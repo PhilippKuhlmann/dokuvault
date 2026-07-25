@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\ADGroup;
+use App\Models\ADUser;
 use App\Models\OperatingSystem;
 use App\Models\Server;
 use App\Models\VM;
@@ -95,6 +97,70 @@ class AgentController extends Controller
             'server' => $server->name,
             'server_id' => $server->id,
             'guests_documented' => $guestCount,
+        ]);
+    }
+
+    /**
+     * Nimmt die von einem Windows-Domaincontroller gemeldeten AD-Benutzer und
+     * -Gruppen entgegen (Upsert über agent_identifier = AD ObjectGUID). Das
+     * Script filtert bereits am DC: nur "echte" Benutzer (inkl. eingebautem
+     * Administrator, ohne Gast/krbtgt/DefaultAccount) und nur selbst
+     * angelegte Gruppen (keine Built-in-Gruppen). Passwörter werden nie
+     * gesetzt – die verschlüsselte Spalte bleibt allein manuell gepflegt.
+     */
+    public function windowsAd(Request $request)
+    {
+        $customer = $request->attributes->get('agentCustomer');
+
+        $data = $request->validate([
+            'domain' => ['nullable', 'string', 'max:255'],
+            'users' => ['nullable', 'array'],
+            'users.*.identifier' => ['required_with:users', 'string', 'max:255'],
+            'users.*.firstName' => ['nullable', 'string', 'max:255'],
+            'users.*.lastName' => ['nullable', 'string', 'max:255'],
+            'users.*.username' => ['nullable', 'string', 'max:255'],
+            'users.*.email' => ['nullable', 'string', 'max:255'],
+            'users.*.enabled' => ['nullable', 'boolean'],
+            'groups' => ['nullable', 'array'],
+            'groups.*.identifier' => ['required_with:groups', 'string', 'max:255'],
+            'groups.*.name' => ['nullable', 'string', 'max:255'],
+            'groups.*.description' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $userCount = 0;
+        foreach ($data['users'] ?? [] as $u) {
+            ADUser::updateOrCreate(
+                ['customer_id' => $customer->id, 'agent_identifier' => $u['identifier']],
+                [
+                    'firstName' => $u['firstName'] ?? null,
+                    'lastName' => $u['lastName'] ?? null,
+                    'username' => $u['username'] ?? null,
+                    'email' => $u['email'] ?? null,
+                    'enabled' => array_key_exists('enabled', $u) ? (bool) $u['enabled'] : null,
+                    // 'password' bleibt bewusst unangetastet (manuell gepflegt)
+                ]
+            );
+            $userCount++;
+        }
+
+        $groupCount = 0;
+        foreach ($data['groups'] ?? [] as $g) {
+            ADGroup::updateOrCreate(
+                ['customer_id' => $customer->id, 'agent_identifier' => $g['identifier']],
+                [
+                    'name' => $g['name'] ?? null,
+                    'description' => $g['description'] ?? null,
+                ]
+            );
+            $groupCount++;
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'customer' => $customer->name,
+            'domain' => $data['domain'] ?? null,
+            'users_documented' => $userCount,
+            'groups_documented' => $groupCount,
         ]);
     }
 

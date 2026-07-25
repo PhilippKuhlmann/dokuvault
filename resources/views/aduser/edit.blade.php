@@ -8,7 +8,14 @@
 
         <x-create.singlerow label="Benutzername" name="username" :default="$aduser->username" />
 
+        <x-create.singlerow label="E-Mail" name="email" :default="$aduser->email" />
+
         <x-create.singlerow label="Passwort" name="password" :default="$aduser->password" />
+
+        <x-edit.radio label="Status" name="enabled" :selector="$aduser->enabled === null ? null : (int) $aduser->enabled" :radios="[
+            'Aktiv' => 1,
+            'Deaktiviert' => 0,
+        ]" />
 
         <x-edit.hidden hidden="{{ $aduser->hidden }}" />
 

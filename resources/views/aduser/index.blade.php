@@ -6,7 +6,7 @@
 
     <div class="m-3">
         <x-table.main>
-            <x-table.head :labels="['Vorname', 'Nachname', 'Benutzername', 'Passwort', '', ]" />
+            <x-table.head :labels="['Vorname', 'Nachname', 'Benutzername', 'E-Mail', 'Status', 'Passwort', '', ]" />
 
             <x-table.body>
 
@@ -17,6 +17,8 @@
                             $aduser->firstName,
                             $aduser->lastName,
                             $aduser->username,
+                            $aduser->email,
+                            $aduser->enabled === null ? '—' : ($aduser->enabled ? 'Aktiv' : 'Deaktiviert'),
                             'password' => $aduser->password,
                         ]"
 

@@ -7,7 +7,14 @@
 
         <x-create.singlerow label="Benutzername" name="username" />
 
+        <x-create.singlerow label="E-Mail" name="email" />
+
         <x-create.singlerow label="Passwort" name="password" />
+
+        <x-create.radio label="Status" name="enabled" :radios="[
+            'Aktiv' => 1,
+            'Deaktiviert' => 0,
+        ]" />
 
         <x-create.hidden />
 

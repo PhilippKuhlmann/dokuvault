@@ -166,6 +166,7 @@
     ]" />
 
     <x-pdf.section title="AD-Benutzer" :items="$customer->adusers" :titleField="fn($u) => trim(($u->firstName ?? '').' '.($u->lastName ?? ''))" :groups="[
+        'Allgemein' => ['E-Mail' => 'email', 'Status' => fn($u) => $u->enabled === null ? '—' : ($u->enabled ? 'Aktiv' : 'Deaktiviert')],
         'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 

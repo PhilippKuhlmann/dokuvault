@@ -27,7 +27,10 @@ class ADUserRequest extends FormRequest
             'firstName' => 'max:255',
             'lastName' => 'max:255',
             'username' => 'required|max:255',
-            'password' => 'required|max:255',
+            // Nullable: per Agent importierte AD-Benutzer haben kein Passwort hinterlegt.
+            'password' => 'nullable|max:255',
+            'email' => 'nullable|email|max:255',
+            'enabled' => 'nullable|boolean',
             'hidden' => '',
         ];
     }
@@ -38,7 +41,9 @@ class ADUserRequest extends FormRequest
             'firstName' => 'Vorname',
             'lastName' => 'Nachname',
             'username' => 'Benutzername',
-            'password' => 'Passwort'
+            'password' => 'Passwort',
+            'email' => 'E-Mail',
+            'enabled' => 'Status',
         ];
     }
 }

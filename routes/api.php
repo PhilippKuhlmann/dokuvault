@@ -30,6 +30,7 @@ Route::get('/test', [RackCabinetController::class, 'deletePosition']);
 // Self-Service-Dokumentation: Geräte melden sich per Agent-Token selbst.
 Route::middleware('agent')->prefix('agent')->group(function () {
     Route::post('/proxmox', [\App\Http\Controllers\API\AgentController::class, 'proxmox']);
+    Route::post('/windows-ad', [\App\Http\Controllers\API\AgentController::class, 'windowsAd']);
 });
 
 

@@ -73,8 +73,20 @@ bash proxmox-doku.sh
 ```
 
 Der Proxmox-Agent erfasst Host-Hardware, Seriennummer, IP und **alle VMs & LXC-Container** (inkl.
-IP über den QEMU-Gast-Agent) und legt sie als Server samt Gästen an. Der Token darf **ausschließlich
-dokumentieren** – bei einem Leak kein weiterer Zugriff. Weitere Agenten (Windows/Hyper-V …) folgen.
+IP über den QEMU-Gast-Agent) und legt sie als Server samt Gästen an.
+
+```powershell
+# Auf einem Domaincontroller (bzw. Rechner mit RSAT-AD-Modul):
+.\windows-ad-doku.ps1
+```
+
+Der Windows-AD-Agent liest alle Benutzer sowie **nur selbst angelegte Gruppen** aus – Standard-/
+Built-in-Gruppen und System-Konten (Gast, krbtgt, DefaultAccount …) werden bereits am DC
+herausgefiltert, der eingebaute Administrator bleibt erhalten. Passwörter werden nie ausgelesen
+oder übertragen.
+
+Jeder Token darf **ausschließlich dokumentieren** – bei einem Leak kein weiterer Zugriff. Weitere
+Agenten folgen.
 
 ---
 

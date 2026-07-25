@@ -17,11 +17,15 @@ class ADUser extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'enabled' => 'boolean',
+    ];
+
     protected function password(): Attribute
     {
         return new Attribute(
             get: fn ($value) => !empty($value) ? Crypt::decryptString($value) : null,
-            set: fn ($value) => Crypt::encryptString($value),
+            set: fn ($value) => !empty($value) ? Crypt::encryptString($value) : null,
         );
     }
 
