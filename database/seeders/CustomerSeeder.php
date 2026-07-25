@@ -2,68 +2,128 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Accesspoint;
+use App\Models\ADGroup;
+use App\Models\ADUser;
+use App\Models\Computer;
+use App\Models\ContactPerson;
+use App\Models\Customer;
+use App\Models\LicenseSoftware;
+use App\Models\Network;
+use App\Models\NetworkSwitch;
+use App\Models\Printer;
+use App\Models\Router;
+use App\Models\SecurepointUTM;
+use App\Models\Server;
+use App\Models\Site;
+use App\Models\VM;
+use App\Models\Wifi;
 use Illuminate\Database\Seeder;
 
 class CustomerSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Weitere Demo-Kunden (zusätzlich zu "Mustermann" aus LocalDatabaseSeeder),
+     * jeweils mit einer ähnlichen Bandbreite an Gerätetypen befüllt.
      */
     public function run(): void
     {
-        $customers = \App\Models\Customer::factory(10)->create();
+        $customers = Customer::factory(5)->create();
 
         foreach ($customers as $customer) {
 
-            $site1 = \App\Models\Site::factory()->create([
+            $site1 = Site::factory()->create([
                 'customer_id' => $customer->id,
-                'name' => 'Main',
+                'name' => 'Hauptsitz',
             ]);
 
-            $site2 = \App\Models\Site::factory()->create([
+            $site2 = Site::factory()->create([
                 'customer_id' => $customer->id,
-                'name' => 'Second',
+                'name' => 'Filiale',
             ]);
 
-
-
-
-            \App\Models\Server::factory(3)->create([
+            ContactPerson::factory(2)->create([
                 'customer_id' => $customer->id,
-                'site_id' => $site1->id,
             ]);
 
-            \App\Models\VM::factory(5)->create([
+            // Netzwerk zuerst (wird von Wifi benötigt)
+            $network = Network::factory()->create([
                 'customer_id' => $customer->id,
                 'site_id' => $site1->id,
             ]);
 
-            \App\Models\Server::factory(1)->create([
-                'customer_id' => $customer->id,
-                'site_id' => $site2->id,
-            ]);
-
-            \App\Models\VM::factory(3)->create([
-                'customer_id' => $customer->id,
-                'site_id' => $site2->id,
-            ]);
-
-
-
-            \App\Models\SecurepointUTM::factory(1)->create([
+            Router::factory(1)->create([
                 'customer_id' => $customer->id,
                 'site_id' => $site1->id,
             ]);
 
-            \App\Models\SecurepointUTM::factory(1)->create([
+            NetworkSwitch::factory(2)->create([
+                'customer_id' => $customer->id,
+                'site_id' => $site1->id,
+            ]);
+
+            Accesspoint::factory(2)->create([
+                'customer_id' => $customer->id,
+                'site_id' => $site1->id,
+            ]);
+
+            Wifi::factory(1)->create([
+                'customer_id' => $customer->id,
+                'site_id' => $site1->id,
+                'network_id' => $network->id,
+            ]);
+
+            Server::factory(3)->create([
+                'customer_id' => $customer->id,
+                'site_id' => $site1->id,
+            ]);
+
+            VM::factory(5)->create([
+                'customer_id' => $customer->id,
+                'site_id' => $site1->id,
+            ]);
+
+            Server::factory(1)->create([
                 'customer_id' => $customer->id,
                 'site_id' => $site2->id,
             ]);
 
+            VM::factory(3)->create([
+                'customer_id' => $customer->id,
+                'site_id' => $site2->id,
+            ]);
 
+            Computer::factory(8)->create([
+                'customer_id' => $customer->id,
+                'site_id' => $site1->id,
+            ]);
+
+            Printer::factory(2)->create([
+                'customer_id' => $customer->id,
+                'site_id' => $site1->id,
+            ]);
+
+            ADUser::factory(5)->create([
+                'customer_id' => $customer->id,
+            ]);
+
+            ADGroup::factory(3)->create([
+                'customer_id' => $customer->id,
+            ]);
+
+            LicenseSoftware::factory(2)->create([
+                'customer_id' => $customer->id,
+            ]);
+
+            SecurepointUTM::factory(1)->create([
+                'customer_id' => $customer->id,
+                'site_id' => $site1->id,
+            ]);
+
+            SecurepointUTM::factory(1)->create([
+                'customer_id' => $customer->id,
+                'site_id' => $site2->id,
+            ]);
         }
-
-
     }
 }
