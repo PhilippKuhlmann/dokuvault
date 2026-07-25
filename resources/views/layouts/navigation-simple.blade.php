@@ -20,6 +20,17 @@
                 </a>
             </div>
 
+            @cannot('isCustomer')
+                <div class="hidden md:flex gap-1 dark:text-gray-100">
+
+                    <x-nav.link url="{{ route('customer.search') }}" name="Kundensuche"><x-svg.search class="h-6 w-6" /> </x-nav.link>
+                    <x-nav.link url="{{ route('search.global') }}" name="Globale Suche"><x-svg.db class="h-6 w-6" /> </x-nav.link>
+                    <x-nav.link url="{{ route('search.utm') }}" name="UTM Suche" target="_blank"><x-svg.software.securepoint class="h-6 w-6" /> </x-nav.link>
+                    <x-nav.link url="{{ route('search.remote') }}" name="Rustdesk Suche" target="_blank"><x-svg.software.rustdesk class="h-6 w-6" /> </x-nav.link>
+
+                </div>
+            @endcannot
+
             <div class="flex items-center">
                 <div class="flex items-center ml-3">
                     <div class="w-14">

@@ -33,15 +33,18 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        if (auth()->user()->role->id == 1)
+        $user = auth()->user();
+
+        // Nutzer mit fest zugeordnetem Kunden (Rolle "Kunde") -> direkt zum eigenen
+        // Kunden-Dashboard. Alle anderen (Admin, Techniker, ...) haben keinen
+        // festen Kunden und landen auf der Kundensuche/Übersicht (RouteServiceProvider::HOME),
+        // von der aus auch die globale Suche erreichbar ist.
+        if ($user->hasCustomer())
         {
-            return redirect()->intended(RouteServiceProvider::HOME);
-        } else
-        {
-            return redirect('/' . auth()->user()->customer_slug);
+            return redirect()->intended('/' . $user->customer->slug);
         }
 
-
+        return redirect()->intended(RouteServiceProvider::HOME);
     }
 
     /**
