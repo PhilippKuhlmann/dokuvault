@@ -48,7 +48,7 @@
                         <label class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Proxmox-Script (proxmox-doku.sh)</label>
                         <div class="flex gap-2">
                             <button type="button"
-                                @click="navigator.clipboard.writeText($refs.proxmoxScript.textContent); copied = true; setTimeout(() => copied = false, 1500)"
+                                @click="copyText($refs.proxmoxScript.textContent); copied = true; setTimeout(() => copied = false, 1500)"
                                 class="text-sm px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
                                 <span x-show="!copied">Kopieren</span>
                                 <span x-show="copied" x-cloak class="text-green-600 dark:text-green-400">Kopiert ✓</span>
@@ -83,7 +83,7 @@
                         <label class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Windows-AD-Script (windows-ad-doku.ps1)</label>
                         <div class="flex gap-2">
                             <button type="button"
-                                @click="navigator.clipboard.writeText($refs.windowsAdScript.textContent); copied = true; setTimeout(() => copied = false, 1500)"
+                                @click="copyText($refs.windowsAdScript.textContent); copied = true; setTimeout(() => copied = false, 1500)"
                                 class="text-sm px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
                                 <span x-show="!copied">Kopieren</span>
                                 <span x-show="copied" x-cloak class="text-green-600 dark:text-green-400">Kopiert ✓</span>
