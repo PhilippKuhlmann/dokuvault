@@ -5,9 +5,17 @@
 
             <!-- Logo-Badge + Titel -->
             <div class="flex flex-col items-center mb-8">
-                <div class="flex items-center justify-center w-16 h-16 mb-4 rounded-2xl bg-gradient-to-br from-cerulean-500 to-chathams-blue-800 shadow-lg">
-                    <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z" />
+                <div class="flex items-center justify-center w-16 h-16 mb-4 rounded-2xl bg-[#4ea1ff] shadow-lg">
+                    <svg viewBox="18 12 64 76" width="44" height="44" aria-hidden="true" focusable="false">
+                        <rect x="20" y="14" width="60" height="72" rx="8" fill="#051323"/>
+                        <rect x="20" y="14" width="10" height="72" rx="8" fill="#0b6fce"/>
+                        <line x1="70" y1="30" x2="76" y2="30" stroke="#e6ebf2" stroke-width="2.5" stroke-linecap="round"/>
+                        <line x1="70" y1="50" x2="76" y2="50" stroke="#e6ebf2" stroke-width="2.5" stroke-linecap="round"/>
+                        <line x1="70" y1="70" x2="76" y2="70" stroke="#e6ebf2" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M42 45 V38 a8 8 0 0 1 16 0 V45" fill="none" stroke="#e6ebf2" stroke-width="4" stroke-linecap="round"/>
+                        <rect x="37" y="44" width="26" height="22" rx="5" fill="#e6ebf2"/>
+                        <circle cx="50" cy="52" r="3" fill="#051323"/>
+                        <rect x="48.5" y="54" width="3" height="7" rx="1" fill="#051323"/>
                     </svg>
                 </div>
                 <span class="text-3xl text-chathams-blue-800 font-CoconPro dark:text-gray-100">

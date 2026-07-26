@@ -7,6 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ config('app.name') }}</title>
+    <link rel="icon" href="{{ asset('logo.svg') }}" type="image/svg+xml">
 
     <script>
         // Vor dem Rendern setzen, um FOUC zu vermeiden
