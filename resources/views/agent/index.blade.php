@@ -1,5 +1,5 @@
 <x-app-layout :$customer>
-    <div class="m-3 space-y-4">
+    <div class="p-3 sm:p-5 space-y-4">
 
         <div class="p-5 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700">
             <div class="text-2xl font-CoconPro text-chathams-blue-800 dark:text-gray-100">Auto-Dokumentation</div>

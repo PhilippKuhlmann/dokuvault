@@ -56,7 +56,7 @@ return [
         'vm' => [\App\Models\VM::class, 'VM'],
         'nas' => [\App\Models\NAS::class, 'NAS'],
         'securepointutm' => [\App\Models\SecurepointUTM::class, 'Securepoint UTM'],
-        'securepointuma' => [\App\Models\SecurepointUMA::class, 'Securepoint UMA'],
+        'securepointuma' => [\App\Models\SecurepointUMA::class, 'E-Mail-Archivierung'],
         'router' => [\App\Models\Router::class, 'Router'],
         'network' => [\App\Models\Network::class, 'Netzwerk'],
         'networkswitch' => [\App\Models\NetworkSwitch::class, 'Switch'],
@@ -90,5 +90,46 @@ return [
         'domain' => [\App\Models\Domain::class, 'Domain'],
         'certificate' => [\App\Models\Certificate::class, 'Zertifikat'],
         'backup' => [\App\Models\Backup::class, 'Backup'],
+    ],
+
+    /**
+     * Überschrift der Listen-Seiten. Die trashables-Labels oben benennen ein
+     * einzelnes Objekt ("Zertifikat wiederhergestellt") und passen deshalb nicht
+     * als Titel einer Liste. Hier steht die Mehrzahl, und zwar in der Schreibweise
+     * aus der Seitenleiste — der Nutzer klickt dort und erwartet oben dasselbe Wort.
+     * Fehlt ein Schlüssel, greift automatisch das trashables-Label.
+     */
+    'list_titles' => [
+        'site' => 'Standorte',
+        'vm' => 'VMs',
+        'network' => 'VLANs',
+        'wifi' => 'WLAN-Netze',
+        'machine' => 'Maschinen',
+        'otherclient' => 'Sonstige Clients',
+        'printer' => 'Drucker',
+        'addomain' => 'AD-Domänen',
+        'aduser' => 'AD-Benutzer',
+        'adgroup' => 'AD-Gruppen',
+        'phonesystem' => 'TK-Anlagen',
+        'phone' => 'Telefone',
+        'logingeneral' => 'Logins Allgemein',
+        'loginnas' => 'Logins NAS',
+        'loginwebsite' => 'Logins Webseiten',
+        'loginrecorder' => 'Logins Recorder',
+        'mailbox' => 'E-Mail-Postfächer',
+        'recorder' => 'Recorder',
+        'camera' => 'Kameras',
+        'licensesoftware' => 'Software-Lizenzen',
+        'licensewindows' => 'Windows-Lizenzen',
+        'licenseaccess' => 'CAL-Lizenzen',
+        'ftpserver' => 'FTP-Server',
+        'internetconnection' => 'Internet-Anschlüsse',
+        'domain' => 'Domains',
+        'certificate' => 'Zertifikate',
+        'backup' => 'Backups',
+        'iotdevice' => 'IoT-Geräte',
+        'networkswitch' => 'Switches',
+        'accesspoint' => 'Accesspoints',
+        'contactperson' => 'Ansprechpartner',
     ],
 ];

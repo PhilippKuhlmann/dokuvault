@@ -16,7 +16,7 @@
 
     $title = $isAdmin
         ? ($adminTitles[$titleKey] ?? null)
-        : (config('custom.trashables')[$titleKey][1] ?? null);
+        : (config('custom.list_titles')[$titleKey] ?? config('custom.trashables')[$titleKey][1] ?? null);
 @endphp
 
 <div class="flex flex-wrap w-full items-center justify-between gap-3 px-3 pt-4 pb-1">

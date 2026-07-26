@@ -1,6 +1,6 @@
 <x-app-layout :$customer>
 
-    <div class="m-3">
+    <div class="p-3 sm:p-5">
         <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">Papierkorb</div>
 
         <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
