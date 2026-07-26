@@ -12,11 +12,11 @@ module.exports = {
     theme: {
         extend: {
             fontFamily: {
-                CoconPro: ['CoconPro-Regular', 'sans'],
-                DINPro: ['DINPro-Regular', 'sans'],
-                'DINPro-bold': ['DINPro-Bold', 'sans'],
-                'DINPro-light': ['DINPro-Light', 'sans'],
-                'DINPro-medium': ['DINPro-Medium', 'sans'],
+                CoconPro: ['SpaceGrotesk-Semibold', 'sans-serif'],
+                DINPro: ['SpaceGrotesk-Regular', 'sans-serif'],
+                'DINPro-bold': ['SpaceGrotesk-Bold', 'sans-serif'],
+                'DINPro-light': ['SpaceGrotesk-Light', 'sans-serif'],
+                'DINPro-medium': ['SpaceGrotesk-Medium', 'sans-serif'],
             },
 
             colors: {

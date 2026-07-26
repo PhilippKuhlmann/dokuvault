@@ -19,10 +19,16 @@
   "name": "dokuvault",
   "description": "DokuVault – Open-Source-IT-Dokumentation & Asset-Management für Managed Service Provider.",
   "version": "1.0.0",
-  "keywords": ["laravel", "documentation", "msp", "asset-management"],
+  "keywords": [
+    "laravel",
+    "documentation",
+    "msp",
+    "asset-management"
+  ],
   "author": "Philipp Kuhlmann",
   "license": "MIT",
   "dependencies": {
+    "@fontsource/space-grotesk": "^5.3.0",
     "puppeteer": "^22.12.0"
   }
 }

@@ -7,48 +7,53 @@
 }
 
 @font-face {
-    font-family: "CoconPro";
-    src: url("/public/fonts/CoconPro-Regular.otf") format('opentype');
+    font-family: "SpaceGrotesk-Light";
+    src: url("/public/fonts/SpaceGrotesk-Light.woff2") format('woff2');
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "SpaceGrotesk-Regular";
+    src: url("/public/fonts/SpaceGrotesk-Regular.woff2") format('woff2');
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "SpaceGrotesk-Medium";
+    src: url("/public/fonts/SpaceGrotesk-Medium.woff2") format('woff2');
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "SpaceGrotesk-Semibold";
+    src: url("/public/fonts/SpaceGrotesk-Semibold.woff2") format('woff2');
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "SpaceGrotesk-Bold";
+    src: url("/public/fonts/SpaceGrotesk-Bold.woff2") format('woff2');
+    font-display: swap;
 }
 
 .font-CoconPro {
-    font-family: 'CoconPro', sans;
-}
-
-@font-face {
-    font-family: "DINPro-Regular";
-    src: url("/public/fonts/DINPro-Regular.otf") format('opentype');
+    font-family: 'SpaceGrotesk-Semibold', sans-serif;
 }
 
 .font-DINPro {
-    font-family: 'DINPro-Regular', sans;
-}
-
-@font-face {
-    font-family: "DINPro-Light";
-    src: url("/public/fonts/DINPro-Light.otf") format('opentype');
+    font-family: 'SpaceGrotesk-Regular', sans-serif;
 }
 
 .font-DINPro-light {
-    font-family: 'DINPro-Light', sans;
-}
-
-@font-face {
-    font-family: "DINPro-Medium";
-    src: url("/public/fonts/DINPro-Medium.otf") format('opentype');
+    font-family: 'SpaceGrotesk-Light', sans-serif;
 }
 
 .font-DINPro-medium {
-    font-family: 'DINPro-Medium', sans;
-}
-
-@font-face {
-    font-family: "DINPro-Bold";
-    src: url("/public/fonts/DINPro-Bold.otf") format('opentype');
+    font-family: 'SpaceGrotesk-Medium', sans-serif;
 }
 
 .font-DINPro-bold {
-    font-family: 'DINPro-Bold', sans;
+    font-family: 'SpaceGrotesk-Bold', sans-serif;
 }
 
 
