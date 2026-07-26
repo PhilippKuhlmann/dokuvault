@@ -31,11 +31,11 @@
             @endforeach
         </div>
 
-        <div class="flex flex-wrap gap-5">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-5">
 
             {{-- Ablaufende Lizenzen --}}
             @can('licensesoftware_viewAny')
-                <div class="w-full sm:w-96 p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                <div class="col-span-2 p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
                     <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">Ablaufende Lizenzen</div>
                     <div class="divide-y divide-gray-100 dark:divide-gray-700">
                         @forelse ($expiringLicenses as $license)
@@ -65,7 +65,7 @@
 
             {{-- Ablaufende Zertifikate --}}
             @can('certificate_viewAny')
-                <div class="w-full sm:w-96 p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                <div class="col-span-2 p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
                     <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">Ablaufende Zertifikate</div>
                     <div class="divide-y divide-gray-100 dark:divide-gray-700">
                         @forelse ($expiringCertificates as $certificate)
@@ -92,6 +92,10 @@
                     </div>
                 </div>
             @endcan
+
+        </div>
+
+        <div class="flex flex-wrap gap-5">
 
             {{-- Standorte --}}
             <div class="w-full sm:w-80 p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
