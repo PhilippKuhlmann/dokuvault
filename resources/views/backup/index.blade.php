@@ -1,7 +1,5 @@
 <x-app-layout :$customer>
-    @can('backup_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="backup_create" />
     @forelse ($backups as $backup)
     <x-card>
         <x-slot:head>

@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('server_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="server_create" />
 
 
     @forelse ($servers as $server)

@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('vm_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="vm_create" />
 
     @forelse ($vms as $vm)
         <x-card>

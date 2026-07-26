@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('accesspoint_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="accesspoint_create" />
 
 
     @forelse ($accesspoints as $accesspoint)

@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('otherclient_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="otherclient_create" />
 
 
     @forelse ($otherclients as $otherclient)

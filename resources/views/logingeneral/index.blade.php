@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('logingeneral_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="logingeneral_create" />
 
     <div class="m-3">
         <x-table.main>

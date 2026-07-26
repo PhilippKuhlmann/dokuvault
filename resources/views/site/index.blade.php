@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('site_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="site_create" />
 
     <div class="m-3">
         <x-table.main>

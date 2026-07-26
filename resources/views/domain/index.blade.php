@@ -1,7 +1,5 @@
 <x-app-layout :$customer>
-    @can('domain_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="domain_create" />
     @forelse ($domains as $domain)
     <x-card>
         <x-slot:head>

@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('licensesoftware_create')
-       <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="licensesoftware_create" />
 
     @forelse ($customer->licensesoftware as $licensesoftware)
         <x-card>

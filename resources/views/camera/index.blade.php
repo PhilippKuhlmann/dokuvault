@@ -1,7 +1,5 @@
 <x-app-layout :$customer>
-    @can('camera_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="camera_create" />
 
     @forelse ($cameras as $camera)
         <x-card>

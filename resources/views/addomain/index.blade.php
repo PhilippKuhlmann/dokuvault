@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('addomain_create')
-    <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="addomain_create" />
 
     <div class="m-3">
         <x-table.main>

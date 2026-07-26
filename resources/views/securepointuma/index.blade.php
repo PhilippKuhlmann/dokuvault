@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('securepointuma_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="securepointuma_create" />
 
     @forelse ($customer->securepointumas as $securepointuma)
         <x-card>

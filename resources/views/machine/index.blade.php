@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('machine_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="machine_create" />
 
     <div class="m-3">
         <x-table.main>

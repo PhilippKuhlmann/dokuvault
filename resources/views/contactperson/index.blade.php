@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('contactperson_create')
-       <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="contactperson_create" />
 
     <div class="m-3">
         <x-table.main>

@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('router_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="router_create" />
 
 
     @forelse ($routers as $router)

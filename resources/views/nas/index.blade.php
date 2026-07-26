@@ -1,10 +1,10 @@
 <x-app-layout :$customer>
 
-    @can('nas_create')
-        <x-sitetopmenu>
+    <x-sitetopmenu can="nas_create">
+        @can('nas_create')
             <x-input.linkbutton label="Weitere Logins" link="{{ route('loginnas.index', $customer) }}" />
-        </x-sitetopmenu>
-    @endcan
+        @endcan
+    </x-sitetopmenu>
 
 
     @forelse ($nasList as $nas)

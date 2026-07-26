@@ -1,10 +1,10 @@
 <x-app-layout :$customer>
 
-    @can('recorder_create')
-        <x-sitetopmenu>
+    <x-sitetopmenu can="recorder_create">
+        @can('recorder_create')
             <x-input.linkbutton label="Weitere Logins" link="{{ route('loginrecorder.index', $customer) }}" />
-        </x-sitetopmenu>
-    @endcan
+        @endcan
+    </x-sitetopmenu>
 
     @forelse ($recorders as $recorder)
         <x-card>

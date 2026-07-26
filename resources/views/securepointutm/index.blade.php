@@ -1,7 +1,5 @@
 <x-app-layout :$customer>
-    @can('securepointutm_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="securepointutm_create" />
 
 
     @forelse ($securepointutms as $securepointutm)

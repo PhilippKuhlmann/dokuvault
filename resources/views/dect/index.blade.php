@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('dect_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="dect_create" />
 
     @forelse ($dectList as $dect)
         <x-card>

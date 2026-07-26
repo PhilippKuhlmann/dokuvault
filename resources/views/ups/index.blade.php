@@ -1,7 +1,5 @@
 <x-app-layout :$customer>
-    @can('ups_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="ups_create" />
     @forelse ($ups as $usv)
     <x-card>
         <x-slot:head>

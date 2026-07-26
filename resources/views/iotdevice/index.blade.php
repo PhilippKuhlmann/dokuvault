@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('iotdevice_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="iotdevice_create" />
 
 
     @forelse ($iotdevices as $iotdevice)

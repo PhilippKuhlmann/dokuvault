@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('ftpserver_create')
-       <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="ftpserver_create" />
 
     <div class="m-3">
         <x-table.main>

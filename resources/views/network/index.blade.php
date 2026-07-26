@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('network_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="network_create" />
 
 
     @forelse ($networks as $network)

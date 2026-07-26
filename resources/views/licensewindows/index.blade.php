@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('licensewindows_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="licensewindows_create" />
 
     <div class="m-3">
         <x-table.main>

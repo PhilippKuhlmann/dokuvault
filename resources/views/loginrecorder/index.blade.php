@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('loginrecorder_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="loginrecorder_create" />
 
     <div class="m-3">
         <x-table.main>

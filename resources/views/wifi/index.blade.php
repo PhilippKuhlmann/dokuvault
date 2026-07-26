@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('wifi_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="wifi_create" />
 
     <div class="m-3">
         <x-table.main>

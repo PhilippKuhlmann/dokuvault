@@ -1,7 +1,5 @@
 <x-app-layout :$customer>
-    @can('certificate_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="certificate_create" />
     @forelse ($certificates as $certificate)
     <x-card>
         <x-slot:head>

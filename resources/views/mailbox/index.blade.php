@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('mailbox_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="mailbox_create" />
 
     @forelse ($customer->mailboxes as $mailbox)
         <x-card>

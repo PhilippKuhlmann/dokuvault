@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('dyndns_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="dyndns_create" />
 
 
     <div class="m-3">

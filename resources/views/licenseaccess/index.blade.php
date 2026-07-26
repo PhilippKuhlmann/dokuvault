@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('licenseaccess_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="licenseaccess_create" />
 
     <div class="m-3">
         <x-table.main>

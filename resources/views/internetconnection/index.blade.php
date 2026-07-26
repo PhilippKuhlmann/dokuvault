@@ -1,7 +1,5 @@
 <x-app-layout :$customer>
-    @can('internetconnection_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="internetconnection_create" />
     @forelse ($internetconnections as $ic)
     <x-card>
         <x-slot:head>

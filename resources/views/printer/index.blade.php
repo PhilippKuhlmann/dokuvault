@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('printer_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="printer_create" />
 
     @forelse ($printers as $printer)
     <x-card>

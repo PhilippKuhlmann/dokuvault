@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('adgroup_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="adgroup_create" />
 
     <div class="m-3">
         <x-table.main>

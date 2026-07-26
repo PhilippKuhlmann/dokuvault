@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('computer_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="computer_create" />
 
 
     @forelse ($computers as $computer)

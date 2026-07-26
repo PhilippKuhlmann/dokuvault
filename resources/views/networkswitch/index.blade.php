@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('networkswitch_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="networkswitch_create" />
 
 
     @forelse ($networkswitches as $networkswitch)

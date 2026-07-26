@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('loginnas_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="loginnas_create" />
 
     <div class="m-3">
         <x-table.main>

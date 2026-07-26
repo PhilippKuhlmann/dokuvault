@@ -1,8 +1,6 @@
 <x-app-layout :$customer>
 
-    @can('phonesystem_create')
-        <x-sitetopmenu />
-    @endcan
+    <x-sitetopmenu can="phonesystem_create" />
 
     @forelse ($phoneSystems as $phoneSystem)
         <x-card>
