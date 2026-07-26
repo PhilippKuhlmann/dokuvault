@@ -53,7 +53,10 @@ class IpPlanController extends Controller
             ];
         });
 
-        return view('ipplan.index', compact('customer', 'plans'));
+        $totalUsed = $plans->sum(fn ($entry) => $entry['plan']['usedCount'] ?? 0);
+        $totalAddresses = $plans->sum(fn ($entry) => $entry['plan']['total'] ?? 0);
+
+        return view('ipplan.index', compact('customer', 'plans', 'totalUsed', 'totalAddresses'));
     }
 
     /**
@@ -123,16 +126,19 @@ class IpPlanController extends Controller
         $map = array_filter($used, fn ($k) => $k >= $first && $k <= $last, ARRAY_FILTER_USE_KEY);
 
         // Gateway markieren
+        $gatewayLong = null;
         if ($network->gateway && filter_var($network->gateway, FILTER_VALIDATE_IP)) {
             $gw = ip2long($network->gateway) & 0xFFFFFFFF;
             if ($gw >= $first && $gw <= $last) {
                 $map[$gw] = isset($map[$gw]) ? 'Gateway / ' . $map[$gw] : 'Gateway';
+                $gatewayLong = $gw;
             }
         }
 
         $dhcp = $this->dhcpRange($network, $networkLong);
 
         $rows = [];
+        $counts = ['device' => 0, 'dhcp' => 0, 'free' => 0];
         $runStart = null;
         $runKind = null;
 
@@ -154,18 +160,21 @@ class IpPlanController extends Controller
         for ($ip = $first; $ip <= $last; $ip++) {
             if (isset($map[$ip])) {
                 $flush($ip - 1);
+                $counts['device']++;
                 $rows[] = [
                     'kind' => 'device',
                     'from' => long2ip($ip),
                     'to' => long2ip($ip),
                     'single' => true,
                     'label' => $map[$ip],
+                    'isGateway' => $ip === $gatewayLong,
                 ];
 
                 continue;
             }
 
             $kind = ($dhcp && $ip >= $dhcp[0] && $ip <= $dhcp[1]) ? 'dhcp' : 'free';
+            $counts[$kind]++;
             if ($runKind !== $kind) {
                 $flush($ip - 1);
                 $runStart = $ip;
@@ -177,6 +186,7 @@ class IpPlanController extends Controller
         return [
             'error' => null,
             'rows' => $rows,
+            'counts' => $counts,
             'truncated' => $truncated,
             'total' => $last - $first + 1,
             'usedCount' => count($map),
