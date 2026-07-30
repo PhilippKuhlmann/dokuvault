@@ -24,6 +24,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @livewireStyles
+    @livewireScriptConfig
 </head>
 
 <body class="antialiased font-DINPro bg-gray-100 dark:bg-gray-900">
@@ -36,8 +37,6 @@
     </main>
 
     @include('layouts.success')
-
-    @livewireScripts
 </body>
 
 </html>

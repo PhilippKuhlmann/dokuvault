@@ -20,13 +20,14 @@ window.copyText = function (text) {
     return Promise.resolve();
 };
 
-import Alpine from 'alpinejs';
+// Livewire 3 bringt seine eigene Alpine-Instanz mit und startet sie selbst als Teil von
+// Livewire.start(). Ein zusätzlicher eigener `import Alpine from 'alpinejs'; Alpine.start()`
+// davor erzeugte zwei konkurrierende Alpine/Livewire-Instanzen auf jeder Seite (Konsolen-
+// warnungen "Detected multiple instances of ..." und ein Crash bei der zweiten Registrierung
+// von Alpine-Magics wie $persist), wodurch wire:click/wire:model teils gar nicht mehr feuerten.
+import { Livewire, Alpine } from '../../vendor/livewire/livewire/dist/livewire.esm';
 
 window.Alpine = Alpine;
-
-Alpine.start();
-
-import { Livewire } from '../../vendor/livewire/livewire/dist/livewire.esm';
 
 Livewire.start()
 

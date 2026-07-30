@@ -21,6 +21,7 @@
     <style>[x-cloak]{display:none!important}</style>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireScriptConfig
 </head>
 
 <body class="antialiased font-DINPro text-gray-900 dark:text-gray-100">
