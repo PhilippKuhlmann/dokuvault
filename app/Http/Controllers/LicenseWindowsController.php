@@ -15,7 +15,9 @@ class LicenseWindowsController extends Controller
     {
         $this->authorize('viewAny', LicenseWindows::class);
 
-        $licensewindowsList = $this->getFilteredQuery(LicenseWindows::class, $customer)
+        // Windows-Lizenzen haben keinen Standortbezug (keine site_id-Spalte), daher
+        // bewusst ohne getFilteredQuery: der Standortfilter gilt hier nicht.
+        $licensewindowsList = LicenseWindows::where('customer_id', $customer->id)
                         ->with('operatingSystem')
                         ->latest()->paginate(25);
 

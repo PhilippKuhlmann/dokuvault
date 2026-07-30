@@ -14,7 +14,9 @@ class FileController extends Controller
     {
         $this->authorize('viewAny', File::class);
 
-        $files = $this->getFilteredQuery(File::class, $customer)
+        // Dateien haben keinen Standortbezug (keine site_id-Spalte), daher bewusst
+        // ohne getFilteredQuery: der Standortfilter der Seitenleiste gilt hier nicht.
+        $files = File::where('customer_id', $customer->id)
                       ->orderBy('created_at')
                       ->paginate(25);
 
