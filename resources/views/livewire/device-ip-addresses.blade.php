@@ -1,4 +1,7 @@
-<div class="m-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700">
+{{-- max-w-3xl + mx-auto: gleiche Spaltenbreite wie das Formular darueber (x-create.main) --}}
+{{-- Wrapper haelt dieselbe zentrierte Spaltenbreite wie das Formular darueber (x-create.main) --}}
+<div class="mx-auto max-w-3xl px-3">
+<div class="my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-4">Weitere IP-Adressen</div>
 
     @if ($entries->isNotEmpty())
@@ -38,11 +41,13 @@
             <x-input.text wire:model="address" x-ref="addr" type="text" class="mt-1 w-40" placeholder="10.10.30.1" />
             @error('address') <span class="text-xs text-red-600 mt-1">{{ $message }}</span> @enderror
         </div>
-        <div class="flex flex-col">
+        {{-- min-w-0 + max-w-full: das Select waechst sonst auf die Breite der laengsten
+             Option ("Beschreibung (10.10.30.0/24)") und schiebt die Seite auf Mobil seitlich raus --}}
+        <div class="flex flex-col min-w-0 max-w-full">
             <x-input.label value="VLAN (optional)" />
             {{-- Bei Auswahl eines VLANs das IP-Feld mit dem Netz-Präfix (erste 3 Oktette) vorbefüllen;
                  ein bereits eingegebenes letztes Oktett bleibt erhalten. --}}
-            <x-input.select name="network_id" wire:model="network_id" class="mt-1"
+            <x-input.select name="network_id" wire:model="network_id" class="mt-1 max-w-full"
                 x-on:change="
                     const prefix = $event.target.selectedOptions[0]?.dataset.prefix || '';
                     if (prefix) {
@@ -68,4 +73,5 @@
         </div>
         <x-input.button type="button" wire:click="add" label="Hinzufügen" />
     </div>
+</div>
 </div>

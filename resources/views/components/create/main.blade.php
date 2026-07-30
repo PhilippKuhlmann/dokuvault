@@ -1,11 +1,23 @@
 @props(['header', 'action', 'labelsubmit' => 'Hinzufügen', 'right' => ''])
 
+@php
+    // Formulare mit rechter Spalte (z. B. die Rechte-Matrix im Rollen-Formular) brauchen
+    // die volle Breite. Alle uebrigen werden mittig auf Lesebreite gehalten - dieselbe
+    // Breite nutzen auch die Karten darunter (IP-Adressen, Loeschen), damit die
+    // Bearbeiten-Seite eine durchgehende Spalte ergibt.
+    $hasRight = trim((string) $right) !== '';
+@endphp
 
-<div class="md:flex xs:flex-col">
-    <form method="post" action="{{ $action }}" class="m-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700" enctype="multipart/form-data">
+{{-- px-3 haelt den seitlichen Abstand auf schmalen Bildschirmen, wo max-w-3xl noch nicht greift --}}
+<div @class(['md:flex xs:flex-col', 'mx-auto max-w-3xl px-3' => ! $hasRight])>
+    <form method="post" action="{{ $action }}" @class([
+        'p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700',
+        'm-3' => $hasRight,
+        'w-full my-3' => ! $hasRight,   // my statt m: die Zentrierung macht der Container
+    ]) enctype="multipart/form-data">
         @csrf
 
-        <div class="md:flex xs:flex-col md:w-128">
+        <div @class(['md:flex xs:flex-col', 'md:w-128' => $hasRight, 'w-full' => ! $hasRight])>
 
             <div class="flex flex-col text-cerulean-950 dark:text-cerulean-500 w-full">
                 <div class="text-2xl font-CoconPro">
