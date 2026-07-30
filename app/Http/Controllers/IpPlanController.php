@@ -40,10 +40,14 @@ class IpPlanController extends Controller
     {
         $this->authorize('viewAny', Network::class);
 
-        $networks = Network::where('customer_id', $customer->id)
+        // Nur die VLANs des gewählten Standorts anzeigen.
+        $networks = $this->getFilteredQuery(Network::class, $customer)
             ->orderBy('vlanId')
             ->get();
 
+        // Die belegten Adressen bewusst OHNE Standortfilter einsammeln: liegt ein Gerät
+        // eines anderen Standorts in diesem Netz, muss es sichtbar bleiben - sonst würde
+        // eine tatsächlich vergebene Adresse hier als frei erscheinen.
         $used = $this->collectUsedIps($customer);
 
         $plans = $networks->map(function (Network $network) use ($used) {

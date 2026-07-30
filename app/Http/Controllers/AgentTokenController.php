@@ -14,7 +14,7 @@ class AgentTokenController extends Controller
     {
         Gate::authorize('see_hidden');
 
-        $tokens = AgentToken::where('customer_id', $customer->id)
+        $tokens = $this->getFilteredQuery(AgentToken::class, $customer)
             ->with('site')
             ->latest()
             ->get();
