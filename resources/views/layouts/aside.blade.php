@@ -213,7 +213,8 @@
                 </x-aside.dropdown>
             @endcanany
 
-            @canany(['file_viewAny', 'ups_viewAny', 'see_hidden'])
+            @php $wizardPermissions = collect(config('custom.wizard_steps'))->pluck('permission')->all(); @endphp
+            @canany(['file_viewAny', 'ups_viewAny', 'see_hidden', ...$wizardPermissions])
                 <x-aside.dropdown label="Sonstiges" svg="svg.settings">
                     <x-slot:links>
                         @can('ups_viewAny')
@@ -222,6 +223,9 @@
                         @can('file_viewAny')
                             <x-aside.dropdownlink label="Dateien" href="{{ route('file.index', $customer) }}" />
                         @endcan
+                        @canany($wizardPermissions)
+                            <x-aside.dropdownlink label="Erstaufnahme-Assistent" href="{{ route('wizard.index', $customer) }}" />
+                        @endcanany
                         @can('see_hidden')
                             <x-aside.dropdownlink label="Auto-Dokumentation" href="{{ route('agent.index', $customer) }}" />
                             <x-aside.dropdownlink label="Papierkorb" href="{{ route('trash.index', $customer) }}" />

@@ -1,0 +1,396 @@
+<?php
+
+namespace App\Livewire;
+
+use App\Models\Customer;
+use App\Models\DocumentationRun;
+use App\Models\Network;
+use App\Models\OperatingSystem;
+use App\Models\Server;
+use App\Models\Site;
+use App\Rules\BelongsToCustomer;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
+use Livewire\Component;
+
+/**
+ * Geführte Erstaufnahme: fragt die Schritte aus config('custom.wizard_steps') der Reihe nach ab
+ * und legt jede Antwort sofort an. Fortschritt liegt in documentation_runs (App\Models\
+ * DocumentationRun), damit ein Durchlauf Logout/Gerätewechsel übersteht.
+ *
+ * Sicherheitsmodell: isCustomer-Middleware und Autorisierung per Route-Parameter greifen bei
+ * Livewire-Aktionen NICHT (die laufen über /livewire/update, ohne {customer} in der Route) -
+ * deshalb prüft guard() bei jeder Aktion neu, und rulesForStep() ersetzt jede
+ * App\Rules\BelongsToCustomer-Regel durch eine Rule::exists(...)->where('customer_id', ...), die
+ * ohne Routen-Parameter auskommt. Siehe App\Livewire\DeviceIpAddresses für dasselbe Muster.
+ */
+class DocumentationWizard extends Component
+{
+    public int $customerId;
+
+    public int $runId;
+
+    /** @var array<string,mixed> */
+    public array $form = [];
+
+    /**
+     * Felder, bei denen die Datenbank strenger ist als der zugehörige FormRequest (geprüft in
+     * den Migrationen, nicht nur in den Requests):
+     * - wifis.password / wifis.network_id sind NOT NULL, WifiRequest führt beide nicht als 'required'.
+     * - servers.operating_system_id / vms.operating_system_id sind NOT NULL (die ->nullable() in
+     *   der Migration hängt nur an der ForeignKeyDefinition, nicht an der Spalte); VMRequest lässt
+     *   das Feld sogar leer durch.
+     * Reine FormRequest-Übernahme würde hier NOT-NULL-Verletzungen oder - bei verschlüsselten
+     * Spalten wie wifis.password - Chiffretext aus einem Leerstring erzeugen.
+     */
+    protected const RULE_OVERRIDES = [
+        'password' => 'required',
+        'network_id' => 'required',
+        'operating_system_id' => 'required',
+    ];
+
+    protected const FOREIGN_KEY_TABLES = [
+        'network_id' => 'networks',
+        'server_id' => 'servers',
+    ];
+
+    public function mount(Customer $customer): void
+    {
+        $this->customerId = $customer->id;
+
+        // Ohne ein einziges _create-Recht ist der Assistent für diesen Nutzer nicht nutzbar.
+        abort_if(empty($this->allowedSteps()), 403);
+
+        $run = DocumentationRun::where('customer_id', $customer->id)
+            ->where('user_id', auth()->id())
+            ->whereNull('completed_at')
+            ->latest('id')
+            ->first();
+
+        if (! $run) {
+            $firstKey = $this->allowedSteps()[0]['key'] ?? null;
+
+            $run = DocumentationRun::create([
+                'customer_id' => $customer->id,
+                'user_id' => auth()->id(),
+                'current_step' => $firstKey,
+                'completed_steps' => [],
+                'skipped_steps' => [],
+            ]);
+        }
+
+        // current_step kann nach einer Config-Änderung oder einem Rechtewechsel ins Leere
+        // zeigen oder auf einen Schritt, den dieser Nutzer (mehr) nicht sehen darf.
+        $allowedKeys = array_column($this->allowedSteps(), 'key');
+        if ($run->current_step !== null && ! in_array($run->current_step, $allowedKeys, true)) {
+            $run->update(['current_step' => $allowedKeys[0] ?? null]);
+        }
+
+        $this->runId = $run->id;
+    }
+
+    // --- Zugriff -------------------------------------------------------
+
+    /**
+     * Lädt Kunde + Durchlauf frisch und prüft Mandantenzugehörigkeit. Public Properties sind
+     * client-seitig manipulierbar (Livewire hydriert, was der Browser schickt) - deshalb bei
+     * jeder Aktion neu prüfen, nicht nur einmalig in mount().
+     *
+     * @return array{0: Customer, 1: DocumentationRun}
+     */
+    protected function guard(): array
+    {
+        $customer = Customer::findOrFail($this->customerId);
+
+        $user = auth()->user();
+        abort_if(! $user, 403);
+        abort_if($user->customer_id && $user->customer_id !== $customer->id, 403);
+
+        $run = DocumentationRun::where('id', $this->runId)
+            ->where('customer_id', $customer->id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        return [$customer, $run];
+    }
+
+    /**
+     * Nur Schritte, für die der Nutzer das jeweilige _create-Recht hat. Hat er für KEINEN
+     * Schritt ein Recht, ist die Seite für ihn insgesamt nicht nutzbar (siehe render()).
+     */
+    protected function allowedSteps(): array
+    {
+        return collect(config('custom.wizard_steps'))
+            ->filter(fn (array $step) => Gate::allows($step['permission']))
+            ->values()
+            ->all();
+    }
+
+    protected function currentStep(DocumentationRun $run): ?array
+    {
+        if ($run->current_step === null) {
+            return null;
+        }
+
+        return collect($this->allowedSteps())->firstWhere('key', $run->current_step);
+    }
+
+    // --- Formular --------------------------------------------------------
+
+    protected function resetForm(): void
+    {
+        $this->form = [];
+        $this->resetValidation();
+    }
+
+    protected function rulesForStep(array $step, int $customerId): array
+    {
+        /** @var \Illuminate\Foundation\Http\FormRequest $request */
+        $request = new $step['request']();
+        $baseRules = $request->rules();
+
+        $rules = [];
+
+        foreach ($step['fields'] as $field) {
+            $name = $field['name'];
+            $raw = $baseRules[$name] ?? 'nullable';
+            // Pipe-getrennte Regel-Strings ('required|max:255') müssen vor dem Anhängen
+            // weiterer Regeln aufgesplittet werden - als Ein-Element-Array durchgereicht,
+            // hält Laravel "required|max:255" für einen einzigen (nicht existierenden) Regelnamen.
+            $fieldRules = is_array($raw) ? $raw : explode('|', $raw);
+
+            // BelongsToCustomer liest request()->route('customer') - existiert unter
+            // /livewire/update nicht (siehe Klassen-Docblock). Ersatzregel unten.
+            $fieldRules = collect($fieldRules)
+                ->reject(fn ($rule) => $rule instanceof BelongsToCustomer)
+                ->values()
+                ->all();
+
+            if (isset(self::FOREIGN_KEY_TABLES[$name])) {
+                $fieldRules[] = Rule::exists(self::FOREIGN_KEY_TABLES[$name], 'id')
+                    ->where('customer_id', $customerId)
+                    ->whereNull('deleted_at');
+            } elseif ($name === 'operating_system_id') {
+                $fieldRules[] = Rule::exists('operating_systems', 'id')->whereNull('deleted_at');
+            }
+
+            if (isset(self::RULE_OVERRIDES[$name])) {
+                $fieldRules = collect($fieldRules)
+                    ->reject(fn ($r) => is_string($r) && in_array($r, ['nullable', 'sometimes'], true))
+                    ->push(self::RULE_OVERRIDES[$name])
+                    ->unique()
+                    ->values()
+                    ->all();
+            }
+
+            $rules["form.$name"] = $fieldRules;
+        }
+
+        return $rules;
+    }
+
+    protected function attributesForStep(array $step): array
+    {
+        return collect($step['fields'])
+            ->mapWithKeys(fn (array $f) => ["form.{$f['name']}" => $f['label']])
+            ->all();
+    }
+
+    // --- Aktionen --------------------------------------------------------
+
+    public function save(): void
+    {
+        [$customer, $run] = $this->guard();
+        $step = $this->currentStep($run);
+        abort_if(! $step, 404);
+
+        Gate::authorize($step['permission']);
+
+        if (($step['scope'] ?? 'site') === 'site' && ! $run->site_id) {
+            $this->addError('form.name', 'Bitte zuerst einen Standort anlegen oder auswählen.');
+
+            return;
+        }
+
+        $this->validate($this->rulesForStep($step, $customer->id), [], $this->attributesForStep($step));
+
+        // Massenzuweisung: alle Models sind $guarded = [], $form kommt vom Client.
+        // Nur die in der Config deklarierten Feldnamen dürfen durch.
+        $names = array_column($step['fields'], 'name');
+        $data = Arr::only($this->form, $names);
+
+        // Leere Werte raus, statt sie als '' zu speichern: verschlüsselnde Setter
+        // (Router::password etc.) machen sonst Chiffretext aus einem Leerstring.
+        $data = array_filter($data, fn ($v) => $v !== '' && $v !== null);
+
+        if (($step['scope'] ?? 'site') === 'site') {
+            $data['site_id'] = $run->site_id;
+        }
+
+        $record = $customer->{$step['relation']}()->create($data);
+
+        if ($step['sets_site'] ?? false) {
+            $run->update(['site_id' => $record->id]);
+        }
+
+        $run->recordCreated($step['key'], $record->id);
+
+        $this->resetForm();
+    }
+
+    /**
+     * Im Standort-Schritt: einen vorhandenen Standort für den restlichen Durchlauf übernehmen,
+     * statt zwingend einen neuen anzulegen.
+     */
+    public function selectSite(int $siteId): void
+    {
+        [$customer, $run] = $this->guard();
+
+        $site = Site::where('customer_id', $customer->id)->whereKey($siteId)->firstOrFail();
+
+        $run->update(['site_id' => $site->id]);
+    }
+
+    public function nextStep(): void
+    {
+        [, $run] = $this->guard();
+        $step = $this->currentStep($run);
+
+        if ($step) {
+            $run->markStepCompleted($step['key']);
+        }
+
+        $this->advance($run);
+    }
+
+    public function skipStep(): void
+    {
+        [, $run] = $this->guard();
+        $step = $this->currentStep($run);
+
+        if ($step) {
+            $run->markStepSkipped($step['key']);
+        }
+
+        $this->advance($run);
+    }
+
+    public function previousStep(): void
+    {
+        [, $run] = $this->guard();
+        $keys = array_column($this->allowedSteps(), 'key');
+        $index = array_search($run->current_step, $keys, true);
+
+        if ($index !== false && $index > 0) {
+            $run->update(['current_step' => $keys[$index - 1]]);
+        }
+
+        $this->resetForm();
+    }
+
+    protected function advance(DocumentationRun $run): void
+    {
+        $keys = array_column($this->allowedSteps(), 'key');
+        $index = array_search($run->current_step, $keys, true);
+        $nextKey = ($index !== false && isset($keys[$index + 1])) ? $keys[$index + 1] : null;
+
+        $run->update(['current_step' => $nextKey]);
+
+        if ($nextKey === null) {
+            $run->update(['completed_at' => now()]);
+        }
+
+        $this->resetForm();
+    }
+
+    public function finish(): void
+    {
+        [$customer, $run] = $this->guard();
+        $run->update(['current_step' => null, 'completed_at' => now()]);
+
+        $this->redirectRoute('customer.dashboard', ['customer' => $customer], navigate: false);
+    }
+
+    public function restart(): void
+    {
+        [$customer] = $this->guard();
+        $firstKey = $this->allowedSteps()[0]['key'] ?? null;
+
+        $run = DocumentationRun::create([
+            'customer_id' => $customer->id,
+            'user_id' => auth()->id(),
+            'current_step' => $firstKey,
+            'completed_steps' => [],
+            'skipped_steps' => [],
+        ]);
+
+        $this->runId = $run->id;
+        $this->resetForm();
+    }
+
+    // --- Anzeige -----------------------------------------------------------
+
+    public function render()
+    {
+        [$customer, $run] = $this->guard();
+        $steps = $this->allowedSteps();
+        $step = $this->currentStep($run);
+
+        $entries = collect();
+        $selectOptions = [];
+
+        if ($step) {
+            $query = $step['model']::where('customer_id', $customer->id);
+            if (($step['scope'] ?? 'site') === 'site' && $run->site_id) {
+                $query->where('site_id', $run->site_id);
+            }
+            $entries = $query->latest()->limit(50)->get();
+
+            foreach ($step['fields'] as $field) {
+                if (($field['type'] ?? null) === 'select' && is_string($field['options'] ?? null)) {
+                    $selectOptions[$field['name']] = $this->optionsFor($field['options'], $customer, $run);
+                }
+
+                // Vorbelegung aus der Config (z. B. Subnetzmaske 255.255.255.0), nur wenn das
+                // Feld noch nicht angefasst wurde - sonst würde jeder Re-Render nach save()
+                // die Vorgabe zurückschreiben.
+                if (! array_key_exists($field['name'], $this->form) && isset($field['default'])) {
+                    $this->form[$field['name']] = $field['default'];
+                }
+            }
+        }
+
+        $existingSites = $step && $step['key'] === 'site'
+            ? Site::where('customer_id', $customer->id)->orderBy('name')->get()
+            : collect();
+
+        return view('livewire.documentation-wizard', [
+            'customer' => $customer,
+            'run' => $run,
+            'steps' => $steps,
+            'step' => $step,
+            'entries' => $entries,
+            'selectOptions' => $selectOptions,
+            'existingSites' => $existingSites,
+            'finished' => $run->completed_at !== null,
+        ]);
+    }
+
+    protected function optionsFor(string $source, Customer $customer, DocumentationRun $run): Collection
+    {
+        return match ($source) {
+            'networks' => Network::where('customer_id', $customer->id)
+                ->when($run->site_id, fn ($q) => $q->where('site_id', $run->site_id))
+                ->orderBy('vlanId')
+                ->get(['id', 'description', 'vlanId']),
+            'servers' => Server::where('customer_id', $customer->id)
+                ->when($run->site_id, fn ($q) => $q->where('site_id', $run->site_id))
+                ->orderBy('name')
+                ->get(['id', 'name']),
+            'operatingSystems' => OperatingSystem::orderBy('name')->get(['id', 'name']),
+            default => collect(),
+        };
+    }
+}

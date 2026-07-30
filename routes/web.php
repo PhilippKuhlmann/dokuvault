@@ -13,6 +13,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\IpPlanController;
 use App\Http\Controllers\AgentTokenController;
 use App\Http\Controllers\TrashController;
+use App\Http\Controllers\WizardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ServerController;
@@ -157,6 +158,9 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::get('agent', [AgentTokenController::class, 'index'])->name('agent.index');
             Route::post('agent', [AgentTokenController::class, 'store'])->name('agent.store');
             Route::delete('agent/{agentToken}', [AgentTokenController::class, 'destroy'])->name('agent.destroy');
+
+            // Dokumentations-Assistent (geführte Erstaufnahme)
+            Route::get('assistent', [WizardController::class, 'index'])->name('wizard.index');
 
             Route::resource('site', SiteController::class)->except(['show']);
             Route::resource('contactperson', ContactPersonController::class)->except(['show']);

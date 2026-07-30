@@ -7,6 +7,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 // use function Spatie\LaravelPdf\Support\pdf;
 use App\Http\Requests\CustomerRequest;
 use App\Models\ContactPerson;
+use App\Models\DocumentationRun;
 use App\Models\LicenseSoftware;
 use App\Models\Role;
 use App\Models\Site;
@@ -80,7 +81,22 @@ class CustomerController extends Controller
             ->orderBy('expiry_date')
             ->get();
 
-        return view('customer.dashboard', compact('customer', 'sites', 'contactpersons', 'tiles', 'expiringLicenses', 'expiringCertificates'));
+        // Einstieg zum Dokumentations-Assistenten: anbieten, wenn ein Durchlauf dieses Nutzers
+        // offen ist ("Fortsetzen") oder der Kunde insgesamt noch kaum Inventar hat.
+        $openWizardRun = DocumentationRun::where('customer_id', $customer->id)
+            ->where('user_id', auth()->id())
+            ->whereNull('completed_at')
+            ->exists();
+
+        $inventoryCount = $customer->servers_count + $customer->computers_count + $customer->vms_count
+            + $customer->nas_count + $customer->networks_count + $customer->wifis_count
+            + $customer->printers_count + $customer->cameras_count + $customer->phones_count
+            + $customer->adusers_count;
+
+        return view('customer.dashboard', compact(
+            'customer', 'sites', 'contactpersons', 'tiles', 'expiringLicenses', 'expiringCertificates',
+            'openWizardRun', 'inventoryCount'
+        ));
     }
 
     public function viewPDF(Customer $customer)
