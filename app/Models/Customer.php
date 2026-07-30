@@ -146,11 +146,6 @@ class Customer extends Model
         return $this->hasMany(Phone::class);
     }
 
-    public function dect()
-    {
-        return $this->hasMany(DECT::class);
-    }
-
     public function dects()
     {
         return $this->hasMany(DECT::class);
@@ -197,11 +192,6 @@ class Customer extends Model
     }
 
     public function contactpersons()
-    {
-        return $this->hasMany(ContactPerson::class);
-    }
-
-    public function contactpeople()
     {
         return $this->hasMany(ContactPerson::class);
     }

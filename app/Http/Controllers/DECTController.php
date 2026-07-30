@@ -32,7 +32,7 @@ class DECTController extends Controller
     {
         $this->authorize('create', DECT::class);
 
-        $customer->dect()->create($request->validated());
+        $customer->dects()->create($request->validated());
 
         return redirect(route('dect.index', $customer));
     }
