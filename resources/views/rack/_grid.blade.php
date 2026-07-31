@@ -1,8 +1,8 @@
 {{--
     Frontansicht eines Racks als CSS-Grid.
     Erwartet: $rack (mit items.device geladen), $interactive (bool).
-    Interaktiv (im Livewire-Editor): freie HE sind Dropzonen, Einbauten draggable —
-    die Alpine-Handler (drag/handleDrop) stellt der umgebende Editor bereit.
+    Interaktiv (im Livewire-Editor): jede HE ist Dropzone, Einbauten sind draggable —
+    den Alpine-Zustand (drag/hover/handleDrop/previewStyle) stellt der umgebende Editor bereit.
     HE zählen von unten: Zeile 1 im Grid ist die oberste Höheneinheit.
 --}}
 @php
@@ -27,28 +27,34 @@
             $occupied[$u] = true;
         }
     }
+
+    // Zeilenhoehe einer HE. Gross genug, dass Name, Typ und die Knoepfe
+    // nebeneinander lesbar bleiben und das Ziehen sicher trifft.
+    $rowHeight = '2rem';
 @endphp
 
-<div class="inline-block min-w-64 w-full max-w-md rounded-lg border-2 border-gray-300 bg-gray-50 p-2 dark:border-gray-600 dark:bg-gray-900/60">
-    <div class="grid gap-y-px" style="grid-template-columns: 2rem 1fr;">
+<div class="inline-block min-w-64 w-full max-w-md rounded-lg border-2 border-gray-300 bg-gray-50 p-2 dark:border-gray-600 dark:bg-gray-900/60"
+    @if ($interactive)
+        {{-- Vorschau nur ausblenden, wenn der Zeiger den Schrank wirklich verlaesst --}}
+        x-on:dragleave="if (! $el.contains($event.relatedTarget)) hover = null"
+    @endif>
+    <div class="grid gap-y-px" style="grid-template-columns: 2.5rem 1fr;">
 
         {{-- HE-Skala links --}}
         @for ($u = $he; $u >= 1; $u--)
-            <div class="flex items-center justify-end pr-2 text-[10px] font-mono text-gray-400 dark:text-gray-500"
-                style="grid-column: 1; grid-row: {{ $he - $u + 1 }}; min-height: 1.6rem;">{{ $u }}</div>
+            <div class="flex items-center justify-end pr-2 text-[11px] font-mono text-gray-400 dark:text-gray-500"
+                style="grid-column: 1; grid-row: {{ $he - $u + 1 }}; min-height: {{ $rowHeight }};">{{ $u }}</div>
         @endfor
 
         {{-- Freie Höheneinheiten (im Editor zugleich Dropzonen) --}}
         @for ($u = $he; $u >= 1; $u--)
             @unless ($occupied[$u] ?? false)
-                <div style="grid-column: 2; grid-row: {{ $he - $u + 1 }}; min-height: 1.6rem;"
+                <div style="grid-column: 2; grid-row: {{ $he - $u + 1 }}; min-height: {{ $rowHeight }};"
                     @if ($interactive)
                         x-on:dragover.prevent="hover = {{ $u }}"
-                        x-on:dragleave="hover === {{ $u }} && (hover = null)"
                         x-on:drop.prevent="handleDrop({{ $u }})"
-                        x-bind:class="hover === {{ $u }} ? 'border-cerulean-500 bg-cerulean-50 dark:bg-cerulean-900/30' : 'border-transparent'"
                     @endif
-                    class="rounded border border-dashed border-transparent bg-white/40 dark:bg-gray-800/40"></div>
+                    class="rounded bg-white/40 dark:bg-gray-800/40"></div>
             @endunless
         @endfor
 
@@ -58,11 +64,14 @@
                 $key = $item->device_type ? ($typeKeys[$item->device_type] ?? null) : null;
                 $color = $item->device_type ? ($colors[$key] ?? $defaultDeviceColor) : $passiveColor;
             @endphp
-            <div style="grid-column: 2; grid-row: {{ $he - $item->topUnit() + 1 }} / span {{ $item->height_units }};"
+            <div style="grid-column: 2; grid-row: {{ $he - $item->topUnit() + 1 }} / span {{ $item->height_units }}; min-height: {{ $rowHeight }};"
                 @if ($interactive)
                     draggable="true"
-                    x-on:dragstart="drag = { kind: 'move', id: {{ $item->id }} }"
+                    x-on:dragstart="drag = { kind: 'move', id: {{ $item->id }}, he: {{ $item->height_units }} }"
                     x-on:dragend="drag = null; hover = null"
+                    {{-- Auch belegte Zeilen melden sich: so zeigt die Vorschau dort rot statt gar nichts --}}
+                    x-on:dragover.prevent="hover = {{ $item->position }}"
+                    x-on:drop.prevent="handleDrop({{ $item->position }})"
                 @endif
                 class="flex items-center justify-between gap-2 rounded border px-2 text-xs {{ $color }} {{ $interactive ? 'cursor-grab active:cursor-grabbing' : '' }}"
                 wire:key="rack-item-{{ $item->id }}">
@@ -86,6 +95,22 @@
                 </span>
             </div>
         @endforeach
+
+        @if ($interactive)
+            {{-- Drop-Vorschau: liegt ueber allem, deckt genau die HE ab, die belegt wuerden.
+                 pointer-events-none, damit sie das darunterliegende drop-Ereignis nicht abfaengt. --}}
+            <div x-show="drag && hover !== null"
+                x-bind:style="previewStyle()"
+                x-bind:class="fits()
+                    ? 'border-cerulean-500 bg-cerulean-400/30'
+                    : 'border-red-500 bg-red-400/30'"
+                class="pointer-events-none relative z-10 flex items-center justify-center rounded border-2 border-dashed"
+                style="display: none;">
+                <span class="rounded px-1.5 text-[11px] font-medium tracking-wide"
+                    x-bind:class="fits() ? 'text-cerulean-800 dark:text-cerulean-100' : 'text-red-800 dark:text-red-100'"
+                    x-text="previewLabel()"></span>
+            </div>
+        @endif
 
     </div>
 </div>

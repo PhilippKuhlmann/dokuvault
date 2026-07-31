@@ -1,9 +1,52 @@
 {{-- Wrapper hält dieselbe zentrierte Spaltenbreite wie das Formular darüber (x-create.main) --}}
+@php
+    // Belegte Höheneinheit => Item-ID. Damit kann die Drop-Vorschau im Browser
+    // entscheiden, ob der gezogene Einbau passt - ohne Server-Rundreise.
+    $occupiedMap = [];
+    foreach ($rack->items as $item) {
+        for ($u = $item->position; $u <= $item->topUnit(); $u++) {
+            $occupiedMap[$u] = $item->id;
+        }
+    }
+@endphp
 <div class="mx-auto max-w-3xl px-3">
 <div class="my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700"
     x-data="{
-        drag: null,
-        hover: null,
+        drag: null,        // { kind, he, ... } - was gerade gezogen wird
+        hover: null,       // unterste HE unter dem Zeiger
+        rackHeight: {{ $rack->height_units }},
+        occupied: @js($occupiedMap),
+
+        span() { return this.drag?.he ?? 1 },
+
+        /* Passt der gezogene Einbau an die Position unter dem Zeiger? */
+        fits() {
+            if (! this.drag || this.hover === null) return false;
+            const top = this.hover + this.span() - 1;
+            if (this.hover < 1 || top > this.rackHeight) return false;
+            // Beim Verschieben zählen die eigenen Höheneinheiten nicht als belegt.
+            const self = this.drag.kind === 'move' ? this.drag.id : null;
+            for (let u = this.hover; u <= top; u++) {
+                if (this.occupied[u] !== undefined && this.occupied[u] !== self) return false;
+            }
+            return true;
+        },
+
+        /* Vorschau deckt genau die HE ab, die belegt würden - oben am Rack abgeschnitten. */
+        previewStyle() {
+            if (this.hover === null) return {};
+            const top = Math.min(this.hover + this.span() - 1, this.rackHeight);
+            const rows = Math.max(1, top - this.hover + 1);
+            return { gridColumn: '2', gridRow: `${this.rackHeight - top + 1} / span ${rows}` };
+        },
+
+        previewLabel() {
+            if (! this.drag || this.hover === null) return '';
+            const top = this.hover + this.span() - 1;
+            const range = this.span() > 1 ? `U${this.hover}–U${top}` : `U${this.hover}`;
+            return this.fits() ? range : `${range} · kein Platz`;
+        },
+
         handleDrop(position) {
             if (! this.drag) return;
             if (this.drag.kind === 'device') $wire.placeDevice(this.drag.type, this.drag.id, position);
@@ -16,8 +59,9 @@
 
     <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">Bestückung</div>
     <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">
-        Geräte aus der Palette auf eine freie Höheneinheit ziehen – oder per Knopf auf den
-        untersten freien Platz einbauen. Eingebautes lässt sich ebenfalls per Ziehen verschieben.
+        Geräte aus der Palette auf eine freie Höheneinheit ziehen – die Vorschau zeigt, welche
+        Einheiten belegt würden. Oder per Knopf auf den untersten freien Platz einbauen.
+        Eingebautes lässt sich ebenfalls per Ziehen verschieben.
     </p>
 
     @error('rack')
@@ -37,7 +81,7 @@
                         @foreach ($group['devices'] as $device)
                             <li wire:key="palette-{{ $group['key'] }}-{{ $device->id }}"
                                 draggable="true"
-                                x-on:dragstart="drag = { kind: 'device', type: '{{ $group['key'] }}', id: {{ $device->id }} }"
+                                x-on:dragstart="drag = { kind: 'device', type: '{{ $group['key'] }}', id: {{ $device->id }}, he: 1 }"
                                 x-on:dragend="drag = null; hover = null"
                                 class="flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm cursor-grab active:cursor-grabbing dark:border-gray-600 dark:bg-gray-700/60 dark:text-gray-200">
                                 <span class="truncate">{{ $device->name }}</span>
@@ -57,7 +101,7 @@
                     @foreach ($catalog as $key => [$label, $he])
                         <li wire:key="catalog-{{ $key }}"
                             draggable="true"
-                            x-on:dragstart="drag = { kind: 'catalog', key: '{{ $key }}' }"
+                            x-on:dragstart="drag = { kind: 'catalog', key: '{{ $key }}', he: {{ $he }} }"
                             x-on:dragend="drag = null; hover = null"
                             class="flex items-center justify-between gap-2 rounded-lg border border-dashed border-gray-300 px-2 py-1.5 text-sm text-gray-500 cursor-grab active:cursor-grabbing dark:border-gray-600 dark:text-gray-400">
                             <span class="truncate">{{ $label }}</span>
