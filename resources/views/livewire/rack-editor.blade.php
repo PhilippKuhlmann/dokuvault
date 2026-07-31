@@ -1,23 +1,23 @@
 {{-- Wrapper hält dieselbe zentrierte Spaltenbreite wie das Formular darüber (x-create.main) --}}
-@php
-    // Belegte Höheneinheit => Item-ID. Damit kann die Drop-Vorschau im Browser
-    // entscheiden, ob der gezogene Einbau passt - ohne Server-Rundreise.
-    $occupiedMap = [];
-    foreach ($rack->items as $item) {
-        for ($u = $item->position; $u <= $item->topUnit(); $u++) {
-            $occupiedMap[$u] = $item->id;
-        }
-    }
-@endphp
 <div class="mx-auto max-w-3xl px-3">
 <div class="my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700"
     x-data="{
         drag: null,        // { kind, he, ... } - was gerade gezogen wird
         hover: null,       // unterste HE unter dem Zeiger
         rackHeight: {{ $rack->height_units }},
-        occupied: @js($occupiedMap),
 
         span() { return this.drag?.he ?? 1 },
+
+        /* Belegung immer frisch aus dem DOM lesen. Ein einmal in x-data
+           gebackener Plan wäre nach jeder Livewire-Änderung (z. B. HE
+           vergrößern) veraltet und die Vorschau würde lügen. */
+        placed() {
+            return [...this.$root.querySelectorAll('[data-item-id]')].map(el => ({
+                id: Number(el.dataset.itemId),
+                unit: Number(el.dataset.unit),
+                he: Number(el.dataset.he),
+            }));
+        },
 
         /* Passt der gezogene Einbau an die Position unter dem Zeiger? */
         fits() {
@@ -26,10 +26,9 @@
             if (this.hover < 1 || top > this.rackHeight) return false;
             // Beim Verschieben zählen die eigenen Höheneinheiten nicht als belegt.
             const self = this.drag.kind === 'move' ? this.drag.id : null;
-            for (let u = this.hover; u <= top; u++) {
-                if (this.occupied[u] !== undefined && this.occupied[u] !== self) return false;
-            }
-            return true;
+            return ! this.placed().some(i =>
+                i.id !== self && this.hover <= i.unit + i.he - 1 && top >= i.unit
+            );
         },
 
         /* Vorschau deckt genau die HE ab, die belegt würden - oben am Rack abgeschnitten. */

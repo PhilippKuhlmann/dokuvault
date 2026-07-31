@@ -42,17 +42,24 @@
 
         {{-- HE-Skala links --}}
         @for ($u = $he; $u >= 1; $u--)
-            <div class="flex items-center justify-end pr-2 text-[11px] font-mono text-gray-400 dark:text-gray-500"
+            <div wire:key="rack-scale-{{ $u }}"
+                class="flex items-center justify-end pr-2 text-[11px] font-mono text-gray-400 dark:text-gray-500"
                 style="grid-column: 1; grid-row: {{ $he - $u + 1 }}; min-height: {{ $rowHeight }};">{{ $u }}</div>
         @endfor
 
-        {{-- Freie Höheneinheiten (im Editor zugleich Dropzonen) --}}
+        {{-- Freie Höheneinheiten (im Editor zugleich Dropzonen).
+             wire:key ist hier Pflicht: ohne Schlüssel ordnet Livewires Morph die
+             Zellen beim Neuzeichnen falsch zu und die Alpine-Handler verlieren
+             ihre Bindung - dann reagiert das Ziehen nicht mehr. Die HE steht
+             zusätzlich als data-Attribut, damit der Handler sie zur Ereigniszeit
+             aus dem DOM liest statt aus einem einmal eingebackenen Wert. --}}
         @for ($u = $he; $u >= 1; $u--)
             @unless ($occupied[$u] ?? false)
-                <div style="grid-column: 2; grid-row: {{ $he - $u + 1 }}; min-height: {{ $rowHeight }};"
+                <div wire:key="rack-free-{{ $u }}" data-unit="{{ $u }}"
+                    style="grid-column: 2; grid-row: {{ $he - $u + 1 }}; min-height: {{ $rowHeight }};"
                     @if ($interactive)
-                        x-on:dragover.prevent="hover = {{ $u }}"
-                        x-on:drop.prevent="handleDrop({{ $u }})"
+                        x-on:dragover.prevent="hover = Number($el.dataset.unit)"
+                        x-on:drop.prevent="handleDrop(Number($el.dataset.unit))"
                     @endif
                     class="rounded bg-white/40 dark:bg-gray-800/40"></div>
             @endunless
@@ -64,17 +71,18 @@
                 $key = $item->device_type ? ($typeKeys[$item->device_type] ?? null) : null;
                 $color = $item->device_type ? ($colors[$key] ?? $defaultDeviceColor) : $passiveColor;
             @endphp
-            <div style="grid-column: 2; grid-row: {{ $he - $item->topUnit() + 1 }} / span {{ $item->height_units }}; min-height: {{ $rowHeight }};"
+            <div wire:key="rack-item-{{ $item->id }}"
+                data-item-id="{{ $item->id }}" data-unit="{{ $item->position }}" data-he="{{ $item->height_units }}"
+                style="grid-column: 2; grid-row: {{ $he - $item->topUnit() + 1 }} / span {{ $item->height_units }}; min-height: {{ $rowHeight }};"
                 @if ($interactive)
                     draggable="true"
-                    x-on:dragstart="drag = { kind: 'move', id: {{ $item->id }}, he: {{ $item->height_units }} }"
+                    x-on:dragstart="drag = { kind: 'move', id: Number($el.dataset.itemId), he: Number($el.dataset.he) }"
                     x-on:dragend="drag = null; hover = null"
                     {{-- Auch belegte Zeilen melden sich: so zeigt die Vorschau dort rot statt gar nichts --}}
-                    x-on:dragover.prevent="hover = {{ $item->position }}"
-                    x-on:drop.prevent="handleDrop({{ $item->position }})"
+                    x-on:dragover.prevent="hover = Number($el.dataset.unit)"
+                    x-on:drop.prevent="handleDrop(Number($el.dataset.unit))"
                 @endif
-                class="flex items-center justify-between gap-2 rounded border px-2 text-xs {{ $color }} {{ $interactive ? 'cursor-grab active:cursor-grabbing' : '' }}"
-                wire:key="rack-item-{{ $item->id }}">
+                class="flex items-center justify-between gap-2 rounded border px-2 text-xs {{ $color }} {{ $interactive ? 'cursor-grab active:cursor-grabbing' : '' }}">
                 <span class="truncate font-medium">{{ $item->label() }}</span>
                 <span class="flex shrink-0 items-center gap-2">
                     @if ($item->device_type && isset($typeLabels[$key]))
@@ -99,7 +107,8 @@
         @if ($interactive)
             {{-- Drop-Vorschau: liegt ueber allem, deckt genau die HE ab, die belegt wuerden.
                  pointer-events-none, damit sie das darunterliegende drop-Ereignis nicht abfaengt. --}}
-            <div x-show="drag && hover !== null"
+            <div wire:key="rack-preview"
+                x-show="drag && hover !== null"
                 x-bind:style="previewStyle()"
                 x-bind:class="fits()
                     ? 'border-cerulean-500 bg-cerulean-400/30'
