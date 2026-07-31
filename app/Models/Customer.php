@@ -46,9 +46,9 @@ class Customer extends Model
         return $this->hasMany(Site::class);
     }
 
-    public function rackcabinets()
+    public function racks()
     {
-        return $this->hasMany(RackCabinet::class);
+        return $this->hasMany(Rack::class);
     }
 
     public function securepointutms()

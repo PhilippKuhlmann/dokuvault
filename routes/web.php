@@ -47,6 +47,7 @@ use App\Http\Controllers\PhoneController;
 use App\Http\Controllers\PhoneSystemController;
 use App\Http\Controllers\PrinterController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RackController;
 use App\Http\Controllers\RecorderController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RouterController;
@@ -173,6 +174,7 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::resource('server', ServerController::class)->except(['show']);
             Route::resource('vm', VMController::class)->except(['show']);
             Route::resource('networkswitch', NetworkSwitchController::class, ['parameters' => ['networkswitch' => 'networkswitch']])->except(['show']);
+            Route::resource('rack', RackController::class)->except(['show']);
             Route::resource('nas', NASController::class, ['parameters' => ['nas' => 'nas']])->except(['show']);
             Route::resource('addomain', ADDomainController::class)->except(['show']);
             Route::resource('aduser', ADUserController::class)->except(['show']);

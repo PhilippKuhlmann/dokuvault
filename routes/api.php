@@ -2,8 +2,6 @@
 
 use App\Http\Controllers\API\AccesspointController;
 use App\Http\Controllers\API\CustomerController;
-use App\Http\Controllers\API\RackCabinetController;
-use App\Http\Controllers\API\RackDeviceController;
 use App\Http\Controllers\API\RoomController;
 use App\Http\Controllers\API\ServerController;
 use App\Http\Controllers\API\SiteController;
@@ -24,8 +22,6 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-
-Route::get('/test', [RackCabinetController::class, 'deletePosition']);
 
 // Self-Service-Dokumentation: Geräte melden sich per Agent-Token selbst.
 Route::middleware('agent')->prefix('agent')->group(function () {
@@ -57,30 +53,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('/accesspoints/{accesspoint}', [AccesspointController::class, 'update']);
         Route::delete('/accesspoints/{accesspoint}', [AccesspointController::class, 'delete']);
 
-        Route::get('/rackcabinets', [RackCabinetController::class, 'index']);
-        Route::post('/rackcabinets', [RackCabinetController::class, 'store']);
-
-
     });
-
-
-
-
-    // RackCabinets
-    Route::get('/rackcabinets', [RackCabinetController::class, 'customerRackCabinets']);
-
-    Route::get('/rackcabinets/devices', [RackCabinetController::class, 'getRackCabinetDevices']);
-
-    Route::get('/rackcabinets/update', [RackCabinetController::class, 'update']);
-    Route::get('/rackcabinets/addposition', [RackCabinetController::class, 'addPosition']);
-    Route::get('/rackcabinets/deleteposition', [RackCabinetController::class, 'deletePosition']);
-
-    // RackDevices
-    Route::get('/rackdevices', [RackDeviceController::class, 'getAll']);
-
-
-
-
 
     // Server
     Route::get('servers', [ServerController::class, 'index']);

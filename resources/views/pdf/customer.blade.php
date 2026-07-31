@@ -112,6 +112,13 @@
         'Netzwerk' => ['IP' => 'ip', 'Port' => 'port'],
     ]" />
 
+    <x-pdf.section title="Serverschränke" :items="$customer->racks()->with('items.device')->get()" :groups="[
+        'Allgemein' => ['Ort' => 'location', 'Höheneinheiten' => fn($r) => $r->height_units . ' HE', 'Notiz' => 'note'],
+        'Belegung' => ['Einbauten' => fn($r) => $r->items
+            ->map(fn($i) => 'U' . $i->position . ($i->height_units > 1 ? '–U' . $i->topUnit() : '') . ': ' . $i->label())
+            ->implode(', ') ?: null],
+    ]" />
+
     {{-- Server & Storage --}}
     <x-pdf.section title="Server" :items="$customer->servers" :groups="[
         'Hardware' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Betriebssystem' => fn($s) => $s->operatingSystem?->name],

@@ -2,8 +2,50 @@
 
 namespace Database\Seeders;
 
+use App\Models\Accesspoint;
+use App\Models\ADDomain;
+use App\Models\ADGroup;
+use App\Models\ADUser;
+use App\Models\Backup;
+use App\Models\Camera;
+use App\Models\Certificate;
+use App\Models\Computer;
+use App\Models\ContactPerson;
+use App\Models\Customer;
+use App\Models\DECT;
+use App\Models\Domain;
+use App\Models\DynDNS;
+use App\Models\FTPServer;
+use App\Models\InternetConnection;
+use App\Models\IoTDevice;
+use App\Models\LicenseAccess;
+use App\Models\LicenseSoftware;
+use App\Models\LicenseWindows;
+use App\Models\LoginGeneral;
+use App\Models\LoginNAS;
+use App\Models\LoginRecorder;
+use App\Models\LoginWebsite;
+use App\Models\Machine;
+use App\Models\Mailbox;
+use App\Models\NAS;
+use App\Models\Network;
+use App\Models\NetworkSwitch;
+use App\Models\OtherClient;
+use App\Models\Phone;
+use App\Models\PhoneSystem;
+use App\Models\Printer;
+use App\Models\Rack;
+use App\Models\Recorder;
 use App\Models\Role;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Router;
+use App\Models\SecurepointUMA;
+use App\Models\SecurepointUTM;
+use App\Models\Server;
+use App\Models\Site;
+use App\Models\Ups;
+use App\Models\User;
+use App\Models\VM;
+use App\Models\Wifi;
 use Illuminate\Database\Seeder;
 
 class LocalDatabaseSeeder extends Seeder
@@ -22,24 +64,23 @@ class LocalDatabaseSeeder extends Seeder
             UserSeeder::class,
             OperatingSystemsSeeder::class,
             MailboxProvidorsSeeder::class,
-            RackDevicesSeeder::class,
         ]);
 
-        $customer = \App\Models\Customer::factory()->create([
+        $customer = Customer::factory()->create([
             'name' => 'Mustermann',
         ]);
 
-        $site1 = \App\Models\Site::factory()->create([
+        $site1 = Site::factory()->create([
             'customer_id' => $customer->id,
             'name' => 'Zentrale Hamburg',
         ]);
 
-        $site2 = \App\Models\Site::factory()->create([
+        $site2 = Site::factory()->create([
             'customer_id' => $customer->id,
             'name' => 'Filiale München',
         ]);
 
-        \App\Models\User::factory()->create([
+        User::factory()->create([
             'name' => 'Kunde Lesen/Schreiben',
             'username' => 'kunde-rw',
             'password' => bcrypt('password'),
@@ -47,7 +88,7 @@ class LocalDatabaseSeeder extends Seeder
             'customer_id' => $customer->id,
         ]);
 
-        \App\Models\User::factory()->create([
+        User::factory()->create([
             'name' => 'Kunde nur Lesen',
             'username' => 'kunde-r',
             'password' => bcrypt('password'),
@@ -55,43 +96,43 @@ class LocalDatabaseSeeder extends Seeder
             'customer_id' => $customer->id,
         ]);
 
-        \App\Models\ADDomain::factory()->create([
+        ADDomain::factory()->create([
             'domain' => 'ad.mustermann.de',
             'netbios' => 'MUSTERMANN',
             'dsrmpassword' => 'password',
             'customer_id' => $customer->id,
         ]);
 
-        \App\Models\SecurepointUTM::factory(1)->create([
+        SecurepointUTM::factory(1)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
-        \App\Models\Router::factory(2)->create([
+        Router::factory(2)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
-        \App\Models\SecurepointUMA::factory(1)->create([
+        SecurepointUMA::factory(1)->create([
             'customer_id' => $customer->id,
             'name' => 'Reddoxx Mailserver',
             'manufacturer' => 'Reddoxx',
             'type' => 'Appliance',
         ]);
 
-        \App\Models\Network::factory(5)->create([
+        Network::factory(5)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
-        \App\Models\Network::factory(3)->create([
+        Network::factory(3)->create([
             'customer_id' => $customer->id,
             'site_id' => $site2->id,
         ]);
 
         // Kohärentes Management-VLAN mit passend adressierten Geräten (für einen
         // aussagekräftigen IP-Plan: Gateway, Server, DHCP-Bereich, freie Bereiche).
-        \App\Models\Network::factory()->create([
+        Network::factory()->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
             'description' => 'Server & Management',
@@ -107,7 +148,7 @@ class LocalDatabaseSeeder extends Seeder
         ]);
 
         // Clients-VLAN (der Router ist auch hier Gateway -> zweite IP)
-        $clientsVlan = \App\Models\Network::factory()->create([
+        $clientsVlan = Network::factory()->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
             'description' => 'Clients',
@@ -120,35 +161,60 @@ class LocalDatabaseSeeder extends Seeder
             'dhcpEnd' => '200',
         ]);
 
-        $rtrCore = \App\Models\Router::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'RTR-Core', 'ip' => '10.10.30.1']);
+        $rtrCore = Router::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'RTR-Core', 'ip' => '10.10.30.1']);
         // Router hängt in mehreren VLANs -> zusätzliche Gateway-IP im Clients-VLAN
         $rtrCore->ipAddresses()->create(['customer_id' => $customer->id, 'network_id' => $clientsVlan->id, 'address' => '10.10.20.1', 'label' => 'Gateway Clients']);
 
-        \App\Models\NetworkSwitch::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SW-Core', 'ip' => '10.10.30.2']);
+        NetworkSwitch::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SW-Core', 'ip' => '10.10.30.2']);
         // ein Client im Clients-VLAN, damit dort auch etwas belegt ist
-        \App\Models\Computer::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'PC-Empfang', 'ip' => '10.10.20.50']);
-        \App\Models\Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-DC01', 'ip1' => '10.10.30.10', 'bmcIp' => '10.10.30.210']);
-        \App\Models\Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-FS01', 'ip1' => '10.10.30.11', 'bmcIp' => '10.10.30.211']);
-        \App\Models\Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-HV01', 'ip1' => '10.10.30.12', 'bmcIp' => '10.10.30.212']);
-        \App\Models\NAS::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'NAS-Backup', 'ip1' => '10.10.30.20']);
-        \App\Models\Accesspoint::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'AP-Serverraum', 'ip' => '10.10.30.30']);
+        Computer::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'PC-Empfang', 'ip' => '10.10.20.50']);
+        Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-DC01', 'ip1' => '10.10.30.10', 'bmcIp' => '10.10.30.210']);
+        Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-FS01', 'ip1' => '10.10.30.11', 'bmcIp' => '10.10.30.211']);
+        Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-HV01', 'ip1' => '10.10.30.12', 'bmcIp' => '10.10.30.212']);
+        NAS::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'NAS-Backup', 'ip1' => '10.10.30.20']);
+        Accesspoint::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'AP-Serverraum', 'ip' => '10.10.30.30']);
 
-        \App\Models\ADUser::factory(10)->create([
+        // Serverschrank mit den kohärenten Geräten von oben - von unten nach oben:
+        // USV, Server, NAS, dann Netzwerktechnik und Patchfeld unter der Decke.
+        $rack = Rack::factory()->create([
+            'customer_id' => $customer->id,
+            'site_id' => $site1->id,
+            'name' => 'Rack HH-01',
+            'height_units' => 42,
+            'location' => 'Serverraum EG',
+        ]);
+        $usv = Ups::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'USV-01']);
+        $byName = fn (string $class, string $name) => $class::where('customer_id', $customer->id)->where('name', $name)->first();
+        $rack->items()->createMany(array_filter([
+            ['position' => 1, 'height_units' => 2, 'device_type' => Ups::class, 'device_id' => $usv->id],
+            ['position' => 4, 'height_units' => 2, 'device_type' => Server::class, 'device_id' => $byName(Server::class, 'SRV-DC01')?->id],
+            ['position' => 6, 'height_units' => 2, 'device_type' => Server::class, 'device_id' => $byName(Server::class, 'SRV-FS01')?->id],
+            ['position' => 8, 'height_units' => 2, 'device_type' => Server::class, 'device_id' => $byName(Server::class, 'SRV-HV01')?->id],
+            ['position' => 11, 'height_units' => 2, 'device_type' => NAS::class, 'device_id' => $byName(NAS::class, 'NAS-Backup')?->id],
+            ['position' => 14, 'height_units' => 1, 'name' => 'Fachboden 1 HE'],
+            ['position' => 36, 'height_units' => 1, 'device_type' => Router::class, 'device_id' => $byName(Router::class, 'RTR-Core')?->id],
+            ['position' => 38, 'height_units' => 1, 'device_type' => NetworkSwitch::class, 'device_id' => $byName(NetworkSwitch::class, 'SW-Core')?->id],
+            ['position' => 39, 'height_units' => 1, 'name' => 'Rangierfeld'],
+            ['position' => 40, 'height_units' => 1, 'name' => 'Patchfeld 24 Port'],
+            ['position' => 42, 'height_units' => 1, 'name' => 'Kabeldurchführung'],
+        ], fn ($item) => ! array_key_exists('device_id', $item) || $item['device_id'] !== null));
+
+        ADUser::factory(10)->create([
             'customer_id' => $customer->id,
         ]);
 
-        \App\Models\ADGroup::factory(5)->create([
+        ADGroup::factory(5)->create([
             'customer_id' => $customer->id,
         ]);
 
         // Server – Referenzen für die VM-Hosts merken
-        $servers = \App\Models\Server::factory(3)->create([
+        $servers = Server::factory(3)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
         // VMs, jeweils einem physischen Host-Server zugeordnet
-        \App\Models\VM::factory(6)->create([
+        VM::factory(6)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ])->each(function ($vm) use ($servers) {
@@ -156,132 +222,132 @@ class LocalDatabaseSeeder extends Seeder
         });
 
         // NAS – für die NAS-Logins gemerkt
-        $nasList = \App\Models\NAS::factory(2)->create([
+        $nasList = NAS::factory(2)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
-        \App\Models\NetworkSwitch::factory(4)->create([
+        NetworkSwitch::factory(4)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
-        \App\Models\Accesspoint::factory(5)->create([
+        Accesspoint::factory(5)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
-        \App\Models\Computer::factory(12)->create([
+        Computer::factory(12)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
-        \App\Models\Printer::factory(4)->create([
+        Printer::factory(4)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
-        \App\Models\IoTDevice::factory(4)->create([
+        IoTDevice::factory(4)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
-        \App\Models\Machine::factory(3)->create([
+        Machine::factory(3)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
-        \App\Models\OtherClient::factory(3)->create([
+        OtherClient::factory(3)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
-        \App\Models\PhoneSystem::factory(1)->create([
+        PhoneSystem::factory(1)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
-        \App\Models\Phone::factory(12)->create([
+        Phone::factory(12)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
-        \App\Models\DECT::factory(5)->create([
+        DECT::factory(5)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
-        \App\Models\Mailbox::factory(6)->create([
+        Mailbox::factory(6)->create([
             'customer_id' => $customer->id,
         ]);
 
-        \App\Models\Wifi::factory(4)->create([
+        Wifi::factory(4)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
         // Recorder – für die Recorder-Logins gemerkt
-        $recorders = \App\Models\Recorder::factory(2)->create([
+        $recorders = Recorder::factory(2)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
-        \App\Models\Camera::factory(12)->create([
+        Camera::factory(12)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
-        \App\Models\ContactPerson::factory(3)->create([
+        ContactPerson::factory(3)->create([
             'customer_id' => $customer->id,
         ]);
 
         // Logins
-        \App\Models\LoginGeneral::factory(6)->create([
+        LoginGeneral::factory(6)->create([
             'customer_id' => $customer->id,
         ]);
 
-        \App\Models\LoginWebsite::factory(6)->create([
+        LoginWebsite::factory(6)->create([
             'customer_id' => $customer->id,
         ]);
 
         foreach ($nasList as $nas) {
-            \App\Models\LoginNAS::factory(2)->create([
+            LoginNAS::factory(2)->create([
                 'customer_id' => $customer->id,
                 'nas_id' => $nas->id,
             ]);
         }
 
         foreach ($recorders as $recorder) {
-            \App\Models\LoginRecorder::factory(1)->create([
+            LoginRecorder::factory(1)->create([
                 'customer_id' => $customer->id,
                 'recorder_id' => $recorder->id,
             ]);
         }
 
         // Lizenzen
-        \App\Models\LicenseWindows::factory(8)->create([
+        LicenseWindows::factory(8)->create([
             'customer_id' => $customer->id,
         ]);
 
-        \App\Models\LicenseSoftware::factory(6)->create([
+        LicenseSoftware::factory(6)->create([
             'customer_id' => $customer->id,
         ]);
 
-        \App\Models\LicenseAccess::factory(3)->create([
+        LicenseAccess::factory(3)->create([
             'customer_id' => $customer->id,
         ]);
 
         // Dienste
-        \App\Models\FTPServer::factory(2)->create([
+        FTPServer::factory(2)->create([
             'customer_id' => $customer->id,
         ]);
 
-        \App\Models\DynDNS::factory(1)->create([
+        DynDNS::factory(1)->create([
             'customer_id' => $customer->id,
         ]);
 
         // Internet-Anschlüsse je Standort
-        \App\Models\InternetConnection::factory()->create([
+        InternetConnection::factory()->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
             'provider' => 'Deutsche Telekom',
@@ -291,7 +357,7 @@ class LocalDatabaseSeeder extends Seeder
             'bandwidth_up' => '500 Mbit/s',
         ]);
 
-        \App\Models\InternetConnection::factory()->create([
+        InternetConnection::factory()->create([
             'customer_id' => $customer->id,
             'site_id' => $site2->id,
             'provider' => 'Vodafone',
@@ -302,13 +368,13 @@ class LocalDatabaseSeeder extends Seeder
         ]);
 
         // USV
-        \App\Models\Ups::factory(2)->create([
+        Ups::factory(2)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
         // Domains (eine läuft demnächst ab -> Dashboard-Warnung)
-        \App\Models\Domain::factory()->create([
+        Domain::factory()->create([
             'customer_id' => $customer->id,
             'name' => 'mustermann.de',
             'registrar' => 'IONOS',
@@ -317,7 +383,7 @@ class LocalDatabaseSeeder extends Seeder
             'nameserver2' => 'ns2.ionos.de',
         ]);
 
-        \App\Models\Domain::factory()->create([
+        Domain::factory()->create([
             'customer_id' => $customer->id,
             'name' => 'mustermann-gmbh.de',
             'registrar' => 'united-domains',
@@ -325,7 +391,7 @@ class LocalDatabaseSeeder extends Seeder
         ]);
 
         // SSL/TLS-Zertifikate (eines läuft demnächst ab -> Dashboard-Warnung)
-        \App\Models\Certificate::factory()->create([
+        Certificate::factory()->create([
             'customer_id' => $customer->id,
             'name' => 'Wildcard *.mustermann.de',
             'common_name' => '*.mustermann.de',
@@ -335,7 +401,7 @@ class LocalDatabaseSeeder extends Seeder
             'expiry_date' => now()->addWeeks(3)->toDateString(),
         ]);
 
-        \App\Models\Certificate::factory()->create([
+        Certificate::factory()->create([
             'customer_id' => $customer->id,
             'name' => 'mail.mustermann.de',
             'common_name' => 'mail.mustermann.de',
@@ -346,7 +412,7 @@ class LocalDatabaseSeeder extends Seeder
         ]);
 
         // Backup-Konzepte
-        \App\Models\Backup::factory()->create([
+        Backup::factory()->create([
             'customer_id' => $customer->id,
             'name' => 'Veeam – VMs täglich',
             'software' => 'Veeam Backup & Replication',
@@ -357,7 +423,7 @@ class LocalDatabaseSeeder extends Seeder
             'last_success' => now()->subDay()->toDateString(),
         ]);
 
-        \App\Models\Backup::factory()->create([
+        Backup::factory()->create([
             'customer_id' => $customer->id,
             'name' => 'Cloud-Backup Fileserver',
             'software' => 'Synology Hyper Backup',
@@ -367,7 +433,6 @@ class LocalDatabaseSeeder extends Seeder
             'retention' => '90 Tage',
             'last_success' => now()->toDateString(),
         ]);
-
 
         $this->call([
             CustomerSeeder::class,

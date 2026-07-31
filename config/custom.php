@@ -42,7 +42,8 @@ return [
         'InternetConnection',
         'Domain',
         'Certificate',
-        'Backup'
+        'Backup',
+        'Rack'
     ],
 
     /*
@@ -60,6 +61,7 @@ return [
         'router' => [\App\Models\Router::class, 'Router'],
         'network' => [\App\Models\Network::class, 'Netzwerk'],
         'networkswitch' => [\App\Models\NetworkSwitch::class, 'Switch'],
+        'rack' => [\App\Models\Rack::class, 'Serverschrank'],
         'wifi' => [\App\Models\Wifi::class, 'WLAN'],
         'accesspoint' => [\App\Models\Accesspoint::class, 'Accesspoint'],
         'computer' => [\App\Models\Computer::class, 'Computer'],
@@ -129,6 +131,7 @@ return [
         'backup' => 'Backups',
         'iotdevice' => 'IoT-Geräte',
         'networkswitch' => 'Switches',
+        'rack' => 'Serverschränke',
         'accesspoint' => 'Accesspoints',
         'contactperson' => 'Ansprechpartner',
     ],
@@ -369,5 +372,40 @@ return [
                 ['name' => 'schedule', 'label' => 'Zeitplan', 'type' => 'text'],
             ],
         ],
+    ],
+
+    /*
+     * Geraetetypen, die sich in ein Rack einbauen lassen.
+     * Schluessel = stabiler Bezeichner im Editor (nie Klassennamen vom Client annehmen),
+     * Wert = [Model-Klasse, Anzeigename]. Reihenfolge = Reihenfolge der Palette.
+     * Voraussetzung: Model hat customer_id und ein name-Feld.
+     */
+    'rack_device_types' => [
+        'server' => [\App\Models\Server::class, 'Server'],
+        'networkswitch' => [\App\Models\NetworkSwitch::class, 'Switch'],
+        'nas' => [\App\Models\NAS::class, 'NAS'],
+        'router' => [\App\Models\Router::class, 'Router'],
+        'ups' => [\App\Models\Ups::class, 'USV'],
+        // PhoneSystem fehlt bewusst: die Tabelle hat keine name-Spalte,
+        // ein Einbau hätte in der Rack-Ansicht keinen Anzeigenamen.
+        'recorder' => [\App\Models\Recorder::class, 'Recorder'],
+        'securepointuma' => [\App\Models\SecurepointUMA::class, 'E-Mail-Archiv'],
+    ],
+
+    /*
+     * Passive Rack-Elemente ohne eigene Dokumentation: Schluessel => [Label, Hoeheneinheiten].
+     */
+    'rack_catalog' => [
+        'patchfeld24' => ['Patchfeld 24 Port', 1],
+        'patchfeld48' => ['Patchfeld 48 Port', 2],
+        'lwlpatchfeld' => ['LWL-Patchfeld', 1],
+        'rangierfeld' => ['Rangierfeld', 1],
+        'kabeldurchfuehrung' => ['Kabeldurchführung', 1],
+        'fachboden1' => ['Fachboden 1 HE', 1],
+        'fachboden2' => ['Fachboden 2 HE', 2],
+        'blindplatte1' => ['Blindplatte 1 HE', 1],
+        'blindplatte2' => ['Blindplatte 2 HE', 2],
+        'blindplatte3' => ['Blindplatte 3 HE', 3],
+        'pdu' => ['Steckdosenleiste (PDU)', 1],
     ],
 ];

@@ -13,7 +13,7 @@ PDF-Export, globaler Suche über alle Kunden und Geräten, die sich per Agent
 ![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php&logoColor=white)
 ![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)
 ![Livewire](https://img.shields.io/badge/Livewire-3-FB70A9)
-![Tests](https://img.shields.io/badge/Tests-172%20grün-3fb950)
+![Tests](https://img.shields.io/badge/Tests-186%20grün-3fb950)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
 <br>
@@ -131,7 +131,9 @@ Agenten folgen.
 ## 🧩 Funktionsumfang
 
 - **Kunden & Standorte** – mehrmandantenfähige Struktur je Kunde
-- **Infrastruktur** – Server, VMs (mit Host-Zuordnung), NAS, Computer, Racks, USV, Maschinen, IoT
+- **Infrastruktur** – Server, VMs (mit Host-Zuordnung), NAS, Computer, USV, Maschinen, IoT
+- **Serverschränke** – Racks mit Drag-&-Drop-Bestückung: dokumentierte Geräte und Patchfelder
+  je Höheneinheit platzieren, Frontansicht in Liste und Editor
 - **Netzwerk** – Router, Switches, Access Points, WLAN, VLANs, **IPAM**, Internet/WAN, UTM-Firewalls
 - **Active Directory** – Domains, Benutzer, Gruppen
 - **Kommunikation** – Telefonanlagen, DECT, E-Mail-Postfächer, E-Mail-Archivierung
@@ -187,7 +189,7 @@ Klartext weder in der Datenbank noch im Audit-Log landet.
 | **Pakete** | spatie/laravel-activitylog 4.12 *(Audit-Log)* · spatie/laravel-pdf 1.9 *(PDF via Browsershot/Puppeteer)* · spatie/laravel-backup 9.3 |
 | **Frontend** | Tailwind CSS 3.2 · Alpine.js 3 · Flowbite 1.6 · Vite 3 |
 | **Datenbank** | MySQL / MariaDB |
-| **Qualität** | Pest 3 *(172 Tests)* · Laravel Pint · GitHub Actions CI |
+| **Qualität** | Pest 3 *(186 Tests)* · Laravel Pint · GitHub Actions CI |
 
 ---
 
@@ -261,7 +263,7 @@ php artisan db:seed --force          # führt den ProductionDatabaseSeeder aus
 
 ## 🧪 Tests
 
-172 Feature-Tests (Pest 3) laufen gegen eine In-Memory-SQLite – keine Einrichtung nötig, keine
+186 Feature-Tests (Pest 3) laufen gegen eine In-Memory-SQLite – keine Einrichtung nötig, keine
 Spuren in der Entwicklungsdatenbank. Bei jedem Push führt GitHub Actions dieselbe Suite aus.
 
 ```bash

@@ -1,0 +1,82 @@
+{{-- Wrapper hält dieselbe zentrierte Spaltenbreite wie das Formular darüber (x-create.main) --}}
+<div class="mx-auto max-w-3xl px-3">
+<div class="my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700"
+    x-data="{
+        drag: null,
+        hover: null,
+        handleDrop(position) {
+            if (! this.drag) return;
+            if (this.drag.kind === 'device') $wire.placeDevice(this.drag.type, this.drag.id, position);
+            if (this.drag.kind === 'catalog') $wire.placeCatalog(this.drag.key, position);
+            if (this.drag.kind === 'move') $wire.move(this.drag.id, position);
+            this.drag = null;
+            this.hover = null;
+        },
+    }">
+
+    <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">Bestückung</div>
+    <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">
+        Geräte aus der Palette auf eine freie Höheneinheit ziehen – oder per Knopf auf den
+        untersten freien Platz einbauen. Eingebautes lässt sich ebenfalls per Ziehen verschieben.
+    </p>
+
+    @error('rack')
+        <div class="p-3 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-900/40 dark:text-red-400" role="alert">
+            {{ $message }}
+        </div>
+    @enderror
+
+    <div class="flex flex-col md:flex-row gap-6">
+
+        {{-- Palette --}}
+        <div class="md:w-64 shrink-0 space-y-4">
+            @forelse ($palette as $group)
+                <div wire:key="palette-{{ $group['key'] }}">
+                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">{{ $group['label'] }}</div>
+                    <ul class="space-y-1">
+                        @foreach ($group['devices'] as $device)
+                            <li wire:key="palette-{{ $group['key'] }}-{{ $device->id }}"
+                                draggable="true"
+                                x-on:dragstart="drag = { kind: 'device', type: '{{ $group['key'] }}', id: {{ $device->id }} }"
+                                x-on:dragend="drag = null; hover = null"
+                                class="flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm cursor-grab active:cursor-grabbing dark:border-gray-600 dark:bg-gray-700/60 dark:text-gray-200">
+                                <span class="truncate">{{ $device->name }}</span>
+                                <button type="button" wire:click="quickPlaceDevice('{{ $group['key'] }}', {{ $device->id }})"
+                                    class="shrink-0 text-xs text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400" title="Auf untersten freien Platz einbauen">Einbauen</button>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @empty
+                <div class="text-sm text-gray-400 dark:text-gray-500">Alle dokumentierten Geräte sind bereits verbaut.</div>
+            @endforelse
+
+            <div>
+                <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">Katalog</div>
+                <ul class="space-y-1">
+                    @foreach ($catalog as $key => [$label, $he])
+                        <li wire:key="catalog-{{ $key }}"
+                            draggable="true"
+                            x-on:dragstart="drag = { kind: 'catalog', key: '{{ $key }}' }"
+                            x-on:dragend="drag = null; hover = null"
+                            class="flex items-center justify-between gap-2 rounded-lg border border-dashed border-gray-300 px-2 py-1.5 text-sm text-gray-500 cursor-grab active:cursor-grabbing dark:border-gray-600 dark:text-gray-400">
+                            <span class="truncate">{{ $label }}</span>
+                            <span class="flex shrink-0 items-center gap-2">
+                                <span class="text-[10px] font-mono opacity-70">{{ $he }} HE</span>
+                                <button type="button" wire:click="quickPlaceCatalog('{{ $key }}')"
+                                    class="text-xs text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400" title="Auf untersten freien Platz einbauen">Einbauen</button>
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+
+        {{-- Rack-Frontansicht --}}
+        <div class="grow">
+            @include('rack._grid', ['rack' => $rack, 'interactive' => true])
+        </div>
+
+    </div>
+</div>
+</div>
