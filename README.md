@@ -5,14 +5,15 @@
 ### Die Open-Source-IT-Dokumentation für Managed Service Provider
 
 Zentrale, mandantenfähige Dokumentation der **kompletten Kunden-IT** – vom Standort über Server,
-Netzwerk und Active Directory bis zu Lizenzen und Zugangsdaten. Mit PDF-Export, globaler Suche
-über alle Kunden und Geräten, die sich per Agent **selbst dokumentieren**.
+Netzwerk und Active Directory bis zu Lizenzen und Zugangsdaten. Mit geführter Erstaufnahme,
+PDF-Export, globaler Suche über alle Kunden und Geräten, die sich per Agent
+**selbst dokumentieren**.
 
 [![Tests](https://github.com/PhilippKuhlmann/dokuvault/actions/workflows/tests.yml/badge.svg)](https://github.com/PhilippKuhlmann/dokuvault/actions/workflows/tests.yml)
 ![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php&logoColor=white)
 ![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)
 ![Livewire](https://img.shields.io/badge/Livewire-3-FB70A9)
-![Tests](https://img.shields.io/badge/Tests-134%20grün-3fb950)
+![Tests](https://img.shields.io/badge/Tests-172%20grün-3fb950)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
 <br>
@@ -32,13 +33,15 @@ immer aktuell.
 |  |  |
 | --- | --- |
 | 🏢 **Mandantenfähig** | Jeder Kunde mit eigenen Standorten, Geräten und Zugängen – sauber getrennt |
+| 🧭 **Erstaufnahme-Assistent** | 16 Schritte führen durch den Neukunden – Frage stellen, Antwort speichern, weiter |
 | 🔎 **Globale Suche** | Server, IP, Seriennummer oder MAC über **alle** Kunden in Sekunden finden |
-| 🤖 **Auto-Dokumentation** | Ein Script auf dem Gerät – der Rest dokumentiert sich selbst (Proxmox u. a.) |
+| 🤖 **Auto-Dokumentation** | Ein Script auf dem Gerät – der Rest dokumentiert sich selbst (Proxmox, Windows AD) |
 | 🌐 **IPAM** | Belegte & freie IP-Adressen je VLAN auf einen Blick, DHCP- und Gateway-Erkennung |
 | 🔐 **Verschlüsselt** | Alle Passwörter verschlüsselt gespeichert, rollenbasierte Zugriffe, Audit-Log |
 | 📄 **PDF-Export** | Komplette Kundendokumentation auf Knopfdruck als PDF |
 | 🌙 **Hell & Dunkel** | Modernes, responsives UI – auch auf dem Smartphone |
 | ⏰ **Ablauf-Warnungen** | Lizenzen, Zertifikate & Domains laufen nie unbemerkt ab |
+| ♻️ **Papierkorb** | Versehentlich gelöscht? Wiederherstellen statt neu erfassen |
 
 ---
 
@@ -57,7 +60,42 @@ immer aktuell.
     <td width="50%"><img src="docs/screenshots/autodoc.png" alt="Auto-Dokumentation"><br><sub><b>Auto-Dokumentation</b> – Agent-Token erzeugen, Script ausführen, fertig</sub></td>
     <td width="50%"><img src="docs/screenshots/certificates.png" alt="Zertifikate"><br><sub><b>SSL/TLS-Zertifikate</b> – mit Ablauf-Warnung im Dashboard</sub></td>
   </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/wizard.png" alt="Erstaufnahme-Assistent"><br><sub><b>Erstaufnahme-Assistent</b> – eine Frage je Schritt, Bestand bleibt sichtbar</sub></td>
+    <td width="50%"><img src="docs/screenshots/login.png" alt="Anmeldung"><br><sub><b>Anmeldung</b> – Hell- und Dunkelmodus folgen dem System</sub></td>
+  </tr>
 </table>
+
+---
+
+## 🧭 Erstaufnahme-Assistent – geführt statt geraten
+
+Einen Neukunden aufzunehmen hieß bisher: Bereich in der Seitenleiste suchen, „Neu" klicken,
+Formular ausfüllen, speichern, zurück, nächster Bereich – sechzehnmal. Man musste selbst wissen,
+**was** zu dokumentieren ist und **in welcher Reihenfolge**.
+
+Der Assistent dreht das um. Er stellt der Reihe nach eine Frage („Welche VLANs gibt es?") und legt
+jede Antwort sofort an:
+
+| Phase | Schritte |
+| --- | --- |
+| **Grunddaten** | Standorte → Ansprechpartner |
+| **Netzwerk** | Internet-Anschlüsse → Router → VLANs → WLAN-Netze → Switches → Accesspoints |
+| **Server & Speicher** | Server → VMs → NAS |
+| **Clients** | Computer → Drucker |
+| **Dienste** | AD-Domänen → TK-Anlagen → Backups |
+
+- **Reihenfolge steckt in der App**, nicht im Kopf: WLAN kommt nach den VLANs, deren Auswahl die
+  gerade angelegten Netze bereits enthält.
+- **Sofort gespeichert** – jeder Eintrag landet direkt in der Doku, nicht erst am Ende.
+- **Bestand bleibt sichtbar**: Schon Erfasstes steht über dem Formular, Schritte lassen sich
+  überspringen.
+- **Jederzeit fortsetzbar** – der Fortschritt liegt in der Datenbank; das Dashboard bietet einen
+  offenen Durchlauf zum Fortsetzen an.
+- **Gleiche Regeln wie die normalen Formulare**: Die Validierung stammt aus denselben
+  FormRequests, Schritte ohne Anlege-Recht werden gar nicht erst gezeigt.
+
+Einstieg über **Sonstiges → Erstaufnahme-Assistent** oder die Karte auf dem Kunden-Dashboard.
 
 ---
 
@@ -102,7 +140,9 @@ Agenten folgen.
 - **Dienste** – FTP, DynDNS, Domains, Backups
 - **Lizenzen** – Software-, Windows- und Zugriffslizenzen inkl. Ablaufdaten & Datei-Upload
 - **Zugangsdaten** – verschlüsselte Logins, Passwort anzeigen & kopieren
+- **Erfassung** – Erstaufnahme-Assistent (16 geführte Schritte), Auto-Dokumentation per Agent
 - **Betrieb** – globale Suche, Audit-Log, Papierkorb (Wiederherstellen), PDF-Export, Dateiablage
+- **Standortfilter** – schränkt Gerätelisten, IPAM und Auto-Dokumentation auf einen Standort ein
 
 ---
 
@@ -116,6 +156,29 @@ Agenten folgen.
 
 ---
 
+## 🏗️ Aufbau
+
+Alle Objekttypen folgen demselben Muster – wer einen kennt, kennt alle. Vier Listen in
+`config/custom.php` halten das zusammen:
+
+| Schlüssel | Wofür |
+| --- | --- |
+| `permissions` | erzeugt je Objekt die Gates `_viewAny`, `_create`, `_update`, `_delete` (im `AuthServiceProvider`) |
+| `trashables` | welche Objekte im Papierkorb erscheinen und wiederherstellbar sind |
+| `list_titles` | Überschrift der jeweiligen Listenseite |
+| `wizard_steps` | Reihenfolge, Fragen und Felder des Erstaufnahme-Assistenten |
+
+Ein neuer Objekttyp braucht damit Model, Migration, FormRequest, Controller und Views – plus je
+einen Eintrag in den Listen, die ihn betreffen. Neue Rechte-Gates, Papierkorb-Anbindung und
+Seitentitel entstehen daraus von selbst.
+
+Jede Ressource liegt unter `/{customer}/…`; die Kundenbindung wird über Route-Model-Binding und
+`getFilteredQuery()` im Basis-Controller durchgesetzt, der zusätzlich den Standortfilter aus der
+Seitenleiste anwendet. Passwortfelder verschlüsselt das Model selbst per `Attribute`-Cast, sodass
+Klartext weder in der Datenbank noch im Audit-Log landet.
+
+---
+
 ## ⚙️ Tech-Stack
 
 | Bereich | Eingesetzt |
@@ -124,7 +187,7 @@ Agenten folgen.
 | **Pakete** | spatie/laravel-activitylog 4.12 *(Audit-Log)* · spatie/laravel-pdf 1.9 *(PDF via Browsershot/Puppeteer)* · spatie/laravel-backup 9.3 |
 | **Frontend** | Tailwind CSS 3.2 · Alpine.js 3 · Flowbite 1.6 · Vite 3 |
 | **Datenbank** | MySQL / MariaDB |
-| **Qualität** | Pest 3 *(134 Tests)* · Laravel Pint · GitHub Actions CI |
+| **Qualität** | Pest 3 *(172 Tests)* · Laravel Pint · GitHub Actions CI |
 
 ---
 
@@ -198,8 +261,27 @@ php artisan db:seed --force          # führt den ProductionDatabaseSeeder aus
 
 ## 🧪 Tests
 
+172 Feature-Tests (Pest 3) laufen gegen eine In-Memory-SQLite – keine Einrichtung nötig, keine
+Spuren in der Entwicklungsdatenbank. Bei jedem Push führt GitHub Actions dieselbe Suite aus.
+
 ```bash
 php artisan test
+```
+
+Einzelne Bereiche:
+
+```bash
+php artisan test --filter=DocumentationWizard
+```
+
+Abgedeckt sind unter anderem die Mandantentrennung (kein Zugriff auf fremde Kunden und Standorte),
+die Berechtigungs-Gates je Rolle, der Erstaufnahme-Assistent inklusive der Feldlisten seiner
+Schritte, der Standortfilter über alle Listen sowie Papierkorb und Wiederherstellung.
+
+Code-Stil vor dem Commit prüfen:
+
+```bash
+./vendor/bin/pint
 ```
 
 ---
