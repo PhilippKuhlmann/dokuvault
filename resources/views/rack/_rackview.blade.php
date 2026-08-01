@@ -44,14 +44,15 @@
             @endfor
         @endforeach
 
-        {{-- Leere Hoeheneinheiten: offener Einschub, ohne Blende.
-             Hell = weiss, dunkel = schwarz. Die Schattenkante innen gibt der
-             Luecke Tiefe und haelt sie von einer Blindplatte unterscheidbar -
-             die hat Rahmen, Schrauben und eine graue Flaeche. --}}
+        {{-- Leere Hoeheneinheiten: offener Einschub. Bewusst voellig flach -
+             kein Schatten, keine Kante. Wo nichts eingebaut ist, soll auch
+             nichts angedeutet werden; jede Schattierung liest sich als Blech.
+             Unterscheidbar bleibt es ueber die Blende daneben, die Rahmen,
+             Schrauben und eine graue Flaeche hat. --}}
         @for ($u = $he; $u >= 1; $u--)
             @unless ($occupied[$u] ?? false)
                 <div style="grid-column: 2; grid-row: {{ $he - $u + 1 }}; min-height: {{ $rowHeight }};"
-                    class="bg-white shadow-[inset_0_2px_5px_rgba(0,0,0,0.16)] dark:bg-black dark:shadow-[inset_0_2px_6px_rgba(0,0,0,0.75)]"></div>
+                    class="bg-white dark:bg-black"></div>
             @endunless
         @endfor
 
