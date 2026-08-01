@@ -23,50 +23,104 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
 
+    # Secrets bewusst als Umgebungsvariablen statt per ${{ }} direkt in die
+    # Skripte: ${{ }} ist Textersetzung, ein Sonderzeichen im Wert wuerde die
+    # Shell-Zeile zerlegen. Als Variable kommt der Wert unveraendert an.
+    env:
+      SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+      HOST: ${{ secrets.DEPLOY_HOST }}
+      USERNAME: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+      PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+      URL: ${{ secrets.DEPLOY_URL }}
+
     steps:
       - name: SSH-Schlüssel einrichten
         run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_deploy
-          chmod 600 ~/.ssh/id_deploy
-          # Bewusst kein StrictHostKeyChecking=no: der Fingerabdruck liegt als
-          # Secret vor, sonst waere der Deploy gegen einen untergeschobenen
-          # Host offen.
-          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
+          set -euo pipefail
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
 
-          # Leere Secrets fruehzeitig melden - sonst scheitert erst der
-          # SSH-Aufruf mit einer Meldung, die die Ursache nicht nennt.
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+
           test -s ~/.ssh/id_deploy || { echo "::error::DEPLOY_SSH_KEY ist leer."; exit 1; }
-          entries=$(grep -c '[^[:space:]]' ~/.ssh/known_hosts || true)
-          echo "known_hosts: ${entries} Eintraege"
-          test "${entries}" -gt 0 || {
-            echo "::error::DEPLOY_KNOWN_HOSTS ist leer. Ausgabe von 'ssh-keyscan <host>' dort eintragen."
+          ssh-keygen -y -f ~/.ssh/id_deploy > /dev/null 2>&1 || {
+            echo "::error::DEPLOY_SSH_KEY ist kein gueltiger privater Schluessel (Passphrase? unvollstaendig kopiert?)."
             exit 1
           }
+          echo "Privater Schluessel: Format ok"
+
+          # Host-Pruefung ueber den Fingerabdruck statt ueber den Namen.
+          #
+          # known_hosts bindet einen Schluessel an genau die Zeichenkette, mit
+          # der verbunden wird. Steht im Secret "doku.dokuvault.de", verbunden
+          # wird aber mit einer IP oder einem anderen Port, passt kein Eintrag -
+          # und ssh meldet nur "Host key verification failed", ohne den Grund.
+          #
+          # Deshalb: die Schluessel frisch vom Server holen (dann stimmt der
+          # Name zwangslaeufig) und ihre Fingerabdruecke gegen das Secret
+          # pruefen. Der Schutz gegen einen untergeschobenen Host bleibt - ein
+          # Angreifer muesste einen Schluessel aus dem Secret besitzen.
+          printf '%s\n' "$KNOWN_HOSTS" > /tmp/pinned
+          test -s /tmp/pinned || {
+            echo "::error::DEPLOY_KNOWN_HOSTS ist leer. Ausgabe von 'ssh-keyscan <host>' eintragen."
+            exit 1
+          }
+          ssh-keygen -l -f /tmp/pinned > /tmp/fp_pinned 2>/dev/null || {
+            echo "::error::DEPLOY_KNOWN_HOSTS enthaelt keinen lesbaren Schluessel."
+            echo "::error::Haeufigste Ursache: beim Einfuegen ist eine Zeile umgebrochen."
+            exit 1
+          }
+
+          ssh-keyscan -p "$PORT" "$HOST" > /tmp/scanned 2>/dev/null || true
+          test -s /tmp/scanned || {
+            echo "::error::Server unter Port $PORT nicht erreichbar - DEPLOY_HOST/DEPLOY_PORT pruefen."
+            exit 1
+          }
+          ssh-keygen -l -f /tmp/scanned > /tmp/fp_scanned
+
+          # Mindestens ein Fingerabdruck muss uebereinstimmen.
+          if ! awk '{print $2}' /tmp/fp_scanned | sort -u > /tmp/a \
+             || ! awk '{print $2}' /tmp/fp_pinned | sort -u > /tmp/b \
+             || [ -z "$(comm -12 /tmp/a /tmp/b)" ]; then
+            echo "::error::Kein Fingerabdruck stimmt ueberein - der Server ist nicht der erwartete."
+            echo "Server bietet an:"; cat /tmp/fp_scanned
+            echo "Im Secret steht:";  cat /tmp/fp_pinned
+            exit 1
+          fi
+
+          echo "Host bestaetigt, uebereinstimmende Fingerabdruecke:"
+          comm -12 /tmp/a /tmp/b
+          cp /tmp/scanned ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
 
       - name: Deploy ausführen
         id: deploy
         run: |
           ssh -i ~/.ssh/id_deploy \
-              -p "${{ secrets.DEPLOY_PORT || '22' }}" \
-              "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
-              "cd '${{ secrets.DEPLOY_PATH }}' && ./deploy.sh"
+              -o BatchMode=yes \
+              -o StrictHostKeyChecking=yes \
+              -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+              -p "$PORT" \
+              "$USERNAME@$HOST" \
+              "cd '$DEPLOY_PATH' && ./deploy.sh"
 
-      - name: Bei SSH-Fehler die tatsächlichen Host-Schlüssel zeigen
+      - name: Bei SSH-Fehler Ursache eingrenzen
         if: failure() && steps.deploy.outcome == 'failure'
         run: |
-          echo "Der Server bietet aktuell diese Host-Schluessel an."
-          echo "Genau diese Zeilen gehoeren in das Secret DEPLOY_KNOWN_HOSTS:"
-          echo "---"
-          ssh-keyscan -p "${{ secrets.DEPLOY_PORT || '22' }}" "${{ secrets.DEPLOY_HOST }}" 2>&1 || true
-          echo "---"
-          echo "Der Hostname erscheint als ***, weil er als Secret hinterlegt ist."
-          echo "Laeuft SSH nicht auf Port 22, muss der Eintrag die Form [host]:port haben"
-          echo "- dafuer ssh-keyscan ebenfalls mit -p aufrufen."
+          echo "=== Was der Server tatsaechlich anbietet ==="
+          ssh-keyscan -p "$PORT" "$HOST" 2>/dev/null | ssh-keygen -l -f - || echo "  Server nicht erreichbar"
+          echo
+          echo "=== Was im Secret steht ==="
+          ssh-keygen -l -f ~/.ssh/known_hosts || true
+          echo
+          echo "Stimmen die Fingerabdruecke ueberein, lag es nicht am Host-Key -"
+          echo "dann weiter unten im Log nach 'Permission denied' schauen: dort fehlt"
+          echo "der oeffentliche Schluessel in den authorized_keys auf dem Server."
 
       - name: Erreichbarkeit prüfen
         run: |
-          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "${{ secrets.DEPLOY_URL }}/login")
-          echo "HTTP $code von ${{ secrets.DEPLOY_URL }}/login"
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$URL/login")
+          echo "HTTP $code von $URL/login"
           test "$code" = "200"
