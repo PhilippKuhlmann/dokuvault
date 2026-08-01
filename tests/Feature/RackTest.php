@@ -8,6 +8,7 @@ use App\Models\RackCatalogItem;
 use App\Models\RackItem;
 use App\Models\Server;
 use App\Models\Site;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 
@@ -238,6 +239,32 @@ test('Frontansicht zeichnet nur Einbauten - leere Höheneinheiten bleiben leer',
     // Ohne diese Trennung saehe eine leere HE aus wie eine Blindplatte.
     // data-empty statt einer CSS-Klasse: die Markierung ueberlebt Farbwechsel.
     expect(substr_count($html, 'data-empty='))->toBe(8);
+});
+
+test('PDF zeigt den Schrank als Zeichnung, nicht als Aufzählung', function () {
+    [$customer, $site, $rack] = customerWithRack(10);
+    $blind = RackCatalogItem::where('name', 'Blindplatte 2 HE')->firstOrFail();
+    $item = $rack->items()->create([
+        'position' => 3, 'height_units' => $blind->height_units,
+        'name' => $blind->name, 'appearance' => $blind->appearance,
+    ]);
+
+    $svgDir = storage_path('app/pdf-svg/test-'.uniqid());
+    File::ensureDirectoryExists($svgDir);
+
+    try {
+        $html = view('pdf._rack', ['rack' => $rack->load('items.device'), 'svgDir' => $svgDir])->render();
+
+        // Je Einbau ein Bild - und die Datei muss wirklich geschrieben sein,
+        // sonst rendert DomPDF nur den alt-Text.
+        expect(substr_count($html, '<img'))->toBe(1);
+        expect(file_exists($svgDir.'/item-'.$item->id.'.svg'))->toBeTrue();
+
+        // Kein Daten-URI: DomPDF laedt SVG nur als Datei aus dem chroot.
+        expect(str_contains($html, 'data:image/svg+xml'))->toBeFalse();
+    } finally {
+        File::deleteDirectory($svgDir);
+    }
 });
 
 test('jede Darstellung in rack_appearances rendert ohne Fehler, auch mehrzeilig', function () {

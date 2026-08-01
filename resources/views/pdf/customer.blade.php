@@ -44,6 +44,21 @@
 
         .clear { clear: both; }
         .empty { color: #9ca3af; font-size: 12px; font-style: italic; padding: 2px 0 6px; }
+
+        /* Rack-Frontansicht: Tabelle, weil DomPDF kein Grid kann */
+        .rack-block { page-break-inside: avoid; margin: 4px 0 10px; }
+        .rack-caption { font-size: 11px; color: #6b7280; margin-bottom: 3px; }
+        .rackview { border-collapse: collapse; border: 1px solid #9ca3af; background: #e5e7eb; }
+        /* vertical-align/display: sonst sitzt das Bild auf der Textbasislinie
+           und die Zeile wird ein paar Pixel höher als die Zeichnung */
+        .rackview td { padding: 0; vertical-align: top; }
+        .rackview img { display: block; }
+        .rackview-scale {
+            width: 20px; height: 16px; text-align: right; padding-right: 4px !important;
+            font-size: 6px; color: #9ca3af; background: #e5e7eb;
+        }
+        .rackview-slot { width: 330px; height: 16px; }
+        .rackview-empty { width: 330px; height: 16px; background: #ffffff; }
     </style>
 </head>
 
@@ -112,12 +127,20 @@
         'Netzwerk' => ['IP' => 'ip', 'Port' => 'port'],
     ]" />
 
-    <x-pdf.section title="Serverschränke" :items="$customer->racks()->with('items.device')->get()" :groups="[
-        'Allgemein' => ['Ort' => 'location', 'Höheneinheiten' => fn($r) => $r->height_units . ' HE', 'Notiz' => 'note'],
-        'Belegung' => ['Einbauten' => fn($r) => $r->items
-            ->map(fn($i) => 'U' . $i->position . ($i->height_units > 1 ? '–U' . $i->topUnit() : '') . ': ' . $i->label())
-            ->implode(', ') ?: null],
+    @php $racks = $customer->racks()->with('items.device')->get(); @endphp
+    <x-pdf.section title="Serverschränke" :items="$racks" :groups="[
+        'Allgemein' => ['Ort' => 'location', 'Höheneinheiten' => fn($r) => $r->height_units . ' HE',
+            'Einbauten' => fn($r) => $r->items->count(), 'Notiz' => 'note'],
     ]" />
+
+    {{-- Die Belegung steht als Zeichnung statt als Aufzählung: im Schrank vor
+         Ort sucht man nach dem Bild, nicht nach einer Liste. --}}
+    @foreach ($racks as $rack)
+        <div class="rack-block">
+            <div class="rack-caption">{{ $rack->name }} – Frontansicht</div>
+            @include('pdf._rack', ['rack' => $rack, 'svgDir' => $svgDir])
+        </div>
+    @endforeach
 
     {{-- Server & Storage --}}
     <x-pdf.section title="Server" :items="$customer->servers" :groups="[

@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
-use Barryvdh\DomPDF\Facade\Pdf;
-// use function Spatie\LaravelPdf\Support\pdf;
 use App\Http\Requests\CustomerRequest;
+use App\Models\Certificate;
+// use function Spatie\LaravelPdf\Support\pdf;
 use App\Models\ContactPerson;
+use App\Models\Customer;
 use App\Models\DocumentationRun;
 use App\Models\LicenseSoftware;
 use App\Models\Role;
 use App\Models\Site;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class CustomerController extends Controller
 {
@@ -28,13 +31,12 @@ class CustomerController extends Controller
 
         session()->put('site', 'all');
 
-        $customers = NULL;
+        $customers = null;
 
         if (request('search')) {
-            $customers = Customer::where('name', 'like', '%' . request('search') . '%')->get();
-            if ($customers->isempty())
-            {
-                $customers = NULL;
+            $customers = Customer::where('name', 'like', '%'.request('search').'%')->get();
+            if ($customers->isempty()) {
+                $customers = null;
             }
         }
 
@@ -75,7 +77,7 @@ class CustomerController extends Controller
             ->get();
 
         // SSL/TLS-Zertifikate, die in den nächsten 60 Tagen ablaufen oder bereits abgelaufen sind
-        $expiringCertificates = \App\Models\Certificate::where('customer_id', $customer->id)
+        $expiringCertificates = Certificate::where('customer_id', $customer->id)
             ->whereNotNull('expiry_date')
             ->whereDate('expiry_date', '<=', now()->addDays(60))
             ->orderBy('expiry_date')
@@ -101,21 +103,35 @@ class CustomerController extends Controller
 
     public function viewPDF(Customer $customer)
     {
-        $pdf = Pdf::loadView('pdf.customer', [
-            'customer' => $customer,
-        ],);
+        // Die Rack-Frontansichten sind SVG. DomPDF rendert SVG weder inline im
+        // HTML noch aus einer Daten-URI - nur aus einer Bilddatei innerhalb
+        // seines chroot (dem Projektverzeichnis). Deshalb ein kurzlebiger
+        // Ordner, den die Blade befuellt und der danach wieder verschwindet -
+        // auch wenn das Rendern fehlschlaegt.
+        $svgDir = storage_path('app/pdf-svg/'.Str::uuid());
+        File::ensureDirectoryExists($svgDir);
 
-        return $pdf->stream();
+        try {
+            $pdf = Pdf::loadView('pdf.customer', [
+                'customer' => $customer,
+                'svgDir' => $svgDir,
+            ]);
 
+            $output = $pdf->output();
+        } finally {
+            File::deleteDirectory($svgDir);
+        }
+
+        return response($output, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="dokumentation.pdf"',
+        ]);
 
         // return pdf()
         //     ->view('pdf.customer', compact('customer'))
         //     ->footerView('pdf.footer')
         //     ->name('dokumentation.pdf');
     }
-
-
-
 
     // ADMIN Bereich
     public function index()
@@ -141,6 +157,7 @@ class CustomerController extends Controller
     public function edit($customer)
     {
         $customer = Customer::where('id', $customer)->firstOrFail();
+
         return view('admin.customer.edit', compact('customer'));
     }
 
