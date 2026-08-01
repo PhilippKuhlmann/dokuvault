@@ -29,7 +29,7 @@
          2. duenne Lasur in der Typfarbe.
          Die Lasur bleibt bewusst schwach, sonst verschwinden die Details
          darueber (Ports, Schaechte) im gleichfarbigen Untergrund. --}}
-    <rect x="1" y="1" width="1084" height="{{ $h - 2 }}" rx="7" class="fill-gray-200 dark:fill-gray-800" />
+    <rect x="1" y="1" width="1084" height="{{ $h - 2 }}" rx="7" class="fill-gray-300 dark:fill-gray-800" />
     <rect x="1" y="1" width="1084" height="{{ $h - 2 }}" rx="7" fill="currentColor" fill-opacity="0.14" />
     {{-- Abkantung: heller Grat oben, Schatten unten --}}
     <line x1="10" y1="4" x2="1076" y2="4" stroke="#ffffff" stroke-opacity="0.22" stroke-width="3" />
