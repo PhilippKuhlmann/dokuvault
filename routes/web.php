@@ -1,71 +1,71 @@
 <?php
 
 use App\Http\Controllers\AccesspointController;
-use App\Http\Controllers\BackupController;
-use App\Http\Controllers\CertificateController;
-use App\Http\Controllers\DomainController;
-use App\Http\Controllers\InternetConnectionController;
-use App\Http\Controllers\UpsController;
+use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\ADDomainController;
 use App\Http\Controllers\ADGroupController;
-use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\IpPlanController;
-use App\Http\Controllers\AgentTokenController;
-use App\Http\Controllers\TrashController;
-use App\Http\Controllers\WizardController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\ServerController;
-use App\Http\Controllers\NetworkController;
 use App\Http\Controllers\ADUserController;
+use App\Http\Controllers\AgentTokenController;
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\CameraController;
+use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\ChangelogController;
 use App\Http\Controllers\ComputerController;
 use App\Http\Controllers\ContactPersonController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DECTController;
+use App\Http\Controllers\DomainController;
 use App\Http\Controllers\DynDNSController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\FTPServerController;
+use App\Http\Controllers\InternetConnectionController;
 use App\Http\Controllers\IoTDeviceController;
+use App\Http\Controllers\IpPlanController;
 use App\Http\Controllers\LicenseAccessController;
-use App\Http\Controllers\LicenseWindowsController;
 use App\Http\Controllers\LicenseSoftwareController;
+use App\Http\Controllers\LicenseWindowsController;
 use App\Http\Controllers\LoginGeneralController;
 use App\Http\Controllers\LoginNASController;
 use App\Http\Controllers\LoginRecorderController;
-use App\Http\Controllers\OperatingSystemController;
-use App\Http\Controllers\VMController;
 use App\Http\Controllers\LoginWebsiteController;
 use App\Http\Controllers\MachineController;
 use App\Http\Controllers\MailboxController;
 use App\Http\Controllers\MailboxProviderController;
 use App\Http\Controllers\NASController;
+use App\Http\Controllers\NetworkController;
 use App\Http\Controllers\NetworkSwitchController;
+use App\Http\Controllers\OperatingSystemController;
 use App\Http\Controllers\OtherClientController;
 use App\Http\Controllers\PhoneController;
 use App\Http\Controllers\PhoneSystemController;
 use App\Http\Controllers\PrinterController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RackCatalogItemController;
 use App\Http\Controllers\RackController;
 use App\Http\Controllers\RecorderController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RouterController;
 use App\Http\Controllers\SecurepointUMAController;
 use App\Http\Controllers\SecurepointUTMController;
+use App\Http\Controllers\ServerController;
 use App\Http\Controllers\SiteController;
+use App\Http\Controllers\TrashController;
+use App\Http\Controllers\UpsController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VMController;
 use App\Http\Controllers\WifiController;
+use App\Http\Controllers\WizardController;
 use App\Livewire\GlobalSearch;
 use App\Livewire\RemoteSearch;
 use App\Livewire\UtmSearch;
+use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/auth.php';
 
 Route::redirect('/', '/login');
 
 Route::get('/changelog', [ChangelogController::class, 'index'])->name('changelog');
-
 
 // Techniker
 Route::middleware(['auth', 'isTechniker'])->group(function () {
@@ -74,7 +74,6 @@ Route::middleware(['auth', 'isTechniker'])->group(function () {
     Route::get('/utmsearch', UtmSearch::class)->name('search.utm');
     Route::get('/remotesearch', RemoteSearch::class)->name('search.remote');
 });
-
 
 // Admin Bereich
 Route::middleware(['auth', 'isAdmin'])->group(function () {
@@ -111,11 +110,11 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
         Route::delete('/role/{role}', [RoleController::class, 'destroy'])->name('admin.role.destroy');
 
         // Operating Systems
-        Route::get('/operatingsystem', [operatingSystemController::class, 'index'])->name('admin.operatingsystem.index');
-        Route::post('/operatingsystem/create', [operatingSystemController::class, 'store'])->name('admin.operatingsystem.store');
-        Route::get('/operatingsystem/create', [operatingSystemController::class, 'create'])->name('admin.operatingsystem.create');
-        Route::get('/operatingsystem/{operatingSystem}/edit', [operatingSystemController::class, 'edit'])->name('admin.operatingsystem.edit');
-        Route::patch('/operatingsystem/{operatingSystem}', [operatingSystemController::class, 'update'])->name('admin.operatingsystem.update');
+        Route::get('/operatingsystem', [OperatingSystemController::class, 'index'])->name('admin.operatingsystem.index');
+        Route::post('/operatingsystem/create', [OperatingSystemController::class, 'store'])->name('admin.operatingsystem.store');
+        Route::get('/operatingsystem/create', [OperatingSystemController::class, 'create'])->name('admin.operatingsystem.create');
+        Route::get('/operatingsystem/{operatingSystem}/edit', [OperatingSystemController::class, 'edit'])->name('admin.operatingsystem.edit');
+        Route::patch('/operatingsystem/{operatingSystem}', [OperatingSystemController::class, 'update'])->name('admin.operatingsystem.update');
 
         // Mailbox Providor
         Route::get('/mailboxprovider', [MailboxProviderController::class, 'index'])->name('admin.mailboxprovider.index');
@@ -124,23 +123,27 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
         Route::get('/mailboxprovider/{mailboxprovider}/edit', [MailboxProviderController::class, 'edit'])->name('admin.mailboxprovider.edit');
         Route::patch('/mailboxprovider/{mailboxprovider}', [MailboxProviderController::class, 'update'])->name('admin.mailboxprovider.update');
 
+        // Rack-Katalog (passive Einbauten wie Patchfelder und Blindplatten)
+        Route::get('/rackcatalogitem', [RackCatalogItemController::class, 'index'])->name('admin.rackcatalogitem.index');
+        Route::post('/rackcatalogitem/create', [RackCatalogItemController::class, 'store'])->name('admin.rackcatalogitem.store');
+        Route::get('/rackcatalogitem/create', [RackCatalogItemController::class, 'create'])->name('admin.rackcatalogitem.create');
+        Route::get('/rackcatalogitem/{rackcatalogitem}/edit', [RackCatalogItemController::class, 'edit'])->name('admin.rackcatalogitem.edit');
+        Route::patch('/rackcatalogitem/{rackcatalogitem}', [RackCatalogItemController::class, 'update'])->name('admin.rackcatalogitem.update');
+        Route::delete('/rackcatalogitem/{rackcatalogitem}', [RackCatalogItemController::class, 'destroy'])->name('admin.rackcatalogitem.destroy');
 
     });
 });
-
 
 // Profile
 Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
 Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-
 // Customer
 Route::middleware('auth')->get('/search', GlobalSearch::class)->name('search.global');
 Route::get('/customer/search', [CustomerController::class, 'search'])->name('customer.search');
 Route::get('/{customer}', [CustomerController::class, 'dashboard'])->name('customer.dashboard');
 Route::post('/{customer}/view-pdf', [CustomerController::class, 'viewPDF'])->name('customer.view-pdf');
-
 
 Route::middleware(['auth', 'isCustomer'])->group(function () {
     Route::prefix('{customer}')->group(function () {
@@ -209,8 +212,6 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::resource('licensewindows', LicenseWindowsController::class, ['parameters' => ['licensewindows' => 'licensewindows']])->except(['show']);
             Route::get('/licenseaccess/{licenseaccess}/download', [LicenseAccessController::class, 'download'])->name('licenseaccess.download');
             Route::resource('licenseaccess', LicenseAccessController::class, ['parameters' => ['licenseaccess' => 'licenseaccess']])->except(['show']);
-
-
 
             // File
             Route::resource('file', FileController::class)->only(['index', 'store', 'destroy']);

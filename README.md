@@ -133,7 +133,8 @@ Agenten folgen.
 - **Kunden & Standorte** – mehrmandantenfähige Struktur je Kunde
 - **Infrastruktur** – Server, VMs (mit Host-Zuordnung), NAS, Computer, USV, Maschinen, IoT
 - **Serverschränke** – Racks mit Drag-&-Drop-Bestückung: dokumentierte Geräte und Patchfelder
-  je Höheneinheit platzieren, Frontansicht in Liste und Editor
+  je Höheneinheit platzieren, Frontansicht in Liste und Editor; der Katalog passiver Elemente
+  wird im Adminbereich gepflegt
 - **Netzwerk** – Router, Switches, Access Points, WLAN, VLANs, **IPAM**, Internet/WAN, UTM-Firewalls
 - **Active Directory** – Domains, Benutzer, Gruppen
 - **Kommunikation** – Telefonanlagen, DECT, E-Mail-Postfächer, E-Mail-Archivierung

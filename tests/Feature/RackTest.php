@@ -4,6 +4,7 @@ use App\Livewire\RackEditor;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
 use App\Models\Rack;
+use App\Models\RackCatalogItem;
 use App\Models\RackItem;
 use App\Models\Server;
 use App\Models\Site;
@@ -146,8 +147,9 @@ test('Kollision: belegte Höheneinheiten lehnen einen zweiten Einbau ab', functi
     $rack->items()->create(['position' => 10, 'height_units' => 2, 'name' => 'Fachboden 2 HE']);
 
     // Blindplatte 3 HE ab U9 wuerde U9-U11 belegen und U10/U11 schneiden
+    $blindplatte = RackCatalogItem::where('name', 'Blindplatte 3 HE')->firstOrFail();
     Livewire::test(RackEditor::class, ['rack' => $rack, 'customer' => $customer])
-        ->call('placeCatalog', 'blindplatte3', 9)
+        ->call('placeCatalog', $blindplatte->id, 9)
         ->assertHasErrors('rack');
 
     expect(RackItem::count())->toBe(1);
@@ -166,16 +168,35 @@ test('move verschiebt auf freie Position und lehnt Kollision ab', function () {
     expect($a->fresh()->position)->toBe(20);
 });
 
-test('placeCatalog kennt nur Katalog-Schlüssel und respektiert die Rackhöhe', function () {
+test('placeCatalog kennt nur vorhandene Katalogelemente und respektiert die Rackhöhe', function () {
     $this->actingAs(userWithPermissions(['rack_update']));
     [$customer, $site, $rack] = customerWithRack(12);
+    // Aus den Standardeintraegen der Migration - deckt zugleich ab, dass es sie gibt.
+    $blindplatte = RackCatalogItem::where('name', 'Blindplatte 3 HE')->firstOrFail();
 
     Livewire::test(RackEditor::class, ['rack' => $rack, 'customer' => $customer])
-        ->call('placeCatalog', 'gibtsnicht', 1)->assertHasErrors('rack')
-        ->call('placeCatalog', 'blindplatte3', 11)->assertHasErrors('rack')   // U11-U13 > 12 HE
-        ->call('placeCatalog', 'blindplatte3', 10)->assertHasNoErrors();      // U10-U12 passt
+        ->call('placeCatalog', 999999, 1)->assertHasErrors('rack')
+        ->call('placeCatalog', $blindplatte->id, 11)->assertHasErrors('rack')   // U11-U13 > 12 HE
+        ->call('placeCatalog', $blindplatte->id, 10)->assertHasNoErrors();      // U10-U12 passt
 
     expect(RackItem::count())->toBe(1);
+});
+
+test('Katalogbezeichnung wird beim Einbau kopiert - spätere Änderungen wirken nicht zurück', function () {
+    $this->actingAs(userWithPermissions(['rack_update']));
+    [$customer, $site, $rack] = customerWithRack(12);
+    $eintrag = RackCatalogItem::where('name', 'Patchfeld 24 Port')->firstOrFail();
+
+    Livewire::test(RackEditor::class, ['rack' => $rack, 'customer' => $customer])
+        ->call('placeCatalog', $eintrag->id, 1)->assertHasNoErrors();
+
+    // Katalogeintrag umbenennen und loeschen - der Einbau bleibt unveraendert.
+    $eintrag->update(['name' => 'Patchfeld 24 Port (alt)', 'height_units' => 2]);
+    $eintrag->delete();
+
+    $item = RackItem::first();
+    expect($item->name)->toBe('Patchfeld 24 Port');
+    expect($item->height_units)->toBe(1);
 });
 
 test('setHeight wächst nach oben und stößt am Rackdeckel an', function () {

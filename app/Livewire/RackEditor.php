@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Rack;
+use App\Models\RackCatalogItem;
 use App\Models\RackItem;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -70,23 +71,24 @@ class RackEditor extends Component
         ]);
     }
 
-    /** Passives Katalogelement einbauen. */
-    public function placeCatalog(string $catalogKey, int $position): void
+    /**
+     * Passives Katalogelement einbauen. Die Bezeichnung wird kopiert, damit ein
+     * spaeter im Adminbereich geaenderter oder geloeschter Katalogeintrag die
+     * bestehende Rack-Dokumentation nicht veraendert.
+     */
+    public function placeCatalog(int $catalogItemId, int $position): void
     {
         $rack = $this->rack();
 
-        $catalog = config('custom.rack_catalog');
-        if (! isset($catalog[$catalogKey])) {
-            $this->fail('Unbekanntes Katalogelement.');
-        }
-        [$label, $he] = $catalog[$catalogKey];
+        $catalogItem = RackCatalogItem::find($catalogItemId)
+            ?? $this->fail('Unbekanntes Katalogelement.');
 
-        $this->assertFree($rack, $position, $he);
+        $this->assertFree($rack, $position, $catalogItem->height_units);
 
         $rack->items()->create([
             'position' => $position,
-            'height_units' => $he,
-            'name' => $label,
+            'height_units' => $catalogItem->height_units,
+            'name' => $catalogItem->name,
         ]);
     }
 
@@ -185,12 +187,13 @@ class RackEditor extends Component
     }
 
     /** Einbauen-Knopf: Katalogelement auf die unterste freie passende HE setzen. */
-    public function quickPlaceCatalog(string $catalogKey): void
+    public function quickPlaceCatalog(int $catalogItemId): void
     {
         $rack = $this->rack();
-        $he = config('custom.rack_catalog')[$catalogKey][1] ?? 1;
+        $he = RackCatalogItem::find($catalogItemId)?->height_units
+            ?? $this->fail('Unbekanntes Katalogelement.');
         $position = $this->lowestFree($rack, $he) ?? $this->fail('Kein freier Platz im Rack.');
-        $this->placeCatalog($catalogKey, $position);
+        $this->placeCatalog($catalogItemId, $position);
     }
 
     public function render()
@@ -222,7 +225,7 @@ class RackEditor extends Component
         return view('livewire.rack-editor', [
             'rack' => $rack,
             'palette' => $palette,
-            'catalog' => config('custom.rack_catalog'),
+            'catalog' => RackCatalogItem::ordered()->get(),
         ]);
     }
 }

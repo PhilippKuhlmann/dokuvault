@@ -395,17 +395,4 @@ return [
     /*
      * Passive Rack-Elemente ohne eigene Dokumentation: Schluessel => [Label, Hoeheneinheiten].
      */
-    'rack_catalog' => [
-        'patchfeld24' => ['Patchfeld 24 Port', 1],
-        'patchfeld48' => ['Patchfeld 48 Port', 2],
-        'lwlpatchfeld' => ['LWL-Patchfeld', 1],
-        'rangierfeld' => ['Rangierfeld', 1],
-        'kabeldurchfuehrung' => ['Kabeldurchführung', 1],
-        'fachboden1' => ['Fachboden 1 HE', 1],
-        'fachboden2' => ['Fachboden 2 HE', 2],
-        'blindplatte1' => ['Blindplatte 1 HE', 1],
-        'blindplatte2' => ['Blindplatte 2 HE', 2],
-        'blindplatte3' => ['Blindplatte 3 HE', 3],
-        'pdu' => ['Steckdosenleiste (PDU)', 1],
-    ],
 ];

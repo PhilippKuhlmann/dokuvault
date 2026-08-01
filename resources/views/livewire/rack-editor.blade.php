@@ -49,7 +49,7 @@
         handleDrop(position) {
             if (! this.drag) return;
             if (this.drag.kind === 'device') $wire.placeDevice(this.drag.type, this.drag.id, position);
-            if (this.drag.kind === 'catalog') $wire.placeCatalog(this.drag.key, position);
+            if (this.drag.kind === 'catalog') $wire.placeCatalog(this.drag.id, position);
             if (this.drag.kind === 'move') $wire.move(this.drag.id, position);
             this.drag = null;
             this.hover = null;
@@ -97,20 +97,25 @@
             <div>
                 <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">Katalog</div>
                 <ul class="space-y-1">
-                    @foreach ($catalog as $key => [$label, $he])
-                        <li wire:key="catalog-{{ $key }}"
+                    @forelse ($catalog as $entry)
+                        <li wire:key="catalog-{{ $entry->id }}"
+                            data-he="{{ $entry->height_units }}" data-catalog-id="{{ $entry->id }}"
                             draggable="true"
-                            x-on:dragstart="drag = { kind: 'catalog', key: '{{ $key }}', he: {{ $he }} }"
+                            x-on:dragstart="drag = { kind: 'catalog', id: Number($el.dataset.catalogId), he: Number($el.dataset.he) }"
                             x-on:dragend="drag = null; hover = null"
                             class="flex items-center justify-between gap-2 rounded-lg border border-dashed border-gray-300 px-2 py-1.5 text-sm text-gray-500 cursor-grab active:cursor-grabbing dark:border-gray-600 dark:text-gray-400">
-                            <span class="truncate">{{ $label }}</span>
+                            <span class="truncate">{{ $entry->name }}</span>
                             <span class="flex shrink-0 items-center gap-2">
-                                <span class="text-[10px] font-mono opacity-70">{{ $he }} HE</span>
-                                <button type="button" wire:click="quickPlaceCatalog('{{ $key }}')"
+                                <span class="text-[10px] font-mono opacity-70">{{ $entry->height_units }} HE</span>
+                                <button type="button" wire:click="quickPlaceCatalog({{ $entry->id }})"
                                     class="text-xs text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400" title="Auf untersten freien Platz einbauen">Einbauen</button>
                             </span>
                         </li>
-                    @endforeach
+                    @empty
+                        <li class="text-sm text-gray-400 dark:text-gray-500">
+                            Noch keine Katalogelemente – im Adminbereich unter „Auswahlmenüs → Rack-Katalog" anlegen.
+                        </li>
+                    @endforelse
                 </ul>
             </div>
         </div>

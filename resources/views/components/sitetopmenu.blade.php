@@ -12,6 +12,7 @@
         'admin.user' => 'Benutzer',
         'admin.mailboxprovider' => 'Postfach-Anbieter',
         'admin.operatingsystem' => 'Betriebssysteme',
+        'admin.rackcatalogitem' => 'Rack-Katalog',
     ];
 
     $title = $isAdmin
