@@ -31,7 +31,11 @@
     @include('layouts.navigation')
     @include('layouts.aside')
 
-    <main class="mt-16 sm:ml-64">
+    <div class="mt-16 sm:ml-64">
+        <x-demobanner />
+    </div>
+
+    <main class="sm:ml-64">
         {{ $slot }}
     </main>
 

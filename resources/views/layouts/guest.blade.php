@@ -26,6 +26,8 @@
 
 <body class="antialiased font-DINPro text-gray-900 dark:text-gray-100">
 
+    <x-demobanner />
+
     {{ $slot }}
 
 </body>

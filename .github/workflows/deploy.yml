@@ -1,0 +1,45 @@
+name: deploy
+
+# Laeuft erst, wenn die Test-Workflow auf main durchgelaufen ist - ein roter
+# Build soll die Demo nicht ueberschreiben.
+on:
+  workflow_run:
+    workflows: ['tests']
+    types: [completed]
+    branches: [main]
+
+# Zwei gleichzeitige Deploys auf denselben Server wuerden sich ins Gehege
+# kommen; der neuere gewinnt, der laufende wird zu Ende gefuehrt.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH-Schlüssel einrichten
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          # Bewusst kein StrictHostKeyChecking=no: der Fingerabdruck liegt als
+          # Secret vor, sonst waere der Deploy gegen einen untergeschobenen
+          # Host offen.
+          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy ausführen
+        run: |
+          ssh -i ~/.ssh/id_deploy \
+              -p "${{ secrets.DEPLOY_PORT || '22' }}" \
+              "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+              "cd '${{ secrets.DEPLOY_PATH }}' && ./deploy.sh"
+
+      - name: Erreichbarkeit prüfen
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "${{ secrets.DEPLOY_URL }}/login")
+          echo "HTTP $code von ${{ secrets.DEPLOY_URL }}/login"
+          test "$code" = "200"
