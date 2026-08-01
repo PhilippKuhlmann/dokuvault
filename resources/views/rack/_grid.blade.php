@@ -38,7 +38,10 @@
         {{-- Vorschau nur ausblenden, wenn der Zeiger den Schrank wirklich verlaesst --}}
         x-on:dragleave="if (! $el.contains($event.relatedTarget)) hover = null"
     @endif>
-    <div class="grid gap-y-px" style="grid-template-columns: 2.5rem 1fr;">
+    {{-- Ohne Zeilenabstand. Der Abstand summiert sich ueber 42 HE auf 41 px und
+         haette das Schema hoeher gemacht als die Frontansicht daneben - beide
+         muessen Zeile fuer Zeile auf gleicher Hoehe liegen. --}}
+    <div class="grid" style="grid-template-columns: 2.5rem 1fr;">
 
         {{-- HE-Skala links --}}
         @for ($u = $he; $u >= 1; $u--)
