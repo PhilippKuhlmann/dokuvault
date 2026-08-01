@@ -64,7 +64,7 @@
                         x-on:dragover.prevent="hover = Number($el.dataset.unit)"
                         x-on:drop.prevent="handleDrop(Number($el.dataset.unit))"
                     @endif
-                    class="rounded bg-white/40 dark:bg-gray-800/40"></div>
+                    class="bg-white dark:bg-gray-800"></div>
             @endunless
         @endfor
 

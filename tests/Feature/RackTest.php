@@ -236,7 +236,8 @@ test('Frontansicht zeichnet nur Einbauten - leere Höheneinheiten bleiben leer',
     expect(substr_count($html, '<svg'))->toBe(1);
     // Und genau acht offene Einschuebe (10 HE minus die 2 HE der Blindplatte).
     // Ohne diese Trennung saehe eine leere HE aus wie eine Blindplatte.
-    expect(substr_count($html, 'dark:bg-black'))->toBe(8);
+    // data-empty statt einer CSS-Klasse: die Markierung ueberlebt Farbwechsel.
+    expect(substr_count($html, 'data-empty='))->toBe(8);
 });
 
 test('jede Darstellung in rack_appearances rendert ohne Fehler, auch mehrzeilig', function () {

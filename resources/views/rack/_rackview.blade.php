@@ -63,8 +63,9 @@
              Schrauben und eine graue Flaeche hat. --}}
         @for ($u = $he; $u >= 1; $u--)
             @unless ($occupied[$u] ?? false)
-                <div style="grid-column: 3; grid-row: {{ $he - $u + 1 }}; min-height: {{ $rowHeight }};"
-                    class="bg-white dark:bg-black"></div>
+                <div data-empty="{{ $u }}"
+                    style="grid-column: 3; grid-row: {{ $he - $u + 1 }}; min-height: {{ $rowHeight }};"
+                    class="bg-white dark:bg-gray-800"></div>
             @endunless
         @endfor
 
