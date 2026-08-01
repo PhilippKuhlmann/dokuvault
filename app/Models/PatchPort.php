@@ -31,8 +31,10 @@ class PatchPort extends Model
      */
     public function getNameAttribute(): string
     {
-        return $this->label
-            ? $this->label.' (Port '.$this->number.')'
+        $dose = trim($this->outlet.' '.$this->label);
+
+        return $dose !== ''
+            ? $dose.' (Port '.$this->number.')'
             : 'Port '.$this->number;
     }
 
@@ -44,7 +46,7 @@ class PatchPort extends Model
     /** Steht an diesem Port etwas, das beim Loeschen verloren ginge? */
     public function isDocumented(): bool
     {
-        return filled($this->label) || filled($this->network_switch_id)
+        return filled($this->outlet) || filled($this->label) || filled($this->network_switch_id)
             || filled($this->switch_port) || filled($this->note);
     }
 }

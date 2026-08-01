@@ -1,5 +1,7 @@
-{{-- Wrapper hält dieselbe zentrierte Spaltenbreite wie das Formular darüber (x-create.main) --}}
-<div class="mx-auto max-w-3xl px-3">
+{{-- Breiter als das Formular darüber (max-w-3xl): sechs Spalten passen dort
+     nicht ohne Querlauf. Bleibt wie das Formular mittig - dasselbe Muster wie
+     beim Rack-Editor. --}}
+<div class="mx-auto max-w-5xl px-3">
 <div class="my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700">
 
     <div class="flex flex-wrap items-baseline justify-between gap-2 mb-1">
@@ -10,7 +12,8 @@
     </div>
 
     <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">
-        Je Port die Netzwerkdose und den Switch-Port eintragen. Die Portanzahl ändert man oben im Formular.
+        Je Port die Dosennummer (z. B. „EG 1.01", „A.12", „2.23"), den Raum und den Switch-Port
+        eintragen. Die Portanzahl ändert man oben im Formular.
     </p>
 
     @if ($saved)
@@ -27,11 +30,12 @@
 
     {{-- overflow-x-auto: bei vier Spalten wird es auf dem Smartphone sonst zu schmal --}}
     <div class="overflow-x-auto">
-        <table class="w-full min-w-[36rem] text-sm">
+        <table class="w-full min-w-[44rem] text-sm">
             <thead class="text-xs uppercase tracking-wide text-gray-400 border-b border-gray-100 dark:border-gray-700">
                 <tr>
                     <th class="py-2 pr-2 text-left font-semibold w-10">Port</th>
-                    <th class="py-2 pr-2 text-left font-semibold">Dose / Raum</th>
+                    <th class="py-2 pr-2 text-left font-semibold w-28">Dose</th>
+                    <th class="py-2 pr-2 text-left font-semibold">Raum / Bezeichnung</th>
                     <th class="py-2 pr-2 text-left font-semibold">Switch</th>
                     <th class="py-2 pr-2 text-left font-semibold w-24">Switch-Port</th>
                     <th class="py-2 pr-2 text-left font-semibold">Notiz</th>
@@ -43,8 +47,12 @@
                     <tr wire:key="port-{{ $port->id }}" class="border-b border-gray-50 last:border-0 dark:border-gray-700/50">
                         <td class="py-1 pr-2 font-mono text-gray-500 dark:text-gray-400">{{ $port->number }}</td>
                         <td class="py-1 pr-2">
+                            <x-input.text type="text" class="w-full text-sm py-1 font-mono"
+                                wire:model="outlet.{{ $port->id }}" placeholder="EG 1.01" />
+                        </td>
+                        <td class="py-1 pr-2">
                             <x-input.text type="text" class="w-full text-sm py-1"
-                                wire:model="label.{{ $port->id }}" placeholder="z. B. 2.14 Besprechung" />
+                                wire:model="label.{{ $port->id }}" placeholder="z. B. Besprechung" />
                         </td>
                         <td class="py-1 pr-2">
                             <x-input.select name="switch-{{ $port->id }}" class="w-full text-sm py-1"

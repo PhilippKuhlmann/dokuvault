@@ -55,20 +55,20 @@ test('Anlegen erzeugt genau so viele Ports wie angegeben, durchnummeriert', func
 test('Portanzahl erhöhen legt nur die fehlenden nach', function () {
     $this->actingAs(userWithPermissions(['patchpanel_update']));
     [$customer, $site, $panel] = customerWithPanel(24);
-    $panel->ports()->where('number', 3)->update(['label' => 'Bleibt stehen']);
+    $panel->ports()->where('number', 3)->update(['outlet' => 'Bleibt stehen']);
 
     $this->patch("/{$customer->slug}/patchpanel/{$panel->id}", [
         'site_id' => $site->id, 'name' => $panel->name, 'port_count' => 48, 'height_units' => 2,
     ])->assertRedirect("/{$customer->slug}/patchpanel");
 
     expect($panel->ports()->count())->toBe(48);
-    expect($panel->ports()->where('number', 3)->value('label'))->toBe('Bleibt stehen');
+    expect($panel->ports()->where('number', 3)->value('outlet'))->toBe('Bleibt stehen');
 });
 
 test('Verkleinern wird abgelehnt, solange oben dokumentierte Ports liegen', function () {
     $this->actingAs(userWithPermissions(['patchpanel_update']));
     [$customer, $site, $panel] = customerWithPanel(48);
-    $panel->ports()->where('number', 40)->update(['label' => 'EG 2.14']);
+    $panel->ports()->where('number', 40)->update(['outlet' => 'EG 2.14']);
 
     $this->patch("/{$customer->slug}/patchpanel/{$panel->id}", [
         'site_id' => $site->id, 'name' => $panel->name, 'port_count' => 24, 'height_units' => 1,
@@ -81,23 +81,23 @@ test('Verkleinern wird abgelehnt, solange oben dokumentierte Ports liegen', func
 test('Verkleinern geht, wenn oben nichts dokumentiert ist', function () {
     $this->actingAs(userWithPermissions(['patchpanel_update']));
     [$customer, $site, $panel] = customerWithPanel(48);
-    $panel->ports()->where('number', 3)->update(['label' => 'Unten, bleibt']);
+    $panel->ports()->where('number', 3)->update(['outlet' => 'Unten, bleibt']);
 
     $this->patch("/{$customer->slug}/patchpanel/{$panel->id}", [
         'site_id' => $site->id, 'name' => $panel->name, 'port_count' => 24, 'height_units' => 1,
     ])->assertRedirect("/{$customer->slug}/patchpanel");
 
     expect($panel->ports()->count())->toBe(24);
-    expect($panel->ports()->where('number', 3)->value('label'))->toBe('Unten, bleibt');
+    expect($panel->ports()->where('number', 3)->value('outlet'))->toBe('Unten, bleibt');
 });
 
 test('Liste zeigt Patchfeld und Dosen, ohne Berechtigung 403', function () {
     $this->actingAs(userWithPermissions(['patchpanel_viewAny']));
     [$customer, $site, $panel] = customerWithPanel(24);
-    $panel->ports()->where('number', 5)->update(['label' => 'EG 1.05 Besprechung']);
+    $panel->ports()->where('number', 5)->update(['outlet' => 'EG 1.05', 'label' => 'Besprechung']);
 
     $this->get("/{$customer->slug}/patchpanel")->assertStatus(200)
-        ->assertSee('PF-Test')->assertSee('EG 1.05 Besprechung');
+        ->assertSee('PF-Test')->assertSee('EG 1.05')->assertSee('Besprechung');
 
     $this->actingAs(userWithPermissions([]));
     $this->get("/{$customer->slug}/patchpanel")->assertStatus(403);
@@ -106,14 +106,14 @@ test('Liste zeigt Patchfeld und Dosen, ohne Berechtigung 403', function () {
 test('Papierkorb: löschen, wiederherstellen, Ports überleben', function () {
     $this->actingAs(userWithPermissions(['patchpanel_delete', 'see_hidden']));
     [$customer, $site, $panel] = customerWithPanel(24);
-    $panel->ports()->where('number', 1)->update(['label' => 'EG 1.01']);
+    $panel->ports()->where('number', 1)->update(['outlet' => 'EG 1.01']);
 
     $this->delete("/{$customer->slug}/patchpanel/{$panel->id}");
     $this->assertSoftDeleted('patch_panels', ['id' => $panel->id]);
 
     $this->post("/{$customer->slug}/trash/patchpanel/{$panel->id}/restore");
     expect($panel->fresh()->deleted_at)->toBeNull();
-    expect($panel->fresh()->ports()->where('number', 1)->value('label'))->toBe('EG 1.01');
+    expect($panel->fresh()->ports()->where('number', 1)->value('outlet'))->toBe('EG 1.01');
 });
 
 // --- Portbeschriftung (Livewire) ---
@@ -125,14 +125,16 @@ test('Speichern schreibt Dose, Switch und Switch-Port', function () {
     $port = $panel->ports()->where('number', 2)->firstOrFail();
 
     Livewire::test(PatchPanelPorts::class, ['panel' => $panel, 'customer' => $customer])
-        ->set("label.{$port->id}", 'EG 1.02 Empfang')
+        ->set("outlet.{$port->id}", 'EG 1.02')
+        ->set("label.{$port->id}", 'Empfang')
         ->set("switchId.{$port->id}", $switch->id)
         ->set("switchPort.{$port->id}", '1/0/12')
         ->call('save')
         ->assertHasNoErrors();
 
     $port->refresh();
-    expect($port->label)->toBe('EG 1.02 Empfang');
+    expect($port->outlet)->toBe('EG 1.02');
+    expect($port->label)->toBe('Empfang');
     expect($port->network_switch_id)->toBe($switch->id);
     expect($port->switch_port)->toBe('1/0/12');
 });
@@ -161,7 +163,7 @@ test('Zeile leeren setzt alle vier Felder zurück', function () {
     $switch = patchTestSwitch($customer, $site);
     $port = $panel->ports()->where('number', 1)->firstOrFail();
     $port->update([
-        'label' => 'weg', 'network_switch_id' => $switch->id,
+        'outlet' => 'A.12', 'label' => 'weg', 'network_switch_id' => $switch->id,
         'switch_port' => '3', 'note' => 'auch weg',
     ]);
 
@@ -169,6 +171,7 @@ test('Zeile leeren setzt alle vier Felder zurück', function () {
         ->call('clearPort', $port->id);
 
     $port->refresh();
+    expect($port->outlet)->toBeNull();
     expect($port->label)->toBeNull();
     expect($port->network_switch_id)->toBeNull();
     expect($port->switch_port)->toBeNull();
@@ -222,7 +225,7 @@ test('globale Suche findet Patchfeld über den Namen und Dose über die Bezeichn
     $this->actingAs(userWithPermissions(['patchpanel_viewAny']));
     [$customer, $site, $panel] = customerWithPanel(24);
     $panel->update(['name' => 'PF-Nordflügel']);
-    $panel->ports()->where('number', 7)->update(['label' => 'EG 2.14 Besprechung']);
+    $panel->ports()->where('number', 7)->update(['outlet' => 'EG 2.14', 'label' => 'Besprechung']);
 
     Livewire::test(GlobalSearch::class)
         ->set('search', 'Nordflügel')
@@ -230,12 +233,35 @@ test('globale Suche findet Patchfeld über den Namen und Dose über die Bezeichn
 
     Livewire::test(GlobalSearch::class)
         ->set('search', '2.14')
-        ->assertSee('EG 2.14 Besprechung');
+        ->assertSee('EG 2.14');
+});
+
+test('Dosennummer und Raum sind getrennte Felder', function () {
+    $this->actingAs(userWithPermissions(['patchpanel_update', 'patchpanel_viewAny']));
+    [$customer, $site, $panel] = customerWithPanel(4);
+    $port = $panel->ports()->where('number', 1)->firstOrFail();
+
+    Livewire::test(PatchPanelPorts::class, ['panel' => $panel, 'customer' => $customer])
+        ->set("outlet.{$port->id}", 'A.12')
+        ->set("label.{$port->id}", 'Büro Nord')
+        ->call('save')->assertHasNoErrors();
+
+    $port->refresh();
+    expect($port->outlet)->toBe('A.12');
+    expect($port->label)->toBe('Büro Nord');
+
+    // Die Suche findet die reine Dosennummer, auch ohne den Raum
+    Livewire::test(GlobalSearch::class)->set('search', 'A.12')->assertSee('A.12');
+
+    // Nur eine Dosennummer ohne Raum gilt bereits als dokumentiert
+    $nurDose = $panel->ports()->where('number', 2)->firstOrFail();
+    $nurDose->update(['outlet' => '2.23']);
+    expect($nurDose->fresh()->isDocumented())->toBeTrue();
 });
 
 test('Kunden-Nutzer sieht fremde Dosen nicht in der Suche', function () {
     [$customer, $site, $panel] = customerWithPanel(24);
-    $panel->ports()->where('number', 1)->update(['label' => 'GEHEIM 9.99']);
+    $panel->ports()->where('number', 1)->update(['outlet' => 'GEHEIM 9.99']);
 
     $fremd = Customer::factory()->create();
     $user = userWithPermissions(['patchpanel_viewAny']);
@@ -246,5 +272,5 @@ test('Kunden-Nutzer sieht fremde Dosen nicht in der Suche', function () {
         ->set('search', '9.99')
         ->assertDontSee('GEHEIM 9.99');
 
-    expect(PatchPort::where('label', 'GEHEIM 9.99')->exists())->toBeTrue();
+    expect(PatchPort::where('outlet', 'GEHEIM 9.99')->exists())->toBeTrue();
 });

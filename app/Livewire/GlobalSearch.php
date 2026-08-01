@@ -63,7 +63,7 @@ class GlobalSearch extends Component
         'domain' => [Domain::class, 'Domains', 'domain', ['name']],
         'certificate' => [Certificate::class, 'Zertifikate', 'certificate', ['name', 'common_name', 'issuer']],
         'patchpanel' => [PatchPanel::class, 'Patchfelder', 'patchpanel', ['name', 'manufacturer', 'model']],
-        'patchport' => [PatchPort::class, 'Netzwerkdosen', 'patchpanel', ['label', 'switch_port'], 'patchpanel'],
+        'patchport' => [PatchPort::class, 'Netzwerkdosen', 'patchpanel', ['outlet', 'label', 'switch_port'], 'patchpanel'],
     ];
 
     public function render()

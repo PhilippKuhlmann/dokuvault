@@ -188,14 +188,15 @@ class LocalDatabaseSeeder extends Seeder
         ]);
         $patchpanel->syncPorts();
         foreach ([
-            [1, 'EG 1.01 Empfang', '1'],
-            [2, 'EG 1.02 Empfang', '2'],
-            [5, 'EG 1.05 Besprechung', '5'],
-            [6, 'EG 1.06 Besprechung', '6'],
-            [12, 'EG 1.12 Büro Nord', '12'],
-        ] as [$nr, $dose, $swPort]) {
+            [1, 'EG 1.01', 'Empfang', '1'],
+            [2, 'EG 1.02', 'Empfang', '2'],
+            [5, 'EG 1.05', 'Besprechung', '5'],
+            [6, 'EG 1.06', 'Besprechung', '6'],
+            [12, 'A.12', 'Büro Nord', '12'],
+        ] as [$nr, $dose, $raum, $swPort]) {
             $patchpanel->ports()->where('number', $nr)->update([
-                'label' => $dose,
+                'outlet' => $dose,
+                'label' => $raum,
                 'network_switch_id' => $swCore?->id,
                 'switch_port' => $swPort,
             ]);

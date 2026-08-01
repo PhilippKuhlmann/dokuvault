@@ -148,11 +148,12 @@
                 <div class="ports-caption">{{ $panel->name }} – Dosenbelegung</div>
                 <table class="ports">
                     <tr>
-                        <th>Port</th><th>Dose / Raum</th><th>Switch</th><th>Switch-Port</th><th>Notiz</th>
+                        <th>Port</th><th>Dose</th><th>Raum</th><th>Switch</th><th>Switch-Port</th><th>Notiz</th>
                     </tr>
                     @foreach ($belegt as $port)
                         <tr>
                             <td>{{ $port->number }}</td>
+                            <td>{{ $port->outlet }}</td>
                             <td>{{ $port->label }}</td>
                             <td>{{ $port->networkSwitch?->name }}</td>
                             <td>{{ $port->switch_port }}</td>

@@ -24,6 +24,8 @@ class PatchPanelPorts extends Component
     public int $customerId;
 
     /** @var array<int, string|null> Port-ID => Wert */
+    public array $outlet = [];
+
     public array $label = [];
 
     public array $switchId = [];
@@ -40,6 +42,7 @@ class PatchPanelPorts extends Component
         $this->customerId = $customer->id;
 
         foreach ($panel->ports as $port) {
+            $this->outlet[$port->id] = $port->outlet;
             $this->label[$port->id] = $port->label;
             $this->switchId[$port->id] = $port->network_switch_id;
             $this->switchPort[$port->id] = $port->switch_port;
@@ -73,6 +76,9 @@ class PatchPanelPorts extends Component
         $ports = $panel->ports()->get()->keyBy('id');
 
         $this->validate([
+            // Schreibweise ist je Kunde verschieden ("EG 1.01", "A.12", "2.23") -
+            // deshalb kein Format erzwingen, nur die Laenge begrenzen.
+            'outlet.*' => 'nullable|string|max:50',
             'label.*' => 'nullable|string|max:255',
             'switchPort.*' => 'nullable|string|max:50',
             'note.*' => 'nullable|string|max:255',
@@ -87,6 +93,7 @@ class PatchPanelPorts extends Component
 
         foreach ($ports as $id => $port) {
             $port->update([
+                'outlet' => $this->leerZuNull($this->outlet[$id] ?? null),
                 'label' => $this->leerZuNull($this->label[$id] ?? null),
                 'network_switch_id' => $this->leerZuNull($this->switchId[$id] ?? null),
                 'switch_port' => $this->leerZuNull($this->switchPort[$id] ?? null),
@@ -102,9 +109,11 @@ class PatchPanelPorts extends Component
     {
         $panel = $this->panel();
         $panel->ports()->whereKey($portId)->update([
-            'label' => null, 'network_switch_id' => null, 'switch_port' => null, 'note' => null,
+            'outlet' => null, 'label' => null,
+            'network_switch_id' => null, 'switch_port' => null, 'note' => null,
         ]);
 
+        $this->outlet[$portId] = null;
         $this->label[$portId] = null;
         $this->switchId[$portId] = null;
         $this->switchPort[$portId] = null;
@@ -116,7 +125,8 @@ class PatchPanelPorts extends Component
     {
         $namen = [];
         foreach ($ports as $id => $port) {
-            $namen["label.$id"] = 'Dose an Port '.$port->number;
+            $namen["outlet.$id"] = 'Dosennummer an Port '.$port->number;
+            $namen["label.$id"] = 'Raum an Port '.$port->number;
             $namen["switchId.$id"] = 'Switch an Port '.$port->number;
             $namen["switchPort.$id"] = 'Switch-Port an Port '.$port->number;
             $namen["note.$id"] = 'Notiz an Port '.$port->number;

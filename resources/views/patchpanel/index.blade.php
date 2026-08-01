@@ -35,7 +35,8 @@
                             <thead class="text-xs uppercase tracking-wide text-gray-400 border-b border-gray-100 dark:border-gray-700">
                                 <tr>
                                     <th class="py-2 pr-4 text-left font-semibold">Port</th>
-                                    <th class="py-2 pr-4 text-left font-semibold">Dose / Raum</th>
+                                    <th class="py-2 pr-4 text-left font-semibold">Dose</th>
+                                    <th class="py-2 pr-4 text-left font-semibold">Raum</th>
                                     <th class="py-2 pr-4 text-left font-semibold">Switch</th>
                                     <th class="py-2 pr-4 text-left font-semibold">Switch-Port</th>
                                     <th class="py-2 text-left font-semibold">Notiz</th>
@@ -45,6 +46,7 @@
                                 @foreach ($belegt as $port)
                                     <tr class="border-b border-gray-50 last:border-0 dark:border-gray-700/50">
                                         <td class="py-2 pr-4 font-mono text-gray-900 dark:text-gray-100">{{ $port->number }}</td>
+                                        <td class="py-2 pr-4 font-mono text-gray-900 dark:text-gray-100">{{ $port->outlet ?: '—' }}</td>
                                         <td class="py-2 pr-4 text-gray-900 dark:text-gray-100">{{ $port->label ?: '—' }}</td>
                                         <td class="py-2 pr-4 text-gray-600 dark:text-gray-300">{{ $port->networkSwitch?->name ?: '—' }}</td>
                                         <td class="py-2 pr-4 font-mono text-gray-600 dark:text-gray-300">{{ $port->switch_port ?: '—' }}</td>
