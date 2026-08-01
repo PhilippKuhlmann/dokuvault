@@ -31,6 +31,9 @@ class RackCatalogItemRequest extends FormRequest
             // 42 HE ist die groesste gaengige Schrankhoehe - mehr waere nie einbaubar.
             'height_units' => 'required|integer|min:1|max:42',
             'sort_order' => 'nullable|integer|min:0|max:65535',
+            // Nur bekannte Darstellungen - der Wert steuert, welche Zeichnung
+            // die Frontansicht rendert.
+            'appearance' => ['required', Rule::in(array_keys(config('custom.rack_appearances')))],
         ];
     }
 
@@ -40,6 +43,7 @@ class RackCatalogItemRequest extends FormRequest
             'name' => 'Bezeichnung',
             'height_units' => 'Höheneinheiten',
             'sort_order' => 'Reihenfolge',
+            'appearance' => 'Darstellung',
         ];
     }
 }

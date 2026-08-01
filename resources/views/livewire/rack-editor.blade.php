@@ -1,5 +1,6 @@
-{{-- Wrapper hält dieselbe zentrierte Spaltenbreite wie das Formular darüber (x-create.main) --}}
-<div class="mx-auto max-w-3xl px-3">
+{{-- Breiter als das Formular darüber (max-w-3xl): Palette, Schema und Frontansicht
+     brauchen nebeneinander Platz. Bleibt wie das Formular mittig. --}}
+<div class="mx-auto max-w-5xl px-3">
 <div class="my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700"
     x-data="{
         drag: null,        // { kind, he, ... } - was gerade gezogen wird
@@ -120,9 +121,15 @@
             </div>
         </div>
 
-        {{-- Rack-Frontansicht --}}
-        <div class="grow">
+        {{-- Links das beschriftete Arbeitsschema, rechts die gezeichnete Frontansicht --}}
+        <div class="grow min-w-0">
+            <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">Schema</div>
             @include('rack._grid', ['rack' => $rack, 'interactive' => true])
+        </div>
+
+        <div class="grow min-w-0 hidden lg:block">
+            <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">Frontansicht</div>
+            @include('rack._rackview', ['rack' => $rack])
         </div>
 
     </div>

@@ -36,4 +36,24 @@ class RackItem extends Model
     {
         return $this->position + $this->height_units - 1;
     }
+
+    /**
+     * Darstellung in der gezeichneten Frontansicht. Bei dokumentierten Geraeten
+     * ergibt sie sich aus dem Geraetetyp, bei Katalogelementen steht sie in der
+     * beim Einbau kopierten Spalte.
+     */
+    public function faceAppearance(): string
+    {
+        if ($this->device_type) {
+            foreach (config('custom.rack_device_types') as [$class, $label, $appearance]) {
+                if ($class === $this->device_type) {
+                    return $appearance;
+                }
+            }
+
+            return 'server';
+        }
+
+        return $this->appearance ?: 'blank';
+    }
 }

@@ -89,6 +89,7 @@ class RackEditor extends Component
             'position' => $position,
             'height_units' => $catalogItem->height_units,
             'name' => $catalogItem->name,
+            'appearance' => $catalogItem->appearance,
         ]);
     }
 

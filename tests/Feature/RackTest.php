@@ -197,6 +197,43 @@ test('Katalogbezeichnung wird beim Einbau kopiert - spätere Änderungen wirken 
     $item = RackItem::first();
     expect($item->name)->toBe('Patchfeld 24 Port');
     expect($item->height_units)->toBe(1);
+    // Auch die Darstellung ist kopiert, nicht verknuepft
+    expect($item->faceAppearance())->toBe('patchpanel');
+});
+
+test('Darstellung der Frontansicht: Geräte aus dem Typ, Katalogelemente aus der Kopie', function () {
+    $this->actingAs(userWithPermissions(['rack_update']));
+    [$customer, $site, $rack] = customerWithRack(12);
+
+    $server = Server::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'name' => 'SRV-1',
+        'operating_system_id' => OperatingSystem::factory()->create(['name' => 'Debian 12'])->id,
+    ]);
+
+    Livewire::test(RackEditor::class, ['rack' => $rack, 'customer' => $customer])
+        ->call('placeDevice', 'server', $server->id, 1)->assertHasNoErrors();
+
+    $geraet = RackItem::whereNotNull('device_type')->firstOrFail();
+    expect($geraet->faceAppearance())->toBe('server');
+
+    // Katalogelement ohne gesetzte Darstellung faellt auf die Blindplatte zurueck
+    $ohne = $rack->items()->create(['position' => 5, 'height_units' => 1, 'name' => 'Unbekannt']);
+    expect($ohne->faceAppearance())->toBe('blank');
+});
+
+test('jede Darstellung in rack_appearances rendert ohne Fehler, auch mehrzeilig', function () {
+    foreach (array_keys(config('custom.rack_appearances')) as $appearance) {
+        foreach ([1, 2, 3] as $he) {
+            $svg = view('components.rack.face', ['appearance' => $appearance, 'he' => $he])->render();
+
+            // toContain() nimmt ein zweites Argument als weiteren Suchbegriff,
+            // nicht als Meldung - deshalb str_contains + toBeTrue.
+            expect(str_contains($svg, 'viewBox="0 0 1086 '.(100 * $he).'"'))
+                ->toBeTrue("Darstellung {$appearance} bei {$he} HE hat den falschen viewBox");
+            expect(substr_count($svg, '<svg'))->toBe(1);
+        }
+    }
 });
 
 test('setHeight wächst nach oben und stößt am Rackdeckel an', function () {

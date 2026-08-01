@@ -377,19 +377,39 @@ return [
     /*
      * Geraetetypen, die sich in ein Rack einbauen lassen.
      * Schluessel = stabiler Bezeichner im Editor (nie Klassennamen vom Client annehmen),
-     * Wert = [Model-Klasse, Anzeigename]. Reihenfolge = Reihenfolge der Palette.
+     * Wert = [Model-Klasse, Anzeigename, Darstellung in der Frontansicht].
+     * Reihenfolge = Reihenfolge der Palette.
      * Voraussetzung: Model hat customer_id und ein name-Feld.
      */
     'rack_device_types' => [
-        'server' => [\App\Models\Server::class, 'Server'],
-        'networkswitch' => [\App\Models\NetworkSwitch::class, 'Switch'],
-        'nas' => [\App\Models\NAS::class, 'NAS'],
-        'router' => [\App\Models\Router::class, 'Router'],
-        'ups' => [\App\Models\Ups::class, 'USV'],
+        'server' => [\App\Models\Server::class, 'Server', 'server'],
+        'networkswitch' => [\App\Models\NetworkSwitch::class, 'Switch', 'switch'],
+        'nas' => [\App\Models\NAS::class, 'NAS', 'nas'],
+        'router' => [\App\Models\Router::class, 'Router', 'router'],
+        'ups' => [\App\Models\Ups::class, 'USV', 'ups'],
         // PhoneSystem fehlt bewusst: die Tabelle hat keine name-Spalte,
         // ein Einbau hätte in der Rack-Ansicht keinen Anzeigenamen.
-        'recorder' => [\App\Models\Recorder::class, 'Recorder'],
-        'securepointuma' => [\App\Models\SecurepointUMA::class, 'E-Mail-Archiv'],
+        'recorder' => [\App\Models\Recorder::class, 'Recorder', 'server'],
+        'securepointuma' => [\App\Models\SecurepointUMA::class, 'E-Mail-Archiv', 'server'],
+    ],
+
+    /*
+     * Darstellungen der gezeichneten Frontansicht (x-rack.face).
+     * Geraete bekommen sie aus rack_device_types, Katalogelemente waehlt der
+     * Admin je Eintrag aus dieser Liste.
+     */
+    'rack_appearances' => [
+        'server' => 'Server (Laufwerksschächte)',
+        'switch' => 'Switch (RJ45-Ports)',
+        'nas' => 'NAS (Laufwerksschächte)',
+        'router' => 'Router',
+        'ups' => 'USV (Display)',
+        'patchpanel' => 'Patchfeld',
+        'cablering' => 'Rangierfeld (Kabelbügel)',
+        'brush' => 'Kabeldurchführung (Bürste)',
+        'shelf' => 'Fachboden',
+        'pdu' => 'Steckdosenleiste',
+        'blank' => 'Blindplatte',
     ],
 
     /*

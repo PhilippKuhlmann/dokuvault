@@ -3,11 +3,7 @@
         action="{{ route('admin.rackcatalogitem.update', $rackCatalogItem) }}">
         @method('PATCH')
 
-        <x-create.singlerow label="Bezeichnung" name="name" :default="$rackCatalogItem->name" />
-
-        <x-create.doublerow
-            label1="Höheneinheiten (HE)" name1="height_units" type1="number" :default1="$rackCatalogItem->height_units"
-            label2="Reihenfolge in der Palette" name2="sort_order" type2="number" :default2="$rackCatalogItem->sort_order" />
+        @include('admin.rackcatalogitem._form', ['item' => $rackCatalogItem])
 
     </x-create.main>
 

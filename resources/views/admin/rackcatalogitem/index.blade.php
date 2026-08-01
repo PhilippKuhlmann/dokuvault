@@ -22,7 +22,7 @@
         </p>
 
         <x-table.main>
-            <x-table.head :labels="['Bezeichnung', 'Höheneinheiten', 'Reihenfolge', '']" />
+            <x-table.head :labels="['Bezeichnung', 'Höheneinheiten', 'Darstellung', 'Reihenfolge', '']" />
 
             <x-table.body>
                 @foreach ($rackCatalogItems as $rackCatalogItem)
@@ -30,6 +30,7 @@
                         :values="[
                             $rackCatalogItem->name,
                             $rackCatalogItem->height_units . ' HE',
+                            config('custom.rack_appearances')[$rackCatalogItem->appearance] ?? $rackCatalogItem->appearance,
                             $rackCatalogItem->sort_order,
                         ]"
                         editUrl="{{ route('admin.rackcatalogitem.edit', $rackCatalogItem) }}"
