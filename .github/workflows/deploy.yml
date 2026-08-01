@@ -35,12 +35,35 @@ jobs:
           printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
+          # Leere Secrets fruehzeitig melden - sonst scheitert erst der
+          # SSH-Aufruf mit einer Meldung, die die Ursache nicht nennt.
+          test -s ~/.ssh/id_deploy || { echo "::error::DEPLOY_SSH_KEY ist leer."; exit 1; }
+          entries=$(grep -c '[^[:space:]]' ~/.ssh/known_hosts || true)
+          echo "known_hosts: ${entries} Eintraege"
+          test "${entries}" -gt 0 || {
+            echo "::error::DEPLOY_KNOWN_HOSTS ist leer. Ausgabe von 'ssh-keyscan <host>' dort eintragen."
+            exit 1
+          }
+
       - name: Deploy ausführen
+        id: deploy
         run: |
           ssh -i ~/.ssh/id_deploy \
               -p "${{ secrets.DEPLOY_PORT || '22' }}" \
               "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
               "cd '${{ secrets.DEPLOY_PATH }}' && ./deploy.sh"
+
+      - name: Bei SSH-Fehler die tatsächlichen Host-Schlüssel zeigen
+        if: failure() && steps.deploy.outcome == 'failure'
+        run: |
+          echo "Der Server bietet aktuell diese Host-Schluessel an."
+          echo "Genau diese Zeilen gehoeren in das Secret DEPLOY_KNOWN_HOSTS:"
+          echo "---"
+          ssh-keyscan -p "${{ secrets.DEPLOY_PORT || '22' }}" "${{ secrets.DEPLOY_HOST }}" 2>&1 || true
+          echo "---"
+          echo "Der Hostname erscheint als ***, weil er als Secret hinterlegt ist."
+          echo "Laeuft SSH nicht auf Port 22, muss der Eintrag die Form [host]:port haben"
+          echo "- dafuer ssh-keyscan ebenfalls mit -p aufrufen."
 
       - name: Erreichbarkeit prüfen
         run: |
