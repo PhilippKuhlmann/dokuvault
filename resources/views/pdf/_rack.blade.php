@@ -58,6 +58,7 @@
                     $svg = view('components.rack.face', [
                         'appearance' => $item->faceAppearance(),
                         'he' => $item->height_units,
+                        'ports' => $item->device?->port_count,
                         'plate' => $plate,
                         'tint' => $tint,
                         'width' => 330,

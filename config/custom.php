@@ -43,7 +43,8 @@ return [
         'Domain',
         'Certificate',
         'Backup',
-        'Rack'
+        'Rack',
+        'PatchPanel',
     ],
 
     /*
@@ -62,6 +63,7 @@ return [
         'network' => [\App\Models\Network::class, 'Netzwerk'],
         'networkswitch' => [\App\Models\NetworkSwitch::class, 'Switch'],
         'rack' => [\App\Models\Rack::class, 'Serverschrank'],
+        'patchpanel' => [\App\Models\PatchPanel::class, 'Patchfeld'],
         'wifi' => [\App\Models\Wifi::class, 'WLAN'],
         'accesspoint' => [\App\Models\Accesspoint::class, 'Accesspoint'],
         'computer' => [\App\Models\Computer::class, 'Computer'],
@@ -132,6 +134,7 @@ return [
         'iotdevice' => 'IoT-Geräte',
         'networkswitch' => 'Switches',
         'rack' => 'Serverschränke',
+        'patchpanel' => 'Patchfelder',
         'accesspoint' => 'Accesspoints',
         'contactperson' => 'Ansprechpartner',
     ],
@@ -384,6 +387,7 @@ return [
     'rack_device_types' => [
         'server' => [\App\Models\Server::class, 'Server', 'server'],
         'networkswitch' => [\App\Models\NetworkSwitch::class, 'Switch', 'switch'],
+        'patchpanel' => [\App\Models\PatchPanel::class, 'Patchfeld', 'patchpanel'],
         'nas' => [\App\Models\NAS::class, 'NAS', 'nas'],
         'router' => [\App\Models\Router::class, 'Router', 'router'],
         'ups' => [\App\Models\Ups::class, 'USV', 'ups'],

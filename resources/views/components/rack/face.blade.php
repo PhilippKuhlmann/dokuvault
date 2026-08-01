@@ -6,6 +6,9 @@
     // Zeichnung ohne Stylesheet aus.
     'plate' => null,
     'tint' => null,
+    // Tatsaechliche Portanzahl eines dokumentierten Patchfelds; ohne Angabe
+    // zeichnet die Blende die uebliche 24er-Reihe.
+    'ports' => null,
     'width' => null,
     'height' => null,
 ])
@@ -172,12 +175,13 @@
         @case('patchpanel')
             @php
                 // Eine Portreihe je Hoeheneinheit - wie beim echten 2-HE-Patchfeld.
-                $ports = 24;
-                $pw = (1000 - 70) / $ports;
+                // Ein 48er-Feld mit 2 HE bekommt also zweimal 24 Ports.
+                $proReihe = (int) ceil(($ports ?: 24) / max(1, $he));
+                $pw = (1000 - 70) / $proReihe;
             @endphp
             @for ($u = 0; $u < $he; $u++)
                 @php $cy = $u * 100 + 50; @endphp
-                @for ($i = 0; $i < $ports; $i++)
+                @for ($i = 0; $i < $proReihe; $i++)
                     @php $x = 70 + $i * $pw; @endphp
                     <rect x="{{ $x + 2 }}" y="{{ $cy - 20 }}" width="{{ $pw - 4 }}" height="40" rx="3"
                         fill="{{ $ink }}" fill-opacity="0.10" stroke="{{ $ink }}" stroke-opacity="0.45" stroke-width="2" />

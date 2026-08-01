@@ -1,5 +1,16 @@
 # Changelog
 
+## 26.08.02
+
+### Added
+
+- **Patchfelder mit Dosendokumentation**: Unter „Netzwerk → Patchfelder" lassen sich Patchfelder anlegen (Standort, Portanzahl, Höheneinheiten, Hersteller). Die Portzeilen entstehen dabei automatisch; je Port trägt man die Netzwerkdose bzw. den Raum ein und auf welchen Switch und dessen Port er gepatcht ist. Damit beantwortet die Doku die Frage, für die man sonst in den Schrank schaut: „Dose 2.14 im Besprechungsraum – wo hängt die?". Die **globale Suche findet Dosen** über ihre Bezeichnung, das Patchfeld ist im **Serverschrank einbaubar** und der **PDF-Export** bekommt einen Abschnitt samt Dosenbelegung je Feld. Papierkorb und Standortfilter gelten wie bei allen Objekten. Die Portanzahl lässt sich nachträglich erhöhen; verkleinern lehnt die App ab, solange oberhalb noch dokumentierte Ports liegen – sie nennt die betroffenen Portnummern. Bestehende Installationen erhalten die vier neuen Berechtigungen per Migration.
+
+### Changed
+
+- **Ein Gerät bringt seine Höhe mit ins Rack**: Der Rack-Editor legte jeden Einbau mit einer Höheneinheit an, unabhängig vom Gerät. Ein 48er-Patchfeld belegt jetzt direkt die zwei HE, die es hat – und der „Einbauen"-Knopf sucht auch nach einer entsprechend großen Lücke. Bisher musste man die Höhe nach jedem Einbau von Hand nachziehen.
+- **Die Rack-Zeichnung nutzt die echte Portanzahl**: Ein Patchfeld wurde immer mit 24 Ports gezeichnet. Bei dokumentierten Patchfeldern kommt die Anzahl jetzt aus dem Datensatz – ein 48er-Feld mit 2 HE bekommt zwei Reihen zu 24.
+
 ## 26.08.01
 
 ### Added

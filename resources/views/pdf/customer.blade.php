@@ -45,6 +45,13 @@
         .clear { clear: both; }
         .empty { color: #9ca3af; font-size: 12px; font-style: italic; padding: 2px 0 6px; }
 
+        /* Dosenbelegung eines Patchfelds */
+        .ports-block { page-break-inside: avoid; margin: 4px 0 10px; }
+        .ports-caption { font-size: 11px; color: #6b7280; margin-bottom: 3px; }
+        .ports { width: 100%; border-collapse: collapse; font-size: 10px; }
+        .ports th { text-align: left; color: #6b7280; border-bottom: 1px solid #e5e7eb; padding: 3px 6px 3px 0; font-weight: normal; }
+        .ports td { padding: 3px 6px 3px 0; border-bottom: 1px solid #f3f4f6; color: #111827; }
+
         /* Rack-Frontansicht: Tabelle, weil DomPDF kein Grid kann */
         .rack-block { page-break-inside: avoid; margin: 4px 0 10px; }
         .rack-caption { font-size: 11px; color: #6b7280; margin-bottom: 3px; }
@@ -126,6 +133,36 @@
         'Login' => ['Benutzername' => 'username', 'Passwort' => 'password'],
         'Netzwerk' => ['IP' => 'ip', 'Port' => 'port'],
     ]" />
+
+    @php $patchpanels = $customer->patchpanels()->with('ports.networkSwitch')->get(); @endphp
+    <x-pdf.section title="Patchfelder" :items="$patchpanels" :groups="[
+        'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model',
+            'Ports' => 'port_count', 'Höheneinheiten' => fn($p) => $p->height_units . ' HE', 'Notiz' => 'note'],
+    ]" />
+
+    {{-- Dosenbelegung je Feld: nur beschriftete Ports, sonst stehen hier 48 leere Zeilen. --}}
+    @foreach ($patchpanels as $panel)
+        @php $belegt = $panel->ports->filter(fn ($p) => $p->isDocumented()); @endphp
+        @if ($belegt->isNotEmpty())
+            <div class="ports-block">
+                <div class="ports-caption">{{ $panel->name }} – Dosenbelegung</div>
+                <table class="ports">
+                    <tr>
+                        <th>Port</th><th>Dose / Raum</th><th>Switch</th><th>Switch-Port</th><th>Notiz</th>
+                    </tr>
+                    @foreach ($belegt as $port)
+                        <tr>
+                            <td>{{ $port->number }}</td>
+                            <td>{{ $port->label }}</td>
+                            <td>{{ $port->networkSwitch?->name }}</td>
+                            <td>{{ $port->switch_port }}</td>
+                            <td>{{ $port->note }}</td>
+                        </tr>
+                    @endforeach
+                </table>
+            </div>
+        @endif
+    @endforeach
 
     @php $racks = $customer->racks()->with('items.device')->get(); @endphp
     <x-pdf.section title="Serverschränke" :items="$racks" :groups="[

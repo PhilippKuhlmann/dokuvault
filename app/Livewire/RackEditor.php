@@ -61,11 +61,16 @@ class RackEditor extends Component
             $this->fail($device->name.' ist bereits in einem Rack verbaut.');
         }
 
-        $this->assertFree($rack, $position, 1);
+        // Hoehe vom Geraet uebernehmen, wenn es eine kennt (z. B. ein
+        // 48er-Patchfeld mit 2 HE). Sonst bleibt es bei einer Hoeheneinheit,
+        // die sich im Editor per + korrigieren laesst.
+        $he = (int) ($device->height_units ?? 1) ?: 1;
+
+        $this->assertFree($rack, $position, $he);
 
         $rack->items()->create([
             'position' => $position,
-            'height_units' => 1,
+            'height_units' => $he,
             'device_type' => $class,
             'device_id' => $device->id,
         ]);
@@ -183,7 +188,17 @@ class RackEditor extends Component
     public function quickPlaceDevice(string $typeKey, int $deviceId): void
     {
         $rack = $this->rack();
-        $position = $this->lowestFree($rack, 1) ?? $this->fail('Kein freier Platz im Rack.');
+
+        // Freien Platz fuer die *tatsaechliche* Hoehe suchen - sonst laege ein
+        // 2-HE-Patchfeld auf einer einzelnen Luecke und placeDevice lehnt ab.
+        $types = config('custom.rack_device_types');
+        $he = 1;
+        if (isset($types[$typeKey])) {
+            [$class] = $types[$typeKey];
+            $he = (int) ($class::find($deviceId)?->height_units ?? 1) ?: 1;
+        }
+
+        $position = $this->lowestFree($rack, $he) ?? $this->fail('Kein freier Platz im Rack.');
         $this->placeDevice($typeKey, $deviceId, $position);
     }
 

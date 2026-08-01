@@ -31,6 +31,7 @@ use App\Models\NAS;
 use App\Models\Network;
 use App\Models\NetworkSwitch;
 use App\Models\OtherClient;
+use App\Models\PatchPanel;
 use App\Models\Phone;
 use App\Models\PhoneSystem;
 use App\Models\Printer;
@@ -175,6 +176,31 @@ class LocalDatabaseSeeder extends Seeder
         NAS::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'NAS-Backup', 'ip1' => '10.10.30.20']);
         Accesspoint::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'AP-Serverraum', 'ip' => '10.10.30.30']);
 
+        // Patchfeld mit ein paar beschrifteten Dosen - die uebrigen Ports bleiben frei,
+        // so wie in einer echten Doku.
+        $swCore = NetworkSwitch::where('customer_id', $customer->id)->where('name', 'SW-Core')->first();
+        $patchpanel = PatchPanel::factory()->create([
+            'customer_id' => $customer->id,
+            'site_id' => $site1->id,
+            'name' => 'PF-EG-01',
+            'port_count' => 24,
+            'height_units' => 1,
+        ]);
+        $patchpanel->syncPorts();
+        foreach ([
+            [1, 'EG 1.01 Empfang', '1'],
+            [2, 'EG 1.02 Empfang', '2'],
+            [5, 'EG 1.05 Besprechung', '5'],
+            [6, 'EG 1.06 Besprechung', '6'],
+            [12, 'EG 1.12 Büro Nord', '12'],
+        ] as [$nr, $dose, $swPort]) {
+            $patchpanel->ports()->where('number', $nr)->update([
+                'label' => $dose,
+                'network_switch_id' => $swCore?->id,
+                'switch_port' => $swPort,
+            ]);
+        }
+
         // Serverschrank mit den kohärenten Geräten von oben - von unten nach oben:
         // USV, Server, NAS, dann Netzwerktechnik und Patchfeld unter der Decke.
         $rack = Rack::factory()->create([
@@ -210,6 +236,8 @@ class LocalDatabaseSeeder extends Seeder
             $ausKatalog(20, 'Blindplatte 2 HE'),
             ['position' => 36, 'height_units' => 1, 'device_type' => Router::class, 'device_id' => $byName(Router::class, 'RTR-Core')?->id],
             ['position' => 38, 'height_units' => 1, 'device_type' => NetworkSwitch::class, 'device_id' => $byName(NetworkSwitch::class, 'SW-Core')?->id],
+            ['position' => 41, 'height_units' => $patchpanel->height_units,
+                'device_type' => PatchPanel::class, 'device_id' => $patchpanel->id],
             $ausKatalog(39, 'Rangierfeld'),
             $ausKatalog(40, 'Patchfeld 24 Port'),
             $ausKatalog(42, 'Kabeldurchführung'),

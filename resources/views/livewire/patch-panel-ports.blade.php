@@ -1,0 +1,82 @@
+{{-- Wrapper hält dieselbe zentrierte Spaltenbreite wie das Formular darüber (x-create.main) --}}
+<div class="mx-auto max-w-3xl px-3">
+<div class="my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700">
+
+    <div class="flex flex-wrap items-baseline justify-between gap-2 mb-1">
+        <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100">Ports</div>
+        <div class="text-sm text-gray-400 dark:text-gray-500">
+            {{ $ports->filter(fn ($p) => $p->isDocumented())->count() }} von {{ $panel->port_count }} dokumentiert
+        </div>
+    </div>
+
+    <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">
+        Je Port die Netzwerkdose und den Switch-Port eintragen. Die Portanzahl ändert man oben im Formular.
+    </p>
+
+    @if ($saved)
+        <div class="p-3 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-900/40 dark:text-green-400" role="status">
+            Gespeichert.
+        </div>
+    @endif
+
+    @error('switchId.*')
+        <div class="p-3 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-900/40 dark:text-red-400" role="alert">
+            {{ $message }}
+        </div>
+    @enderror
+
+    {{-- overflow-x-auto: bei vier Spalten wird es auf dem Smartphone sonst zu schmal --}}
+    <div class="overflow-x-auto">
+        <table class="w-full min-w-[36rem] text-sm">
+            <thead class="text-xs uppercase tracking-wide text-gray-400 border-b border-gray-100 dark:border-gray-700">
+                <tr>
+                    <th class="py-2 pr-2 text-left font-semibold w-10">Port</th>
+                    <th class="py-2 pr-2 text-left font-semibold">Dose / Raum</th>
+                    <th class="py-2 pr-2 text-left font-semibold">Switch</th>
+                    <th class="py-2 pr-2 text-left font-semibold w-24">Switch-Port</th>
+                    <th class="py-2 pr-2 text-left font-semibold">Notiz</th>
+                    <th class="py-2 w-8"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($ports as $port)
+                    <tr wire:key="port-{{ $port->id }}" class="border-b border-gray-50 last:border-0 dark:border-gray-700/50">
+                        <td class="py-1 pr-2 font-mono text-gray-500 dark:text-gray-400">{{ $port->number }}</td>
+                        <td class="py-1 pr-2">
+                            <x-input.text type="text" class="w-full text-sm py-1"
+                                wire:model="label.{{ $port->id }}" placeholder="z. B. 2.14 Besprechung" />
+                        </td>
+                        <td class="py-1 pr-2">
+                            <x-input.select name="switch-{{ $port->id }}" class="w-full text-sm py-1"
+                                wire:model="switchId.{{ $port->id }}">
+                                <option value="">—</option>
+                                @foreach ($switches as $switch)
+                                    <option value="{{ $switch->id }}">{{ $switch->name }}</option>
+                                @endforeach
+                            </x-input.select>
+                        </td>
+                        <td class="py-1 pr-2">
+                            <x-input.text type="text" class="w-full text-sm py-1"
+                                wire:model="switchPort.{{ $port->id }}" placeholder="12" />
+                        </td>
+                        <td class="py-1 pr-2">
+                            <x-input.text type="text" class="w-full text-sm py-1"
+                                wire:model="note.{{ $port->id }}" />
+                        </td>
+                        <td class="py-1 text-right">
+                            <button type="button" wire:click="clearPort({{ $port->id }})"
+                                class="text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                                title="Zeile leeren">✕</button>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    <div class="flex justify-end mt-4">
+        <x-input.button type="button" wire:click="save" label="Ports speichern"
+            wire:loading.attr="disabled" />
+    </div>
+</div>
+</div>

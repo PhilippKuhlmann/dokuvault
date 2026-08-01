@@ -2,6 +2,29 @@
 
 namespace App\Livewire;
 
+use App\Models\Accesspoint;
+use App\Models\Camera;
+use App\Models\Certificate;
+use App\Models\Computer;
+use App\Models\DECT;
+use App\Models\Domain;
+use App\Models\InternetConnection;
+use App\Models\IoTDevice;
+use App\Models\Machine;
+use App\Models\NAS;
+use App\Models\NetworkSwitch;
+use App\Models\OtherClient;
+use App\Models\PatchPanel;
+use App\Models\PatchPort;
+use App\Models\Phone;
+use App\Models\PhoneSystem;
+use App\Models\Printer;
+use App\Models\Recorder;
+use App\Models\Router;
+use App\Models\Server;
+use App\Models\Ups;
+use App\Models\VM;
+use App\Models\Wifi;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
@@ -12,31 +35,35 @@ class GlobalSearch extends Component
     protected $queryString = ['search'];
 
     /**
-     * Durchsuchbare Typen: Slug => [Model, Anzeigename, Permission-Prefix, Suchspalten].
+     * Durchsuchbare Typen: Slug => [Model, Anzeigename, Permission-Prefix, Suchspalten]
+     * und optional als fuenftes Element der Routen-Slug, falls der Treffer auf eine
+     * andere Liste zeigt als sein eigener Schluessel (Patchfeld-Ports -> Patchfelder).
      * Die Spalten sind gegen die Migrationen verifiziert (ip vs. ip1 etc.).
      */
     protected const TYPES = [
-        'server' => [\App\Models\Server::class, 'Server', 'server', ['name', 'ip1', 'ip2', 'serialNumber']],
-        'vm' => [\App\Models\VM::class, 'VMs', 'vm', ['name', 'ip1', 'ip2']],
-        'nas' => [\App\Models\NAS::class, 'NAS', 'nas', ['name', 'ip1', 'ip2', 'serialNumber']],
-        'computer' => [\App\Models\Computer::class, 'Computer', 'computer', ['name', 'ip', 'serialNumber']],
-        'printer' => [\App\Models\Printer::class, 'Drucker', 'printer', ['name', 'ip', 'serialNumber']],
-        'camera' => [\App\Models\Camera::class, 'Kameras', 'camera', ['name', 'ip', 'serialNumber']],
-        'recorder' => [\App\Models\Recorder::class, 'Recorder', 'recorder', ['name', 'ip', 'serialNumber']],
-        'phone' => [\App\Models\Phone::class, 'Telefone', 'phone', ['ip', 'serialNumber', 'mac']],
-        'dect' => [\App\Models\DECT::class, 'DECT', 'dect', ['ip', 'serialNumber', 'mac']],
-        'phonesystem' => [\App\Models\PhoneSystem::class, 'TK-Anlagen', 'phonesystem', ['ip1', 'serialNumber']],
-        'networkswitch' => [\App\Models\NetworkSwitch::class, 'Switches', 'networkswitch', ['name', 'ip', 'serialNumber']],
-        'accesspoint' => [\App\Models\Accesspoint::class, 'Accesspoints', 'accesspoint', ['name', 'ip', 'serialNumber']],
-        'router' => [\App\Models\Router::class, 'Router', 'router', ['name', 'ip', 'serialNumber']],
-        'wifi' => [\App\Models\Wifi::class, 'WLAN', 'wifi', ['ssid']],
-        'iotdevice' => [\App\Models\IoTDevice::class, 'IoT-Geräte', 'iotdevice', ['name', 'ip', 'serialNumber']],
-        'machine' => [\App\Models\Machine::class, 'Maschinen', 'machine', ['name', 'ip']],
-        'otherclient' => [\App\Models\OtherClient::class, 'Sonstige Clients', 'otherclient', ['name', 'ip', 'serialNumber']],
-        'ups' => [\App\Models\Ups::class, 'USV', 'ups', ['name', 'ip', 'serialNumber']],
-        'internetconnection' => [\App\Models\InternetConnection::class, 'Internet / WAN', 'internetconnection', ['wan_ip']],
-        'domain' => [\App\Models\Domain::class, 'Domains', 'domain', ['name']],
-        'certificate' => [\App\Models\Certificate::class, 'Zertifikate', 'certificate', ['name', 'common_name', 'issuer']],
+        'server' => [Server::class, 'Server', 'server', ['name', 'ip1', 'ip2', 'serialNumber']],
+        'vm' => [VM::class, 'VMs', 'vm', ['name', 'ip1', 'ip2']],
+        'nas' => [NAS::class, 'NAS', 'nas', ['name', 'ip1', 'ip2', 'serialNumber']],
+        'computer' => [Computer::class, 'Computer', 'computer', ['name', 'ip', 'serialNumber']],
+        'printer' => [Printer::class, 'Drucker', 'printer', ['name', 'ip', 'serialNumber']],
+        'camera' => [Camera::class, 'Kameras', 'camera', ['name', 'ip', 'serialNumber']],
+        'recorder' => [Recorder::class, 'Recorder', 'recorder', ['name', 'ip', 'serialNumber']],
+        'phone' => [Phone::class, 'Telefone', 'phone', ['ip', 'serialNumber', 'mac']],
+        'dect' => [DECT::class, 'DECT', 'dect', ['ip', 'serialNumber', 'mac']],
+        'phonesystem' => [PhoneSystem::class, 'TK-Anlagen', 'phonesystem', ['ip1', 'serialNumber']],
+        'networkswitch' => [NetworkSwitch::class, 'Switches', 'networkswitch', ['name', 'ip', 'serialNumber']],
+        'accesspoint' => [Accesspoint::class, 'Accesspoints', 'accesspoint', ['name', 'ip', 'serialNumber']],
+        'router' => [Router::class, 'Router', 'router', ['name', 'ip', 'serialNumber']],
+        'wifi' => [Wifi::class, 'WLAN', 'wifi', ['ssid']],
+        'iotdevice' => [IoTDevice::class, 'IoT-Geräte', 'iotdevice', ['name', 'ip', 'serialNumber']],
+        'machine' => [Machine::class, 'Maschinen', 'machine', ['name', 'ip']],
+        'otherclient' => [OtherClient::class, 'Sonstige Clients', 'otherclient', ['name', 'ip', 'serialNumber']],
+        'ups' => [Ups::class, 'USV', 'ups', ['name', 'ip', 'serialNumber']],
+        'internetconnection' => [InternetConnection::class, 'Internet / WAN', 'internetconnection', ['wan_ip']],
+        'domain' => [Domain::class, 'Domains', 'domain', ['name']],
+        'certificate' => [Certificate::class, 'Zertifikate', 'certificate', ['name', 'common_name', 'issuer']],
+        'patchpanel' => [PatchPanel::class, 'Patchfelder', 'patchpanel', ['name', 'manufacturer', 'model']],
+        'patchport' => [PatchPort::class, 'Netzwerkdosen', 'patchpanel', ['label', 'switch_port'], 'patchpanel'],
     ];
 
     public function render()
@@ -44,11 +71,13 @@ class GlobalSearch extends Component
         $groups = collect();
 
         if (strlen((string) $this->search) >= 2) {
-            $term = '%' . addcslashes($this->search, '%_') . '%';
+            $term = '%'.addcslashes($this->search, '%_').'%';
             $user = auth()->user();
 
-            foreach (self::TYPES as $slug => [$class, $label, $permission, $columns]) {
-                if (! Gate::allows($permission . '_viewAny')) {
+            foreach (self::TYPES as $slug => $entry) {
+                [$class, $label, $permission, $columns] = $entry;
+                $routeSlug = $entry[4] ?? $slug;
+                if (! Gate::allows($permission.'_viewAny')) {
                     continue;
                 }
 
@@ -69,7 +98,7 @@ class GlobalSearch extends Component
 
                 if ($results->isNotEmpty()) {
                     $groups->push([
-                        'slug' => $slug,
+                        'slug' => $routeSlug,
                         'label' => $label,
                         'results' => $results,
                     ]);

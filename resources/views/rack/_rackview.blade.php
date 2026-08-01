@@ -79,7 +79,8 @@
                 style="grid-column: 3; grid-row: {{ $he - $item->topUnit() + 1 }} / span {{ $item->height_units }}; min-height: {{ $rowHeight }};"
                 class="{{ $color }}"
                 title="{{ $item->label() }} · {{ $item->height_units }} HE">
-                <x-rack.face :appearance="$item->faceAppearance()" :he="$item->height_units" />
+                <x-rack.face :appearance="$item->faceAppearance()" :he="$item->height_units"
+                    :ports="$item->device?->port_count" />
             </div>
         @endforeach
 

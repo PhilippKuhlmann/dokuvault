@@ -51,6 +51,11 @@ class Customer extends Model
         return $this->hasMany(Rack::class);
     }
 
+    public function patchpanels()
+    {
+        return $this->hasMany(PatchPanel::class);
+    }
+
     public function securepointutms()
     {
         return $this->hasMany(SecurepointUTM::class);
