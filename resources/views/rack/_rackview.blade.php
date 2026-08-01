@@ -31,8 +31,12 @@
 @endphp
 
 <div class="inline-block min-w-64 w-full max-w-md rounded-lg border-2 border-gray-400 bg-gray-200 p-2 dark:border-gray-600 dark:bg-gray-950">
-    {{-- Schmale Spalten links/rechts sind die Montageschienen --}}
-    <div class="grid gap-y-px" style="grid-template-columns: 0.6rem 1fr 0.6rem;">
+    {{-- Schmale Spalten links/rechts sind die Montageschienen.
+         Ohne Zeilenabstand: sonst trennt eine Haarlinie auch zwei benachbarte
+         freie Hoeheneinheiten, und die Luecke sieht gefaechert aus statt leer.
+         Blenden bleiben trotzdem unterscheidbar, sie haben eigene Raender -
+         im echten Schrank sitzen Geraete ohnehin buendig aufeinander. --}}
+    <div class="grid" style="grid-template-columns: 0.6rem 1fr 0.6rem;">
 
         {{-- Montageschienen mit Lochung, je Hoeheneinheit ein Loch --}}
         @foreach ([1, 3] as $col)
