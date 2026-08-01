@@ -44,11 +44,14 @@
             @endfor
         @endforeach
 
-        {{-- Leere Hoeheneinheiten: Blick in den offenen Schrank --}}
+        {{-- Leere Hoeheneinheiten: Blick in den offenen Schrank.
+             Bewusst dunkel in *beiden* Modi - ein offener Einschub zeigt den
+             Innenraum, kein Blech. Sonst ist eine leere HE im Hellmodus von
+             einer Blindplatte nicht zu unterscheiden. --}}
         @for ($u = $he; $u >= 1; $u--)
             @unless ($occupied[$u] ?? false)
                 <div style="grid-column: 2; grid-row: {{ $he - $u + 1 }}; min-height: {{ $rowHeight }};"
-                    class="bg-gray-300/70 shadow-inner dark:bg-black/60"></div>
+                    class="bg-gray-900 shadow-[inset_0_2px_6px_rgba(0,0,0,0.75)] dark:bg-black"></div>
             @endunless
         @endfor
 

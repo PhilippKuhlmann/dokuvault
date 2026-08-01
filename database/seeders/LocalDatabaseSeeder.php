@@ -35,6 +35,7 @@ use App\Models\Phone;
 use App\Models\PhoneSystem;
 use App\Models\Printer;
 use App\Models\Rack;
+use App\Models\RackCatalogItem;
 use App\Models\Recorder;
 use App\Models\Role;
 use App\Models\Router;
@@ -185,19 +186,35 @@ class LocalDatabaseSeeder extends Seeder
         ]);
         $usv = Ups::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'USV-01']);
         $byName = fn (string $class, string $name) => $class::where('customer_id', $customer->id)->where('name', $name)->first();
+
+        // Passive Einbauten aus dem Katalog holen, damit Hoehe *und* Darstellung
+        // von dort kommen - genau wie beim Einbauen im Editor.
+        $ausKatalog = function (int $position, string $name) {
+            $eintrag = RackCatalogItem::where('name', $name)->first();
+
+            return $eintrag ? [
+                'position' => $position,
+                'height_units' => $eintrag->height_units,
+                'name' => $eintrag->name,
+                'appearance' => $eintrag->appearance,
+            ] : null;
+        };
+
         $rack->items()->createMany(array_filter([
             ['position' => 1, 'height_units' => 2, 'device_type' => Ups::class, 'device_id' => $usv->id],
             ['position' => 4, 'height_units' => 2, 'device_type' => Server::class, 'device_id' => $byName(Server::class, 'SRV-DC01')?->id],
             ['position' => 6, 'height_units' => 2, 'device_type' => Server::class, 'device_id' => $byName(Server::class, 'SRV-FS01')?->id],
             ['position' => 8, 'height_units' => 2, 'device_type' => Server::class, 'device_id' => $byName(Server::class, 'SRV-HV01')?->id],
             ['position' => 11, 'height_units' => 2, 'device_type' => NAS::class, 'device_id' => $byName(NAS::class, 'NAS-Backup')?->id],
-            ['position' => 14, 'height_units' => 1, 'name' => 'Fachboden 1 HE'],
+            $ausKatalog(14, 'Fachboden 1 HE'),
+            $ausKatalog(20, 'Blindplatte 2 HE'),
             ['position' => 36, 'height_units' => 1, 'device_type' => Router::class, 'device_id' => $byName(Router::class, 'RTR-Core')?->id],
             ['position' => 38, 'height_units' => 1, 'device_type' => NetworkSwitch::class, 'device_id' => $byName(NetworkSwitch::class, 'SW-Core')?->id],
-            ['position' => 39, 'height_units' => 1, 'name' => 'Rangierfeld'],
-            ['position' => 40, 'height_units' => 1, 'name' => 'Patchfeld 24 Port'],
-            ['position' => 42, 'height_units' => 1, 'name' => 'Kabeldurchführung'],
-        ], fn ($item) => ! array_key_exists('device_id', $item) || $item['device_id'] !== null));
+            $ausKatalog(39, 'Rangierfeld'),
+            $ausKatalog(40, 'Patchfeld 24 Port'),
+            $ausKatalog(42, 'Kabeldurchführung'),
+        ], fn ($item) => $item !== null
+            && (! array_key_exists('device_id', $item) || $item['device_id'] !== null)));
 
         ADUser::factory(10)->create([
             'customer_id' => $customer->id,

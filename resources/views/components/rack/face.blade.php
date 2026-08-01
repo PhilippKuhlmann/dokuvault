@@ -23,9 +23,18 @@
 <svg viewBox="0 0 1086 {{ $h }}" preserveAspectRatio="none" role="presentation" aria-hidden="true"
     {{ $attributes->merge(['class' => 'block h-full w-full']) }}>
 
-    {{-- Grundplatte --}}
+    {{-- Grundplatte in zwei Lagen:
+         1. undurchsichtiges Blech in Neutralgrau - damit eine Blende nie wie
+            der offene (dunkle) Einschub daneben aussieht;
+         2. duenne Lasur in der Typfarbe.
+         Die Lasur bleibt bewusst schwach, sonst verschwinden die Details
+         darueber (Ports, Schaechte) im gleichfarbigen Untergrund. --}}
+    <rect x="1" y="1" width="1084" height="{{ $h - 2 }}" rx="7" class="fill-gray-200 dark:fill-gray-800" />
     <rect x="1" y="1" width="1084" height="{{ $h - 2 }}" rx="7" fill="currentColor" fill-opacity="0.14" />
-    <rect x="1" y="1" width="1084" height="{{ $h - 2 }}" rx="7" fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="2" />
+    {{-- Abkantung: heller Grat oben, Schatten unten --}}
+    <line x1="10" y1="4" x2="1076" y2="4" stroke="#ffffff" stroke-opacity="0.22" stroke-width="3" />
+    <line x1="10" y1="{{ $h - 4 }}" x2="1076" y2="{{ $h - 4 }}" stroke="#000000" stroke-opacity="0.28" stroke-width="3" />
+    <rect x="1" y="1" width="1084" height="{{ $h - 2 }}" rx="7" fill="none" stroke="currentColor" stroke-opacity="0.55" stroke-width="2" />
 
     {{-- Montageohren mit Schrauben, je Hoeheneinheit eine --}}
     @for ($u = 0; $u < $he; $u++)
@@ -200,10 +209,11 @@
             @break
 
         @default
-            {{-- Blindplatte: glattes Blech mit angedeuteter Schliffstruktur --}}
+            {{-- Blindplatte: glattes Blech. Ausser der Schliffstruktur nichts -
+                 die Grundplatte oben traegt die Erkennbarkeit. --}}
             @for ($i = 0; $i < 5; $i++)
                 <line x1="{{ $inset + 20 }}" y1="{{ $h * ($i + 1) / 6 }}" x2="{{ 1066 - $inset }}" y2="{{ $h * ($i + 1) / 6 }}"
-                    stroke="currentColor" stroke-opacity="0.08" stroke-width="6" />
+                    stroke="currentColor" stroke-opacity="0.14" stroke-width="6" />
             @endfor
     @endswitch
 </svg>

@@ -11,13 +11,13 @@
     "file": "assets/SpaceGrotesk-Regular.a6658ce6.woff2",
     "src": "public/fonts/SpaceGrotesk-Regular.woff2"
   },
-  "public/fonts/SpaceGrotesk-Bold.woff2": {
-    "file": "assets/SpaceGrotesk-Bold.7ce350b7.woff2",
-    "src": "public/fonts/SpaceGrotesk-Bold.woff2"
-  },
   "public/fonts/SpaceGrotesk-Semibold.woff2": {
     "file": "assets/SpaceGrotesk-Semibold.0bdc872e.woff2",
     "src": "public/fonts/SpaceGrotesk-Semibold.woff2"
+  },
+  "public/fonts/SpaceGrotesk-Bold.woff2": {
+    "file": "assets/SpaceGrotesk-Bold.7ce350b7.woff2",
+    "src": "public/fonts/SpaceGrotesk-Bold.woff2"
   },
   "resources/js/app.js": {
     "file": "assets/app.bf8aaccd.js",
@@ -25,7 +25,7 @@
     "isEntry": true
   },
   "resources/css/app.css": {
-    "file": "assets/app.cea5715a.css",
+    "file": "assets/app.addb79ee.css",
     "src": "resources/css/app.css",
     "isEntry": true
   }

@@ -222,6 +222,23 @@ test('Darstellung der Frontansicht: Geräte aus dem Typ, Katalogelemente aus der
     expect($ohne->faceAppearance())->toBe('blank');
 });
 
+test('Frontansicht zeichnet nur Einbauten - leere Höheneinheiten bleiben leer', function () {
+    [$customer, $site, $rack] = customerWithRack(10);
+    $blind = RackCatalogItem::where('name', 'Blindplatte 2 HE')->firstOrFail();
+    $rack->items()->create([
+        'position' => 3, 'height_units' => $blind->height_units,
+        'name' => $blind->name, 'appearance' => $blind->appearance,
+    ]);
+
+    $html = view('rack._rackview', ['rack' => $rack->load('items.device')])->render();
+
+    // Genau eine gezeichnete Blende: die Blindplatte.
+    expect(substr_count($html, '<svg'))->toBe(1);
+    // Und genau acht offene Einschuebe (10 HE minus die 2 HE der Blindplatte).
+    // Ohne diese Trennung saehe eine leere HE aus wie eine Blindplatte.
+    expect(substr_count($html, 'dark:bg-black'))->toBe(8);
+});
+
 test('jede Darstellung in rack_appearances rendert ohne Fehler, auch mehrzeilig', function () {
     foreach (array_keys(config('custom.rack_appearances')) as $appearance) {
         foreach ([1, 2, 3] as $he) {
