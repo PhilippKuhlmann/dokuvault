@@ -12,10 +12,21 @@ Build erreicht den Server nicht.
 # Repo klonen (ins Verzeichnis, das der Webserver ausliefert)
 git clone https://github.com/PhilippKuhlmann/dokuvault.git /var/www/dokuvault
 cd /var/www/dokuvault
-
 cp .env.example .env
+```
+
+`.env` anpassen: `APP_URL`, DB-Zugang, `APP_ENV=production`.
+
+**Reihenfolge beachten:** `vendor/` liegt nicht im Repo, deshalb muss `composer install`
+vor dem ersten Artisan-Befehl laufen – sonst schlägt `key:generate` fehl, und zwar
+still, wenn man die Ausgabe nicht liest.
+
+```bash
+composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
+```
+
+```bash
 php artisan key:generate
-# .env anpassen: APP_URL, DB-Zugang, APP_ENV=production
 ```
 
 Rechte für den Deploy-Benutzer setzen, damit `deploy.sh` schreiben darf, und
@@ -93,9 +104,16 @@ stehen, auf dem sonst nichts läuft.
 
 ## Von Hand deployen
 
+Entweder in GitHub unter **Actions → deploy → Run workflow**, oder direkt auf dem Server:
+
 ```bash
 cd /var/www/dokuvault && ./deploy.sh
 ```
+
+Das Skript schaltet zu Beginn den Wartungsmodus ein und gibt die Seite am Ende wieder
+frei – auch wenn ein Schritt dazwischen fehlschlägt. Es bricht beim ersten Fehler ab
+und liefert Exitcode 1, damit die GitHub-Action rot wird statt einen halben Deploy
+als Erfolg zu melden.
 
 `deploy.sh` setzt den Arbeitsstand hart auf `origin/main`. Änderungen, die direkt
 auf dem Server gemacht wurden, gehen dabei verloren – das ist Absicht, damit der

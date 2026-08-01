@@ -7,6 +7,9 @@ on:
     workflows: ['tests']
     types: [completed]
     branches: [main]
+  # Von Hand ausloesbar: fuer den ersten Deploy und zum Nachziehen, wenn auf
+  # dem Server etwas schiefging, ohne einen Leer-Commit machen zu muessen.
+  workflow_dispatch:
 
 # Zwei gleichzeitige Deploys auf denselben Server wuerden sich ins Gehege
 # kommen; der neuere gewinnt, der laufende wird zu Ende gefuehrt.
@@ -16,7 +19,8 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.event.workflow_run.conclusion == 'success'
+    # Bei workflow_run nur nach gruenem Testlauf; bei Handstart immer.
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
 
     steps:
