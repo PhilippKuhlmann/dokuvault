@@ -64,6 +64,10 @@ immer aktuell.
     <td width="50%"><img src="docs/screenshots/wizard.png" alt="Erstaufnahme-Assistent"><br><sub><b>Erstaufnahme-Assistent</b> – eine Frage je Schritt, Bestand bleibt sichtbar</sub></td>
     <td width="50%"><img src="docs/screenshots/rack.png" alt="Serverschrank-Editor"><br><sub><b>Serverschränke</b> – Geräte per Drag & Drop auf Höheneinheiten platzieren</sub></td>
   </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/rackcatalog.png" alt="Rack-Katalog im Adminbereich"><br><sub><b>Rack-Katalog</b> – Patchfelder, Blindplatten & Co. im Adminbereich pflegen</sub></td>
+    <td width="50%"><img src="docs/screenshots/login.png" alt="Anmeldung"><br><sub><b>Anmeldung</b> – Hell- und Dunkelmodus folgen dem System</sub></td>
+  </tr>
 </table>
 
 ---
