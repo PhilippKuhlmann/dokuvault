@@ -121,13 +121,16 @@
             </div>
         </div>
 
-        {{-- Links das beschriftete Arbeitsschema, rechts die gezeichnete Frontansicht --}}
-        <div class="grow min-w-0">
+        {{-- Links das beschriftete Arbeitsschema, rechts die gezeichnete Frontansicht.
+             basis-0: beide Spalten teilen den Platz gleichmaessig auf. Ohne das
+             richtet sich die Breite nach dem Inhalt, und die Frontansicht wird
+             breiter als das Schema. --}}
+        <div class="grow basis-0 min-w-0">
             <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">Schema</div>
             @include('rack._grid', ['rack' => $rack, 'interactive' => true])
         </div>
 
-        <div class="grow min-w-0 hidden lg:block">
+        <div class="grow basis-0 min-w-0 hidden lg:block">
             <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">Frontansicht</div>
             @include('rack._rackview', ['rack' => $rack])
         </div>

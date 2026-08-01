@@ -33,15 +33,15 @@
     $rowHeight = '2rem';
 @endphp
 
-<div class="inline-block min-w-64 w-full max-w-md rounded-lg border-2 border-gray-300 bg-gray-50 p-2 dark:border-gray-600 dark:bg-gray-900/60"
-    @if ($interactive)
-        {{-- Vorschau nur ausblenden, wenn der Zeiger den Schrank wirklich verlaesst --}}
-        x-on:dragleave="if (! $el.contains($event.relatedTarget)) hover = null"
-    @endif>
+<x-rack.chassis>
     {{-- Ohne Zeilenabstand. Der Abstand summiert sich ueber 42 HE auf 41 px und
          haette das Schema hoeher gemacht als die Frontansicht daneben - beide
          muessen Zeile fuer Zeile auf gleicher Hoehe liegen. --}}
-    <div class="grid" style="grid-template-columns: 2.5rem 1fr;">
+    <div class="grid" style="grid-template-columns: 2.5rem 1fr;"
+        @if ($interactive)
+            {{-- Vorschau nur ausblenden, wenn der Zeiger den Schrank wirklich verlaesst --}}
+            x-on:dragleave="if (! $el.contains($event.relatedTarget)) hover = null"
+        @endif>
 
         {{-- HE-Skala links --}}
         @for ($u = $he; $u >= 1; $u--)
@@ -125,4 +125,4 @@
         @endif
 
     </div>
-</div>
+</x-rack.chassis>

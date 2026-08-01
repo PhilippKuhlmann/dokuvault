@@ -24,7 +24,7 @@
                     @include('rack._grid', ['rack' => $rack, 'interactive' => false])
                 </div>
 
-                <div class="w-full sm:w-64">
+                <div class="w-full sm:w-80">
                     <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-2">Frontansicht</div>
                     @include('rack._rackview', ['rack' => $rack])
                 </div>

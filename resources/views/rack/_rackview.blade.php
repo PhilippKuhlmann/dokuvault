@@ -30,16 +30,24 @@
     }
 @endphp
 
-<div class="inline-block min-w-64 w-full max-w-md rounded-lg border-2 border-gray-400 bg-gray-200 p-2 dark:border-gray-600 dark:bg-gray-950">
-    {{-- Schmale Spalten links/rechts sind die Montageschienen.
+<x-rack.chassis>
+    {{-- Spalte 1 ist die HE-Skala wie im Schema, damit sich beide Ansichten
+         zeilenweise vergleichen lassen. Spalten 2 und 4 sind die
+         Montageschienen, Spalte 3 nimmt die Blenden auf.
          Ohne Zeilenabstand: sonst trennt eine Haarlinie auch zwei benachbarte
          freie Hoeheneinheiten, und die Luecke sieht gefaechert aus statt leer.
          Blenden bleiben trotzdem unterscheidbar, sie haben eigene Raender -
          im echten Schrank sitzen Geraete ohnehin buendig aufeinander. --}}
-    <div class="grid" style="grid-template-columns: 0.6rem 1fr 0.6rem;">
+    <div class="grid" style="grid-template-columns: 2.5rem 0.6rem 1fr 0.6rem;">
+
+        {{-- HE-Skala links (identisch zum Schema) --}}
+        @for ($u = $he; $u >= 1; $u--)
+            <div class="flex items-center justify-end pr-2 text-[11px] font-mono text-gray-400 dark:text-gray-500"
+                style="grid-column: 1; grid-row: {{ $he - $u + 1 }}; min-height: {{ $rowHeight }};">{{ $u }}</div>
+        @endfor
 
         {{-- Montageschienen mit Lochung, je Hoeheneinheit ein Loch --}}
-        @foreach ([1, 3] as $col)
+        @foreach ([2, 4] as $col)
             @for ($u = $he; $u >= 1; $u--)
                 <div style="grid-column: {{ $col }}; grid-row: {{ $he - $u + 1 }}; min-height: {{ $rowHeight }};"
                     class="flex items-center justify-center bg-gray-300 dark:bg-gray-800">
@@ -55,7 +63,7 @@
              Schrauben und eine graue Flaeche hat. --}}
         @for ($u = $he; $u >= 1; $u--)
             @unless ($occupied[$u] ?? false)
-                <div style="grid-column: 2; grid-row: {{ $he - $u + 1 }}; min-height: {{ $rowHeight }};"
+                <div style="grid-column: 3; grid-row: {{ $he - $u + 1 }}; min-height: {{ $rowHeight }};"
                     class="bg-white dark:bg-black"></div>
             @endunless
         @endfor
@@ -67,7 +75,7 @@
                 $color = $item->device_type ? ($colors[$key] ?? $deviceDefault) : $passive;
             @endphp
             <div wire:key="rack-face-{{ $item->id }}"
-                style="grid-column: 2; grid-row: {{ $he - $item->topUnit() + 1 }} / span {{ $item->height_units }}; min-height: {{ $rowHeight }};"
+                style="grid-column: 3; grid-row: {{ $he - $item->topUnit() + 1 }} / span {{ $item->height_units }}; min-height: {{ $rowHeight }};"
                 class="{{ $color }}"
                 title="{{ $item->label() }} · {{ $item->height_units }} HE">
                 <x-rack.face :appearance="$item->faceAppearance()" :he="$item->height_units" />
@@ -75,4 +83,4 @@
         @endforeach
 
     </div>
-</div>
+</x-rack.chassis>
