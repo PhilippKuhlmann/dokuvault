@@ -11,7 +11,13 @@
         @auth
             <a href="{{ route('changelog') }}" class="underline hover:no-underline">Änderungsverlauf</a>
         @else
-            Anmeldung: <span class="font-mono">admin</span> / <span class="font-mono">password</span>
+            <br class="sm:hidden">
+            Anmeldung:
+            <span class="font-mono">admin</span>,
+            <span class="font-mono">techniker</span>,
+            <span class="font-mono">kunde-rw</span> oder
+            <span class="font-mono">kunde-r</span> –
+            Passwort jeweils <span class="font-mono">password</span>
         @endauth
     </div>
 @endif

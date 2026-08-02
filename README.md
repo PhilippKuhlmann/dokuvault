@@ -16,8 +16,10 @@ PDF-Export, globaler Suche über alle Kunden und Geräten, die sich per Agent
 ![Tests](https://img.shields.io/badge/Tests-216%20grün-3fb950)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
-**[▶ Live-Demo ausprobieren](https://doku.dokuvault.de)** · Anmeldung `admin` / `password`
-<br><sub>Alles darf verändert werden – die Demo setzt sich stündlich zurück.</sub>
+**[▶ Live-Demo ausprobieren](https://doku.dokuvault.de)**
+
+Anmeldung mit `admin`, `techniker`, `kunde-rw` oder `kunde-r` – Passwort jeweils `password`
+<br><sub>Jede Rolle sieht etwas anderes. Alles darf verändert werden, die Demo setzt sich stündlich zurück.</sub>
 
 <br>
 
@@ -272,15 +274,20 @@ Caches neu. Einrichtung, Secrets und der stündliche Reset einer öffentlichen D
 | **Techniker** | Zugriff auf alle Kunden                             |
 | **Kunde**     | Sieht nur die eigenen Daten                         |
 
-> ⚠️ **Nur für lokale Test-/Demo-Umgebungen.** Für den Produktivbetrieb eigene Benutzer anlegen
-> und die Demo-Accounts entfernen.
+Der Seeder legt vier Zugänge an – dieselben gelten in der
+**[Live-Demo](https://doku.dokuvault.de)**. Am meisten sieht man, wenn man sie nacheinander
+ausprobiert: Die Seitenleiste, die „Neu"-Schaltflächen und der Adminbereich ändern sich je Rolle.
 
-| Benutzername | Passwort   | Rolle     | Hinweis                                    |
-| ------------ | ---------- | --------- | ------------------------------------------ |
-| `admin`      | `password` | Admin     | Vollzugriff, alle Kunden                   |
-| `techniker`  | `password` | Techniker | Zugriff auf alle Kunden                    |
-| `kunde-rw`   | `password` | Kunde     | Nur Demo-Kunde „Mustermann", Lese-/Schreibzugriff |
-| `kunde-r`    | `password` | Kunde     | Nur Demo-Kunde „Mustermann", nur Lesezugriff |
+| Benutzername | Passwort   | Rolle     | Was man damit sieht |
+| ------------ | ---------- | --------- | ------------------- |
+| `admin`      | `password` | Admin     | Alles: alle Kunden, Adminbereich (Benutzer, Rollen, Rack-Katalog), Aktivitätsprotokoll |
+| `techniker`  | `password` | Techniker | Alle Kunden anlegen und bearbeiten, aber kein Adminbereich |
+| `kunde-rw`   | `password` | Kunde     | Nur den Kunden „Mustermann", lesen **und** schreiben |
+| `kunde-r`    | `password` | Kunde     | Nur den Kunden „Mustermann", ausschließlich lesen – keine „Neu"- und „Bearbeiten"-Schaltflächen |
+
+> ⚠️ **Diese Zugänge gehören nicht auf einen echten Server.** Sie stammen aus dem Demo-Seeder
+> und haben überall dasselbe Passwort. Für den Produktivbetrieb eigene Benutzer anlegen und die
+> Demo-Accounts löschen.
 
 ---
 
