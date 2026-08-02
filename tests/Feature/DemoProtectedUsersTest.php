@@ -46,21 +46,39 @@ test('in der Demo lässt sich ein vordefinierter Zugang nicht löschen', functio
     $this->assertDatabaseHas('users', ['id' => $admin->id, 'username' => 'admin']);
 });
 
-test('in der Demo bleibt das Passwort eines vordefinierten Zugangs unverändert', function () {
+test('in der Demo bleibt ein vordefinierter Zugang vollständig unverändert', function () {
     config(['app.demo' => true]);
     $admin = demoAdmin();
+    $vorher = $admin->only(['name', 'username', 'email', 'role_id', 'customer_id']);
 
     $this->actingAs($admin)->patch("/admin/user/{$admin->id}", [
         'name' => 'Neuer Name',
         'username' => 'admin',
-        'email' => 'admin@example.test',
+        'email' => 'gekapert@example.test',
         'password' => 'gekapertes-passwort',
+        'role_id' => $admin->role_id,
+    ])->assertRedirect("/admin/user/{$admin->id}/edit");
+
+    expect(Hash::check('password', $admin->fresh()->password))->toBeTrue();
+    expect($admin->fresh()->only(array_keys($vorher)))->toBe($vorher);
+});
+
+test('in der Demo lässt sich der Benutzername eines vordefinierten Zugangs nicht ändern', function () {
+    config(['app.demo' => true]);
+    $admin = demoAdmin();
+
+    // Der Schutz erkennt den Zugang am Benutzernamen. Waere der aenderbar,
+    // hebte eine Umbenennung den Schutz auf - und die dokumentierte Anmeldung
+    // funktionierte nicht mehr.
+    $this->actingAs($admin)->patch("/admin/user/{$admin->id}", [
+        'name' => $admin->name,
+        'username' => 'nicht-mehr-geschuetzt',
+        'email' => 'admin@example.test',
         'role_id' => $admin->role_id,
     ]);
 
-    // Das Passwort bleibt, harmlose Felder werden trotzdem gespeichert.
-    expect(Hash::check('password', $admin->fresh()->password))->toBeTrue();
-    expect($admin->fresh()->name)->toBe('Neuer Name');
+    expect($admin->fresh()->username)->toBe('admin');
+    expect($admin->fresh()->istDemoGeschuetzt())->toBeTrue();
 });
 
 test('in der Demo lässt sich die Rolle eines vordefinierten Zugangs nicht herabstufen', function () {
@@ -128,7 +146,8 @@ test('das Bearbeiten-Formular zeigt den Hinweis und blendet Löschen aus', funct
 
     $this->actingAs($admin)->get("/admin/user/{$admin->id}/edit")
         ->assertSee('Demo-Zugang')
-        ->assertDontSee('admin.user.destroy');
+        ->assertDontSee('admin.user.destroy')
+        ->assertDontSee('name="username"', false);
 
     $this->actingAs($admin)->get("/admin/user/{$eigener->id}/edit")
         ->assertDontSee('Demo-Zugang')

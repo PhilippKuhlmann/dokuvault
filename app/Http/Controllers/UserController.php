@@ -50,15 +50,13 @@ class UserController extends Controller
     {
         $userData = $request->validated();
 
-        // Auf der Demo bleiben die vordefinierten Zugaenge nutzbar: Passwort und
-        // Rolle sind gesperrt. Beides wuerde alle uebrigen Besucher aussperren -
-        // ein geaendertes Passwort direkt, eine herabgestufte Rolle genauso.
+        // Auf der Demo sind die vordefinierten Zugaenge vollstaendig gesperrt.
+        // Nicht nur Passwort und Rolle: Der Schutz erkennt sie am Benutzernamen,
+        // ein umbenannter Zugang waere also nicht mehr geschuetzt - und die
+        // dokumentierte Anmeldung funktionierte nicht mehr.
         if ($user->istDemoGeschuetzt()) {
-            unset($userData['password'], $userData['role_id'], $userData['customer_id']);
-            $user->update($userData);
-
             return redirect(route('admin.user.edit', $user))
-                ->withErrors(['demo' => 'Passwort und Rolle dieses Demo-Zugangs sind gesperrt. Alles Übrige wurde gespeichert.']);
+                ->withErrors(['demo' => 'Dieser Demo-Zugang ist gesperrt und lässt sich nicht ändern.']);
         }
 
         if (! empty($userData['password'])) {
