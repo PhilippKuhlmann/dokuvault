@@ -64,14 +64,25 @@ jobs:
           # Angreifer muesste einen Schluessel aus dem Secret besitzen.
           printf '%s\n' "$KNOWN_HOSTS" > /tmp/pinned
           test -s /tmp/pinned || {
-            echo "::error::DEPLOY_KNOWN_HOSTS ist leer. Ausgabe von 'ssh-keyscan <host>' eintragen."
+            echo "::error::DEPLOY_KNOWN_HOSTS ist leer."
             exit 1
           }
-          ssh-keygen -l -f /tmp/pinned > /tmp/fp_pinned 2>/dev/null || {
-            echo "::error::DEPLOY_KNOWN_HOSTS enthaelt keinen lesbaren Schluessel."
-            echo "::error::Haeufigste Ursache: beim Einfuegen ist eine Zeile umgebrochen."
-            exit 1
-          }
+
+          # Zwei Formate erlaubt, weil das lange Base64 beim Kopieren leicht
+          # umbricht: entweder known_hosts-Zeilen oder einfach die kurzen
+          # SHA256-Fingerabdruecke (Ausgabe von `ssh-keygen -lf`).
+          if grep -qoE 'SHA256:[A-Za-z0-9+/=]+' /tmp/pinned; then
+            grep -oE 'SHA256:[A-Za-z0-9+/=]+' /tmp/pinned | sort -u > /tmp/b
+            echo "DEPLOY_KNOWN_HOSTS: $(wc -l < /tmp/b | tr -d ' ') Fingerabdruecke erkannt"
+          else
+            ssh-keygen -l -f /tmp/pinned > /tmp/fp_pinned 2>/dev/null || {
+              echo "::error::DEPLOY_KNOWN_HOSTS enthaelt weder lesbare Schluessel noch Fingerabdruecke."
+              echo "::error::Am einfachsten auf dem Server: for f in /etc/ssh/ssh_host_*_key.pub; do ssh-keygen -lf \"\$f\"; done"
+              exit 1
+            }
+            awk '{print $2}' /tmp/fp_pinned | sort -u > /tmp/b
+            echo "DEPLOY_KNOWN_HOSTS: $(wc -l < /tmp/b | tr -d ' ') Schluessel erkannt"
+          fi
 
           ssh-keyscan -p "$PORT" "$HOST" > /tmp/scanned 2>/dev/null || true
           test -s /tmp/scanned || {
@@ -81,12 +92,15 @@ jobs:
           ssh-keygen -l -f /tmp/scanned > /tmp/fp_scanned
 
           # Mindestens ein Fingerabdruck muss uebereinstimmen.
-          if ! awk '{print $2}' /tmp/fp_scanned | sort -u > /tmp/a \
-             || ! awk '{print $2}' /tmp/fp_pinned | sort -u > /tmp/b \
-             || [ -z "$(comm -12 /tmp/a /tmp/b)" ]; then
+          awk '{print $2}' /tmp/fp_scanned | sort -u > /tmp/a
+          if [ -z "$(comm -12 /tmp/a /tmp/b)" ]; then
             echo "::error::Kein Fingerabdruck stimmt ueberein - der Server ist nicht der erwartete."
-            echo "Server bietet an:"; cat /tmp/fp_scanned
-            echo "Im Secret steht:";  cat /tmp/fp_pinned
+            echo
+            echo "Server bietet an:"; sed 's/^/  /' /tmp/a
+            echo "Im Secret steht:";  sed 's/^/  /' /tmp/b
+            echo
+            echo "Auf dem Server ausfuehren und die drei Zeilen als DEPLOY_KNOWN_HOSTS eintragen:"
+            echo '  for f in /etc/ssh/ssh_host_*_key.pub; do ssh-keygen -lf "$f"; done'
             exit 1
           fi
 
