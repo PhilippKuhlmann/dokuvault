@@ -108,6 +108,28 @@ Für den stündlichen Reset einen Cronjob des Deploy-Benutzers anlegen:
 0 * * * * cd /var/www/dokuvault && php artisan demo:reset >> storage/logs/demo-reset.log 2>&1
 ```
 
+### Nutzung auswerten
+
+Bei aktivem Demo-Modus hält die App fest, wann die Demo besucht wurde und mit welcher
+Rolle. Auswertung auf dem Server:
+
+```bash
+cd /var/www/dokuvault && php artisan demo:stats
+```
+
+Ausgegeben werden Besuche und Seitenaufrufe gesamt, Besuche je Tag als Balken, die
+Verteilung über die Tageszeit und die genutzten Rollen. Einschränken lässt sich das mit
+`--month=2026-08` und `--days=30`.
+
+Ein „Besuch" ist eine Sitzung, keine Person: Wer nach Ablauf der Sitzung wiederkommt,
+zählt erneut.
+
+**Was nicht erfasst wird:** keine IP-Adresse, kein User-Agent, keine aufgerufenen Seiten.
+Besuche werden über einen Zufallswert in der Sitzung unterschieden, der sich keiner Person
+zuordnen lässt. Die Aufzeichnung liegt als JSONL unter `storage/app/demo-usage/` – eine
+Datei je Monat, damit sie den stündlichen Datenbank-Reset übersteht. Alte Monate können
+einfach gelöscht werden.
+
 ### Was auf einer Demo bewusst offen ist
 
 Die Zugangsdaten stehen im README und im Hinweis-Banner. Jeder Besucher ist damit
