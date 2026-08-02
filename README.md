@@ -13,8 +13,11 @@ PDF-Export, globaler Suche über alle Kunden und Geräten, die sich per Agent
 ![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php&logoColor=white)
 ![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)
 ![Livewire](https://img.shields.io/badge/Livewire-3-FB70A9)
-![Tests](https://img.shields.io/badge/Tests-186%20grün-3fb950)
+![Tests](https://img.shields.io/badge/Tests-216%20grün-3fb950)
 ![License](https://img.shields.io/badge/License-MIT-blue)
+
+**[▶ Live-Demo ausprobieren](https://doku.dokuvault.de)** · Anmeldung `admin` / `password`
+<br><sub>Alles darf verändert werden – die Demo setzt sich stündlich zurück.</sub>
 
 <br>
 
@@ -34,6 +37,7 @@ immer aktuell.
 | --- | --- |
 | 🏢 **Mandantenfähig** | Jeder Kunde mit eigenen Standorten, Geräten und Zugängen – sauber getrennt |
 | 🧭 **Erstaufnahme-Assistent** | 16 Schritte führen durch den Neukunden – Frage stellen, Antwort speichern, weiter |
+| 🔌 **Patchfelder** | Je Port die Dosennummer, den Raum und den Ziel-Switch – „wo hängt Dose A.12?" |
 | 🔎 **Globale Suche** | Server, IP, Seriennummer oder MAC über **alle** Kunden in Sekunden finden |
 | 🤖 **Auto-Dokumentation** | Ein Script auf dem Gerät – der Rest dokumentiert sich selbst (Proxmox, Windows AD) |
 | 🌐 **IPAM** | Belegte & freie IP-Adressen je VLAN auf einen Blick, DHCP- und Gateway-Erkennung |
@@ -62,10 +66,14 @@ immer aktuell.
   </tr>
   <tr>
     <td width="50%"><img src="docs/screenshots/wizard.png" alt="Erstaufnahme-Assistent"><br><sub><b>Erstaufnahme-Assistent</b> – eine Frage je Schritt, Bestand bleibt sichtbar</sub></td>
-    <td width="50%"><img src="docs/screenshots/rack.png" alt="Serverschrank-Editor"><br><sub><b>Serverschränke</b> – Geräte per Drag & Drop auf Höheneinheiten platzieren</sub></td>
+    <td width="50%"><img src="docs/screenshots/rack.png" alt="Serverschrank-Editor"><br><sub><b>Serverschränke</b> – Schema zum Bestücken, daneben die gezeichnete Frontansicht</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/screenshots/rackcatalog.png" alt="Rack-Katalog im Adminbereich"><br><sub><b>Rack-Katalog</b> – Patchfelder, Blindplatten & Co. im Adminbereich pflegen</sub></td>
+    <td width="50%"><img src="docs/screenshots/patchpanel.png" alt="Patchfeld-Ports bearbeiten"><br><sub><b>Patchfeld-Ports</b> – je Port Dosennummer, Raum und Ziel-Switch eintragen</sub></td>
+    <td width="50%"><img src="docs/screenshots/patchpanel-liste.png" alt="Patchfeld-Liste"><br><sub><b>Dosenübersicht</b> – welche Dose auf welchem Switch-Port liegt</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/rackcatalog.png" alt="Rack-Katalog im Adminbereich"><br><sub><b>Rack-Katalog</b> – Blindplatten, Fachböden & Co. im Adminbereich pflegen</sub></td>
     <td width="50%"><img src="docs/screenshots/login.png" alt="Anmeldung"><br><sub><b>Anmeldung</b> – Hell- und Dunkelmodus folgen dem System</sub></td>
   </tr>
 </table>
@@ -136,9 +144,12 @@ Agenten folgen.
 
 - **Kunden & Standorte** – mehrmandantenfähige Struktur je Kunde
 - **Infrastruktur** – Server, VMs (mit Host-Zuordnung), NAS, Computer, USV, Maschinen, IoT
-- **Serverschränke** – Racks mit Drag-&-Drop-Bestückung: dokumentierte Geräte und Patchfelder
-  je Höheneinheit platzieren, Frontansicht in Liste und Editor; der Katalog passiver Elemente
-  wird im Adminbereich gepflegt
+- **Serverschränke** – Racks mit Drag-&-Drop-Bestückung: dokumentierte Geräte und passive
+  Elemente je Höheneinheit platzieren. Neben dem beschrifteten Schema eine gezeichnete
+  Frontansicht, die sich der Höhe anpasst; der Katalog passiver Elemente wird im
+  Adminbereich gepflegt
+- **Patchfelder** – je Port Dosennummer, Raum und Ziel-Switch samt Portnummer; die Portzeilen
+  entstehen automatisch aus der Portanzahl
 - **Netzwerk** – Router, Switches, Access Points, WLAN, VLANs, **IPAM**, Internet/WAN, UTM-Firewalls
 - **Active Directory** – Domains, Benutzer, Gruppen
 - **Kommunikation** – Telefonanlagen, DECT, E-Mail-Postfächer, E-Mail-Archivierung
@@ -194,7 +205,7 @@ Klartext weder in der Datenbank noch im Audit-Log landet.
 | **Pakete** | spatie/laravel-activitylog 4.12 *(Audit-Log)* · spatie/laravel-pdf 1.9 *(PDF via Browsershot/Puppeteer)* · spatie/laravel-backup 9.3 |
 | **Frontend** | Tailwind CSS 3.2 · Alpine.js 3 · Flowbite 1.6 · Vite 3 |
 | **Datenbank** | MySQL / MariaDB |
-| **Qualität** | Pest 3 *(186 Tests)* · Laravel Pint · GitHub Actions CI |
+| **Qualität** | Pest 3 *(216 Tests)* · Laravel Pint · GitHub Actions CI |
 
 ---
 
@@ -244,6 +255,13 @@ php artisan db:seed --force          # führt den ProductionDatabaseSeeder aus
 > das Seeding fehl (`fake()` nicht gefunden) – dann entweder `APP_ENV=production` setzen oder
 > mit Dev-Paketen installieren.
 
+### Automatisch deployen
+
+Ein Push auf `main` kann den Server selbst aktualisieren: Erst laufen die Tests, und nur
+wenn sie grün sind, holt eine GitHub-Action per SSH den neuen Stand, migriert und baut die
+Caches neu. Einrichtung, Secrets und der stündliche Reset einer öffentlichen Demo stehen in
+**[DEPLOYMENT.md](DEPLOYMENT.md)**.
+
 ---
 
 ## 👥 Rollen & Demo-Zugänge
@@ -268,7 +286,7 @@ php artisan db:seed --force          # führt den ProductionDatabaseSeeder aus
 
 ## 🧪 Tests
 
-186 Feature-Tests (Pest 3) laufen gegen eine In-Memory-SQLite – keine Einrichtung nötig, keine
+216 Feature-Tests (Pest 3) laufen gegen eine In-Memory-SQLite – keine Einrichtung nötig, keine
 Spuren in der Entwicklungsdatenbank. Bei jedem Push führt GitHub Actions dieselbe Suite aus.
 
 ```bash
