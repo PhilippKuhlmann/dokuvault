@@ -129,11 +129,32 @@ Verteilung über die Tageszeit und die genutzten Rollen. Einschränken lässt si
 Ein „Besuch" ist eine Sitzung, keine Person: Wer nach Ablauf der Sitzung wiederkommt,
 zählt erneut.
 
-**Was nicht erfasst wird:** keine IP-Adresse, kein User-Agent, keine aufgerufenen Seiten.
-Besuche werden über einen Zufallswert in der Sitzung unterschieden, der sich keiner Person
-zuordnen lässt. Die Aufzeichnung liegt als JSONL unter `storage/app/demo-usage/` – eine
-Datei je Monat, damit sie den stündlichen Datenbank-Reset übersteht. Alte Monate können
-einfach gelöscht werden.
+Ausgegeben wird außerdem, aus welchen Netzen die Besuche kamen.
+
+**Was nicht erfasst wird:** kein User-Agent, keine aufgerufenen Seiten. Besuche werden über
+einen Zufallswert in der Sitzung unterschieden, der sich keiner Person zuordnen lässt. Die
+Aufzeichnung liegt als JSONL unter `storage/app/demo-usage/` – eine Datei je Monat, damit sie
+den stündlichen Datenbank-Reset übersteht. Alte Monate können einfach gelöscht werden.
+
+**Herkunft.** Wie viel von der Adresse gespeichert wird, steht in `config/custom.php` unter
+`demo_ip_logging`, umschaltbar per `DEMO_IP_LOGGING` in der `.env`:
+
+| Wert | |
+| --- | --- |
+| `aus` | keine Adresse, die Aufzeichnung bleibt ohne Personenbezug |
+| `anonym` | **Standard** – gekürzt auf /24 (IPv4) bzw. /48 (IPv6) |
+| `voll` | vollständige Adresse |
+
+`anonym` beantwortet die Frage nach der Herkunft genauso gut: Eine GeoIP-Abfrage liefert aus
+`91.65.42.0` dasselbe Land wie aus der vollen Adresse. Die **vollständige** IP ist dagegen ein
+personenbezogenes Datum nach DSGVO – wer `voll` setzt, braucht auf der Demo eine
+Datenschutzerklärung, die die Speicherung, den Zweck und eine Löschfrist nennt. Das ist kein
+Grund, es nicht zu tun, aber einer, es bewusst zu tun.
+
+Wichtig für die Aussagekraft: Steht ein Reverse-Proxy vor der App, zeichnet sie dessen Adresse
+auf statt der des Besuchers – alle Besuche kämen dann scheinbar aus einem einzigen Netz. Der
+Proxy muss dafür in `app/Http/Middleware/TrustProxies.php` eingetragen sein. `demo:stats` weist
+von sich aus darauf hin, sobald aufgezeichnete Adressen nicht öffentlich sind.
 
 ### Was auf einer Demo bewusst offen ist
 

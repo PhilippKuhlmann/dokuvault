@@ -408,6 +408,25 @@ return [
     'demo_protected_users' => ['admin', 'techniker', 'kunde-rw', 'kunde-r'],
 
     /*
+    |--------------------------------------------------------------------------
+    | Aufzeichnung der Herkunft auf der Demo
+    |--------------------------------------------------------------------------
+    |
+    | Steuert, ob RecordDemoUsage die IP-Adresse mitschreibt:
+    |
+    |   'aus'    - gar nicht, die Aufzeichnung bleibt ohne Personenbezug
+    |   'anonym' - gekuerzt auf /24 (IPv4) bzw. /48 (IPv6), Standard
+    |   'voll'   - vollstaendig
+    |
+    | 'anonym' ist der Standard, weil es die Frage "woher kommen die Besucher"
+    | genauso beantwortet: eine GeoIP-Abfrage liefert aus 91.65.42.0 dasselbe
+    | Land wie aus der vollen Adresse. Die vollstaendige IP ist ein
+    | personenbezogenes Datum und gehoert dann in die Datenschutzerklaerung.
+    |
+    */
+    'demo_ip_logging' => env('DEMO_IP_LOGGING', 'anonym'),
+
+    /*
      * Darstellungen der gezeichneten Frontansicht (x-rack.face).
      * Geraete bekommen sie aus rack_device_types, Katalogelemente waehlt der
      * Admin je Eintrag aus dieser Liste.

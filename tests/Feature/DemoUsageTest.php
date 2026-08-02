@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\RecordDemoUsage;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 
 beforeEach(fn () => File::deleteDirectory(RecordDemoUsage::verzeichnis()));
@@ -32,21 +33,49 @@ test('mit DEMO_MODE wird je Seitenaufruf eine Zeile geschrieben', function () {
     expect(usageZeilen())->toHaveCount(2);
 });
 
-test('aufgezeichnet werden nur Zeitpunkt, Besuchskennung und Rolle', function () {
+test('der User-Agent wird nie aufgezeichnet', function () {
     config(['app.demo' => true]);
 
-    $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.7'])
-        ->withHeaders(['User-Agent' => 'NeugierigerBrowser/1.0'])
-        ->get('/login');
+    $this->withHeaders(['User-Agent' => 'NeugierigerBrowser/1.0'])->get('/login');
 
-    $zeile = usageZeilen()[0];
+    expect(file_get_contents(RecordDemoUsage::pfad(now()->format('Y-m'))))
+        ->not->toContain('NeugierigerBrowser');
+});
 
-    // Keine Personendaten: das ist die Zusage an Demo-Besucher.
-    expect(array_keys($zeile))->toEqualCanonicalizing(['t', 'v', 'r']);
+test('mit demo_ip_logging=aus steht keine Adresse in der Datei', function () {
+    config(['app.demo' => true, 'custom.demo_ip_logging' => 'aus']);
 
-    $inhalt = file_get_contents(RecordDemoUsage::pfad(now()->format('Y-m')));
-    expect($inhalt)->not->toContain('203.0.113.7');
-    expect($inhalt)->not->toContain('NeugierigerBrowser');
+    $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.7'])->get('/login');
+
+    expect(array_keys(usageZeilen()[0]))->toEqualCanonicalizing(['t', 'v']);
+    expect(file_get_contents(RecordDemoUsage::pfad(now()->format('Y-m'))))->not->toContain('203.0.113');
+});
+
+test('mit demo_ip_logging=anonym wird IPv4 auf das /24-Netz gekürzt', function () {
+    config(['app.demo' => true, 'custom.demo_ip_logging' => 'anonym']);
+
+    $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.7'])->get('/login');
+
+    expect(usageZeilen()[0]['ip'])->toBe('203.0.113.0');
+    // Der letzte Block ist der Punkt der Uebung - er darf nirgends stehen.
+    expect(file_get_contents(RecordDemoUsage::pfad(now()->format('Y-m'))))->not->toContain('203.0.113.7');
+});
+
+test('mit demo_ip_logging=anonym wird IPv6 auf das /48-Netz gekürzt', function () {
+    config(['app.demo' => true, 'custom.demo_ip_logging' => 'anonym']);
+
+    // Kurzschreibweise mit "::" - als Text liesse sich das nicht abschneiden.
+    $this->withServerVariables(['REMOTE_ADDR' => '2001:db8:abcd:1234::42'])->get('/login');
+
+    expect(usageZeilen()[0]['ip'])->toBe('2001:db8:abcd::');
+});
+
+test('mit demo_ip_logging=voll wird die ganze Adresse aufgezeichnet', function () {
+    config(['app.demo' => true, 'custom.demo_ip_logging' => 'voll']);
+
+    $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.7'])->get('/login');
+
+    expect(usageZeilen()[0]['ip'])->toBe('203.0.113.7');
 });
 
 test('die Rolle des angemeldeten Nutzers wird festgehalten', function () {
@@ -74,10 +103,10 @@ test('demo:stats wertet die aufgezeichneten Zeilen aus', function () {
 
     // Zwei Besuche: einer mit drei Seiten über zwei Minuten, einer mit einer Seite
     $zeilen = [
-        ['t' => '2026-08-01T09:00:00+00:00', 'v' => 'aaa', 'r' => 'Admin'],
-        ['t' => '2026-08-01T09:01:00+00:00', 'v' => 'aaa', 'r' => 'Admin'],
-        ['t' => '2026-08-01T09:02:00+00:00', 'v' => 'aaa', 'r' => 'Admin'],
-        ['t' => '2026-08-01T14:30:00+00:00', 'v' => 'bbb', 'r' => null],
+        ['t' => '2026-08-01T09:00:00+00:00', 'v' => 'aaa', 'r' => 'Admin', 'ip' => '203.0.113.0'],
+        ['t' => '2026-08-01T09:01:00+00:00', 'v' => 'aaa', 'r' => 'Admin', 'ip' => '203.0.113.0'],
+        ['t' => '2026-08-01T09:02:00+00:00', 'v' => 'aaa', 'r' => 'Admin', 'ip' => '203.0.113.0'],
+        ['t' => '2026-08-01T14:30:00+00:00', 'v' => 'bbb', 'r' => null, 'ip' => '198.51.100.0'],
     ];
     file_put_contents(
         RecordDemoUsage::pfad('2026-08'),
@@ -87,7 +116,34 @@ test('demo:stats wertet die aufgezeichneten Zeilen aus', function () {
     $this->artisan('demo:stats', ['--month' => '2026-08'])
         ->expectsOutputToContain('Gesamt')
         ->expectsOutputToContain('Besuche je Rolle')
+        ->expectsOutputToContain('Besuche je Herkunft')
+        ->expectsOutputToContain('203.0.113.0')
         ->assertExitCode(0);
+});
+
+test('demo:stats zählt Besuche je Netz, nicht Seitenaufrufe', function () {
+    config(['app.demo' => true]);
+    File::ensureDirectoryExists(RecordDemoUsage::verzeichnis());
+
+    // Ein Besuch mit drei Seiten aus einem Netz, zwei Besuche aus einem anderen.
+    $zeilen = [
+        ['t' => '2026-08-01T09:00:00+00:00', 'v' => 'aaa', 'ip' => '203.0.113.0'],
+        ['t' => '2026-08-01T09:01:00+00:00', 'v' => 'aaa', 'ip' => '203.0.113.0'],
+        ['t' => '2026-08-01T09:02:00+00:00', 'v' => 'aaa', 'ip' => '203.0.113.0'],
+        ['t' => '2026-08-01T10:00:00+00:00', 'v' => 'bbb', 'ip' => '198.51.100.0'],
+        ['t' => '2026-08-01T11:00:00+00:00', 'v' => 'ccc', 'ip' => '198.51.100.0'],
+    ];
+    file_put_contents(
+        RecordDemoUsage::pfad('2026-08'),
+        implode("\n", array_map('json_encode', $zeilen))."\n"
+    );
+
+    expect(Artisan::call('demo:stats', ['--month' => '2026-08']))->toBe(0);
+    $ausgabe = Artisan::output();
+
+    // 198.51.100.0 hat zwei Besuche, 203.0.113.0 nur einen - trotz dreier Seiten.
+    $herkunft = substr($ausgabe, strpos($ausgabe, 'Besuche je Herkunft'));
+    expect(strpos($herkunft, '198.51.100.0'))->toBeLessThan(strpos($herkunft, '203.0.113.0'));
 });
 
 test('demo:stats meldet sich verständlich, wenn noch nichts aufgezeichnet wurde', function () {

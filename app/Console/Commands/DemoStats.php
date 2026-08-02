@@ -38,10 +38,13 @@ class DemoStats extends Command
             $t = Carbon::parse($z['t']);
             $v = $z['v'];
 
-            $besuche[$v] ??= ['erste' => $t, 'letzte' => $t, 'seiten' => 0, 'rollen' => []];
+            $besuche[$v] ??= ['erste' => $t, 'letzte' => $t, 'seiten' => 0, 'rollen' => [], 'ip' => null];
             $besuche[$v]['seiten']++;
             $besuche[$v]['letzte'] = $t->max($besuche[$v]['letzte']);
             $besuche[$v]['erste'] = $t->min($besuche[$v]['erste']);
+            if (! empty($z['ip'])) {
+                $besuche[$v]['ip'] ??= $z['ip'];
+            }
             if ($z['r']) {
                 $besuche[$v]['rollen'][$z['r']] = true;
             }
@@ -54,11 +57,13 @@ class DemoStats extends Command
         $this->proStunde($zeilen);
         $this->newLine();
         $this->proRolle($besuche);
+        $this->newLine();
+        $this->proHerkunft($besuche);
 
         return self::SUCCESS;
     }
 
-    /** @return array<int, array{t:string,v:string,r:?string}> */
+    /** @return array<int, array{t:string,v:string,r:?string,ip:?string}> */
     private function einlesen(): array
     {
         $monat = $this->option('month');
@@ -71,7 +76,7 @@ class DemoStats extends Command
             foreach (file($datei, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $zeile) {
                 $daten = json_decode($zeile, true);
                 if (is_array($daten) && isset($daten['t'], $daten['v'])) {
-                    $zeilen[] = $daten + ['r' => null];
+                    $zeilen[] = $daten + ['r' => null, 'ip' => null];
                 }
             }
         }
@@ -162,6 +167,58 @@ class DemoStats extends Command
 
         $this->info('Besuche je Rolle');
         $this->table(['Rolle', 'Besuche'], collect($rollen)->map(fn ($n, $r) => [$r, $n])->values()->all());
+    }
+
+    private function proHerkunft(array $besuche): void
+    {
+        $modus = config('custom.demo_ip_logging', 'anonym');
+
+        $netze = [];
+        foreach ($besuche as $b) {
+            $schluessel = $b['ip'] ?? '(nicht aufgezeichnet)';
+            $netze[$schluessel] = ($netze[$schluessel] ?? 0) + 1;
+        }
+        arsort($netze);
+
+        $this->info('Besuche je Herkunft');
+        $this->line(match ($modus) {
+            'aus' => '  Aufzeichnung abgeschaltet (custom.demo_ip_logging = aus).',
+            'voll' => '  Vollstaendige Adressen - personenbezogen, siehe DEPLOYMENT.md.',
+            default => '  Gekuerzt auf das Netz: /24 bei IPv4, /48 bei IPv6.',
+        });
+
+        // Alles Weitere zaehlt Besuche, nicht Seitenaufrufe - sonst stuende ein
+        // langer Besuch fuer viele Herkuenfte.
+        $this->table(
+            ['Netz', 'Besuche'],
+            collect($netze)->take(20)->map(fn ($n, $netz) => [$netz, $n])->values()->all()
+        );
+
+        if (count($netze) > 20) {
+            $this->line('  ... und '.(count($netze) - 20).' weitere.');
+        }
+
+        $this->proxyhinweis(array_keys($netze));
+    }
+
+    /**
+     * Private Adressen bedeuten fast immer: vor der App steht ein Proxy, dem
+     * sie nicht vertraut - dann zeichnet sie dessen Adresse auf statt der des
+     * Besuchers. Ohne Hinweis liest man die Zahlen sonst als Ergebnis.
+     */
+    private function proxyhinweis(array $netze): void
+    {
+        $privat = array_filter($netze, fn ($netz) => filter_var(
+            $netz, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+        ) === false && filter_var($netz, FILTER_VALIDATE_IP) !== false);
+
+        if ($privat === []) {
+            return;
+        }
+
+        $this->warn('  Achtung: '.implode(', ', $privat).' sind keine oeffentlichen Adressen.');
+        $this->line('  Vermutlich steht ein Proxy davor, dem die App nicht vertraut.');
+        $this->line('  Dessen Adresse gehoert in app/Http/Middleware/TrustProxies.php.');
     }
 
     private function dauer(int $sekunden): string
