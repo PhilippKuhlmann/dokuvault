@@ -163,11 +163,13 @@ Das Skript bricht beim ersten Fehler ab und liefert Exitcode 1, damit die GitHub
 rot wird statt einen halben Deploy als Erfolg zu melden.
 
 **Der Wartungsmodus deckt nur das Ende ab.** Code holen, `composer install` und der
-Frontend-Build laufen bei laufender Seite – das dauert ein bis zwei Minuten, und die
-Seite dafür abzuschalten hieße, sie für nichts abzuschalten. Erst für Migrationen,
-Cache-Neuaufbau und den Demo-Reset geht sie kurz auf 503, meist wenige Sekunden. Die
-Freigabe hängt an einem `trap`, sie kommt also auch, wenn ein Schritt dazwischen
-fehlschlägt.
+Frontend-Build laufen bei laufender Seite – sie brauchen keine Auszeit. Erst für
+Migrationen, Cache-Neuaufbau und den Demo-Reset geht die Seite auf 503. Gemessen auf
+der Demo: **10 Sekunden**, vorher 17. Der Abstand wächst, sobald sich Abhängigkeiten
+ändern: `composer install` und `npm ci` sind nur dann Sekundensache, wenn die
+Lock-Dateien gleich geblieben sind – sonst dauern sie Minuten, und die lagen früher
+komplett im Wartungsfenster. Die Freigabe hängt an einem `trap`, sie kommt also auch,
+wenn ein Schritt dazwischen fehlschlägt.
 
 Der Preis dafür: Zwischen `git reset` und `migrate` liefert die Seite schon den neuen
 Code gegen das alte Schema aus. Bei Migrationen, die nur etwas hinzufügen – der
