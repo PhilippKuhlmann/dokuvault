@@ -59,6 +59,43 @@ test('store scheitert ohne Pflichtfelder', function () {
     expect(Rack::count())->toBe(0);
 });
 
+test('update speichert Änderungen und leitet zur Liste', function () {
+    $this->actingAs(userWithPermissions(['rack_update']));
+    [$customer, $site, $rack] = customerWithRack(24);
+    $andererStandort = Site::factory()->create(['customer_id' => $customer->id]);
+
+    $this->patch("/{$customer->slug}/rack/{$rack->id}", [
+        'site_id' => $andererStandort->id, 'name' => 'Rack Neu', 'height_units' => 42,
+    ])->assertRedirect("/{$customer->slug}/rack")
+        ->assertSessionHasNoErrors();
+
+    expect($rack->fresh()->only(['name', 'height_units', 'site_id']))
+        ->toBe(['name' => 'Rack Neu', 'height_units' => 42, 'site_id' => $andererStandort->id]);
+});
+
+test('update verkleinert, solange oben nichts herausragt', function () {
+    $this->actingAs(userWithPermissions(['rack_update']));
+    [$customer, $site, $rack] = customerWithRack(42);
+    $rack->items()->create(['position' => 1, 'height_units' => 2, 'name' => 'Patchfeld 24 Port']);
+
+    $this->patch("/{$customer->slug}/rack/{$rack->id}", [
+        'site_id' => $site->id, 'name' => $rack->name, 'height_units' => 12,
+    ])->assertSessionHasNoErrors();
+
+    expect($rack->fresh()->height_units)->toBe(12);
+});
+
+test('update ohne rack_update ist verboten', function () {
+    $this->actingAs(userWithPermissions(['rack_viewAny']));
+    [$customer, $site, $rack] = customerWithRack();
+
+    $this->patch("/{$customer->slug}/rack/{$rack->id}", [
+        'site_id' => $site->id, 'name' => 'Fremd', 'height_units' => 42,
+    ])->assertForbidden();
+
+    expect($rack->fresh()->name)->toBe('Rack Test');
+});
+
 test('update kann das Rack nicht kleiner machen als der oberste Einbau', function () {
     $this->actingAs(userWithPermissions(['rack_update']));
     [$customer, $site, $rack] = customerWithRack(42);
