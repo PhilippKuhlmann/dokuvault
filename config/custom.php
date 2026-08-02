@@ -398,6 +398,16 @@ return [
     ],
 
     /*
+     * Benutzer, die auf einer Demo-Instanz (DEMO_MODE=true) nicht geloescht
+     * und deren Passwort und Rolle nicht geaendert werden koennen.
+     *
+     * Ohne diesen Schutz sperrt der erste Besucher, der das Admin-Passwort
+     * aendert oder das Konto loescht, alle uebrigen aus - bis zum naechsten
+     * stuendlichen Reset. Ausserhalb des Demo-Modus wirkt die Liste nicht.
+     */
+    'demo_protected_users' => ['admin', 'techniker', 'kunde-rw', 'kunde-r'],
+
+    /*
      * Darstellungen der gezeichneten Frontansicht (x-rack.face).
      * Geraete bekommen sie aus rack_device_types, Katalogelemente waehlt der
      * Admin je Eintrag aus dieser Liste.

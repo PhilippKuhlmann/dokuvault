@@ -47,6 +47,14 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // Siehe User::istDemoGeschuetzt(): der Zugang muss der Demo erhalten bleiben.
+        if ($request->user()->istDemoGeschuetzt()) {
+            return back()->withErrors(
+                ['password' => 'Ein Demo-Zugang lässt sich nicht löschen.'],
+                'userDeletion'
+            );
+        }
+
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current-password'],
         ]);

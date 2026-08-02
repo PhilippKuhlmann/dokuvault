@@ -15,6 +15,15 @@ class PasswordController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
+        // Siehe User::istDemoGeschuetzt(): auf der Demo wuerde eine
+        // Passwortaenderung alle uebrigen Besucher aussperren.
+        if ($request->user()->istDemoGeschuetzt()) {
+            return back()->withErrors(
+                ['current_password' => 'Das Passwort eines Demo-Zugangs lässt sich nicht ändern.'],
+                'updatePassword'
+            );
+        }
+
         $validated = $request->validateWithBag('updatePassword', [
             'current_password' => ['required', 'current_password'],
             'password' => ['required', Password::defaults(), 'confirmed'],

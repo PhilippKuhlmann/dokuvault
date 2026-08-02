@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -11,7 +12,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
-    use \App\Models\Concerns\TracksChanges;
+    use TracksChanges;
 
     protected $fillable = [
         'name',
@@ -61,4 +62,17 @@ class User extends Authenticatable
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * Ein vom Seeder angelegter Demo-Zugang, der auf der Demo-Instanz nicht
+     * veraendert werden darf: Wer das Admin-Passwort aendert oder das Konto
+     * loescht, sperrt alle uebrigen Besucher aus.
+     *
+     * Ausserhalb des Demo-Modus ist niemand geschuetzt - auf einer echten
+     * Installation soll ein Admin seine Benutzer natuerlich verwalten koennen.
+     */
+    public function istDemoGeschuetzt(): bool
+    {
+        return (bool) config('app.demo')
+            && in_array($this->username, config('custom.demo_protected_users', []), true);
+    }
 }

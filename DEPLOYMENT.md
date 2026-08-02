@@ -133,8 +133,13 @@ einfach gelöscht werden.
 ### Was auf einer Demo bewusst offen ist
 
 Die Zugangsdaten stehen im README und im Hinweis-Banner. Jeder Besucher ist damit
-Administrator und kann alles ändern – auch das Admin-Passwort. Genau dagegen hilft
-der stündliche Reset: Nach spätestens einer Stunde ist der Ausgangszustand zurück.
+Administrator und kann fast alles ändern. Der stündliche Reset räumt hinterher auf.
+
+**Ausgenommen sind die vier Zugänge selbst**: `admin`, `techniker`, `kunde-rw` und
+`kunde-r` lassen sich bei aktivem Demo-Modus nicht löschen, und ihr Passwort und ihre
+Rolle nicht ändern – sonst wären alle übrigen Besucher bis zum nächsten Reset
+ausgesperrt. Welche Benutzernamen geschützt sind, steht in `config/custom.php` unter
+`demo_protected_users`. Selbst angelegte Benutzer bleiben voll bearbeitbar.
 
 Eine Demo sollte deshalb **keine** echten Daten enthalten und auf einem Server
 stehen, auf dem sonst nichts läuft.

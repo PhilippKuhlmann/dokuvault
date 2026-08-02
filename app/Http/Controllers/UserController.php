@@ -7,12 +7,9 @@ use App\Models\Customer;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-
-
     // ADMIN Bereich
     public function index()
     {
@@ -53,7 +50,18 @@ class UserController extends Controller
     {
         $userData = $request->validated();
 
-        if (!empty($userData['password'])) {
+        // Auf der Demo bleiben die vordefinierten Zugaenge nutzbar: Passwort und
+        // Rolle sind gesperrt. Beides wuerde alle uebrigen Besucher aussperren -
+        // ein geaendertes Passwort direkt, eine herabgestufte Rolle genauso.
+        if ($user->istDemoGeschuetzt()) {
+            unset($userData['password'], $userData['role_id'], $userData['customer_id']);
+            $user->update($userData);
+
+            return redirect(route('admin.user.edit', $user))
+                ->withErrors(['demo' => 'Passwort und Rolle dieses Demo-Zugangs sind gesperrt. Alles Übrige wurde gespeichert.']);
+        }
+
+        if (! empty($userData['password'])) {
             $userData['password'] = Hash::make($request->password);
         } else {
             unset($userData['password']);
@@ -66,6 +74,11 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        if ($user->istDemoGeschuetzt()) {
+            return redirect(route('admin.user.edit', $user))
+                ->withErrors(['demo' => 'Dieser Zugang gehört zur Demo und lässt sich nicht löschen. Selbst angelegte Benutzer schon.']);
+        }
+
         $user->delete();
 
         return redirect(route('admin.user.index'));
