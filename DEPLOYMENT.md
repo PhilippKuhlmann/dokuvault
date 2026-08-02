@@ -45,15 +45,24 @@ ssh-keygen -t ed25519 -f ~/.ssh/dokuvault_deploy -C "github-deploy" -N ""
 ```
 
 Den **öffentlichen** Teil auf dem Server in die `authorized_keys` des Deploy-Benutzers
-eintragen. Den Fingerabdruck des Servers holen:
+eintragen.
+
+Dann die Fingerabdrücke der Host-Schlüssel holen – **auf dem Server**, aus seinen
+eigenen Schlüsseldateien:
 
 ```bash
-ssh-keyscan -p 22 doku.dokuvault.de
+for f in /etc/ssh/ssh_host_*_key.pub; do ssh-keygen -lf "$f"; done
 ```
+
+Nicht per `ssh-keyscan` vom eigenen Rechner: Antwortet auf dem abgefragten Port ein
+Gateway oder ein anderer Dienst, bekommt man dessen Schlüssel statt der des Servers –
+und der Deploy scheitert später mit `Host key verification failed`, ohne den Grund zu
+nennen. Aus den Schlüsseldateien gelesen kann das nicht passieren.
 
 ### 3. Secrets in GitHub hinterlegen
 
-Repository → Settings → Secrets and variables → Actions:
+Repository → Settings → Secrets and variables → Actions → Reiter **Secrets** →
+**New repository secret**. Environments werden nicht gebraucht.
 
 | Secret | Inhalt |
 | --- | --- |
@@ -61,12 +70,18 @@ Repository → Settings → Secrets and variables → Actions:
 | `DEPLOY_USER` | Benutzer für den SSH-Zugang |
 | `DEPLOY_PATH` | `/var/www/dokuvault` |
 | `DEPLOY_SSH_KEY` | Inhalt von `~/.ssh/dokuvault_deploy` (der **private** Teil) |
-| `DEPLOY_KNOWN_HOSTS` | Ausgabe von `ssh-keyscan` |
+| `DEPLOY_KNOWN_HOSTS` | Ausgabe des Befehls oben – drei kurze `SHA256:`-Zeilen |
 | `DEPLOY_URL` | `https://doku.dokuvault.de` |
 | `DEPLOY_PORT` | nur nötig, wenn SSH nicht auf 22 läuft |
 
-`DEPLOY_KNOWN_HOSTS` ist kein Beiwerk: ohne den Fingerabdruck müsste der Deploy die
-Host-Prüfung abschalten und wäre gegen einen untergeschobenen Server offen.
+`DEPLOY_KNOWN_HOSTS` ist kein Beiwerk: Ohne diese Angabe müsste der Deploy die
+Host-Prüfung abschalten und wäre gegen einen untergeschobenen Server offen. Der
+Workflow holt die Schlüssel zur Laufzeit vom Server und vergleicht ihre
+Fingerabdrücke mit diesem Secret.
+
+Ganze `known_hosts`-Zeilen werden weiterhin akzeptiert. Die kurze Form ist nur
+weniger fehleranfällig – das lange Base64 bricht beim Kopieren leicht um, und ein
+so beschädigter Wert fällt erst beim Deploy auf.
 
 ## Demo-Instanz
 
