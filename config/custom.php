@@ -427,6 +427,26 @@ return [
     'demo_ip_logging' => env('DEMO_IP_LOGGING', 'anonym'),
 
     /*
+    |--------------------------------------------------------------------------
+    | Vertrauenswuerdige Proxys
+    |--------------------------------------------------------------------------
+    |
+    | Steht ein Reverse-Proxy vor der App, sieht sie dessen Adresse statt der
+    | des Besuchers - es sei denn, der Proxy steht hier. Dann wird stattdessen
+    | X-Forwarded-For ausgewertet.
+    |
+    | Mehrere Eintraege mit Komma trennen, CIDR ist erlaubt:
+    |
+    |   TRUSTED_PROXIES=172.18.0.0/16,127.0.0.1
+    |
+    | '*' vertraut jedem. Bequem, aber dann kann jeder, der die App direkt
+    | erreicht, per X-Forwarded-For eine beliebige Herkunft vortaeuschen -
+    | vertretbar nur, wenn ausschliesslich der Proxy sie erreicht.
+    |
+    */
+    'trusted_proxies' => env('TRUSTED_PROXIES', '10.0.254.2'),
+
+    /*
      * Darstellungen der gezeichneten Frontansicht (x-rack.face).
      * Geraete bekommen sie aus rack_device_types, Katalogelemente waehlt der
      * Admin je Eintrag aus dieser Liste.

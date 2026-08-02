@@ -8,13 +8,6 @@ use Illuminate\Http\Request;
 class TrustProxies extends Middleware
 {
     /**
-     * The trusted proxies for this application.
-     *
-     * @var array<int, string>|string|null
-     */
-    protected $proxies = ['10.0.254.2'];
-
-    /**
      * The headers that should be used to detect proxies.
      *
      * @var int
@@ -25,4 +18,19 @@ class TrustProxies extends Middleware
         Request::HEADER_X_FORWARDED_PORT |
         Request::HEADER_X_FORWARDED_PROTO |
         Request::HEADER_X_FORWARDED_AWS_ELB;
+
+    /**
+     * Aus der Konfiguration statt fest im Code: Welcher Proxy davorsteht, ist
+     * eine Eigenschaft der Installation, nicht der Anwendung. Ueber die
+     * Konfiguration und nicht ueber env(), weil der Deploy config:cache
+     * ausfuehrt - danach liefert env() nichts mehr.
+     */
+    public function __construct()
+    {
+        $proxies = config('custom.trusted_proxies');
+
+        $this->proxies = $proxies === '*'
+            ? '*'
+            : array_values(array_filter(array_map('trim', explode(',', (string) $proxies))));
+    }
 }

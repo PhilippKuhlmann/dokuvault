@@ -70,6 +70,49 @@ test('mit demo_ip_logging=anonym wird IPv6 auf das /48-Netz gekürzt', function 
     expect(usageZeilen()[0]['ip'])->toBe('2001:db8:abcd::');
 });
 
+test('hinter einem vertrauten Proxy wird die Adresse des Besuchers aufgezeichnet', function () {
+    config([
+        'app.demo' => true,
+        'custom.demo_ip_logging' => 'anonym',
+        'custom.trusted_proxies' => '192.0.2.1',
+    ]);
+
+    $this->withServerVariables(['REMOTE_ADDR' => '192.0.2.1'])
+        ->withHeaders(['X-Forwarded-For' => '203.0.113.7'])
+        ->get('/login');
+
+    expect(usageZeilen()[0]['ip'])->toBe('203.0.113.0');
+});
+
+test('ohne vertrauten Proxy wird die Adresse des Proxys aufgezeichnet', function () {
+    config([
+        'app.demo' => true,
+        'custom.demo_ip_logging' => 'anonym',
+        'custom.trusted_proxies' => '10.0.254.2',
+    ]);
+
+    // Genau der Fall, den demo:stats meldet: alle Besuche scheinbar aus einem Netz.
+    $this->withServerVariables(['REMOTE_ADDR' => '192.0.2.1'])
+        ->withHeaders(['X-Forwarded-For' => '203.0.113.7'])
+        ->get('/login');
+
+    expect(usageZeilen()[0]['ip'])->toBe('192.0.2.0');
+});
+
+test('trusted_proxies akzeptiert mehrere Einträge und CIDR', function () {
+    config([
+        'app.demo' => true,
+        'custom.demo_ip_logging' => 'anonym',
+        'custom.trusted_proxies' => '127.0.0.1, 172.18.0.0/16',
+    ]);
+
+    $this->withServerVariables(['REMOTE_ADDR' => '172.18.0.5'])
+        ->withHeaders(['X-Forwarded-For' => '203.0.113.7'])
+        ->get('/login');
+
+    expect(usageZeilen()[0]['ip'])->toBe('203.0.113.0');
+});
+
 test('mit demo_ip_logging=voll wird die ganze Adresse aufgezeichnet', function () {
     config(['app.demo' => true, 'custom.demo_ip_logging' => 'voll']);
 

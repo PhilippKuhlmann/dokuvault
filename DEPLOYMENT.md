@@ -151,10 +151,27 @@ personenbezogenes Datum nach DSGVO – wer `voll` setzt, braucht auf der Demo ei
 Datenschutzerklärung, die die Speicherung, den Zweck und eine Löschfrist nennt. Das ist kein
 Grund, es nicht zu tun, aber einer, es bewusst zu tun.
 
-Wichtig für die Aussagekraft: Steht ein Reverse-Proxy vor der App, zeichnet sie dessen Adresse
-auf statt der des Besuchers – alle Besuche kämen dann scheinbar aus einem einzigen Netz. Der
-Proxy muss dafür in `app/Http/Middleware/TrustProxies.php` eingetragen sein. `demo:stats` weist
-von sich aus darauf hin, sobald aufgezeichnete Adressen nicht öffentlich sind.
+Wichtig für die Aussagekraft: Steht ein Reverse-Proxy vor der App – etwa ein Nginx Proxy
+Manager –, sieht sie dessen Adresse statt der des Besuchers. Alle Besuche kämen dann scheinbar
+aus einem einzigen Netz. `demo:stats` weist von sich aus darauf hin, sobald aufgezeichnete
+Adressen nicht öffentlich sind.
+
+Der Proxy gehört deshalb in die `.env`:
+
+```
+TRUSTED_PROXIES=172.18.0.0/16
+```
+
+Mehrere Einträge mit Komma trennen, CIDR ist erlaubt. Welche Adresse einzutragen ist, verrät
+die Aufzeichnung selbst – solange der Proxy nicht vertraut wird, steht dort seine:
+
+```bash
+cd /var/www/dokuvault && tail -n 1 storage/app/demo-usage/$(date +%Y-%m).jsonl
+```
+
+`*` vertraut jedem Absender. Das ist bequem, hebt aber die Prüfung auf: Wer die App direkt
+erreicht – am Proxy vorbei –, kann sich per `X-Forwarded-For` eine beliebige Herkunft geben.
+Vertretbar nur, wenn wirklich ausschließlich der Proxy an die App kommt.
 
 ### Was auf einer Demo bewusst offen ist
 
