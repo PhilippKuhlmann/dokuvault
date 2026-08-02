@@ -64,8 +64,6 @@ class Kernel extends HttpKernel
             VerifyCsrfToken::class,
             SubstituteBindings::class,
 
-            StartSession::class,
-
             // Zaehlt Aufrufe, aber nur bei DEMO_MODE=true - siehe Middleware.
             RecordDemoUsage::class,
         ],
