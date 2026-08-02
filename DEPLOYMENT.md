@@ -105,8 +105,13 @@ er die Datenbank einmal zurück.
 Für den stündlichen Reset einen Cronjob des Deploy-Benutzers anlegen:
 
 ```
-0 * * * * cd /var/www/dokuvault && php artisan demo:reset >> storage/logs/demo-reset.log 2>&1
+0 * * * * cd /var/www/dokuvault && flock -n storage/deploy.lock php artisan demo:reset >> storage/logs/demo-reset.log 2>&1
 ```
+
+Das `flock -n` ist wichtig: `deploy.sh` nimmt dieselbe Sperre. Ohne sie kann der Reset
+mitten in einen laufenden Deploy fallen und `migrate` gegen eine Datenbank laufen, die
+gerade geleert wird. Trifft der Cronjob auf einen Deploy, überspringt er den Reset –
+richtig so, denn der Deploy setzt die Datenbank selbst zurück.
 
 ### Nutzung auswerten
 
@@ -154,10 +159,20 @@ Entweder in GitHub unter **Actions → deploy → Run workflow**, oder direkt au
 cd /var/www/dokuvault && ./deploy.sh
 ```
 
-Das Skript schaltet zu Beginn den Wartungsmodus ein und gibt die Seite am Ende wieder
-frei – auch wenn ein Schritt dazwischen fehlschlägt. Es bricht beim ersten Fehler ab
-und liefert Exitcode 1, damit die GitHub-Action rot wird statt einen halben Deploy
-als Erfolg zu melden.
+Das Skript bricht beim ersten Fehler ab und liefert Exitcode 1, damit die GitHub-Action
+rot wird statt einen halben Deploy als Erfolg zu melden.
+
+**Der Wartungsmodus deckt nur das Ende ab.** Code holen, `composer install` und der
+Frontend-Build laufen bei laufender Seite – das dauert ein bis zwei Minuten, und die
+Seite dafür abzuschalten hieße, sie für nichts abzuschalten. Erst für Migrationen,
+Cache-Neuaufbau und den Demo-Reset geht sie kurz auf 503, meist wenige Sekunden. Die
+Freigabe hängt an einem `trap`, sie kommt also auch, wenn ein Schritt dazwischen
+fehlschlägt.
+
+Der Preis dafür: Zwischen `git reset` und `migrate` liefert die Seite schon den neuen
+Code gegen das alte Schema aus. Bei Migrationen, die nur etwas hinzufügen – der
+Normalfall hier – merkt das niemand. Wer eine Spalte umbenennt oder entfernt, sollte
+den Deploy in eine ruhige Minute legen oder in zwei Schritten ausrollen.
 
 `deploy.sh` setzt den Arbeitsstand hart auf `origin/main`. Änderungen, die direkt
 auf dem Server gemacht wurden, gehen dabei verloren – das ist Absicht, damit der

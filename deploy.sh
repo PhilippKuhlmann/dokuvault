@@ -13,6 +13,19 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
+# Nur ein Deploy zur Zeit, und nie gleichzeitig mit dem stuendlichen
+# demo:reset (der Cronjob nimmt dieselbe Sperre, siehe DEPLOYMENT.md).
+# Beide fassen die Datenbank an; ueberlappen sie, laeuft migrate gegen eine
+# Datenbank, die gerade geleert wird.
+LOCK="$(pwd)/storage/deploy.lock"
+if [ -z "${DEPLOY_LOCKED:-}" ]; then
+    if command -v flock >/dev/null 2>&1; then
+        export DEPLOY_LOCKED=1
+        exec flock --wait 900 "$LOCK" "$0" "$@"
+    fi
+    echo "!!! flock nicht gefunden - Deploy laeuft ohne Sperre" >&2
+fi
+
 BRANCH="${DEPLOY_BRANCH:-main}"
 
 # Demo-Instanz? Dann werden Dev-Abhaengigkeiten gebraucht (Faker fuer die
@@ -22,11 +35,6 @@ if grep -qE '^DEMO_MODE=true' .env 2>/dev/null; then
 else
     IS_DEMO=0
 fi
-
-echo "==> Wartungsmodus an"
-php artisan down --retry=15 || true
-# Auch bei einem Fehler zwischendurch die Seite wieder freigeben.
-trap 'php artisan up || true' EXIT
 
 echo "==> Stand von origin/${BRANCH} holen"
 git fetch --prune origin
@@ -43,6 +51,16 @@ fi
 echo "==> Frontend bauen"
 npm ci
 npm run build
+
+# Ab hier wird die Seite abgeschaltet - aber erst ab hier. Composer und der
+# Frontend-Build dauern ein bis zwei Minuten und brauchen keine Auszeit;
+# frueher lag die Demo genau so lange auf 503. Was jetzt noch kommt, sind
+# Sekunden: Migrationen und das Zuruecksetzen fassen die Datenbank an, und
+# waehrend die Caches neu geschrieben werden, sind sie kurz unvollstaendig.
+echo "==> Wartungsmodus an"
+php artisan down --retry=15 || true
+# Auch bei einem Fehler zwischendurch die Seite wieder freigeben.
+trap 'php artisan up || true' EXIT
 
 echo "==> Migrationen"
 php artisan migrate --force
