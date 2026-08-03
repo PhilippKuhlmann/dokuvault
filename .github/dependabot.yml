@@ -42,6 +42,13 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: tailwindcss
         update-types: ["version-update:semver-major"]
+      # flowbite 4 haengt daran: Es fuehrt tailwindcss ^4.1.12 als eigene
+      # Abhaengigkeit und ist fuer Tailwind 4 gebaut. Mit Tailwind 3 laeuft es
+      # zwar - Dropdown, Drawer und Tooltip funktionieren -, bringt aber 26 KB
+      # CSS fuer ApexCharts mit, das hier niemand nutzt. Gehoert in dieselbe
+      # Umstellung wie die drei darueber.
+      - dependency-name: flowbite
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: "/"
