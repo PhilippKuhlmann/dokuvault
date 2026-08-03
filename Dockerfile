@@ -17,10 +17,11 @@ COPY package.json package-lock.json ./
 RUN npm ci
 COPY resources resources
 COPY vite.config.js tailwind.config.js postcss.config.js ./
-# tailwind.config.js durchsucht auch die Pagination-Views aus dem Framework.
-# Fehlen sie, fehlen hinterher deren Klassen im CSS.
-COPY --from=vendor /app/vendor/laravel/framework/src/Illuminate/Pagination/resources/views \
-                   vendor/laravel/framework/src/Illuminate/Pagination/resources/views
+# Der Frontend-Build greift an zwei Stellen nach vendor/: resources/js/app.js
+# importiert Livewires ESM-Bundle von dort, und tailwind.config.js durchsucht
+# die Pagination-Views des Frameworks. Deshalb das ganze Verzeichnis statt
+# einzelner Pfade - sonst bricht der Build erneut, sobald ein Bezug dazukommt.
+COPY --from=vendor /app/vendor vendor
 RUN npm run build
 
 # ------------------------------------------------------------------- Laufzeit
