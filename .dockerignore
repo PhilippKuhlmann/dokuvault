@@ -1,0 +1,20 @@
+# Alles, was im Image neu entsteht oder dort nichts zu suchen hat.
+.git
+.github
+node_modules
+vendor
+public/build
+public/hot
+public/storage
+storage/app/demo-usage
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/logs/*
+.env
+.env.testing
+.phpunit.cache
+docs
+graphify-out
+.claude
+.DS_Store

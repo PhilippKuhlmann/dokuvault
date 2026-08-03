@@ -213,7 +213,21 @@ Klartext weder in der Datenbank noch im Audit-Log landet.
 
 ## 📦 Installation
 
-Voraussetzungen: PHP 8.2+, Composer, Node.js, MySQL/MariaDB.
+Voraussetzungen: entweder Docker – oder PHP 8.2+, Composer, Node.js und MySQL/MariaDB.
+
+### Mit Docker (am schnellsten)
+
+```bash
+git clone https://github.com/PhilippKuhlmann/dokuvault.git && cd dokuvault && docker compose up
+```
+
+Danach [http://localhost:8000](http://localhost:8000) öffnen und mit `admin` / `password`
+anmelden. Datenbank, Demo-Daten und Zugänge legt der erste Start selbst an; ein zweiter
+Start seedet nicht erneut, die eingegebenen Daten bleiben also erhalten.
+
+Der Container ist zum Ausprobieren und für kleine Installationen gedacht: ein Prozess mit
+Laravels eingebautem Server, kein nginx. Für den Betrieb mit vielen Nutzern ist der Weg in
+[DEPLOYMENT.md](DEPLOYMENT.md) der richtige.
 
 ### Zum Ausprobieren (mit Demo-Daten)
 
