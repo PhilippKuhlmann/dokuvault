@@ -1,0 +1,79 @@
+name: docker
+
+# Bewusst eine eigene Workflow und kein Job in "tests": Der Deploy haengt an
+# "tests". Ein Bruch im Docker-Bild soll die Demo nicht am Aktualisieren
+# hindern - und umgekehrt soll das Bild trotzdem bei jedem Push gebaut werden.
+on:
+  push:
+    paths:
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - '.dockerignore'
+      - 'docker/**'
+      - 'composer.lock'
+      - 'package-lock.json'
+      - '.github/workflows/docker.yml'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  bauen:
+    name: Bauen und starten
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Image bauen und hochfahren
+        run: docker compose up -d --build
+
+      - name: Auf die Anwendung warten
+        run: |
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/login || true)
+            if [ "$code" = "200" ]; then
+              echo "Erreichbar nach etwa $((i * 5)) Sekunden."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Nach fuenf Minuten keine Antwort auf http://localhost:8000/login."
+          exit 1
+
+      - name: Anmeldeseite pruefen
+        run: |
+          seite=$(curl -s http://localhost:8000/login)
+          echo "$seite" | grep -q 'name="username"' || { echo 'Kein Anmeldeformular gefunden.'; exit 1; }
+          echo "$seite" | grep -q 'Anmelden' || { echo 'Seite geladen, aber ohne erwarteten Inhalt.'; exit 1; }
+
+      # Der eigentliche Beweis, dass Migrationen und Seeder gelaufen sind: Ohne
+      # sie gaebe es den Demo-Kunden nicht, und die Anmeldung schluege fehl.
+      - name: Anmeldung mit dem Demo-Zugang
+        run: |
+          keks=$(mktemp)
+          token=$(curl -s -c "$keks" http://localhost:8000/login \
+            | grep -o 'name="_token" value="[^"]*"' | head -1 | cut -d'"' -f4)
+          code=$(curl -s -b "$keks" -c "$keks" -o /dev/null -w '%{http_code}' \
+            -X POST http://localhost:8000/login \
+            --data-urlencode "_token=$token" \
+            --data-urlencode 'username=admin' \
+            --data-urlencode 'password=password')
+          echo "Antwort auf die Anmeldung: HTTP $code"
+          [ "$code" = "302" ] || { echo 'Keine Weiterleitung - Anmeldung fehlgeschlagen.'; exit 1; }
+
+          # Der Statuscode allein genuegt nicht: Laravel antwortet auch auf eine
+          # abgelehnte Anmeldung mit 302, nur eben zurueck auf das Formular.
+          # Beweisend ist erst eine Seite, die nur Angemeldete sehen.
+          nachher=$(curl -s -L -b "$keks" http://localhost:8000/)
+          echo "$nachher" | grep -q 'Abmelden' \
+            || { echo 'Nach der Anmeldung keine angemeldete Sitzung.'; exit 1; }
+          echo "$nachher" | grep -q 'Mustermann' \
+            || { echo 'Angemeldet, aber ohne Demo-Daten - Seeder nicht gelaufen?'; exit 1; }
+
+      - name: Logs bei Fehlschlag
+        if: failure()
+        run: docker compose logs --no-color
+
+      - name: Aufraeumen
+        if: always()
+        run: docker compose down -v
