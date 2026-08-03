@@ -21,6 +21,7 @@
 
 ### Fixed
 
+- **Kein Umschalter für dunkel/hell auf der Anmeldeseite**: Auf Seiten ohne Navigationsleiste – Anmeldung, „Passwort vergessen" – gab es keinen Weg ins dunkle Erscheinungsbild; man sah sie immer so, wie das Betriebssystem es vorgab. Das Gast-Layout hat den Knopf jetzt oben rechts, unterhalb des Demo-Hinweises. Der Knopf selbst steckte dreimal wortgleich in den Navigationsleisten und ist jetzt eine Komponente.
 - **Seitenfehler auf Seiten ohne Navigationsleiste**: Der Theme-Umschalter in `resources/js/app.js` griff ungeprüft auf seinen Knopf und die beiden Icons zu. Die stehen nur in den Navigationsleisten – auf der Anmeldeseite etwa fehlen sie, und die Seite warf „Cannot read properties of null“. Folge war nicht nur eine Meldung in der Konsole: Die Ausführung der Datei brach an dieser Stelle ab, alles Nachfolgende lief dort nicht mehr. Der Block steigt jetzt früh aus, wenn die Elemente fehlen. Dazu fehlte hinter `Livewire.start()` das Semikolon – ohne das liest JavaScript eine folgende Zeile, die mit `(` beginnt, als Fortsetzung des Ausdrucks.
 
 ### Internal
