@@ -68,7 +68,7 @@ $serverBauformen = [
 
 $serverTiefen = [
     1 => 'Volle Tiefe',
-    0 => 'Halbe Tiefe – dahinter ist Platz',
+    0 => 'Halbe Tiefe',
 ];
 
 return [

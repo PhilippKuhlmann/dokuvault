@@ -33,12 +33,35 @@ test('store speichert Bauform und Einbautiefe', function () {
 
     $this->post("/{$customer->slug}/server", [
         'site_id' => $site->id, 'name' => 'SRV-01', 'operating_system_id' => $os->id,
-        'form_factor' => 'tower', 'full_depth' => '0',
+        'form_factor' => 'rack', 'full_depth' => '0',
     ]);
 
     $server = Server::first();
-    expect($server->form_factor)->toBe('tower');
+    expect($server->form_factor)->toBe('rack');
     expect($server->full_depth)->toBeFalse();
+});
+
+test('ein Standserver braucht keine Einbautiefe', function () {
+    $this->actingAs(userWithPermissions(['server_create']));
+    [$customer, $site, $os] = serverUmgebung();
+
+    // Das Formular blendet das Feld aus, es kommt also gar nicht mit.
+    $this->post("/{$customer->slug}/server", [
+        'site_id' => $site->id, 'name' => 'SRV-TOWER', 'operating_system_id' => $os->id,
+        'form_factor' => 'tower',
+    ])->assertSessionHasNoErrors();
+
+    expect(Server::first()->form_factor)->toBe('tower');
+});
+
+test('beim 19-Zoll-Server bleibt die Einbautiefe Pflicht', function () {
+    $this->actingAs(userWithPermissions(['server_create']));
+    [$customer, $site, $os] = serverUmgebung();
+
+    $this->post("/{$customer->slug}/server", [
+        'site_id' => $site->id, 'name' => 'SRV-01', 'operating_system_id' => $os->id,
+        'form_factor' => 'rack',
+    ])->assertSessionHasErrors('full_depth');
 });
 
 test('eine unbekannte Bauform wird abgelehnt', function () {

@@ -7,9 +7,17 @@
 
         <x-create.doublerow label1="Hersteller" name1="manufacturer" label2="Model" name2="model" />
 
-        <x-create.options label="Bauform" name="form_factor" :options="config('custom.server_form_factors')" default="rack" />
+        {{-- Ein Standserver hat keine Einbautiefe: Das Feld erscheint erst,
+             wenn die Bauform 19 Zoll ist. --}}
+        <div x-data="{ bauform: '{{ old('form_factor', 'rack') }}' }">
 
-        <x-create.options label="Einbautiefe" name="full_depth" :options="config('custom.server_depths')" default="1" />
+            <x-create.options label="Bauform" name="form_factor" :options="config('custom.server_form_factors')" default="rack" x-model="bauform" />
+
+            <div x-show="bauform === 'rack'" x-cloak>
+                <x-create.options label="Einbautiefe" name="full_depth" :options="config('custom.server_depths')" default="1" />
+            </div>
+
+        </div>
 
         <x-create.singlerow label="Seriennummer" name="serialNumber" />
 

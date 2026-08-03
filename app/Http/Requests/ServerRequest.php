@@ -23,6 +23,14 @@ class ServerRequest extends FormRequest
      *
      * @return array<string, mixed>
      */
+    /** Ein Standserver hat keine Einbautiefe - der Wert bleibt auf dem Standard. */
+    protected function prepareForValidation(): void
+    {
+        if ($this->input('form_factor') !== 'rack') {
+            $this->merge(['full_depth' => true]);
+        }
+    }
+
     public function rules()
     {
         return [
@@ -32,7 +40,7 @@ class ServerRequest extends FormRequest
             'manufacturer' => 'max:255',
             'model' => 'max:255',
             'form_factor' => ['required', Rule::in(array_keys(config('custom.server_form_factors')))],
-            'full_depth' => 'required|boolean',
+            'full_depth' => 'required_if:form_factor,rack|boolean',
             'serialNumber' => 'max:255',
             'ip1' => 'max:255',
             'ip2' => 'max:255',
