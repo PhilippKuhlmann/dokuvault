@@ -36,6 +36,10 @@ Das Projekt nutzt [Laravel Pint](https://laravel.com/docs/pint) (`pint.json`, La
 ./vendor/bin/pint --dirty
 ```
 
+`--dirty` beschränkt den Lauf auf die geänderten Dateien. Die CI prüft mit
+`./vendor/bin/pint --test`, ob das Repository dem Standard entspricht – ein Beitrag mit
+abweichender Formatierung wird also rot, statt später in einem fremden Diff aufzutauchen.
+
 ## Changelog & Versionierung
 
 Die Version ist datumsbasiert (`JJ.MM.TT`). Bei jeder Änderung wird oben in `changelog.md`

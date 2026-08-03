@@ -20,6 +20,7 @@
 
 ### Internal
 
+- **Der Code-Stil wird geprüft**: Pint lief einmal über das ganze Repository (293 Dateien, rein mechanisch: Importe sortiert und ungenutzte entfernt, Klammern und Einrückung vereinheitlicht), und die CI hält den Stand mit `pint --test`. Vorher erzeugte jeder lokale Pint-Lauf einen Diff über Hunderte fremder Dateien – zweimal passiert, zweimal von Hand zurückgedreht.
 - **Vorlagen für Issues und Pull Requests**, Dependabot für Composer, npm und GitHub Actions, `.mailmap` gegen doppelte Autorenzählung, und ein dokumentiertes Tag-Schema (`vJJ.MM.TT`) in CONTRIBUTING.md.
 
 ## 26.08.01

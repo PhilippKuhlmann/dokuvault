@@ -3,6 +3,25 @@ name: tests
 on: [push, pull_request]
 
 jobs:
+  # Eigener Job statt eines Schritts in der Matrix: Der Code-Stil haengt weder
+  # von der PHP- noch von der Datenbankversion ab, und die Antwort steht in
+  # Sekunden fest statt nach dem Frontend-Build.
+  stil:
+    name: Code-Stil
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Pint
+        run: ./vendor/bin/pint --test
+
   tests:
     name: PHP ${{ matrix.php }} / ${{ matrix.datenbank }}
     runs-on: ubuntu-latest
