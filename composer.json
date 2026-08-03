@@ -16,7 +16,7 @@
         "phenx/php-svg-lib": "^1.0",
         "spatie/laravel-activitylog": "^4.12",
         "spatie/laravel-backup": "^9.0",
-        "spatie/laravel-pdf": "^1.5"
+        "spatie/laravel-pdf": "^2.12"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^4.4",
