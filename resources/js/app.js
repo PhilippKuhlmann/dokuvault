@@ -29,12 +29,27 @@ import { Livewire, Alpine } from '../../vendor/livewire/livewire/dist/livewire.e
 
 window.Alpine = Alpine;
 
-Livewire.start()
+// Das Semikolon ist Pflicht, nicht Geschmack: Ohne es wuerde eine folgende
+// Zeile, die mit ( oder [ beginnt, als Fortsetzung dieses Ausdrucks gelesen -
+// aus Livewire.start() gefolgt von (function(){...})() wird dann
+// Livewire.start()(function(){...})().
+Livewire.start();
 
 
 
-var themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
-var themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+// Der Umschalter steht nur in den Navigationsleisten. Auf Seiten ohne Navigation –
+// der Anmeldeseite etwa – fehlen Knopf und Icons. Ungeprüft zugegriffen brach das
+// die Ausführung dieser Datei an dieser Stelle ab, und alles Nachfolgende lief dort
+// nicht mehr. Deshalb gekapselt mit frühem Ausstieg.
+(function () {
+
+const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+const themeToggleBtn = document.getElementById('theme-toggle');
+
+if (! themeToggleBtn || ! themeToggleDarkIcon || ! themeToggleLightIcon) {
+    return;
+}
 
 // Change the icons inside the button based on previous settings
 if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -42,8 +57,6 @@ if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localS
 } else {
     themeToggleDarkIcon.classList.remove('hidden');
 }
-
-var themeToggleBtn = document.getElementById('theme-toggle');
 
 themeToggleBtn.addEventListener('click', function() {
 
@@ -73,3 +86,5 @@ themeToggleBtn.addEventListener('click', function() {
     }
 
 });
+
+})();

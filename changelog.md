@@ -19,6 +19,10 @@
 - **Ein Gerät bringt seine Höhe mit ins Rack**: Der Rack-Editor legte jeden Einbau mit einer Höheneinheit an, unabhängig vom Gerät. Ein 48er-Patchfeld belegt jetzt direkt die zwei HE, die es hat – und der „Einbauen"-Knopf sucht auch nach einer entsprechend großen Lücke. Bisher musste man die Höhe nach jedem Einbau von Hand nachziehen.
 - **Die Rack-Zeichnung nutzt die echte Portanzahl**: Ein Patchfeld wurde immer mit 24 Ports gezeichnet. Bei dokumentierten Patchfeldern kommt die Anzahl jetzt aus dem Datensatz – ein 48er-Feld mit 2 HE bekommt zwei Reihen zu 24.
 
+### Fixed
+
+- **Seitenfehler auf Seiten ohne Navigationsleiste**: Der Theme-Umschalter in `resources/js/app.js` griff ungeprüft auf seinen Knopf und die beiden Icons zu. Die stehen nur in den Navigationsleisten – auf der Anmeldeseite etwa fehlen sie, und die Seite warf „Cannot read properties of null“. Folge war nicht nur eine Meldung in der Konsole: Die Ausführung der Datei brach an dieser Stelle ab, alles Nachfolgende lief dort nicht mehr. Der Block steigt jetzt früh aus, wenn die Elemente fehlen. Dazu fehlte hinter `Livewire.start()` das Semikolon – ohne das liest JavaScript eine folgende Zeile, die mit `(` beginnt, als Fortsetzung des Ausdrucks.
+
 ### Internal
 
 - **Frontend-Pakete innerhalb ihrer Major-Linie angehoben**: `laravel-vite-plugin` 0.8.1, Tailwind 3.4.19, Vite 3.2.11. Die Major-Sprünge dieser Pakete bleiben ausgenommen – dazu gehört jetzt auch `flowbite`, das ab Version 4 Tailwind 4 als eigene Abhängigkeit führt und 26 KB CSS für eine ungenutzte Diagramm-Bibliothek mitbringt.
