@@ -10,6 +10,25 @@ if [ ! -f .env ]; then
     cp .env.example .env
 fi
 
+# Die Werte aus der Umgebung in die .env schreiben, statt sich auf die
+# Umgebung zu verlassen: "php artisan serve" setzt im Serverprozess jede
+# Variable auf false, die nicht in ServeCommand::$passthroughVariables steht -
+# und DB_* steht dort nicht. Migrationen liefen damit gegen die richtige
+# Datenbank, die ausgelieferte Anwendung aber gegen die aus .env.example.
+setze_env() {
+    schluessel="$1"
+    eval "wert=\${$schluessel-}"
+    [ -z "$wert" ] && return 0
+    grep -v "^${schluessel}=" .env > .env.neu 2>/dev/null || true
+    printf '%s=%s\n' "$schluessel" "$wert" >> .env.neu
+    mv .env.neu .env
+}
+
+for schluessel in APP_ENV APP_DEBUG APP_URL APP_KEY LOG_CHANNEL \
+                  DB_CONNECTION DB_HOST DB_PORT DB_DATABASE DB_USERNAME DB_PASSWORD; do
+    setze_env "$schluessel"
+done
+
 # Der Schluessel steht nicht im Image - sonst haetten alle denselben. Die
 # Umgebungsvariable aus dem Compose-Datei hat Vorrang; ohne sie wird einmal
 # einer erzeugt.
