@@ -83,6 +83,44 @@ Ganze `known_hosts`-Zeilen werden weiterhin akzeptiert. Die kurze Form ist nur
 weniger fehleranfällig – das lange Base64 bricht beim Kopieren leicht um, und ein
 so beschädigter Wert fällt erst beim Deploy auf.
 
+## Aktualisieren
+
+Wer den Deploy aus dem vorigen Abschnitt eingerichtet hat, braucht hier nichts: Ein Push
+auf `main` erledigt das. Für eine Installation ohne GitHub-Anbindung ist es dieselbe
+Reihenfolge von Hand.
+
+**Vorher sichern.** Migrationen sind nicht rückwärts gedacht; ein Backup ist der einzige
+verlässliche Weg zurück:
+
+```bash
+cd /var/www/dokuvault && php artisan backup:run
+```
+
+Dann der Ablauf. Die Seite geht erst kurz vor den Migrationen aus – `composer` und der
+Frontend-Build brauchen keine Auszeit:
+
+```bash
+cd /var/www/dokuvault && git pull
+```
+
+```bash
+composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader && npm ci && npm run build
+```
+
+```bash
+php artisan down --retry=15 && php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan up
+```
+
+Alternativ nimmt [`deploy.sh`](deploy.sh) genau diese Schritte ab – es setzt den Stand
+allerdings hart auf `origin/main` und verwirft dabei alles, was auf dem Server geändert
+wurde.
+
+**Was beim Versionssprung zu beachten ist:** Neue Berechtigungen kommen als Migration,
+bestehende Rollen bekommen sie also automatisch. Das Changelog nennt zu jedem Eintrag,
+was sich für bestehende Installationen ändert – ein Blick dorthin vor dem Update spart
+Rückfragen. Bleibt nach `git pull` etwas unklar, hilft `php artisan migrate:status`: Es
+listet, was noch aussteht, ohne etwas zu tun.
+
 ## Demo-Instanz
 
 Für eine öffentliche Demo zusätzlich in die `.env`:

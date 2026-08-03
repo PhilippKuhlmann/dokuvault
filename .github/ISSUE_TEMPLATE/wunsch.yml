@@ -1,0 +1,26 @@
+name: Funktion vorschlagen
+description: Etwas fehlt in der Dokumentation des eigenen Netzes
+labels: ["wunsch"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Welche Frage kannst du mit DokuVault heute nicht beantworten?
+      description: >
+        Die Frage aus dem Alltag ist hilfreicher als der Lösungsvorschlag –
+        etwa „Welche Dose hängt an welchem Switchport?" statt „Bitte eine
+        Patchfeld-Tabelle".
+    validations:
+      required: true
+
+  - type: textarea
+    id: heute
+    attributes:
+      label: Wie behilfst du dir bisher?
+      placeholder: Excel-Liste, Zettel im Schrank, gar nicht …
+
+  - type: textarea
+    id: idee
+    attributes:
+      label: Wie stellst du es dir vor?
+      description: Optional.

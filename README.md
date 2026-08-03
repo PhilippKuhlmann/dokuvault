@@ -257,6 +257,13 @@ php artisan db:seed --force          # führt den ProductionDatabaseSeeder aus
 > das Seeding fehl (`fake()` nicht gefunden) – dann entweder `APP_ENV=production` setzen oder
 > mit Dev-Paketen installieren.
 
+### Aktualisieren
+
+Eine bestehende Installation auf einen neueren Stand bringen – Backup, `git pull`,
+Abhängigkeiten, Migrationen – steht Schritt für Schritt in
+**[DEPLOYMENT.md → Aktualisieren](DEPLOYMENT.md#aktualisieren)**. Wer sich auf eine
+Version festlegen will statt `main` zu folgen, nimmt einen Tag im Format `vJJ.MM.TT`.
+
 ### Automatisch deployen
 
 Ein Push auf `main` kann den Server selbst aktualisieren: Erst laufen die Tests, und nur

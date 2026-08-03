@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Sicherheitslücke melden
+    url: https://github.com/PhilippKuhlmann/dokuvault/security/advisories/new
+    about: Bitte nicht als öffentliches Issue – siehe SECURITY.md.
+  - name: Demo ausprobieren
+    url: https://doku.dokuvault.de
+    about: Zum Nachstellen eines Fehlers, ohne selbst zu installieren.

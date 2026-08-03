@@ -43,6 +43,18 @@ ein Eintrag `## JJ.MM.TT` (heutiges Datum) ergänzt bzw. der heutige Eintrag erw
 mit Abschnitten `### Added` / `### Changed` / `### Fixed` / `### Internal`.
 Die im Footer angezeigte Version wird automatisch aus dem obersten Eintrag gelesen.
 
+Ein Release ist ein Git-Tag auf dem Stand, der die Version einführt, im Format
+`vJJ.MM.TT` – also `v26.08.02` zum Changelog-Eintrag `## 26.08.02`. Ältere Tags folgen
+noch anderen Schreibweisen; maßgeblich ist die hier genannte.
+
+```bash
+git tag -a v26.08.02 -m "26.08.02" && git push github v26.08.02
+```
+
+Getaggt wird, was jemand installieren können soll – nicht jeder Changelog-Eintrag. Wer
+DokuVault selbst betreibt, kann sich damit auf einen Stand festlegen, statt `main` zu
+folgen.
+
 ## Pull Requests
 
 - Ein Thema pro PR, mit kurzer Beschreibung (Was & Warum).

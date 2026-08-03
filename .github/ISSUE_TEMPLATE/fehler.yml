@@ -1,0 +1,52 @@
+name: Fehler melden
+description: Etwas funktioniert nicht wie beschrieben
+labels: ["fehler"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke fürs Melden. Am schnellsten geht es, wenn sich der Fehler auf der
+        [Demo](https://doku.dokuvault.de) nachstellen lässt – dann brauchen wir
+        von deiner Installation nichts weiter.
+
+  - type: textarea
+    id: beschreibung
+    attributes:
+      label: Was passiert?
+      description: Und was hattest du stattdessen erwartet?
+    validations:
+      required: true
+
+  - type: textarea
+    id: schritte
+    attributes:
+      label: Schritte zum Nachstellen
+      placeholder: |
+        1. Anmelden als …
+        2. Auf „Serverschränke" → „Neu"
+        3. Speichern → Fehlermeldung
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Steht im Footer der Anwendung, z. B. 26.08.02
+    validations:
+      required: true
+
+  - type: input
+    id: umgebung
+    attributes:
+      label: PHP- und Datenbankversion
+      placeholder: "PHP 8.3, MariaDB 11.5"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Fehlermeldung aus storage/logs/laravel.log
+      description: Falls vorhanden. Bitte vorher Namen, Adressen und Passwörter entfernen.
+      render: text
