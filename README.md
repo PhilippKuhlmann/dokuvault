@@ -204,7 +204,7 @@ Klartext weder in der Datenbank noch im Audit-Log landet.
 | Bereich | Eingesetzt |
 | --- | --- |
 | **Backend** | PHP 8.2 · Laravel 12 · Livewire 3.8 · Laravel Sanctum 4 *(Agent-/API-Token)* |
-| **Pakete** | spatie/laravel-activitylog 4.12 *(Audit-Log)* · spatie/laravel-pdf 1.9 *(PDF via Browsershot/Puppeteer)* · spatie/laravel-backup 9.3 |
+| **Pakete** | spatie/laravel-activitylog 4.12 *(Audit-Log)* · barryvdh/laravel-dompdf 3.0 *(PDF-Export)* · spatie/laravel-backup 9.3 |
 | **Frontend** | Tailwind CSS 3.2 · Alpine.js 3 · Flowbite 1.6 · Vite 3 |
 | **Datenbank** | MySQL / MariaDB |
 | **Qualität** | Pest 3 *(216 Tests)* · Laravel Pint · GitHub Actions CI |

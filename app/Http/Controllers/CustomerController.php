@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CustomerRequest;
 use App\Models\Certificate;
-// use function Spatie\LaravelPdf\Support\pdf;
 use App\Models\ContactPerson;
 use App\Models\Customer;
 use App\Models\DocumentationRun;
