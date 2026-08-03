@@ -35,7 +35,7 @@ abstract class TestCase extends BaseTestCase
         ]);
 
         $user = User::factory()->create([
-            'role_id' => $role->id
+            'role_id' => $role->id,
         ]);
 
         $this->actingAs($user);
@@ -52,7 +52,7 @@ abstract class TestCase extends BaseTestCase
         $customer = Customer::factory()->create();
 
         $user = User::factory()->create([
-            'role_id' => $role->id
+            'role_id' => $role->id,
         ]);
 
         $this->actingAs($user);

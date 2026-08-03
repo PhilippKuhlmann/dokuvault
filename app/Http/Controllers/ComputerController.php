@@ -15,9 +15,9 @@ class ComputerController extends Controller
         $this->authorize('viewAny', Computer::class);
 
         $computers = $this->getFilteredQuery(Computer::class, $customer)
-                          ->with('operatingSystem')
-                          ->latest()
-                          ->paginate(25);
+            ->with('operatingSystem')
+            ->latest()
+            ->paginate(25);
 
         return view('computer.index', compact('customer', 'computers'));
     }

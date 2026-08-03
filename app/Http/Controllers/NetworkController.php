@@ -5,18 +5,16 @@ namespace App\Http\Controllers;
 use App\Http\Requests\NetworkRequest;
 use App\Models\Customer;
 use App\Models\Network;
-use App\Models\Site;
 
 class NetworkController extends Controller
 {
-
     public function index(Customer $customer)
     {
         $this->authorize('viewAny', Network::class);
 
         $networks = $this->getFilteredQuery(Network::class, $customer)
-                         ->orderBy('vlanId')
-                         ->paginate(25);
+            ->orderBy('vlanId')
+            ->paginate(25);
 
         return view('network.index', compact('customer', 'networks'));
     }
@@ -63,8 +61,7 @@ class NetworkController extends Controller
 
         $wifis = $network->wifis()->get();
 
-        foreach($wifis as $wifi)
-        {
+        foreach ($wifis as $wifi) {
             $wifi->delete();
         }
 
@@ -72,5 +69,4 @@ class NetworkController extends Controller
 
         return redirect(route('network.index', $customer))->withSuccess('Gelöscht!');
     }
-
 }

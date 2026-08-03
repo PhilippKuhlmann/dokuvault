@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\BelongsToCustomer;
 use Illuminate\Foundation\Http\FormRequest;
 
 class VMRequest extends FormRequest
@@ -24,8 +25,8 @@ class VMRequest extends FormRequest
     public function rules()
     {
         return [
-            'site_id' => ['required', new \App\Rules\BelongsToCustomer('sites')],
-            'server_id' => ['nullable', new \App\Rules\BelongsToCustomer('servers')],
+            'site_id' => ['required', new BelongsToCustomer('sites')],
+            'server_id' => ['nullable', new BelongsToCustomer('servers')],
             'name' => 'required|max:255',
             'ip1' => 'max:255',
             'ip2' => 'max:255',

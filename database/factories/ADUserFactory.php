@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\ADUser;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ADUser>
+ * @extends Factory<ADUser>
  */
 class ADUserFactory extends Factory
 {
@@ -17,7 +18,7 @@ class ADUserFactory extends Factory
     public function definition()
     {
         return [
-            'firstName' => fake()->firstName($gender = 'male'|'female'),
+            'firstName' => fake()->firstName($gender = 'male' | 'female'),
             'lastName' => fake()->lastName(),
             'username' => fake()->userName(),
             'password' => fake()->password($minLength = 6, $maxLength = 12),

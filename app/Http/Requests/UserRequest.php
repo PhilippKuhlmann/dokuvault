@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UserRequest extends FormRequest
@@ -17,7 +18,7 @@ class UserRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules(): array
     {
@@ -27,7 +28,7 @@ class UserRequest extends FormRequest
             'password' => $this->isMethod('post') ? 'required|min:6' : 'nullable|min:6',
             'email' => 'nullable',
             'role_id' => 'required',
-            'customer_id' => 'required_if:role_id,98,99'
+            'customer_id' => 'required_if:role_id,98,99',
         ];
     }
 }

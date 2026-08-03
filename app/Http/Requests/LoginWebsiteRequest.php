@@ -37,7 +37,7 @@ class LoginWebsiteRequest extends FormRequest
             'name' => 'Name',
             'username' => 'Benutzername',
             'password' => 'Passwort',
-            'url' => 'URL'
+            'url' => 'URL',
         ];
     }
 }

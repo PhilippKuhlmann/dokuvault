@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\BelongsToCustomer;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RouterRequest extends FormRequest
@@ -17,20 +19,20 @@ class RouterRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules()
     {
         return [
-            'site_id' => ['required', new \App\Rules\BelongsToCustomer('sites')],
+            'site_id' => ['required', new BelongsToCustomer('sites')],
             'name' => 'required|max:255',
-            'manufacturer' => ['nullable',],
+            'manufacturer' => ['nullable'],
             'model' => 'nullable|max:255',
             'serialNumber' => 'nullable|max:255',
             'username' => 'required|max:255',
             'password' => 'required|max:255',
             'ip' => 'required|ipv4|max:255',
-            'port' => 'required|numeric'
+            'port' => 'required|numeric',
         ];
     }
 

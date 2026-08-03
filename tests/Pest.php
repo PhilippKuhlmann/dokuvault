@@ -1,5 +1,11 @@
 <?php
 
+use App\Models\Permission;
+use App\Models\Role;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -12,8 +18,8 @@
 */
 
 uses(
-    Tests\TestCase::class,
-    Illuminate\Foundation\Testing\RefreshDatabase::class,
+    TestCase::class,
+    RefreshDatabase::class,
 )->in('Feature');
 
 /*
@@ -46,19 +52,18 @@ expect()->extend('toBeOne', function () {
  * Legt einen authentifizierbaren Nutzer mit den angegebenen Permissions an
  * (ohne customer_id => Zugriff auf alle Kunden, wie ein Techniker).
  */
-function userWithPermissions(array $names): \App\Models\User
+function userWithPermissions(array $names): User
 {
     // Explizite hohe ID, damit die Rolle nie versehentlich die Admin- (1)
     // oder Techniker-Rolle (10) per Auto-Increment erwischt.
-    $role = \App\Models\Role::factory()->create([
-        'id' => (\App\Models\Role::max('id') ?? 0) + 100,
+    $role = Role::factory()->create([
+        'id' => (Role::max('id') ?? 0) + 100,
     ]);
 
     foreach ($names as $name) {
-        $permission = \App\Models\Permission::factory()->create(['name' => $name]);
+        $permission = Permission::factory()->create(['name' => $name]);
         $role->permissions()->attach($permission->id);
     }
 
-    return \App\Models\User::factory()->create(['role_id' => $role->id]);
+    return User::factory()->create(['role_id' => $role->id]);
 }
-

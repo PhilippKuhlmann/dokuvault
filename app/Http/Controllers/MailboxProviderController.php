@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\MailboxProviderRequest;
 use App\Models\MailboxProvider;
-use Illuminate\Http\Request;
 
 class MailboxProviderController extends Controller
 {

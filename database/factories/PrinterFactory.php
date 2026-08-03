@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\Printer;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Printer>
+ * @extends Factory<Printer>
  */
 class PrinterFactory extends Factory
 {
@@ -17,7 +18,7 @@ class PrinterFactory extends Factory
     public function definition()
     {
         return [
-            'name' => 'prt-' . fake()->numberBetween($min = 1, $max = 100),
+            'name' => 'prt-'.fake()->numberBetween($min = 1, $max = 100),
             'manufacturer' => fake()->randomElement(['Brother', 'HP', 'Kyocera']),
             'model' => fake()->randomElement(['MFC-L8900CDW', 'LaserJet M480', 'ECOSYS M5526cdw', 'WorkForce Pro WF-C5790']),
             'serialNumber' => fake()->ean13(),

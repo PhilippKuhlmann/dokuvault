@@ -2,8 +2,28 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Accesspoint;
+use App\Models\Camera;
+use App\Models\Computer;
 use App\Models\Customer;
+use App\Models\DECT;
+use App\Models\IoTDevice;
+use App\Models\IpAddress;
+use App\Models\Machine;
+use App\Models\NAS;
 use App\Models\Network;
+use App\Models\NetworkSwitch;
+use App\Models\OtherClient;
+use App\Models\Phone;
+use App\Models\PhoneSystem;
+use App\Models\Printer;
+use App\Models\Recorder;
+use App\Models\Router;
+use App\Models\SecurepointUMA;
+use App\Models\SecurepointUTM;
+use App\Models\Server;
+use App\Models\Ups;
+use App\Models\VM;
 
 class IpPlanController extends Controller
 {
@@ -12,25 +32,25 @@ class IpPlanController extends Controller
      * [Model, [spalte => label-suffix]]
      */
     protected const IP_SOURCES = [
-        [\App\Models\Server::class, ['ip1' => '', 'ip2' => ' (IP2)', 'bmcIp' => ' (BMC)']],
-        [\App\Models\VM::class, ['ip1' => '', 'ip2' => ' (IP2)']],
-        [\App\Models\NAS::class, ['ip1' => '', 'ip2' => ' (IP2)']],
-        [\App\Models\PhoneSystem::class, ['ip1' => '']],
-        [\App\Models\Computer::class, ['ip' => '']],
-        [\App\Models\Printer::class, ['ip' => '']],
-        [\App\Models\Camera::class, ['ip' => '']],
-        [\App\Models\Recorder::class, ['ip' => '']],
-        [\App\Models\Phone::class, ['ip' => '']],
-        [\App\Models\DECT::class, ['ip' => '']],
-        [\App\Models\NetworkSwitch::class, ['ip' => '']],
-        [\App\Models\Accesspoint::class, ['ip' => '']],
-        [\App\Models\Router::class, ['ip' => '']],
-        [\App\Models\IoTDevice::class, ['ip' => '']],
-        [\App\Models\OtherClient::class, ['ip' => '']],
-        [\App\Models\Ups::class, ['ip' => '']],
-        [\App\Models\Machine::class, ['ip' => '']],
-        [\App\Models\SecurepointUTM::class, ['ip' => '']],
-        [\App\Models\SecurepointUMA::class, ['ip' => '']],
+        [Server::class, ['ip1' => '', 'ip2' => ' (IP2)', 'bmcIp' => ' (BMC)']],
+        [VM::class, ['ip1' => '', 'ip2' => ' (IP2)']],
+        [NAS::class, ['ip1' => '', 'ip2' => ' (IP2)']],
+        [PhoneSystem::class, ['ip1' => '']],
+        [Computer::class, ['ip' => '']],
+        [Printer::class, ['ip' => '']],
+        [Camera::class, ['ip' => '']],
+        [Recorder::class, ['ip' => '']],
+        [Phone::class, ['ip' => '']],
+        [DECT::class, ['ip' => '']],
+        [NetworkSwitch::class, ['ip' => '']],
+        [Accesspoint::class, ['ip' => '']],
+        [Router::class, ['ip' => '']],
+        [IoTDevice::class, ['ip' => '']],
+        [OtherClient::class, ['ip' => '']],
+        [Ups::class, ['ip' => '']],
+        [Machine::class, ['ip' => '']],
+        [SecurepointUTM::class, ['ip' => '']],
+        [SecurepointUMA::class, ['ip' => '']],
     ];
 
     // Obergrenze an Host-Adressen, die vollständig aufgelistet werden (schützt vor riesigen Subnetzen).
@@ -71,7 +91,7 @@ class IpPlanController extends Controller
         $used = [];
 
         $addLong = function (int $long, string $label) use (&$used) {
-            $used[$long] = ($used[$long] ?? '') === '' ? $label : $used[$long] . ' / ' . $label;
+            $used[$long] = ($used[$long] ?? '') === '' ? $label : $used[$long].' / '.$label;
         };
 
         foreach (self::IP_SOURCES as [$class, $columns]) {
@@ -79,20 +99,20 @@ class IpPlanController extends Controller
 
             foreach ($rows as $row) {
                 $name = $row->getAttribute('name')
-                    ?: trim(($row->getAttribute('manufacturer') ?? '') . ' ' . ($row->getAttribute('model') ?? ''))
-                    ?: ('#' . $row->id);
+                    ?: trim(($row->getAttribute('manufacturer') ?? '').' '.($row->getAttribute('model') ?? ''))
+                    ?: ('#'.$row->id);
                 foreach ($columns as $column => $suffix) {
                     $value = $row->getAttribute($column);
                     if (! $value || ! filter_var($value, FILTER_VALIDATE_IP)) {
                         continue;
                     }
-                    $addLong(ip2long($value) & 0xFFFFFFFF, $name . $suffix);
+                    $addLong(ip2long($value) & 0xFFFFFFFF, $name.$suffix);
                 }
             }
         }
 
         // Zusätzliche (polymorphe) IP-Adressen — z. B. Gateway-IPs eines Routers je VLAN
-        \App\Models\IpAddress::where('customer_id', $customer->id)
+        IpAddress::where('customer_id', $customer->id)
             ->with('ipable')
             ->get()
             ->each(function ($ip) use ($addLong) {
@@ -101,7 +121,7 @@ class IpPlanController extends Controller
                 }
                 $deviceName = $ip->ipable?->getAttribute('name')
                     ?: ($ip->ipable ? class_basename($ip->ipable) : 'Gerät');
-                $label = $deviceName . ($ip->label ? ' (' . $ip->label . ')' : '');
+                $label = $deviceName.($ip->label ? ' ('.$ip->label.')' : '');
                 $addLong(ip2long($ip->address) & 0xFFFFFFFF, $label);
             });
 
@@ -134,7 +154,7 @@ class IpPlanController extends Controller
         if ($network->gateway && filter_var($network->gateway, FILTER_VALIDATE_IP)) {
             $gw = ip2long($network->gateway) & 0xFFFFFFFF;
             if ($gw >= $first && $gw <= $last) {
-                $map[$gw] = isset($map[$gw]) ? 'Gateway / ' . $map[$gw] : 'Gateway';
+                $map[$gw] = isset($map[$gw]) ? 'Gateway / '.$map[$gw] : 'Gateway';
                 $gatewayLong = $gw;
             }
         }

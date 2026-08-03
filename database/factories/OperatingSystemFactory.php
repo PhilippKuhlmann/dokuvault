@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\ServerOperatingSystem;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ServerOperatingSystem>
+ * @extends Factory<ServerOperatingSystem>
  */
 class OperatingSystemFactory extends Factory
 {

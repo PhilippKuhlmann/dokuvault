@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\BelongsToCustomer;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CameraRequest extends FormRequest
@@ -17,12 +19,12 @@ class CameraRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules()
     {
         return [
-            'site_id' => ['required', new \App\Rules\BelongsToCustomer('sites')],
+            'site_id' => ['required', new BelongsToCustomer('sites')],
             'name' => 'required',
             'manufacturer' => '',
             'model' => '',

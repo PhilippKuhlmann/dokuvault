@@ -6,7 +6,6 @@ use App\Http\Requests\MachineRequest;
 use App\Models\Customer;
 use App\Models\Machine;
 use App\Models\Site;
-use Illuminate\Http\Request;
 
 class MachineController extends Controller
 {

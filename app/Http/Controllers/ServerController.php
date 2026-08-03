@@ -3,21 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ServerRequest;
-use App\Models\Server;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
-use Illuminate\Support\Arr;
+use App\Models\Server;
 
 class ServerController extends Controller
 {
-
     public function index(Customer $customer)
     {
         $this->authorize('viewAny', Server::class);
 
         $servers = $this->getFilteredQuery(Server::class, $customer)
-                        ->with('operatingSystem')
-                        ->latest()->paginate(25);
+            ->with('operatingSystem')
+            ->latest()->paginate(25);
 
         return view('server.index', compact('customer', 'servers'));
     }

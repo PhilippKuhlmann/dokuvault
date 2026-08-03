@@ -50,5 +50,4 @@ class SecurepointUMARequest extends FormRequest
             'urlUser' => 'User URL',
         ];
     }
-
 }

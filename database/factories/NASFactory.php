@@ -2,11 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\NAS;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class NASFactory extends Factory
 {
-    protected $model = \App\Models\NAS::class;
+    protected $model = NAS::class;
 
     public function definition()
     {
@@ -19,7 +20,7 @@ class NASFactory extends Factory
         ]);
 
         return [
-            'name' => 'NAS-' . fake()->randomElement(['Backup', 'Archiv', 'Kameras', 'Fileserver']),
+            'name' => 'NAS-'.fake()->randomElement(['Backup', 'Archiv', 'Kameras', 'Fileserver']),
             'manufacturer' => $manufacturer,
             'model' => $model,
             'serialNumber' => strtoupper(fake()->bothify('????########')),

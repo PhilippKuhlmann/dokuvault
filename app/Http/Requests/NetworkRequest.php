@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\BelongsToCustomer;
 use Illuminate\Foundation\Http\FormRequest;
 
 class NetworkRequest extends FormRequest
@@ -24,7 +25,7 @@ class NetworkRequest extends FormRequest
     public function rules()
     {
         return [
-            'site_id' => ['required', new \App\Rules\BelongsToCustomer('sites')],
+            'site_id' => ['required', new BelongsToCustomer('sites')],
             'vlanId' => 'integer|min:1|max:4094',
             'description' => 'required',
             'network' => 'required|ipv4',

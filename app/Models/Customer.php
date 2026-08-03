@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Str;
+use App\Models\Concerns\TracksChanges;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
 
 class Customer extends Model
 {
     use HasFactory, SoftDeletes;
-    use \App\Models\Concerns\TracksChanges;
+    use TracksChanges;
 
     protected $guarded = [];
 
@@ -25,7 +26,7 @@ class Customer extends Model
             $slug = $baseSlug;
             $counter = 1;
             while (static::where('slug', $slug)->exists()) {
-                $slug = $baseSlug . '-' . $counter;
+                $slug = $baseSlug.'-'.$counter;
                 $counter++;
             }
 
@@ -37,9 +38,6 @@ class Customer extends Model
     {
         return 'slug';
     }
-
-
-
 
     public function sites()
     {

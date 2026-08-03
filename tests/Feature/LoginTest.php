@@ -1,5 +1,9 @@
 <?php
 
+use App\Models\Customer;
+use App\Models\Role;
+use App\Models\User;
+
 test('login user with role admin and assert redirect to admin page', function () {
     $this->createAndAuthenticateUserAdmin();
 
@@ -31,8 +35,8 @@ test('login user with role customer and assert redirect to customer dashboard pa
 });
 
 test('Techniker wird beim Login direkt (ohne Umweg) zur Kundensuche geleitet', function () {
-    $role = \App\Models\Role::factory()->create(['id' => \App\Models\Role::IS_TECHNIKER]);
-    $user = \App\Models\User::factory()->create([
+    $role = Role::factory()->create(['id' => Role::IS_TECHNIKER]);
+    $user = User::factory()->create([
         'username' => 'techniker-login-test',
         'password' => bcrypt('password'),
         'role_id' => $role->id,
@@ -53,9 +57,9 @@ test('Techniker wird beim Login direkt (ohne Umweg) zur Kundensuche geleitet', f
 });
 
 test('Kunde wird beim Login direkt zum eigenen Kunden-Dashboard geleitet', function () {
-    $role = \App\Models\Role::factory()->create();
-    $customer = \App\Models\Customer::factory()->create();
-    $user = \App\Models\User::factory()->create([
+    $role = Role::factory()->create();
+    $customer = Customer::factory()->create();
+    $user = User::factory()->create([
         'username' => 'kunde-login-test',
         'password' => bcrypt('password'),
         'role_id' => $role->id,

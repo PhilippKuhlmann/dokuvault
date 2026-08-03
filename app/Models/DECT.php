@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasIpAddresses;
+use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,8 +13,8 @@ use Illuminate\Support\Facades\Crypt;
 class DECT extends Model
 {
     use HasFactory, SoftDeletes;
-    use \App\Models\Concerns\TracksChanges;
-    use \App\Models\Concerns\HasIpAddresses;
+    use HasIpAddresses;
+    use TracksChanges;
 
     protected $table = 'dect';
 
@@ -21,7 +23,7 @@ class DECT extends Model
     protected function password(): Attribute
     {
         return new Attribute(
-            get: fn ($value) => !empty($value) ? Crypt::decryptString($value) : null,
+            get: fn ($value) => ! empty($value) ? Crypt::decryptString($value) : null,
             set: fn ($value) => Crypt::encryptString($value),
         );
     }

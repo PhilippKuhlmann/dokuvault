@@ -30,9 +30,6 @@ class AccesspointController extends Controller
         return response()->json($accesspoints, 200);
     }
 
-
-
-
     public function show(Customer $customer, Site $site, Room $room, Accesspoint $accesspoint)
     {
         if ($accesspoint->customer_id == $customer->id) {

@@ -49,10 +49,10 @@ foreach ($models as $model) {
     $model = strtolower($model);
 
     test('user with permission '.$model.'_viewAny can acceess the page', function () use ($model) {
-        $permission = Permission::factory()->create(['name' => $model.'_viewAny',]);
+        $permission = Permission::factory()->create(['name' => $model.'_viewAny']);
         $role = Role::factory()->create()->assignPermission($permission);
 
-        $user = User::factory()->create(['role_id' => $role->id,]);
+        $user = User::factory()->create(['role_id' => $role->id]);
         $customer = Customer::factory()->create();
 
         $this->actingAs($user)->get(route($model.'.index', $customer))
@@ -66,7 +66,7 @@ foreach ($models as $model) {
     test('user without permission '.$model.'_viewAny cannot acceess the page', function () use ($model) {
         $role = Role::factory()->create();
 
-        $user = User::factory()->create(['role_id' => $role->id,]);
+        $user = User::factory()->create(['role_id' => $role->id]);
         $customer = Customer::factory()->create();
 
         $this->actingAs($user)->get(route($model.'.index', $customer))

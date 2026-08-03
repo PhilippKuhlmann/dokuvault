@@ -14,7 +14,7 @@ class CustomerController extends Controller
 
         $name = $request->query('name');
 
-        $data = Customer::where('name', 'like', '%' . $name . '%')->get();
+        $data = Customer::where('name', 'like', '%'.$name.'%')->get();
 
         return response()->json($data);
     }

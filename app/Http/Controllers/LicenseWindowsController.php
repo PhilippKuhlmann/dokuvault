@@ -6,7 +6,6 @@ use App\Http\Requests\LicenseWindowsRequest;
 use App\Models\Customer;
 use App\Models\LicenseWindows;
 use App\Models\OperatingSystem;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class LicenseWindowsController extends Controller
@@ -18,8 +17,8 @@ class LicenseWindowsController extends Controller
         // Windows-Lizenzen haben keinen Standortbezug (keine site_id-Spalte), daher
         // bewusst ohne getFilteredQuery: der Standortfilter gilt hier nicht.
         $licensewindowsList = LicenseWindows::where('customer_id', $customer->id)
-                        ->with('operatingSystem')
-                        ->latest()->paginate(25);
+            ->with('operatingSystem')
+            ->latest()->paginate(25);
 
         return view('licensewindows.index', compact('customer', 'licensewindowsList'));
     }
@@ -39,8 +38,8 @@ class LicenseWindowsController extends Controller
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $fileName = time() . '_' . $request->file_name . '.' . $file->getClientOriginalExtension();
-            $filePath = $file->storeAs($customer->slug . '/licensewindows', $fileName, 'local');
+            $fileName = time().'_'.$request->file_name.'.'.$file->getClientOriginalExtension();
+            $filePath = $file->storeAs($customer->slug.'/licensewindows', $fileName, 'local');
         } else {
             $filePath = null;
         }
@@ -68,8 +67,8 @@ class LicenseWindowsController extends Controller
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $fileName = time() . '_' . $request->file_name . '.' . $file->getClientOriginalExtension();
-            $filePath = $file->storeAs($customer->slug . '/licensewindows', $fileName, 'local');
+            $fileName = time().'_'.$request->file_name.'.'.$file->getClientOriginalExtension();
+            $filePath = $file->storeAs($customer->slug.'/licensewindows', $fileName, 'local');
             if ($licensewindows->file_path) {
                 Storage::delete($licensewindows->file);
             }

@@ -18,7 +18,7 @@ class ServerFactory extends Factory
         ]);
 
         return [
-            'name' => 'SRV-' . fake()->randomElement(['DC01', 'FS01', 'HV01', 'APP01', 'SQL01', 'BAK01']),
+            'name' => 'SRV-'.fake()->randomElement(['DC01', 'FS01', 'HV01', 'APP01', 'SQL01', 'BAK01']),
             'manufacturer' => $manufacturer,
             'model' => $model,
             'serialNumber' => strtoupper(fake()->bothify('??######')),

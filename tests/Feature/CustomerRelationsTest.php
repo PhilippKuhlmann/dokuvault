@@ -30,7 +30,7 @@ test('Customer hat keine zwei Relationen auf dasselbe Ziel', function () {
 
         try {
             $result = $customer->{$method}();
-        } catch (\Throwable) {
+        } catch (Throwable) {
             continue; // keine Relation (z. B. Accessor, der Daten braucht)
         }
 

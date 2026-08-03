@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RouterRequest;
 use App\Models\Customer;
 use App\Models\Router;
-use Illuminate\Http\Request;
 
 class RouterController extends Controller
 {
@@ -14,7 +13,7 @@ class RouterController extends Controller
         $this->authorize('viewAny', Router::class);
 
         $routers = $this->getFilteredQuery(Router::class, $customer)
-                        ->latest()->paginate(25);
+            ->latest()->paginate(25);
 
         return view('router.index', compact('customer', 'routers'));
     }

@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Site;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class AgentTokenController extends Controller
 {
@@ -30,7 +31,7 @@ class AgentTokenController extends Controller
 
         $validated = $request->validate([
             'name' => ['nullable', 'string', 'max:255'],
-            'site_id' => ['required', \Illuminate\Validation\Rule::exists('sites', 'id')->where('customer_id', $customer->id)],
+            'site_id' => ['required', Rule::exists('sites', 'id')->where('customer_id', $customer->id)],
         ]);
 
         $site = Site::where('customer_id', $customer->id)->findOrFail($validated['site_id']);

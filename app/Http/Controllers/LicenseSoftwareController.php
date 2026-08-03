@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LicenseSoftwareRequest;
 use App\Models\Customer;
 use App\Models\LicenseSoftware;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class LicenseSoftwareController extends Controller
@@ -30,8 +29,8 @@ class LicenseSoftwareController extends Controller
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $fileName = time() . '_' . $request->file_name . '.' . $file->getClientOriginalExtension();
-            $filePath = $file->storeAs($customer->slug . '/licensesoftware', $fileName, 'local');
+            $fileName = time().'_'.$request->file_name.'.'.$file->getClientOriginalExtension();
+            $filePath = $file->storeAs($customer->slug.'/licensesoftware', $fileName, 'local');
         } else {
             $filePath = null;
         }
@@ -57,8 +56,8 @@ class LicenseSoftwareController extends Controller
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $fileName = time() . '_' . $request->file_name . '.' . $file->getClientOriginalExtension();
-            $filePath = $file->storeAs($customer->slug . '/licensesoftware', $fileName, 'local');
+            $fileName = time().'_'.$request->file_name.'.'.$file->getClientOriginalExtension();
+            $filePath = $file->storeAs($customer->slug.'/licensesoftware', $fileName, 'local');
             if ($licensesoftware->file_path) {
                 Storage::delete($licensesoftware->file_path);
             }

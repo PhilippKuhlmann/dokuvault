@@ -3,26 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ADUserRequest;
-use App\Models\Customer;
 use App\Models\ADUser;
+use App\Models\Customer;
 use Illuminate\Support\Facades\Auth;
 
 class ADUserController extends Controller
 {
-
     public function index(Customer $customer)
     {
         $this->authorize('viewAny', ADUser::class);
 
         if (Auth::user()->can('see_hidden')) {
             $adusers = ADUser::where('customer_id', $customer->id)
-                                ->latest()
-                                ->paginate(25);
+                ->latest()
+                ->paginate(25);
         } else {
             $adusers = ADUser::where('customer_id', $customer->id)
-                                ->where('hidden', false)
-                                ->latest()
-                                ->paginate(25);
+                ->where('hidden', false)
+                ->latest()
+                ->paginate(25);
         }
 
         return view('aduser.index', compact('customer', 'adusers'));

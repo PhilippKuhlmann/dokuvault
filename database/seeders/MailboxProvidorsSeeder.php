@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\MailboxProvider;
 use Illuminate\Database\Seeder;
 
 class MailboxProvidorsSeeder extends Seeder
@@ -14,7 +14,7 @@ class MailboxProvidorsSeeder extends Seeder
      */
     public function run()
     {
-        \App\Models\MailboxProvider::create([
+        MailboxProvider::create([
             'name' => 'EWE',
             'pop3server' => 'pop.ewe.net',
             'pop3port' => '995',
@@ -24,7 +24,7 @@ class MailboxProvidorsSeeder extends Seeder
             'smtpport' => '587',
         ]);
 
-        \App\Models\MailboxProvider::create([
+        MailboxProvider::create([
             'name' => 'IONOS',
             'pop3server' => 'pop.ionos.de',
             'pop3port' => '995',
@@ -34,7 +34,7 @@ class MailboxProvidorsSeeder extends Seeder
             'smtpport' => '465',
         ]);
 
-        \App\Models\MailboxProvider::create([
+        MailboxProvider::create([
             'name' => 'STRATO',
             'pop3server' => 'pop3.strato.de',
             'pop3port' => '995',
@@ -44,7 +44,7 @@ class MailboxProvidorsSeeder extends Seeder
             'smtpport' => '465',
         ]);
 
-        \App\Models\MailboxProvider::create([
+        MailboxProvider::create([
             'name' => 'Experia',
             'pop3server' => 'mail.experia.eu',
             'pop3port' => '995',
@@ -54,7 +54,7 @@ class MailboxProvidorsSeeder extends Seeder
             'smtpport' => '465',
         ]);
 
-        \App\Models\MailboxProvider::create([
+        MailboxProvider::create([
             'name' => 'Hetzner',
             'pop3server' => 'mail.your-server.de',
             'pop3port' => '995',
@@ -64,7 +64,7 @@ class MailboxProvidorsSeeder extends Seeder
             'smtpport' => '465',
         ]);
 
-        \App\Models\MailboxProvider::create([
+        MailboxProvider::create([
             'name' => 'Jimdo',
             'pop3server' => 'secure.emailsrvr.com',
             'pop3port' => '995',
@@ -74,7 +74,7 @@ class MailboxProvidorsSeeder extends Seeder
             'smtpport' => '465',
         ]);
 
-        \App\Models\MailboxProvider::create([
+        MailboxProvider::create([
             'name' => 'Microsoft 365 / Exchange Online',
             'pop3server' => 'outlook.office365.com',
             'pop3port' => '995',
@@ -84,7 +84,7 @@ class MailboxProvidorsSeeder extends Seeder
             'smtpport' => '587',
         ]);
 
-        \App\Models\MailboxProvider::create([
+        MailboxProvider::create([
             'name' => 'Google Workspace / Gmail',
             'pop3server' => 'pop.gmail.com',
             'pop3port' => '995',
@@ -94,7 +94,7 @@ class MailboxProvidorsSeeder extends Seeder
             'smtpport' => '587',
         ]);
 
-        \App\Models\MailboxProvider::create([
+        MailboxProvider::create([
             'name' => 'Telekom / T-Online',
             'pop3server' => 'securepop.t-online.de',
             'pop3port' => '995',
@@ -104,7 +104,7 @@ class MailboxProvidorsSeeder extends Seeder
             'smtpport' => '465',
         ]);
 
-        \App\Models\MailboxProvider::create([
+        MailboxProvider::create([
             'name' => 'GMX',
             'pop3server' => 'pop.gmx.net',
             'pop3port' => '995',
@@ -114,7 +114,7 @@ class MailboxProvidorsSeeder extends Seeder
             'smtpport' => '587',
         ]);
 
-        \App\Models\MailboxProvider::create([
+        MailboxProvider::create([
             'name' => 'Web.de',
             'pop3server' => 'pop3.web.de',
             'pop3port' => '995',
@@ -124,7 +124,7 @@ class MailboxProvidorsSeeder extends Seeder
             'smtpport' => '587',
         ]);
 
-        \App\Models\MailboxProvider::create([
+        MailboxProvider::create([
             'name' => 'mailbox.org',
             'pop3server' => 'pop3.mailbox.org',
             'pop3port' => '995',
@@ -134,7 +134,7 @@ class MailboxProvidorsSeeder extends Seeder
             'smtpport' => '465',
         ]);
 
-        \App\Models\MailboxProvider::create([
+        MailboxProvider::create([
             'name' => 'Posteo',
             'pop3server' => 'posteo.de',
             'pop3port' => '995',
@@ -144,7 +144,7 @@ class MailboxProvidorsSeeder extends Seeder
             'smtpport' => '465',
         ]);
 
-        \App\Models\MailboxProvider::create([
+        MailboxProvider::create([
             'name' => 'Vodafone / Arcor',
             'pop3server' => 'pop.vodafonemail.de',
             'pop3port' => '995',

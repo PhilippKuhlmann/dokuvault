@@ -4,6 +4,7 @@ use App\Livewire\GlobalSearch;
 use App\Models\Computer;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Site;
 use App\Models\User;
@@ -54,7 +55,7 @@ test('Kunden-Nutzer sieht nur Objekte des eigenen Kunden', function () {
     // Nutzer gehört zu einem ANDEREN Kunden
     $customerB = Customer::factory()->create();
     $role = Role::factory()->create();
-    $permission = \App\Models\Permission::factory()->create(['name' => 'computer_viewAny']);
+    $permission = Permission::factory()->create(['name' => 'computer_viewAny']);
     $role->permissions()->attach($permission->id);
     $user = User::factory()->create(['role_id' => $role->id, 'customer_id' => $customerB->id]);
     $this->actingAs($user);

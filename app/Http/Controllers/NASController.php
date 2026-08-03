@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\NASRequest;
 use App\Models\Customer;
 use App\Models\NAS;
-use Illuminate\Http\Request;
 
 class NASController extends Controller
 {
@@ -14,7 +13,7 @@ class NASController extends Controller
         $this->authorize('viewAny', NAS::class);
 
         $nasList = $this->getFilteredQuery(NAS::class, $customer)
-                    ->latest()->paginate(25);
+            ->latest()->paginate(25);
 
         return view('nas.index', compact('customer', 'nasList'));
     }
@@ -61,7 +60,7 @@ class NASController extends Controller
 
         $logins = $nas->loginnas()->get();
 
-        foreach($logins as $login) {
+        foreach ($logins as $login) {
             $login->delete();
         }
 

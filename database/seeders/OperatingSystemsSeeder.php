@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\OperatingSystem;
 use Illuminate\Database\Seeder;
 
 class OperatingSystemsSeeder extends Seeder
@@ -78,7 +78,7 @@ class OperatingSystemsSeeder extends Seeder
         ];
 
         foreach ($array as $a) {
-            \App\Models\OperatingSystem::create([
+            OperatingSystem::create([
                 'name' => $a,
             ]);
         }

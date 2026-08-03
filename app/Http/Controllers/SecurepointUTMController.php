@@ -13,7 +13,7 @@ class SecurepointUTMController extends Controller
         $this->authorize('viewAny', SecurepointUTM::class);
 
         $securepointutms = $this->getFilteredQuery(SecurepointUTM::class, $customer)
-                                ->latest()->paginate(25);
+            ->latest()->paginate(25);
 
         return view('securepointutm.index', compact('customer', 'securepointutms'));
     }

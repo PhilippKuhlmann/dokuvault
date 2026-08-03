@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RecorderRequest;
 use App\Models\Customer;
 use App\Models\Recorder;
-use Illuminate\Http\Request;
 
 class RecorderController extends Controller
 {
@@ -14,7 +13,7 @@ class RecorderController extends Controller
         $this->authorize('viewAny', Recorder::class);
 
         $recorders = $this->getFilteredQuery(Recorder::class, $customer)
-                          ->latest()->paginate(25);
+            ->latest()->paginate(25);
 
         return view('recorder.index', compact('customer', 'recorders'));
     }
@@ -61,7 +60,7 @@ class RecorderController extends Controller
 
         $logins = $recorder->loginrecorders()->get();
 
-        foreach($logins as $login) {
+        foreach ($logins as $login) {
             $login->delete();
         }
 

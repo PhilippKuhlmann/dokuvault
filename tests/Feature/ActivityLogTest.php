@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\Computer;
 use App\Models\Customer;
+use App\Models\Network;
 use App\Models\OperatingSystem;
 use App\Models\Role;
 use App\Models\Site;
@@ -23,7 +25,7 @@ test('Anlegen eines Objekts wird mit Verursacher protokolliert', function () {
     ]);
 
     $activity = Activity::where('event', 'created')
-        ->where('subject_type', \App\Models\Computer::class)
+        ->where('subject_type', Computer::class)
         ->latest()->first();
 
     expect($activity)->not->toBeNull();
@@ -37,7 +39,7 @@ test('Löschen wird protokolliert', function () {
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     $os = OperatingSystem::factory()->create(['name' => 'Windows 11']);
-    $computer = \App\Models\Computer::create([
+    $computer = Computer::create([
         'customer_id' => $customer->id,
         'site_id' => $site->id,
         'name' => 'PC-Weg',
@@ -47,7 +49,7 @@ test('Löschen wird protokolliert', function () {
     $this->delete("/{$customer->slug}/computer/{$computer->id}");
 
     expect(Activity::where('event', 'deleted')
-        ->where('subject_type', \App\Models\Computer::class)
+        ->where('subject_type', Computer::class)
         ->where('subject_id', $computer->id)
         ->exists())->toBeTrue();
 });
@@ -56,7 +58,7 @@ test('Passwörter erscheinen niemals im Aktivitätsprotokoll', function () {
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
 
-    $network = \App\Models\Network::factory()->create([
+    $network = Network::factory()->create([
         'customer_id' => $customer->id,
         'site_id' => $site->id,
     ]);

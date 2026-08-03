@@ -1,13 +1,19 @@
 <?php
+
 namespace Database\Factories;
+
 use Illuminate\Database\Eloquent\Factories\Factory;
-class LicenseSoftwareFactory extends Factory {
-    public function definition(): array {
+
+class LicenseSoftwareFactory extends Factory
+{
+    public function definition(): array
+    {
         $software = fake()->randomElement([
-            'Microsoft 365 Business Premium','Adobe Creative Cloud','TeamViewer Corporate',
-            'DATEV Unternehmen online','Veeam Backup & Replication','Acronis Cyber Protect',
-            'Sophos Intercept X','ESET PROTECT','AutoCAD LT','Lexware Buchhaltung',
+            'Microsoft 365 Business Premium', 'Adobe Creative Cloud', 'TeamViewer Corporate',
+            'DATEV Unternehmen online', 'Veeam Backup & Replication', 'Acronis Cyber Protect',
+            'Sophos Intercept X', 'ESET PROTECT', 'AutoCAD LT', 'Lexware Buchhaltung',
         ]);
+
         return [
             'name' => $software,
             'key' => strtoupper(fake()->bothify('?????-?????-?????-?????-?????')),

@@ -6,7 +6,6 @@ use App\Http\Requests\IoTDeviceRequest;
 use App\Models\Customer;
 use App\Models\IoTDevice;
 use App\Models\Site;
-use Illuminate\Http\Request;
 
 class IoTDeviceController extends Controller
 {

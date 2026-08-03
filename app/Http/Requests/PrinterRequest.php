@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\BelongsToCustomer;
 use Illuminate\Foundation\Http\FormRequest;
 
 class PrinterRequest extends FormRequest
@@ -24,7 +25,7 @@ class PrinterRequest extends FormRequest
     public function rules()
     {
         return [
-            'site_id' => ['required', new \App\Rules\BelongsToCustomer('sites')],
+            'site_id' => ['required', new BelongsToCustomer('sites')],
             'name' => 'required|max:255',
             'manufacturer' => 'max:255',
             'model' => 'max:255',

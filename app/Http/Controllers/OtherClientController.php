@@ -6,7 +6,6 @@ use App\Http\Requests\OtherClientRequest;
 use App\Models\Customer;
 use App\Models\OtherClient;
 use App\Models\Site;
-use Illuminate\Http\Request;
 
 class OtherClientController extends Controller
 {

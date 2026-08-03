@@ -9,6 +9,7 @@ use App\Models\OperatingSystem;
 use App\Models\Server;
 use App\Models\Site;
 use App\Rules\BelongsToCustomer;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -147,8 +148,8 @@ class DocumentationWizard extends Component
 
     protected function rulesForStep(array $step, int $customerId): array
     {
-        /** @var \Illuminate\Foundation\Http\FormRequest $request */
-        $request = new $step['request']();
+        /** @var FormRequest $request */
+        $request = new $step['request'];
         $baseRules = $request->rules();
 
         $rules = [];

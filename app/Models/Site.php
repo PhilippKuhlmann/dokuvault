@@ -2,17 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Str;
+use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Site extends Model
 {
     use HasFactory, SoftDeletes;
-    use \App\Models\Concerns\TracksChanges;
+    use TracksChanges;
 
     protected $guarded = [];
 
@@ -25,5 +23,4 @@ class Site extends Model
     {
         return $this->hasMany(Room::class);
     }
-
 }

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\NetworkSwitchRequest;
 use App\Models\Customer;
 use App\Models\NetworkSwitch;
-use Illuminate\Http\Request;
 
 class NetworkSwitchController extends Controller
 {
@@ -14,7 +13,7 @@ class NetworkSwitchController extends Controller
         $this->authorize('viewAny', NetworkSwitch::class);
 
         $networkswitches = $this->getFilteredQuery(NetworkSwitch::class, $customer)
-                        ->latest()->paginate(25);
+            ->latest()->paginate(25);
 
         return view('networkswitch.index', compact('customer', 'networkswitches'));
     }

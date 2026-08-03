@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\ContactPerson;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ContactPerson>
+ * @extends Factory<ContactPerson>
  */
 class ContactPersonFactory extends Factory
 {

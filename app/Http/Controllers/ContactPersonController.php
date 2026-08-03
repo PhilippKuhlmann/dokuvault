@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ContactPersonRequest;
 use App\Models\ContactPerson;
 use App\Models\Customer;
-use Illuminate\Http\Request;
 
 class ContactPersonController extends Controller
 {

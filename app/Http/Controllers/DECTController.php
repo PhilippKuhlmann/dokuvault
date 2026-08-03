@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\DECTRequest;
 use App\Models\Customer;
 use App\Models\DECT;
-use Illuminate\Http\Request;
 
 class DECTController extends Controller
 {
@@ -14,7 +13,7 @@ class DECTController extends Controller
         $this->authorize('viewAny', DECT::class);
 
         $dectList = $this->getFilteredQuery(DECT::class, $customer)
-                       ->latest()->paginate(25);
+            ->latest()->paginate(25);
 
         return view('dect.index', compact('customer', 'dectList'));
     }

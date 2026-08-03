@@ -13,7 +13,7 @@ class PhoneSystemController extends Controller
         $this->authorize('viewAny', PhoneSystem::class);
 
         $phoneSystems = $this->getFilteredQuery(PhoneSystem::class, $customer)
-                            ->latest()->paginate(25);
+            ->latest()->paginate(25);
 
         return view('phonesystem.index', compact('customer', 'phoneSystems'));
     }

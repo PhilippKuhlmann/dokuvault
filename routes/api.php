@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\AccesspointController;
+use App\Http\Controllers\API\AgentController;
 use App\Http\Controllers\API\CustomerController;
 use App\Http\Controllers\API\RoomController;
 use App\Http\Controllers\API\ServerController;
@@ -25,17 +26,15 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 // Self-Service-Dokumentation: Geräte melden sich per Agent-Token selbst.
 Route::middleware('agent')->prefix('agent')->group(function () {
-    Route::post('/proxmox', [\App\Http\Controllers\API\AgentController::class, 'proxmox']);
-    Route::post('/windows-ad', [\App\Http\Controllers\API\AgentController::class, 'windowsAd']);
+    Route::post('/proxmox', [AgentController::class, 'proxmox']);
+    Route::post('/windows-ad', [AgentController::class, 'windowsAd']);
 });
-
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/customers', [CustomerController::class, 'index']);
     Route::get('/{customer}', [CustomerController::class, 'show']);
     Route::post('/customers', [CustomerController::class, 'store']);
-
 
     Route::prefix('{customer}')->group(function () {
 
@@ -61,11 +60,5 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('servers', [ServerController::class, 'store']);
     Route::put('servers/{server}', [ServerController::class, 'update']);
     Route::delete('servers/{server}', [ServerController::class, 'delete']);
-
-
-
-
-
-
 
 });

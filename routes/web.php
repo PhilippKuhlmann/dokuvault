@@ -179,7 +179,7 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::resource('vm', VMController::class)->except(['show']);
             Route::resource('networkswitch', NetworkSwitchController::class, ['parameters' => ['networkswitch' => 'networkswitch']])->except(['show']);
             Route::resource('rack', RackController::class)->except(['show']);
-        Route::resource('patchpanel', PatchPanelController::class, ['parameters' => ['patchpanel' => 'patchpanel']])->except(['show']);
+            Route::resource('patchpanel', PatchPanelController::class, ['parameters' => ['patchpanel' => 'patchpanel']])->except(['show']);
             Route::resource('nas', NASController::class, ['parameters' => ['nas' => 'nas']])->except(['show']);
             Route::resource('addomain', ADDomainController::class)->except(['show']);
             Route::resource('aduser', ADUserController::class)->except(['show']);

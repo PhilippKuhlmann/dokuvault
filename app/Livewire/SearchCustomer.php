@@ -14,23 +14,17 @@ class SearchCustomer extends Component
     public function render()
     {
 
-        $customers = NULL;
+        $customers = null;
 
         if ($this->search) {
-            $customers = Customer::where('name', 'like', '%' . $this->search . '%')->get();
-            if ($customers->isempty())
-            {
-                $customers = NULL;
+            $customers = Customer::where('name', 'like', '%'.$this->search.'%')->get();
+            if ($customers->isempty()) {
+                $customers = null;
             }
         }
-
 
         return view('livewire.search-customer', [
             'customers' => $customers,
         ]);
     }
 }
-
-
-
-

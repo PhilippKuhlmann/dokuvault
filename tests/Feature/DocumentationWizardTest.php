@@ -1,12 +1,16 @@
 <?php
 
 use App\Livewire\DocumentationWizard;
+use App\Models\ADDomain;
 use App\Models\Customer;
 use App\Models\DocumentationRun;
 use App\Models\Network;
 use App\Models\OperatingSystem;
 use App\Models\Router;
+use App\Models\Server;
 use App\Models\Site;
+use App\Models\VM;
+use App\Models\Wifi;
 use Livewire\Livewire;
 
 /**
@@ -20,7 +24,7 @@ test('jeder Schritt fragt jedes Pflichtfeld seines FormRequest ab', function () 
     // Schutz gegen den Fehler, den dieses Feature beheben soll: ein Schritt, der nicht
     // speicherbar ist, weil ein Pflichtfeld fehlt.
     foreach (config('custom.wizard_steps') as $step) {
-        $request = new $step['request']();
+        $request = new $step['request'];
         $required = collect($request->rules())
             ->filter(fn ($rules, $name) => $name !== 'site_id'
                 && collect((array) $rules)->contains(fn ($r) => $r === 'required' || (is_string($r) && str_starts_with($r, 'required'))))
@@ -133,7 +137,7 @@ test('WLAN mit VLAN eines fremden Kunden wird abgelehnt (BelongsToCustomer-Ersat
         ->call('save')
         ->assertHasErrors('form.network_id');
 
-    expect(\App\Models\Wifi::where('customer_id', $customer->id)->count())->toBe(0);
+    expect(Wifi::where('customer_id', $customer->id)->count())->toBe(0);
 });
 
 test('WLAN mit eigenem VLAN wird angenommen', function () {
@@ -155,7 +159,7 @@ test('WLAN mit eigenem VLAN wird angenommen', function () {
         ->call('save')
         ->assertHasNoErrors();
 
-    expect(\App\Models\Wifi::where('customer_id', $customer->id)->count())->toBe(1);
+    expect(Wifi::where('customer_id', $customer->id)->count())->toBe(1);
 });
 
 test('Massenzuweisung: customer_id und hidden aus dem Formular werden ignoriert', function () {
@@ -312,7 +316,7 @@ test('Server ohne Betriebssystem schlägt fehl statt die NOT-NULL-Spalte zu verl
         ->call('save')
         ->assertHasErrors('form.operating_system_id');
 
-    expect(\App\Models\Server::where('customer_id', $customer->id)->count())->toBe(0);
+    expect(Server::where('customer_id', $customer->id)->count())->toBe(0);
 });
 
 test('VM ohne Betriebssystem schlägt fehl, obwohl VMRequest das Feld nicht verlangt', function () {
@@ -333,7 +337,7 @@ test('VM ohne Betriebssystem schlägt fehl, obwohl VMRequest das Feld nicht verl
         ->call('save')
         ->assertHasErrors('form.operating_system_id');
 
-    expect(\App\Models\VM::where('customer_id', $customer->id)->count())->toBe(0);
+    expect(VM::where('customer_id', $customer->id)->count())->toBe(0);
 
     $os = OperatingSystem::factory()->create(['name' => 'Windows Server 2022']);
 
@@ -343,7 +347,7 @@ test('VM ohne Betriebssystem schlägt fehl, obwohl VMRequest das Feld nicht verl
         ->call('save')
         ->assertHasNoErrors();
 
-    expect(\App\Models\VM::where('customer_id', $customer->id)->count())->toBe(1);
+    expect(VM::where('customer_id', $customer->id)->count())->toBe(1);
 });
 
 test('AD-Domäne und Backup werden ohne site_id angelegt (Modelle haben keine Spalte dafür)', function () {
@@ -362,5 +366,5 @@ test('AD-Domäne und Backup werden ohne site_id angelegt (Modelle haben keine Sp
         ->call('save')
         ->assertHasNoErrors();
 
-    expect(\App\Models\ADDomain::where('customer_id', $customer->id)->count())->toBe(1);
+    expect(ADDomain::where('customer_id', $customer->id)->count())->toBe(1);
 });

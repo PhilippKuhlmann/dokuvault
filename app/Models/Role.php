@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -9,13 +10,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Role extends Model
 {
     use HasFactory, SoftDeletes;
-    use \App\Models\Concerns\TracksChanges;
+    use TracksChanges;
 
     protected $guarded = [];
 
     public const IS_ADMIN = 1;
-    public const IS_TECHNIKER = 10;
 
+    public const IS_TECHNIKER = 10;
 
     public function permissions()
     {

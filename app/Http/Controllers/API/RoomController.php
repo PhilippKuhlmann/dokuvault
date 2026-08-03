@@ -7,7 +7,6 @@ use App\Http\Requests\RoomRequest;
 use App\Models\Customer;
 use App\Models\Room;
 use App\Models\Site;
-use Illuminate\Http\Request;
 
 class RoomController extends Controller
 {
@@ -29,6 +28,4 @@ class RoomController extends Controller
 
         return response()->json($room, 201);
     }
-
-
 }

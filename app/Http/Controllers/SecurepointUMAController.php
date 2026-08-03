@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SecurepointUMARequest;
 use App\Models\Customer;
 use App\Models\SecurepointUMA;
-use Illuminate\Http\Request;
 
 class SecurepointUMAController extends Controller
 {

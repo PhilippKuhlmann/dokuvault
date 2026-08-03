@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LoginGeneralRequest;
 use App\Models\Customer;
 use App\Models\LoginGeneral;
-use Illuminate\Http\Request;
 
 class LoginGeneralController extends Controller
 {

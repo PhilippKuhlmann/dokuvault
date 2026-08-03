@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\FTPServerRequest;
 use App\Models\Customer;
 use App\Models\FTPServer;
-use Illuminate\Http\Request;
 
 class FTPServerController extends Controller
 {

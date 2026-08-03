@@ -17,7 +17,7 @@ class CameraFactory extends Factory
         ]);
 
         return [
-            'name' => 'CAM-' . fake()->randomElement(['Werkstatt', 'Hof', 'Parkplatz', 'Buero', 'Tor', 'Eingang', 'Flur', 'Lager']),
+            'name' => 'CAM-'.fake()->randomElement(['Werkstatt', 'Hof', 'Parkplatz', 'Buero', 'Tor', 'Eingang', 'Flur', 'Lager']),
             'manufacturer' => $manufacturer,
             'model' => $model,
             'serialNumber' => strtoupper(fake()->bothify('??########')),

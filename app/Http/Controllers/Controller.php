@@ -57,6 +57,4 @@ class Controller extends BaseController
     {
         return Network::where('customer_id', $customer->id)->get();
     }
-
-
 }

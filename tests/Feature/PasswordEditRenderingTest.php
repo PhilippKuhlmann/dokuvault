@@ -2,6 +2,7 @@
 
 use App\Models\Customer;
 use App\Models\LicenseSoftware;
+use App\Models\OperatingSystem;
 use App\Models\Router;
 use App\Models\Server;
 use App\Models\Site;
@@ -27,7 +28,7 @@ test('Passwort mit Sonderzeichen übersteht den Edit-Roundtrip unverändert', fu
     // Edit-Seite: genau 1x escaped im value-Attribut, kein Doppel-Escaping
     $response = $this->get("/{$customer->slug}/router/{$router->id}/edit");
     $response->assertStatus(200);
-    $response->assertSee('value="' . e($password) . '"', false);
+    $response->assertSee('value="'.e($password).'"', false);
     $response->assertDontSee('&amp;amp;', false);
 
     // Speichern ohne Änderung -> Wert bleibt exakt gleich
@@ -51,7 +52,7 @@ test('Script-Payload im Passwort bricht nicht aus dem Attribut aus (XSS)', funct
 
     $payload = '"><script>alert(1)</script>';
 
-    $os = \App\Models\OperatingSystem::factory()->create(['name' => 'Windows Server 2022']);
+    $os = OperatingSystem::factory()->create(['name' => 'Windows Server 2022']);
 
     $server = Server::create([
         'customer_id' => $customer->id,

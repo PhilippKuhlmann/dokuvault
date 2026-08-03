@@ -3,7 +3,6 @@
 namespace App\Policies;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class CustomerPolicy
@@ -14,5 +13,4 @@ class CustomerPolicy
     {
         return $user->hasCustomer();
     }
-
 }

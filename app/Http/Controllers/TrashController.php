@@ -64,6 +64,6 @@ class TrashController extends Controller
             }
         }
 
-        return '#' . $item->id;
+        return '#'.$item->id;
     }
 }

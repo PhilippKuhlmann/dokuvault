@@ -13,7 +13,7 @@ class PhoneController extends Controller
         $this->authorize('viewAny', Phone::class);
 
         $phones = $this->getFilteredQuery(Phone::class, $customer)
-                       ->latest()->paginate(25);
+            ->latest()->paginate(25);
 
         return view('phone.index', compact('customer', 'phones'));
     }

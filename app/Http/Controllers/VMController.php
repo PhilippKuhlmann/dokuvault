@@ -10,14 +10,13 @@ use App\Models\VM;
 
 class VMController extends Controller
 {
-
     public function index(Customer $customer)
     {
         $this->authorize('viewAny', VM::class);
 
         $vms = $this->getFilteredQuery(VM::class, $customer)
-                    ->with('operatingSystem', 'host')
-                    ->latest()->paginate(25);
+            ->with('operatingSystem', 'host')
+            ->latest()->paginate(25);
 
         return view('vm.index', compact('customer', 'vms'));
     }

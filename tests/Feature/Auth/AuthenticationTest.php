@@ -8,7 +8,6 @@ test('login screen can be rendered', function () {
     $response->assertStatus(200);
 });
 
-
 test('users can not authenticate with invalid password', function () {
     $user = User::factory()->create();
 

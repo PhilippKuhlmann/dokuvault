@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Permission;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Role;
 use Illuminate\Database\Seeder;
 
 class PermissionRoleSeeder extends Seeder
@@ -17,29 +17,25 @@ class PermissionRoleSeeder extends Seeder
     {
         // Rollen
 
-        $admin = \App\Models\Role::forceCreate([
+        $admin = Role::forceCreate([
             'id' => 1,
             'name' => 'Admin',
         ]);
 
-        $techniker = \App\Models\Role::forceCreate([
+        $techniker = Role::forceCreate([
             'id' => 10,
             'name' => 'Techniker',
         ]);
 
-        $customerViewAny = \App\Models\Role::forceCreate([
+        $customerViewAny = Role::forceCreate([
             'name' => 'general_read',
             'description' => 'Standard Kunde lesen',
         ]);
 
-        $customerDelete = \App\Models\Role::forceCreate([
+        $customerDelete = Role::forceCreate([
             'name' => 'general_full',
             'description' => 'Standard Kunde Vollzugriff',
         ]);
-
-
-
-
 
         // Permissions
         $models = config('custom.permissions');
@@ -51,27 +47,24 @@ class PermissionRoleSeeder extends Seeder
             'delete' => 'löschen',
         ];
 
-
         foreach ($models as $model) {
             foreach ($permissions as $p => $pn) {
-                ${strtolower($model).'_'.$p} = \App\Models\Permission::forceCreate([
+                ${strtolower($model).'_'.$p} = Permission::forceCreate([
                     'name' => strtolower($model).'_'.$p,
                     'description' => $model.' '.$pn,
                 ]);
             }
         }
 
-
-        $see_hidden = \App\Models\Permission::forceCreate([
+        $see_hidden = Permission::forceCreate([
             'name' => 'see_hidden',
-            'description' => 'Verstecke Objekte sehen'
+            'description' => 'Verstecke Objekte sehen',
         ]);
 
-        $create_pdf = \App\Models\Permission::forceCreate([
+        $create_pdf = Permission::forceCreate([
             'name' => 'create_pdf',
-            'description' => 'PDF erstellen'
+            'description' => 'PDF erstellen',
         ]);
-
 
         // PermissionRole
 
@@ -113,10 +106,6 @@ class PermissionRoleSeeder extends Seeder
         foreach ($permissions as $permission) {
             $customerDelete->assignPermission($permission);
         }
-
-
-
-
 
     }
 }

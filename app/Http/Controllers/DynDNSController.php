@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\DynDNSRequest;
 use App\Models\Customer;
 use App\Models\DynDNS;
-use Illuminate\Http\Request;
 
 class DynDNSController extends Controller
 {

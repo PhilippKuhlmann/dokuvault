@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\Schema;
  */
 class BelongsToCustomer implements ValidationRule
 {
-    public function __construct(protected string $table)
-    {
-    }
+    public function __construct(protected string $table) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {

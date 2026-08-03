@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CameraRequest;
 use App\Models\Camera;
 use App\Models\Customer;
-use Illuminate\Http\Request;
 
 class CameraController extends Controller
 {
@@ -14,7 +13,7 @@ class CameraController extends Controller
         $this->authorize('viewAny', Camera::class);
 
         $cameras = $this->getFilteredQuery(Camera::class, $customer)
-                        ->latest()->paginate(25);
+            ->latest()->paginate(25);
 
         return view('camera.index', compact('customer', 'cameras'));
     }

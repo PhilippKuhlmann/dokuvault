@@ -8,7 +8,6 @@ use App\Models\Customer;
 
 class ADGroupController extends Controller
 {
-
     public function index(Customer $customer)
     {
         $this->authorize('viewAny', ADGroup::class);

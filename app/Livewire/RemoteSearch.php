@@ -18,38 +18,37 @@ class RemoteSearch extends Component
             $search = $this->search;
 
             $servers = Server::where('remoteID', '!=', '')->where('remotePassword', '!=', '')
-                                ->with('customer')
-                                ->join('customers', 'servers.customer_id', '=', 'customers.id')
-                                ->select('servers.*', 'customers.name as customerName')
-                                ->where('customers.name', 'like', "%$search%")
-                                ->orderBy('customers.name')
-                                ->get();
+                ->with('customer')
+                ->join('customers', 'servers.customer_id', '=', 'customers.id')
+                ->select('servers.*', 'customers.name as customerName')
+                ->where('customers.name', 'like', "%$search%")
+                ->orderBy('customers.name')
+                ->get();
 
             $vms = VM::where('remoteID', '!=', '')->where('remotePassword', '!=', '')
-                        ->with('customer')
-                        ->join('customers', 'vms.customer_id', '=', 'customers.id')
-                        ->select('vms.*', 'customers.name as customerName')
-                        ->where('customers.name', 'like', "%$search%")
-                        ->orderBy('customers.name')
-                        ->get();
-
+                ->with('customer')
+                ->join('customers', 'vms.customer_id', '=', 'customers.id')
+                ->select('vms.*', 'customers.name as customerName')
+                ->where('customers.name', 'like', "%$search%")
+                ->orderBy('customers.name')
+                ->get();
 
         } else {
             $servers = Server::where('remoteID', '!=', '')
-                                ->where('remotePassword', '!=', '')
-                                ->with('customer')
-                                ->join('customers', 'servers.customer_id', '=', 'customers.id')
-                                ->select('servers.*', 'customers.name as customerName')
-                                ->orderBy('customers.name')
-                                ->get();
+                ->where('remotePassword', '!=', '')
+                ->with('customer')
+                ->join('customers', 'servers.customer_id', '=', 'customers.id')
+                ->select('servers.*', 'customers.name as customerName')
+                ->orderBy('customers.name')
+                ->get();
 
             $vms = VM::where('remoteID', '!=', '')
-                        ->where('remotePassword', '!=', '')
-                        ->select('name')
-                        ->join('customers', 'vms.customer_id', '=', 'customers.id')
-                        ->select('vms.*', 'customers.name as customerName')
-                        ->orderBy('customers.name')
-                        ->get();
+                ->where('remotePassword', '!=', '')
+                ->select('name')
+                ->join('customers', 'vms.customer_id', '=', 'customers.id')
+                ->select('vms.*', 'customers.name as customerName')
+                ->orderBy('customers.name')
+                ->get();
         }
 
         $remotes = [];
@@ -82,9 +81,7 @@ class RemoteSearch extends Component
             return strcmp($a['name'], $b['name']);
         });
 
-
-
         return view('livewire.remote-search', compact('remotes'))
-            ->layout('layouts.empty', ['title' => "Rustdesk"]);
+            ->layout('layouts.empty', ['title' => 'Rustdesk']);
     }
 }

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\OperatingSystemRequest;
 use App\Models\OperatingSystem;
-use Illuminate\Http\Request;
 
 class OperatingSystemController extends Controller
 {

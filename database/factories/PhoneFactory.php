@@ -1,12 +1,18 @@
 <?php
+
 namespace Database\Factories;
+
 use Illuminate\Database\Eloquent\Factories\Factory;
-class PhoneFactory extends Factory {
-    public function definition() {
+
+class PhoneFactory extends Factory
+{
+    public function definition()
+    {
         [$m,$mo] = fake()->randomElement([
-            ['Yealink','T54W'],['Yealink','T46U'],['Snom','D785'],
-            ['Grandstream','GRP2614'],['Fanvil','X5U'],
+            ['Yealink', 'T54W'], ['Yealink', 'T46U'], ['Snom', 'D785'],
+            ['Grandstream', 'GRP2614'], ['Fanvil', 'X5U'],
         ]);
+
         return [
             'extension' => fake()->numberBetween(10, 99),
             'manufacturer' => $m, 'model' => $mo,

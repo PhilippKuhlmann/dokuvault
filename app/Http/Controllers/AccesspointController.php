@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AccesspointRequest;
 use App\Models\Accesspoint;
 use App\Models\Customer;
-use Illuminate\Http\Request;
 
 class AccesspointController extends Controller
 {
@@ -14,7 +13,7 @@ class AccesspointController extends Controller
         $this->authorize('viewAny', Accesspoint::class);
 
         $accesspoints = $this->getFilteredQuery(Accesspoint::class, $customer)
-                        ->latest()->paginate(25);
+            ->latest()->paginate(25);
 
         return view('accesspoint.index', compact('customer', 'accesspoints'));
     }

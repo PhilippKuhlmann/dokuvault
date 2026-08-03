@@ -67,5 +67,4 @@ class MailboxController extends Controller
 
         return redirect(route('mailbox.index', $customer));
     }
-
 }

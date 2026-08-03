@@ -3,10 +3,7 @@
 use App\Models\Computer;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
-use App\Models\Permission;
-use App\Models\Role;
 use App\Models\Site;
-use App\Models\User;
 
 test('site_id eines fremden Kunden wird beim Anlegen abgelehnt (IDOR)', function () {
     $this->actingAs(userWithPermissions(['computer_create', 'computer_viewAny']));

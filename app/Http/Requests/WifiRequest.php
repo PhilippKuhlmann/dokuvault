@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\BelongsToCustomer;
 use Illuminate\Foundation\Http\FormRequest;
 
 class WifiRequest extends FormRequest
@@ -24,10 +25,10 @@ class WifiRequest extends FormRequest
     public function rules()
     {
         return [
-            'site_id' => ['required', new \App\Rules\BelongsToCustomer('sites')],
+            'site_id' => ['required', new BelongsToCustomer('sites')],
             'ssid' => 'required|max:255',
             'password' => 'nullable|max:255',
-            'network_id' => ['required', new \App\Rules\BelongsToCustomer('networks')],
+            'network_id' => ['required', new BelongsToCustomer('networks')],
             'encryption' => 'required|max:255',
         ];
     }

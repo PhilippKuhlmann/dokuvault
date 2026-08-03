@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\LoginRecorderRequest;
 use App\Models\Customer;
 use App\Models\LoginRecorder;
 use App\Models\Recorder;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class LoginRecorderController extends Controller
@@ -18,15 +16,15 @@ class LoginRecorderController extends Controller
 
         if (Auth::user()->can('see_hidden')) {
             $loginrecorders = LoginRecorder::where('customer_id', $customer->id)
-                                            ->with('recorder')
-                                            ->latest()
-                                            ->paginate(25);
+                ->with('recorder')
+                ->latest()
+                ->paginate(25);
         } else {
             $loginrecorders = LoginRecorder::where('customer_id', $customer->id)
-                                            ->where('hidden', false)
-                                            ->with('recorder')
-                                            ->latest()
-                                            ->paginate(25);
+                ->where('hidden', false)
+                ->with('recorder')
+                ->latest()
+                ->paginate(25);
         }
 
         return view('loginrecorder.index', compact('customer', 'loginrecorders'));

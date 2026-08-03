@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\ADDomain;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ADDomain>
+ * @extends Factory<ADDomain>
  */
 class ADDomainFactory extends Factory
 {

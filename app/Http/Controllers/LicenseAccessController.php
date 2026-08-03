@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LicenseAccessRequest;
 use App\Models\Customer;
 use App\Models\LicenseAccess;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class LicenseAccessController extends Controller
@@ -30,8 +29,8 @@ class LicenseAccessController extends Controller
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $fileName = time() . '_' . $request->file_name . '.' . $file->getClientOriginalExtension();
-            $filePath = $file->storeAs($customer->slug . '/licenseaccess', $fileName, 'local');
+            $fileName = time().'_'.$request->file_name.'.'.$file->getClientOriginalExtension();
+            $filePath = $file->storeAs($customer->slug.'/licenseaccess', $fileName, 'local');
         } else {
             $filePath = null;
         }
@@ -57,8 +56,8 @@ class LicenseAccessController extends Controller
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $fileName = time() . '_' . $request->file_name . '.' . $file->getClientOriginalExtension();
-            $filePath = $file->storeAs($customer->slug . '/licenseaccess', $fileName, 'local');
+            $fileName = time().'_'.$request->file_name.'.'.$file->getClientOriginalExtension();
+            $filePath = $file->storeAs($customer->slug.'/licenseaccess', $fileName, 'local');
             if ($licenseaccess->file_path) {
                 Storage::delete($licenseaccess->file_path);
             }

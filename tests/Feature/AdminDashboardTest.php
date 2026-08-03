@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Certificate;
+use App\Models\Customer;
 use App\Models\Role;
 use App\Models\User;
 
@@ -26,8 +28,8 @@ test('Admin-Dashboard zeigt global ablaufende Zertifikate/Lizenzen', function ()
     $admin = User::factory()->create(['role_id' => $adminRole->id]);
     $this->actingAs($admin);
 
-    $customer = \App\Models\Customer::factory()->create(['name' => 'Beispiel GmbH']);
-    \App\Models\Certificate::factory()->create([
+    $customer = Customer::factory()->create(['name' => 'Beispiel GmbH']);
+    Certificate::factory()->create([
         'customer_id' => $customer->id,
         'name' => 'Ablaufendes Wildcard',
         'expiry_date' => now()->addDays(10)->toDateString(),

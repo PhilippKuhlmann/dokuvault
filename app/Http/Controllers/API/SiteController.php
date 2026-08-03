@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SiteRequest;
 use App\Models\Customer;
 use App\Models\Site;
-use Illuminate\Http\Request;
 
 class SiteController extends Controller
 {

@@ -2,7 +2,6 @@
 
 namespace App\Livewire;
 
-use App\Models\IpAddress;
 use App\Models\Network;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -12,12 +11,16 @@ class DeviceIpAddresses extends Component
 {
     // Skalare statt Model-Instanz: robust bei polymorphen Modellen und Livewire-Hydration.
     public string $modelClass;
+
     public int $modelId;
+
     public int $customerId;
 
     // Formular für neuen Eintrag
     public string $address = '';
+
     public $network_id = '';
+
     public string $label = '';
 
     public function mount($model, $customer): void
@@ -35,7 +38,7 @@ class DeviceIpAddresses extends Component
     {
         $device = $this->modelClass::findOrFail($this->modelId);
 
-        Gate::authorize(strtolower(class_basename($this->modelClass)) . '_update');
+        Gate::authorize(strtolower(class_basename($this->modelClass)).'_update');
 
         $user = auth()->user();
         abort_if($user->customer_id && $user->customer_id !== $device->customer_id, 403);

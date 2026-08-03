@@ -1,6 +1,12 @@
 <?php
 
+use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\File;
+use App\Models\LicenseWindows;
+use App\Models\Network;
+use App\Models\Printer;
+use App\Models\Server;
 use App\Models\Site;
 use Illuminate\Support\Facades\Schema;
 
@@ -19,21 +25,21 @@ use Illuminate\Support\Facades\Schema;
 
 /** Modelle, die auf Index-Seiten gelistet werden und KEINEN Standortbezug haben. */
 const SITELESS_MODELS = [
-    \App\Models\File::class,
-    \App\Models\LicenseWindows::class,
+    File::class,
+    LicenseWindows::class,
 ];
 
 /** Kontrollgruppe: Modelle MIT Standortbezug, hier muss der Filter greifen. */
 const SITE_SCOPED_MODELS = [
-    \App\Models\Server::class,
-    \App\Models\Printer::class,
-    \App\Models\Network::class,
+    Server::class,
+    Printer::class,
+    Network::class,
 ];
 
 /** Ruft das geschützte getFilteredQuery des Basis-Controllers auf. */
 function filteredQueryFor(string $model, Customer $customer)
 {
-    $controller = new class extends \App\Http\Controllers\Controller
+    $controller = new class extends Controller
     {
         public function call($model, $customer)
         {

@@ -8,7 +8,6 @@ use App\Models\LoginWebsite;
 
 class LoginWebsiteController extends Controller
 {
-
     public function index(Customer $customer)
     {
         $this->authorize('viewAny', LoginWebsite::class);

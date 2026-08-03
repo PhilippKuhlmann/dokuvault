@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\VM;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\VM>
+ * @extends Factory<VM>
  */
 class VMFactory extends Factory
 {
@@ -17,7 +18,7 @@ class VMFactory extends Factory
     public function definition()
     {
         return [
-            'name' => 'VM-' . fake()->randomElement(['DC02', 'Exchange', 'RDS01', 'App-ERP', 'SQL02', 'WSUS', 'Webserver', 'Terminal']),
+            'name' => 'VM-'.fake()->randomElement(['DC02', 'Exchange', 'RDS01', 'App-ERP', 'SQL02', 'WSUS', 'Webserver', 'Terminal']),
             'ip1' => fake()->localIpv4(),
             'services' => 'docker,apache2,mariadb',
             'operating_system_id' => fake()->numberBetween($min = 1, $max = 10),

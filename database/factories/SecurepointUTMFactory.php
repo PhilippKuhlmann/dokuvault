@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\SecurepointUTM;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\SecurepointUTM>
+ * @extends Factory<SecurepointUTM>
  */
 class SecurepointUTMFactory extends Factory
 {
@@ -17,7 +18,7 @@ class SecurepointUTMFactory extends Factory
     public function definition()
     {
         return [
-            'name' => 'utm01.' . fake()->domainName(),
+            'name' => 'utm01.'.fake()->domainName(),
             'type' => 'VM',
             'username' => 'admin',
             'password' => fake()->password($minLength = 6, $maxLength = 12),

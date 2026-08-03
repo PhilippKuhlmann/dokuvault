@@ -6,7 +6,6 @@ use App\Http\Requests\LoginNASRequest;
 use App\Models\Customer;
 use App\Models\LoginNAS;
 use App\Models\NAS;
-use Illuminate\Http\Request;
 
 class LoginNASController extends Controller
 {

@@ -1,5 +1,64 @@
 <?php
 
+use App\Http\Requests\AccesspointRequest;
+use App\Http\Requests\ADDomainRequest;
+use App\Http\Requests\BackupRequest;
+use App\Http\Requests\ComputerRequest;
+use App\Http\Requests\ContactPersonRequest;
+use App\Http\Requests\InternetConnectionRequest;
+use App\Http\Requests\NASRequest;
+use App\Http\Requests\NetworkRequest;
+use App\Http\Requests\NetworkSwitchRequest;
+use App\Http\Requests\PhoneSystemRequest;
+use App\Http\Requests\PrinterRequest;
+use App\Http\Requests\RouterRequest;
+use App\Http\Requests\ServerRequest;
+use App\Http\Requests\SiteRequest;
+use App\Http\Requests\VMRequest;
+use App\Http\Requests\WifiRequest;
+use App\Models\Accesspoint;
+use App\Models\ADDomain;
+use App\Models\ADGroup;
+use App\Models\ADUser;
+use App\Models\Backup;
+use App\Models\Camera;
+use App\Models\Certificate;
+use App\Models\Computer;
+use App\Models\ContactPerson;
+use App\Models\DECT;
+use App\Models\Domain;
+use App\Models\DynDNS;
+use App\Models\FTPServer;
+use App\Models\InternetConnection;
+use App\Models\IoTDevice;
+use App\Models\LicenseAccess;
+use App\Models\LicenseSoftware;
+use App\Models\LicenseWindows;
+use App\Models\LoginGeneral;
+use App\Models\LoginNAS;
+use App\Models\LoginRecorder;
+use App\Models\LoginWebsite;
+use App\Models\Machine;
+use App\Models\Mailbox;
+use App\Models\NAS;
+use App\Models\Network;
+use App\Models\NetworkSwitch;
+use App\Models\OtherClient;
+use App\Models\PatchPanel;
+use App\Models\Phone;
+use App\Models\PhoneSystem;
+use App\Models\Printer;
+use App\Models\Rack;
+use App\Models\Recorder;
+use App\Models\Router;
+use App\Models\SecurepointUMA;
+use App\Models\SecurepointUTM;
+use App\Models\Server;
+use App\Models\Site;
+use App\Models\Ups;
+use App\Models\VM;
+use App\Models\Wifi;
+
 return [
     'permissions' => [
         'Site',
@@ -52,48 +111,48 @@ return [
      * Nur Models mit customer_id und SoftDeletes aufnehmen.
      */
     'trashables' => [
-        'site' => [\App\Models\Site::class, 'Standort'],
-        'contactperson' => [\App\Models\ContactPerson::class, 'Ansprechpartner'],
-        'server' => [\App\Models\Server::class, 'Server'],
-        'vm' => [\App\Models\VM::class, 'VM'],
-        'nas' => [\App\Models\NAS::class, 'NAS'],
-        'securepointutm' => [\App\Models\SecurepointUTM::class, 'Securepoint UTM'],
-        'securepointuma' => [\App\Models\SecurepointUMA::class, 'E-Mail-Archivierung'],
-        'router' => [\App\Models\Router::class, 'Router'],
-        'network' => [\App\Models\Network::class, 'Netzwerk'],
-        'networkswitch' => [\App\Models\NetworkSwitch::class, 'Switch'],
-        'rack' => [\App\Models\Rack::class, 'Serverschrank'],
-        'patchpanel' => [\App\Models\PatchPanel::class, 'Patchfeld'],
-        'wifi' => [\App\Models\Wifi::class, 'WLAN'],
-        'accesspoint' => [\App\Models\Accesspoint::class, 'Accesspoint'],
-        'computer' => [\App\Models\Computer::class, 'Computer'],
-        'iotdevice' => [\App\Models\IoTDevice::class, 'IoT-Gerät'],
-        'machine' => [\App\Models\Machine::class, 'Maschine'],
-        'otherclient' => [\App\Models\OtherClient::class, 'Sonstiger Client'],
-        'printer' => [\App\Models\Printer::class, 'Drucker'],
-        'addomain' => [\App\Models\ADDomain::class, 'AD-Domäne'],
-        'aduser' => [\App\Models\ADUser::class, 'AD-Benutzer'],
-        'adgroup' => [\App\Models\ADGroup::class, 'AD-Gruppe'],
-        'phonesystem' => [\App\Models\PhoneSystem::class, 'TK-Anlage'],
-        'phone' => [\App\Models\Phone::class, 'Telefon'],
-        'dect' => [\App\Models\DECT::class, 'DECT'],
-        'logingeneral' => [\App\Models\LoginGeneral::class, 'Login Allgemein'],
-        'loginnas' => [\App\Models\LoginNAS::class, 'Login NAS'],
-        'loginwebsite' => [\App\Models\LoginWebsite::class, 'Login Webseite'],
-        'loginrecorder' => [\App\Models\LoginRecorder::class, 'Login Recorder'],
-        'mailbox' => [\App\Models\Mailbox::class, 'Postfach'],
-        'recorder' => [\App\Models\Recorder::class, 'Recorder'],
-        'camera' => [\App\Models\Camera::class, 'Kamera'],
-        'licensesoftware' => [\App\Models\LicenseSoftware::class, 'Software-Lizenz'],
-        'licensewindows' => [\App\Models\LicenseWindows::class, 'Windows-Lizenz'],
-        'licenseaccess' => [\App\Models\LicenseAccess::class, 'CAL-Lizenz'],
-        'ftpserver' => [\App\Models\FTPServer::class, 'FTP-Server'],
-        'dyndns' => [\App\Models\DynDNS::class, 'DynDNS'],
-        'ups' => [\App\Models\Ups::class, 'USV'],
-        'internetconnection' => [\App\Models\InternetConnection::class, 'Internet-Anschluss'],
-        'domain' => [\App\Models\Domain::class, 'Domain'],
-        'certificate' => [\App\Models\Certificate::class, 'Zertifikat'],
-        'backup' => [\App\Models\Backup::class, 'Backup'],
+        'site' => [Site::class, 'Standort'],
+        'contactperson' => [ContactPerson::class, 'Ansprechpartner'],
+        'server' => [Server::class, 'Server'],
+        'vm' => [VM::class, 'VM'],
+        'nas' => [NAS::class, 'NAS'],
+        'securepointutm' => [SecurepointUTM::class, 'Securepoint UTM'],
+        'securepointuma' => [SecurepointUMA::class, 'E-Mail-Archivierung'],
+        'router' => [Router::class, 'Router'],
+        'network' => [Network::class, 'Netzwerk'],
+        'networkswitch' => [NetworkSwitch::class, 'Switch'],
+        'rack' => [Rack::class, 'Serverschrank'],
+        'patchpanel' => [PatchPanel::class, 'Patchfeld'],
+        'wifi' => [Wifi::class, 'WLAN'],
+        'accesspoint' => [Accesspoint::class, 'Accesspoint'],
+        'computer' => [Computer::class, 'Computer'],
+        'iotdevice' => [IoTDevice::class, 'IoT-Gerät'],
+        'machine' => [Machine::class, 'Maschine'],
+        'otherclient' => [OtherClient::class, 'Sonstiger Client'],
+        'printer' => [Printer::class, 'Drucker'],
+        'addomain' => [ADDomain::class, 'AD-Domäne'],
+        'aduser' => [ADUser::class, 'AD-Benutzer'],
+        'adgroup' => [ADGroup::class, 'AD-Gruppe'],
+        'phonesystem' => [PhoneSystem::class, 'TK-Anlage'],
+        'phone' => [Phone::class, 'Telefon'],
+        'dect' => [DECT::class, 'DECT'],
+        'logingeneral' => [LoginGeneral::class, 'Login Allgemein'],
+        'loginnas' => [LoginNAS::class, 'Login NAS'],
+        'loginwebsite' => [LoginWebsite::class, 'Login Webseite'],
+        'loginrecorder' => [LoginRecorder::class, 'Login Recorder'],
+        'mailbox' => [Mailbox::class, 'Postfach'],
+        'recorder' => [Recorder::class, 'Recorder'],
+        'camera' => [Camera::class, 'Kamera'],
+        'licensesoftware' => [LicenseSoftware::class, 'Software-Lizenz'],
+        'licensewindows' => [LicenseWindows::class, 'Windows-Lizenz'],
+        'licenseaccess' => [LicenseAccess::class, 'CAL-Lizenz'],
+        'ftpserver' => [FTPServer::class, 'FTP-Server'],
+        'dyndns' => [DynDNS::class, 'DynDNS'],
+        'ups' => [Ups::class, 'USV'],
+        'internetconnection' => [InternetConnection::class, 'Internet-Anschluss'],
+        'domain' => [Domain::class, 'Domain'],
+        'certificate' => [Certificate::class, 'Zertifikat'],
+        'backup' => [Backup::class, 'Backup'],
     ],
 
     /**
@@ -161,8 +220,8 @@ return [
         [
             'key' => 'site', 'group' => 'Grunddaten', 'label' => 'Standorte',
             'question' => 'An welchen Standorten arbeitet der Kunde?',
-            'model' => \App\Models\Site::class, 'relation' => 'sites',
-            'request' => \App\Http\Requests\SiteRequest::class, 'permission' => 'site_create',
+            'model' => Site::class, 'relation' => 'sites',
+            'request' => SiteRequest::class, 'permission' => 'site_create',
             'scope' => 'customer', 'label_field' => 'name', 'sets_site' => true,
             'fields' => [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
@@ -175,8 +234,8 @@ return [
         [
             'key' => 'contactperson', 'group' => 'Grunddaten', 'label' => 'Ansprechpartner',
             'question' => 'Wer sind die Ansprechpartner beim Kunden?',
-            'model' => \App\Models\ContactPerson::class, 'relation' => 'contactpersons',
-            'request' => \App\Http\Requests\ContactPersonRequest::class, 'permission' => 'contactperson_create',
+            'model' => ContactPerson::class, 'relation' => 'contactpersons',
+            'request' => ContactPersonRequest::class, 'permission' => 'contactperson_create',
             'scope' => 'customer', 'label_field' => 'last_name',
             'fields' => [
                 ['name' => 'first_name', 'label' => 'Vorname', 'type' => 'text'],
@@ -188,8 +247,8 @@ return [
         [
             'key' => 'internetconnection', 'group' => 'Netzwerk', 'label' => 'Internet-Anschlüsse',
             'question' => 'Welche Internet-Anschlüsse gibt es?',
-            'model' => \App\Models\InternetConnection::class, 'relation' => 'internetconnections',
-            'request' => \App\Http\Requests\InternetConnectionRequest::class, 'permission' => 'internetconnection_create',
+            'model' => InternetConnection::class, 'relation' => 'internetconnections',
+            'request' => InternetConnectionRequest::class, 'permission' => 'internetconnection_create',
             'scope' => 'site', 'label_field' => 'provider',
             'fields' => [
                 ['name' => 'provider', 'label' => 'Anbieter', 'type' => 'text'],
@@ -201,8 +260,8 @@ return [
         [
             'key' => 'router', 'group' => 'Netzwerk', 'label' => 'Router',
             'question' => 'Welche Router sind im Einsatz?',
-            'model' => \App\Models\Router::class, 'relation' => 'routers',
-            'request' => \App\Http\Requests\RouterRequest::class, 'permission' => 'router_create',
+            'model' => Router::class, 'relation' => 'routers',
+            'request' => RouterRequest::class, 'permission' => 'router_create',
             'scope' => 'site', 'label_field' => 'name',
             'fields' => [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
@@ -215,8 +274,8 @@ return [
         [
             'key' => 'network', 'group' => 'Netzwerk', 'label' => 'VLANs',
             'question' => 'Welche VLANs gibt es?',
-            'model' => \App\Models\Network::class, 'relation' => 'networks',
-            'request' => \App\Http\Requests\NetworkRequest::class, 'permission' => 'network_create',
+            'model' => Network::class, 'relation' => 'networks',
+            'request' => NetworkRequest::class, 'permission' => 'network_create',
             'scope' => 'site', 'label_field' => 'description',
             'fields' => [
                 ['name' => 'description', 'label' => 'Bezeichnung', 'type' => 'text'],
@@ -230,8 +289,8 @@ return [
         [
             'key' => 'wifi', 'group' => 'Netzwerk', 'label' => 'WLAN-Netze',
             'question' => 'Welche WLANs werden ausgestrahlt?',
-            'model' => \App\Models\Wifi::class, 'relation' => 'wifis',
-            'request' => \App\Http\Requests\WifiRequest::class, 'permission' => 'wifi_create',
+            'model' => Wifi::class, 'relation' => 'wifis',
+            'request' => WifiRequest::class, 'permission' => 'wifi_create',
             'scope' => 'site', 'label_field' => 'ssid',
             // password/network_id sind in wifis NOT NULL, obwohl WifiRequest sie nicht als
             // 'required' führt (geprüft in der Migration) - siehe DocumentationWizard::RULE_OVERRIDES.
@@ -247,8 +306,8 @@ return [
         [
             'key' => 'networkswitch', 'group' => 'Netzwerk', 'label' => 'Switches',
             'question' => 'Welche Switches sind verbaut?',
-            'model' => \App\Models\NetworkSwitch::class, 'relation' => 'networkswitches',
-            'request' => \App\Http\Requests\NetworkSwitchRequest::class, 'permission' => 'networkswitch_create',
+            'model' => NetworkSwitch::class, 'relation' => 'networkswitches',
+            'request' => NetworkSwitchRequest::class, 'permission' => 'networkswitch_create',
             'scope' => 'site', 'label_field' => 'name',
             'fields' => [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
@@ -260,8 +319,8 @@ return [
         [
             'key' => 'accesspoint', 'group' => 'Netzwerk', 'label' => 'Accesspoints',
             'question' => 'Welche Accesspoints sind verbaut?',
-            'model' => \App\Models\Accesspoint::class, 'relation' => 'accesspoints',
-            'request' => \App\Http\Requests\AccesspointRequest::class, 'permission' => 'accesspoint_create',
+            'model' => Accesspoint::class, 'relation' => 'accesspoints',
+            'request' => AccesspointRequest::class, 'permission' => 'accesspoint_create',
             'scope' => 'site', 'label_field' => 'name',
             'fields' => [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
@@ -273,8 +332,8 @@ return [
         [
             'key' => 'server', 'group' => 'Server & Speicher', 'label' => 'Server',
             'question' => 'Welche physischen Server stehen beim Kunden?',
-            'model' => \App\Models\Server::class, 'relation' => 'servers',
-            'request' => \App\Http\Requests\ServerRequest::class, 'permission' => 'server_create',
+            'model' => Server::class, 'relation' => 'servers',
+            'request' => ServerRequest::class, 'permission' => 'server_create',
             'scope' => 'site', 'label_field' => 'name',
             'fields' => [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
@@ -288,8 +347,8 @@ return [
         [
             'key' => 'vm', 'group' => 'Server & Speicher', 'label' => 'VMs',
             'question' => 'Welche virtuellen Maschinen laufen?',
-            'model' => \App\Models\VM::class, 'relation' => 'vms',
-            'request' => \App\Http\Requests\VMRequest::class, 'permission' => 'vm_create',
+            'model' => VM::class, 'relation' => 'vms',
+            'request' => VMRequest::class, 'permission' => 'vm_create',
             'scope' => 'site', 'label_field' => 'name',
             // operating_system_id ist in vms NOT NULL, obwohl VMRequest es nicht verlangt
             // (geprüft in der Migration) - siehe DocumentationWizard::RULE_OVERRIDES.
@@ -303,8 +362,8 @@ return [
         [
             'key' => 'nas', 'group' => 'Server & Speicher', 'label' => 'NAS',
             'question' => 'Welche NAS-Systeme sind im Einsatz?',
-            'model' => \App\Models\NAS::class, 'relation' => 'nas',
-            'request' => \App\Http\Requests\NASRequest::class, 'permission' => 'nas_create',
+            'model' => NAS::class, 'relation' => 'nas',
+            'request' => NASRequest::class, 'permission' => 'nas_create',
             'scope' => 'site', 'label_field' => 'name',
             'fields' => [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
@@ -316,8 +375,8 @@ return [
         [
             'key' => 'computer', 'group' => 'Clients', 'label' => 'Computer',
             'question' => 'Welche Arbeitsplatzrechner gibt es?',
-            'model' => \App\Models\Computer::class, 'relation' => 'computers',
-            'request' => \App\Http\Requests\ComputerRequest::class, 'permission' => 'computer_create',
+            'model' => Computer::class, 'relation' => 'computers',
+            'request' => ComputerRequest::class, 'permission' => 'computer_create',
             'scope' => 'site', 'label_field' => 'name',
             'fields' => [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
@@ -329,8 +388,8 @@ return [
         [
             'key' => 'printer', 'group' => 'Clients', 'label' => 'Drucker',
             'question' => 'Welche Drucker sind im Einsatz?',
-            'model' => \App\Models\Printer::class, 'relation' => 'printers',
-            'request' => \App\Http\Requests\PrinterRequest::class, 'permission' => 'printer_create',
+            'model' => Printer::class, 'relation' => 'printers',
+            'request' => PrinterRequest::class, 'permission' => 'printer_create',
             'scope' => 'site', 'label_field' => 'name',
             'fields' => [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
@@ -341,8 +400,8 @@ return [
         [
             'key' => 'addomain', 'group' => 'Dienste', 'label' => 'AD-Domänen',
             'question' => 'Welche Active-Directory-Domäne wird betrieben?',
-            'model' => \App\Models\ADDomain::class, 'relation' => 'addomains',
-            'request' => \App\Http\Requests\ADDomainRequest::class, 'permission' => 'addomain_create',
+            'model' => ADDomain::class, 'relation' => 'addomains',
+            'request' => ADDomainRequest::class, 'permission' => 'addomain_create',
             'scope' => 'customer', 'label_field' => 'domain',
             'fields' => [
                 ['name' => 'domain', 'label' => 'Domäne', 'type' => 'text', 'placeholder' => 'firma.local'],
@@ -353,8 +412,8 @@ return [
         [
             'key' => 'phonesystem', 'group' => 'Dienste', 'label' => 'TK-Anlagen',
             'question' => 'Welche Telefonanlage ist im Einsatz?',
-            'model' => \App\Models\PhoneSystem::class, 'relation' => 'phonesystems',
-            'request' => \App\Http\Requests\PhoneSystemRequest::class, 'permission' => 'phonesystem_create',
+            'model' => PhoneSystem::class, 'relation' => 'phonesystems',
+            'request' => PhoneSystemRequest::class, 'permission' => 'phonesystem_create',
             'scope' => 'site', 'label_field' => 'manufacturer',
             'fields' => [
                 ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
@@ -365,8 +424,8 @@ return [
         [
             'key' => 'backup', 'group' => 'Dienste', 'label' => 'Backups',
             'question' => 'Wie wird gesichert?',
-            'model' => \App\Models\Backup::class, 'relation' => 'backups',
-            'request' => \App\Http\Requests\BackupRequest::class, 'permission' => 'backup_create',
+            'model' => Backup::class, 'relation' => 'backups',
+            'request' => BackupRequest::class, 'permission' => 'backup_create',
             'scope' => 'customer', 'label_field' => 'name',
             'fields' => [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
@@ -385,16 +444,16 @@ return [
      * Voraussetzung: Model hat customer_id und ein name-Feld.
      */
     'rack_device_types' => [
-        'server' => [\App\Models\Server::class, 'Server', 'server'],
-        'networkswitch' => [\App\Models\NetworkSwitch::class, 'Switch', 'switch'],
-        'patchpanel' => [\App\Models\PatchPanel::class, 'Patchfeld', 'patchpanel'],
-        'nas' => [\App\Models\NAS::class, 'NAS', 'nas'],
-        'router' => [\App\Models\Router::class, 'Router', 'router'],
-        'ups' => [\App\Models\Ups::class, 'USV', 'ups'],
+        'server' => [Server::class, 'Server', 'server'],
+        'networkswitch' => [NetworkSwitch::class, 'Switch', 'switch'],
+        'patchpanel' => [PatchPanel::class, 'Patchfeld', 'patchpanel'],
+        'nas' => [NAS::class, 'NAS', 'nas'],
+        'router' => [Router::class, 'Router', 'router'],
+        'ups' => [Ups::class, 'USV', 'ups'],
         // PhoneSystem fehlt bewusst: die Tabelle hat keine name-Spalte,
         // ein Einbau hätte in der Rack-Ansicht keinen Anzeigenamen.
-        'recorder' => [\App\Models\Recorder::class, 'Recorder', 'server'],
-        'securepointuma' => [\App\Models\SecurepointUMA::class, 'E-Mail-Archiv', 'server'],
+        'recorder' => [Recorder::class, 'Recorder', 'server'],
+        'securepointuma' => [SecurepointUMA::class, 'E-Mail-Archiv', 'server'],
     ],
 
     /*
