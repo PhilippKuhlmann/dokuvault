@@ -1,17 +1,22 @@
 version: 2
 
 # Woechentlich statt taeglich: Bei einem Projekt dieser Groesse sind taegliche
-# Aktualisierungen mehr Rauschen als Nutzen. Gruppiert, damit nicht fuenf
-# Patch-Updates fuenf Pull Requests ergeben.
+# Aktualisierungen mehr Rauschen als Nutzen.
+#
+# Gruppiert wird nach Ecosystem, damit aus sechs Patch-Updates ein Pull Request
+# wird statt sechs. Major-Spruenge bleiben bewusst einzeln - sie brauchen eine
+# Entscheidung, und in einer Gruppe wuerde ein einziger schwieriger Sprung alle
+# uebrigen mit blockieren.
 updates:
   - package-ecosystem: composer
     directory: "/"
     schedule:
       interval: weekly
       day: monday
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
     groups:
-      php-patch:
+      php-klein:
+        patterns: ["*"]
         update-types: ["minor", "patch"]
 
   - package-ecosystem: npm
@@ -19,12 +24,29 @@ updates:
     schedule:
       interval: weekly
       day: monday
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
     groups:
-      js-patch:
+      js-klein:
+        patterns: ["*"]
         update-types: ["minor", "patch"]
+    ignore:
+      # Der Frontend-Build haengt zusammen: vite, laravel-vite-plugin und
+      # tailwindcss lassen sich nicht einzeln anheben - jeder Versuch scheitert
+      # an der Abhaengigkeit zu den anderen (npm ERESOLVE). Dazu ist Tailwind 4
+      # keine Aktualisierung, sondern eine Umstellung: Die Konfiguration wandert
+      # aus tailwind.config.js nach CSS. Das gehoert in ein eigenes Vorhaben,
+      # nicht in einen automatischen Pull Request.
+      - dependency-name: vite
+        update-types: ["version-update:semver-major"]
+      - dependency-name: laravel-vite-plugin
+        update-types: ["version-update:semver-major"]
+      - dependency-name: tailwindcss
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]

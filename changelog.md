@@ -21,6 +21,7 @@
 
 ### Internal
 
+- **Abhängigkeiten nachgezogen**: Pint 1.30.3, Debugbar 4.4, `@tailwindcss/forms`, Alpine, autoprefixer, axios, lodash, postcss und Puppeteer auf aktuelle Stände; `actions/checkout` und `actions/setup-node` auf v7 – in allen drei Workflows, nicht nur in dem, den Dependabot kannte. Die Dependabot-Konfiguration fasst kleine Aktualisierungen jetzt je Ecosystem zu einem Pull Request zusammen; Major-Sprünge bleiben einzeln, weil sie eine Entscheidung brauchen. `vite`, `laravel-vite-plugin` und `tailwindcss` sind für Major-Sprünge ausgenommen: Sie hängen voneinander ab und lassen sich nur gemeinsam anheben.
 - **Der Code-Stil wird geprüft**: Pint lief einmal über das ganze Repository (293 Dateien, rein mechanisch: Importe sortiert und ungenutzte entfernt, Klammern und Einrückung vereinheitlicht), und die CI hält den Stand mit `pint --test`. Vorher erzeugte jeder lokale Pint-Lauf einen Diff über Hunderte fremder Dateien – zweimal passiert, zweimal von Hand zurückgedreht.
 - **Vorlagen für Issues und Pull Requests**, Dependabot für Composer, npm und GitHub Actions, `.mailmap` gegen doppelte Autorenzählung, und ein dokumentiertes Tag-Schema (`vJJ.MM.TT`) in CONTRIBUTING.md.
 
