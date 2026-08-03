@@ -57,6 +57,12 @@ class RackEditor extends Component
         $device = $class::findOrFail($deviceId);
         abort_if($device->customer_id !== $rack->customer_id, 403);
 
+        // Serverseitig pruefen, nicht nur in der Auswahlliste: Der Aufruf
+        // kommt vom Client und laesst sich mit beliebiger ID nachbilden.
+        if (method_exists($device, 'istRackServer') && ! $device->istRackServer()) {
+            $this->fail($device->name.' ist ein Standserver und lässt sich nicht einbauen.');
+        }
+
         if (RackItem::where('device_type', $class)->where('device_id', $device->id)->exists()) {
             $this->fail($device->name.' ist bereits in einem Rack verbaut.');
         }
@@ -223,7 +229,13 @@ class RackEditor extends Component
             ->map(function (array $entry, string $key) {
                 [$class, $label] = $entry;
 
-                $devices = $class::where('customer_id', $this->customerId)
+                // Modelle koennen selbst bestimmen, was einbaubar ist -
+                // ein Standserver steht neben dem Schrank, nicht darin.
+                $query = method_exists($class, 'scopeRackMountable')
+                    ? $class::rackMountable()
+                    : $class::query();
+
+                $devices = $query->where('customer_id', $this->customerId)
                     ->whereNotExists(function ($query) use ($class) {
                         $query->selectRaw('1')
                             ->from('rack_items')

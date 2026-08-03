@@ -24,6 +24,10 @@
                     'Hersteller' => $server->manufacturer,
                     'Modell' => $server->model,
                     'Seriennummer' => $server->serialNumber,
+                    'Bauform' => config('custom.server_form_factors')[$server->form_factor] ?? null,
+                    'Einbautiefe' => $server->form_factor === 'rack'
+                        ? (config('custom.server_depths')[(int) $server->full_depth] ?? null)
+                        : null,
                 ]" />
 
                 <x-minitablecard title="Netzwerk" :array="[

@@ -182,7 +182,7 @@
 
     {{-- Server & Storage --}}
     <x-pdf.section title="Server" :items="$customer->servers" :groups="[
-        'Hardware' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Betriebssystem' => fn($s) => $s->operatingSystem?->name],
+        'Hardware' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Bauform' => fn($s) => config('custom.server_form_factors')[$s->form_factor] ?? null, 'Einbautiefe' => fn($s) => $s->form_factor === 'rack' ? (config('custom.server_depths')[(int) $s->full_depth] ?? null) : null, 'Betriebssystem' => fn($s) => $s->operatingSystem?->name],
         'Netzwerk' => ['IP 1' => 'ip1', 'IP 2' => 'ip2'],
         'BMC' => ['IP' => 'bmcIp', 'Benutzer' => 'bmcUser', 'Passwort' => 'bmcPassword'],
     ]" />

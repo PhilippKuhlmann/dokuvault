@@ -17,7 +17,13 @@ class ServerFactory extends Factory
             ['Fujitsu', 'PRIMERGY RX2540 M6'],
         ]);
 
+        // Meist 19 Zoll, ab und zu ein Standserver - so sieht man in der Demo
+        // beide Faelle und den Filter im Rack-Editor.
+        $bauform = fake()->randomElement(['rack', 'rack', 'rack', 'tower']);
+
         return [
+            'form_factor' => $bauform,
+            'full_depth' => $bauform === 'rack' ? fake()->boolean(80) : true,
             'name' => 'SRV-'.fake()->randomElement(['DC01', 'FS01', 'HV01', 'APP01', 'SQL01', 'BAK01']),
             'manufacturer' => $manufacturer,
             'model' => $model,

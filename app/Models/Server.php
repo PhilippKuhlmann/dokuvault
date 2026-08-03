@@ -18,6 +18,21 @@ class Server extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'full_depth' => 'boolean',
+    ];
+
+    /** Nur diese Server lassen sich in einen Serverschrank einbauen. */
+    public function scopeRackMountable($query)
+    {
+        return $query->where('form_factor', 'rack');
+    }
+
+    public function istRackServer(): bool
+    {
+        return $this->form_factor === 'rack';
+    }
+
     protected function bmcPassword(): Attribute
     {
         return new Attribute(

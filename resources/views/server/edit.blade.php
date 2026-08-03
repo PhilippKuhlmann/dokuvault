@@ -8,6 +8,10 @@
 
         <x-create.doublerow label1="Hersteller" name1="manufacturer" :default1="$server->manufacturer" label2="Model" name2="model" :default2="$server->model" />
 
+        <x-create.options label="Bauform" name="form_factor" :options="config('custom.server_form_factors')" :default="$server->form_factor" />
+
+        <x-create.options label="Einbautiefe" name="full_depth" :options="config('custom.server_depths')" :default="(int) $server->full_depth" />
+
         <x-create.singlerow label="Seriennummer" name="serialNumber" :default="$server->serialNumber" />
 
         <x-create.doublerow label1="IP 1" name1="ip1" :default1="$server->ip1" label2="IP 2" name2="ip2" :default2="$server->ip2" />

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Rules\BelongsToCustomer;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ServerRequest extends FormRequest
 {
@@ -30,6 +31,8 @@ class ServerRequest extends FormRequest
             'type' => 'max:255',
             'manufacturer' => 'max:255',
             'model' => 'max:255',
+            'form_factor' => ['required', Rule::in(array_keys(config('custom.server_form_factors')))],
+            'full_depth' => 'required|boolean',
             'serialNumber' => 'max:255',
             'ip1' => 'max:255',
             'ip2' => 'max:255',

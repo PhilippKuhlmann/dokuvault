@@ -59,6 +59,18 @@ use App\Models\Ups;
 use App\Models\VM;
 use App\Models\Wifi;
 
+// Vor dem return, damit sowohl die eigenen Konfigurationsschluessel als auch
+// die Felder des Erstaufnahme-Assistenten dieselbe Liste benutzen.
+$serverBauformen = [
+    'rack' => '19-Zoll (Rackeinbau)',
+    'tower' => 'Standserver (Tower)',
+];
+
+$serverTiefen = [
+    1 => 'Volle Tiefe',
+    0 => 'Halbe Tiefe – dahinter ist Platz',
+];
+
 return [
     'permissions' => [
         'Site',
@@ -341,6 +353,8 @@ return [
                 ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
                 ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
                 ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
+                ['name' => 'form_factor', 'label' => 'Bauform', 'type' => 'select', 'options' => $serverBauformen, 'default' => 'rack'],
+                ['name' => 'full_depth', 'label' => 'Einbautiefe', 'type' => 'select', 'options' => $serverTiefen, 'default' => 1],
                 ['name' => 'ip1', 'label' => 'IP-Adresse', 'type' => 'text'],
             ],
         ],
@@ -443,6 +457,29 @@ return [
      * Reihenfolge = Reihenfolge der Palette.
      * Voraussetzung: Model hat customer_id und ein name-Feld.
      */
+    /*
+    |--------------------------------------------------------------------------
+    | Bauform von Servern
+    |--------------------------------------------------------------------------
+    |
+    | Nur Server der Bauform 'rack' lassen sich in einen Serverschrank
+    | einbauen - ein Standserver steht daneben.
+    |
+    */
+    'server_form_factors' => $serverBauformen,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Einbautiefe
+    |--------------------------------------------------------------------------
+    |
+    | Belegt das Geraet die volle Schranktiefe, oder bleibt hinter ihm Platz
+    | fuer einen weiteren Einbau? Wird fuer die kommende Rueckansicht der
+    | Schraenke gebraucht.
+    |
+    */
+    'server_depths' => $serverTiefen,
+
     'rack_device_types' => [
         'server' => [Server::class, 'Server', 'server'],
         'networkswitch' => [NetworkSwitch::class, 'Switch', 'switch'],
