@@ -16,6 +16,7 @@
             <x-slot:body>
 
                 <x-minitablecard :title="__('Allgemein')" :array="[
+                    'Rack' => $patchpanel->einbauort(),
                     'Standort' => $customer->sites->firstWhere('id', $patchpanel->site_id)?->name,
                     'Hersteller' => $patchpanel->manufacturer,
                     'Modell' => $patchpanel->model,

@@ -14,6 +14,7 @@
             <x-slot:body>
 
                 <x-minitablecard :title="__('Allgemein')" :array="[
+                    'Rack' => $networkswitch->einbauort(),
                     'Hersteller' => $networkswitch->manufacturer,
                     'Modell' => $networkswitch->model,
                     'Seriennummer' => $networkswitch->serialNumber,

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasIpAddresses;
+use App\Models\Concerns\IstEinbaubar;
 use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +13,7 @@ class Ups extends Model
 {
     use HasFactory, SoftDeletes;
     use HasIpAddresses;
+    use IstEinbaubar;
     use TracksChanges;
 
     protected $table = 'ups';

@@ -18,6 +18,7 @@
             <x-slot:body>
 
                 <x-minitablecard :title="__('Hardware')" :array="[
+                    'Rack' => $nas->einbauort(),
                     'Hersteller' => $nas->manufacturer,
                     'Modell' => $nas->model,
                     'Seriennummer' => $nas->serialNumber,

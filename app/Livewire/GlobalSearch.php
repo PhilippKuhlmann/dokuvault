@@ -19,6 +19,7 @@ use App\Models\PatchPort;
 use App\Models\Phone;
 use App\Models\PhoneSystem;
 use App\Models\Printer;
+use App\Models\Rack;
 use App\Models\Recorder;
 use App\Models\Router;
 use App\Models\Server;
@@ -64,6 +65,7 @@ class GlobalSearch extends Component
         'certificate' => [Certificate::class, 'Zertifikate', 'certificate', ['name', 'common_name', 'issuer']],
         'patchpanel' => [PatchPanel::class, 'Patchfelder', 'patchpanel', ['name', 'manufacturer', 'model']],
         'patchport' => [PatchPort::class, 'Netzwerkdosen', 'patchpanel', ['outlet', 'label', 'switch_port'], 'patchpanel'],
+        'rack' => [Rack::class, 'Serverschränke', 'rack', ['name', 'location']],
     ];
 
     public function render()

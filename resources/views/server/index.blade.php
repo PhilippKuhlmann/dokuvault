@@ -21,6 +21,7 @@
             <x-slot:body>
 
                 <x-minitablecard :title="__('Hardware')" :array="[
+                    'Rack' => $server->einbauort(),
                     'Hersteller' => $server->manufacturer,
                     'Modell' => $server->model,
                     'Seriennummer' => $server->serialNumber,

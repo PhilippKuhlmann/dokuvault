@@ -9,6 +9,7 @@
         </x-slot>
         <x-slot:body>
             <x-minitablecard :title="__('Allgemein')" :array="[
+                    'Rack' => $usv->einbauort(),
                 'Hersteller' => $usv->manufacturer,
                 'Modell' => $usv->model,
                 'Seriennummer' => $usv->serialNumber,

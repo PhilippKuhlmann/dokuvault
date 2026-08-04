@@ -13,6 +13,7 @@
             <x-slot:body>
 
                 <x-minitablecard :title="__('Allgemein')" :array="[
+                    'Rack' => $securepointuma->einbauort(),
                     'Hersteller / Produkt' => $securepointuma->manufacturer,
                     'Art' => $securepointuma->type,
                 ]" />

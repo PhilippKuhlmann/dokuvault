@@ -17,6 +17,7 @@
             <x-slot:body>
 
                 <x-minitablecard :title="__('Allgemein')" :array="[
+                    'Rack' => $recorder->einbauort(),
                     'Hersteller' => $recorder->manufacturer,
                     'Model' => $recorder->model,
                     'Seriennummer' => $recorder->serialNumber,
