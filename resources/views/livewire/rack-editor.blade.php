@@ -59,9 +59,7 @@
 
     <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">{{ __('Bestückung') }}</div>
     <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">
-        Geräte aus der Palette auf eine freie Höheneinheit ziehen – die Vorschau zeigt, welche
-        Einheiten belegt würden. Oder per Knopf auf den untersten freien Platz einbauen.
-        Eingebautes lässt sich ebenfalls per Ziehen verschieben.
+        {{ __('Geräte aus der Palette auf eine freie Höheneinheit ziehen – die Vorschau zeigt, welche Einheiten belegt würden. Oder per Knopf auf den untersten freien Platz einbauen. Eingebautes lässt sich ebenfalls per Ziehen verschieben.') }}
     </p>
 
     @error('rack')
@@ -114,7 +112,7 @@
                         </li>
                     @empty
                         <li class="text-sm text-gray-400 dark:text-gray-500">
-                            Noch keine Katalogelemente – im Adminbereich unter „Auswahlmenüs → Rack-Katalog" anlegen.
+                            {{ __('Noch keine Katalogelemente – im Adminbereich unter „Auswahlmenüs → Rack-Katalog" anlegen.') }}
                         </li>
                     @endforelse
                 </ul>

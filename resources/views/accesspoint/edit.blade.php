@@ -2,7 +2,7 @@
     <x-create.main :header="__('Accesspoint bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('accesspoint.update', [$customer, $accesspoint]) }}">
         @method('PATCH')
 
-        <x-edit.select name="site_id" value="Standort" selector="{{ $accesspoint->site_id }}" :array="$sites" />
+        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $accesspoint->site_id }}" :array="$sites" />
 
         <x-create.singlerow :label="__('Name')" name="name" :default="$accesspoint->name" />
 

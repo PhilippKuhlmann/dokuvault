@@ -1,7 +1,7 @@
 <x-app-layout :$customer>
     <x-create.main :header="__('USV bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('ups.update', [$customer, $ups]) }}">
         @method('PATCH')
-        <x-edit.select name="site_id" value="Standort" selector="{{ $ups->site_id }}" :array="$sites" />
+        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $ups->site_id }}" :array="$sites" />
         <x-create.singlerow :label="__('Name')" name="name" :default="$ups->name" />
         <x-create.doublerow :label1="__('Hersteller')" name1="manufacturer" :default1="$ups->manufacturer" :label2="__('Model')" name2="model" :default2="$ups->model" />
         <x-create.singlerow :label="__('Seriennummer')" name="serialNumber" :default="$ups->serialNumber" />

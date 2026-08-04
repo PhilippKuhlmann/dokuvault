@@ -7,13 +7,12 @@
     <div class="flex flex-wrap items-baseline justify-between gap-2 mb-1">
         <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100">{{ __('Ports') }}</div>
         <div class="text-sm text-gray-400 dark:text-gray-500">
-            {{ $ports->filter(fn ($p) => $p->isDocumented())->count() }} von {{ $panel->port_count }} dokumentiert
+            {{ __(':dokumentiert von :gesamt dokumentiert', ['dokumentiert' => $ports->filter(fn ($p) => $p->isDocumented())->count(), 'gesamt' => $panel->port_count]) }}
         </div>
     </div>
 
     <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">
-        Je Port die Dosennummer (z. B. „EG 1.01", „A.12", „2.23"), den Raum und den Switch-Port
-        eintragen. Die Portanzahl ändert man oben im Formular.
+        {{ __('Je Port die Dosennummer, den Raum und den Switch-Port eintragen. Die Portanzahl ändert man oben im Formular.') }}
     </p>
 
     @if ($saved)

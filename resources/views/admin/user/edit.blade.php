@@ -7,9 +7,7 @@
             <div class="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900
                         dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300" role="status">
                 <span class="font-semibold">{{ __('Demo-Zugang – gesperrt.') }}</span>
-                Dieser Benutzer lässt sich weder ändern noch löschen. Die Zugangsdaten stehen im
-                Hinweis-Banner; könnte man sie hier überschreiben, käme kein anderer Besucher mehr
-                herein. Selbst angelegte Benutzer lassen sich uneingeschränkt bearbeiten.
+                {{ __('Dieser Benutzer lässt sich weder ändern noch löschen. Die Zugangsdaten stehen im Hinweis-Banner; könnte man sie hier überschreiben, käme kein anderer Besucher mehr herein. Selbst angelegte Benutzer lassen sich uneingeschränkt bearbeiten.') }}
             </div>
 
             <dl class="mt-4 divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white

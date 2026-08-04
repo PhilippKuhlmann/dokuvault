@@ -2,7 +2,7 @@
     <x-create.main :header="__('Sonstiges Gerät bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('otherclient.update', [$customer, $otherclient]) }}">
         @method('PATCH')
 
-        <x-edit.select name="site_id" value="Standort" selector="{{ $otherclient->site_id }}" :array="$sites" />
+        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $otherclient->site_id }}" :array="$sites" />
 
         <x-create.singlerow :label="__('Name')" name="name" :default="$otherclient->name" />
 

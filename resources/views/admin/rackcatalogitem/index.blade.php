@@ -15,10 +15,7 @@
 
     <div class="m-3">
         <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">
-            Passive Einbauten, die im Rack-Editor jedes Kunden zur Verfügung stehen – Patchfelder,
-            Blindplatten, Fachböden und Ähnliches. Beim Einbau wird die Bezeichnung in die
-            Rack-Dokumentation kopiert; Änderungen hier wirken sich deshalb nur auf künftige
-            Einbauten aus, nicht auf bestehende Racks.
+            {{ __('Passive Einbauten, die im Rack-Editor jedes Kunden zur Verfügung stehen – Patchfelder, Blindplatten, Fachböden und Ähnliches. Beim Einbau wird die Bezeichnung in die Rack-Dokumentation kopiert; Änderungen hier wirken sich deshalb nur auf künftige Einbauten aus, nicht auf bestehende Racks.') }}
         </p>
 
         <x-table.main>

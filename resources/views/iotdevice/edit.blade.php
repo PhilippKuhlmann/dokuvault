@@ -2,7 +2,7 @@
     <x-create.main :header="__('IoT Gerät bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('iotdevice.update', [$customer, $iotdevice]) }}">
         @method('PATCH')
 
-        <x-edit.select name="site_id" value="Standort" selector="{{ $iotdevice->site_id }}" :array="$sites" />
+        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $iotdevice->site_id }}" :array="$sites" />
 
         <x-create.singlerow :label="__('Name')" name="name" :default="$iotdevice->name" />
 

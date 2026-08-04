@@ -1,5 +1,7 @@
 <div align="center">
 
+**Deutsch** · [English](README.en.md)
+
 # 📘 DokuVault
 
 ### Die Open-Source-IT-Dokumentation für Managed Service Provider
@@ -12,8 +14,8 @@ PDF-Export, globaler Suche über alle Kunden und Geräten, die sich per Agent
 [![Tests](https://github.com/PhilippKuhlmann/dokuvault/actions/workflows/tests.yml/badge.svg)](https://github.com/PhilippKuhlmann/dokuvault/actions/workflows/tests.yml)
 ![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php&logoColor=white)
 ![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)
-![Livewire](https://img.shields.io/badge/Livewire-3-FB70A9)
-![Tests](https://img.shields.io/badge/Tests-216%20grün-3fb950)
+![Livewire](https://img.shields.io/badge/Livewire-4-FB70A9)
+![Tests](https://img.shields.io/badge/Tests-267%20grün-3fb950)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
 **[▶ Live-Demo ausprobieren](https://doku.dokuvault.de)**
@@ -46,6 +48,7 @@ immer aktuell.
 | 🔐 **Verschlüsselt** | Alle Passwörter verschlüsselt gespeichert, rollenbasierte Zugriffe, Audit-Log |
 | 📄 **PDF-Export** | Komplette Kundendokumentation auf Knopfdruck als PDF |
 | 🌙 **Hell & Dunkel** | Modernes, responsives UI – auch auf dem Smartphone |
+| 🌍 **Deutsch & Englisch** | Umschaltbar je Benutzer oder der Browsersprache folgend |
 | ⏰ **Ablauf-Warnungen** | Lizenzen, Zertifikate & Domains laufen nie unbemerkt ab |
 | ♻️ **Papierkorb** | Versehentlich gelöscht? Wiederherstellen statt neu erfassen |
 
@@ -163,6 +166,7 @@ Agenten folgen.
 - **Erfassung** – Erstaufnahme-Assistent (16 geführte Schritte), Auto-Dokumentation per Agent
 - **Betrieb** – globale Suche, Audit-Log, Papierkorb (Wiederherstellen), PDF-Export, Dateiablage
 - **Standortfilter** – schränkt Gerätelisten, IPAM und Auto-Dokumentation auf einen Standort ein
+- **Sprache** – Deutsch und Englisch, je Benutzer oder der Browsersprache folgend
 
 ---
 
@@ -203,11 +207,11 @@ Klartext weder in der Datenbank noch im Audit-Log landet.
 
 | Bereich | Eingesetzt |
 | --- | --- |
-| **Backend** | PHP 8.2 · Laravel 12 · Livewire 3.8 · Laravel Sanctum 4 *(Agent-/API-Token)* |
+| **Backend** | PHP 8.2 · Laravel 12 · Livewire 4 · Laravel Sanctum 4 *(Agent-/API-Token)* |
 | **Pakete** | spatie/laravel-activitylog 4.12 *(Audit-Log)* · barryvdh/laravel-dompdf 3.0 *(PDF-Export)* · spatie/laravel-backup 9.3 |
-| **Frontend** | Tailwind CSS 3.2 · Alpine.js 3 · Flowbite 1.6 · Vite 3 |
+| **Frontend** | Tailwind CSS 3.4 · Alpine.js 3 · Flowbite 1.8 · Vite 3 |
 | **Datenbank** | MySQL / MariaDB |
-| **Qualität** | Pest 3 *(216 Tests)* · Laravel Pint · GitHub Actions CI |
+| **Qualität** | Pest 3 *(267 Tests)* · Laravel Pint · GitHub Actions CI |
 
 ---
 
@@ -314,8 +318,9 @@ ausprobiert: Die Seitenleiste, die „Neu"-Schaltflächen und der Adminbereich �
 
 ## 🧪 Tests
 
-216 Feature-Tests (Pest 3) laufen gegen eine In-Memory-SQLite – keine Einrichtung nötig, keine
-Spuren in der Entwicklungsdatenbank. Bei jedem Push führt GitHub Actions dieselbe Suite aus.
+267 Feature-Tests (Pest 3) laufen gegen eine In-Memory-SQLite – keine Einrichtung nötig, keine
+Spuren in der Entwicklungsdatenbank. Bei jedem Push führt GitHub Actions dieselbe Suite aus –
+gegen PHP 8.2 und 8.3, jeweils mit SQLite und MariaDB.
 
 ```bash
 php artisan test

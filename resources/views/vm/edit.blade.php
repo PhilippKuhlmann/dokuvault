@@ -2,7 +2,7 @@
     <x-create.main :header="__('VM bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('vm.update', [$customer, $vm]) }}">
         @method('PATCH')
 
-        <x-edit.select name="site_id" value="Standort" selector="{{ $vm->site_id }}" :array="$sites" />
+        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $vm->site_id }}" :array="$sites" />
 
         <div class="flex flex-col mt-2">
             <x-input.label for="server_id" :value="__('Host (Server)')" />

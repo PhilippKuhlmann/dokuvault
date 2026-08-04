@@ -3,7 +3,7 @@
         action="{{ route('wifi.update', [$customer, $wifi]) }}">
         @method('PATCH')
 
-        <x-edit.select name="site_id" value="Standort" selector="{{ $wifi->site_id }}" :array="$sites" />
+        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $wifi->site_id }}" :array="$sites" />
 
         <x-create.singlerow :label="__('SSID')" name="ssid" :default="$wifi->ssid" />
 

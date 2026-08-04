@@ -133,7 +133,7 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
         foreach ($dateien as $datei) {
             if ($datei->isFile() && preg_match('/\.(php|blade\.php)$/', $datei->getFilename())) {
                 $inhalt = file_get_contents($datei);
-                preg_match_all("/__\('((?:[^'\\\\]|\\\\.)+)'\)/", $inhalt, $treffer);
+                preg_match_all("/__\('((?:[^'\\\\]|\\\\.)+)'/", $inhalt, $treffer);
                 $verwendet = array_merge($verwendet, $treffer[1]);
 
                 // Schluessel von :array="['Hersteller' => …]" und :groups sind

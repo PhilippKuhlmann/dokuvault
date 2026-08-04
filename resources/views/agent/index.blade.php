@@ -4,9 +4,7 @@
         <div class="p-5 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700">
             <div class="text-2xl font-CoconPro text-chathams-blue-800 dark:text-gray-100">{{ __('Auto-Dokumentation') }}</div>
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                Erzeuge einen Agent-Token und lade das passende Script herunter – für Proxmox-Hosts oder
-                Windows Active Directory. Auf dem Gerät ausgeführt, dokumentiert es sich selbst. Der Token ist an den
-                gewählten Standort gebunden und darf ausschließlich Dokumentationsdaten melden – kein weiterer Zugriff.
+                {{ __('Erzeuge einen Agent-Token und lade das passende Script herunter – für Proxmox-Hosts oder Windows Active Directory. Auf dem Gerät ausgeführt, dokumentiert es sich selbst. Der Token ist an den gewählten Standort gebunden und darf ausschließlich Dokumentationsdaten melden – kein weiterer Zugriff.') }}
             </p>
         </div>
 
@@ -104,9 +102,7 @@
                             <code class="break-all">.\windows-ad-doku.ps1 -ApiUrl "https://euer-server/api/agent/windows-ad"</code>
                         </p>
                         <p>
-                            Es werden nur „echte" Benutzer (inkl. Administrator, ohne Gast/krbtgt) und selbst
-                            angelegte Gruppen gemeldet – Standard-/Built-in-Gruppen werden ausgelassen. Passwörter
-                            werden nie übertragen.
+                            {{ __('Es werden nur „echte" Benutzer (inkl. Administrator, ohne Gast/krbtgt) und selbst angelegte Gruppen gemeldet – Standard-/Built-in-Gruppen werden ausgelassen. Passwörter werden nie übertragen.') }}
                         </p>
                         @if (\Illuminate\Support\Str::contains(url('/'), ['.test', 'localhost', '127.0.0.1']))
                             <p class="text-amber-600 dark:text-amber-400">

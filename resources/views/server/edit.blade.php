@@ -2,7 +2,7 @@
     <x-create.main :header="__('Server bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('server.update', [$customer, $server]) }}">
         @method('PATCH')
 
-        <x-edit.select name="site_id" value="Standort" selector="{{ $server->site_id }}" :array="$sites" />
+        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $server->site_id }}" :array="$sites" />
 
         <x-create.singlerow :label="__('Name')" name="name" :default="$server->name" />
 

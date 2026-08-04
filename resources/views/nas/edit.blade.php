@@ -2,7 +2,7 @@
     <x-create.main :header="__('NAS bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('nas.update', [$customer, $nas]) }}">
         @method('PATCH')
 
-        <x-edit.select name="site_id" value="Standort" selector="{{ $nas->site_id }}" :array="$sites" />
+        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $nas->site_id }}" :array="$sites" />
 
         <x-create.singlerow :label="__('Name')" name="name" :default="$nas->name" />
 

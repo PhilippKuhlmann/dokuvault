@@ -2,7 +2,7 @@
     <x-create.main :header="__('Recorder bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('recorder.update', [$customer, $recorder]) }}">
         @method('PATCH')
 
-        <x-edit.select name="site_id" value="Standort" selector="{{ $recorder->site_id }}" :array="$sites" />
+        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $recorder->site_id }}" :array="$sites" />
 
         <x-create.singlerow :label="__('Name')" name="name" :default="$recorder->name" />
 

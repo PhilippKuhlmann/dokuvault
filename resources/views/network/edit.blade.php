@@ -2,7 +2,7 @@
     <x-create.main :header="__('Netzwerk bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('network.update', [$customer, $network]) }}">
         @method('PATCH')
 
-        <x-edit.select name="site_id" value="Standort" selector="{{ $network->site_id }}" :array="$sites" />
+        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $network->site_id }}" :array="$sites" />
 
         <x-create.singlerow :label="__('Beschreibung')" name="description" :default="$network->description" />
 

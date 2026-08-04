@@ -2,7 +2,7 @@
     <x-create.main :header="__('TK-Anlage bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('phonesystem.update', [$customer, $phonesystem]) }}">
         @method('PATCH')
 
-        <x-edit.select name="site_id" value="Standort" selector="{{ $phonesystem->site_id }}" :array="$sites" />
+        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $phonesystem->site_id }}" :array="$sites" />
 
         <x-create.doublerow :label1="__('Hersteller')" name1="manufacturer" :default1="$phonesystem->manufacturer" :label2="__('Model')" name2="model" :default2="$phonesystem->model" />
 

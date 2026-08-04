@@ -3,7 +3,7 @@
         action="{{ route('patchpanel.update', [$customer, $patchpanel]) }}">
         @method('PATCH')
 
-        <x-edit.select name="site_id" value="Standort" selector="{{ $patchpanel->site_id }}" :array="$sites" />
+        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $patchpanel->site_id }}" :array="$sites" />
 
         <x-create.singlerow :label="__('Name')" name="name" :default="$patchpanel->name" />
 

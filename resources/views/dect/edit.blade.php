@@ -2,7 +2,7 @@
     <x-create.main :header="__('DECT bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('dect.update', [$customer, $dect]) }}">
         @method('PATCH')
 
-        <x-edit.select name="site_id" value="Standort" selector="{{ $dect->site_id }}" :array="$sites" />
+        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $dect->site_id }}" :array="$sites" />
 
         <x-create.singlerow :label="__('Rolle')" name="role" :default="$dect->role" />
 
