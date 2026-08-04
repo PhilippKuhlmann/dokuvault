@@ -36,7 +36,8 @@
          ansetzt: Der laeuft im normalen Fluss, ein am Seitenanfang
          ausgerichteter Knopf laege darauf. --}}
     <div class="relative">
-        <div class="absolute top-3 right-3 z-20">
+        <div class="absolute top-3 right-3 z-20 flex items-center gap-2">
+            <x-locale-switch class="text-gray-500 dark:text-gray-400 hover:bg-white/70 dark:hover:bg-gray-800" />
             <x-theme-toggle class="text-gray-500 dark:text-gray-400 hover:bg-white/70 dark:hover:bg-gray-800" />
         </div>
 

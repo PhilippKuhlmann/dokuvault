@@ -61,6 +61,14 @@ use App\Models\Wifi;
 
 // Vor dem return, damit sowohl die eigenen Konfigurationsschluessel als auch
 // die Felder des Erstaufnahme-Assistenten dieselbe Liste benutzen.
+// Verfuegbare Sprachen der Oberflaeche. Der Schluessel ist der Locale-Code,
+// der Wert steht in der Auswahl - bewusst in der jeweiligen Sprache, damit man
+// die eigene auch findet, wenn die Oberflaeche gerade fremd ist.
+$sprachen = [
+    'de' => 'Deutsch',
+    'en' => 'English',
+];
+
 $serverBauformen = [
     'rack' => '19-Zoll (Rackeinbau)',
     'tower' => 'Standserver (Tower)',
@@ -72,6 +80,8 @@ $serverTiefen = [
 ];
 
 return [
+    'locales' => $sprachen,
+
     'permissions' => [
         'Site',
         'ContactPerson',

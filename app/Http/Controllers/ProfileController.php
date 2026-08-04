@@ -31,11 +31,20 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        // Siehe User::istDemoGeschuetzt(): Der Zugang ist auf der Demo
+        // vollstaendig gesperrt, also auch hier - sonst haette ein Besucher
+        // Namen, E-Mail und Sprache des geteilten Zugangs in der Hand.
+        if ($request->user()->istDemoGeschuetzt()) {
+            return Redirect::route('profile.edit')
+                ->withErrors(['demo' => __('Dieser Demo-Zugang ist gesperrt und lässt sich nicht ändern.')]);
+        }
+
         $request->user()->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
+        // Kein E-Mail-Bestaetigungsverfahren in diesem Projekt: User
+        // implementiert MustVerifyEmail nicht, und users hat keine Spalte
+        // email_verified_at. Der Breeze-Rest davon liess jede Aenderung der
+        // E-Mail-Adresse in einen 500er laufen.
 
         $request->user()->save();
 

@@ -40,6 +40,7 @@
             <div class="flex items-center">
                 <div class="flex items-center ml-3">
                     <div class="w-14">
+                        <x-locale-switch class="mr-1 dark:text-gray-400 hover:bg-cerulean-500 dark:hover:bg-gray-700" />
                         <x-theme-toggle class="mr-3 dark:text-gray-400 hover:bg-cerulean-500 dark:hover:bg-gray-700" />
                     </div>
                     <div>

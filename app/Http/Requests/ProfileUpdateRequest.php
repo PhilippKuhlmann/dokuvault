@@ -13,11 +13,20 @@ class ProfileUpdateRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\Rule|array|string>
      */
+    /** Leere Auswahl heisst "der Browsersprache folgen", nicht Leerstring. */
+    protected function prepareForValidation(): void
+    {
+        if ($this->input('locale') === '') {
+            $this->merge(['locale' => null]);
+        }
+    }
+
     public function rules(): array
     {
         return [
             'name' => ['string', 'max:255'],
             'email' => ['email', 'max:255', Rule::unique(User::class)->ignore($this->user()->id)],
+            'locale' => ['nullable', Rule::in(array_keys(config('custom.locales')))],
         ];
     }
 }

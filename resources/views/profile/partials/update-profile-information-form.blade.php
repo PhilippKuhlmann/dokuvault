@@ -44,6 +44,17 @@
             @endif
         </div>
 
+        <div>
+            <x-input.label for="locale" :value="__('Sprache')" class="text-gray-900" />
+            <x-input.select id="locale" name="locale" class="mt-1 block w-full">
+                <option value="">{{ __('Automatisch (Browsersprache)') }}</option>
+                @foreach (config('custom.locales') as $code => $bezeichnung)
+                    <option value="{{ $code }}" @selected(old('locale', $user->locale) === $code)>{{ $bezeichnung }}</option>
+                @endforeach
+            </x-input.select>
+            <x-input-error class="mt-2" :messages="$errors->get('locale')" />
+        </div>
+
         <div class="flex items-center gap-4">
             <x-input.button label="Speichern" />
 

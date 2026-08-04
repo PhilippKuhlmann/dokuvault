@@ -18,6 +18,7 @@ use App\Http\Controllers\DECTController;
 use App\Http\Controllers\DomainController;
 use App\Http\Controllers\DynDNSController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\FTPServerController;
 use App\Http\Controllers\InternetConnectionController;
 use App\Http\Controllers\IoTDeviceController;
@@ -69,6 +70,10 @@ Route::redirect('/', '/login');
 Route::get('/changelog', [ChangelogController::class, 'index'])->name('changelog');
 
 // Techniker
+// Bewusst ohne auth: Auch auf der Anmeldeseite soll man die Sprache wechseln
+// koennen, und auf der Demo ist der geteilte Zugang gesperrt.
+Route::post('/locale/{locale}', [LocaleController::class, 'update'])->name('locale.update');
+
 Route::middleware(['auth', 'isTechniker'])->group(function () {
 
     // GlobalSearch
