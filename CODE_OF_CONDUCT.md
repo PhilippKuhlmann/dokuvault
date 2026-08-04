@@ -1,37 +1,40 @@
-# Verhaltenskodex
+[Deutsch](CODE_OF_CONDUCT.de.md) · **English**
 
-## Unser Versprechen
+# Code of Conduct
 
-Wir als Mitglieder, Beitragende und Verantwortliche verpflichten uns, die Teilnahme an
-unserem Projekt für alle Menschen zu einer belästigungsfreien Erfahrung zu machen —
-unabhängig von Alter, Körpergröße, sichtbarer oder unsichtbarer Behinderung, ethnischer
-Zugehörigkeit, Geschlechtsmerkmalen, Geschlechtsidentität und -ausdruck, Erfahrungsniveau,
-Bildung, sozioökonomischem Status, Nationalität, persönlichem Aussehen, Religion oder
-sexueller Identität und Orientierung.
+## Our pledge
 
-## Unsere Standards
+We as members, contributors and maintainers pledge to make participation in our project a
+harassment-free experience for everyone — regardless of age, body size, visible or invisible
+disability, ethnicity, sex characteristics, gender identity and expression, level of experience,
+education, socio-economic status, nationality, personal appearance, religion, or sexual identity
+and orientation.
 
-Beispiele für Verhalten, das zu einem positiven Umfeld beiträgt:
+## Our standards
 
-- Einfühlungsvermögen und Freundlichkeit gegenüber anderen
-- Respekt vor anderen Meinungen, Standpunkten und Erfahrungen
-- Konstruktives Feedback geben und annehmen
-- Verantwortung übernehmen, sich bei Betroffenen entschuldigen und aus Fehlern lernen
+Examples of behaviour that contributes to a positive environment:
 
-Beispiele für inakzeptables Verhalten:
+- Showing empathy and kindness toward other people
+- Being respectful of differing opinions, viewpoints and experiences
+- Giving and gracefully accepting constructive feedback
+- Taking responsibility, apologising to those affected by our mistakes, and learning from them
 
-- Sexualisierte Sprache oder Bilder sowie unerwünschte Annäherungen
-- Beleidigende oder abwertende Kommentare, persönliche oder politische Angriffe (Trolling)
-- Öffentliche oder private Belästigung
-- Veröffentlichung privater Informationen anderer ohne deren ausdrückliche Erlaubnis
+Examples of unacceptable behaviour:
 
-## Durchsetzung
+- Sexualised language or imagery, and unwelcome advances
+- Insulting or derogatory comments, and personal or political attacks (trolling)
+- Public or private harassment
+- Publishing others' private information without their explicit permission
 
-Fälle von missbräuchlichem, belästigendem oder anderweitig inakzeptablem Verhalten können
-dem Maintainer gemeldet werden (Kontakt siehe GitHub-Profil). Alle Beschwerden werden
-zeitnah und fair geprüft.
+## Enforcement
+
+Instances of abusive, harassing or otherwise unacceptable behaviour may be reported to the
+maintainer (contact details on the GitHub profile). All complaints will be reviewed promptly and
+fairly, and the privacy of the reporter will be respected.
+
+Reports are welcome in English or German.
 
 ## Attribution
 
-Dieser Verhaltenskodex basiert auf dem [Contributor Covenant](https://www.contributor-covenant.org),
-Version 2.1.
+This Code of Conduct is based on the [Contributor Covenant](https://www.contributor-covenant.org),
+version 2.1.
