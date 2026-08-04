@@ -132,8 +132,18 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
         $dateien = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(base_path($ordner)));
         foreach ($dateien as $datei) {
             if ($datei->isFile() && preg_match('/\.(php|blade\.php)$/', $datei->getFilename())) {
-                preg_match_all("/__\('((?:[^'\\\\]|\\\\.)+)'\)/", file_get_contents($datei), $treffer);
+                $inhalt = file_get_contents($datei);
+                preg_match_all("/__\('((?:[^'\\\\]|\\\\.)+)'\)/", $inhalt, $treffer);
                 $verwendet = array_merge($verwendet, $treffer[1]);
+
+                // Schluessel von :array="['Hersteller' => …]" und :groups sind
+                // die Beschriftungen; sie laufen erst zur Laufzeit durch __()
+                // (siehe x-minitablecard und x-pdf.section).
+                preg_match_all('/:(?:array|groups)="\[(.*?)\]"/s', $inhalt, $bloecke);
+                foreach ($bloecke[1] as $block) {
+                    preg_match_all("/'([^']{2,60})'\s*=>/", $block, $schluessel);
+                    $verwendet = array_merge($verwendet, $schluessel[1]);
+                }
             }
         }
     }

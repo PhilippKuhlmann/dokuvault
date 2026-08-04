@@ -19,11 +19,11 @@
             <div class="card-body">
                 @foreach ($groups as $groupTitle => $fields)
                     <div class="card-table" style="width: {{ $width }}%;">
-                        <div class="card-table-title">{{ $groupTitle }}</div>
+                        <div class="card-table-title">{{ __($groupTitle) }}</div>
                         <table>
                             @foreach ($fields as $label => $field)
                                 <tr>
-                                    <td class="key">{{ $label }}</td>
+                                    <td class="key">{{ __($label) }}</td>
                                     <td class="val">{{ $field instanceof \Closure ? $field($item) : data_get($item, $field) }}</td>
                                 </tr>
                             @endforeach

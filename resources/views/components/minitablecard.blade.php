@@ -8,7 +8,7 @@
         <table class="w-full">
             @foreach ($array as $key => $value)
                 <tr class="border-b border-gray-100 last:border-0 dark:border-gray-700/50">
-                    <td class="py-1 pr-6 align-top whitespace-nowrap text-gray-500 dark:text-gray-400">{{ $key }}</td>
+                    <td class="py-1 pr-6 align-top whitespace-nowrap text-gray-500 dark:text-gray-400">{{ __($key) }}</td>
                     @if ($key == 'Passwort' || $key == 'BMC Passwort' || $key == 'DSRM Passwort' || $key == 'Cloud Backup Passwort' || $key == 'Verschlüsselungscode' || $key == 'USC-PIN')
                         <td scope="row" class="">
                             <div class="" x-data="{ show: true, copied: false }">
