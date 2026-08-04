@@ -56,7 +56,7 @@ class UserController extends Controller
         // dokumentierte Anmeldung funktionierte nicht mehr.
         if ($user->istDemoGeschuetzt()) {
             return redirect(route('admin.user.edit', $user))
-                ->withErrors(['demo' => 'Dieser Demo-Zugang ist gesperrt und lässt sich nicht ändern.']);
+                ->withErrors(['demo' => __('Dieser Demo-Zugang ist gesperrt und lässt sich nicht ändern.')]);
         }
 
         if (! empty($userData['password'])) {
@@ -74,7 +74,7 @@ class UserController extends Controller
     {
         if ($user->istDemoGeschuetzt()) {
             return redirect(route('admin.user.edit', $user))
-                ->withErrors(['demo' => 'Dieser Zugang gehört zur Demo und lässt sich nicht löschen. Selbst angelegte Benutzer schon.']);
+                ->withErrors(['demo' => __('Dieser Zugang gehört zur Demo und lässt sich nicht löschen. Selbst angelegte Benutzer schon.')]);
         }
 
         $user->delete();

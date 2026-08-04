@@ -1,10 +1,10 @@
 <x-app-layout :$customer>
-    <x-create.main header="AD-Gruppe bearbeiten" labelsubmit="Speichern" action="{{ route('adgroup.update', [$customer, $adgroup]) }}">
+    <x-create.main :header="__('AD-Gruppe bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('adgroup.update', [$customer, $adgroup]) }}">
         @method('PATCH')
 
-        <x-create.singlerow label="Name" name="name" :default="$adgroup->name" />
+        <x-create.singlerow :label="__('Name')" name="name" :default="$adgroup->name" />
 
-        <x-create.singlerow label="Beschreibung" name="description" :default="$adgroup->description" />
+        <x-create.singlerow :label="__('Beschreibung')" name="description" :default="$adgroup->description" />
 
     </x-create.main>
 

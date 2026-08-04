@@ -19,18 +19,18 @@
 
             <x-slot:body>
 
-                <x-minitablecard title="Allgemein" :array="[
+                <x-minitablecard :title="__('Allgemein')" :array="[
                     'Host' => $vm->host?->name,
                 ]" />
 
-                <x-minitablecard title="Netzwerk" :array="[
+                <x-minitablecard :title="__('Netzwerk')" :array="[
                     'IP-Adresse 1' => $vm->ip1,
                     'IP-Adresse 2' => $vm->ip2,
                 ]" />
 
-                <x-minitagcard title="Dienste" :array="$vm->services" />
+                <x-minitagcard :title="__('Dienste')" :array="$vm->services" />
 
-                <x-minitextcard title="Betriebsystem">
+                <x-minitextcard :title="__('Betriebsystem')">
                     {{ $vm->operatingSystem?->name ?? '—' }}
                 </x-minitextcard>
 

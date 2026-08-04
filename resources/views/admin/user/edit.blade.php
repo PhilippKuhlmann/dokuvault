@@ -6,7 +6,7 @@
         <div class="mx-auto max-w-3xl px-3 py-3">
             <div class="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900
                         dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300" role="status">
-                <span class="font-semibold">Demo-Zugang – gesperrt.</span>
+                <span class="font-semibold">{{ __('Demo-Zugang – gesperrt.') }}</span>
                 Dieser Benutzer lässt sich weder ändern noch löschen. Die Zugangsdaten stehen im
                 Hinweis-Banner; könnte man sie hier überschreiben, käme kein anderer Besucher mehr
                 herein. Selbst angelegte Benutzer lassen sich uneingeschränkt bearbeiten.
@@ -29,14 +29,14 @@
             </dl>
         </div>
     @else
-        <x-create.main header="Benutzer bearbeiten" labelsubmit="Speichern" action="{{ route('admin.user.update', $user) }}">
+        <x-create.main :header="__('Benutzer bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('admin.user.update', $user) }}">
             @method('PATCH')
 
-            <x-create.singlerow label="Name" name="name" :default="$user->name" />
+            <x-create.singlerow :label="__('Name')" name="name" :default="$user->name" />
 
-            <x-create.doublerow label1="Benutzername" name1="username" :default1="$user->username" label2="Passwort" name2="password" />
+            <x-create.doublerow :label1="__('Benutzername')" name1="username" :default1="$user->username" :label2="__('Passwort')" name2="password" />
 
-            <x-create.singlerow label="E-Mail" name="email" :default="$user->email" />
+            <x-create.singlerow :label="__('E-Mail')" name="email" :default="$user->email" />
 
             <x-edit.select.role selector="{{ $user->role_id }}" :$roles/>
 

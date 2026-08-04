@@ -4,7 +4,7 @@
 ])
 
 <div class="flex flex-col mt-2">
-    <x-input.label for="recorder_id" value="Recorder" />
+    <x-input.label for="recorder_id" :value="__('Recorder')" />
     <x-input.select id="recorder_id" name="recorder_id">
         @foreach ($recorder as $recorder)
             <option {{ $recorder->id == $selector ? 'selected' : '' }} value="{{ $recorder->id }}">{{ $recorder->name }}</option>

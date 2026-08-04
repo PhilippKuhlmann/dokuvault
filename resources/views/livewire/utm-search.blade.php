@@ -2,7 +2,7 @@
     <div class="w-full flex text-center justify-between">
 
         <div class="">
-            <input wire:model.live.debounce.300ms="search" type="search" name="search" placeholder="Suche"
+            <input wire:model.live.debounce.300ms="search" type="search" name="search" placeholder="{{ __('Suche') }}"
                 class="rounded-md w-64 px-4 text-sm
             bg-gray-100 text-gray-900 dark:bg-gray-200 dark:text-gray-900 dark:border-gray-500
                 focus:ring-0 focus:border-cerulean-500"
@@ -19,10 +19,10 @@
                 <thead class="text-xs text-gray-100 bg-chathams-blue-800 dark:bg-gray-100 dark:text-gray-700">
                     <tr>
                         <th scope="col" class="py-3 px-6">
-                            Kunde
+                            {{ __('Kunde') }}
                         </th>
                         <th scope="col" class="py-3 px-6">
-                            Standort
+                            {{ __('Standort') }}
                         </th>
                         <th scope="col" class="py-3 px-6">
                             URL

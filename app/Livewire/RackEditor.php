@@ -50,7 +50,7 @@ class RackEditor extends Component
 
         $types = config('custom.rack_device_types');
         if (! isset($types[$typeKey])) {
-            $this->fail('Unbekannter Gerätetyp.');
+            $this->fail(__('Unbekannter Gerätetyp.'));
         }
         [$class] = $types[$typeKey];
 
@@ -60,11 +60,11 @@ class RackEditor extends Component
         // Serverseitig pruefen, nicht nur in der Auswahlliste: Der Aufruf
         // kommt vom Client und laesst sich mit beliebiger ID nachbilden.
         if (method_exists($device, 'istRackServer') && ! $device->istRackServer()) {
-            $this->fail($device->name.' ist ein Standserver und lässt sich nicht einbauen.');
+            $this->fail($device->name.__(' ist ein Standserver und lässt sich nicht einbauen.'));
         }
 
         if (RackItem::where('device_type', $class)->where('device_id', $device->id)->exists()) {
-            $this->fail($device->name.' ist bereits in einem Rack verbaut.');
+            $this->fail($device->name.__(' ist bereits in einem Rack verbaut.'));
         }
 
         // Hoehe vom Geraet uebernehmen, wenn es eine kennt (z. B. ein
@@ -122,7 +122,7 @@ class RackEditor extends Component
         $item = $rack->items()->findOrFail($itemId);
 
         if ($he < 1 || $he > 8) {
-            $this->fail('Höhe muss zwischen 1 und 8 HE liegen.');
+            $this->fail(__('Höhe muss zwischen 1 und 8 HE liegen.'));
         }
 
         $this->assertFree($rack, $item->position, $he, ignoreId: $item->id);

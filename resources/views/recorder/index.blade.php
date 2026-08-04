@@ -2,7 +2,7 @@
 
     <x-sitetopmenu can="recorder_create">
         @can('recorder_create')
-            <x-input.linkbutton label="Weitere Logins" link="{{ route('loginrecorder.index', $customer) }}" />
+            <x-input.linkbutton :label="__('Weitere Logins')" link="{{ route('loginrecorder.index', $customer) }}" />
         @endcan
     </x-sitetopmenu>
 
@@ -16,18 +16,18 @@
 
             <x-slot:body>
 
-                <x-minitablecard title="Allgemein" :array="[
+                <x-minitablecard :title="__('Allgemein')" :array="[
                     'Hersteller' => $recorder->manufacturer,
                     'Model' => $recorder->model,
                     'Seriennummer' => $recorder->serialNumber,
                 ]" />
 
-                <x-minitablecard title="Netzwerk" :array="[
+                <x-minitablecard :title="__('Netzwerk')" :array="[
                     'IP' => $recorder->ip,
                     'Port' => $recorder->port,
                 ]" />
 
-                <x-minitablecard title="Login" :array="[
+                <x-minitablecard :title="__('Login')" :array="[
                     'Benutzer' => $recorder->username,
                     'Passwort' => $recorder->password,
                 ]" />

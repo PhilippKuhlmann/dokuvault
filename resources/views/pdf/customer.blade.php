@@ -75,7 +75,7 @@
     <div class="cover">
         <div class="cover-app">{{ config('app.name') }}</div>
         <div class="cover-bar"></div>
-        <div class="cover-title">Dokumentation</div>
+        <div class="cover-title">{{ __('Dokumentation') }}</div>
         <div class="cover-customer">{{ $customer->name }}</div>
         <div class="cover-date">Stand: {{ date('d.m.Y') }}</div>
     </div>
@@ -86,56 +86,56 @@
     @endphp
 
     {{-- Stammdaten --}}
-    <x-pdf.section title="Standorte" :items="$customer->sites" :groups="[
+    <x-pdf.section :title="__('Standorte')" :items="$customer->sites" :groups="[
         'Adresse' => ['Straße' => fn($s) => trim(($s->street ?? '').' '.($s->house_number ?? '')), 'PLZ / Ort' => fn($s) => trim(($s->zip ?? '').' '.($s->city ?? ''))],
     ]" />
 
-    <x-pdf.section title="Ansprechpartner" :items="$customer->contactpersons" :titleField="fn($c) => trim(($c->first_name ?? '').' '.($c->last_name ?? ''))" :groups="[
+    <x-pdf.section :title="__('Ansprechpartner')" :items="$customer->contactpersons" :titleField="fn($c) => trim(($c->first_name ?? '').' '.($c->last_name ?? ''))" :groups="[
         'Kontakt' => ['Telefon' => 'phone', 'E-Mail' => 'mail'],
     ]" />
 
     {{-- Netzwerk --}}
-    <x-pdf.section title="Internet / WAN" :items="$customer->internetconnections" :titleField="fn($i) => trim(($i->provider ?? '').' '.($i->product ? '– '.$i->product : ''))" :groups="[
+    <x-pdf.section :title="__('Internet / WAN')" :items="$customer->internetconnections" :titleField="fn($i) => trim(($i->provider ?? '').' '.($i->product ? '– '.$i->product : ''))" :groups="[
         'Vertrag' => ['Anbieter' => 'provider', 'Produkt' => 'product', 'Vertragsnummer' => 'contract_number', 'Anschlussart' => 'connection_type'],
         'Technik' => ['Download' => 'bandwidth_down', 'Upload' => 'bandwidth_up', 'WAN-IP' => 'wan_ip', 'Hotline' => 'hotline'],
     ]" />
 
-    <x-pdf.section title="Securepoint UTM" :items="$customer->securepointutms" :titleField="fn($u) => $u->type ?: 'UTM #'.$u->id" :groups="[
+    <x-pdf.section :title="__('Securepoint UTM')" :items="$customer->securepointutms" :titleField="fn($u) => $u->type ?: 'UTM #'.$u->id" :groups="[
         'Allgemein' => ['Art' => 'type', 'Seriennummer' => 'serialNumber'],
         'Login' => ['Benutzername' => 'username', 'Passwort' => 'password', 'Cloud Backup' => 'cloudBackupPassword', 'USC-PIN' => 'uscpin'],
         'URL' => ['IP' => 'ip', 'Admin URL' => 'urlAdmin', 'User URL' => 'urlUser', 'Externe URL' => 'urlExternal'],
     ]" />
 
-    <x-pdf.section title="Router" :items="$customer->routers" :titleField="$deviceTitle" :groups="[
+    <x-pdf.section :title="__('Router')" :items="$customer->routers" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber'],
         'Login' => ['Benutzername' => 'username', 'Passwort' => 'password'],
         'Netzwerk' => ['IP' => 'ip', 'Port' => 'port'],
     ]" />
 
-    <x-pdf.section title="Netzwerke (VLAN)" :items="$customer->networks" :titleField="fn($n) => $n->description ?: $n->network ?: 'VLAN '.$n->vlanId" :groups="[
+    <x-pdf.section :title="__('Netzwerke (VLAN)')" :items="$customer->networks" :titleField="fn($n) => $n->description ?: $n->network ?: 'VLAN '.$n->vlanId" :groups="[
         'Netzwerk' => ['VLAN-ID' => 'vlanId', 'Netz' => 'network', 'Subnetzmaske' => 'subnetmask', 'Gateway' => 'gateway'],
         'DHCP' => ['Start' => 'dhcpStart', 'Ende' => 'dhcpEnd'],
         'DNS' => ['DNS 1' => 'dns1', 'DNS 2' => 'dns2'],
     ]" />
 
-    <x-pdf.section title="WLAN-Netze" :items="$customer->wifis" titleField="ssid" :groups="[
+    <x-pdf.section :title="__('WLAN-Netze')" :items="$customer->wifis" titleField="ssid" :groups="[
         'WLAN' => ['SSID' => 'ssid', 'Passwort' => 'password', 'Verschlüsselung' => 'encryption'],
     ]" />
 
-    <x-pdf.section title="Switches" :items="$customer->networkswitches" :titleField="$deviceTitle" :groups="[
+    <x-pdf.section :title="__('Switches')" :items="$customer->networkswitches" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber'],
         'Login' => ['Benutzername' => 'username', 'Passwort' => 'password'],
         'Netzwerk' => ['IP' => 'ip', 'Port' => 'port'],
     ]" />
 
-    <x-pdf.section title="Accesspoints" :items="$customer->accesspoints" :titleField="$deviceTitle" :groups="[
+    <x-pdf.section :title="__('Accesspoints')" :items="$customer->accesspoints" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber'],
         'Login' => ['Benutzername' => 'username', 'Passwort' => 'password'],
         'Netzwerk' => ['IP' => 'ip', 'Port' => 'port'],
     ]" />
 
     @php $patchpanels = $customer->patchpanels()->with('ports.networkSwitch')->get(); @endphp
-    <x-pdf.section title="Patchfelder" :items="$patchpanels" :groups="[
+    <x-pdf.section :title="__('Patchfelder')" :items="$patchpanels" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model',
             'Ports' => 'port_count', 'Höheneinheiten' => fn($p) => $p->height_units . ' HE', 'Notiz' => 'note'],
     ]" />
@@ -148,7 +148,7 @@
                 <div class="ports-caption">{{ $panel->name }} – Dosenbelegung</div>
                 <table class="ports">
                     <tr>
-                        <th>Port</th><th>Dose</th><th>Raum</th><th>Switch</th><th>Switch-Port</th><th>Notiz</th>
+                        <th>{{ __('Port') }}</th><th>{{ __('Dose') }}</th><th>{{ __('Raum') }}</th><th>{{ __('Switch') }}</th><th>{{ __('Switch-Port') }}</th><th>{{ __('Notiz') }}</th>
                     </tr>
                     @foreach ($belegt as $port)
                         <tr>
@@ -166,7 +166,7 @@
     @endforeach
 
     @php $racks = $customer->racks()->with('items.device')->get(); @endphp
-    <x-pdf.section title="Serverschränke" :items="$racks" :groups="[
+    <x-pdf.section :title="__('Serverschränke')" :items="$racks" :groups="[
         'Allgemein' => ['Ort' => 'location', 'Höheneinheiten' => fn($r) => $r->height_units . ' HE',
             'Einbauten' => fn($r) => $r->items->count(), 'Notiz' => 'note'],
     ]" />
@@ -181,105 +181,105 @@
     @endforeach
 
     {{-- Server & Storage --}}
-    <x-pdf.section title="Server" :items="$customer->servers" :groups="[
-        'Hardware' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Bauform' => fn($s) => config('custom.server_form_factors')[$s->form_factor] ?? null, 'Einbautiefe' => fn($s) => $s->form_factor === 'rack' ? (config('custom.server_depths')[(int) $s->full_depth] ?? null) : null, 'Höheneinheiten' => fn($s) => $s->form_factor === 'rack' ? $s->height_units.' HE' : null, 'Betriebssystem' => fn($s) => $s->operatingSystem?->name],
+    <x-pdf.section :title="__('Server')" :items="$customer->servers" :groups="[
+        'Hardware' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Bauform' => fn($s) => __(config('custom.server_form_factors')[$s->form_factor] ?? ''), 'Einbautiefe' => fn($s) => $s->form_factor === 'rack' ? __(config('custom.server_depths')[(int) $s->full_depth] ?? '') : null, 'Höheneinheiten' => fn($s) => $s->form_factor === 'rack' ? $s->height_units.' HE' : null, 'Betriebssystem' => fn($s) => $s->operatingSystem?->name],
         'Netzwerk' => ['IP 1' => 'ip1', 'IP 2' => 'ip2'],
         'BMC' => ['IP' => 'bmcIp', 'Benutzer' => 'bmcUser', 'Passwort' => 'bmcPassword'],
     ]" />
 
-    <x-pdf.section title="VMs" :items="$customer->vms" :groups="[
+    <x-pdf.section :title="__('VMs')" :items="$customer->vms" :groups="[
         'Allgemein' => ['Host' => fn($v) => $v->host?->name],
         'Netzwerk' => ['IP 1' => 'ip1', 'IP 2' => 'ip2'],
         'Betriebssystem' => ['OS' => fn($v) => $v->operatingSystem?->name],
     ]" />
 
-    <x-pdf.section title="NAS" :items="$customer->nas" :groups="[
+    <x-pdf.section :title="__('NAS')" :items="$customer->nas" :groups="[
         'Hardware' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber'],
         'Netzwerk' => ['IP 1' => 'ip1', 'IP 2' => 'ip2', 'Port' => 'port'],
         'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
     {{-- Clients --}}
-    <x-pdf.section title="Computer" :items="$customer->computers" :groups="[
+    <x-pdf.section :title="__('Computer')" :items="$customer->computers" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber'],
         'Netzwerk' => ['IP-Adresse' => 'ip'],
         'Betriebssystem' => ['OS' => fn($c) => $c->operatingSystem?->name],
     ]" />
 
-    <x-pdf.section title="Drucker" :items="$customer->printers" :groups="[
+    <x-pdf.section :title="__('Drucker')" :items="$customer->printers" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber'],
         'Netzwerk' => ['IP' => 'ip', 'Port' => 'port'],
         'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
-    <x-pdf.section title="IoT-Geräte" :items="$customer->iotdevices" :titleField="$deviceTitle" :groups="[
+    <x-pdf.section :title="__('IoT-Geräte')" :items="$customer->iotdevices" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber'],
         'Netzwerk' => ['IP' => 'ip', 'Port' => 'port', 'URL' => 'url'],
         'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
-    <x-pdf.section title="Maschinen" :items="$customer->machines" :groups="[
+    <x-pdf.section :title="__('Maschinen')" :items="$customer->machines" :groups="[
         'Allgemein' => ['IP-Adresse' => 'ip'],
     ]" />
 
-    <x-pdf.section title="Sonstige Clients" :items="$customer->otherclients" :titleField="$deviceTitle" :groups="[
+    <x-pdf.section :title="__('Sonstige Clients')" :items="$customer->otherclients" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber'],
         'Netzwerk' => ['IP' => 'ip', 'Port' => 'port'],
         'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
     {{-- Active Directory --}}
-    <x-pdf.section title="AD-Domänen" :items="$customer->addomains" titleField="domain" :groups="[
+    <x-pdf.section :title="__('AD-Domänen')" :items="$customer->addomains" titleField="domain" :groups="[
         'Domäne' => ['Domäne' => 'domain', 'NetBIOS' => 'netbios', 'DSRM-Passwort' => 'dsrmpassword'],
     ]" />
 
-    <x-pdf.section title="AD-Benutzer" :items="$customer->adusers" :titleField="fn($u) => trim(($u->firstName ?? '').' '.($u->lastName ?? ''))" :groups="[
+    <x-pdf.section :title="__('AD-Benutzer')" :items="$customer->adusers" :titleField="fn($u) => trim(($u->firstName ?? '').' '.($u->lastName ?? ''))" :groups="[
         'Allgemein' => ['E-Mail' => 'email', 'Status' => fn($u) => $u->enabled === null ? '—' : ($u->enabled ? 'Aktiv' : 'Deaktiviert')],
         'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
-    <x-pdf.section title="AD-Gruppen" :items="$customer->adgroups" :groups="[
+    <x-pdf.section :title="__('AD-Gruppen')" :items="$customer->adgroups" :groups="[
         'Gruppe' => ['Name' => 'name', 'Beschreibung' => 'description'],
     ]" />
 
     {{-- Telefonie --}}
-    <x-pdf.section title="Telefonanlagen" :items="$customer->phonesystems" :titleField="$deviceTitle" :groups="[
+    <x-pdf.section :title="__('Telefonanlagen')" :items="$customer->phonesystems" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Modell' => 'model', 'Seriennummer' => 'serialNumber'],
         'Netzwerk' => ['IP 1' => 'ip1', 'Port' => 'port'],
     ]" />
 
-    <x-pdf.section title="Telefone" :items="$customer->phones" :titleField="$deviceTitle" :groups="[
+    <x-pdf.section :title="__('Telefone')" :items="$customer->phones" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Durchwahl' => 'extension'],
         'Netzwerk' => ['IP' => 'ip', 'MAC' => 'mac'],
         'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
-    <x-pdf.section title="DECT" :items="$customer->dects" :titleField="$deviceTitle" :groups="[
+    <x-pdf.section :title="__('DECT')" :items="$customer->dects" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber'],
         'Netzwerk' => ['IP' => 'ip', 'MAC' => 'mac'],
         'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
     {{-- E-Mail --}}
-    <x-pdf.section title="E-Mail-Archivierung" :items="$customer->securepointumas" :titleField="fn($u) => $u->name ?: ($u->manufacturer ?: 'E-Mail-Archivierung #'.$u->id)" :groups="[
+    <x-pdf.section :title="__('E-Mail-Archivierung')" :items="$customer->securepointumas" :titleField="fn($u) => $u->name ?: ($u->manufacturer ?: 'E-Mail-Archivierung #'.$u->id)" :groups="[
         'Allgemein' => ['Hersteller / Produkt' => 'manufacturer', 'Art' => 'type'],
         'Login' => ['Benutzername' => 'username', 'Passwort' => 'password', 'Verschlüsselungscode' => 'encryptionkey'],
         'URL' => ['IP' => 'ip', 'Admin URL' => 'urlAdmin', 'User URL' => 'urlUser'],
     ]" />
 
-    <x-pdf.section title="E-Mail Postfächer" :items="$customer->mailboxes" titleField="mailAdress" :groups="[
+    <x-pdf.section :title="__('E-Mail Postfächer')" :items="$customer->mailboxes" titleField="mailAdress" :groups="[
         'Login' => ['E-Mail' => 'mailAdress', 'Benutzer' => 'username', 'Passwort' => 'password'],
         'Server' => ['POP3' => fn($m) => $m->mailboxProvider?->pop3server, 'IMAP' => fn($m) => $m->mailboxProvider?->imapserver, 'SMTP' => fn($m) => $m->mailboxProvider?->smtpserver],
     ]" />
 
     {{-- Kamera / Funk --}}
-    <x-pdf.section title="Recorder" :items="$customer->recorders" :titleField="$deviceTitle" :groups="[
+    <x-pdf.section :title="__('Recorder')" :items="$customer->recorders" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber'],
         'Netzwerk' => ['IP' => 'ip', 'Port' => 'port'],
         'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
-    <x-pdf.section title="Kameras" :items="$customer->cameras" :titleField="$deviceTitle" :groups="[
+    <x-pdf.section :title="__('Kameras')" :items="$customer->cameras" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber'],
         'Netzwerk' => ['IP' => 'ip', 'Port' => 'port'],
         'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
@@ -287,55 +287,55 @@
 
 
     {{-- Logins --}}
-    <x-pdf.section title="Logins – Allgemein" :items="$customer->logingenerals" :groups="[
+    <x-pdf.section :title="__('Logins – Allgemein')" :items="$customer->logingenerals" :groups="[
         'Login' => ['Beschreibung' => 'description', 'Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
-    <x-pdf.section title="Logins – Webseiten" :items="$customer->loginwebsites" :groups="[
+    <x-pdf.section :title="__('Logins – Webseiten')" :items="$customer->loginwebsites" :groups="[
         'Login' => ['URL' => 'url', 'Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
     {{-- Lizenzen --}}
-    <x-pdf.section title="Lizenzen – Windows" :items="$customer->licensewindows" :titleField="fn($l) => $l->operatingSystem?->name ?: 'Windows-Lizenz #'.$l->id" :groups="[
+    <x-pdf.section :title="__('Lizenzen – Windows')" :items="$customer->licensewindows" :titleField="fn($l) => $l->operatingSystem?->name ?: 'Windows-Lizenz #'.$l->id" :groups="[
         'Lizenz' => ['Key' => 'key'],
     ]" />
 
-    <x-pdf.section title="Lizenzen – Software" :items="$customer->licensesoftware" :groups="[
+    <x-pdf.section :title="__('Lizenzen – Software')" :items="$customer->licensesoftware" :groups="[
         'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
         'Laufzeit' => ['Start' => fn($l) => $date($l->start_date), 'Ende' => fn($l) => $date($l->end_date), 'Abrechnung' => 'abo'],
         'Key' => ['Key' => 'key'],
     ]" />
 
-    <x-pdf.section title="Lizenzen – CAL" :items="$customer->licenseaccesses" :groups="[
+    <x-pdf.section :title="__('Lizenzen – CAL')" :items="$customer->licenseaccesses" :groups="[
         'Lizenz' => ['Key' => 'key'],
     ]" />
 
     {{-- Dienste --}}
-    <x-pdf.section title="FTP-Server" :items="$customer->ftpservers" :titleField="$deviceTitle" :groups="[
+    <x-pdf.section :title="__('FTP-Server')" :items="$customer->ftpservers" :titleField="$deviceTitle" :groups="[
         'Login' => ['Host' => 'ip', 'Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
-    <x-pdf.section title="DynDNS" :items="$customer->dyndns" :groups="[
+    <x-pdf.section :title="__('DynDNS')" :items="$customer->dyndns" :groups="[
         'Login' => ['Anbieter' => 'provider', 'Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
-    <x-pdf.section title="Domains" :items="$customer->domains" :groups="[
+    <x-pdf.section :title="__('Domains')" :items="$customer->domains" :groups="[
         'Allgemein' => ['Registrar' => 'registrar', 'Ablaufdatum' => fn($d) => $date($d->expiry_date)],
         'Nameserver' => ['NS 1' => 'nameserver1', 'NS 2' => 'nameserver2'],
     ]" />
 
-    <x-pdf.section title="Zertifikate" :items="$customer->certificates" :groups="[
+    <x-pdf.section :title="__('Zertifikate')" :items="$customer->certificates" :groups="[
         'Allgemein' => ['Domain / CN' => 'common_name', 'Aussteller' => 'issuer', 'Typ' => 'type'],
         'Gültigkeit' => ['Ausgestellt am' => fn($c) => $date($c->issued_date), 'Ablaufdatum' => fn($c) => $date($c->expiry_date)],
     ]" />
 
     {{-- Sonstiges --}}
-    <x-pdf.section title="USV" :items="$customer->ups" :groups="[
+    <x-pdf.section :title="__('USV')" :items="$customer->ups" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber'],
         'Technik' => ['IP' => 'ip', 'Kapazität' => 'capacity', 'Laufzeit' => 'runtime'],
     ]" />
 
-    <x-pdf.section title="Backup" :items="$customer->backups" :groups="[
+    <x-pdf.section :title="__('Backup')" :items="$customer->backups" :groups="[
         'Konfiguration' => ['Software' => 'software', 'Quelle' => 'source', 'Ziel' => 'destination'],
         'Zeitplan' => ['Zeitplan' => 'schedule', 'Aufbewahrung' => 'retention', 'Letzter Erfolg' => fn($b) => $date($b->last_success)],
         'Login' => ['Passwort' => 'password'],

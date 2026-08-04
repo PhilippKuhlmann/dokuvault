@@ -3,5 +3,5 @@
 <form method="POST" action="{{ $link }}">
     @csrf
     @method('DELETE')
-    <x-input.button color="red" label="Löschen" />
+    <x-input.button color="red" :label="__('Löschen')" />
 </form>

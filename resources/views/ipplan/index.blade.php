@@ -47,8 +47,8 @@
                     <table class="w-full min-w-max text-sm text-left sm:min-w-0">
                         <thead class="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-gray-700">
                             <tr>
-                                <th class="py-2 px-5 font-semibold w-1/3">IP-Adresse</th>
-                                <th class="py-2 px-5 font-semibold">Zuordnung</th>
+                                <th class="py-2 px-5 font-semibold w-1/3">{{ __('IP-Adresse') }}</th>
+                                <th class="py-2 px-5 font-semibold">{{ __('Zuordnung') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -66,7 +66,7 @@
                                     <td class="py-1.5 px-5">
                                         @if ($row['kind'] === 'device')
                                             @if ($row['isGateway'] ?? false)
-                                                <span class="inline-flex items-center rounded-full bg-cerulean-50 px-1.5 py-0.5 text-[10px] font-DINPro-bold text-cerulean-700 dark:bg-cerulean-900/30 dark:text-cerulean-300 mr-1.5 align-middle">Gateway</span>
+                                                <span class="inline-flex items-center rounded-full bg-cerulean-50 px-1.5 py-0.5 text-[10px] font-DINPro-bold text-cerulean-700 dark:bg-cerulean-900/30 dark:text-cerulean-300 mr-1.5 align-middle">{{ __('Gateway') }}</span>
                                             @endif
                                             <span class="text-gray-900 dark:text-gray-100 align-middle">{{ $row['label'] }}</span>
                                         @elseif ($row['kind'] === 'dhcp')
@@ -83,13 +83,13 @@
 
                     @if ($plan['truncated'] ?? false)
                         <div class="px-5 py-3 text-xs text-gray-400 border-t border-gray-100 dark:border-gray-700">
-                            Subnetz zu groß — nur die ersten 8.192 Adressen aufgelistet.
+                            {{ __('Subnetz zu groß — nur die ersten 8.192 Adressen aufgelistet.') }}
                         </div>
                     @endif
                 @endif
             </div>
         @empty
-            <div class="text-sm text-gray-400">Keine VLANs angelegt.</div>
+            <div class="text-sm text-gray-400">{{ __('Keine VLANs angelegt.') }}</div>
         @endforelse
     </div>
 </x-app-layout>

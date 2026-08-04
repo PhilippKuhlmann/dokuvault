@@ -13,7 +13,7 @@
     <x-input.label for="{{ $name }}" value="{{ $label }}" />
     <x-input.select id="{{ $name }}" name="{{ $name }}" class="mt-1" {{ $attributes }}>
         @foreach ($options as $wert => $beschriftung)
-            <option value="{{ $wert }}" @selected((string) (old($name) ?? $default) === (string) $wert)>{{ $beschriftung }}</option>
+            <option value="{{ $wert }}" @selected((string) (old($name) ?? $default) === (string) $wert)>{{ __($beschriftung) }}</option>
         @endforeach
     </x-input.select>
 </div>

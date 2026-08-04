@@ -29,7 +29,7 @@
         </div>
 
         <div class="flex items-center gap-4">
-            <x-input.button label="Speichern" />
+            <x-input.button :label="__('Speichern')" />
 
             @if (session('status') === 'password-updated')
                 <p

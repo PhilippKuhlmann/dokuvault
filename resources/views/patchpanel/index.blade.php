@@ -15,14 +15,14 @@
 
             <x-slot:body>
 
-                <x-minitablecard title="Allgemein" :array="[
+                <x-minitablecard :title="__('Allgemein')" :array="[
                     'Standort' => $customer->sites->firstWhere('id', $patchpanel->site_id)?->name,
                     'Hersteller' => $patchpanel->manufacturer,
                     'Modell' => $patchpanel->model,
                     'Höheneinheiten' => $patchpanel->height_units . ' HE',
                 ]" />
 
-                <x-minitablecard title="Belegung" :array="[
+                <x-minitablecard :title="__('Belegung')" :array="[
                     'Ports' => $patchpanel->port_count,
                     'Dokumentiert' => $belegt->count(),
                     'Frei' => $patchpanel->port_count - $belegt->count(),
@@ -30,16 +30,16 @@
 
                 @if ($belegt->isNotEmpty())
                     <div class="w-full">
-                        <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-2">Dosen</div>
+                        <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-2">{{ __('Dosen') }}</div>
                         <table class="w-full text-sm">
                             <thead class="text-xs uppercase tracking-wide text-gray-400 border-b border-gray-100 dark:border-gray-700">
                                 <tr>
-                                    <th class="py-2 pr-4 text-left font-semibold">Port</th>
-                                    <th class="py-2 pr-4 text-left font-semibold">Dose</th>
-                                    <th class="py-2 pr-4 text-left font-semibold">Raum</th>
-                                    <th class="py-2 pr-4 text-left font-semibold">Switch</th>
-                                    <th class="py-2 pr-4 text-left font-semibold">Switch-Port</th>
-                                    <th class="py-2 text-left font-semibold">Notiz</th>
+                                    <th class="py-2 pr-4 text-left font-semibold">{{ __('Port') }}</th>
+                                    <th class="py-2 pr-4 text-left font-semibold">{{ __('Dose') }}</th>
+                                    <th class="py-2 pr-4 text-left font-semibold">{{ __('Raum') }}</th>
+                                    <th class="py-2 pr-4 text-left font-semibold">{{ __('Switch') }}</th>
+                                    <th class="py-2 pr-4 text-left font-semibold">{{ __('Switch-Port') }}</th>
+                                    <th class="py-2 text-left font-semibold">{{ __('Notiz') }}</th>
                                 </tr>
                             </thead>
                             <tbody>

@@ -1,5 +1,5 @@
 <x-admin-layout>
-    <x-create.main header="Katalogelement bearbeiten" labelsubmit="Speichern"
+    <x-create.main :header="__('Katalogelement bearbeiten')" :labelsubmit="__('Speichern')"
         action="{{ route('admin.rackcatalogitem.update', $rackCatalogItem) }}">
         @method('PATCH')
 

@@ -10,10 +10,10 @@
                 </svg>
             </div>
             <span class="text-3xl text-chathams-blue-800 font-CoconPro dark:text-gray-100">
-                Kundensuche
+                {{ __('Kundensuche') }}
             </span>
             <span class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Kunde suchen und öffnen
+                {{ __('Kunde suchen und öffnen') }}
             </span>
         </div>
 
@@ -25,7 +25,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.35-5.4a6.75 6.75 0 11-13.5 0 6.75 6.75 0 0113.5 0z" />
                     </svg>
                 </span>
-                <input wire:model.live.debounce.300ms="search" type="search" name="search" placeholder="Kunde suchen …"
+                <input wire:model.live.debounce.300ms="search" type="search" name="search" placeholder="{{ __('Kunde suchen …') }}"
                     class="block w-full pl-10 pr-4 py-2.5 rounded-lg border-gray-300 shadow-sm text-gray-900 placeholder-gray-400
                            focus:border-cerulean-500 focus:ring-cerulean-500
                            dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
@@ -41,7 +41,7 @@
                     <svg class="w-10 h-10 mb-3 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.35-5.4a6.75 6.75 0 11-13.5 0 6.75 6.75 0 0113.5 0z" />
                     </svg>
-                    <span>Keine Suchergebnisse</span>
+                    <span>{{ __('Keine Suchergebnisse') }}</span>
                 </div>
             @endempty
 

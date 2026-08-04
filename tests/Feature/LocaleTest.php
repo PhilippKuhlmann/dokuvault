@@ -102,3 +102,62 @@ test('locale kommt nur aus der erlaubten Liste in die Anwendung', function () {
 
     expect(app()->getLocale())->toBe('de');
 });
+
+test('mit englischer Sprache erscheint die Oberfläche auf Englisch', function () {
+    $nutzer = userWithPermissions([]);
+    $nutzer->update(['locale' => 'en']);
+
+    $this->actingAs($nutzer)->get('/profile')
+        ->assertSee('Language')
+        ->assertSee('Save')
+        ->assertDontSee('Sprache')
+        ->assertDontSee('Speichern');
+});
+
+test('auf Deutsch bleibt die Oberfläche deutsch', function () {
+    $nutzer = userWithPermissions([]);
+    $nutzer->update(['locale' => 'de']);
+
+    $this->actingAs($nutzer)->get('/profile')
+        ->assertSee('Sprache')
+        ->assertSee('Speichern');
+});
+
+test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
+    $uebersetzt = array_keys(json_decode(file_get_contents(base_path('lang/en.json')), true));
+
+    // Alle __('...')-Aufrufe im Projekt einsammeln.
+    $verwendet = [];
+    foreach (['resources/views', 'app', 'config'] as $ordner) {
+        $dateien = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(base_path($ordner)));
+        foreach ($dateien as $datei) {
+            if ($datei->isFile() && preg_match('/\.(php|blade\.php)$/', $datei->getFilename())) {
+                preg_match_all("/__\('((?:[^'\\\\]|\\\\.)+)'\)/", file_get_contents($datei), $treffer);
+                $verwendet = array_merge($verwendet, $treffer[1]);
+            }
+        }
+    }
+    // Beschriftungen aus der Konfiguration laufen erst zur Laufzeit durch __().
+    $ausConfig = collect(config('custom.wizard_steps'))
+        ->flatMap(fn ($s) => array_merge(
+            [$s['group'] ?? null, $s['label'] ?? null, $s['question'] ?? null],
+            collect($s['fields'] ?? [])->flatMap(fn ($f) => array_merge(
+                [$f['label'] ?? null],
+                is_array($f['options'] ?? null) ? array_values($f['options']) : []
+            ))->all()
+        ))
+        ->merge(array_values(config('custom.list_titles', [])))
+        ->merge(array_values(config('custom.rack_appearances', [])))
+        ->merge(array_values(config('custom.server_form_factors', [])))
+        ->merge(array_values(config('custom.server_depths', [])))
+        ->merge(collect(config('custom.trashables', []))->map(fn ($t) => $t[1] ?? null))
+        ->merge(collect(config('custom.rack_device_types', []))->map(fn ($t) => $t[1] ?? null))
+        ->filter()->all();
+
+    $verwendet = array_unique(array_merge($verwendet, $ausConfig));
+    $verwaist = array_values(array_diff($uebersetzt, $verwendet));
+
+    // Verwaiste Eintraege sind kein Fehler zur Laufzeit, aber toter Ballast -
+    // und meist der Rest einer umbenannten Beschriftung.
+    expect($verwaist)->toBe([], 'Übersetzt, aber nirgends verwendet: '.implode(' | ', $verwaist));
+});

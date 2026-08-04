@@ -5,7 +5,7 @@
                 <button data-drawer-target="logo-sidebar" data-drawer-toggle="logo-sidebar"
                     aria-controls="logo-sidebar" type="button"
                     class="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
-                    <span class="sr-only">Open sidebar</span>
+                    <span class="sr-only">{{ __('Open sidebar') }}</span>
                     <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"
                         xmlns="http://www.w3.org/2000/svg">
                         <path clip-rule="evenodd" fill-rule="evenodd"
@@ -21,11 +21,11 @@
             @cannot('isCustomer')
                 <div class="hidden md:flex gap-1 dark:text-gray-100">
 
-                    <x-nav.link url="{{ route('customer.dashboard', $customer) }}" name="Daschboard"><x-svg.home class="h-6 w-6" /> </x-nav.link>
-                    <x-nav.link url="{{ route('customer.search') }}" name="Kundensuche"><x-svg.search class="h-6 w-6" /> </x-nav.link>
-                    <x-nav.link url="{{ route('search.global') }}" name="Globale Suche"><x-svg.db class="h-6 w-6" /> </x-nav.link>
-                    <x-nav.link url="{{ route('search.utm') }}" name="UTM Suche" target="_blank"><x-svg.software.securepoint class="h-6 w-6" /> </x-nav.link>
-                    <x-nav.link url="{{ route('search.remote') }}" name="Rustdesk Suche" target="_blank"><x-svg.software.rustdesk class="h-6 w-6" /> </x-nav.link>
+                    <x-nav.link url="{{ route('customer.dashboard', $customer) }}" :name="__('Daschboard')"><x-svg.home class="h-6 w-6" /> </x-nav.link>
+                    <x-nav.link url="{{ route('customer.search') }}" :name="__('Kundensuche')"><x-svg.search class="h-6 w-6" /> </x-nav.link>
+                    <x-nav.link url="{{ route('search.global') }}" :name="__('Globale Suche')"><x-svg.db class="h-6 w-6" /> </x-nav.link>
+                    <x-nav.link url="{{ route('search.utm') }}" :name="__('UTM Suche')" target="_blank"><x-svg.software.securepoint class="h-6 w-6" /> </x-nav.link>
+                    <x-nav.link url="{{ route('search.remote') }}" :name="__('Rustdesk Suche')" target="_blank"><x-svg.software.rustdesk class="h-6 w-6" /> </x-nav.link>
 
                 </div>
             <!--
@@ -47,7 +47,7 @@
                         <button type="button"
                             class="flex text-sm w-10 h-10 overflow-hidden relative bg-gray-800 rounded-full focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600"
                             aria-expanded="false" data-dropdown-toggle="dropdown-user">
-                            <span class="sr-only">Open user menu</span>
+                            <span class="sr-only">{{ __('Open user menu') }}</span>
                             <svg class="w-full h-full text-gray-300" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.42 0-8 2.239-8 5v1h16v-1c0-2.761-3.58-5-8-5z"/></svg>
                         </button>
                     </div>
@@ -63,7 +63,7 @@
                         </div>
                         <ul class="py-1" role="none">
                             <li>
-                                <x-dropdown-link :href="route('profile.edit')">Profil bearbeiten</x-dropdown-link>
+                                <x-dropdown-link :href="route('profile.edit')">{{ __('Profil bearbeiten') }}</x-dropdown-link>
                             </li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">

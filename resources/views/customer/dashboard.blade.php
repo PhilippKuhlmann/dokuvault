@@ -8,7 +8,7 @@
             @can('create_pdf')
                 <form action="{{ route('customer.view-pdf', $customer) }}" method="POST" target="__blank">
                     @csrf
-                    <x-input.button label="PDF erstellen" />
+                    <x-input.button :label="__('PDF erstellen')" />
                 </form>
             @endcan
         </div>
@@ -56,7 +56,7 @@
             {{-- Ablaufende Lizenzen --}}
             @can('licensesoftware_viewAny')
                 <div class="col-span-2 p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                    <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">Ablaufende Lizenzen</div>
+                    <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Ablaufende Lizenzen') }}</div>
                     <div class="divide-y divide-gray-100 dark:divide-gray-700">
                         @forelse ($expiringLicenses as $license)
                             @php
@@ -77,7 +77,7 @@
                                 @endif
                             </a>
                         @empty
-                            <div class="py-3 text-sm text-gray-400 dark:text-gray-500">Keine ablaufenden Lizenzen 🎉</div>
+                            <div class="py-3 text-sm text-gray-400 dark:text-gray-500">{{ __('Keine ablaufenden Lizenzen 🎉') }}</div>
                         @endforelse
                     </div>
                 </div>
@@ -86,7 +86,7 @@
             {{-- Ablaufende Zertifikate --}}
             @can('certificate_viewAny')
                 <div class="col-span-2 p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                    <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">Ablaufende Zertifikate</div>
+                    <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Ablaufende Zertifikate') }}</div>
                     <div class="divide-y divide-gray-100 dark:divide-gray-700">
                         @forelse ($expiringCertificates as $certificate)
                             @php
@@ -107,7 +107,7 @@
                                 @endif
                             </a>
                         @empty
-                            <div class="py-3 text-sm text-gray-400 dark:text-gray-500">Keine ablaufenden Zertifikate 🎉</div>
+                            <div class="py-3 text-sm text-gray-400 dark:text-gray-500">{{ __('Keine ablaufenden Zertifikate 🎉') }}</div>
                         @endforelse
                     </div>
                 </div>
@@ -119,7 +119,7 @@
 
             {{-- Standorte --}}
             <div class="w-full sm:w-80 p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">Standorte</div>
+                <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Standorte') }}</div>
                 <div class="space-y-4">
                     @forelse ($sites as $site)
                         <div>
@@ -128,14 +128,14 @@
                             <div class="text-sm text-gray-500 dark:text-gray-400">{{ $site->zip }} {{ $site->city }}</div>
                         </div>
                     @empty
-                        <div class="text-sm text-gray-400 dark:text-gray-500">Keine Standorte</div>
+                        <div class="text-sm text-gray-400 dark:text-gray-500">{{ __('Keine Standorte') }}</div>
                     @endforelse
                 </div>
             </div>
 
             {{-- Ansprechpartner --}}
             <div class="w-full sm:w-80 p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">Ansprechpartner</div>
+                <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Ansprechpartner') }}</div>
                 <div class="space-y-4">
                     @forelse ($contactpersons as $contactperson)
                         <div>
@@ -144,7 +144,7 @@
                             <div class="text-sm text-gray-500 dark:text-gray-400">{{ $contactperson->mail }}</div>
                         </div>
                     @empty
-                        <div class="text-sm text-gray-400 dark:text-gray-500">Keine Ansprechpartner</div>
+                        <div class="text-sm text-gray-400 dark:text-gray-500">{{ __('Keine Ansprechpartner') }}</div>
                     @endforelse
                 </div>
             </div>

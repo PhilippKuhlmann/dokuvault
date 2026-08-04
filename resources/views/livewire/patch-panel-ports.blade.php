@@ -5,7 +5,7 @@
 <div class="my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700">
 
     <div class="flex flex-wrap items-baseline justify-between gap-2 mb-1">
-        <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100">Ports</div>
+        <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100">{{ __('Ports') }}</div>
         <div class="text-sm text-gray-400 dark:text-gray-500">
             {{ $ports->filter(fn ($p) => $p->isDocumented())->count() }} von {{ $panel->port_count }} dokumentiert
         </div>
@@ -18,7 +18,7 @@
 
     @if ($saved)
         <div class="p-3 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-900/40 dark:text-green-400" role="status">
-            Gespeichert.
+            {{ __('Gespeichert.') }}
         </div>
     @endif
 
@@ -33,12 +33,12 @@
         <table class="w-full min-w-[44rem] text-sm">
             <thead class="text-xs uppercase tracking-wide text-gray-400 border-b border-gray-100 dark:border-gray-700">
                 <tr>
-                    <th class="py-2 pr-2 text-left font-semibold w-10">Port</th>
-                    <th class="py-2 pr-2 text-left font-semibold w-28">Dose</th>
-                    <th class="py-2 pr-2 text-left font-semibold">Raum / Bezeichnung</th>
-                    <th class="py-2 pr-2 text-left font-semibold">Switch</th>
-                    <th class="py-2 pr-2 text-left font-semibold w-24">Switch-Port</th>
-                    <th class="py-2 pr-2 text-left font-semibold">Notiz</th>
+                    <th class="py-2 pr-2 text-left font-semibold w-10">{{ __('Port') }}</th>
+                    <th class="py-2 pr-2 text-left font-semibold w-28">{{ __('Dose') }}</th>
+                    <th class="py-2 pr-2 text-left font-semibold">{{ __('Raum / Bezeichnung') }}</th>
+                    <th class="py-2 pr-2 text-left font-semibold">{{ __('Switch') }}</th>
+                    <th class="py-2 pr-2 text-left font-semibold w-24">{{ __('Switch-Port') }}</th>
+                    <th class="py-2 pr-2 text-left font-semibold">{{ __('Notiz') }}</th>
                     <th class="py-2 w-8"></th>
                 </tr>
             </thead>
@@ -48,11 +48,11 @@
                         <td class="py-1 pr-2 font-mono text-gray-500 dark:text-gray-400">{{ $port->number }}</td>
                         <td class="py-1 pr-2">
                             <x-input.text type="text" class="w-full text-sm py-1 font-mono"
-                                wire:model="outlet.{{ $port->id }}" placeholder="EG 1.01" />
+                                wire:model="outlet.{{ $port->id }}" :placeholder="__('EG 1.01')" />
                         </td>
                         <td class="py-1 pr-2">
                             <x-input.text type="text" class="w-full text-sm py-1"
-                                wire:model="label.{{ $port->id }}" placeholder="z. B. Besprechung" />
+                                wire:model="label.{{ $port->id }}" :placeholder="__('z. B. Besprechung')" />
                         </td>
                         <td class="py-1 pr-2">
                             <x-input.select name="switch-{{ $port->id }}" class="w-full text-sm py-1"
@@ -74,7 +74,7 @@
                         <td class="py-1 text-right">
                             <button type="button" wire:click="clearPort({{ $port->id }})"
                                 class="text-gray-400 hover:text-red-600 dark:hover:text-red-400"
-                                title="Zeile leeren">✕</button>
+                                title="{{ __('Zeile leeren') }}">✕</button>
                         </td>
                     </tr>
                 @endforeach
@@ -83,7 +83,7 @@
     </div>
 
     <div class="flex justify-end mt-4">
-        <x-input.button type="button" wire:click="save" label="Ports speichern"
+        <x-input.button type="button" wire:click="save" :label="__('Ports speichern')"
             wire:loading.attr="disabled" />
     </div>
 </div>

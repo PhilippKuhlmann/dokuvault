@@ -7,7 +7,7 @@
 @else
     <span x-data="{ copied: false }" class="inline-flex items-center gap-1.5">
         <span>{{ $value }}</span>
-        <button type="button" tabindex="-1" title="Kopieren"
+        <button type="button" tabindex="-1" title="{{ __('Kopieren') }}"
             @click="copyText(@js($val)); copied = true; setTimeout(() => copied = false, 1500)"
             class="shrink-0 text-gray-400 hover:text-cerulean-600 dark:text-gray-500 dark:hover:text-gray-300 focus:outline-none">
             <svg x-show="!copied" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">

@@ -18,7 +18,7 @@ class AuthenticateAgent
         $plain = $request->bearerToken() ?: $request->header('X-Agent-Token');
 
         if (! $plain) {
-            abort(401, 'Kein Agent-Token übermittelt.');
+            abort(401, __('Kein Agent-Token übermittelt.'));
         }
 
         $token = AgentToken::with(['customer', 'site'])
@@ -26,7 +26,7 @@ class AuthenticateAgent
             ->first();
 
         if (! $token || ! $token->customer || ! $token->site) {
-            abort(401, 'Ungültiger Agent-Token.');
+            abort(401, __('Ungültiger Agent-Token.'));
         }
 
         $token->forceFill(['last_used_at' => now()])->saveQuietly();

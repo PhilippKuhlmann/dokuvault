@@ -9,11 +9,11 @@
         @elseif ($key == 'download')
             @if ($value)
                 <td scope="row" class="py-2.5 px-4">
-                    <a href="{{ $value }}" target="_blank"  class="text-cerulean-500 hover:text-cerulean-600">Download</a>
+                    <a href="{{ $value }}" target="_blank"  class="text-cerulean-500 hover:text-cerulean-600">{{ __('Download') }}</a>
                 </td>
             @else
                 <td scope="row" class="py-2.5 px-4">
-                    <a disabled class="text-gray-500">Download</a>
+                    <a disabled class="text-gray-500">{{ __('Download') }}</a>
                 </td>
             @endif
         @elseif ($key == 'password')
@@ -27,7 +27,7 @@
                         disabled>
                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center gap-2 text-sm leading-5">
 
-                        <button type="button" tabindex="-1" title="Passwort kopieren"
+                        <button type="button" tabindex="-1" title="{{ __('Passwort kopieren') }}"
                             @click="copyText($refs.pw.value); copied = true; setTimeout(() => copied = false, 1500)"
                             class="text-gray-400 hover:text-cerulean-600 dark:text-gray-500 dark:hover:text-gray-300 focus:outline-none">
                             <svg x-show="!copied" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
@@ -70,7 +70,7 @@
         @isset($editUrl)
             @can($can)
                 <div class="flex flex-row space-x-2">
-                    <a href="{{ $editUrl }}" title="Bearbeiten" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-cerulean-600 shadow-sm hover:bg-cerulean-50 hover:border-cerulean-300 transition-colors dark:bg-gray-800 dark:border-gray-600 dark:text-cerulean-400 dark:hover:bg-gray-700">
+                    <a href="{{ $editUrl }}" title="{{ __('Bearbeiten') }}" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-cerulean-600 shadow-sm hover:bg-cerulean-50 hover:border-cerulean-300 transition-colors dark:bg-gray-800 dark:border-gray-600 dark:text-cerulean-400 dark:hover:bg-gray-700">
                         <x-svg.edit class="h-5 w-5" />
                     </a>
                 </div>
@@ -85,7 +85,7 @@
                     <form method="POST" action="{{ $delUrl }}" onsubmit="return confirm('Objekt wirklich unwiderruflich löschen?')">
                         @csrf
                         @method('delete')
-                        <x-input.button color="red" size="sm" label="Löschen!" />
+                        <x-input.button color="red" size="sm" :label="__('Löschen!')" />
                     </form>
                 </div>
             @endcan

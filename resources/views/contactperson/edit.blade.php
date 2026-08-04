@@ -1,14 +1,14 @@
 <x-app-layout :$customer>
-    <x-create.main header="Ansprechpartner bearbeiten" labelsubmit="Speichern" action="{{ route('contactperson.update', [$customer, $contactperson]) }}">
+    <x-create.main :header="__('Ansprechpartner bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('contactperson.update', [$customer, $contactperson]) }}">
         @method('PATCH')
 
-        <x-create.singlerow label="Vorname" name="first_name" :default="$contactperson->first_name" />
+        <x-create.singlerow :label="__('Vorname')" name="first_name" :default="$contactperson->first_name" />
 
-        <x-create.singlerow label="Nachname" name="last_name" :default="$contactperson->last_name" />
+        <x-create.singlerow :label="__('Nachname')" name="last_name" :default="$contactperson->last_name" />
 
-        <x-create.singlerow label="Tel." name="phone" :default="$contactperson->phone" />
+        <x-create.singlerow :label="__('Tel.')" name="phone" :default="$contactperson->phone" />
 
-        <x-create.singlerow label="E-Mail" name="mail" :default="$contactperson->mail" />
+        <x-create.singlerow :label="__('E-Mail')" name="mail" :default="$contactperson->mail" />
 
     </x-create.main>
 

@@ -1,16 +1,16 @@
 <x-app-layout :$customer>
-    <x-create.main header="TK-Anlage bearbeiten" labelsubmit="Speichern" action="{{ route('phonesystem.update', [$customer, $phonesystem]) }}">
+    <x-create.main :header="__('TK-Anlage bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('phonesystem.update', [$customer, $phonesystem]) }}">
         @method('PATCH')
 
         <x-edit.select name="site_id" value="Standort" selector="{{ $phonesystem->site_id }}" :array="$sites" />
 
-        <x-create.doublerow label1="Hersteller" name1="manufacturer" :default1="$phonesystem->manufacturer" label2="Model" name2="model" :default2="$phonesystem->model" />
+        <x-create.doublerow :label1="__('Hersteller')" name1="manufacturer" :default1="$phonesystem->manufacturer" :label2="__('Model')" name2="model" :default2="$phonesystem->model" />
 
-        <x-create.singlerow label="Seriennummer" name="serialNumber" :default="$phonesystem->serialNumber" />
+        <x-create.singlerow :label="__('Seriennummer')" name="serialNumber" :default="$phonesystem->serialNumber" />
 
-        <x-create.doublerow label1="IP 1" name1="ip1" :default1="$phonesystem->ip1" label2="Port" name2="port" type2="number" :default2="$phonesystem->port" />
+        <x-create.doublerow :label1="__('IP 1')" name1="ip1" :default1="$phonesystem->ip1" :label2="__('Port')" name2="port" type2="number" :default2="$phonesystem->port" />
 
-        <x-create.doublerow label1="Benutzername" name1="username" :default1="$phonesystem->username" label2="Passwort" name2="password" :default2="$phonesystem->password" />
+        <x-create.doublerow :label1="__('Benutzername')" name1="username" :default1="$phonesystem->username" :label2="__('Passwort')" name2="password" :default2="$phonesystem->password" />
 
     </x-create.main>
 

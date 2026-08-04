@@ -8,20 +8,20 @@
             </x-show.header>
         </x-slot>
         <x-slot:body>
-            <x-minitablecard title="Vertrag" :array="[
+            <x-minitablecard :title="__('Vertrag')" :array="[
                 'Anbieter' => $ic->provider,
                 'Produkt' => $ic->product,
                 'Vertragsnummer' => $ic->contract_number,
                 'Anschlussart' => $ic->connection_type,
             ]" />
-            <x-minitablecard title="Technik" :array="[
+            <x-minitablecard :title="__('Technik')" :array="[
                 'Download' => $ic->bandwidth_down,
                 'Upload' => $ic->bandwidth_up,
                 'WAN-IP' => $ic->wan_ip,
                 'Hotline' => $ic->hotline,
             ]" />
             @if ($ic->notes)
-                <x-minitextcard title="Notizen">{{ $ic->notes }}</x-minitextcard>
+                <x-minitextcard :title="__('Notizen')">{{ $ic->notes }}</x-minitextcard>
             @endif
         </x-slot>
     </x-card>

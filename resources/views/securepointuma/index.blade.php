@@ -12,18 +12,18 @@
 
             <x-slot:body>
 
-                <x-minitablecard title="Allgemein" :array="[
+                <x-minitablecard :title="__('Allgemein')" :array="[
                     'Hersteller / Produkt' => $securepointuma->manufacturer,
                     'Art' => $securepointuma->type,
                 ]" />
 
-                <x-minitablecard title="Login" :array="[
+                <x-minitablecard :title="__('Login')" :array="[
                     'Benutzername' => $securepointuma->username,
                     'Passwort' => $securepointuma->password,
                     'Verschlüsselungscode' => $securepointuma->encryptionkey,
                 ]" />
 
-                <x-minitablecard title="URL" :array="[
+                <x-minitablecard :title="__('URL')" :array="[
                     'IP' => $securepointuma->ip,
                     'Admin URL' => $securepointuma->urlAdmin,
                     'User URL' => $securepointuma->urlUser,

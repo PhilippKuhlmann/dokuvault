@@ -3,7 +3,7 @@
     <div class="flex w-full pl-3 pt-3 gap-3">
         <div class="w-64 rounded-xl border border-gray-200 bg-white shadow-sm p-4 dark:bg-gray-800 dark:border-gray-700">
             <div class="h-8 text-cerulean-500 text-center font-CoconPro">
-                Katalogelemente Gesamt
+                {{ __('Katalogelemente Gesamt') }}
             </div>
             <div class="h-10 text-chathams-blue-800 dark:text-gray-100 text-center font-CoconPro text-4xl">
                 {{ $rackCatalogItemsCount }}
@@ -30,7 +30,7 @@
                         :values="[
                             $rackCatalogItem->name,
                             $rackCatalogItem->height_units . ' HE',
-                            config('custom.rack_appearances')[$rackCatalogItem->appearance] ?? $rackCatalogItem->appearance,
+                            __(config('custom.rack_appearances')[$rackCatalogItem->appearance] ?? $rackCatalogItem->appearance),
                             $rackCatalogItem->sort_order,
                         ]"
                         editUrl="{{ route('admin.rackcatalogitem.edit', $rackCatalogItem) }}"

@@ -20,31 +20,31 @@
 
             <x-slot:body>
 
-                <x-minitablecard title="Hardware" :array="[
+                <x-minitablecard :title="__('Hardware')" :array="[
                     'Hersteller' => $server->manufacturer,
                     'Modell' => $server->model,
                     'Seriennummer' => $server->serialNumber,
-                    'Bauform' => config('custom.server_form_factors')[$server->form_factor] ?? null,
+                    'Bauform' => __(config('custom.server_form_factors')[$server->form_factor] ?? ''),
                     'Einbautiefe' => $server->form_factor === 'rack'
-                        ? (config('custom.server_depths')[(int) $server->full_depth] ?? null)
+                        ? __(config('custom.server_depths')[(int) $server->full_depth] ?? '')
                         : null,
                     'Höheneinheiten' => $server->form_factor === 'rack' ? $server->height_units.' HE' : null,
                 ]" />
 
-                <x-minitablecard title="Netzwerk" :array="[
+                <x-minitablecard :title="__('Netzwerk')" :array="[
                     'IP-Adresse 1' => $server->ip1,
                     'IP-Adresse 2' => $server->ip2,
                 ]" />
 
-                <x-minitablecard title="BMC" :array="[
+                <x-minitablecard :title="__('BMC')" :array="[
                     'BMC IP-Adresse' => $server->bmcIp,
                     'BMC Benutzer' => $server->bmcUser,
                     'BMC Passwort' => $server->bmcPassword,
                 ]" />
 
-                <x-minitagcard title="Dienste" :array="$server->services" />
+                <x-minitagcard :title="__('Dienste')" :array="$server->services" />
 
-                <x-minitextcard title="Betriebsystem">
+                <x-minitextcard :title="__('Betriebsystem')">
                     {{ $server->operatingSystem?->name ?? '—' }}
                 </x-minitextcard>
 

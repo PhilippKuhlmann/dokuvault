@@ -13,7 +13,7 @@
             <x-slot:body>
 
 
-                <x-minitablecard title="Login" :array="[
+                <x-minitablecard :title="__('Login')" :array="[
                     'E-Mail Adresse' => $mailbox->mailAdress,
                     'Benutzer' => $mailbox->username,
                     'Passwort' => $mailbox->password,

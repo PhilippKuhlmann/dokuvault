@@ -8,18 +8,18 @@
             </x-show.header>
         </x-slot>
         <x-slot:body>
-            <x-minitablecard title="Allgemein" :array="[
+            <x-minitablecard :title="__('Allgemein')" :array="[
                 'Hersteller' => $usv->manufacturer,
                 'Modell' => $usv->model,
                 'Seriennummer' => $usv->serialNumber,
             ]" />
-            <x-minitablecard title="Technik" :array="[
+            <x-minitablecard :title="__('Technik')" :array="[
                 'IP-Adresse' => $usv->ip,
                 'Kapazität' => $usv->capacity,
                 'Laufzeit' => $usv->runtime,
             ]" />
             @if ($usv->notes)
-                <x-minitextcard title="Notizen">{{ $usv->notes }}</x-minitextcard>
+                <x-minitextcard :title="__('Notizen')">{{ $usv->notes }}</x-minitextcard>
             @endif
         </x-slot>
     </x-card>

@@ -10,17 +10,17 @@
     @endphp
 
     <div class="m-3">
-        <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">Aktivitäten</div>
+        <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Aktivitäten') }}</div>
 
         <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs uppercase tracking-wide text-gray-500 bg-gray-50 border-b border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600">
                     <tr>
-                        <th class="py-2.5 px-4 font-semibold">Zeitpunkt</th>
-                        <th class="py-2.5 px-4 font-semibold">Benutzer</th>
-                        <th class="py-2.5 px-4 font-semibold">Ereignis</th>
-                        <th class="py-2.5 px-4 font-semibold">Objekt</th>
-                        <th class="py-2.5 px-4 font-semibold">Details</th>
+                        <th class="py-2.5 px-4 font-semibold">{{ __('Zeitpunkt') }}</th>
+                        <th class="py-2.5 px-4 font-semibold">{{ __('Benutzer') }}</th>
+                        <th class="py-2.5 px-4 font-semibold">{{ __('Ereignis') }}</th>
+                        <th class="py-2.5 px-4 font-semibold">{{ __('Objekt') }}</th>
+                        <th class="py-2.5 px-4 font-semibold">{{ __('Details') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -66,7 +66,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="py-6 px-4 text-center text-gray-400">Noch keine Aktivitäten</td>
+                            <td colspan="5" class="py-6 px-4 text-center text-gray-400">{{ __('Noch keine Aktivitäten') }}</td>
                         </tr>
                     @endforelse
                 </tbody>

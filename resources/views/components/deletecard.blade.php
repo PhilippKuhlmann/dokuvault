@@ -9,13 +9,13 @@
             <h3 class="text-lg font-medium">ACHTUNG</h3>
         </div>
         <div class="mt-2 mb-4 text-sm">
-            Mit dem Klick auf Löschen wird das Objekt unwiederruflich gelöscht!
+            {{ __('Mit dem Klick auf Löschen wird das Objekt unwiederruflich gelöscht!') }}
         </div>
         <div class="flex">
             <form method="POST" action="{{ $action }}" onsubmit="return confirm('Objekt wirklich unwiderruflich löschen?')">
                 @csrf
                 @method('delete')
-                <x-input.button color="red" label="Löschen!" />
+                <x-input.button color="red" :label="__('Löschen!')" />
             </form>
         </div>
     </div>

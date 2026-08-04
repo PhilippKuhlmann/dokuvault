@@ -1,20 +1,20 @@
 <x-app-layout :$customer>
-    <x-create.main header="Accesspoint bearbeiten" labelsubmit="Speichern" action="{{ route('accesspoint.update', [$customer, $accesspoint]) }}">
+    <x-create.main :header="__('Accesspoint bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('accesspoint.update', [$customer, $accesspoint]) }}">
         @method('PATCH')
 
         <x-edit.select name="site_id" value="Standort" selector="{{ $accesspoint->site_id }}" :array="$sites" />
 
-        <x-create.singlerow label="Name" name="name" :default="$accesspoint->name" />
+        <x-create.singlerow :label="__('Name')" name="name" :default="$accesspoint->name" />
 
-        <x-create.singlerow label="Hersteller" name="manufacturer" :default="$accesspoint->manufacturer" />
+        <x-create.singlerow :label="__('Hersteller')" name="manufacturer" :default="$accesspoint->manufacturer" />
 
-        <x-create.doublerow label1="Modell" name1="model" :default1="$accesspoint->model" label2="Seriennummer" name2="serialNumber" :default2="$accesspoint->serialNumber" />
+        <x-create.doublerow :label1="__('Modell')" name1="model" :default1="$accesspoint->model" :label2="__('Seriennummer')" name2="serialNumber" :default2="$accesspoint->serialNumber" />
 
-        <x-create.singlerow label="Benutzername" name="username" :default="$accesspoint->username" />
+        <x-create.singlerow :label="__('Benutzername')" name="username" :default="$accesspoint->username" />
 
-        <x-create.singlerow label="Passwort" name="password" :default="$accesspoint->password" />
+        <x-create.singlerow :label="__('Passwort')" name="password" :default="$accesspoint->password" />
 
-        <x-create.doublerow14 label1="IP" name1="ip" :default1="$accesspoint->ip" label2="Port" name2="port" :default2="$accesspoint->port" type2="number" />
+        <x-create.doublerow14 :label1="__('IP')" name1="ip" :default1="$accesspoint->ip" :label2="__('Port')" name2="port" :default2="$accesspoint->port" type2="number" />
 
     </x-create.main>
 

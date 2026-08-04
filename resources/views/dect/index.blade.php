@@ -12,19 +12,19 @@
 
             <x-slot:body>
 
-                <x-minitablecard title="Allgemein" :array="[
+                <x-minitablecard :title="__('Allgemein')" :array="[
                     'Hersteller' => $dect->manufacturer,
                     'Modell' => $dect->model,
                     'Seriennummer' => $dect->serialNumber,
                 ]" />
 
-                <x-minitablecard title="Netzwerk" :array="[
+                <x-minitablecard :title="__('Netzwerk')" :array="[
                     'IP-Adresse' => $dect->ip,
                     'Port' => $dect->port,
                     'MAC-Adresse' => $dect->mac,
                 ]" />
 
-                <x-minitablecard title="Login" :array="[
+                <x-minitablecard :title="__('Login')" :array="[
                     'Benutzer' => $dect->username,
                     'Passwort' => $dect->password,
                 ]" />

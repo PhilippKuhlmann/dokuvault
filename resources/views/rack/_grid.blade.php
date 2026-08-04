@@ -94,14 +94,14 @@
                     <span class="text-[10px] font-mono opacity-70">{{ $item->height_units }} HE</span>
                     @if ($interactive)
                         <button type="button" wire:click="setHeight({{ $item->id }}, {{ $item->height_units + 1 }})"
-                            class="opacity-60 hover:opacity-100" title="1 HE höher">＋</button>
+                            class="opacity-60 hover:opacity-100" title="{{ __('1 HE höher') }}">＋</button>
                         @if ($item->height_units > 1)
                             <button type="button" wire:click="setHeight({{ $item->id }}, {{ $item->height_units - 1 }})"
-                                class="opacity-60 hover:opacity-100" title="1 HE niedriger">－</button>
+                                class="opacity-60 hover:opacity-100" title="{{ __('1 HE niedriger') }}">－</button>
                         @endif
                         <button type="button" wire:click="remove({{ $item->id }})"
                             wire:confirm="Einbau entfernen?"
-                            class="text-red-600 hover:text-red-700 dark:text-red-400" title="Entfernen">✕</button>
+                            class="text-red-600 hover:text-red-700 dark:text-red-400" title="{{ __('Entfernen') }}">✕</button>
                     @endif
                 </span>
             </div>

@@ -13,18 +13,18 @@
 
             <x-slot:body>
 
-                <x-minitablecard title="Allgemein" :array="[
+                <x-minitablecard :title="__('Allgemein')" :array="[
                     'Hersteller' => $otherclient->manufacturer,
                     'Modell' => $otherclient->model,
                     'Seriennummer' => $otherclient->serialNumber,
                 ]" />
 
-                <x-minitablecard title="Netzwerk" :array="[
+                <x-minitablecard :title="__('Netzwerk')" :array="[
                     'IP-Adresse' => $otherclient->ip,
                     'Port' => $otherclient->port,
                 ]" />
 
-                <x-minitablecard title="Login" :array="[
+                <x-minitablecard :title="__('Login')" :array="[
                     'Benutzer' => $otherclient->username,
                     'Passwort' => $otherclient->password
                 ]" />

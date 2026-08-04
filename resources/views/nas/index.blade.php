@@ -2,7 +2,7 @@
 
     <x-sitetopmenu can="nas_create">
         @can('nas_create')
-            <x-input.linkbutton label="Weitere Logins" link="{{ route('loginnas.index', $customer) }}" />
+            <x-input.linkbutton :label="__('Weitere Logins')" link="{{ route('loginnas.index', $customer) }}" />
         @endcan
     </x-sitetopmenu>
 
@@ -17,19 +17,19 @@
 
             <x-slot:body>
 
-                <x-minitablecard title="Hardware" :array="[
+                <x-minitablecard :title="__('Hardware')" :array="[
                     'Hersteller' => $nas->manufacturer,
                     'Modell' => $nas->model,
                     'Seriennummer' => $nas->serialNumber,
                 ]" />
 
-                <x-minitablecard title="Netzwerk" :array="[
+                <x-minitablecard :title="__('Netzwerk')" :array="[
                     'IP-Adresse 1' => $nas->ip1,
                     'IP-Adresse 2' => $nas->ip2,
                     'Port' => $nas->port,
                 ]" />
 
-                <x-minitablecard title="Login" :array="[
+                <x-minitablecard :title="__('Login')" :array="[
                     'Benutzer' => $nas->username,
                     'Passwort' => $nas->password,
                 ]" />

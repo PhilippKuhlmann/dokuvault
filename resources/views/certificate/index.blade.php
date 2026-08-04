@@ -8,17 +8,17 @@
             </x-show.header>
         </x-slot>
         <x-slot:body>
-            <x-minitablecard title="Allgemein" :array="[
+            <x-minitablecard :title="__('Allgemein')" :array="[
                 'Domain / CN' => $certificate->common_name,
                 'Aussteller' => $certificate->issuer,
                 'Typ' => $certificate->type,
             ]" />
-            <x-minitablecard title="Gültigkeit" :array="[
+            <x-minitablecard :title="__('Gültigkeit')" :array="[
                 'Ausgestellt am' => $certificate->issued_date ? \Carbon\Carbon::parse($certificate->issued_date)->format('d.m.Y') : null,
                 'Ablaufdatum' => $certificate->expiry_date ? \Carbon\Carbon::parse($certificate->expiry_date)->format('d.m.Y') : null,
             ]" />
             @if ($certificate->notes)
-                <x-minitextcard title="Notizen">{{ $certificate->notes }}</x-minitextcard>
+                <x-minitextcard :title="__('Notizen')">{{ $certificate->notes }}</x-minitextcard>
             @endif
         </x-slot>
     </x-card>

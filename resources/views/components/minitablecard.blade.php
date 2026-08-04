@@ -19,7 +19,7 @@
                                         value="{{ $value }}" disabled>
                                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center gap-2 text-sm leading-5">
 
-                                        <button type="button" tabindex="-1" title="Passwort kopieren"
+                                        <button type="button" tabindex="-1" title="{{ __('Passwort kopieren') }}"
                                             @click="copyText($refs.pw.value); copied = true; setTimeout(() => copied = false, 1500)"
                                             class="text-gray-400 hover:text-cerulean-600 dark:text-gray-500 dark:hover:text-gray-300 focus:outline-none">
                                             <svg x-show="!copied" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">

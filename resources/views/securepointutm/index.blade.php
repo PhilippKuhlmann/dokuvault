@@ -12,19 +12,19 @@
 
             <x-slot:body>
 
-                <x-minitablecard title="Allgemein" :array="[
+                <x-minitablecard :title="__('Allgemein')" :array="[
                     'Art' => $securepointutm->type,
                     'Seriennummer' => $securepointutm->serialNumber,
                 ]" />
 
-                <x-minitablecard title="Login" :array="[
+                <x-minitablecard :title="__('Login')" :array="[
                     'Benutzername' => $securepointutm->username,
                     'Passwort' => $securepointutm->password,
                     'Cloud Backup Passwort' => $securepointutm->cloudBackupPassword,
                     'USC-PIN' => $securepointutm->uscpin,
                 ]" />
 
-                <x-minitablecard title="URL" :array="[
+                <x-minitablecard :title="__('URL')" :array="[
                     'IP' => $securepointutm->ip,
                     'Admin URL' => $securepointutm->urlAdmin,
                     'User URL' => $securepointutm->urlUser,

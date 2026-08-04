@@ -15,13 +15,13 @@
         <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center">
 
             <span class="rounded-full bg-amber-400 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-950
-                         dark:bg-amber-400 dark:text-amber-950">Demo</span>
+                         dark:bg-amber-400 dark:text-amber-950">{{ __('Demo') }}</span>
 
-            <span>Alles darf ausprobiert werden – die Daten werden stündlich zurückgesetzt.</span>
+            <span>{{ __('Alles darf ausprobiert werden – die Daten werden stündlich zurückgesetzt.') }}</span>
 
             @guest
                 <span class="text-amber-800/80 dark:text-gray-400">
-                    Anmeldung
+                    {{ __('Anmeldung') }}
                     <span class="font-mono text-amber-900 dark:text-gray-200">admin</span>,
                     <span class="font-mono text-amber-900 dark:text-gray-200">techniker</span>,
                     <span class="font-mono text-amber-900 dark:text-gray-200">kunde-rw</span> oder
@@ -30,7 +30,7 @@
                 </span>
             @else
                 <a href="{{ route('changelog') }}"
-                    class="underline underline-offset-2 hover:no-underline">Änderungsverlauf</a>
+                    class="underline underline-offset-2 hover:no-underline">{{ __('Änderungsverlauf') }}</a>
             @endguest
 
         </div>

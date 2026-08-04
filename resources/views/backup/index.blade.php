@@ -8,21 +8,21 @@
             </x-show.header>
         </x-slot>
         <x-slot:body>
-            <x-minitablecard title="Konfiguration" :array="[
+            <x-minitablecard :title="__('Konfiguration')" :array="[
                 'Software' => $backup->software,
                 'Quelle' => $backup->source,
                 'Ziel' => $backup->destination,
             ]" />
-            <x-minitablecard title="Zeitplan" :array="[
+            <x-minitablecard :title="__('Zeitplan')" :array="[
                 'Zeitplan' => $backup->schedule,
                 'Aufbewahrung' => $backup->retention,
                 'Letzter Erfolg' => $backup->last_success ? \Carbon\Carbon::parse($backup->last_success)->format('d.m.Y') : null,
             ]" />
-            <x-minitablecard title="Login" :array="[
+            <x-minitablecard :title="__('Login')" :array="[
                 'Passwort' => $backup->password,
             ]" />
             @if ($backup->notes)
-                <x-minitextcard title="Notizen">{{ $backup->notes }}</x-minitextcard>
+                <x-minitextcard :title="__('Notizen')">{{ $backup->notes }}</x-minitextcard>
             @endif
         </x-slot>
     </x-card>

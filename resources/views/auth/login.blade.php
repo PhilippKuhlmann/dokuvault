@@ -22,7 +22,7 @@
                     {{ config('app.name') }}
                 </span>
                 <span class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Bitte melde dich an
+                    {{ __('Bitte melde dich an') }}
                 </span>
             </div>
 

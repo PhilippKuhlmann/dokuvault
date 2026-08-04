@@ -12,18 +12,18 @@
 
         <x-slot:body>
 
-            <x-minitablecard title="Allgemein" :array="[
+            <x-minitablecard :title="__('Allgemein')" :array="[
                 'Hersteller' => $printer->manufacturer,
                 'Modell' => $printer->model,
                 'Seriennummer' => $printer->serialNumber,
             ]" />
 
-            <x-minitablecard title="Netzwerk" :array="[
+            <x-minitablecard :title="__('Netzwerk')" :array="[
                 'IP-Adresse' => $printer->ip,
                 'Port' => $printer->port,
             ]" />
 
-            <x-minitablecard title="Login" :array="[
+            <x-minitablecard :title="__('Login')" :array="[
                 'Benutzer' => $printer->username,
                 'Passwort' => $printer->password,
             ]" />

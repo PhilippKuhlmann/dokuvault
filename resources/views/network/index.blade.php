@@ -13,19 +13,19 @@
 
             <x-slot:body>
 
-                <x-minitablecard title="Netzwerk" :array="[
+                <x-minitablecard :title="__('Netzwerk')" :array="[
                     'Netzwerk' => $network->network,
                     'Subnetzmakske' => $network->subnetmask,
                     'CIDR' => '/'. $network->cidr,
                     'Gateway' => $network->gateway,
                 ]" />
 
-                <x-minitablecard title="DHCP" :array="[
+                <x-minitablecard :title="__('DHCP')" :array="[
                     'Start' => $network->dhcpStart,
                     'Ende' => $network->dhcpEnd,
                 ]" />
 
-                <x-minitablecard title="DNS" :array="[
+                <x-minitablecard :title="__('DNS')" :array="[
                     'DNS 1' => $network->dns1,
                     'DNS 2' => $network->dns2,
                 ]" />

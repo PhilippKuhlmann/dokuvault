@@ -34,7 +34,7 @@ class BelongsToCustomer implements ValidationRule
         }
 
         if (! $query->exists()) {
-            $fail('Die Auswahl für :attribute gehört nicht zu diesem Kunden.');
+            $fail(__('Die Auswahl für :attribute gehört nicht zu diesem Kunden.'));
         }
     }
 }

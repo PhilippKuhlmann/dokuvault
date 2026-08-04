@@ -8,16 +8,16 @@
             </x-show.header>
         </x-slot>
         <x-slot:body>
-            <x-minitablecard title="Allgemein" :array="[
+            <x-minitablecard :title="__('Allgemein')" :array="[
                 'Registrar' => $domain->registrar,
                 'Ablaufdatum' => $domain->expiry_date ? \Carbon\Carbon::parse($domain->expiry_date)->format('d.m.Y') : null,
             ]" />
-            <x-minitablecard title="Nameserver" :array="[
+            <x-minitablecard :title="__('Nameserver')" :array="[
                 'NS 1' => $domain->nameserver1,
                 'NS 2' => $domain->nameserver2,
             ]" />
             @if ($domain->notes)
-                <x-minitextcard title="Notizen">{{ $domain->notes }}</x-minitextcard>
+                <x-minitextcard :title="__('Notizen')">{{ $domain->notes }}</x-minitextcard>
             @endif
         </x-slot>
     </x-card>

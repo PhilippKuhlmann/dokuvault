@@ -7,7 +7,7 @@
         <input
             type="text"
             name="search"
-            placeholder="Kundensuche"
+            placeholder="{{ __('Kundensuche') }}"
             value="{{ $value }}"
             class="border-r-0 rounded-l-sm w-full px-4 text-sm bg-gray-100 text-gray-900
                     dark:bg-gray-700 dark:text-gray-100 dark:border-gray-500
@@ -17,7 +17,7 @@
             @endif
             />
         <button type="submit" class="bg-cerulean-500 px-6 rounded-r-sm text-sm text-white hover:bg-cerulean-600 focus:bg-cerulean-600">
-            Suchen
+            {{ __('Suchen') }}
         </button>
     </form>
 </div>

@@ -57,7 +57,7 @@
         },
     }">
 
-    <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">Bestückung</div>
+    <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">{{ __('Bestückung') }}</div>
     <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">
         Geräte aus der Palette auf eine freie Höheneinheit ziehen – die Vorschau zeigt, welche
         Einheiten belegt würden. Oder per Knopf auf den untersten freien Platz einbauen.
@@ -86,17 +86,17 @@
                                 class="flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm cursor-grab active:cursor-grabbing dark:border-gray-600 dark:bg-gray-700/60 dark:text-gray-200">
                                 <span class="truncate">{{ $device->name }}</span>
                                 <button type="button" wire:click="quickPlaceDevice('{{ $group['key'] }}', {{ $device->id }})"
-                                    class="shrink-0 text-xs text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400" title="Auf untersten freien Platz einbauen">Einbauen</button>
+                                    class="shrink-0 text-xs text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400" title="{{ __('Auf untersten freien Platz einbauen') }}">{{ __('Einbauen') }}</button>
                             </li>
                         @endforeach
                     </ul>
                 </div>
             @empty
-                <div class="text-sm text-gray-400 dark:text-gray-500">Alle dokumentierten Geräte sind bereits verbaut.</div>
+                <div class="text-sm text-gray-400 dark:text-gray-500">{{ __('Alle dokumentierten Geräte sind bereits verbaut.') }}</div>
             @endforelse
 
             <div>
-                <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">Katalog</div>
+                <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">{{ __('Katalog') }}</div>
                 <ul class="space-y-1">
                     @forelse ($catalog as $entry)
                         <li wire:key="catalog-{{ $entry->id }}"
@@ -109,7 +109,7 @@
                             <span class="flex shrink-0 items-center gap-2">
                                 <span class="text-[10px] font-mono opacity-70">{{ $entry->height_units }} HE</span>
                                 <button type="button" wire:click="quickPlaceCatalog({{ $entry->id }})"
-                                    class="text-xs text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400" title="Auf untersten freien Platz einbauen">Einbauen</button>
+                                    class="text-xs text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400" title="{{ __('Auf untersten freien Platz einbauen') }}">{{ __('Einbauen') }}</button>
                             </span>
                         </li>
                     @empty
@@ -126,12 +126,12 @@
              richtet sich die Breite nach dem Inhalt, und die Frontansicht wird
              breiter als das Schema. --}}
         <div class="grow basis-0 min-w-0">
-            <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">Schema</div>
+            <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">{{ __('Schema') }}</div>
             @include('rack._grid', ['rack' => $rack, 'interactive' => true])
         </div>
 
         <div class="grow basis-0 min-w-0 hidden lg:block">
-            <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">Frontansicht</div>
+            <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">{{ __('Frontansicht') }}</div>
             @include('rack._rackview', ['rack' => $rack])
         </div>
 

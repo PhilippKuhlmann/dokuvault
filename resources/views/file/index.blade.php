@@ -6,8 +6,8 @@
         @can('file_create')
             <div class="flex flex-row gap-3 p-3">
                 <x-input.file id="file" name="file" class="w-96" />
-                <x-input.field name="name" placeholder="Dateiname" required />
-                <x-input.button label="Hochladen" />
+                <x-input.field name="name" :placeholder="__('Dateiname')" required />
+                <x-input.button :label="__('Hochladen')" />
             </div>
         @endcan
 
@@ -36,7 +36,7 @@
                     />
 
                 @empty
-    <tr><td colspan="100" class="px-4 py-8 text-center text-sm text-gray-400 dark:text-gray-500">Noch keine Einträge vorhanden.</td></tr>
+    <tr><td colspan="100" class="px-4 py-8 text-center text-sm text-gray-400 dark:text-gray-500">{{ __('Noch keine Einträge vorhanden.') }}</td></tr>
 @endforelse
 
             </x-table.body>

@@ -9,7 +9,7 @@
         </p>
     </header>
 
-    <x-input.button label="Konto Löschen!" color="red" x-data="" x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')" />
+    <x-input.button :label="__('Konto Löschen!')" color="red" x-data="" x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')" />
 
 
     <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
@@ -40,9 +40,9 @@
             </div>
 
             <div class="mt-6 flex justify-end">
-                <x-input.button label="Abbrechen" color="gray" type="button" x-on:click="$dispatch('close')" />
+                <x-input.button :label="__('Abbrechen')" color="gray" type="button" x-on:click="$dispatch('close')" />
 
-                <x-input.button label="Konto Löschen!" color="red" />
+                <x-input.button :label="__('Konto Löschen!')" color="red" />
             </div>
         </form>
     </x-modal>

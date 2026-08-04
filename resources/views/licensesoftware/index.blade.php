@@ -13,24 +13,24 @@
             <x-slot:body>
 
 
-                <x-minitablecard title="Login" :array="[
+                <x-minitablecard :title="__('Login')" :array="[
                     'Benutzer' => $licensesoftware->username,
                     'Passwort' => $licensesoftware->password,
                 ]" />
 
-                <x-minitablecard title="Laufzeit" :array="[
+                <x-minitablecard :title="__('Laufzeit')" :array="[
                     'Start Datum' => $licensesoftware->start_date,
                     'End Datum' => $licensesoftware->end_date,
                     'Abrechnung' => $licensesoftware->abo,
                 ]" />
 
-                <x-minitextcard title="Datei">
+                <x-minitextcard :title="__('Datei')">
                     @if ($licensesoftware->file_path)
                         <a href="{{ route('licensesoftware.download', [$customer, $licensesoftware]) }}" class="text-cerulean-600 hover:text-cerulean-700 hover:underline">{{ $licensesoftware->file_name }} – Download</a>
                     @endif
                 </x-minitextcard>
 
-                <x-minitextcard title="Key">
+                <x-minitextcard :title="__('Key')">
                     {{ $licensesoftware->key }}
                 </x-minitextcard>
 

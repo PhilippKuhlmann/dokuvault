@@ -1,9 +1,9 @@
 <x-admin-layout>
-    <x-create.main header="Neue Rolle" action="{{ route('admin.role.store') }}">
+    <x-create.main :header="__('Neue Rolle')" action="{{ route('admin.role.store') }}">
 
-        <x-create.singlerow label="Name" name="name" />
+        <x-create.singlerow :label="__('Name')" name="name" />
 
-        <x-create.singlerow label="Beschreibung" name="description" />
+        <x-create.singlerow :label="__('Beschreibung')" name="description" />
 
         <x-slot:right>
             <x-role.permissions :matrix="$matrix" :others="$others" :actions="$actions" />

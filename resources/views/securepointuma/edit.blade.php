@@ -1,24 +1,24 @@
 <x-app-layout :$customer>
-    <x-create.main header="E-Mail-Archivierung bearbeiten" labelsubmit="Speichern" action="{{ route('securepointuma.update', [$customer, $securepointuma]) }}">
+    <x-create.main :header="__('E-Mail-Archivierung bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('securepointuma.update', [$customer, $securepointuma]) }}">
         @method('PATCH')
 
-        <x-create.singlerow label="Name" name="name" :default="$securepointuma->name" />
+        <x-create.singlerow :label="__('Name')" name="name" :default="$securepointuma->name" />
 
-        <x-create.singlerow label="Hersteller / Produkt" name="manufacturer" :default="$securepointuma->manufacturer" />
+        <x-create.singlerow :label="__('Hersteller / Produkt')" name="manufacturer" :default="$securepointuma->manufacturer" />
 
-        <x-create.singlerow label="Type" name="type" :default="$securepointuma->type" />
+        <x-create.singlerow :label="__('Type')" name="type" :default="$securepointuma->type" />
 
-        <x-create.singlerow label="Benutzername" name="username" :default="$securepointuma->username" />
+        <x-create.singlerow :label="__('Benutzername')" name="username" :default="$securepointuma->username" />
 
-        <x-create.singlerow label="Passwort" name="password" :default="$securepointuma->password" />
+        <x-create.singlerow :label="__('Passwort')" name="password" :default="$securepointuma->password" />
 
-        <x-create.singlerow label="Verschlüsselungscode" name="encryptionkey" :default="$securepointuma->encryptionkey" />
+        <x-create.singlerow :label="__('Verschlüsselungscode')" name="encryptionkey" :default="$securepointuma->encryptionkey" />
 
-        <x-create.singlerow label="IP" name="ip" :default="$securepointuma->ip" />
+        <x-create.singlerow :label="__('IP')" name="ip" :default="$securepointuma->ip" />
 
-        <x-create.singlerow label="Admin URL" name="urlAdmin" :default="$securepointuma->urlAdmin" />
+        <x-create.singlerow :label="__('Admin URL')" name="urlAdmin" :default="$securepointuma->urlAdmin" />
 
-        <x-create.singlerow label="User URL" name="urlUser" :default="$securepointuma->urlUser" />
+        <x-create.singlerow :label="__('User URL')" name="urlUser" :default="$securepointuma->urlUser" />
 
     </x-create.main>
 

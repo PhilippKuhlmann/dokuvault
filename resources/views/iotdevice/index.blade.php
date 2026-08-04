@@ -13,19 +13,19 @@
 
         <x-slot:body>
 
-            <x-minitablecard title="Allgemein" :array="[
+            <x-minitablecard :title="__('Allgemein')" :array="[
                 'Hersteller' => $iotdevice->manufacturer,
                 'Modell' => $iotdevice->model,
                 'Seriennummer' => $iotdevice->serialNumber,
             ]" />
 
-            <x-minitablecard title="Netzwerk" :array="[
+            <x-minitablecard :title="__('Netzwerk')" :array="[
                 'IP-Adresse' => $iotdevice->ip,
                 'Port' => $iotdevice->port,
                 'URL' => $iotdevice->url,
             ]" />
 
-            <x-minitablecard title="Login" :array="[
+            <x-minitablecard :title="__('Login')" :array="[
                 'Benutzer' => $iotdevice->username,
                 'Passwort' => $iotdevice->password
             ]" />

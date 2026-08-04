@@ -8,7 +8,7 @@
         <x-slot:head>
             <x-show.header can="computer_update" editUrl="{{ route('computer.edit', [$customer, $computer]) }}">
                 @if ($computer->remoteID AND $computer->remotePassword)
-                    <a href="rustdesk://connection/new/{{ $computer->remoteID }}?password={{ $computer->remotePassword }}" class="bg-cerulean-600 text-white rounded-lg px-4 py-2 text-sm mr-5 hover:bg-cerulean-700">Verbinden</a>
+                    <a href="rustdesk://connection/new/{{ $computer->remoteID }}?password={{ $computer->remotePassword }}" class="bg-cerulean-600 text-white rounded-lg px-4 py-2 text-sm mr-5 hover:bg-cerulean-700">{{ __('Verbinden') }}</a>
                 @endif
                 {{ $computer->name }}
             </x-show.header>
@@ -16,17 +16,17 @@
 
         <x-slot:body>
 
-            <x-minitablecard title="Allgemein" :array="[
+            <x-minitablecard :title="__('Allgemein')" :array="[
                 'Hersteller' => $computer->manufacturer,
                 'Modell' => $computer->model,
                 'Seriennummer' => $computer->serialNumber,
             ]" />
 
-            <x-minitablecard title="Netzwerk" :array="[
+            <x-minitablecard :title="__('Netzwerk')" :array="[
                 'IP-Adresse' => $computer->ip,
             ]" />
 
-            <x-minitextcard title="Betriebsystem">
+            <x-minitextcard :title="__('Betriebsystem')">
                 {{ $computer->operatingSystem?->name ?? '—' }}
             </x-minitextcard>
 

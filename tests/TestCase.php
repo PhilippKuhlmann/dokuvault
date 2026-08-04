@@ -11,6 +11,15 @@ abstract class TestCase extends BaseTestCase
 {
     use CreatesApplication;
 
+    /**
+     * Der Testclient sendet von sich aus "Accept-Language: en-us". Seit die
+     * Oberflaeche uebersetzbar ist, antwortete sie deshalb englisch, und
+     * Zusicherungen auf deutschen Text schlugen fehl. Deutsch ist die
+     * Ausgangssprache; Tests, die eine andere brauchen, setzen den Kopf selbst
+     * ueber withHeaders().
+     */
+    protected $defaultHeaders = ['Accept-Language' => 'de-DE,de'];
+
     protected function createAndAuthenticateUserWithCustomer()
     {
         $role = Role::factory()->create([
