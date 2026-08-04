@@ -1,25 +1,25 @@
+[Deutsch](DEPLOYMENT.de.md) · **English**
+
 # Deployment
 
-Bei jedem Push auf `main` läuft zuerst die Test-Workflow. Nur wenn sie grün ist,
-startet `deploy` und führt auf dem Server [`deploy.sh`](deploy.sh) aus. Ein roter
-Build erreicht den Server nicht.
+On every push to `main` the test workflow runs first. Only if it passes does `deploy` start and run
+[`deploy.sh`](deploy.sh) on the server. A red build never reaches the server.
 
-## Einmalige Einrichtung
+## One-time setup
 
-### 1. Auf dem Server
+### 1. On the server
 
 ```bash
-# Repo klonen (ins Verzeichnis, das der Webserver ausliefert)
+# Clone the repo into the directory the web server serves
 git clone https://github.com/PhilippKuhlmann/dokuvault.git /var/www/dokuvault
 cd /var/www/dokuvault
 cp .env.example .env
 ```
 
-`.env` anpassen: `APP_URL`, DB-Zugang, `APP_ENV=production`.
+Adjust `.env`: `APP_URL`, database credentials, `APP_ENV=production`.
 
-**Reihenfolge beachten:** `vendor/` liegt nicht im Repo, deshalb muss `composer install`
-vor dem ersten Artisan-Befehl laufen – sonst schlägt `key:generate` fehl, und zwar
-still, wenn man die Ausgabe nicht liest.
+**Mind the order:** `vendor/` is not in the repo, so `composer install` has to run before the first
+artisan command — otherwise `key:generate` fails, and it fails quietly if you do not read the output.
 
 ```bash
 composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
@@ -29,75 +29,68 @@ composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
 php artisan key:generate
 ```
 
-Rechte für den Deploy-Benutzer setzen, damit `deploy.sh` schreiben darf, und
-`storage/` sowie `bootstrap/cache/` für den Webserver-Benutzer beschreibbar machen.
+Give the deploy user write permissions so `deploy.sh` can work, and make `storage/` and
+`bootstrap/cache/` writable for the web server user.
 
 ```bash
 chmod +x deploy.sh
 ```
 
-### 2. SSH-Schlüssel für GitHub
+### 2. SSH key for GitHub
 
-Auf dem **eigenen Rechner** ein Schlüsselpaar erzeugen, das nur für den Deploy da ist:
+On **your own machine**, create a key pair used only for deploying:
 
 ```bash
 ssh-keygen -t ed25519 -f ~/.ssh/dokuvault_deploy -C "github-deploy" -N ""
 ```
 
-Den **öffentlichen** Teil auf dem Server in die `authorized_keys` des Deploy-Benutzers
-eintragen.
+Add the **public** part to the `authorized_keys` of the deploy user on the server.
 
-Dann die Fingerabdrücke der Host-Schlüssel holen – **auf dem Server**, aus seinen
-eigenen Schlüsseldateien:
+Then fetch the fingerprints of the host keys — **on the server**, from its own key files:
 
 ```bash
 for f in /etc/ssh/ssh_host_*_key.pub; do ssh-keygen -lf "$f"; done
 ```
 
-Nicht per `ssh-keyscan` vom eigenen Rechner: Antwortet auf dem abgefragten Port ein
-Gateway oder ein anderer Dienst, bekommt man dessen Schlüssel statt der des Servers –
-und der Deploy scheitert später mit `Host key verification failed`, ohne den Grund zu
-nennen. Aus den Schlüsseldateien gelesen kann das nicht passieren.
+Not via `ssh-keyscan` from your own machine: if a gateway or some other service answers on the port
+you query, you get its key instead of the server's — and the deploy later fails with
+`Host key verification failed` without saying why. Read from the key files, that cannot happen.
 
-### 3. Secrets in GitHub hinterlegen
+### 3. Store the secrets in GitHub
 
-Repository → Settings → Secrets and variables → Actions → Reiter **Secrets** →
-**New repository secret**. Environments werden nicht gebraucht.
+Repository → Settings → Secrets and variables → Actions → tab **Secrets** →
+**New repository secret**. Environments are not needed.
 
-| Secret | Inhalt |
+| Secret | Contents |
 | --- | --- |
 | `DEPLOY_HOST` | `doku.dokuvault.de` |
-| `DEPLOY_USER` | Benutzer für den SSH-Zugang |
+| `DEPLOY_USER` | user for the SSH access |
 | `DEPLOY_PATH` | `/var/www/dokuvault` |
-| `DEPLOY_SSH_KEY` | Inhalt von `~/.ssh/dokuvault_deploy` (der **private** Teil) |
-| `DEPLOY_KNOWN_HOSTS` | Ausgabe des Befehls oben – drei kurze `SHA256:`-Zeilen |
+| `DEPLOY_SSH_KEY` | contents of `~/.ssh/dokuvault_deploy` (the **private** part) |
+| `DEPLOY_KNOWN_HOSTS` | output of the command above — three short `SHA256:` lines |
 | `DEPLOY_URL` | `https://doku.dokuvault.de` |
-| `DEPLOY_PORT` | nur nötig, wenn SSH nicht auf 22 läuft |
+| `DEPLOY_PORT` | only needed if SSH does not run on 22 |
 
-`DEPLOY_KNOWN_HOSTS` ist kein Beiwerk: Ohne diese Angabe müsste der Deploy die
-Host-Prüfung abschalten und wäre gegen einen untergeschobenen Server offen. Der
-Workflow holt die Schlüssel zur Laufzeit vom Server und vergleicht ihre
-Fingerabdrücke mit diesem Secret.
+`DEPLOY_KNOWN_HOSTS` is not decoration: without it the deploy would have to switch off host
+verification and would be open to a substituted server. The workflow fetches the keys from the server
+at runtime and compares their fingerprints against this secret.
 
-Ganze `known_hosts`-Zeilen werden weiterhin akzeptiert. Die kurze Form ist nur
-weniger fehleranfällig – das lange Base64 bricht beim Kopieren leicht um, und ein
-so beschädigter Wert fällt erst beim Deploy auf.
+Full `known_hosts` lines are still accepted. The short form is simply less error-prone — the long
+base64 wraps easily when copied, and a value damaged that way only shows up during the deploy.
 
-## Aktualisieren
+## Updating
 
-Wer den Deploy aus dem vorigen Abschnitt eingerichtet hat, braucht hier nichts: Ein Push
-auf `main` erledigt das. Für eine Installation ohne GitHub-Anbindung ist es dieselbe
-Reihenfolge von Hand.
+If you set up the deploy from the previous section, there is nothing to do here: a push to `main`
+handles it. For an installation without the GitHub connection, it is the same order by hand.
 
-**Vorher sichern.** Migrationen sind nicht rückwärts gedacht; ein Backup ist der einzige
-verlässliche Weg zurück:
+**Back up first.** Migrations are not built to run backwards; a backup is the only reliable way back:
 
 ```bash
 cd /var/www/dokuvault && php artisan backup:run
 ```
 
-Dann der Ablauf. Die Seite geht erst kurz vor den Migrationen aus – `composer` und der
-Frontend-Build brauchen keine Auszeit:
+Then the sequence. The site only goes down shortly before the migrations — `composer` and the
+frontend build need no downtime:
 
 ```bash
 cd /var/www/dokuvault && git pull
@@ -111,147 +104,135 @@ composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader &
 php artisan down --retry=15 && php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan up
 ```
 
-Alternativ nimmt [`deploy.sh`](deploy.sh) genau diese Schritte ab – es setzt den Stand
-allerdings hart auf `origin/main` und verwirft dabei alles, was auf dem Server geändert
-wurde.
+Alternatively [`deploy.sh`](deploy.sh) takes exactly these steps off your hands — but it resets the
+working tree hard to `origin/main` and discards anything changed on the server.
 
-**Was beim Versionssprung zu beachten ist:** Neue Berechtigungen kommen als Migration,
-bestehende Rollen bekommen sie also automatisch. Das Changelog nennt zu jedem Eintrag,
-was sich für bestehende Installationen ändert – ein Blick dorthin vor dem Update spart
-Rückfragen. Bleibt nach `git pull` etwas unklar, hilft `php artisan migrate:status`: Es
-listet, was noch aussteht, ohne etwas zu tun.
+**What to watch for on a version jump:** new permissions arrive as a migration, so existing roles
+receive them automatically. The changelog says for every entry what changes for existing
+installations — a look there before updating saves questions. If something is unclear after
+`git pull`, `php artisan migrate:status` lists what is still pending without doing anything.
 
-## Demo-Instanz
+## Demo instance
 
-Für eine öffentliche Demo zusätzlich in die `.env`:
+For a public demo, add this to `.env`:
 
 ```
 DEMO_MODE=true
 ```
 
-Das bewirkt zweierlei:
+That does two things:
 
-- In der Oberfläche erscheint ein Hinweis, dass alles ausprobiert werden darf und
-  die Daten stündlich zurückgesetzt werden – auf der Login-Seite mit den Zugangsdaten.
-- `php artisan demo:reset` wird entsperrt. **Ohne `DEMO_MODE=true` verweigert der
-  Befehl den Dienst**, denn er löscht die komplette Datenbank.
+- The interface shows a notice that everything may be tried out and that the data is reset every
+  hour — on the sign-in page including the credentials.
+- `php artisan demo:reset` is unlocked. **Without `DEMO_MODE=true` the command refuses to run**,
+  because it deletes the entire database.
 
-Der Deploy erkennt den Demo-Modus an der `.env` und installiert dann **mit**
-Dev-Abhängigkeiten – die Demo-Daten brauchen `fakerphp/faker`. Nach dem Deploy setzt
-er die Datenbank einmal zurück.
+The deploy detects demo mode from `.env` and then installs **with** dev dependencies — the demo data
+needs `fakerphp/faker`. After the deploy it resets the database once.
 
-Für den stündlichen Reset einen Cronjob des Deploy-Benutzers anlegen:
+For the hourly reset, create a cron job for the deploy user:
 
 ```
 0 * * * * cd /var/www/dokuvault && flock -n storage/deploy.lock php artisan demo:reset >> storage/logs/demo-reset.log 2>&1
 ```
 
-Das `flock -n` ist wichtig: `deploy.sh` nimmt dieselbe Sperre. Ohne sie kann der Reset
-mitten in einen laufenden Deploy fallen und `migrate` gegen eine Datenbank laufen, die
-gerade geleert wird. Trifft der Cronjob auf einen Deploy, überspringt er den Reset –
-richtig so, denn der Deploy setzt die Datenbank selbst zurück.
+The `flock -n` matters: `deploy.sh` takes the same lock. Without it the reset can fall into a running
+deploy and `migrate` runs against a database that is being emptied. If the cron job meets a deploy it
+skips the reset — which is right, because the deploy resets the database itself.
 
-### Nutzung auswerten
+### Measuring usage
 
-Bei aktivem Demo-Modus hält die App fest, wann die Demo besucht wurde und mit welcher
-Rolle. Auswertung auf dem Server:
+With demo mode active the app records when the demo was visited and with which role. Evaluate on the
+server:
 
 ```bash
 cd /var/www/dokuvault && php artisan demo:stats
 ```
 
-Ausgegeben werden Besuche und Seitenaufrufe gesamt, Besuche je Tag als Balken, die
-Verteilung über die Tageszeit und die genutzten Rollen. Einschränken lässt sich das mit
-`--month=2026-08` und `--days=30`.
+It prints total visits and page views, visits per day as bars, the distribution over the day and the
+roles used. Narrow it down with `--month=2026-08` and `--days=30`.
 
-Ein „Besuch" ist eine Sitzung, keine Person: Wer nach Ablauf der Sitzung wiederkommt,
-zählt erneut.
+A “visit” is a session, not a person: whoever returns after the session has expired counts again.
 
-Ausgegeben wird außerdem, aus welchen Netzen die Besuche kamen.
+It also prints which networks the visits came from.
 
-**Was nicht erfasst wird:** kein User-Agent, keine aufgerufenen Seiten. Besuche werden über
-einen Zufallswert in der Sitzung unterschieden, der sich keiner Person zuordnen lässt. Die
-Aufzeichnung liegt als JSONL unter `storage/app/demo-usage/` – eine Datei je Monat, damit sie
-den stündlichen Datenbank-Reset übersteht. Alte Monate können einfach gelöscht werden.
+**What is not recorded:** no user agent, no visited pages. Visits are distinguished by a random value
+in the session that cannot be traced to a person. The recording is JSONL under
+`storage/app/demo-usage/` — one file per month so it survives the hourly database reset. Old months
+can simply be deleted.
 
-**Herkunft.** Wie viel von der Adresse gespeichert wird, steht in `config/custom.php` unter
-`demo_ip_logging`, umschaltbar per `DEMO_IP_LOGGING` in der `.env`:
+**Origin.** How much of the address is stored is set in `config/custom.php` under `demo_ip_logging`,
+switchable via `DEMO_IP_LOGGING` in `.env`:
 
-| Wert | |
+| Value | |
 | --- | --- |
-| `aus` | keine Adresse, die Aufzeichnung bleibt ohne Personenbezug |
-| `anonym` | **Standard** – gekürzt auf /24 (IPv4) bzw. /48 (IPv6) |
-| `voll` | vollständige Adresse |
+| `aus` | no address; the recording stays free of personal data |
+| `anonym` | **default** — truncated to /24 (IPv4) or /48 (IPv6) |
+| `voll` | full address |
 
-`anonym` beantwortet die Frage nach der Herkunft genauso gut: Eine GeoIP-Abfrage liefert aus
-`91.65.42.0` dasselbe Land wie aus der vollen Adresse. Die **vollständige** IP ist dagegen ein
-personenbezogenes Datum nach DSGVO – wer `voll` setzt, braucht auf der Demo eine
-Datenschutzerklärung, die die Speicherung, den Zweck und eine Löschfrist nennt. Das ist kein
-Grund, es nicht zu tun, aber einer, es bewusst zu tun.
+`anonym` answers the question about origin just as well: a GeoIP lookup returns the same country for
+`91.65.42.0` as for the full address. The **full** IP, by contrast, is personal data under the GDPR —
+whoever sets `voll` needs a privacy notice on the demo naming the storage, the purpose and a
+retention period. That is not a reason against it, but a reason to do it deliberately.
 
-Wichtig für die Aussagekraft: Steht ein Reverse-Proxy vor der App – etwa ein Nginx Proxy
-Manager –, sieht sie dessen Adresse statt der des Besuchers. Alle Besuche kämen dann scheinbar
-aus einem einzigen Netz. `demo:stats` weist von sich aus darauf hin, sobald aufgezeichnete
-Adressen nicht öffentlich sind.
+Important for the value of the numbers: if a reverse proxy sits in front of the app — a Nginx Proxy
+Manager, say — the app sees its address instead of the visitor's. All visits would then appear to
+come from a single network. `demo:stats` points this out by itself as soon as recorded addresses are
+not public.
 
-Der Proxy gehört deshalb in die `.env`:
+The proxy therefore belongs in `.env`:
 
 ```
 TRUSTED_PROXIES=172.18.0.0/16
 ```
 
-Mehrere Einträge mit Komma trennen, CIDR ist erlaubt. Welche Adresse einzutragen ist, verrät
-die Aufzeichnung selbst – solange der Proxy nicht vertraut wird, steht dort seine:
+Separate several entries with commas; CIDR is allowed. Which address to enter is revealed by the
+recording itself — as long as the proxy is not trusted, its address is what ends up there:
 
 ```bash
 cd /var/www/dokuvault && tail -n 1 storage/app/demo-usage/$(date +%Y-%m).jsonl
 ```
 
-`*` vertraut jedem Absender. Das ist bequem, hebt aber die Prüfung auf: Wer die App direkt
-erreicht – am Proxy vorbei –, kann sich per `X-Forwarded-For` eine beliebige Herkunft geben.
-Vertretbar nur, wenn wirklich ausschließlich der Proxy an die App kommt.
+`*` trusts every sender. That is convenient but removes the check: anyone who reaches the app
+directly — past the proxy — can claim any origin via `X-Forwarded-For`. Only defensible if the proxy
+really is the only way in.
 
-### Was auf einer Demo bewusst offen ist
+### What is deliberately open on a demo
 
-Die Zugangsdaten stehen im README und im Hinweis-Banner. Jeder Besucher ist damit
-Administrator und kann fast alles ändern. Der stündliche Reset räumt hinterher auf.
+The credentials are in the README and in the notice banner. Every visitor is therefore an
+administrator and can change almost anything. The hourly reset cleans up afterwards.
 
-**Ausgenommen sind die vier Zugänge selbst**: `admin`, `techniker`, `kunde-rw` und
-`kunde-r` sind bei aktivem Demo-Modus vollständig gesperrt – kein Löschen, keine Änderung,
-auch nicht am Namen. Sonst wären alle übrigen Besucher bis zum nächsten Reset ausgesperrt.
-Dass auch der **Benutzername** feststeht, ist kein Übereifer: Der Schutz erkennt die Zugänge
-daran, eine Umbenennung würde ihn also aufheben. Welche Benutzernamen geschützt sind, steht
-in `config/custom.php` unter `demo_protected_users`. Selbst angelegte Benutzer bleiben voll
-bearbeitbar.
+**The four accounts themselves are excluded**: with demo mode active, `admin`, `techniker`,
+`kunde-rw` and `kunde-r` are fully locked — no deleting, no changes, not even to the name. Otherwise
+every other visitor would be locked out until the next reset. That the **username** is fixed too is
+not overzealous: the protection recognises the accounts by it, so renaming one would lift it. Which
+usernames are protected is set in `config/custom.php` under `demo_protected_users`. Accounts you
+create yourself stay fully editable.
 
-Eine Demo sollte deshalb **keine** echten Daten enthalten und auf einem Server
-stehen, auf dem sonst nichts läuft.
+A demo should therefore contain **no** real data and run on a server where nothing else does.
 
-## Von Hand deployen
+## Deploying by hand
 
-Entweder in GitHub unter **Actions → deploy → Run workflow**, oder direkt auf dem Server:
+Either in GitHub under **Actions → deploy → Run workflow**, or directly on the server:
 
 ```bash
 cd /var/www/dokuvault && ./deploy.sh
 ```
 
-Das Skript bricht beim ersten Fehler ab und liefert Exitcode 1, damit die GitHub-Action
-rot wird statt einen halben Deploy als Erfolg zu melden.
+The script stops at the first error and returns exit code 1, so the GitHub Action turns red instead
+of reporting half a deploy as success.
 
-**Der Wartungsmodus deckt nur das Ende ab.** Code holen, `composer install` und der
-Frontend-Build laufen bei laufender Seite – sie brauchen keine Auszeit. Erst für
-Migrationen, Cache-Neuaufbau und den Demo-Reset geht die Seite auf 503. Gemessen auf
-der Demo: **10 Sekunden**, vorher 17. Der Abstand wächst, sobald sich Abhängigkeiten
-ändern: `composer install` und `npm ci` sind nur dann Sekundensache, wenn die
-Lock-Dateien gleich geblieben sind – sonst dauern sie Minuten, und die lagen früher
-komplett im Wartungsfenster. Die Freigabe hängt an einem `trap`, sie kommt also auch,
-wenn ein Schritt dazwischen fehlschlägt.
+**Maintenance mode only covers the end.** Fetching the code, `composer install` and the frontend
+build run while the site is up — they need no downtime. Only for migrations, cache rebuilding and the
+demo reset does the site return 503. Measured on the demo: **10 seconds**, previously 17. The gap
+grows as soon as dependencies change: `composer install` and `npm ci` are a matter of seconds only
+while the lock files stay the same — otherwise they take minutes, and those minutes used to sit
+entirely inside the maintenance window. Releasing the site hangs on a `trap`, so it happens even if a
+step in between fails.
 
-Der Preis dafür: Zwischen `git reset` und `migrate` liefert die Seite schon den neuen
-Code gegen das alte Schema aus. Bei Migrationen, die nur etwas hinzufügen – der
-Normalfall hier – merkt das niemand. Wer eine Spalte umbenennt oder entfernt, sollte
-den Deploy in eine ruhige Minute legen oder in zwei Schritten ausrollen.
+The price: between `git reset` and `migrate` the site already serves the new code against the old
+schema. For migrations that only add something — the normal case here — nobody notices. If you rename
+or drop a column, put the deploy in a quiet minute or roll it out in two steps.
 
-`deploy.sh` setzt den Arbeitsstand hart auf `origin/main`. Änderungen, die direkt
-auf dem Server gemacht wurden, gehen dabei verloren – das ist Absicht, damit der
-Server immer dem Repository entspricht.
+`deploy.sh` resets the working tree hard to `origin/main`. Changes made directly on the server are
+lost in the process — deliberately, so the server always matches the repository.

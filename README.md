@@ -272,7 +272,7 @@ php artisan db:seed --force          # runs the ProductionDatabaseSeeder
 ### Updating
 
 Bringing an existing installation up to date — backup, `git pull`, dependencies, migrations — is
-described step by step in **[DEPLOYMENT.md → Aktualisieren](DEPLOYMENT.md#aktualisieren)**. To pin a
+described step by step in **[DEPLOYMENT.md → Updating](DEPLOYMENT.md#updating)**. To pin a
 version instead of following `main`, use a tag in the format `vYY.MM.DD`.
 
 ### Deploying automatically

@@ -231,7 +231,7 @@ Start seedet nicht erneut, die eingegebenen Daten bleiben also erhalten.
 
 Der Container ist zum Ausprobieren und für kleine Installationen gedacht: ein Prozess mit
 Laravels eingebautem Server, kein nginx. Für den Betrieb mit vielen Nutzern ist der Weg in
-[DEPLOYMENT.md](DEPLOYMENT.md) der richtige.
+[DEPLOYMENT.de.md](DEPLOYMENT.de.md) der richtige.
 
 ### Zum Ausprobieren (mit Demo-Daten)
 
@@ -279,7 +279,7 @@ php artisan db:seed --force          # führt den ProductionDatabaseSeeder aus
 
 Eine bestehende Installation auf einen neueren Stand bringen – Backup, `git pull`,
 Abhängigkeiten, Migrationen – steht Schritt für Schritt in
-**[DEPLOYMENT.md → Aktualisieren](DEPLOYMENT.md#aktualisieren)**. Wer sich auf eine
+**[DEPLOYMENT.de.md → Aktualisieren](DEPLOYMENT.de.md#aktualisieren)**. Wer sich auf eine
 Version festlegen will statt `main` zu folgen, nimmt einen Tag im Format `vJJ.MM.TT`.
 
 ### Automatisch deployen
@@ -287,7 +287,7 @@ Version festlegen will statt `main` zu folgen, nimmt einen Tag im Format `vJJ.MM
 Ein Push auf `main` kann den Server selbst aktualisieren: Erst laufen die Tests, und nur
 wenn sie grün sind, holt eine GitHub-Action per SSH den neuen Stand, migriert und baut die
 Caches neu. Einrichtung, Secrets und der stündliche Reset einer öffentlichen Demo stehen in
-**[DEPLOYMENT.md](DEPLOYMENT.md)**.
+**[DEPLOYMENT.de.md](DEPLOYMENT.de.md)**.
 
 ---
 

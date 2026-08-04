@@ -14,7 +14,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 # Nur ein Deploy zur Zeit, und nie gleichzeitig mit dem stuendlichen
-# demo:reset (der Cronjob nimmt dieselbe Sperre, siehe DEPLOYMENT.md).
+# demo:reset (der Cronjob nimmt dieselbe Sperre, siehe DEPLOYMENT.de.md).
 # Beide fassen die Datenbank an; ueberlappen sie, laeuft migrate gegen eine
 # Datenbank, die gerade geleert wird.
 LOCK="$(pwd)/storage/deploy.lock"
