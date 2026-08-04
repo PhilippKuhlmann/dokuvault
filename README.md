@@ -61,27 +61,27 @@ MSPs lose time to scattered spreadsheets, stale wikis and “where did we write 
     <td width="50%"><img src="docs/screenshots/en/search.png" alt="Global search"><br><sub><b>Global search</b> – across every device type and customer</sub></td>
   </tr>
   <tr>
+    <td width="50%"><img src="docs/screenshots/en/computers.png" alt="Device list"><br><sub><b>Devices</b> – tidy cards, copy IP or serial number with one click</sub></td>
+    <td width="50%"><img src="docs/screenshots/en/ipam.png" alt="IPAM"><br><sub><b>IPAM</b> – used and free addresses per VLAN</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/en/autodoc.png" alt="Auto-documentation"><br><sub><b>Auto-documentation</b> – create an agent token, run the script, done</sub></td>
+    <td width="50%"><img src="docs/screenshots/en/certificates.png" alt="Certificates"><br><sub><b>SSL/TLS certificates</b> – with an expiry warning on the dashboard</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/en/wizard.png" alt="Initial survey wizard"><br><sub><b>Initial survey wizard</b> – one question per step, existing entries stay visible</sub></td>
     <td width="50%"><img src="docs/screenshots/en/rack.png" alt="Rack editor"><br><sub><b>Racks</b> – mount the front and the rear, with the drawn view beside it</sub></td>
-    <td width="50%"><img src="docs/screenshots/en/rackliste.png" alt="Rack list"><br><sub><b>Rack overview</b> – key facts in one row, occupancy and drawing per side</sub></td>
   </tr>
   <tr>
     <td width="50%"><img src="docs/screenshots/en/patchpanel.png" alt="Edit patch panel ports"><br><sub><b>Patch panel ports</b> – outlet number, room and target switch per port</sub></td>
     <td width="50%"><img src="docs/screenshots/en/patchpanel-liste.png" alt="Patch panel list"><br><sub><b>Outlet overview</b> – which outlet sits on which switch port</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/screenshots/en/computers.png" alt="Device list"><br><sub><b>Devices</b> – tidy cards, copy IP or serial number with one click</sub></td>
-    <td width="50%"><img src="docs/screenshots/en/ipam.png" alt="IPAM"><br><sub><b>IPAM</b> – used and free addresses per VLAN</sub></td>
-  </tr>
-  <tr>
-    <td width="50%"><img src="docs/screenshots/en/wizard.png" alt="Initial survey wizard"><br><sub><b>Initial survey wizard</b> – one question per step, existing entries stay visible</sub></td>
-    <td width="50%"><img src="docs/screenshots/en/autodoc.png" alt="Auto-documentation"><br><sub><b>Auto-documentation</b> – create an agent token, run the script, done</sub></td>
-  </tr>
-  <tr>
-    <td width="50%"><img src="docs/screenshots/en/certificates.png" alt="Certificates"><br><sub><b>SSL/TLS certificates</b> – with an expiry warning on the dashboard</sub></td>
     <td width="50%"><img src="docs/screenshots/en/rackcatalog.png" alt="Rack catalogue in the admin area"><br><sub><b>Rack catalogue</b> – maintain blanking plates, shelves & co. in the admin area</sub></td>
+    <td width="50%"><img src="docs/screenshots/en/login.png" alt="Sign-in"><br><sub><b>Sign-in</b> – light/dark and language switchable, even before signing in</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/screenshots/en/login.png" alt="Sign-in"><br><sub><b>Sign-in</b> – light/dark and language switchable, even before signing in</sub></td>
+    <td width="50%"><img src="docs/screenshots/en/rackliste.png" alt="Rack list"><br><sub><b>Rack overview</b> – key facts in one row, occupancy and drawing per side</sub></td>
     <td width="50%"></td>
   </tr>
 </table>

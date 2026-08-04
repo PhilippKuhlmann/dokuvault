@@ -62,27 +62,27 @@ immer aktuell.
     <td width="50%"><img src="docs/screenshots/search.png" alt="Globale Suche"><br><sub><b>Globale Suche</b> – über alle Gerätetypen und Kunden hinweg</sub></td>
   </tr>
   <tr>
+    <td width="50%"><img src="docs/screenshots/computers.png" alt="Geräteliste"><br><sub><b>Geräte</b> – übersichtliche Karten, IP/Seriennummer per Klick kopieren</sub></td>
+    <td width="50%"><img src="docs/screenshots/ipam.png" alt="IPAM"><br><sub><b>IPAM</b> – belegte und freie Adressen je VLAN</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/autodoc.png" alt="Auto-Dokumentation"><br><sub><b>Auto-Dokumentation</b> – Agent-Token erzeugen, Script ausführen, fertig</sub></td>
+    <td width="50%"><img src="docs/screenshots/certificates.png" alt="Zertifikate"><br><sub><b>SSL/TLS-Zertifikate</b> – mit Ablauf-Warnung im Dashboard</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/wizard.png" alt="Erstaufnahme-Assistent"><br><sub><b>Erstaufnahme-Assistent</b> – eine Frage je Schritt, Bestand bleibt sichtbar</sub></td>
     <td width="50%"><img src="docs/screenshots/rack.png" alt="Serverschrank-Editor"><br><sub><b>Serverschränke</b> – Vorder- und Rückseite bestücken, daneben die gezeichnete Ansicht</sub></td>
-    <td width="50%"><img src="docs/screenshots/rackliste.png" alt="Serverschrank-Liste"><br><sub><b>Schrank-Übersicht</b> – Eckdaten in einer Zeile, Belegung und Zeichnung je Seite</sub></td>
   </tr>
   <tr>
     <td width="50%"><img src="docs/screenshots/patchpanel.png" alt="Patchfeld-Ports bearbeiten"><br><sub><b>Patchfeld-Ports</b> – je Port Dosennummer, Raum und Ziel-Switch eintragen</sub></td>
     <td width="50%"><img src="docs/screenshots/patchpanel-liste.png" alt="Patchfeld-Liste"><br><sub><b>Dosenübersicht</b> – welche Dose auf welchem Switch-Port liegt</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/screenshots/computers.png" alt="Geräteliste"><br><sub><b>Geräte</b> – übersichtliche Karten, IP/Seriennummer per Klick kopieren</sub></td>
-    <td width="50%"><img src="docs/screenshots/ipam.png" alt="IPAM"><br><sub><b>IPAM</b> – belegte und freie Adressen je VLAN</sub></td>
-  </tr>
-  <tr>
-    <td width="50%"><img src="docs/screenshots/wizard.png" alt="Erstaufnahme-Assistent"><br><sub><b>Erstaufnahme-Assistent</b> – eine Frage je Schritt, Bestand bleibt sichtbar</sub></td>
-    <td width="50%"><img src="docs/screenshots/autodoc.png" alt="Auto-Dokumentation"><br><sub><b>Auto-Dokumentation</b> – Agent-Token erzeugen, Script ausführen, fertig</sub></td>
-  </tr>
-  <tr>
-    <td width="50%"><img src="docs/screenshots/certificates.png" alt="Zertifikate"><br><sub><b>SSL/TLS-Zertifikate</b> – mit Ablauf-Warnung im Dashboard</sub></td>
     <td width="50%"><img src="docs/screenshots/rackcatalog.png" alt="Rack-Katalog im Adminbereich"><br><sub><b>Rack-Katalog</b> – Blindplatten, Fachböden & Co. im Adminbereich pflegen</sub></td>
+    <td width="50%"><img src="docs/screenshots/login.png" alt="Anmeldung"><br><sub><b>Anmeldung</b> – Hell/Dunkel und Sprache umschaltbar, auch ohne Anmeldung</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/screenshots/login.png" alt="Anmeldung"><br><sub><b>Anmeldung</b> – Hell/Dunkel und Sprache umschaltbar, auch ohne Anmeldung</sub></td>
+    <td width="50%"><img src="docs/screenshots/rackliste.png" alt="Serverschrank-Liste"><br><sub><b>Schrank-Übersicht</b> – Eckdaten in einer Zeile, Belegung und Zeichnung je Seite</sub></td>
     <td width="50%"></td>
   </tr>
 </table>
