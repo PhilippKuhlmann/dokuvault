@@ -346,7 +346,7 @@ Code-Stil vor dem Commit prüfen:
 
 ## 🤝 Mitwirken & Lizenz
 
-Beiträge sind willkommen – siehe [CONTRIBUTING.md](CONTRIBUTING.md) und
+Beiträge sind willkommen – siehe [CONTRIBUTING.de.md](CONTRIBUTING.de.md) und
 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Sicherheitslücken bitte gemäß [SECURITY.md](SECURITY.md)
 melden (nicht als öffentliches Issue).
 
