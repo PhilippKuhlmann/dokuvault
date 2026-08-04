@@ -355,6 +355,7 @@ return [
                 ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
                 ['name' => 'form_factor', 'label' => 'Bauform', 'type' => 'select', 'options' => $serverBauformen, 'default' => 'rack'],
                 ['name' => 'full_depth', 'label' => 'Einbautiefe', 'type' => 'select', 'options' => $serverTiefen, 'default' => 1],
+                ['name' => 'height_units', 'label' => 'Höheneinheiten (HE)', 'type' => 'number', 'default' => 1],
                 ['name' => 'ip1', 'label' => 'IP-Adresse', 'type' => 'text'],
             ],
         ],

@@ -28,6 +28,7 @@
                     'Einbautiefe' => $server->form_factor === 'rack'
                         ? (config('custom.server_depths')[(int) $server->full_depth] ?? null)
                         : null,
+                    'Höheneinheiten' => $server->form_factor === 'rack' ? $server->height_units.' HE' : null,
                 ]" />
 
                 <x-minitablecard title="Netzwerk" :array="[

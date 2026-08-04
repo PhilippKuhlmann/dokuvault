@@ -15,6 +15,8 @@
 
             <div x-show="bauform === 'rack'" x-cloak>
                 <x-create.options label="Einbautiefe" name="full_depth" :options="config('custom.server_depths')" default="1" />
+
+                <x-create.singlerow label="Höheneinheiten (HE)" name="height_units" type="number" default="1" />
             </div>
 
         </div>

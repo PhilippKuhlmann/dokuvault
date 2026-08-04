@@ -24,6 +24,7 @@ class ServerFactory extends Factory
         return [
             'form_factor' => $bauform,
             'full_depth' => $bauform === 'rack' ? fake()->boolean(80) : true,
+            'height_units' => $bauform === 'rack' ? fake()->randomElement([1, 1, 1, 2, 2, 4]) : 1,
             'name' => 'SRV-'.fake()->randomElement(['DC01', 'FS01', 'HV01', 'APP01', 'SQL01', 'BAK01']),
             'manufacturer' => $manufacturer,
             'model' => $model,

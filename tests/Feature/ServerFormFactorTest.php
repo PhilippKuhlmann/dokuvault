@@ -17,13 +17,14 @@ function serverUmgebung(): array
     return [$customer, $site, $os];
 }
 
-function serverMitBauform(Customer $customer, Site $site, string $bauform, string $name = 'SRV'): Server
+function serverMitBauform(Customer $customer, Site $site, string $bauform, string $name = 'SRV', int $he = 1): Server
 {
     $os = OperatingSystem::factory()->create(['name' => 'Debian 13']);
 
     return Server::create([
         'customer_id' => $customer->id, 'site_id' => $site->id, 'name' => $name,
         'operating_system_id' => $os->id, 'form_factor' => $bauform, 'full_depth' => true,
+        'height_units' => $he,
     ]);
 }
 
@@ -33,12 +34,13 @@ test('store speichert Bauform und Einbautiefe', function () {
 
     $this->post("/{$customer->slug}/server", [
         'site_id' => $site->id, 'name' => 'SRV-01', 'operating_system_id' => $os->id,
-        'form_factor' => 'rack', 'full_depth' => '0',
+        'form_factor' => 'rack', 'full_depth' => '0', 'height_units' => 2,
     ]);
 
     $server = Server::first();
     expect($server->form_factor)->toBe('rack');
     expect($server->full_depth)->toBeFalse();
+    expect($server->height_units)->toBe(2);
 });
 
 test('ein Standserver braucht keine Einbautiefe', function () {
@@ -61,7 +63,7 @@ test('beim 19-Zoll-Server bleibt die Einbautiefe Pflicht', function () {
     $this->post("/{$customer->slug}/server", [
         'site_id' => $site->id, 'name' => 'SRV-01', 'operating_system_id' => $os->id,
         'form_factor' => 'rack',
-    ])->assertSessionHasErrors('full_depth');
+    ])->assertSessionHasErrors(['full_depth', 'height_units']);
 });
 
 test('eine unbekannte Bauform wird abgelehnt', function () {
@@ -70,7 +72,7 @@ test('eine unbekannte Bauform wird abgelehnt', function () {
 
     $this->post("/{$customer->slug}/server", [
         'site_id' => $site->id, 'name' => 'SRV-01', 'operating_system_id' => $os->id,
-        'form_factor' => 'schrank', 'full_depth' => '1',
+        'form_factor' => 'schrank', 'full_depth' => '1', 'height_units' => 1,
     ])->assertSessionHasErrors('form_factor');
 
     expect(Server::count())->toBe(0);
@@ -136,4 +138,31 @@ test('ein 19-Zoll-Server lässt sich einbauen', function () {
         ->call('placeDevice', 'server', $server->id, 1);
 
     expect($rack->items()->count())->toBe(1);
+});
+
+test('ein Server bringt seine Höhe mit ins Rack', function () {
+    $this->actingAs(userWithPermissions(['rack_update']));
+    [$customer, $site] = serverUmgebung();
+    $rack = Rack::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'name' => 'Rack A', 'height_units' => 42,
+    ]);
+    $server = serverMitBauform($customer, $site, 'rack', 'SRV-2HE', he: 2);
+
+    Livewire::test(RackEditor::class, ['rack' => $rack, 'customer' => $customer])
+        ->call('placeDevice', 'server', $server->id, 1);
+
+    expect($rack->items()->first()->height_units)->toBe(2);
+});
+
+test('Bestandsserver bekommen eine Höheneinheit', function () {
+    [$customer, $site] = serverUmgebung();
+    $os = OperatingSystem::factory()->create(['name' => 'Ubuntu 26.04']);
+
+    $server = Server::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'name' => 'Altbestand', 'operating_system_id' => $os->id,
+    ]);
+
+    expect($server->fresh()->height_units)->toBe(1);
 });

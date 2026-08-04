@@ -27,7 +27,7 @@ class ServerRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         if ($this->input('form_factor') !== 'rack') {
-            $this->merge(['full_depth' => true]);
+            $this->merge(['full_depth' => true, 'height_units' => 1]);
         }
     }
 
@@ -41,6 +41,7 @@ class ServerRequest extends FormRequest
             'model' => 'max:255',
             'form_factor' => ['required', Rule::in(array_keys(config('custom.server_form_factors')))],
             'full_depth' => 'required_if:form_factor,rack|boolean',
+            'height_units' => 'required_if:form_factor,rack|integer|min:1|max:20',
             'serialNumber' => 'max:255',
             'ip1' => 'max:255',
             'ip2' => 'max:255',
