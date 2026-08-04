@@ -39,9 +39,11 @@
 
             <div class="flex items-center">
                 <div class="flex items-center ml-3">
-                    <div class="w-14">
-                        <x-locale-switch class="mr-1 dark:text-gray-400 hover:bg-cerulean-500 dark:hover:bg-gray-700" />
-                        <x-theme-toggle class="mr-3 dark:text-gray-400 hover:bg-cerulean-500 dark:hover:bg-gray-700" />
+                    {{-- Beide Schalter nebeneinander; das feste w-14 fasste nur
+                         einen und brach den zweiten in die naechste Zeile um. --}}
+                    <div class="flex items-center gap-1 mr-3">
+                        <x-locale-switch class="dark:text-gray-400 hover:bg-cerulean-500 dark:hover:bg-gray-700" />
+                        <x-theme-toggle class="dark:text-gray-400 hover:bg-cerulean-500 dark:hover:bg-gray-700" />
                     </div>
                     <div>
                         <button type="button"
