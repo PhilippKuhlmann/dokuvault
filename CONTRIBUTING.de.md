@@ -85,4 +85,4 @@ folgen.
 - Neue Objekttypen folgen dem bestehenden Muster (Migration, Model mit `TracksChanges`,
   Factory, Policy, Controller, FormRequest mit `BelongsToCustomer`-Rule, Views, Route,
   Eintrag in `config/custom.php` unter `permissions` und ggf. `trashables`).
-- Sicherheitslücken bitte **nicht** als Issue melden — siehe [SECURITY.md](SECURITY.md).
+- Sicherheitslücken bitte **nicht** als Issue melden — siehe [SECURITY.de.md](SECURITY.de.md).

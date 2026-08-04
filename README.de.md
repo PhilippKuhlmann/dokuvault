@@ -176,7 +176,7 @@ Agenten folgen.
 - **Rollenbasierte** Zugriffe (Admin / Techniker / Kunde) mit granularen Berechtigungen
 - **Audit-Log** aller Änderungen (ohne Klartext-Passwörter)
 - Schutz gegen **IDOR** (fremde Kunden-/Standortzuweisung), XSS-Härtung, verschlüsselte Sessions
-- Verantwortungsvolle Meldung von Lücken über [SECURITY.md](SECURITY.md)
+- Verantwortungsvolle Meldung von Lücken über [SECURITY.de.md](SECURITY.de.md)
 
 ---
 
@@ -347,7 +347,7 @@ Code-Stil vor dem Commit prüfen:
 ## 🤝 Mitwirken & Lizenz
 
 Beiträge sind willkommen – siehe [CONTRIBUTING.de.md](CONTRIBUTING.de.md) und
-[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Sicherheitslücken bitte gemäß [SECURITY.md](SECURITY.md)
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Sicherheitslücken bitte gemäß [SECURITY.de.md](SECURITY.de.md)
 melden (nicht als öffentliches Issue).
 
 Veröffentlicht unter der [MIT-Lizenz](LICENSE).

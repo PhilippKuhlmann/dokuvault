@@ -1,28 +1,38 @@
-# Sicherheitsrichtlinie
+[Deutsch](SECURITY.de.md) · **English**
 
-## Unterstützte Versionen
+# Security policy
 
-Das Projekt nutzt eine datumsbasierte Versionierung (`JJ.MM.TT`, siehe [changelog.md](changelog.md)).
-Sicherheitsrelevante Fixes fließen in die jeweils aktuelle Version ein — bitte halte deine
-Installation aktuell.
+## Supported versions
 
-## Sicherheitslücke melden
+The project uses date-based versioning (`YY.MM.DD`, see [changelog.md](changelog.md)). Security
+fixes go into the current version — please keep your installation up to date.
 
-Bitte melde Sicherheitslücken **nicht** über öffentliche GitHub-Issues.
+## Reporting a vulnerability
 
-Sende stattdessen eine E-Mail an den Maintainer (siehe GitHub-Profil des Repository-Inhabers)
-mit einer Beschreibung der Lücke und — wenn möglich — Schritten zur Reproduktion. Du erhältst
-so schnell wie möglich eine Rückmeldung; behobene Lücken werden im Changelog vermerkt.
+Please do **not** report security issues through public GitHub issues.
 
-## Hinweise zum Sicherheitsmodell
+Use **[Report a vulnerability](https://github.com/PhilippKuhlmann/dokuvault/security/advisories/new)**
+in GitHub instead — that creates a private report only you and the maintainer can see.
+Alternatively, send an email to the maintainer (see the GitHub profile of the repository owner).
 
-- **Credentials at rest**: In der Anwendung gespeicherte Passwörter (Geräte, Logins usw.) werden
-  mit dem Laravel-`APP_KEY` verschlüsselt (`Crypt`). Der `APP_KEY` ist damit der Generalschlüssel —
-  sichere ihn und binde ihn in deine Backup-Strategie ein. Bei Verlust sind alle gespeicherten
-  Credentials unlesbar.
-- **Sessions** werden verschlüsselt gespeichert (`SESSION_ENCRYPT=true`), Cookies sind `HttpOnly`
-  und in Produktion `Secure` (nur HTTPS).
-- **Betrieb**: Die Anwendung ist für den Betrieb hinter HTTPS vorgesehen. In Produktion
-  (`APP_ENV=production`) werden URLs automatisch auf HTTPS erzwungen.
-- **Demo-Zugänge**: Die vom Seeder angelegten Demo-Accounts (`admin`/`password` usw.) sind nur
-  für lokale Test-Umgebungen gedacht und müssen in Produktion entfernt werden.
+A description of the issue and, if possible, steps to reproduce it are helpful. You will get a reply
+as soon as possible; fixed issues are noted in the changelog.
+
+Reports are welcome in **English or German**.
+
+## Notes on the security model
+
+- **Credentials at rest**: passwords stored in the application (devices, logins and so on) are
+  encrypted with the Laravel `APP_KEY` (`Crypt`). The `APP_KEY` is therefore the master key — keep it
+  safe and include it in your backup strategy. If it is lost, every stored credential becomes
+  unreadable.
+- **Sessions** are stored encrypted (`SESSION_ENCRYPT=true`); cookies are `HttpOnly` and, in
+  production, `Secure` (HTTPS only).
+- **Operation**: the application is meant to run behind HTTPS. In production
+  (`APP_ENV=production`) URLs are forced to HTTPS automatically.
+- **Demo accounts**: the demo accounts created by the seeder (`admin`/`password` and so on) are meant
+  for local test environments only and must be removed in production.
+- **Trusted proxies**: if a reverse proxy sits in front of the app, enter it in `.env` under
+  `TRUSTED_PROXIES`. Without it the app sees the proxy's address instead of the visitor's — which
+  also lands in the audit log. Do not use `*` unless the proxy really is the only way in; otherwise
+  anyone reaching the app directly can claim any origin via `X-Forwarded-For`.
