@@ -38,14 +38,18 @@
                                        {{ $code === $aktuell ? 'font-semibold' : '' }}"
                                 @if ($code === $aktuell) aria-current="true" @endif>
                                 <span>{{ $bezeichnung }}</span>
-                                @if ($code === $aktuell)
-                                    <svg class="w-4 h-4 shrink-0 text-cerulean-500" fill="none" stroke="currentColor"
-                                        stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                @else
-                                    <span class="text-xs uppercase text-gray-400 dark:text-gray-400">{{ $code }}</span>
-                                @endif
+
+                                {{-- Kürzel bei jedem Eintrag, damit die Spalte gleich
+                                     bleibt; der Haken steht davor statt an seiner Stelle. --}}
+                                <span class="flex shrink-0 items-center gap-2">
+                                    @if ($code === $aktuell)
+                                        <svg class="w-4 h-4 text-cerulean-500" fill="none" stroke="currentColor"
+                                            stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    @endif
+                                    <span class="w-6 text-right text-xs uppercase {{ $code === $aktuell ? 'text-cerulean-500' : 'text-gray-400 dark:text-gray-400' }}">{{ $code }}</span>
+                                </span>
                             </button>
                         </form>
                     </li>
