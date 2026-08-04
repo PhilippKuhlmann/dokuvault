@@ -68,6 +68,23 @@
         </div>
     @enderror
 
+    {{-- Seitenwahl. Statt vier Spalten nebeneinander (Palette, Schema vorn,
+         Schema hinten, Zeichnung) zeigt der Editor eine Seite und schaltet um -
+         so bleibt die Aufteilung wie bisher lesbar. --}}
+    <div class="mb-4 inline-flex rounded-lg border border-gray-200 p-0.5 dark:border-gray-600" role="tablist">
+        @foreach (\App\Models\Rack::SEITEN as $wert => $bezeichnung)
+            <button type="button" wire:click="setSide('{{ $wert }}')" role="tab"
+                aria-selected="{{ $side === $wert ? 'true' : 'false' }}"
+                class="rounded-md px-3 py-1.5 text-sm transition-colors
+                    {{ $side === $wert
+                        ? 'bg-cerulean-500 text-white'
+                        : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700' }}">
+                {{ __($bezeichnung) }}
+                <span class="ml-1 text-[10px] font-mono opacity-70">{{ $rack->items->where('side', $wert)->count() }}</span>
+            </button>
+        @endforeach
+    </div>
+
     <div class="flex flex-col md:flex-row gap-6">
 
         {{-- Palette --}}
@@ -124,13 +141,13 @@
              richtet sich die Breite nach dem Inhalt, und die Frontansicht wird
              breiter als das Schema. --}}
         <div class="grow basis-0 min-w-0">
-            <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">{{ __('Schema') }}</div>
-            @include('rack._grid', ['rack' => $rack, 'interactive' => true])
+            <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">{{ __('Schema') }} · {{ __(\App\Models\Rack::SEITEN[$side]) }}</div>
+            @include('rack._grid', ['rack' => $rack, 'interactive' => true, 'seite' => $side])
         </div>
 
         <div class="grow basis-0 min-w-0 hidden lg:block">
-            <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">{{ __('Frontansicht') }}</div>
-            @include('rack._rackview', ['rack' => $rack])
+            <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">{{ $side === 'front' ? __('Frontansicht') : __('Rückansicht') }}</div>
+            @include('rack._rackview', ['rack' => $rack, 'seite' => $side])
         </div>
 
     </div>

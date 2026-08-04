@@ -16,18 +16,28 @@
                     'Standort' => $customer->sites->firstWhere('id', $rack->site_id)?->name,
                     'Ort' => $rack->location,
                     'Höheneinheiten' => $rack->height_units . ' HE',
-                    'Einbauten' => $rack->items->count(),
+                    'Einbauten' => $rack->items->where('side', 'front')->count()
+                        .($rack->items->where('side', 'rear')->isNotEmpty() ? ' + '.$rack->items->where('side', 'rear')->count().' '.__('hinten') : ''),
                 ]" />
 
                 <div class="w-full sm:w-80">
                     <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-2">{{ __('Belegung') }}</div>
-                    @include('rack._grid', ['rack' => $rack, 'interactive' => false])
+                    @include('rack._grid', ['rack' => $rack, 'interactive' => false, 'seite' => 'front'])
                 </div>
 
                 <div class="w-full sm:w-80">
                     <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-2">{{ __('Frontansicht') }}</div>
-                    @include('rack._rackview', ['rack' => $rack])
+                    @include('rack._rackview', ['rack' => $rack, 'seite' => 'front'])
                 </div>
+
+                {{-- Die Rueckseite nur zeigen, wenn dort etwas steht. Sonst
+                     naehme eine leere Zeichnung Platz weg, ohne etwas zu sagen. --}}
+                @if ($rack->items->where('side', 'rear')->isNotEmpty())
+                    <div class="w-full sm:w-80">
+                        <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-2">{{ __('Rückansicht') }}</div>
+                        @include('rack._rackview', ['rack' => $rack, 'seite' => 'rear'])
+                    </div>
+                @endif
 
             </x-slot>
         </x-card>

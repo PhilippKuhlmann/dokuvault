@@ -31,6 +31,22 @@ class RackItem extends Model
         return $this->device?->name ?? $this->name ?? '—';
     }
 
+    protected $casts = [
+        'full_depth' => 'boolean',
+    ];
+
+    /**
+     * Belegt dieser Einbau die angegebene Seite?
+     *
+     * Ein Geraet in voller Tiefe blockiert beide Seiten - hinter einem
+     * 800 mm tiefen Server passt nichts mehr. Eines in halber Tiefe nur die
+     * eigene.
+     */
+    public function belegtSeite(string $seite): bool
+    {
+        return $this->side === $seite || $this->full_depth;
+    }
+
     /** Oberste belegte Hoeheneinheit. */
     public function topUnit(): int
     {

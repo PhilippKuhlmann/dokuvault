@@ -21,6 +21,10 @@ class RackCatalogItem extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'full_depth' => 'boolean',
+    ];
+
     /** Reihenfolge in der Palette des Rack-Editors. */
     public function scopeOrdered($query)
     {

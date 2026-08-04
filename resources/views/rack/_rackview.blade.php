@@ -1,11 +1,13 @@
 {{--
-    Gezeichnete Frontansicht desselben Racks - ohne Beschriftung, so wie der
-    Schrank tatsaechlich aussieht. Erwartet: $rack (mit items.device geladen).
+    Gezeichnete Ansicht derselben Rackseite - ohne Beschriftung, so wie der
+    Schrank tatsaechlich aussieht. Erwartet: $rack (mit items.device geladen)
+    und $seite ('front'|'rear').
 
     Bewusst nicht interaktiv: gearbeitet wird im beschrifteten Schema daneben,
     diese Ansicht dient dem Wiedererkennen vor Ort.
 --}}
 @php
+    $seite = $seite ?? 'front';
     $he = $rack->height_units;
     $rowHeight = '2rem';
 
@@ -22,8 +24,10 @@
     $deviceDefault = 'text-cerulean-700 dark:text-cerulean-300';
     $passive = 'text-gray-500 dark:text-gray-400';
 
+    $sichtbar = $rack->itemsFuerSeite($seite);
+
     $occupied = [];
-    foreach ($rack->items as $item) {
+    foreach ($sichtbar as $item) {
         for ($u = $item->position; $u <= $item->topUnit(); $u++) {
             $occupied[$u] = true;
         }
@@ -70,17 +74,20 @@
         @endfor
 
         {{-- Einbauten als gezeichnete Blenden --}}
-        @foreach ($rack->items as $item)
+        @foreach ($sichtbar as $item)
             @php
+                // Von der Gegenseite durchreichend: Man sieht hier die Rueckwand
+                // des Geraets, nicht seine Front - deshalb eine schlichte Blende.
+                $geist = $item->side !== $seite;
                 $key = $item->device_type ? ($typeKeys[$item->device_type] ?? null) : null;
-                $color = $item->device_type ? ($colors[$key] ?? $deviceDefault) : $passive;
+                $color = $geist ? $passive : ($item->device_type ? ($colors[$key] ?? $deviceDefault) : $passive);
             @endphp
             <div wire:key="rack-face-{{ $item->id }}"
                 style="grid-column: 3; grid-row: {{ $he - $item->topUnit() + 1 }} / span {{ $item->height_units }}; min-height: {{ $rowHeight }};"
-                class="{{ $color }}"
-                title="{{ $item->label() }} · {{ $item->height_units }} HE">
-                <x-rack.face :appearance="$item->faceAppearance()" :he="$item->height_units"
-                    :ports="$item->device?->port_count" />
+                class="{{ $color }} {{ $geist ? 'opacity-50' : '' }}"
+                title="{{ $item->label() }} · {{ $item->height_units }} HE{{ $geist ? ' · '.__('Rückseite des Geräts') : '' }}">
+                <x-rack.face :appearance="$geist ? 'blank' : $item->faceAppearance()" :he="$item->height_units"
+                    :ports="$geist ? null : $item->device?->port_count" />
             </div>
         @endforeach
 

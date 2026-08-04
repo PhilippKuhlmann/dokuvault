@@ -1,11 +1,12 @@
 {{--
-    Frontansicht eines Racks als CSS-Grid.
-    Erwartet: $rack (mit items.device geladen), $interactive (bool).
+    Eine Seite eines Racks als CSS-Grid.
+    Erwartet: $rack (mit items.device geladen), $interactive (bool), $seite ('front'|'rear').
     Interaktiv (im Livewire-Editor): jede HE ist Dropzone, Einbauten sind draggable —
     den Alpine-Zustand (drag/hover/handleDrop/previewStyle) stellt der umgebende Editor bereit.
     HE zählen von unten: Zeile 1 im Grid ist die oberste Höheneinheit.
 --}}
 @php
+    $seite = $seite ?? 'front';
     $he = $rack->height_units;
     // Model-Klasse => Palette-Schlüssel (für die Typfarbe)
     $typeKeys = collect(config('custom.rack_device_types'))->map(fn ($v) => $v[0])->flip();
@@ -21,8 +22,12 @@
     $defaultDeviceColor = 'bg-cerulean-100 border-cerulean-300 text-cerulean-900 dark:bg-cerulean-900/40 dark:border-cerulean-700 dark:text-cerulean-100';
     $passiveColor = 'bg-gray-100 border-gray-300 text-gray-600 dark:bg-gray-700/60 dark:border-gray-600 dark:text-gray-300';
 
+    // Sichtbar ist, was diese Seite belegt: die hier eingebauten Geraete und
+    // die von der Gegenseite, die in voller Tiefe durchreichen.
+    $sichtbar = $rack->itemsFuerSeite($seite);
+
     $occupied = [];
-    foreach ($rack->items as $item) {
+    foreach ($sichtbar as $item) {
         for ($u = $item->position; $u <= $item->topUnit(); $u++) {
             $occupied[$u] = true;
         }
@@ -69,30 +74,46 @@
         @endfor
 
         {{-- Einbauten --}}
-        @foreach ($rack->items as $item)
+        @foreach ($sichtbar as $item)
             @php
                 $key = $item->device_type ? ($typeKeys[$item->device_type] ?? null) : null;
                 $color = $item->device_type ? ($colors[$key] ?? $defaultDeviceColor) : $passiveColor;
             @endphp
+            @php
+                // Von der Gegenseite durchreichend: belegt den Platz, gehoert
+                // aber dorthin - hier nur als Geist, nicht bearbeitbar.
+                $geist = $item->side !== $seite;
+                $bearbeitbar = $interactive && ! $geist;
+            @endphp
             <div wire:key="rack-item-{{ $item->id }}"
-                data-item-id="{{ $item->id }}" data-unit="{{ $item->position }}" data-he="{{ $item->height_units }}"
+                @unless ($geist) data-item-id="{{ $item->id }}" @endunless
+                data-unit="{{ $item->position }}" data-he="{{ $item->height_units }}"
+                @if ($geist) data-geist="1" @endif
                 style="grid-column: 2; grid-row: {{ $he - $item->topUnit() + 1 }} / span {{ $item->height_units }}; min-height: {{ $rowHeight }};"
-                @if ($interactive)
+                @if ($bearbeitbar)
                     draggable="true"
                     x-on:dragstart="drag = { kind: 'move', id: Number($el.dataset.itemId), he: Number($el.dataset.he) }"
                     x-on:dragend="drag = null; hover = null"
                     {{-- Auch belegte Zeilen melden sich: so zeigt die Vorschau dort rot statt gar nichts --}}
                     x-on:dragover.prevent="hover = Number($el.dataset.unit)"
                     x-on:drop.prevent="handleDrop(Number($el.dataset.unit))"
+                @elseif ($interactive)
+                    {{-- Auch der Geist meldet sich, sonst zeigt die Vorschau dort nichts --}}
+                    x-on:dragover.prevent="hover = Number($el.dataset.unit)"
                 @endif
-                class="flex items-center justify-between gap-2 rounded border px-2 text-xs {{ $color }} {{ $interactive ? 'cursor-grab active:cursor-grabbing' : '' }}">
-                <span class="truncate font-medium">{{ $item->label() }}</span>
+                class="flex items-center justify-between gap-2 rounded border px-2 text-xs
+                       {{ $geist ? 'border-dashed bg-gray-50 text-gray-400 dark:bg-gray-800/60 dark:border-gray-600 dark:text-gray-500' : $color }}
+                       {{ $bearbeitbar ? 'cursor-grab active:cursor-grabbing' : '' }}">
+                <span class="truncate {{ $geist ? '' : 'font-medium' }}">{{ $item->label() }}</span>
                 <span class="flex shrink-0 items-center gap-2">
-                    @if ($item->device_type && isset($typeLabels[$key]))
+                    @if ($geist)
+                        <span class="text-[10px] uppercase tracking-wide">{{ __('durchgehend') }}</span>
+                    @endif
+                    @if (! $geist && $item->device_type && isset($typeLabels[$key]))
                         <span class="hidden sm:inline text-[10px] uppercase tracking-wide opacity-70">{{ $typeLabels[$key] }}</span>
                     @endif
                     <span class="text-[10px] font-mono opacity-70">{{ $item->height_units }} HE</span>
-                    @if ($interactive)
+                    @if ($bearbeitbar)
                         <button type="button" wire:click="setHeight({{ $item->id }}, {{ $item->height_units + 1 }})"
                             class="opacity-60 hover:opacity-100" title="{{ __('1 HE höher') }}">＋</button>
                         @if ($item->height_units > 1)

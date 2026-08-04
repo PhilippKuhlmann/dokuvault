@@ -13,6 +13,9 @@
     :label1="__('Höheneinheiten (HE)')" name1="height_units" type1="number" :default1="$item->height_units ?? 1"
     :label2="__('Reihenfolge in der Palette')" name2="sort_order" type2="number" :default2="$item->sort_order ?? 0" />
 
+<x-create.options :label="__('Einbautiefe')" name="full_depth"
+    :options="config('custom.server_depths')" :default="(int) ($item->full_depth ?? 1)" />
+
 <div class="flex flex-col mt-2" x-data="{ appearance: '{{ $selected }}' }">
     <x-input.label for="appearance" :value="__('Darstellung in der Frontansicht')" />
     <x-input.select id="appearance" name="appearance" x-model="appearance">

@@ -149,10 +149,11 @@ Agenten folgen.
 
 - **Kunden & Standorte** – mehrmandantenfähige Struktur je Kunde
 - **Infrastruktur** – Server, VMs (mit Host-Zuordnung), NAS, Computer, USV, Maschinen, IoT
-- **Serverschränke** – Racks mit Drag-&-Drop-Bestückung: dokumentierte Geräte und passive
-  Elemente je Höheneinheit platzieren. Neben dem beschrifteten Schema eine gezeichnete
-  Frontansicht, die sich der Höhe anpasst; der Katalog passiver Elemente wird im
-  Adminbereich gepflegt
+- **Serverschränke** – Racks mit Drag-&-Drop-Bestückung, **Vorder- und Rückseite**:
+  dokumentierte Geräte und passive Elemente je Höheneinheit platzieren. Geräte in voller
+  Tiefe belegen beide Seiten, halbtiefe lassen dahinter Platz. Neben dem beschrifteten
+  Schema eine gezeichnete Ansicht, die sich der Höhe anpasst; der Katalog passiver
+  Elemente wird im Adminbereich gepflegt
 - **Patchfelder** – je Port Dosennummer, Raum und Ziel-Switch samt Portnummer; die Portzeilen
   entstehen automatisch aus der Portanzahl
 - **Netzwerk** – Router, Switches, Access Points, WLAN, VLANs, **IPAM**, Internet/WAN, UTM-Firewalls

@@ -145,9 +145,10 @@ Every token may **only document** — a leaked one grants no further access. Mor
 
 - **Customers & sites** — a multi-tenant structure per customer
 - **Infrastructure** — servers, VMs (with host assignment), NAS, computers, UPS, machines, IoT
-- **Racks** — drag-and-drop mounting: place documented devices and passive items per rack unit.
-  Next to the labelled schematic there is a drawn front view that follows the height; the catalogue
-  of passive items is maintained in the admin area
+- **Racks** — drag-and-drop mounting, **front and rear**: place documented devices and passive items
+  per rack unit. Full-depth devices occupy both sides, half-depth ones leave room behind them. Next
+  to the labelled schematic there is a drawn view that follows the height; the catalogue of passive
+  items is maintained in the admin area
 - **Patch panels** — outlet number, room and target switch with port number per port; the port rows
   are created automatically from the port count
 - **Network** — routers, switches, access points, Wi-Fi, VLANs, **IPAM**, internet/WAN, UTM firewalls

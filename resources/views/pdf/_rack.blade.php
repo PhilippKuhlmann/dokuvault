@@ -1,5 +1,6 @@
 {{--
-    Rack-Frontansicht für den PDF-Export. Erwartet: $rack (mit items.device).
+    Eine Rackseite für den PDF-Export. Erwartet: $rack (mit items.device) und
+    $seite ('front'|'rear').
 
     Bewusst als Tabelle mit rowspan statt als CSS-Grid: DomPDF beherrscht
     weder Grid noch Flexbox, Tabellen dagegen zuverlässig. Farben und Maße
@@ -13,6 +14,7 @@
     Erwartet zusätzlich: $svgDir (absoluter Pfad).
 --}}
 @php
+    $seite = $seite ?? 'front';
     $he = $rack->height_units;
 
     $typeKeys = collect(config('custom.rack_device_types'))->map(fn ($v) => $v[0])->flip();
@@ -33,7 +35,7 @@
     // damit dort keine eigene Zeile entsteht (die deckt der rowspan ab).
     $startsAt = [];
     $covered = [];
-    foreach ($rack->items as $item) {
+    foreach ($rack->itemsFuerSeite($seite) as $item) {
         $startsAt[$item->topUnit()] = $item;
         for ($u = $item->position; $u < $item->topUnit(); $u++) {
             $covered[$u] = true;

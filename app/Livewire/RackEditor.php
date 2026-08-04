@@ -20,6 +20,14 @@ class RackEditor extends Component
 
     public int $customerId;
 
+    /** Welche Seite gerade bearbeitet wird - 'front' oder 'rear'. */
+    public string $side = 'front';
+
+    public function setSide(string $side): void
+    {
+        $this->side = array_key_exists($side, Rack::SEITEN) ? $side : 'front';
+    }
+
     public function mount($rack, $customer): void
     {
         $this->rackId = $rack->id;
@@ -72,11 +80,15 @@ class RackEditor extends Component
         // die sich im Editor per + korrigieren laesst.
         $he = (int) ($device->height_units ?? 1) ?: 1;
 
-        $this->assertFree($rack, $position, $he);
+        $this->assertFree($rack, $this->side, $position, $he);
 
         $rack->items()->create([
+            'side' => $this->side,
             'position' => $position,
             'height_units' => $he,
+            // Tiefe beim Einbau kopieren, wie Name und Darstellung: Eine spaetere
+            // Aenderung am Geraet soll den Schrank nicht rueckwirkend umbauen.
+            'full_depth' => (bool) ($device->full_depth ?? true),
             'device_type' => $class,
             'device_id' => $device->id,
         ]);
@@ -94,23 +106,39 @@ class RackEditor extends Component
         $catalogItem = RackCatalogItem::find($catalogItemId)
             ?? $this->fail('Unbekanntes Katalogelement.');
 
-        $this->assertFree($rack, $position, $catalogItem->height_units);
+        $this->assertFree($rack, $this->side, $position, $catalogItem->height_units);
 
         $rack->items()->create([
+            'side' => $this->side,
             'position' => $position,
             'height_units' => $catalogItem->height_units,
+            'full_depth' => (bool) $catalogItem->full_depth,
             'name' => $catalogItem->name,
             'appearance' => $catalogItem->appearance,
         ]);
     }
 
     /** Einbau an eine neue Position verschieben. */
+    /**
+     * Einbauten der Gegenseite erscheinen als Geister, wenn sie in voller Tiefe
+     * durchreichen. Bearbeiten laesst sich dort nichts - sonst verschoebe man
+     * von hinten etwas, das man vorne sieht.
+     */
+    protected function nurEigeneSeite(RackItem $item): void
+    {
+        if ($item->side !== $this->side) {
+            $this->fail($item->label().' steht auf der '.__(Rack::SEITEN[$item->side]).' und lässt sich nur dort bearbeiten.');
+        }
+    }
+
     public function move(int $itemId, int $newPosition): void
     {
         $rack = $this->rack();
         $item = $rack->items()->findOrFail($itemId);
 
-        $this->assertFree($rack, $newPosition, $item->height_units, ignoreId: $item->id);
+        $this->nurEigeneSeite($item);
+
+        $this->assertFree($rack, $item->side, $newPosition, $item->height_units, ignoreId: $item->id);
 
         $item->update(['position' => $newPosition]);
     }
@@ -121,11 +149,13 @@ class RackEditor extends Component
         $rack = $this->rack();
         $item = $rack->items()->findOrFail($itemId);
 
+        $this->nurEigeneSeite($item);
+
         if ($he < 1 || $he > 8) {
             $this->fail(__('Höhe muss zwischen 1 und 8 HE liegen.'));
         }
 
-        $this->assertFree($rack, $item->position, $he, ignoreId: $item->id);
+        $this->assertFree($rack, $item->side, $item->position, $he, ignoreId: $item->id);
 
         $item->update(['height_units' => $he]);
     }
@@ -133,15 +163,18 @@ class RackEditor extends Component
     public function remove(int $itemId): void
     {
         $rack = $this->rack();
+        $item = $rack->items()->findOrFail($itemId);
 
-        $rack->items()->whereKey($itemId)->delete();
+        $this->nurEigeneSeite($item);
+
+        $item->delete();
     }
 
     /**
      * Kollisionsprüfung: [position, position+he-1] muss im Rack liegen und darf
      * keinen anderen Einbau schneiden.
      */
-    protected function assertFree(Rack $rack, int $position, int $he, ?int $ignoreId = null): void
+    protected function assertFree(Rack $rack, string $seite, int $position, int $he, ?int $ignoreId = null): void
     {
         $top = $position + $he - 1;
 
@@ -149,13 +182,20 @@ class RackEditor extends Component
             $this->fail("Passt nicht: HE {$position}–{$top} liegt außerhalb des Racks (1–{$rack->height_units}).");
         }
 
+        // Nur was diese Seite belegt: ein Geraet in halber Tiefe auf der
+        // Gegenseite laesst hier Platz, eines in voller Tiefe nicht.
         $conflict = $rack->items()
             ->when($ignoreId, fn ($q) => $q->whereKeyNot($ignoreId))
             ->get()
+            ->filter(fn (RackItem $item) => $item->belegtSeite($seite))
             ->first(fn (RackItem $item) => $position <= $item->topUnit() && $top >= $item->position);
 
         if ($conflict) {
-            $this->fail("HE {$position}–{$top} kollidiert mit ".$conflict->label()." (HE {$conflict->position}–{$conflict->topUnit()}).");
+            $hinweis = $conflict->side === $seite
+                ? ''
+                : ' – es reicht in voller Tiefe von der '.__(Rack::SEITEN[$conflict->side]).' durch';
+
+            $this->fail("HE {$position}–{$top} kollidiert mit ".$conflict->label()." (HE {$conflict->position}–{$conflict->topUnit()}){$hinweis}.");
         }
     }
 
@@ -165,10 +205,10 @@ class RackEditor extends Component
     }
 
     /** Unterste freie Position, an der ein Element mit $he Höhe Platz hat (für den Einbauen-Knopf). */
-    protected function lowestFree(Rack $rack, int $he): ?int
+    protected function lowestFree(Rack $rack, string $seite, int $he): ?int
     {
         $occupied = [];
-        foreach ($rack->items as $item) {
+        foreach ($rack->itemsFuerSeite($seite) as $item) {
             for ($u = $item->position; $u <= $item->topUnit(); $u++) {
                 $occupied[$u] = true;
             }
@@ -204,7 +244,7 @@ class RackEditor extends Component
             $he = (int) ($class::find($deviceId)?->height_units ?? 1) ?: 1;
         }
 
-        $position = $this->lowestFree($rack, $he) ?? $this->fail('Kein freier Platz im Rack.');
+        $position = $this->lowestFree($rack, $this->side, $he) ?? $this->fail('Kein freier Platz im Rack.');
         $this->placeDevice($typeKey, $deviceId, $position);
     }
 
@@ -214,7 +254,7 @@ class RackEditor extends Component
         $rack = $this->rack();
         $he = RackCatalogItem::find($catalogItemId)?->height_units
             ?? $this->fail('Unbekanntes Katalogelement.');
-        $position = $this->lowestFree($rack, $he) ?? $this->fail('Kein freier Platz im Rack.');
+        $position = $this->lowestFree($rack, $this->side, $he) ?? $this->fail('Kein freier Platz im Rack.');
         $this->placeCatalog($catalogItemId, $position);
     }
 

@@ -216,12 +216,14 @@ class LocalDatabaseSeeder extends Seeder
 
         // Passive Einbauten aus dem Katalog holen, damit Hoehe *und* Darstellung
         // von dort kommen - genau wie beim Einbauen im Editor.
-        $ausKatalog = function (int $position, string $name) {
+        $ausKatalog = function (int $position, string $name, string $seite = 'front') {
             $eintrag = RackCatalogItem::where('name', $name)->first();
 
             return $eintrag ? [
+                'side' => $seite,
                 'position' => $position,
                 'height_units' => $eintrag->height_units,
+                'full_depth' => $eintrag->full_depth,
                 'name' => $eintrag->name,
                 'appearance' => $eintrag->appearance,
             ] : null;
@@ -242,6 +244,11 @@ class LocalDatabaseSeeder extends Seeder
             $ausKatalog(39, 'Rangierfeld'),
             $ausKatalog(40, 'Patchfeld 24 Port'),
             $ausKatalog(42, 'Kabeldurchführung'),
+
+            // Rueckseite: Was dort typischerweise sitzt - Strom unten,
+            // Kabelfuehrung oben. Beides in halber Tiefe, vorne bleibt Platz.
+            $ausKatalog(3, 'Steckdosenleiste (PDU)', 'rear'),
+            $ausKatalog(37, 'Kabeldurchführung', 'rear'),
         ], fn ($item) => $item !== null
             && (! array_key_exists('device_id', $item) || $item['device_id'] !== null)));
 

@@ -175,9 +175,18 @@
          Ort sucht man nach dem Bild, nicht nach einer Liste. --}}
     @foreach ($racks as $rack)
         <div class="rack-block">
-            <div class="rack-caption">{{ $rack->name }} – Frontansicht</div>
-            @include('pdf._rack', ['rack' => $rack, 'svgDir' => $svgDir])
+            <div class="rack-caption">{{ $rack->name }} – {{ __('Frontansicht') }}</div>
+            @include('pdf._rack', ['rack' => $rack, 'svgDir' => $svgDir, 'seite' => 'front'])
         </div>
+
+        {{-- Rueckansicht nur, wenn dort etwas eingebaut ist - eine leere
+             Zeichnung kostet im Ausdruck eine halbe Seite und sagt nichts. --}}
+        @if ($rack->items->where('side', 'rear')->isNotEmpty())
+            <div class="rack-block">
+                <div class="rack-caption">{{ $rack->name }} – {{ __('Rückansicht') }}</div>
+                @include('pdf._rack', ['rack' => $rack, 'svgDir' => $svgDir, 'seite' => 'rear'])
+            </div>
+        @endif
     @endforeach
 
     {{-- Server & Storage --}}

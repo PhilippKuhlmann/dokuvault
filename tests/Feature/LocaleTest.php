@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Rack;
 use App\Models\User;
 
 test('ohne Einstellung entscheidet die Browsersprache', function () {
@@ -162,6 +163,9 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
         ->merge(array_values(config('custom.server_depths', [])))
         ->merge(collect(config('custom.trashables', []))->map(fn ($t) => $t[1] ?? null))
         ->merge(collect(config('custom.rack_device_types', []))->map(fn ($t) => $t[1] ?? null))
+        // Beschriftungen aus Model-Konstanten laufen ebenfalls erst zur
+        // Laufzeit durch __() - etwa die Rackseiten.
+        ->merge(array_values(Rack::SEITEN))
         ->filter()->all();
 
     $verwendet = array_unique(array_merge($verwendet, $ausConfig));
