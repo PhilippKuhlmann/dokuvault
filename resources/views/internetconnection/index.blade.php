@@ -20,6 +20,16 @@
                 'WAN-IP' => $ic->wan_ip,
                 'Hotline' => $ic->hotline,
             ]" />
+
+            {{-- Nur wenn ein geroutetes Netz hinterlegt ist - die meisten
+                 Anschluesse haben nur die eine WAN-Adresse. --}}
+            @if ($ic->subnet)
+                <x-minitablecard :title="__('Geroutetes Netz')" :array="[
+                    'Netz' => $ic->subnet,
+                    'Gateway' => $ic->subnet_gateway,
+                    'Nutzbar' => $ic->nutzbarerBereich(),
+                ]" />
+            @endif
             @if ($ic->notes)
                 <x-minitextcard :title="__('Notizen')">{{ $ic->notes }}</x-minitextcard>
             @endif

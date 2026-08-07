@@ -98,6 +98,7 @@
     <x-pdf.section :title="__('Internet / WAN')" :items="$customer->internetconnections" :titleField="fn($i) => trim(($i->provider ?? '').' '.($i->product ? '– '.$i->product : ''))" :groups="[
         'Vertrag' => ['Anbieter' => 'provider', 'Produkt' => 'product', 'Vertragsnummer' => 'contract_number', 'Anschlussart' => 'connection_type'],
         'Technik' => ['Download' => 'bandwidth_down', 'Upload' => 'bandwidth_up', 'WAN-IP' => 'wan_ip', 'Hotline' => 'hotline'],
+        'Geroutetes Netz' => ['Netz' => 'subnet', 'Gateway' => 'subnet_gateway', 'Nutzbar' => fn($i) => $i->nutzbarerBereich()],
     ]" />
 
     <x-pdf.section :title="__('Securepoint UTM')" :items="$customer->securepointutms" :titleField="fn($u) => $u->type ?: 'UTM #'.$u->id" :groups="[

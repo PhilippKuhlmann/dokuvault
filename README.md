@@ -155,7 +155,7 @@ Every token may **only document** — a leaked one grants no further access. Mor
   items is maintained in the admin area
 - **Patch panels** — outlet number, room and target switch with port number per port; the port rows
   are created automatically from the port count
-- **Network** — routers, switches, access points, Wi-Fi, VLANs, **IPAM**, internet/WAN, UTM firewalls
+- **Network** — routers, switches, access points, Wi-Fi, VLANs, **IPAM**, internet/WAN, UTM firewalls; internet connections optionally with a routed subnet (CIDR) and gateway
 - **Active Directory** — domains, users, groups
 - **Communication** — phone systems, DECT, mailboxes, email archiving
 - **Security & certificates** — SSL/TLS certificates with expiry warnings

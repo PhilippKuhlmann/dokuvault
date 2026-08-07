@@ -160,7 +160,7 @@ Agenten folgen.
   Elemente wird im Adminbereich gepflegt
 - **Patchfelder** – je Port Dosennummer, Raum und Ziel-Switch samt Portnummer; die Portzeilen
   entstehen automatisch aus der Portanzahl
-- **Netzwerk** – Router, Switches, Access Points, WLAN, VLANs, **IPAM**, Internet/WAN, UTM-Firewalls
+- **Netzwerk** – Router, Switches, Access Points, WLAN, VLANs, **IPAM**, Internet/WAN, UTM-Firewalls; Internet-Anschlüsse optional mit geroutetem Netz (CIDR) und Gateway
 - **Active Directory** – Domains, Benutzer, Gruppen
 - **Kommunikation** – Telefonanlagen, DECT, E-Mail-Postfächer, E-Mail-Archivierung
 - **Sicherheit & Zertifikate** – SSL/TLS-Zertifikate mit Ablauf-Warnung

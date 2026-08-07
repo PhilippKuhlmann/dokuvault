@@ -408,6 +408,11 @@ class LocalDatabaseSeeder extends Seeder
             'connection_type' => 'Glasfaser',
             'bandwidth_down' => '1000 Mbit/s',
             'bandwidth_up' => '500 Mbit/s',
+            // Der Hauptanschluss bringt ein geroutetes /28 mit - so zeigt die
+            // Demo beide Faelle, mit und ohne eigenes Netz.
+            'wan_ip' => '203.0.113.2',
+            'subnet' => '203.0.113.16/28',
+            'subnet_gateway' => '203.0.113.17',
         ]);
 
         InternetConnection::factory()->create([
