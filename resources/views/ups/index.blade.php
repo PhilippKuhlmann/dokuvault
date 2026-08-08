@@ -14,6 +14,8 @@
                 'Modell' => $usv->model,
                 'Seriennummer' => $usv->serialNumber,
             ]" />
+
+            <x-credentialscard :device="$usv" />
             <x-minitablecard :title="__('Technik')" :array="[
                 'IP-Adresse' => $usv->ip,
                 'Kapazität' => $usv->capacity,
@@ -22,8 +24,6 @@
             @if ($usv->notes)
                 <x-minitextcard :title="__('Notizen')">{{ $usv->notes }}</x-minitextcard>
             @endif
-
-            <x-credentialscard :device="$usv" />
 
         </x-slot>
     </x-card>

@@ -19,6 +19,8 @@
                     'Seriennummer' => $otherclient->serialNumber,
                 ]" />
 
+                <x-credentialscard :device="$otherclient" />
+
                 <x-minitablecard :title="__('Netzwerk')" :array="[
                     'IP-Adresse' => $otherclient->ip,
                     'Port' => $otherclient->port,
@@ -28,9 +30,6 @@
                     'Benutzer' => $otherclient->username,
                     'Passwort' => $otherclient->password
                 ]" />
-
-
-                <x-credentialscard :device="$otherclient" />
 
             </x-slot>
         </x-card>

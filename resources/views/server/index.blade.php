@@ -32,6 +32,8 @@
                     'Höheneinheiten' => $server->form_factor === 'rack' ? $server->height_units.' HE' : null,
                 ]" />
 
+                <x-credentialscard :device="$server" />
+
                 <x-minitablecard :title="__('Netzwerk')" :array="[
                     'IP-Adresse 1' => $server->ip1,
                     'IP-Adresse 2' => $server->ip2,
@@ -48,9 +50,6 @@
                 <x-minitextcard :title="__('Betriebsystem')">
                     {{ $server->operatingSystem?->name ?? '—' }}
                 </x-minitextcard>
-
-
-                <x-credentialscard :device="$server" />
 
             </x-slot>
         </x-card>

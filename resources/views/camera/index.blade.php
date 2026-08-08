@@ -17,6 +17,8 @@
                     'Seriennummer' => $camera->serialNumber,
                 ]" />
 
+                <x-credentialscard :device="$camera" />
+
                 <x-minitablecard :title="__('Netzwerk')" :array="[
                     'IP' => $camera->ip,
                     'Port' => $camera->port,
@@ -26,9 +28,6 @@
                     'Benutzer' => $camera->username,
                     'Passwort' => $camera->password,
                 ]" />
-
-
-                <x-credentialscard :device="$camera" />
 
             </x-slot>
         </x-card>

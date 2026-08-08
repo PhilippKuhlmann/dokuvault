@@ -18,6 +18,8 @@
                     'Seriennummer' => $dect->serialNumber,
                 ]" />
 
+                <x-credentialscard :device="$dect" />
+
                 <x-minitablecard :title="__('Netzwerk')" :array="[
                     'IP-Adresse' => $dect->ip,
                     'Port' => $dect->port,
@@ -28,12 +30,6 @@
                     'Benutzer' => $dect->username,
                     'Passwort' => $dect->password,
                 ]" />
-
-
-
-
-
-                <x-credentialscard :device="$dect" />
 
             </x-slot>
         </x-card>

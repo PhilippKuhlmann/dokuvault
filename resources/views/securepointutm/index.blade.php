@@ -17,6 +17,8 @@
                     'Seriennummer' => $securepointutm->serialNumber,
                 ]" />
 
+                <x-credentialscard :device="$securepointutm" />
+
                 <x-minitablecard :title="__('Login')" :array="[
                     'Benutzername' => $securepointutm->username,
                     'Passwort' => $securepointutm->password,
@@ -30,9 +32,6 @@
                     'User URL' => $securepointutm->urlUser,
                     'Externe URL' => $securepointutm->urlExternal,
                 ]" />
-
-
-                <x-credentialscard :device="$securepointutm" />
 
             </x-slot>
         </x-card>

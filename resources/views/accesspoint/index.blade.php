@@ -19,6 +19,8 @@
                     'Seriennummer' => $accesspoint->serialNumber,
                 ]" />
 
+                <x-credentialscard :device="$accesspoint" />
+
                 <x-minitablecard :title="__('Login')" :array="[
                     'Benutzername' => $accesspoint->username,
                     'Passwort' => $accesspoint->password,
@@ -28,9 +30,6 @@
                     'IP' => $accesspoint->ip,
                     'Port' => $accesspoint->port,
                 ]" />
-
-
-                <x-credentialscard :device="$accesspoint" />
 
             </x-slot>
         </x-card>

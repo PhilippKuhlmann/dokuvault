@@ -20,6 +20,8 @@
                     'Seriennummer' => $router->serialNumber,
                 ]" />
 
+                <x-credentialscard :device="$router" />
+
                 <x-minitablecard :title="__('Login')" :array="[
                     'Benutzername' => $router->username,
                     'Passwort' => $router->password,
@@ -29,9 +31,6 @@
                     'IP' => $router->ip,
                     'Port' => $router->port,
                 ]" />
-
-
-                <x-credentialscard :device="$router" />
 
             </x-slot>
         </x-card>

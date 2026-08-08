@@ -20,6 +20,8 @@
                     'Seriennummer' => $networkswitch->serialNumber,
                 ]" />
 
+                <x-credentialscard :device="$networkswitch" />
+
                 <x-minitablecard :title="__('Login')" :array="[
                     'Benutzername' => $networkswitch->username,
                     'Passwort' => $networkswitch->password,
@@ -29,9 +31,6 @@
                     'IP' => $networkswitch->ip,
                     'Port' => $networkswitch->port,
                 ]" />
-
-
-                <x-credentialscard :device="$networkswitch" />
 
             </x-slot>
         </x-card>

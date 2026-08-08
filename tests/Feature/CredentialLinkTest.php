@@ -6,8 +6,10 @@ use App\Models\Customer;
 use App\Models\LoginGeneral;
 use App\Models\NAS;
 use App\Models\OperatingSystem;
+use App\Models\Role;
 use App\Models\Server;
 use App\Models\Site;
+use App\Models\User;
 use App\Models\VM;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -352,4 +354,39 @@ test('ein Umbau der Verknüpfung landet im Aktivitätsprotokoll', function () {
     $ereignisse = Activity::where('subject_type', CredentialLink::class)->pluck('event');
     expect($ereignisse)->toContain('created');
     expect($ereignisse)->toContain('deleted');
+});
+
+/**
+ * Ziel des Abbrechen-Knopfes aus der Antwort ziehen.
+ *
+ * Nicht assertSee auf die URL: Die steht auch in der Seitenleiste, der Test
+ * waere damit auch mit kaputtem Knopf gruen.
+ */
+function abbrechenZiel($antwort): ?string
+{
+    preg_match('/<a href="([^"]+)"[^>]*>\s*Abbrechen\s*<\/a>/', $antwort->getContent(), $treffer);
+
+    return $treffer[1] ?? null;
+}
+
+test('Abbrechen führt aus dem Formular zurück in die Liste', function () {
+    $nutzer = userWithPermissions(['vm_update', 'vm_create', 'logingeneral_viewAny']);
+    [$customer, $site, $vm, $login] = zugangsUmgebung();
+
+    // Vorher stand hier redirect()->back(), das beim Rendern auf die Seite selbst
+    // zeigte - der Knopf lud die Seite nur neu.
+    expect(abbrechenZiel($this->actingAs($nutzer)->get("/{$customer->slug}/vm/{$vm->id}/edit")))
+        ->toBe(route('vm.index', $customer));
+
+    expect(abbrechenZiel($this->actingAs($nutzer)->get("/{$customer->slug}/vm/create")))
+        ->toBe(route('vm.index', $customer));
+});
+
+test('Abbrechen führt auch in der Administration in die Liste', function () {
+    $adminRolle = Role::factory()->create(['id' => Role::IS_ADMIN]);
+    $admin = User::factory()->create(['role_id' => $adminRolle->id]);
+
+    // Die Admin-Listen kennen keinen Kunden - der darf nicht als Parameter anhängen.
+    expect(abbrechenZiel($this->actingAs($admin)->get('/admin/user/create')))
+        ->toBe(route('admin.user.index'));
 });

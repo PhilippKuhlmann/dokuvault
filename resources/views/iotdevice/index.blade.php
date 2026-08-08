@@ -19,6 +19,8 @@
                 'Seriennummer' => $iotdevice->serialNumber,
             ]" />
 
+            <x-credentialscard :device="$iotdevice" />
+
             <x-minitablecard :title="__('Netzwerk')" :array="[
                 'IP-Adresse' => $iotdevice->ip,
                 'Port' => $iotdevice->port,
@@ -29,9 +31,6 @@
                 'Benutzer' => $iotdevice->username,
                 'Passwort' => $iotdevice->password
             ]" />
-
-
-            <x-credentialscard :device="$iotdevice" />
 
         </x-slot>
     </x-card>

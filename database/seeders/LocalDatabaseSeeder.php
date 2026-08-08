@@ -258,11 +258,14 @@ class LocalDatabaseSeeder extends Seeder
             'customer_id' => $customer->id,
         ]);
 
-        // Server – Referenzen für die VM-Hosts merken
-        $servers = Server::factory(3)->create([
-            'customer_id' => $customer->id,
-            'site_id' => $site1->id,
-        ]);
+        // Server – Referenzen für die VM-Hosts merken. Feste Namen, sonst kollidieren
+        // sie mit den oben namentlich angelegten SRV-DC01/FS01/HV01.
+        $servers = collect(['SRV-APP01', 'SRV-SQL01', 'SRV-BAK01'])
+            ->map(fn ($name) => Server::factory()->create([
+                'customer_id' => $customer->id,
+                'site_id' => $site1->id,
+                'name' => $name,
+            ]));
 
         // VMs, jeweils einem physischen Host-Server zugeordnet.
         // Namen fest vergeben: die Factory zieht sie zufällig aus einer kurzen
@@ -390,7 +393,10 @@ class LocalDatabaseSeeder extends Seeder
             ]);
         }
 
-        foreach ($servers as $server) {
+        // Alle Server des Kunden, nicht nur die drei aus der Factory: Sonst stehen
+        // die namentlich angelegten SRV-DC01/FS01/HV01 oben in der Liste ohne
+        // Zugangsdaten, und der Abschnitt sieht aus, als fehle er.
+        foreach (Server::where('customer_id', $customer->id)->get() as $server) {
             $server->credentialLinks()->create([
                 'customer_id' => $customer->id,
                 'login_general_id' => $konsolenLogin->id,

@@ -22,6 +22,8 @@
                 'Seriennummer' => $computer->serialNumber,
             ]" />
 
+            <x-credentialscard :device="$computer" />
+
             <x-minitablecard :title="__('Netzwerk')" :array="[
                 'IP-Adresse' => $computer->ip,
             ]" />
@@ -29,9 +31,6 @@
             <x-minitextcard :title="__('Betriebsystem')">
                 {{ $computer->operatingSystem?->name ?? '—' }}
             </x-minitextcard>
-
-
-            <x-credentialscard :device="$computer" />
 
         </x-slot>
     </x-card>

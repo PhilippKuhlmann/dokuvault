@@ -18,6 +18,8 @@
                     'Seriennummer' => $phone->serialNumber,
                 ]" />
 
+                <x-credentialscard :device="$phone" />
+
                 <x-minitablecard :title="__('Netzwerk')" :array="[
                     'IP-Adresse' => $phone->ip,
                     'Port' => $phone->port,
@@ -28,12 +30,6 @@
                     'Benutzer' => $phone->username,
                     'Passwort' => $phone->password,
                 ]" />
-
-
-
-
-
-                <x-credentialscard :device="$phone" />
 
             </x-slot>
         </x-card>

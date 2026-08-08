@@ -18,6 +18,8 @@
                     'Art' => $securepointuma->type,
                 ]" />
 
+                <x-credentialscard :device="$securepointuma" />
+
                 <x-minitablecard :title="__('Login')" :array="[
                     'Benutzername' => $securepointuma->username,
                     'Passwort' => $securepointuma->password,
@@ -29,9 +31,6 @@
                     'Admin URL' => $securepointuma->urlAdmin,
                     'User URL' => $securepointuma->urlUser,
                 ]" />
-
-
-                <x-credentialscard :device="$securepointuma" />
 
             </x-slot>
         </x-card>

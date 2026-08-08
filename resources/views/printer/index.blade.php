@@ -18,6 +18,8 @@
                 'Seriennummer' => $printer->serialNumber,
             ]" />
 
+            <x-credentialscard :device="$printer" />
+
             <x-minitablecard :title="__('Netzwerk')" :array="[
                 'IP-Adresse' => $printer->ip,
                 'Port' => $printer->port,
@@ -27,9 +29,6 @@
                 'Benutzer' => $printer->username,
                 'Passwort' => $printer->password,
             ]" />
-
-
-            <x-credentialscard :device="$printer" />
 
         </x-slot>
     </x-card>

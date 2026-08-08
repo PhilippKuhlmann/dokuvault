@@ -23,6 +23,8 @@
                     'Host' => $vm->host?->name,
                 ]" />
 
+                <x-credentialscard :device="$vm" />
+
                 <x-minitablecard :title="__('Netzwerk')" :array="[
                     'IP-Adresse 1' => $vm->ip1,
                     'IP-Adresse 2' => $vm->ip2,
@@ -33,9 +35,6 @@
                 <x-minitextcard :title="__('Betriebsystem')">
                     {{ $vm->operatingSystem?->name ?? '—' }}
                 </x-minitextcard>
-
-
-                <x-credentialscard :device="$vm" />
 
             </x-slot>
         </x-card>

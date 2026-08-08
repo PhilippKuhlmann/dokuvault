@@ -20,6 +20,8 @@
                     'Seriennummer' => $nas->serialNumber,
                 ]" />
 
+                <x-credentialscard :device="$nas" />
+
                 <x-minitablecard :title="__('Netzwerk')" :array="[
                     'IP-Adresse 1' => $nas->ip1,
                     'IP-Adresse 2' => $nas->ip2,
@@ -30,10 +32,6 @@
                     'Benutzer' => $nas->username,
                     'Passwort' => $nas->password,
                 ]" />
-
-
-
-                <x-credentialscard :device="$nas" />
 
             </x-slot>
         </x-card>
