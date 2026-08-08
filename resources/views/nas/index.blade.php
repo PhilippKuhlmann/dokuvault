@@ -32,6 +32,9 @@
                 ]" />
 
 
+
+                <x-credentialscard :device="$nas" />
+
             </x-slot>
         </x-card>
     @empty

@@ -29,6 +29,9 @@
                     'Passwort' => $otherclient->password
                 ]" />
 
+
+                <x-credentialscard :device="$otherclient" />
+
             </x-slot>
         </x-card>
     @empty

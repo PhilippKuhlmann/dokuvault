@@ -32,6 +32,9 @@
 
 
 
+
+                <x-credentialscard :device="$dect" />
+
             </x-slot>
         </x-card>
     @empty

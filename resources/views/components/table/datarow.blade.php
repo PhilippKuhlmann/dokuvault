@@ -16,6 +16,10 @@
                     <a disabled class="text-gray-500">{{ __('Download') }}</a>
                 </td>
             @endif
+        @elseif ($key == 'credentials')
+            {{-- $value ist hier das Geraet selbst, nicht ein Wert: Die verknuepften
+                 Zugangsdaten holt sich die Komponente daraus. --}}
+            <td scope="row" class="py-2.5 px-4"><x-credentialsinline :device="$value" /></td>
         @elseif ($key == 'password')
         <td scope="row" class="py-2.5 px-4">
             <div class="" x-data="{ show: true, copied: false }">

@@ -27,6 +27,9 @@
                     'Passwort' => $camera->password,
                 ]" />
 
+
+                <x-credentialscard :device="$camera" />
+
             </x-slot>
         </x-card>
     @empty

@@ -22,6 +22,9 @@
             @if ($usv->notes)
                 <x-minitextcard :title="__('Notizen')">{{ $usv->notes }}</x-minitextcard>
             @endif
+
+            <x-credentialscard :device="$usv" />
+
         </x-slot>
     </x-card>
     @empty

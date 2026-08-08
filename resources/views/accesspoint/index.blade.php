@@ -29,6 +29,9 @@
                     'Port' => $accesspoint->port,
                 ]" />
 
+
+                <x-credentialscard :device="$accesspoint" />
+
             </x-slot>
         </x-card>
     @empty

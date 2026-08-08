@@ -31,6 +31,9 @@
                     'Externe URL' => $securepointutm->urlExternal,
                 ]" />
 
+
+                <x-credentialscard :device="$securepointutm" />
+
             </x-slot>
         </x-card>
     @empty

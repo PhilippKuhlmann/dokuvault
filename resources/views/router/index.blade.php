@@ -30,6 +30,9 @@
                     'Port' => $router->port,
                 ]" />
 
+
+                <x-credentialscard :device="$router" />
+
             </x-slot>
         </x-card>
     @empty

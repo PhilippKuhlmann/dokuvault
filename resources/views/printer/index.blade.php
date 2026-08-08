@@ -28,6 +28,9 @@
                 'Passwort' => $printer->password,
             ]" />
 
+
+            <x-credentialscard :device="$printer" />
+
         </x-slot>
     </x-card>
 @empty

@@ -32,6 +32,9 @@
 
 
 
+
+                <x-credentialscard :device="$phone" />
+
             </x-slot>
         </x-card>
     @empty

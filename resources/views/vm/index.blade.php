@@ -34,6 +34,9 @@
                     {{ $vm->operatingSystem?->name ?? '—' }}
                 </x-minitextcard>
 
+
+                <x-credentialscard :device="$vm" />
+
             </x-slot>
         </x-card>
     @empty

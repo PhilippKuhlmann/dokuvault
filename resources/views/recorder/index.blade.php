@@ -29,6 +29,9 @@
                     'Passwort' => $recorder->password,
                 ]" />
 
+
+                <x-credentialscard :device="$recorder" />
+
             </x-slot>
         </x-card>
     @empty

@@ -30,6 +30,9 @@
                 {{ $computer->operatingSystem?->name ?? '—' }}
             </x-minitextcard>
 
+
+            <x-credentialscard :device="$computer" />
+
         </x-slot>
     </x-card>
 @empty

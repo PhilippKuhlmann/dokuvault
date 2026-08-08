@@ -30,6 +30,9 @@
                     'Port' => $networkswitch->port,
                 ]" />
 
+
+                <x-credentialscard :device="$networkswitch" />
+
             </x-slot>
         </x-card>
     @empty

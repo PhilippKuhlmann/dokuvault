@@ -23,8 +23,12 @@ trait HasCredentials
      */
     public function zugangsdaten()
     {
-        return $this->credentialLinks()->with('login')->get()
-            ->filter(fn ($link) => $link->login !== null)
-            ->values();
+        // Vorgeladene Relation benutzen, wenn es sie gibt: In den Listen haengt
+        // sonst je Geraet eine eigene Abfrage dran (siehe Controller::getFilteredQuery).
+        $links = $this->relationLoaded('credentialLinks')
+            ? $this->credentialLinks
+            : $this->credentialLinks()->with('login')->get();
+
+        return $links->filter(fn ($link) => $link->login !== null)->values();
     }
 }

@@ -183,6 +183,74 @@ test('ein Login im Papierkorb verschwindet aus den Zugangsdaten des Geräts', fu
     expect($vm->fresh()->zugangsdaten())->toHaveCount(0);
 });
 
+test('die Geräteliste zeigt die Zugangsdaten ohne Umweg über das Formular', function () {
+    $nutzer = userWithPermissions(['vm_viewAny', 'logingeneral_viewAny']);
+    [$customer, $site, $vm, $login] = zugangsUmgebung();
+    $vm->credentialLinks()->create(['customer_id' => $customer->id, 'login_general_id' => $login->id]);
+
+    $this->actingAs($nutzer)->get("/{$customer->slug}/vm")
+        ->assertSee('Zugangsdaten')
+        ->assertSee('Linux root')
+        ->assertSee('geheim123');
+});
+
+test('in der Geräteliste tritt die Notiz an die Stelle des Namens', function () {
+    $nutzer = userWithPermissions(['vm_viewAny', 'logingeneral_viewAny']);
+    [$customer, $site, $vm, $login] = zugangsUmgebung();
+    $vm->credentialLinks()->create([
+        'customer_id' => $customer->id, 'login_general_id' => $login->id, 'note' => 'Serielle Konsole',
+    ]);
+
+    // Beides nebeneinander waere auf der schmalen Karte eine Dopplung.
+    $this->actingAs($nutzer)->get("/{$customer->slug}/vm")
+        ->assertSee('Serielle Konsole')
+        ->assertDontSee('Linux root');
+});
+
+test('ohne logingeneral_viewAny stehen in der Geräteliste keine Passwörter', function () {
+    $nutzer = userWithPermissions(['vm_viewAny']);
+    [$customer, $site, $vm, $login] = zugangsUmgebung();
+    $vm->credentialLinks()->create(['customer_id' => $customer->id, 'login_general_id' => $login->id]);
+
+    $this->actingAs($nutzer)->get("/{$customer->slug}/vm")
+        ->assertDontSee('geheim123')
+        ->assertDontSee('Linux root');
+});
+
+test('die Zugangsdaten der Liste kosten keine Abfrage je Gerät', function () {
+    $nutzer = userWithPermissions(['vm_viewAny', 'logingeneral_viewAny']);
+    [$customer, $site, $vm, $login] = zugangsUmgebung();
+    $vm->credentialLinks()->create(['customer_id' => $customer->id, 'login_general_id' => $login->id]);
+
+    // Nur die Abfragen auf die Zugangsdaten zählen: Rollen und Rechte holt Laravel
+    // beim ersten Request des Testlaufs und danach aus dem Cache - das würde eine
+    // Gesamtzahl verfälschen.
+    $messen = function () use ($nutzer, $customer) {
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $this->actingAs($nutzer)->get("/{$customer->slug}/vm")->assertOk();
+
+        return collect(DB::getQueryLog())
+            ->filter(fn ($q) => str_contains($q['query'], 'credential_links') || str_contains($q['query'], 'login_generals'))
+            ->count();
+    };
+
+    $eine = $messen();
+    expect($eine)->toBe(2);
+
+    // Vier weitere VMs mit demselben Login: ohne Vorladen in
+    // Controller::getFilteredQuery kaeme je Gerät eine eigene Abfrage dazu.
+    foreach (range(1, 4) as $nr) {
+        $weitere = VM::create([
+            'customer_id' => $customer->id, 'site_id' => $site->id,
+            'name' => 'VM-0'.$nr, 'operating_system_id' => $vm->operating_system_id,
+        ]);
+        $weitere->credentialLinks()->create(['customer_id' => $customer->id, 'login_general_id' => $login->id]);
+    }
+
+    expect($messen())->toBe($eine);
+});
+
 test('die Login-Liste nennt die verknüpften Systeme', function () {
     $nutzer = userWithPermissions(['logingeneral_viewAny']);
     [$customer, $site, $vm, $login] = zugangsUmgebung();

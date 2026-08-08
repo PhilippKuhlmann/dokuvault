@@ -49,6 +49,9 @@
                     {{ $server->operatingSystem?->name ?? '—' }}
                 </x-minitextcard>
 
+
+                <x-credentialscard :device="$server" />
+
             </x-slot>
         </x-card>
     @empty

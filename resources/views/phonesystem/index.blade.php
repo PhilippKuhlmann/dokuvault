@@ -30,6 +30,9 @@
 
 
 
+
+                <x-credentialscard :device="$phoneSystem" />
+
             </x-slot>
         </x-card>
     @empty

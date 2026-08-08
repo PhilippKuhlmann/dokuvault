@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Concerns\HasCredentials;
 use App\Models\Network;
 use App\Models\Site;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -17,6 +18,9 @@ class Controller extends BaseController
     /** Cache je Tabelle, ob sie eine site_id-Spalte hat (spart Schema-Abfragen pro Request). */
     private static array $hasSiteColumn = [];
 
+    /** Cache je Model, ob es Zugangsdaten verknüpfen kann. */
+    private static array $hasCredentials = [];
+
     protected function getFilteredQuery($model, $customer)
     {
         $site = session()->get('site');
@@ -26,10 +30,25 @@ class Controller extends BaseController
         // einem vorherigen Kunden) alle Datensätze des Kunden zurückgeben.
         if ($site && $site !== 'all' && $customer->sites()->whereKey($site)->exists()
             && $this->tableHasSiteColumn($model)) {
-            return $model::where('customer_id', $customer->id)->where('site_id', $site);
+            $query = $model::where('customer_id', $customer->id)->where('site_id', $site);
+        } else {
+            $query = $model::where('customer_id', $customer->id);
         }
 
-        return $model::where('customer_id', $customer->id);
+        return $this->zugangsdatenVorladen($model, $query);
+    }
+
+    /**
+     * Zugangsdaten mitladen, wo das Model sie hat: Die Listen zeigen sie je Gerät,
+     * ohne Vorladen wären das 25 zusätzliche Abfragen pro Seite.
+     */
+    private function zugangsdatenVorladen($model, $query)
+    {
+        $hatZugangsdaten = self::$hasCredentials[$model] ??= in_array(
+            HasCredentials::class, class_uses_recursive($model), true
+        );
+
+        return $hatZugangsdaten ? $query->with('credentialLinks.login') : $query;
     }
 
     /**

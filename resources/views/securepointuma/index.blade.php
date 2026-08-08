@@ -30,6 +30,9 @@
                     'User URL' => $securepointuma->urlUser,
                 ]" />
 
+
+                <x-credentialscard :device="$securepointuma" />
+
             </x-slot>
         </x-card>
     @empty

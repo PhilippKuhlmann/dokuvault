@@ -30,6 +30,9 @@
                 'Passwort' => $iotdevice->password
             ]" />
 
+
+            <x-credentialscard :device="$iotdevice" />
+
         </x-slot>
     </x-card>
 @empty

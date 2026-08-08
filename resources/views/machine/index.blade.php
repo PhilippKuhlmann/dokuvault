@@ -4,7 +4,7 @@
 
     <div class="m-3">
         <x-table.main>
-            <x-table.head :labels="['Name', 'IP', '', ]" />
+            <x-table.head :labels="['Name', 'IP', 'Zugangsdaten', '', ]" />
 
             <x-table.body>
 
@@ -14,6 +14,7 @@
                         :values="[
                             $machine->name,
                             $machine->ip,
+                            'credentials' => $machine,
                         ]"
 
                         editUrl="{{ route('machine.edit', [$customer, $machine]) }}"
