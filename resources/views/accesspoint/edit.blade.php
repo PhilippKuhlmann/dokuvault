@@ -20,6 +20,9 @@
 
     <livewire:device-ip-addresses :model="$accesspoint" :customer="$customer" />
 
+
+    <livewire:device-credentials :model="$accesspoint" :customer="$customer" />
+
     @can('accesspoint_delete')
         <x-deletecard action="{{ route('accesspoint.destroy', [$customer, $accesspoint]) }}" />
     @endcan

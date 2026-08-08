@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Concerns\IstEinbaubar;
 use App\Models\Concerns\TracksChanges;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Crypt;
 
 class Recorder extends Model
 {
+    use HasCredentials;
     use HasFactory, SoftDeletes;
     use HasIpAddresses;
     use IstEinbaubar;
@@ -26,11 +28,6 @@ class Recorder extends Model
             get: fn ($value) => ! empty($value) ? Crypt::decryptString($value) : null,
             set: fn ($value) => Crypt::encryptString($value),
         );
-    }
-
-    public function loginrecorders()
-    {
-        return $this->hasMany(LoginRecorder::class);
     }
 
     public function customer()

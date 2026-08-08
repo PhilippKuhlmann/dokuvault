@@ -35,8 +35,6 @@ use App\Models\LicenseAccess;
 use App\Models\LicenseSoftware;
 use App\Models\LicenseWindows;
 use App\Models\LoginGeneral;
-use App\Models\LoginNAS;
-use App\Models\LoginRecorder;
 use App\Models\LoginWebsite;
 use App\Models\Machine;
 use App\Models\Mailbox;
@@ -106,9 +104,7 @@ return [
         'Phone',
         'DECT',
         'LoginGeneral',
-        'LoginNAS',
         'LoginWebsite',
-        'LoginRecorder',
         'SecurepointUMA',
         'Mailbox',
         'Recorder',
@@ -159,9 +155,7 @@ return [
         'phone' => [Phone::class, 'Telefon'],
         'dect' => [DECT::class, 'DECT'],
         'logingeneral' => [LoginGeneral::class, 'Login Allgemein'],
-        'loginnas' => [LoginNAS::class, 'Login NAS'],
         'loginwebsite' => [LoginWebsite::class, 'Login Webseite'],
-        'loginrecorder' => [LoginRecorder::class, 'Login Recorder'],
         'mailbox' => [Mailbox::class, 'Postfach'],
         'recorder' => [Recorder::class, 'Recorder'],
         'camera' => [Camera::class, 'Kamera'],
@@ -198,9 +192,7 @@ return [
         'phonesystem' => 'TK-Anlagen',
         'phone' => 'Telefone',
         'logingeneral' => 'Logins Allgemein',
-        'loginnas' => 'Logins NAS',
         'loginwebsite' => 'Logins Webseiten',
-        'loginrecorder' => 'Logins Recorder',
         'mailbox' => 'E-Mail-Postfächer',
         'recorder' => 'Recorder',
         'camera' => 'Kameras',

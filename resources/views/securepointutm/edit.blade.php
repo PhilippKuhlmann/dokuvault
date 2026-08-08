@@ -28,6 +28,9 @@
 
     <livewire:device-ip-addresses :model="$securepointutm" :customer="$customer" />
 
+
+    <livewire:device-credentials :model="$securepointutm" :customer="$customer" />
+
     @can('securepointutm_delete')
         <x-deletecard action="{{ route('securepointutm.destroy', [$customer, $securepointutm]) }}" />
     @endcan

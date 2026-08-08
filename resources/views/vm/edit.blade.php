@@ -28,6 +28,9 @@
 
     <livewire:device-ip-addresses :model="$vm" :customer="$customer" />
 
+
+    <livewire:device-credentials :model="$vm" :customer="$customer" />
+
     @can('vm_delete')
         <x-deletecard action="{{ route('vm.destroy', [$customer, $vm]) }}" />
     @endcan

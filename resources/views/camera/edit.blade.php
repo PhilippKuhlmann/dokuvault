@@ -18,6 +18,9 @@
 
     <livewire:device-ip-addresses :model="$camera" :customer="$customer" />
 
+
+    <livewire:device-credentials :model="$camera" :customer="$customer" />
+
     @can('camera_delete')
         <x-deletecard action="{{ route('camera.destroy', [$customer, $camera]) }}" />
     @endcan

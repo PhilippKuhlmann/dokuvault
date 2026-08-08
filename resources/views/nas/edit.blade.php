@@ -20,6 +20,9 @@
 
     <livewire:device-ip-addresses :model="$nas" :customer="$customer" />
 
+
+    <livewire:device-credentials :model="$nas" :customer="$customer" />
+
     @can('nas_delete')
         <x-deletecard action="{{ route('nas.destroy', [$customer, $nas]) }}" />
     @endcan

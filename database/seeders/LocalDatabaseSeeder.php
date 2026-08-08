@@ -22,8 +22,6 @@ use App\Models\LicenseAccess;
 use App\Models\LicenseSoftware;
 use App\Models\LicenseWindows;
 use App\Models\LoginGeneral;
-use App\Models\LoginNAS;
-use App\Models\LoginRecorder;
 use App\Models\LoginWebsite;
 use App\Models\Machine;
 use App\Models\Mailbox;
@@ -266,19 +264,24 @@ class LocalDatabaseSeeder extends Seeder
             'site_id' => $site1->id,
         ]);
 
-        // VMs, jeweils einem physischen Host-Server zugeordnet
-        VM::factory(6)->create([
-            'customer_id' => $customer->id,
-            'site_id' => $site1->id,
-        ])->each(function ($vm) use ($servers) {
-            $vm->update(['server_id' => $servers->random()->id]);
-        });
+        // VMs, jeweils einem physischen Host-Server zugeordnet.
+        // Namen fest vergeben: die Factory zieht sie zufällig aus einer kurzen
+        // Liste, sodass im Demo-Datensatz dieselbe VM mehrfach auftauchte.
+        $vms = collect(['VM-DC02', 'VM-Exchange', 'VM-RDS01', 'VM-App-ERP', 'VM-SQL02', 'VM-Webserver'])
+            ->map(fn ($name) => VM::factory()->create([
+                'customer_id' => $customer->id,
+                'site_id' => $site1->id,
+                'name' => $name,
+                'server_id' => $servers->random()->id,
+            ]));
 
-        // NAS – für die NAS-Logins gemerkt
-        $nasList = NAS::factory(2)->create([
+        // NAS und Recorder mit festen Namen: die Factory zieht sie zufaellig aus
+        // einer kurzen Liste, sonst stehen zwei gleichnamige Geraete in der Doku.
+        $nasList = collect(['NAS-Archiv', 'NAS-Fileserver'])->map(fn ($name) => NAS::factory()->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
-        ]);
+            'name' => $name,
+        ]));
 
         NetworkSwitch::factory(4)->create([
             'customer_id' => $customer->id,
@@ -339,11 +342,11 @@ class LocalDatabaseSeeder extends Seeder
             'site_id' => $site1->id,
         ]);
 
-        // Recorder – für die Recorder-Logins gemerkt
-        $recorders = Recorder::factory(2)->create([
+        $recorders = collect(['NVR-Zentrale', 'NVR-Werkstatt'])->map(fn ($name) => Recorder::factory()->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
-        ]);
+            'name' => $name,
+        ]));
 
         Camera::factory(12)->create([
             'customer_id' => $customer->id,
@@ -354,26 +357,86 @@ class LocalDatabaseSeeder extends Seeder
             'customer_id' => $customer->id,
         ]);
 
-        // Logins
-        LoginGeneral::factory(6)->create([
+        // Logins - feste Namen, weil die Factory sie zufällig aus einer kurzen
+        // Liste zieht und sonst dreimal "DATEV" in der Auswahl steht.
+        foreach (['DATEV', 'Lexware', 'TeamViewer', 'Microsoft 365 Admin', 'Warenwirtschaft', 'Zeiterfassung'] as $name) {
+            LoginGeneral::factory()->create([
+                'customer_id' => $customer->id,
+                'name' => $name,
+            ]);
+        }
+
+        // Ein Passwort, viele Systeme - der Fall, für den es die Verknüpfung gibt.
+        $rootLogin = LoginGeneral::create([
             'customer_id' => $customer->id,
+            'name' => 'Linux root',
+            'description' => 'Einheitliches root-Passwort der Linux-VMs',
+            'username' => 'root',
+            'password' => 'R00t!Demo2026',
+        ]);
+
+        $konsolenLogin = LoginGeneral::create([
+            'customer_id' => $customer->id,
+            'name' => 'Hypervisor-Konsole',
+            'description' => 'Lokale Anmeldung an den Host-Servern',
+            'username' => 'administrator',
+            'password' => 'Hyp3r!Demo2026',
+        ]);
+
+        foreach ($vms as $vm) {
+            $vm->credentialLinks()->create([
+                'customer_id' => $customer->id,
+                'login_general_id' => $rootLogin->id,
+            ]);
+        }
+
+        foreach ($servers as $server) {
+            $server->credentialLinks()->create([
+                'customer_id' => $customer->id,
+                'login_general_id' => $konsolenLogin->id,
+            ]);
+        }
+
+        // Der einzige Fall im Datensatz, in dem die Notiz etwas beiträgt: dasselbe
+        // root-Passwort, an der Firewall aber über die serielle Konsole statt SSH.
+        // Überall sonst bleibt sie leer - sie soll den Namen nicht wiederholen.
+        $utm = SecurepointUTM::where('customer_id', $customer->id)->first();
+        $utm?->credentialLinks()->create([
+            'customer_id' => $customer->id,
+            'login_general_id' => $rootLogin->id,
+            'note' => 'Serielle Konsole',
         ]);
 
         LoginWebsite::factory(6)->create([
             'customer_id' => $customer->id,
         ]);
 
+        // Geräte-Logins gibt es nicht mehr als eigene Typen - sie sind ein
+        // Login-Eintrag plus Verknüpfung, so wie die Migration den Bestand umzieht.
         foreach ($nasList as $nas) {
-            LoginNAS::factory(2)->create([
+            $login = LoginGeneral::create([
                 'customer_id' => $customer->id,
-                'nas_id' => $nas->id,
+                'name' => $nas->name.' (admin)',
+                'description' => 'Weboberfläche',
+                'username' => 'admin',
+                'password' => fake()->password(10, 14),
+            ]);
+            $nas->credentialLinks()->create([
+                'customer_id' => $customer->id,
+                'login_general_id' => $login->id,
             ]);
         }
 
         foreach ($recorders as $recorder) {
-            LoginRecorder::factory(1)->create([
+            $login = LoginGeneral::create([
                 'customer_id' => $customer->id,
-                'recorder_id' => $recorder->id,
+                'name' => $recorder->name.' (admin)',
+                'username' => 'admin',
+                'password' => fake()->password(10, 14),
+            ]);
+            $recorder->credentialLinks()->create([
+                'customer_id' => $customer->id,
+                'login_general_id' => $login->id,
             ]);
         }
 

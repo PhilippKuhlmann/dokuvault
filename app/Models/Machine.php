@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Machine extends Model
 {
+    use HasCredentials;
     use HasFactory, SoftDeletes;
     use HasIpAddresses;
     use TracksChanges;

@@ -299,6 +299,7 @@
     {{-- Logins --}}
     <x-pdf.section :title="__('Logins – Allgemein')" :items="$customer->logingenerals" :groups="[
         'Login' => ['Beschreibung' => 'description', 'Benutzer' => 'username', 'Passwort' => 'password'],
+        'Verwendung' => ['Verwendet bei' => fn ($l) => $l->verwendetBei() ?: '—'],
     ]" />
 
     <x-pdf.section :title="__('Logins – Webseiten')" :items="$customer->loginwebsites" :groups="[

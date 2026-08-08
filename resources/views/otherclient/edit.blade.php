@@ -20,6 +20,9 @@
 
     <livewire:device-ip-addresses :model="$otherclient" :customer="$customer" />
 
+
+    <livewire:device-credentials :model="$otherclient" :customer="$customer" />
+
     @can('otherclient_delete')
         <x-deletecard action="{{ route('otherclient.destroy', [$customer, $otherclient]) }}" />
     @endcan

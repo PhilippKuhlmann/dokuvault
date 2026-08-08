@@ -16,6 +16,9 @@
 
     <livewire:device-ip-addresses :model="$phonesystem" :customer="$customer" />
 
+
+    <livewire:device-credentials :model="$phonesystem" :customer="$customer" />
+
     @can('phonesystem_delete')
         <x-deletecard action="{{ route('phonesystem.destroy', [$customer, $phonesystem]) }}" />
     @endcan

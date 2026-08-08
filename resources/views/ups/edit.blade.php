@@ -11,6 +11,9 @@
     </x-create.main>
 
     <livewire:device-ip-addresses :model="$ups" :customer="$customer" />
+
+
+    <livewire:device-credentials :model="$ups" :customer="$customer" />
     @can('ups_delete')
         <x-deletecard action="{{ route('ups.destroy', [$customer, $ups]) }}" />
     @endcan

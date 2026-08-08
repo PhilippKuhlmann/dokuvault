@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Crypt;
 
 class PhoneSystem extends Model
 {
+    use HasCredentials;
     use HasFactory, SoftDeletes;
     use HasIpAddresses;
     use TracksChanges;

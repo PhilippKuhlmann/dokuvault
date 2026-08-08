@@ -18,6 +18,9 @@
 
     <livewire:device-ip-addresses :model="$printer" :customer="$customer" />
 
+
+    <livewire:device-credentials :model="$printer" :customer="$customer" />
+
     @can('printer_delete')
         <x-deletecard action="{{ route('printer.destroy', [$customer, $printer]) }}" />
     @endcan

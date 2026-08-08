@@ -129,16 +129,6 @@ class Customer extends Model
         return $this->hasMany(LoginWebsite::class);
     }
 
-    public function loginnas()
-    {
-        return $this->hasMany(LoginNAS::class);
-    }
-
-    public function loginrecorders()
-    {
-        return $this->hasMany(LoginRecorder::class);
-    }
-
     public function phonesystems()
     {
         return $this->hasMany(PhoneSystem::class);

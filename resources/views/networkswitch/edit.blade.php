@@ -20,6 +20,9 @@
 
     <livewire:device-ip-addresses :model="$networkswitch" :customer="$customer" />
 
+
+    <livewire:device-credentials :model="$networkswitch" :customer="$customer" />
+
     @can('networkswitch_delete')
         <x-deletecard action="{{ route('networkswitch.destroy', [$customer, $networkswitch]) }}" />
     @endcan

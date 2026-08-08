@@ -24,6 +24,9 @@
 
     <livewire:device-ip-addresses :model="$securepointuma" :customer="$customer" />
 
+
+    <livewire:device-credentials :model="$securepointuma" :customer="$customer" />
+
     @can('securepointuma_delete')
         <x-deletecard action="{{ route('securepointuma.destroy', [$customer, $securepointuma]) }}" />
     @endcan

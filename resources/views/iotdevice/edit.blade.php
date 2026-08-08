@@ -20,6 +20,9 @@
 
     <livewire:device-ip-addresses :model="$iotdevice" :customer="$customer" />
 
+
+    <livewire:device-credentials :model="$iotdevice" :customer="$customer" />
+
     @can('iotdevice_delete')
         <x-deletecard action="{{ route('iotdevice.destroy', [$customer, $iotdevice]) }}" />
     @endcan

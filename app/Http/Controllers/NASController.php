@@ -58,12 +58,8 @@ class NASController extends Controller
     {
         $this->authorize('delete', NAS::class);
 
-        $logins = $nas->loginnas()->get();
-
-        foreach ($logins as $login) {
-            $login->delete();
-        }
-
+        // Verknüpfte Zugangsdaten bleiben stehen: Das Login kann an weiteren
+        // Systemen hängen, und beim Wiederherstellen ist die Verknüpfung zurück.
         $nas->delete();
 
         return redirect(route('nas.index', $customer));

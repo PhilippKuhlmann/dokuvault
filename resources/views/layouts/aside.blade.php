@@ -136,7 +136,7 @@
                 </x-aside.dropdown>
             @endcanany
 
-            @canany(['logingeneral_viewAny', 'loginwebsite_viewAny', 'loginnas_viewAny', 'loginrecorder_viewAny'])
+            @canany(['logingeneral_viewAny', 'loginwebsite_viewAny'])
                 <x-aside.dropdown :label="__('Logins')" svg="svg.login">
                     <x-slot:links>
                         @can('logingeneral_viewAny')
@@ -144,12 +144,6 @@
                         @endcan
                         @can('loginwebsite_viewAny')
                             <x-aside.dropdownlink :label="__('Webseiten')" href="{{ route('loginwebsite.index', $customer) }}" />
-                        @endcan
-                        @can('loginnas_viewAny')
-                            <x-aside.dropdownlink :label="__('NAS')" href="{{ route('loginnas.index', $customer) }}" />
-                        @endcan
-                        @can('loginrecorder_viewAny')
-                            <x-aside.dropdownlink :label="__('Recorder')" href="{{ route('loginrecorder.index', $customer) }}" />
                         @endcan
                     </x-slot:links>
                 </x-aside.dropdown>

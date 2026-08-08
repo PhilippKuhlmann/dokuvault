@@ -18,6 +18,9 @@
 
     <livewire:device-ip-addresses :model="$recorder" :customer="$customer" />
 
+
+    <livewire:device-credentials :model="$recorder" :customer="$customer" />
+
     @can('recorder_delete')
         <x-deletecard action="{{ route('recorder.destroy', [$customer, $recorder]) }}" />
     @endcan

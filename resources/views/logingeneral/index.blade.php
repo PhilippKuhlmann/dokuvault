@@ -4,11 +4,12 @@
 
     <div class="m-3">
         <x-table.main>
-            <x-table.head :labels="['Name', 'Benutzername', 'Passwort', 'Beschreibung', '', ]" />
+            <x-table.head :labels="['Name', 'Benutzername', 'Passwort', 'Beschreibung', 'Verwendet bei', '', ]" />
 
             <x-table.body>
 
-                @forelse ($customer->logingenerals as $logingeneral)
+                {{-- links.credentialable vorladen: sonst je Zeile eine Abfrage pro Verknuepfung --}}
+                @forelse ($customer->logingenerals()->with('links.credentialable')->get() as $logingeneral)
 
                     <x-table.datarow
                         :values="[
@@ -16,6 +17,7 @@
                             $logingeneral->username,
                             'password' => $logingeneral->password,
                             $logingeneral->description,
+                            $logingeneral->verwendetBei() ?: '—',
 
                         ]"
 

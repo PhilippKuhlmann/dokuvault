@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Concerns\IstEinbaubar;
 use App\Models\Concerns\TracksChanges;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Crypt;
 
 class NAS extends Model
 {
+    use HasCredentials;
     use HasFactory, SoftDeletes;
     use HasIpAddresses;
     use IstEinbaubar;
@@ -28,11 +30,6 @@ class NAS extends Model
             get: fn ($value) => ! empty($value) ? Crypt::decryptString($value) : null,
             set: fn ($value) => Crypt::encryptString($value),
         );
-    }
-
-    public function loginnas()
-    {
-        return $this->hasMany(LoginNAS::class, 'nas_id');
     }
 
     public function customer()

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Concerns\IstEinbaubar;
 use App\Models\Concerns\TracksChanges;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Crypt;
 
 class SecurepointUMA extends Model
 {
+    use HasCredentials;
     use HasFactory, SoftDeletes;
     use HasIpAddresses;
     use IstEinbaubar;

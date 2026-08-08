@@ -27,8 +27,6 @@ use App\Http\Controllers\LicenseSoftwareController;
 use App\Http\Controllers\LicenseWindowsController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\LoginGeneralController;
-use App\Http\Controllers\LoginNASController;
-use App\Http\Controllers\LoginRecorderController;
 use App\Http\Controllers\LoginWebsiteController;
 use App\Http\Controllers\MachineController;
 use App\Http\Controllers\MailboxController;
@@ -191,8 +189,6 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::resource('adgroup', ADGroupController::class)->except(['show']);
             Route::resource('loginwebsite', LoginWebsiteController::class)->except(['show']);
             Route::resource('logingeneral', LoginGeneralController::class)->except(['show']);
-            Route::resource('loginrecorder', LoginRecorderController::class)->except(['show']);
-            Route::resource('loginnas', LoginNASController::class, ['parameters' => ['loginnas' => 'loginnas']])->except(['show']);
             Route::resource('phonesystem', PhoneSystemController::class)->except(['show']);
             Route::resource('phone', PhoneController::class)->except(['show']);
             Route::resource('dect', DECTController::class)->except(['show']);
