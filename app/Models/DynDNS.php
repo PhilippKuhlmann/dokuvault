@@ -16,7 +16,7 @@ class DynDNS extends Model
 
     protected $table = 'dyndns';
 
-    protected $guarded = [];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     protected function password(): Attribute
     {

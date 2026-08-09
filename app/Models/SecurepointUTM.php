@@ -20,7 +20,7 @@ class SecurepointUTM extends Model
 
     protected $table = 'securepoint_utms';
 
-    protected $guarded = [];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     protected function password(): Attribute
     {

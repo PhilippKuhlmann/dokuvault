@@ -16,7 +16,7 @@ class ADDomain extends Model
 
     protected $table = 'ad_domains';
 
-    protected $guarded = [];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     protected function password(): Attribute
     {

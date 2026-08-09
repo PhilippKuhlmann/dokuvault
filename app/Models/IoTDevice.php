@@ -20,7 +20,7 @@ class IoTDevice extends Model
 
     protected $table = 'iot_devices';
 
-    protected $guarded = [];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     protected function password(): Attribute
     {

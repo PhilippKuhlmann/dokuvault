@@ -50,7 +50,7 @@ class AccesspointController extends Controller
 
     public function update(Customer $customer, Site $site, Room $room, AccesspointRequest $request, Accesspoint $accesspoint)
     {
-        $accesspoint->update($request->all());
+        $accesspoint->update($request->validated());
 
         return response()->json($accesspoint, 200);
     }

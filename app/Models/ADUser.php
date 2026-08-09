@@ -16,7 +16,7 @@ class ADUser extends Model
 
     protected $table = 'ad_users';
 
-    protected $guarded = [];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     protected $casts = [
         'enabled' => 'boolean',

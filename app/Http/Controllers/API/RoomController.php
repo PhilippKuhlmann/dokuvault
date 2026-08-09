@@ -24,7 +24,7 @@ class RoomController extends Controller
 
     public function store(Customer $customer, Site $site, RoomRequest $request)
     {
-        $room = $site->rooms()->create($request->all());
+        $room = $site->rooms()->create($request->validated());
 
         return response()->json($room, 201);
     }

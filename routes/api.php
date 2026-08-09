@@ -33,10 +33,13 @@ Route::middleware('agent')->prefix('agent')->group(function () {
 Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/customers', [CustomerController::class, 'index']);
-    Route::get('/{customer}', [CustomerController::class, 'show']);
+    // isCustomer: verhindert, dass ein auf einen Kunden beschraenkter Token
+    // (customer_id gesetzt) Daten eines anderen Kunden ueber die Route
+    // abruft. Admin-/Techniker-Token (kein customer_id) bleiben unbeschraenkt.
+    Route::get('/{customer}', [CustomerController::class, 'show'])->middleware('isCustomer');
     Route::post('/customers', [CustomerController::class, 'store']);
 
-    Route::prefix('{customer}')->group(function () {
+    Route::prefix('{customer}')->middleware('isCustomer')->group(function () {
 
         Route::get('/sites', [SiteController::class, 'index']);
         Route::post('/sites', [SiteController::class, 'store']);

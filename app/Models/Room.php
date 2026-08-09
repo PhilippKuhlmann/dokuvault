@@ -11,7 +11,7 @@ class Room extends Model
     use HasFactory;
     use TracksChanges;
 
-    protected $guarded = [];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     public function accesspoints()
     {

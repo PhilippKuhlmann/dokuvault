@@ -22,7 +22,7 @@ class SecurepointUMA extends Model
 
     protected $table = 'securepoint_umas';
 
-    protected $guarded = [];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     protected function password(): Attribute
     {

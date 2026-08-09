@@ -20,7 +20,7 @@ class Ups extends Model
 
     protected $table = 'ups';
 
-    protected $guarded = [];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     public function customer()
     {

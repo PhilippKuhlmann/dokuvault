@@ -22,7 +22,7 @@ class NAS extends Model
 
     protected $table = 'nas';
 
-    protected $guarded = [];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     protected function password(): Attribute
     {

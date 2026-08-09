@@ -23,7 +23,7 @@ class SiteController extends Controller
 
     public function store(Customer $customer, SiteRequest $request)
     {
-        $site = $customer->sites()->create($request->all());
+        $site = $customer->sites()->create($request->validated());
 
         return response()->json($site, 201);
     }

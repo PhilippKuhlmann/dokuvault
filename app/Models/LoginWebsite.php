@@ -14,7 +14,7 @@ class LoginWebsite extends Model
     use HasFactory, SoftDeletes;
     use TracksChanges;
 
-    protected $guarded = [];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     protected function password(): Attribute
     {

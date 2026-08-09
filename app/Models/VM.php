@@ -20,7 +20,7 @@ class VM extends Model
 
     protected $table = 'vms';
 
-    protected $guarded = [];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     protected function services(): Attribute
     {

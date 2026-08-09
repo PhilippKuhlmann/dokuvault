@@ -19,7 +19,7 @@ class PatchPanel extends Model
     use IstEinbaubar;
     use TracksChanges;
 
-    protected $guarded = [];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     public function customer()
     {

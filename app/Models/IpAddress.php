@@ -14,7 +14,7 @@ class IpAddress extends Model
 
     protected $table = 'ip_addresses';
 
-    protected $guarded = [];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     public function ipable()
     {

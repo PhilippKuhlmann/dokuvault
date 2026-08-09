@@ -14,7 +14,7 @@ class DocumentationRun extends Model
 {
     use HasFactory;
 
-    protected $guarded = [];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     protected $casts = [
         'completed_steps' => 'array',

@@ -14,14 +14,26 @@ class CustomerController extends Controller
 
         $name = $request->query('name');
 
-        $data = Customer::where('name', 'like', '%'.$name.'%')->get();
+        $query = Customer::where('name', 'like', '%'.$name.'%');
 
-        return response()->json($data);
+        // Ein auf einen Kunden beschraenkter Token (customer_id gesetzt) darf
+        // hierueber nicht alle Kunden auflisten koennen - nur den eigenen.
+        if (auth()->user()->hasCustomer()) {
+            $query->where('id', auth()->user()->customer_id);
+        }
+
+        return response()->json($query->get());
     }
 
     public function store(CustomerRequest $request)
     {
-        $customer = Customer::create($request->all());
+        // Kunden anzulegen ist Admin-/Techniker-Aufgabe; ein auf einen Kunden
+        // beschraenkter Token darf das nicht.
+        if (auth()->user()->hasCustomer()) {
+            abort(403);
+        }
+
+        $customer = Customer::create($request->validated());
 
         return response()->json($customer, 201);
     }

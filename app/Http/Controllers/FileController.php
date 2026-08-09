@@ -26,20 +26,24 @@ class FileController extends Controller
     {
         $this->authorize('create', File::class);
 
-        $filePath = '';
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $fileName = time().'_'.$request->name.'.'.$file->getClientOriginalExtension();
-            $filePath = $request->file('file')->storeAs($customer->slug.'/files', $fileName, 'local');
+        // Validierung: 'file' ist Pflicht, 'name' wird begrenzt und beim
+        // Aufbau des Dateipfads zusaetzlich auf unbedenkliche Zeichen
+        // reduziert (kein Path-Traversal ueber den Anzeigenamen moeglich).
+        $validated = $request->validate([
+            'file' => ['required', 'file', 'max:20480'],
+            'name' => ['required', 'string', 'max:255'],
+        ]);
 
-            $customer->files()->create([
-                'file_path' => $filePath,
-                'name' => $request->name,
-                'extension' => $request->file->getClientOriginalExtension(),
-            ]);
-        } else {
-            return redirect('/'.$customer->slug.'/file')->withErrors('Fehler');
-        }
+        $file = $request->file('file');
+        $safeName = preg_replace('/[^A-Za-z0-9_-]+/', '_', $validated['name']);
+        $fileName = time().'_'.$safeName.'.'.$file->getClientOriginalExtension();
+        $filePath = $file->storeAs($customer->slug.'/files', $fileName, 'local');
+
+        $customer->files()->create([
+            'file_path' => $filePath,
+            'name' => $validated['name'],
+            'extension' => $file->getClientOriginalExtension(),
+        ]);
 
         return redirect('/'.$customer->slug.'/file');
     }

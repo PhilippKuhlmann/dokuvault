@@ -18,7 +18,7 @@ class Computer extends Model
     use HasIpAddresses;
     use TracksChanges;
 
-    protected $guarded = [];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     public function operatingSystem()
     {

@@ -16,7 +16,7 @@ class FTPServer extends Model
 
     protected $table = 'ftp_servers';
 
-    protected $guarded = [];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     protected function password(): Attribute
     {

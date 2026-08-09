@@ -20,7 +20,7 @@ class DECT extends Model
 
     protected $table = 'dect';
 
-    protected $guarded = [];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     protected function password(): Attribute
     {
