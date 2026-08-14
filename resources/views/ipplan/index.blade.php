@@ -66,11 +66,11 @@
                                     <td class="py-1.5 px-5">
                                         @if ($row['kind'] === 'device')
                                             @if ($row['isGateway'] ?? false)
-                                                <span class="inline-flex items-center rounded-full bg-cerulean-50 px-1.5 py-0.5 text-[10px] font-DINPro-bold text-cerulean-700 dark:bg-cerulean-900/30 dark:text-cerulean-300 mr-1.5 align-middle">{{ __('Gateway') }}</span>
+                                                <span class="inline-flex items-center rounded bg-cerulean-50 px-1.5 py-0.5 text-[10px] font-DINPro-bold text-cerulean-700 dark:bg-cerulean-900/30 dark:text-cerulean-300 mr-1.5 align-middle">{{ __('Gateway') }}</span>
                                             @endif
                                             <span class="text-gray-900 dark:text-gray-100 align-middle">{{ $row['label'] }}</span>
                                         @elseif ($row['kind'] === 'dhcp')
-                                            <span class="inline-flex items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-DINPro-bold text-slate-600 dark:bg-slate-700/40 dark:text-slate-300">{{ $row['label'] }}</span>
+                                            <span class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-DINPro-bold text-slate-600 dark:bg-slate-700/40 dark:text-slate-300">{{ $row['label'] }}</span>
                                         @else
                                             <span class="text-gray-400 dark:text-gray-500 italic">{{ $row['label'] }}</span>
                                         @endif

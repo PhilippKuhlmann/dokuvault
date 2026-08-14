@@ -11,6 +11,22 @@ module.exports = {
 
     theme: {
         extend: {
+            // Kantiger statt rund: Die Radien sind zentral heruntergesetzt, damit
+            // nicht 200 Klassen in den Views angefasst werden muessen. Die
+            // Klassennamen (rounded-lg, rounded-xl ...) bleiben, nur ihre Werte
+            // aendern sich. 'full' bleibt bewusst rund - das braucht der Avatar.
+            borderRadius: {
+                none: '0px',
+                sm: '1px',
+                DEFAULT: '2px',
+                md: '2px',
+                lg: '3px',
+                xl: '4px',
+                '2xl': '5px',
+                '3xl': '6px',
+                full: '9999px',
+            },
+
             fontFamily: {
                 CoconPro: ['SpaceGrotesk-Semibold', 'sans-serif'],
                 DINPro: ['SpaceGrotesk-Regular', 'sans-serif'],

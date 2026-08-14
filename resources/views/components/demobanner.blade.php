@@ -14,7 +14,7 @@
                dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
         <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center">
 
-            <span class="rounded-full bg-amber-400 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-950
+            <span class="rounded bg-amber-400 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-950
                          dark:bg-amber-400 dark:text-amber-950">{{ __('Demo') }}</span>
 
             <span>{{ __('Alles darf ausprobiert werden – die Daten werden stündlich zurückgesetzt.') }}</span>

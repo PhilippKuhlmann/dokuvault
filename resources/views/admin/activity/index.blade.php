@@ -35,7 +35,7 @@
                             <td class="py-2.5 px-4 whitespace-nowrap">{{ $activity->created_at->format('d.m.Y H:i') }}</td>
                             <td class="py-2.5 px-4 text-gray-900 dark:text-gray-100">{{ $activity->causer?->name ?? 'System' }}</td>
                             <td class="py-2.5 px-4">
-                                <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ $badge }}">{{ $label }}</span>
+                                <span class="px-2 py-0.5 rounded text-xs font-medium {{ $badge }}">{{ $label }}</span>
                             </td>
                             <td class="py-2.5 px-4 text-gray-900 dark:text-gray-100">
                                 {{ class_basename($activity->subject_type) }} <span class="text-gray-400">{{ is_scalar($objectName) ? $objectName : '' }}</span>

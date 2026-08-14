@@ -3,7 +3,7 @@
     <x-sitetopmenu can="rack_create" />
 
     @forelse ($racks as $rack)
-        <x-card>
+        <x-card plain>
             <x-slot:head>
                 <x-show.header can="rack_update" editUrl="{{ route('rack.edit', [$customer, $rack]) }}">
                     {{ $rack->name }}
