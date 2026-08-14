@@ -4,6 +4,10 @@
 
 ### Added
 
+- **Serverliste umgestellt („Entwurf 2")**: Die Kopfzeile trägt jetzt die Angaben, die man fast immer sucht — primäre IP mit Kopierknopf und Einbauort. Das Betriebssystem steht klein hinter dem Servernamen und entfällt dafür als eigener Block. Der Rustdesk-Knopf bleibt unverändert der erste Knopf der Zeile.
+- **Alle IP-Adressen in der Liste**: Die weiteren Adressen eines Geräts standen bisher ausschließlich im Bearbeiten-Formular. Jetzt zeigt die Karte primäre, sekundäre und alle zusätzlichen Adressen samt VLAN bzw. Bezeichnung.
+- **Zähler für Mehrfach-Angaben**: `10.10.30.10 +1` in der Kopfzeile — man sieht vor dem Lesen, dass mehr hinterlegt ist. Gilt für IP-Adressen und Zugangsdaten.
+- **Fernwartung als Datenblock**: Rustdesk-ID und -Passwort zum Ablesen, wenn der Knopf nicht greift (anderer Rechner, kein Client).
 - **Zugangsdaten stehen direkt in der Geräteliste**: Benutzername und Passwort (maskiert, mit Auge und Kopierknopf) je verknüpftem Login – kein Umweg mehr über das Bearbeiten-Formular. In allen 19 Gerätelisten; bei den Maschinen als eigene Tabellenspalte, weil die Liste kein Kartenlayout hat. Sichtbar nur mit `logingeneral_viewAny`.
 - Beschriftung ist die Notiz, falls gepflegt („Serielle Konsole"), sonst der Name des Logins – nebeneinander wäre es auf der schmalen Karte eine Dopplung.
 

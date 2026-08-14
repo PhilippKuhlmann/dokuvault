@@ -49,6 +49,7 @@ use App\Http\Controllers\RouterController;
 use App\Http\Controllers\SecurepointUMAController;
 use App\Http\Controllers\SecurepointUTMController;
 use App\Http\Controllers\ServerController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\TrashController;
 use App\Http\Controllers\UpsController;
@@ -119,6 +120,14 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
         Route::get('/operatingsystem/create', [OperatingSystemController::class, 'create'])->name('admin.operatingsystem.create');
         Route::get('/operatingsystem/{operatingSystem}/edit', [OperatingSystemController::class, 'edit'])->name('admin.operatingsystem.edit');
         Route::patch('/operatingsystem/{operatingSystem}', [OperatingSystemController::class, 'update'])->name('admin.operatingsystem.update');
+
+        // Dienste-Katalog (Name und Farbe der Kacheln in den Geraetelisten)
+        Route::get('/service', [ServiceController::class, 'index'])->name('admin.service.index');
+        Route::post('/service/create', [ServiceController::class, 'store'])->name('admin.service.store');
+        Route::get('/service/create', [ServiceController::class, 'create'])->name('admin.service.create');
+        Route::get('/service/{service}/edit', [ServiceController::class, 'edit'])->name('admin.service.edit');
+        Route::patch('/service/{service}', [ServiceController::class, 'update'])->name('admin.service.update');
+        Route::delete('/service/{service}', [ServiceController::class, 'destroy'])->name('admin.service.destroy');
 
         // Mailbox Providor
         Route::get('/mailboxprovider', [MailboxProviderController::class, 'index'])->name('admin.mailboxprovider.index');

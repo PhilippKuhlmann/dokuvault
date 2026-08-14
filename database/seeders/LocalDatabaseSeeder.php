@@ -41,6 +41,7 @@ use App\Models\Router;
 use App\Models\SecurepointUMA;
 use App\Models\SecurepointUTM;
 use App\Models\Server;
+use App\Models\Service;
 use App\Models\Site;
 use App\Models\Ups;
 use App\Models\User;
@@ -65,6 +66,17 @@ class LocalDatabaseSeeder extends Seeder
             OperatingSystemsSeeder::class,
             MailboxProvidorsSeeder::class,
         ]);
+
+        // Dienste-Katalog: gilt fuer die ganze Installation, nicht je Kunde.
+        // Farbe nach Rolle - was ausfaellt, faellt unterschiedlich schwer auf.
+        foreach ([
+            'AD' => '#b91c1c', 'DNS' => '#dc2626', 'Hyper-V' => '#7c3aed',
+            'SQL' => '#1f73d6', 'Fileserver' => '#3391f0', 'DFS' => '#8ecdff',
+            'Backup' => '#15803d', 'RDS' => '#b45309', 'Print' => '#f59e0b',
+            'docker' => '#0f766e', 'apache2' => '#14b8a6', 'mariadb' => '#1b4176',
+        ] as $name => $farbe) {
+            Service::create(['name' => $name, 'color' => $farbe]);
+        }
 
         $customer = Customer::factory()->create([
             'name' => 'Mustermann',
@@ -168,7 +180,10 @@ class LocalDatabaseSeeder extends Seeder
         NetworkSwitch::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SW-Core', 'ip' => '10.10.30.2']);
         // ein Client im Clients-VLAN, damit dort auch etwas belegt ist
         Computer::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'PC-Empfang', 'ip' => '10.10.20.50']);
-        Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-DC01', 'ip1' => '10.10.30.10', 'bmcIp' => '10.10.30.210']);
+        $srvDc01 = Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-DC01', 'ip1' => '10.10.30.10', 'bmcIp' => '10.10.30.210']);
+        // Ein Server mit mehreren Beinen - damit im Demo-Datensatz sichtbar ist,
+        // dass die Liste alle Adressen zeigt und nicht nur die ersten beiden.
+        $srvDc01->ipAddresses()->create(['customer_id' => $customer->id, 'network_id' => $clientsVlan->id, 'address' => '10.10.20.10', 'label' => 'Clients']);
         Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-FS01', 'ip1' => '10.10.30.11', 'bmcIp' => '10.10.30.211']);
         Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-HV01', 'ip1' => '10.10.30.12', 'bmcIp' => '10.10.30.212']);
         NAS::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'NAS-Backup', 'ip1' => '10.10.30.20']);

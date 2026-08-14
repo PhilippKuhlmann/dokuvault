@@ -1,15 +1,23 @@
 @props(['title', 'array' => []])
 
-<div class="w-80">
-    <div class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-        {{ $title }}
-    </div>
-    <div class="flex flex-wrap pr-5 gap-2">
-        @if ($array > 1)
-            @foreach ($array as $key => $value)
-                <div class="px-3 py-1 text-sm rounded-full bg-cerulean-100 text-cerulean-800 dark:text-gray-100 dark:bg-gray-600">
-                    {{ $value }}</div>
+{{-- Wie x-minitablecard: leere Einträge raus, Block ganz weg, wenn nichts
+     übrig bleibt. Die Dienste kommen aus explode(',', ...) und liefern bei
+     einem leeren Feld [''] - das ergab bisher eine leere Sprechblase. --}}
+@php ($gefuellt = array_filter((array) $array, fn ($v) => filled($v)))
+
+@if (count($gefuellt))
+    <div class="w-full mb-5 break-inside-avoid">
+        <div class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            {{ $title }}
+        </div>
+        {{-- Farbe kommt aus dem Dienste-Katalog der Administration; was dort
+             nicht steht, bleibt neutral. --}}
+        @php ($farben = \App\Models\Service::farbzuordnung())
+
+        <div class="flex flex-wrap gap-2">
+            @foreach ($gefuellt as $value)
+                <x-servicechip :name="$value" :farbe="$farben[mb_strtolower(trim($value))] ?? null" />
             @endforeach
-        @endif
+        </div>
     </div>
-</div>
+@endif

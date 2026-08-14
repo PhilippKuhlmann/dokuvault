@@ -21,6 +21,7 @@
                 <x-slot:links>
                     <x-aside.dropdownlink :label="__('Betriebsysteme')" href="{{ route('admin.operatingsystem.index') }}" />
                     <x-aside.dropdownlink :label="__('Mail Anbieter')" href="{{ route('admin.mailboxprovider.index') }}" />
+                    <x-aside.dropdownlink :label="__('Dienste')" href="{{ route('admin.service.index') }}" />
                     <x-aside.dropdownlink :label="__('Rack-Katalog')" href="{{ route('admin.rackcatalogitem.index') }}" />
                 </x-slot:links>
             </x-aside.dropdown>
