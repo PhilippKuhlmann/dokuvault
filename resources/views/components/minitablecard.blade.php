@@ -1,16 +1,23 @@
 @props(['title', 'array' => []])
 
-<div class="w-full sm:w-80">
+{{-- Leere Felder weglassen und den Block ganz auslassen, wenn nichts uebrig
+     bleibt: Beim Standserver sind Einbautiefe und Hoeheneinheiten leer, bei den
+     meisten Geraeten die zweite IP - als leere Zeilen sah die Karte
+     lueckenhaft aus. Dieselbe Regel wie in der Schrankliste. --}}
+@php ($gefuellt = array_filter($array, fn ($v) => filled($v)))
+
+@if (count($gefuellt))
+<div class="w-full mb-5 break-inside-avoid">
     <div class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
         {{ $title }}
     </div>
     <div class="text-sm dark:text-gray-100">
         <table class="w-full">
-            @foreach ($array as $key => $value)
+            @foreach ($gefuellt as $key => $value)
                 <tr class="border-b border-gray-100 last:border-0 dark:border-gray-700/50">
                     <td class="py-1 pr-6 align-top whitespace-nowrap text-gray-500 dark:text-gray-400">{{ __($key) }}</td>
                     @if ($key == 'Passwort' || $key == 'BMC Passwort' || $key == 'DSRM Passwort' || $key == 'Cloud Backup Passwort' || $key == 'Verschlüsselungscode' || $key == 'USC-PIN')
-                        <td scope="row" class="">
+                        <td scope="row" class="w-full">
                             <div class="" x-data="{ show: true, copied: false }">
 
                                 <div class="relative">
@@ -53,17 +60,17 @@
                             </div>
                         </td>
                     @elseif ($key == 'URL' || $key == 'Admin URL' || $key == 'User URL' || $key == 'Externe URL')
-                       <td class="py-1">
+                       <td class="py-1 w-full">
                             <a href="{{ $value }}" target="_blank" class="text-cerulean-600 hover:text-cerulean-700 hover:underline">
                                 {{ $value }}
                             </a>
                         </td>
                     @elseif (\Illuminate\Support\Str::contains($key, ['IP', 'MAC', 'Serien']))
-                        <td class="py-1 text-gray-900 dark:text-gray-100">
+                        <td class="py-1 w-full text-gray-900 dark:text-gray-100">
                             <x-copy :value="$value" />
                         </td>
                     @else
-                        <td class="py-1 text-gray-900 dark:text-gray-100">{{ $value }}</td>
+                        <td class="py-1 w-full text-gray-900 dark:text-gray-100">{{ $value }}</td>
                     @endif
 
                 </tr>
@@ -71,3 +78,4 @@
         </table>
     </div>
 </div>
+@endif

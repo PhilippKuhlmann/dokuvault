@@ -3,14 +3,32 @@
     <x-sitetopmenu can="dect_create" />
 
     @forelse ($dectList as $dect)
+
+        @php
+            $adressen = $dect->relationLoaded('ipAddresses') ? $dect->ipAddresses : $dect->ipAddresses()->get();
+            $primaer = $dect->ip1 ?? $dect->ip;
+            $anzahlIps = collect([$primaer, $dect->ip2 ?? null])->filter()->count() + $adressen->count();
+        @endphp
         <x-card>
             <x-slot:head>
                 <x-show.header can="dect_update" editUrl="{{ route('dect.edit', [$customer, $dect]) }}">
                     Rolle: {{ $dect->role }}
+
+                    {{-- Was man fast immer sucht, neben dem Namen. --}}
+                    <x-slot:kernwerte>
+                        @if ($primaer)
+                            <x-kernwert :label="__('IP')" :zaehler="$anzahlIps - 1">
+                                <x-copy :value="$primaer" />
+                            </x-kernwert>
+                        @endif
+                    </x-slot>
                 </x-show.header>
             </x-slot>
 
             <x-slot:body>
+
+
+                <x-ipcard :device="$dect" />
 
                 <x-minitablecard :title="__('Allgemein')" :array="[
                     'Hersteller' => $dect->manufacturer,
@@ -21,7 +39,6 @@
                 <x-credentialscard :device="$dect" />
 
                 <x-minitablecard :title="__('Netzwerk')" :array="[
-                    'IP-Adresse' => $dect->ip,
                     'Port' => $dect->port,
                     'MAC-Adresse' => $dect->mac,
                 ]" />

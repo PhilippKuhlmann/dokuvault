@@ -4,14 +4,32 @@
 
 
     @forelse ($otherclients as $otherclient)
+
+        @php
+            $adressen = $otherclient->relationLoaded('ipAddresses') ? $otherclient->ipAddresses : $otherclient->ipAddresses()->get();
+            $primaer = $otherclient->ip1 ?? $otherclient->ip;
+            $anzahlIps = collect([$primaer, $otherclient->ip2 ?? null])->filter()->count() + $adressen->count();
+        @endphp
         <x-card>
             <x-slot:head>
                 <x-show.header can="otherclient_update" editUrl="{{ route('otherclient.edit', [$customer, $otherclient]) }}">
                     {{ $otherclient->name }}
+
+                    {{-- Was man fast immer sucht, neben dem Namen. --}}
+                    <x-slot:kernwerte>
+                        @if ($primaer)
+                            <x-kernwert :label="__('IP')" :zaehler="$anzahlIps - 1">
+                                <x-copy :value="$primaer" />
+                            </x-kernwert>
+                        @endif
+                    </x-slot>
                 </x-show.header>
             </x-slot>
 
             <x-slot:body>
+
+
+                <x-ipcard :device="$otherclient" />
 
                 <x-minitablecard :title="__('Allgemein')" :array="[
                     'Hersteller' => $otherclient->manufacturer,
@@ -22,7 +40,6 @@
                 <x-credentialscard :device="$otherclient" />
 
                 <x-minitablecard :title="__('Netzwerk')" :array="[
-                    'IP-Adresse' => $otherclient->ip,
                     'Port' => $otherclient->port,
                 ]" />
 

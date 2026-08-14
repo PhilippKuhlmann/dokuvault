@@ -5,8 +5,14 @@
 
     @forelse ($servers as $server)
         <x-card>
+            @php
+                $adressen = $server->relationLoaded('ipAddresses') ? $server->ipAddresses : $server->ipAddresses()->get();
+                $anzahlIps = collect([$server->ip1, $server->ip2])->filter()->count() + $adressen->count();
+            @endphp
+
             <x-slot:head>
                 <x-show.header can="server_update" editUrl="{{ route('server.edit', [$customer, $server]) }}">
+                    {{-- Rustdesk bleibt der erste Knopf in der Kopfzeile: taeglich benutzt. --}}
                     @if ($server->remoteID AND $server->remotePassword)
                         <x-input.linkbutton link="rustdesk://connection/new/{{ $server->remoteID }}?password={{ $server->remotePassword }}">
                             <x-slot:label>
@@ -15,13 +21,49 @@
                         </x-input.linkbutton>
                     @endif
                     {{ $server->name }}
+
+                    {{-- Betriebssystem klein hinter den Namen: Es gehoert zur
+                         Identitaet der Maschine, nicht zu den Nachschlagewerten. --}}
+                    @if ($server->operatingSystem)
+                        <span class="text-sm font-normal text-gray-500 dark:text-gray-400">{{ $server->operatingSystem->name }}</span>
+                    @endif
+
+                    {{-- Was man fast immer sucht, steht neben dem Namen statt irgendwo
+                         in der Karte. Der Zaehler verraet schon hier, dass mehr da ist. --}}
+                    <x-slot:kernwerte>
+                        @if ($server->ip1)
+                            <x-kernwert :label="__('IP')" :zaehler="$anzahlIps - 1">
+                                <x-copy :value="$server->ip1" />
+                            </x-kernwert>
+                        @endif
+
+                        @if ($server->einbauort())
+                            <x-kernwert :label="__('Rack')">{{ $server->einbauort() }}</x-kernwert>
+                        @endif
+                    </x-slot>
                 </x-show.header>
             </x-slot>
 
             <x-slot:body>
 
+                <x-ipcard :device="$server" />
+
+                <x-credentialscard :device="$server" />
+
+                <x-minitablecard :title="__('BMC')" :array="[
+                    'BMC IP-Adresse' => $server->bmcIp,
+                    'BMC Benutzer' => $server->bmcUser,
+                    'BMC Passwort' => $server->bmcPassword,
+                ]" />
+
+                {{-- Die Rustdesk-Kennung auch als Text: Wenn der Knopf nicht greift
+                     (anderer Rechner, kein Client), braucht man die ID zum Abtippen. --}}
+                <x-minitablecard :title="__('Fernwartung')" :array="[
+                    'Rustdesk ID' => $server->remoteID,
+                    'Passwort' => $server->remotePassword,
+                ]" />
+
                 <x-minitablecard :title="__('Hardware')" :array="[
-                    'Rack' => $server->einbauort(),
                     'Hersteller' => $server->manufacturer,
                     'Modell' => $server->model,
                     'Seriennummer' => $server->serialNumber,
@@ -32,24 +74,8 @@
                     'Höheneinheiten' => $server->form_factor === 'rack' ? $server->height_units.' HE' : null,
                 ]" />
 
-                <x-credentialscard :device="$server" />
-
-                <x-minitablecard :title="__('Netzwerk')" :array="[
-                    'IP-Adresse 1' => $server->ip1,
-                    'IP-Adresse 2' => $server->ip2,
-                ]" />
-
-                <x-minitablecard :title="__('BMC')" :array="[
-                    'BMC IP-Adresse' => $server->bmcIp,
-                    'BMC Benutzer' => $server->bmcUser,
-                    'BMC Passwort' => $server->bmcPassword,
-                ]" />
-
+                {{-- Betriebssystem steht jetzt in der Kopfzeile - hier waere es doppelt. --}}
                 <x-minitagcard :title="__('Dienste')" :array="$server->services" />
-
-                <x-minitextcard :title="__('Betriebsystem')">
-                    {{ $server->operatingSystem?->name ?? '—' }}
-                </x-minitextcard>
 
             </x-slot>
         </x-card>

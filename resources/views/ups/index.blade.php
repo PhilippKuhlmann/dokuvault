@@ -1,15 +1,35 @@
 <x-app-layout :$customer>
     <x-sitetopmenu can="ups_create" />
     @forelse ($ups as $usv)
+
+        @php
+            $adressen = $usv->relationLoaded('ipAddresses') ? $usv->ipAddresses : $usv->ipAddresses()->get();
+            $primaer = $usv->ip1 ?? $usv->ip;
+            $anzahlIps = collect([$primaer, $usv->ip2 ?? null])->filter()->count() + $adressen->count();
+        @endphp
     <x-card>
         <x-slot:head>
             <x-show.header can="ups_update" editUrl="{{ route('ups.edit', [$customer, $usv]) }}">
                 {{ $usv->name }}
-            </x-show.header>
+
+                    {{-- Was man fast immer sucht, neben dem Namen. --}}
+                    <x-slot:kernwerte>
+                        @if ($primaer)
+                            <x-kernwert :label="__('IP')" :zaehler="$anzahlIps - 1">
+                                <x-copy :value="$primaer" />
+                            </x-kernwert>
+                        @endif
+
+                        @if ($usv->einbauort())
+                            <x-kernwert :label="__('Rack')">{{ $usv->einbauort() }}</x-kernwert>
+                        @endif
+                    </x-slot>
+                </x-show.header>
         </x-slot>
         <x-slot:body>
+
+            <x-ipcard :device="$usv" />
             <x-minitablecard :title="__('Allgemein')" :array="[
-                    'Rack' => $usv->einbauort(),
                 'Hersteller' => $usv->manufacturer,
                 'Modell' => $usv->model,
                 'Seriennummer' => $usv->serialNumber,
@@ -17,7 +37,6 @@
 
             <x-credentialscard :device="$usv" />
             <x-minitablecard :title="__('Technik')" :array="[
-                'IP-Adresse' => $usv->ip,
                 'Kapazität' => $usv->capacity,
                 'Laufzeit' => $usv->runtime,
             ]" />

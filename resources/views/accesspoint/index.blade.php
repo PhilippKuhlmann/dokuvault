@@ -4,14 +4,32 @@
 
 
     @forelse ($accesspoints as $accesspoint)
+
+        @php
+            $adressen = $accesspoint->relationLoaded('ipAddresses') ? $accesspoint->ipAddresses : $accesspoint->ipAddresses()->get();
+            $primaer = $accesspoint->ip1 ?? $accesspoint->ip;
+            $anzahlIps = collect([$primaer, $accesspoint->ip2 ?? null])->filter()->count() + $adressen->count();
+        @endphp
         <x-card>
             <x-slot:head>
                 <x-show.header can="accesspoint_update" editUrl="{{ route('accesspoint.edit', [$customer, $accesspoint]) }}">
                     {{ $accesspoint->name }}
+
+                    {{-- Was man fast immer sucht, neben dem Namen. --}}
+                    <x-slot:kernwerte>
+                        @if ($primaer)
+                            <x-kernwert :label="__('IP')" :zaehler="$anzahlIps - 1">
+                                <x-copy :value="$primaer" />
+                            </x-kernwert>
+                        @endif
+                    </x-slot>
                 </x-show.header>
             </x-slot>
 
             <x-slot:body>
+
+
+                <x-ipcard :device="$accesspoint" />
 
                 <x-minitablecard :title="__('Allgemein')" :array="[
                     'Hersteller' => $accesspoint->manufacturer,
@@ -27,7 +45,6 @@
                 ]" />
 
                 <x-minitablecard :title="__('Netzwerk')" :array="[
-                    'IP' => $accesspoint->ip,
                     'Port' => $accesspoint->port,
                 ]" />
 

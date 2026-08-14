@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Concerns\HasCredentials;
+use App\Models\Concerns\HasIpAddresses;
 use App\Models\Network;
 use App\Models\Site;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -20,6 +21,9 @@ class Controller extends BaseController
 
     /** Cache je Model, ob es Zugangsdaten verknüpfen kann. */
     private static array $hasCredentials = [];
+
+    /** Cache je Model, ob es weitere IP-Adressen führen kann. */
+    private static array $hasIpAddresses = [];
 
     protected function getFilteredQuery($model, $customer)
     {
@@ -48,7 +52,17 @@ class Controller extends BaseController
             HasCredentials::class, class_uses_recursive($model), true
         );
 
-        return $hatZugangsdaten ? $query->with('credentialLinks.login') : $query;
+        if ($hatZugangsdaten) {
+            $query->with('credentialLinks.login');
+        }
+
+        // Dieselbe Ueberlegung fuer die weiteren IP-Adressen: Sie stehen jetzt in
+        // der Liste und wuerden sonst je Geraet eine eigene Abfrage kosten.
+        $hatAdressen = self::$hasIpAddresses[$model] ??= in_array(
+            HasIpAddresses::class, class_uses_recursive($model), true
+        );
+
+        return $hatAdressen ? $query->with('ipAddresses.network') : $query;
     }
 
     /**

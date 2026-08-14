@@ -4,17 +4,38 @@
 
 
     @forelse ($networkswitches as $networkswitch)
+
+        @php
+            $adressen = $networkswitch->relationLoaded('ipAddresses') ? $networkswitch->ipAddresses : $networkswitch->ipAddresses()->get();
+            $primaer = $networkswitch->ip1 ?? $networkswitch->ip;
+            $anzahlIps = collect([$primaer, $networkswitch->ip2 ?? null])->filter()->count() + $adressen->count();
+        @endphp
         <x-card>
             <x-slot:head>
                 <x-show.header can="networkswitch_update" editUrl="{{ route('networkswitch.edit', [$customer, $networkswitch]) }}">
                     {{ $networkswitch->name }}
+
+                    {{-- Was man fast immer sucht, neben dem Namen. --}}
+                    <x-slot:kernwerte>
+                        @if ($primaer)
+                            <x-kernwert :label="__('IP')" :zaehler="$anzahlIps - 1">
+                                <x-copy :value="$primaer" />
+                            </x-kernwert>
+                        @endif
+
+                        @if ($networkswitch->einbauort())
+                            <x-kernwert :label="__('Rack')">{{ $networkswitch->einbauort() }}</x-kernwert>
+                        @endif
+                    </x-slot>
                 </x-show.header>
             </x-slot>
 
             <x-slot:body>
 
+
+                <x-ipcard :device="$networkswitch" />
+
                 <x-minitablecard :title="__('Allgemein')" :array="[
-                    'Rack' => $networkswitch->einbauort(),
                     'Hersteller' => $networkswitch->manufacturer,
                     'Modell' => $networkswitch->model,
                     'Seriennummer' => $networkswitch->serialNumber,
@@ -28,7 +49,6 @@
                 ]" />
 
                 <x-minitablecard :title="__('Netzwerk')" :array="[
-                    'IP' => $networkswitch->ip,
                     'Port' => $networkswitch->port,
                 ]" />
 

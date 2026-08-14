@@ -4,6 +4,12 @@
 
 
     @forelse ($computers as $computer)
+
+        @php
+            $adressen = $computer->relationLoaded('ipAddresses') ? $computer->ipAddresses : $computer->ipAddresses()->get();
+            $primaer = $computer->ip1 ?? $computer->ip;
+            $anzahlIps = collect([$primaer, $computer->ip2 ?? null])->filter()->count() + $adressen->count();
+        @endphp
     <x-card>
         <x-slot:head>
             <x-show.header can="computer_update" editUrl="{{ route('computer.edit', [$customer, $computer]) }}">
@@ -11,10 +17,22 @@
                     <a href="rustdesk://connection/new/{{ $computer->remoteID }}?password={{ $computer->remotePassword }}" class="bg-cerulean-600 text-white rounded-lg px-4 py-2 text-sm mr-5 hover:bg-cerulean-700">{{ __('Verbinden') }}</a>
                 @endif
                 {{ $computer->name }}
-            </x-show.header>
+
+                    {{-- Was man fast immer sucht, neben dem Namen. --}}
+                    <x-slot:kernwerte>
+                        @if ($primaer)
+                            <x-kernwert :label="__('IP')" :zaehler="$anzahlIps - 1">
+                                <x-copy :value="$primaer" />
+                            </x-kernwert>
+                        @endif
+                    </x-slot>
+                </x-show.header>
         </x-slot>
 
         <x-slot:body>
+
+
+            <x-ipcard :device="$computer" />
 
             <x-minitablecard :title="__('Allgemein')" :array="[
                 'Hersteller' => $computer->manufacturer,
@@ -25,7 +43,6 @@
             <x-credentialscard :device="$computer" />
 
             <x-minitablecard :title="__('Netzwerk')" :array="[
-                'IP-Adresse' => $computer->ip,
             ]" />
 
             <x-minitextcard :title="__('Betriebsystem')">

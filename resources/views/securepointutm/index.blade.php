@@ -3,14 +3,32 @@
 
 
     @forelse ($securepointutms as $securepointutm)
+
+        @php
+            $adressen = $securepointutm->relationLoaded('ipAddresses') ? $securepointutm->ipAddresses : $securepointutm->ipAddresses()->get();
+            $primaer = $securepointutm->ip1 ?? $securepointutm->ip;
+            $anzahlIps = collect([$primaer, $securepointutm->ip2 ?? null])->filter()->count() + $adressen->count();
+        @endphp
         <x-card>
             <x-slot:head>
                 <x-show.header can="securepointutm_update" editUrl="{{ route('securepointutm.edit', [$customer, $securepointutm]) }}">
                     {{ $securepointutm->name }}
+
+                    {{-- Was man fast immer sucht, neben dem Namen. --}}
+                    <x-slot:kernwerte>
+                        @if ($primaer)
+                            <x-kernwert :label="__('IP')" :zaehler="$anzahlIps - 1">
+                                <x-copy :value="$primaer" />
+                            </x-kernwert>
+                        @endif
+                    </x-slot>
                 </x-show.header>
             </x-slot>
 
             <x-slot:body>
+
+
+                <x-ipcard :device="$securepointutm" />
 
                 <x-minitablecard :title="__('Allgemein')" :array="[
                     'Art' => $securepointutm->type,
@@ -27,7 +45,6 @@
                 ]" />
 
                 <x-minitablecard :title="__('URL')" :array="[
-                    'IP' => $securepointutm->ip,
                     'Admin URL' => $securepointutm->urlAdmin,
                     'User URL' => $securepointutm->urlUser,
                     'Externe URL' => $securepointutm->urlExternal,
