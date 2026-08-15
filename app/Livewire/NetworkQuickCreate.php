@@ -67,16 +67,29 @@ class NetworkQuickCreate extends Component
      * neue Netz stuende sonst erst nach einem Neuladen da. Am Geraet ist das
      * unnoetig: Dort wird es nur in der Auswahl gesetzt.
      */
-    public bool $neuLaden = false;
+    /**
+     * Ziel, auf das nach dem Anlegen umgeleitet wird - leer heisst: nicht
+     * umleiten.
+     *
+     * Die Liste ist eine gewoehnliche Blade-Seite; ohne Neuladen stuende das
+     * neue Netz erst nach einem Seitenwechsel darin. Am Geraet bleibt es leer,
+     * dort wuerde ein Neuladen das halb ausgefuellte IP-Formular kosten.
+     *
+     * Die Adresse kommt von aussen und wird nicht selbst ermittelt:
+     * url()->current() liefert im Livewire-Kontext /livewire/update - auch in
+     * mount() - und ein Redirect dorthin endet in einem 405.
+     */
+    #[Locked]
+    public string $zielNachAnlegen = '';
 
-    public function mount($customer, ?int $siteId = null, string $knopfKlassen = '', string $label = '', bool $mitSymbol = false, bool $neuLaden = false): void
+    public function mount($customer, ?int $siteId = null, string $knopfKlassen = '', string $label = '', bool $mitSymbol = false, string $zielNachAnlegen = ''): void
     {
         $this->customerId = $customer->id;
         $this->siteId = $siteId;
         $this->knopfKlassen = $knopfKlassen;
         $this->label = $label;
         $this->mitSymbol = $mitSymbol;
-        $this->neuLaden = $neuLaden;
+        $this->zielNachAnlegen = $zielNachAnlegen;
     }
 
     public function speichern(): void
@@ -139,8 +152,8 @@ class NetworkQuickCreate extends Component
         // Der IP-Block waehlt das neue Netz damit gleich aus.
         $this->dispatch('vlan-angelegt', id: $netz->id);
 
-        if ($this->neuLaden) {
-            $this->redirect(url()->current(), navigate: true);
+        if ($this->zielNachAnlegen !== '') {
+            $this->redirect($this->zielNachAnlegen, navigate: true);
         }
     }
 

@@ -109,13 +109,17 @@ test('in der Liste laedt die Seite nach dem Anlegen neu', function () {
 
     // Die Liste ist eine normale Blade-Seite: Ohne Neuladen stuende das neue
     // Netz erst nach einem Seitenwechsel darin.
-    Livewire::test(NetworkQuickCreate::class, ['customer' => $customer, 'neuLaden' => true])
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $customer, 'zielNachAnlegen' => "/{$customer->slug}/network"])
         ->set('site_id', $site->id)
         ->set('description', 'Frisch')
         ->set('network', '10.10.93.0')
         ->call('speichern')
         ->assertHasNoErrors()
-        ->assertRedirect();
+        // Auf die Liste, nicht auf /livewire/update: url()->current() liefert
+        // im Livewire-Kontext die Update-Adresse - auch in mount() - und ein
+        // Redirect dorthin endet in einem 405. Deshalb kommt das Ziel aus der
+        // View.
+        ->assertRedirect("/{$customer->slug}/network");
 });
 
 test('am Geraet wird nicht neu geladen, nur ausgewaehlt', function () {
