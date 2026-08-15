@@ -66,3 +66,18 @@ test('Kunden-Nutzer sieht nur Objekte des eigenen Kunden', function () {
         ->set('search', 'PC-Suchtest')
         ->assertDontSee('PC-Suchtest');
 });
+
+test('die Treffer lassen sich ohne die View pruefen', function () {
+    $this->actingAs(userWithPermissions(['computer_viewAny']));
+    [$customer] = searchFixture();
+
+    // groups() ist eine computed property - abrufbar ohne Rendern.
+    $groups = Livewire::test(GlobalSearch::class)->set('search', 'PC-Suchtest')->get('groups');
+
+    expect($groups)->toHaveCount(1);
+    expect($groups->first()['slug'])->toBe('computer');
+    expect($groups->first()['results']->pluck('name')->all())->toBe(['PC-Suchtest']);
+
+    // Unter zwei Zeichen wird gar nicht gesucht.
+    expect(Livewire::test(GlobalSearch::class)->set('search', 'P')->get('groups'))->toBeEmpty();
+});

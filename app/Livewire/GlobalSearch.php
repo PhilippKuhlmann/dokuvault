@@ -28,6 +28,7 @@ use App\Models\Ups;
 use App\Models\VM;
 use App\Models\Wifi;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 class GlobalSearch extends Component
@@ -69,7 +70,15 @@ class GlobalSearch extends Component
         'rack' => [Rack::class, 'Serverschränke', 'rack', ['name', 'location']],
     ];
 
-    public function render()
+    /**
+     * Die Treffer, nach Typ gruppiert.
+     *
+     * Als computed property statt inline in render(): So laesst sich die Suche
+     * einzeln pruefen, ohne die View mitzurendern, und render() sagt wieder in
+     * einer Zeile, was es tut.
+     */
+    #[Computed]
+    public function groups()
     {
         $groups = collect();
 
@@ -119,7 +128,12 @@ class GlobalSearch extends Component
             }
         }
 
-        return view('livewire.global-search', ['groups' => $groups])
+        return $groups;
+    }
+
+    public function render()
+    {
+        return view('livewire.global-search', ['groups' => $this->groups])
             ->layout('layouts.empty', ['title' => 'Globale Suche']);
     }
 }
