@@ -2,6 +2,13 @@
 
     <x-sitetopmenu can="network_create" />
 
+    {{-- Dasselbe Modal wie im IP-Block am Geraet: ein VLAN anlegen, ohne die
+         Liste zu verlassen. Der Standort wird hier mit abgefragt - anders als
+         am Geraet gibt ihn nichts vor. --}}
+    <div class="px-3 pb-1">
+        <livewire:network-quick-create :customer="$customer" />
+    </div>
+
 
     @forelse ($networks as $network)
         <x-card>

@@ -2,10 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Models\Customer;
 use App\Models\Network;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class DeviceIpAddresses extends Component
@@ -31,31 +33,6 @@ class DeviceIpAddresses extends Component
     // des Formulars steht (x-create.main, Slot "nach").
     #[Locked]
     public bool $eingebettet = false;
-
-    // Ein VLAN anlegen, ohne das Formular zu verlassen. Dieselben Felder wie im
-    // VLAN-Formular - ein Modal, das die Haelfte weglaesst, zwingt sonst doch
-    // wieder zum Nachtragen an anderer Stelle.
-    public bool $vlanModal = false;
-
-    public string $vlanDescription = '';
-
-    public $vlanNummer = '';
-
-    public string $vlanNetwork = '';
-
-    public string $vlanSubnetmask = '255.255.255.0';
-
-    public $vlanCidr = '';
-
-    public string $vlanGateway = '';
-
-    public string $vlanDns1 = '';
-
-    public string $vlanDns2 = '';
-
-    public string $vlanDhcpStart = '';
-
-    public string $vlanDhcpEnd = '';
 
     public function mount($model, $customer, bool $eingebettet = false): void
     {
@@ -103,64 +80,14 @@ class DeviceIpAddresses extends Component
     }
 
     /**
-     * Legt ein VLAN an, ohne das Geraeteformular zu verlassen, und waehlt es
-     * gleich aus - man traegt gerade eine IP ein und merkt, dass das Netz noch
-     * fehlt; ohne das waere die halb ausgefuellte Zeile weg.
-     *
-     * Der Standort kommt vom Geraet, nicht aus dem Formular: Ein VLAN gehoert
-     * dorthin, wo das Geraet steht, und ein Feld dafuer waere eine Angriffs-
-     * flaeche mehr.
+     * Das VLAN-Modal ist eine eigene Komponente (auch die VLAN-Liste nutzt sie).
+     * Meldet sie ein neues Netz, wird es hier gleich ausgewaehlt - man war ja
+     * beim Eintragen einer Adresse.
      */
-    public function vlanAnlegen(): void
+    #[On('vlan-angelegt')]
+    public function vlanUebernehmen(int $id): void
     {
-        $device = $this->device();
-        Gate::authorize('network_create');
-
-        $daten = $this->validate([
-            'vlanDescription' => ['required', 'max:255'],
-            'vlanNummer' => ['nullable', 'integer', 'min:1', 'max:4094'],
-            'vlanNetwork' => ['required', 'ipv4'],
-            'vlanSubnetmask' => ['required', 'ipv4'],
-            'vlanCidr' => ['nullable', 'integer', 'min:0', 'max:32'],
-            'vlanGateway' => ['nullable', 'ipv4'],
-            'vlanDns1' => ['nullable', 'ipv4'],
-            'vlanDns2' => ['nullable', 'ipv4'],
-            'vlanDhcpStart' => ['nullable', 'ipv4'],
-            'vlanDhcpEnd' => ['nullable', 'ipv4'],
-        ], [], [
-            'vlanDescription' => __('Bezeichnung'),
-            'vlanNummer' => __('VLAN-ID'),
-            'vlanNetwork' => __('Netz'),
-            'vlanSubnetmask' => __('Subnetzmaske'),
-            'vlanCidr' => __('CIDR'),
-            'vlanGateway' => __('Gateway'),
-            'vlanDns1' => __('DNS 1'),
-            'vlanDns2' => __('DNS 2'),
-            'vlanDhcpStart' => __('DHCP-Start'),
-            'vlanDhcpEnd' => __('DHCP-Ende'),
-        ]);
-
-        $netz = Network::create([
-            'customer_id' => $this->customerId,
-            'site_id' => $device->site_id ?? null,
-            'description' => $daten['vlanDescription'],
-            'vlanId' => $daten['vlanNummer'] ?: null,
-            'network' => $daten['vlanNetwork'],
-            'subnetmask' => $daten['vlanSubnetmask'],
-            'cidr' => $daten['vlanCidr'] ?: null,
-            'gateway' => $daten['vlanGateway'] ?: null,
-            'dns1' => $daten['vlanDns1'] ?: null,
-            'dns2' => $daten['vlanDns2'] ?: null,
-            'dhcpStart' => $daten['vlanDhcpStart'] ?: null,
-            'dhcpEnd' => $daten['vlanDhcpEnd'] ?: null,
-        ]);
-
-        // Gleich ausgewaehlt: Der Nutzer war beim Eintragen einer Adresse.
-        $this->network_id = $netz->id;
-
-        $this->reset('vlanModal', 'vlanDescription', 'vlanNummer', 'vlanNetwork',
-            'vlanCidr', 'vlanGateway', 'vlanDns1', 'vlanDns2', 'vlanDhcpStart', 'vlanDhcpEnd');
-        $this->vlanSubnetmask = '255.255.255.0';
+        $this->network_id = $id;
     }
 
     public function remove(int $id): void
@@ -179,6 +106,9 @@ class DeviceIpAddresses extends Component
                 ? $device->ipAddresses()->with('network')->latest()->get()
                 : collect(),
             'networks' => Network::where('customer_id', $this->customerId)->orderBy('vlanId')->get(),
+            // Fuer das VLAN-Modal: Das neue Netz erbt den Standort des Geraets.
+            'kunde' => Customer::find($this->customerId),
+            'geraeteStandort' => $device?->site_id,
         ]);
     }
 }
