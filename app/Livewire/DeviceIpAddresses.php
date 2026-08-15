@@ -5,15 +5,19 @@ namespace App\Livewire;
 use App\Models\Network;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class DeviceIpAddresses extends Component
 {
     // Skalare statt Model-Instanz: robust bei polymorphen Modellen und Livewire-Hydration.
+    #[Locked]
     public string $modelClass;
 
+    #[Locked]
     public int $modelId;
 
+    #[Locked]
     public int $customerId;
 
     // Formular für neuen Eintrag
@@ -25,6 +29,7 @@ class DeviceIpAddresses extends Component
 
     // Eingebettet: ohne eigenen Kartenrahmen, weil der Block dann in der Karte
     // des Formulars steht (x-create.main, Slot "nach").
+    #[Locked]
     public bool $eingebettet = false;
 
     public function mount($model, $customer, bool $eingebettet = false): void

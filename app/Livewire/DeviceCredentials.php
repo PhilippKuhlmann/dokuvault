@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\LoginGeneral;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
@@ -18,10 +19,13 @@ use Livewire\Component;
 class DeviceCredentials extends Component
 {
     // Skalare statt Model-Instanz: robust bei polymorphen Modellen und Livewire-Hydration.
+    #[Locked]
     public string $modelClass;
 
+    #[Locked]
     public int $modelId;
 
+    #[Locked]
     public int $customerId;
 
     // Vorhandenes Login anhängen
@@ -40,6 +44,7 @@ class DeviceCredentials extends Component
 
     // Eingebettet: ohne eigenen Kartenrahmen, weil der Block dann in der Karte
     // des Formulars steht (x-create.main, Slot "nach").
+    #[Locked]
     public bool $eingebettet = false;
 
     public function mount($model, $customer, bool $eingebettet = false): void

@@ -5,6 +5,7 @@ use App\Models\Customer;
 use App\Models\Network;
 use App\Models\Router;
 use App\Models\Site;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
 function routerWithNetworks(): array
@@ -132,4 +133,19 @@ test('die Listenkarte zeigt zur Adresse den Netznamen samt VLAN-Nummer', functio
     $this->get("/{$customer->slug}/router")->assertOk()
         ->assertSee('10.10.20.5')
         ->assertSee('Clients · VLAN 20', false);
+});
+
+test('die Kennung des Geraets laesst sich vom Client nicht umbiegen', function () {
+    $this->actingAs(userWithPermissions(['router_update']));
+    [$customer, $router] = routerWithNetworks();
+
+    $fremd = Customer::factory()->create();
+
+    // #[Locked]: Livewire lehnt die Aenderung ab, bevor eine Aktion laeuft -
+    // vorher fing das erst die Pruefung in device() ab.
+    foreach (['customerId' => $fremd->id, 'modelId' => 999, 'modelClass' => 'App\Models\Server'] as $feld => $wert) {
+        expect(fn () => Livewire::test(DeviceIpAddresses::class, ['model' => $router, 'customer' => $customer])
+            ->set($feld, $wert))
+            ->toThrow(CannotUpdateLockedPropertyException::class);
+    }
 });

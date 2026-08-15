@@ -6,6 +6,7 @@ use App\Models\NetworkSwitch;
 use App\Models\PatchPanel;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
@@ -19,8 +20,10 @@ use Livewire\Component;
 class PatchPanelPorts extends Component
 {
     // Skalare statt Model-Instanz: robust bei Livewire-Hydration (wie DeviceIpAddresses).
+    #[Locked]
     public int $panelId;
 
+    #[Locked]
     public int $customerId;
 
     /** @var array<int, string|null> Port-ID => Wert */
