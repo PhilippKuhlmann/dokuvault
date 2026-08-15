@@ -86,7 +86,24 @@
         </table>
     </div>
 
-    <div class="flex justify-end mt-4">
+    <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+        {{-- Fuellt aus der ersten Dosennummer die leeren Felder darunter hoch
+             (1.01 -> 1.02, 1.03 ...). Bereits Eingetragenes bleibt stehen,
+             damit eine abweichende Dose an Port 10 nicht ueberschrieben wird. --}}
+        <div class="flex flex-wrap items-center gap-2">
+            <x-input.button type="button" color="gray" wire:click="durchnummerieren"
+                :label="__('Dosen durchnummerieren')" wire:loading.attr="disabled" />
+
+            {{-- Vertippt beim ersten Feld? Alles leeren und neu zaehlen. Wirkt
+                 nur im Formular - ohne Speichern bleibt der Stand erhalten. --}}
+            <x-input.button type="button" color="gray" wire:click="dosenLeeren"
+                :label="__('Dosen leeren')" wire:loading.attr="disabled" />
+
+            <span class="text-xs text-gray-400 dark:text-gray-500">
+                {{ __('Zählt ab der ersten Dosennummer hoch und lässt Ausgefülltes stehen. Leeren wirkt erst mit „Ports speichern“.') }}
+            </span>
+        </div>
+
         <x-input.button type="button" wire:click="save" :label="__('Ports speichern')"
             wire:loading.attr="disabled" />
     </div>

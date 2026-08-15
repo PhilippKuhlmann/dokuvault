@@ -105,6 +105,70 @@ class PatchPanelPorts extends Component
     }
 
     /** Eine Zeile leeren, ohne alle vier Felder einzeln loeschen zu muessen. */
+    /**
+     * Zaehlt die Dosennummer der ersten belegten Zeile fuer alle folgenden
+     * Ports hoch: aus "1.01" wird 1.02, 1.03 ... Fuehrende Nullen und das
+     * Praefix ("1.", "A-", "EG") bleiben erhalten.
+     *
+     * Ueberschrieben wird nichts: Nur leere Felder werden gefuellt, damit eine
+     * abweichend beschriftete Dose an Port 10 stehen bleibt. Wer sie doch neu
+     * durchzaehlen will, leert sie vorher.
+     *
+     * Gefuellt wird nur das Formular - gespeichert wird erst mit "Speichern".
+     */
+    public function durchnummerieren(): void
+    {
+        $ports = $this->panel()->ports()->orderBy('number')->get();
+
+        $start = $ports->first(fn ($port) => filled($this->outlet[$port->id] ?? null));
+
+        if (! $start) {
+            $this->addError('outlet.'.($ports->first()?->id ?? 0), __('Bitte zuerst eine Dosennummer eintragen.'));
+
+            return;
+        }
+
+        // Ziffernblock am Ende: "1.01" -> Praefix "1." und Zaehler "01".
+        if (! preg_match('/^(.*?)(\d+)$/', trim((string) $this->outlet[$start->id]), $treffer)) {
+            $this->addError('outlet.'.$start->id, __('Die Dosennummer muss auf eine Zahl enden.'));
+
+            return;
+        }
+
+        [, $praefix, $zahl] = $treffer;
+        $stellen = strlen($zahl);
+        $zaehler = (int) $zahl;
+
+        foreach ($ports as $port) {
+            if ($port->number <= $start->number) {
+                continue;
+            }
+
+            $zaehler++;
+
+            if (blank($this->outlet[$port->id] ?? null)) {
+                $this->outlet[$port->id] = $praefix.str_pad((string) $zaehler, $stellen, '0', STR_PAD_LEFT);
+            }
+        }
+    }
+
+    /**
+     * Leert alle Dosennummern im Formular - fuer den Fall, dass man sich beim
+     * ersten Feld vertippt hat und neu durchzaehlen will.
+     *
+     * Nur das Formular, nicht die Datenbank: Ein Fehlklick ist folgenlos,
+     * solange nicht gespeichert wird. Raum, Switch und Notiz bleiben stehen,
+     * die haengen nicht an der Nummerierung.
+     */
+    public function dosenLeeren(): void
+    {
+        $this->resetErrorBag();
+
+        foreach (array_keys($this->outlet) as $id) {
+            $this->outlet[$id] = null;
+        }
+    }
+
     public function clearPort(int $portId): void
     {
         $panel = $this->panel();

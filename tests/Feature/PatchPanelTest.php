@@ -274,3 +274,85 @@ test('Kunden-Nutzer sieht fremde Dosen nicht in der Suche', function () {
 
     expect(PatchPort::where('outlet', 'GEHEIM 9.99')->exists())->toBeTrue();
 });
+
+// --- Dosen durchnummerieren ---
+
+test('durchnummerieren zaehlt ab der ersten Dosennummer hoch', function () {
+    $this->actingAs(userWithPermissions(['patchpanel_update']));
+    [$customer, $site, $panel] = customerWithPanel(4);
+    $ports = $panel->ports()->orderBy('number')->get();
+
+    Livewire::test(PatchPanelPorts::class, ['panel' => $panel, 'customer' => $customer])
+        ->set("outlet.{$ports[0]->id}", '1.01')
+        ->call('durchnummerieren')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    // Fuehrende Null bleibt, das Praefix auch.
+    expect($panel->ports()->orderBy('number')->pluck('outlet')->all())
+        ->toBe(['1.01', '1.02', '1.03', '1.04']);
+});
+
+test('durchnummerieren ueberschreibt eine abweichende Dose nicht', function () {
+    $this->actingAs(userWithPermissions(['patchpanel_update']));
+    [$customer, $site, $panel] = customerWithPanel(4);
+    $ports = $panel->ports()->orderBy('number')->get();
+
+    Livewire::test(PatchPanelPorts::class, ['panel' => $panel, 'customer' => $customer])
+        ->set("outlet.{$ports[0]->id}", '1.01')
+        // Port 3 heisst anders - das soll das Durchzaehlen nicht plattmachen.
+        ->set("outlet.{$ports[2]->id}", 'Serverraum')
+        ->call('durchnummerieren')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect($panel->ports()->orderBy('number')->pluck('outlet')->all())
+        ->toBe(['1.01', '1.02', 'Serverraum', '1.04']);
+});
+
+test('durchnummerieren ohne Startwert meldet das, statt stumm nichts zu tun', function () {
+    $this->actingAs(userWithPermissions(['patchpanel_update']));
+    [$customer, $site, $panel] = customerWithPanel(4);
+
+    Livewire::test(PatchPanelPorts::class, ['panel' => $panel, 'customer' => $customer])
+        ->call('durchnummerieren')
+        ->assertHasErrors();
+
+    expect($panel->ports()->whereNotNull('outlet')->count())->toBe(0);
+});
+
+test('Dosen leeren raeumt das Formular, ohne Raum und Switch anzufassen', function () {
+    $this->actingAs(userWithPermissions(['patchpanel_update']));
+    [$customer, $site, $panel] = customerWithPanel(4);
+    $ports = $panel->ports()->orderBy('number')->get();
+
+    Livewire::test(PatchPanelPorts::class, ['panel' => $panel, 'customer' => $customer])
+        ->set("outlet.{$ports[0]->id}", '9.99')
+        ->set("label.{$ports[0]->id}", 'Besprechung')
+        ->call('durchnummerieren')
+        // Vertippt: alles leeren und mit der richtigen Nummer neu zaehlen.
+        ->call('dosenLeeren')
+        ->set("outlet.{$ports[0]->id}", '1.01')
+        ->call('durchnummerieren')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect($panel->ports()->orderBy('number')->pluck('outlet')->all())
+        ->toBe(['1.01', '1.02', '1.03', '1.04']);
+
+    // Der Raum haengt nicht an der Nummerierung und bleibt stehen.
+    expect($panel->ports()->orderBy('number')->first()->label)->toBe('Besprechung');
+});
+
+test('Dosen leeren wirkt erst mit Speichern', function () {
+    $this->actingAs(userWithPermissions(['patchpanel_update']));
+    [$customer, $site, $panel] = customerWithPanel(2);
+    $port = $panel->ports()->orderBy('number')->first();
+    $port->update(['outlet' => '1.01']);
+
+    Livewire::test(PatchPanelPorts::class, ['panel' => $panel, 'customer' => $customer])
+        ->call('dosenLeeren');
+
+    // Ein Fehlklick allein darf nichts loeschen.
+    expect($port->fresh()->outlet)->toBe('1.01');
+});
