@@ -372,3 +372,27 @@ test('AD-Domäne und Backup werden ohne site_id angelegt (Modelle haben keine Sp
 
     expect(ADDomain::where('customer_id', $customer->id)->count())->toBe(1);
 });
+
+test('schon erfasste Eintraege verlinken auf ihr Bearbeiten-Formular', function () {
+    $this->actingAs(userWithPermissions(['site_create', 'router_create', 'router_update']));
+    $customer = Customer::factory()->create();
+
+    $inhalt = Livewire::test(DocumentationWizard::class, ['customer' => $customer])
+        ->set('form.name', 'Zentrale')
+        ->call('save')
+        // Der Nutzer hat nur site_ und router_create - die Schritte dazwischen
+        // zeigt der Assistent gar nicht erst an.
+        ->call('nextStep')
+        ->set('form.name', 'RTR-Core')
+        ->set('form.port', '443')
+        ->set('form.username', 'admin')
+        ->set('form.password', 'geheim123')
+        ->call('save')
+        ->html();
+
+    $router = Router::where('customer_id', $customer->id)->firstOrFail();
+
+    // Neuer Tab, damit der angefangene Durchlauf nicht verloren geht.
+    expect($inhalt)->toContain(route('router.edit', [$customer, $router], false));
+    expect($inhalt)->toContain('target="_blank"');
+});

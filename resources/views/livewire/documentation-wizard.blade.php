@@ -85,14 +85,32 @@
                      schon erfasst ist, soll man ueberfliegen und nicht Zeile fuer
                      Zeile lesen. --}}
                 <div class="mb-5 rounded-lg bg-gray-50 p-3 dark:bg-gray-700/40" wire:key="entries-{{ $step['key'] }}">
-                    <div class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    @php ($bearbeitbar = Route::has($step['key'].'.edit'))
+
+                    <div class="mb-2 flex flex-wrap items-baseline gap-x-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         {{ __('Schon erfasst') }} ({{ $entries->count() }})
+
+                        @if ($bearbeitbar)
+                            {{-- Der Durchlauf soll nicht verloren gehen, wenn man
+                                 etwas nachtraegt - deshalb ein neuer Tab. --}}
+                            <span class="font-normal normal-case tracking-normal text-gray-400 dark:text-gray-500">
+                                {{ __('zum Nachtragen anklicken, öffnet einen neuen Tab') }}
+                            </span>
+                        @endif
                     </div>
+
                     <div class="flex max-h-40 flex-wrap gap-1.5 overflow-y-auto">
                         @foreach ($entries as $entry)
-                            <span class="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
-                                {{ $entry->{$step['label_field']} ?: '—' }}
-                            </span>
+                            @if ($bearbeitbar)
+                                <a href="{{ route($step['key'].'.edit', [$customer, $entry]) }}" target="_blank" rel="noopener"
+                                    class="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 transition-colors hover:border-cerulean-400 hover:text-cerulean-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-cerulean-500 dark:hover:text-cerulean-300">
+                                    {{ $entry->{$step['label_field']} ?: '—' }}
+                                </a>
+                            @else
+                                <span class="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
+                                    {{ $entry->{$step['label_field']} ?: '—' }}
+                                </span>
+                            @endif
                         @endforeach
                     </div>
                 </div>
