@@ -30,7 +30,11 @@
                     @endphp
 
                     <div @class(['relative', 'ml-2' => $loop->iteration % 6 === 1 && ! $loop->first])
-                        @if ($istBelegt) x-data="{ offen: false }" x-on:mouseenter="offen = true" x-on:mouseleave="offen = false" @endif>
+                        @if ($istBelegt)
+                            x-data="{ offen: false, x: 0, y: 0 }"
+                            x-on:mouseenter="const r = $el.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top; offen = true"
+                            x-on:mouseleave="offen = false"
+                        @endif>
 
                         <div @class([
                                 'flex h-6 w-6 items-center justify-center rounded-[2px] border font-mono text-[10px] tabular-nums',
@@ -41,10 +45,14 @@
                         </div>
 
                         @if ($istBelegt)
-                            {{-- Das Hover-Fenster steht ueber der Buchse, damit es in der
-                                 untersten Reihe nicht aus der Karte laeuft. --}}
+                            {{-- Am Viewport statt an der Buchse: Der waagerechte
+                                 Scrollrahmen der Blende schneidet senkrecht mit ab
+                                 (overflow-x: auto macht auch overflow-y zu auto), und
+                                 absolut positioniert verschwand das Fenster dahinter.
+                                 position: fixed entkommt jedem Rahmen. --}}
                             <div x-show="offen" x-cloak
-                                class="absolute bottom-full left-1/2 z-20 mb-1 w-56 -translate-x-1/2 rounded border border-gray-200 bg-white p-2.5 text-left shadow-lg dark:border-gray-600 dark:bg-gray-800">
+                                x-bind:style="`left: ${x}px; top: ${y - 8}px`"
+                                class="fixed z-50 w-56 -translate-x-1/2 -translate-y-full rounded border border-gray-200 bg-white p-2.5 text-left shadow-lg dark:border-gray-600 dark:bg-gray-800">
                                 <div class="mb-1 font-mono text-xs font-semibold text-cerulean-700 dark:text-cerulean-400">
                                     {{ __('Port') }} {{ $nummer }}
                                 </div>
