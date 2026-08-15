@@ -2,9 +2,17 @@
      neben der VLAN-Auswahl am Geraet oder ueber der VLAN-Liste. --}}
 <div class="inline">
     @can('network_create')
+        {{-- Zwei Auftritte: als Textlink neben der VLAN-Auswahl am Geraet, als
+             voller Knopf im Kopf der Liste. Deshalb Klassen und Beschriftung
+             von aussen statt merge() - sonst stapeln sich text-xs und text-sm. --}}
         <button type="button" wire:click="$set('offen', true)"
-            {{ $attributes->merge(['class' => 'text-xs text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400']) }}>
-            {{ __('+ Neues VLAN') }}
+            class="{{ $knopfKlassen ?: 'text-xs text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400' }}">
+            @if ($mitSymbol)
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+            @endif
+            {{ $label ?: __('+ Neues VLAN') }}
         </button>
     @endcan
 

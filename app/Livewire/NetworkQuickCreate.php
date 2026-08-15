@@ -54,10 +54,20 @@ class NetworkQuickCreate extends Component
 
     public string $dhcpEnd = '';
 
-    public function mount($customer, ?int $siteId = null): void
+    /** Aussehen des ausloesenden Knopfes - Textlink am Geraet, voller Knopf in der Liste. */
+    public string $knopfKlassen = '';
+
+    public string $label = '';
+
+    public bool $mitSymbol = false;
+
+    public function mount($customer, ?int $siteId = null, string $knopfKlassen = '', string $label = '', bool $mitSymbol = false): void
     {
         $this->customerId = $customer->id;
         $this->siteId = $siteId;
+        $this->knopfKlassen = $knopfKlassen;
+        $this->label = $label;
+        $this->mitSymbol = $mitSymbol;
     }
 
     public function speichern(): void

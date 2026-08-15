@@ -93,5 +93,12 @@ test('die VLAN-Liste bindet das Modal ein', function () {
     $this->actingAs(userWithPermissions(['network_viewAny', 'network_create']));
     [$customer] = netzUmgebung();
 
-    $this->get("/{$customer->slug}/network")->assertOk()->assertSee('+ Neues VLAN');
+    // In der Liste traegt der Knopf die Beschriftung des bisherigen "Neu" -
+    // gleiche Stelle, gleiche Optik, nur ohne Seitenwechsel.
+    $inhalt = $this->get("/{$customer->slug}/network")->assertOk()->getContent();
+
+    expect($inhalt)->toContain("wire:click=\"\$set('offen', true)\"");
+    expect($inhalt)->toContain('bg-cerulean-600');
+    // Der alte Weg ist nicht mehr verlinkt.
+    expect($inhalt)->not->toContain('/network/create');
 });
