@@ -39,15 +39,26 @@
                  Farbunterscheidung zu finden. --}}
             <div class="flex items-end gap-0.5">
                 @foreach ($steps as $s)
-                    <div title="{{ __($s['label']) }}" @class([
-                        'flex-1 rounded-full transition-all',
-                        'h-3' => $s['key'] === $step['key'],
-                        'h-1.5' => $s['key'] !== $step['key'],
-                        'bg-cerulean-600' => $s['key'] === $step['key'],
-                        'bg-cerulean-300 dark:bg-cerulean-700' => $s['key'] !== $step['key'] && in_array($s['key'], $run->completed_steps ?? []),
-                        'bg-gray-300 dark:bg-gray-600' => $s['key'] !== $step['key'] && in_array($s['key'], $run->skipped_steps ?? []),
-                        'bg-gray-200 dark:bg-gray-700' => $s['key'] !== $step['key'] && ! in_array($s['key'], $run->completed_steps ?? []) && ! in_array($s['key'], $run->skipped_steps ?? []),
-                    ]) wire:key="progress-{{ $s['key'] }}"></div>
+                    @php
+                        $erledigt = in_array($s['key'], $run->completed_steps ?? []);
+                        $uebersprungen = in_array($s['key'], $run->skipped_steps ?? []);
+                        $stand = $erledigt ? __('erfasst') : ($uebersprungen ? __('übersprungen') : __('offen'));
+                    @endphp
+
+                    <x-hovertext :text="__($s['label']).' — '.$stand" class="flex-1" wire:key="progress-{{ $s['key'] }}">
+                        {{-- Klickbar statt bloss Anzeige: Man merkt oft erst drei
+                             Schritte weiter, dass etwas fehlt. --}}
+                        <button type="button" wire:click="gotoStep('{{ $s['key'] }}')"
+                            aria-label="{{ __($s['label']) }}" @class([
+                                'block w-full rounded-full transition-all hover:opacity-80',
+                                'h-3' => $s['key'] === $step['key'],
+                                'h-1.5 hover:h-3' => $s['key'] !== $step['key'],
+                                'bg-cerulean-600' => $s['key'] === $step['key'],
+                                'bg-cerulean-300 dark:bg-cerulean-700' => $s['key'] !== $step['key'] && $erledigt,
+                                'bg-gray-300 dark:bg-gray-600' => $s['key'] !== $step['key'] && $uebersprungen,
+                                'bg-gray-200 dark:bg-gray-700' => $s['key'] !== $step['key'] && ! $erledigt && ! $uebersprungen,
+                            ])></button>
+                    </x-hovertext>
                 @endforeach
             </div>
         </div>

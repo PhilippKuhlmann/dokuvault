@@ -285,6 +285,29 @@ class DocumentationWizard extends Component
         $this->advance($run);
     }
 
+    /**
+     * Direkt zu einem Schritt springen - vor oder zurueck.
+     *
+     * Nur zu erlaubten Schritten: allowedSteps() filtert nach _create-Recht,
+     * und $key kommt vom Client. Ein unbekannter oder gesperrter Schluessel
+     * wird still verworfen, statt den Durchlauf in einen Zustand zu bringen,
+     * den der Nutzer gar nicht sehen darf.
+     *
+     * Der aktuelle Schritt wird dabei weder als erledigt noch als uebersprungen
+     * vermerkt: Springen ist kein Bearbeiten.
+     */
+    public function gotoStep(string $key): void
+    {
+        [, $run] = $this->guard();
+
+        if (! collect($this->allowedSteps())->contains(fn ($s) => $s['key'] === $key)) {
+            return;
+        }
+
+        $run->update(['current_step' => $key]);
+        $this->resetForm();
+    }
+
     public function skipStep(): void
     {
         [, $run] = $this->guard();

@@ -154,6 +154,7 @@
     "EOL": "EOL",
     "EOL bald": "EOL soon",
     "Ereignis": "Event",
+    "erfasst": "recorded",
     "Erstaufnahme-Assistent": "Initial survey wizard",
     "Erzeuge einen Agent-Token und lade das passende Script herunter – für Proxmox-Hosts oder Windows Active Directory. Auf dem Gerät ausgeführt, dokumentiert es sich selbst. Der Token ist an den gewählten Standort gebunden und darf ausschließlich Dokumentationsdaten melden – kein weiterer Zugriff.": "Create an agent token and download the matching script — for Proxmox hosts or a Windows domain controller. Repeated runs update instead of duplicating.",
     "Es ist noch kein Betriebssystem hinterlegt. Bitte zuerst unter": "No operating system has been set up yet. Please start under",
@@ -561,5 +562,6 @@
     "Zählt ab der ersten Dosennummer hoch und lässt Ausgefülltes stehen. Leeren wirkt erst mit „Ports speichern“.": "Counts up from the first outlet number and leaves filled fields untouched. Clearing only takes effect once you save.",
     "— bitte wählen —": "— please choose —",
     "Änderungsverlauf": "Changelog",
-    "Überspringen": "Skip"
+    "Überspringen": "Skip",
+    "übersprungen": "skipped"
 }

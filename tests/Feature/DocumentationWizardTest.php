@@ -396,3 +396,36 @@ test('schon erfasste Eintraege verlinken auf ihr Bearbeiten-Formular', function 
     expect($inhalt)->toContain(route('router.edit', [$customer, $router], false));
     expect($inhalt)->toContain('target="_blank"');
 });
+
+test('man kann zwischen den Schritten hin und her springen', function () {
+    $this->actingAs(userWithPermissions(['site_create', 'router_create']));
+    $customer = Customer::factory()->create();
+
+    $component = Livewire::test(DocumentationWizard::class, ['customer' => $customer])
+        ->set('form.name', 'Zentrale')
+        ->call('save')
+        ->call('nextStep');
+
+    $run = DocumentationRun::where('customer_id', $customer->id)->firstOrFail();
+    expect($run->fresh()->current_step)->toBe('router');
+
+    // Zurueck zum Standort und wieder vor.
+    $component->call('gotoStep', 'site');
+    expect($run->fresh()->current_step)->toBe('site');
+
+    $component->call('gotoStep', 'router');
+    expect($run->fresh()->current_step)->toBe('router');
+});
+
+test('ein Sprung auf einen gesperrten Schritt wird verworfen', function () {
+    // Ohne server_create darf der Server-Schritt gar nicht erreichbar sein -
+    // $key kommt vom Client.
+    $this->actingAs(userWithPermissions(['site_create']));
+    $customer = Customer::factory()->create();
+
+    Livewire::test(DocumentationWizard::class, ['customer' => $customer])
+        ->call('gotoStep', 'server');
+
+    $run = DocumentationRun::where('customer_id', $customer->id)->firstOrFail();
+    expect($run->current_step)->toBe('site');
+});
