@@ -32,6 +32,19 @@ class DeviceIpAddresses extends Component
     #[Locked]
     public bool $eingebettet = false;
 
+    // Schnell ein VLAN anlegen, ohne das Formular zu verlassen. Nur die
+    // Pflichtangaben - Gateway, DNS und DHCP ergaenzt man spaeter im richtigen
+    // VLAN-Formular.
+    public bool $vlanModal = false;
+
+    public string $vlanDescription = '';
+
+    public $vlanNummer = '';
+
+    public string $vlanNetwork = '';
+
+    public string $vlanSubnetmask = '255.255.255.0';
+
     public function mount($model, $customer, bool $eingebettet = false): void
     {
         $this->modelClass = $model::class;
@@ -75,6 +88,48 @@ class DeviceIpAddresses extends Component
         ]);
 
         $this->reset('address', 'network_id', 'label');
+    }
+
+    /**
+     * Legt ein VLAN an, ohne das Geraeteformular zu verlassen, und waehlt es
+     * gleich aus - man traegt gerade eine IP ein und merkt, dass das Netz noch
+     * fehlt; ohne das waere die halb ausgefuellte Zeile weg.
+     *
+     * Der Standort kommt vom Geraet, nicht aus dem Formular: Ein VLAN gehoert
+     * dorthin, wo das Geraet steht, und ein Feld dafuer waere eine Angriffs-
+     * flaeche mehr.
+     */
+    public function vlanAnlegen(): void
+    {
+        $device = $this->device();
+        Gate::authorize('network_create');
+
+        $daten = $this->validate([
+            'vlanDescription' => ['required', 'max:255'],
+            'vlanNummer' => ['nullable', 'integer', 'min:1', 'max:4094'],
+            'vlanNetwork' => ['required', 'ipv4'],
+            'vlanSubnetmask' => ['required', 'ipv4'],
+        ], [], [
+            'vlanDescription' => __('Bezeichnung'),
+            'vlanNummer' => __('VLAN-ID'),
+            'vlanNetwork' => __('Netz'),
+            'vlanSubnetmask' => __('Subnetzmaske'),
+        ]);
+
+        $netz = Network::create([
+            'customer_id' => $this->customerId,
+            'site_id' => $device->site_id ?? null,
+            'description' => $daten['vlanDescription'],
+            'vlanId' => $daten['vlanNummer'] ?: null,
+            'network' => $daten['vlanNetwork'],
+            'subnetmask' => $daten['vlanSubnetmask'],
+        ]);
+
+        // Gleich ausgewaehlt: Der Nutzer war beim Eintragen einer Adresse.
+        $this->network_id = $netz->id;
+
+        $this->reset('vlanModal', 'vlanDescription', 'vlanNummer', 'vlanNetwork');
+        $this->vlanSubnetmask = '255.255.255.0';
     }
 
     public function remove(int $id): void

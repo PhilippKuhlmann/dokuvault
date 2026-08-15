@@ -149,3 +149,37 @@ test('die Kennung des Geraets laesst sich vom Client nicht umbiegen', function (
             ->toThrow(CannotUpdateLockedPropertyException::class);
     }
 });
+
+test('ein VLAN laesst sich im IP-Block anlegen und ist danach ausgewaehlt', function () {
+    $this->actingAs(userWithPermissions(['router_update', 'network_create']));
+    [$customer, $router] = routerWithNetworks();
+
+    $komponente = Livewire::test(DeviceIpAddresses::class, ['model' => $router, 'customer' => $customer])
+        ->set('vlanDescription', 'DMZ')
+        ->set('vlanNummer', 90)
+        ->set('vlanNetwork', '10.10.90.0')
+        ->call('vlanAnlegen')
+        ->assertHasNoErrors();
+
+    $netz = Network::where('description', 'DMZ')->firstOrFail();
+    expect($netz->customer_id)->toBe($customer->id);
+    // Der Standort kommt vom Geraet, nicht aus dem Formular.
+    expect($netz->site_id)->toBe($router->site_id);
+    expect($netz->vlanId)->toBe(90);
+
+    // Direkt ausgewaehlt und Modal zu - man war mitten im Eintragen einer IP.
+    $komponente->assertSet('network_id', $netz->id)->assertSet('vlanModal', false);
+});
+
+test('ohne network_create bleibt das VLAN-Anlegen gesperrt', function () {
+    $this->actingAs(userWithPermissions(['router_update'])); // kein network_create
+    [$customer, $router] = routerWithNetworks();
+
+    Livewire::test(DeviceIpAddresses::class, ['model' => $router, 'customer' => $customer])
+        ->set('vlanDescription', 'Heimlich')
+        ->set('vlanNetwork', '10.10.99.0')
+        ->call('vlanAnlegen')
+        ->assertForbidden();
+
+    expect(Network::where('description', 'Heimlich')->count())->toBe(0);
+});
