@@ -153,7 +153,10 @@ class NetworkQuickCreate extends Component
         $this->dispatch('vlan-angelegt', id: $netz->id);
 
         if ($this->zielNachAnlegen !== '') {
-            $this->redirect($this->zielNachAnlegen, navigate: true);
+            // Bewusst ohne navigate: Livewires SPA-Navigation tauscht nur den
+            // Inhalt, das Theme-Skript im <head> laeuft dabei nicht erneut -
+            // die Seite landete im hellen Modus und der Umschalter war tot.
+            $this->redirect($this->zielNachAnlegen);
         }
     }
 
