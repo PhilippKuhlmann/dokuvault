@@ -33,10 +33,16 @@
                     Schritt {{ $currentIndex + 1 }} von {{ count($steps) }}
                 </span>
             </div>
-            <div class="flex gap-0.5">
+            {{-- Jeder Balken traegt seinen Schrittnamen als Titel: Sechzehn
+                 namenlose Striche sagen nur, wie weit es noch ist, nicht was
+                 kommt. Der aktuelle ist doppelt so hoch und damit auch ohne
+                 Farbunterscheidung zu finden. --}}
+            <div class="flex items-end gap-0.5">
                 @foreach ($steps as $s)
-                    <div @class([
-                        'h-1.5 flex-1 rounded-full',
+                    <div title="{{ __($s['label']) }}" @class([
+                        'flex-1 rounded-full transition-all',
+                        'h-3' => $s['key'] === $step['key'],
+                        'h-1.5' => $s['key'] !== $step['key'],
                         'bg-cerulean-600' => $s['key'] === $step['key'],
                         'bg-cerulean-300 dark:bg-cerulean-700' => $s['key'] !== $step['key'] && in_array($s['key'], $run->completed_steps ?? []),
                         'bg-gray-300 dark:bg-gray-600' => $s['key'] !== $step['key'] && in_array($s['key'], $run->skipped_steps ?? []),
@@ -71,18 +77,24 @@
                 </div>
             @endif
 
-            @if ($entries->isNotEmpty())
-                <div class="mb-5" wire:key="entries-{{ $step['key'] }}">
-                    <div class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Bereits erfasst ({{ $entries->count() }})
+            {{-- Beim Standort-Schritt stehen dieselben Eintraege schon oben in der
+                 Auswahl "Vorhandenen Standort verwenden" - zweimal dieselbe Liste
+                 untereinander sagt nichts Zusaetzliches. --}}
+            @if ($entries->isNotEmpty() && $step['key'] !== 'site')
+                {{-- Abgesetzte Flaeche mit Kacheln statt einer Zeilenliste: Was
+                     schon erfasst ist, soll man ueberfliegen und nicht Zeile fuer
+                     Zeile lesen. --}}
+                <div class="mb-5 rounded-lg bg-gray-50 p-3 dark:bg-gray-700/40" wire:key="entries-{{ $step['key'] }}">
+                    <div class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                        {{ __('Schon erfasst') }} ({{ $entries->count() }})
                     </div>
-                    <ul class="divide-y divide-gray-100 dark:divide-gray-700 text-sm max-h-48 overflow-y-auto">
+                    <div class="flex max-h-40 flex-wrap gap-1.5 overflow-y-auto">
                         @foreach ($entries as $entry)
-                            <li class="py-1.5 text-gray-800 dark:text-gray-100">
+                            <span class="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
                                 {{ $entry->{$step['label_field']} ?: '—' }}
-                            </li>
+                            </span>
                         @endforeach
-                    </ul>
+                    </div>
                 </div>
             @endif
 
