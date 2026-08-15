@@ -4,6 +4,8 @@
         <div class="h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-gray-900">
             <ul class="space-y-2">
 
+            <x-aside.toplink :label="__('Dashboard')" svg="svg.home" :href="route('admin.dashboard')" />
+
             <x-aside.dropdown :label="__('Benutzer')" svg="svg.user" >
                 <x-slot:links>
                     <x-aside.dropdownlink :label="__('Benutzer')" href="{{ route('admin.user.index') }}" />
