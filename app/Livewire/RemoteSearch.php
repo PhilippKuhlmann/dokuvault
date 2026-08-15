@@ -4,13 +4,13 @@ namespace App\Livewire;
 
 use App\Models\Server;
 use App\Models\VM;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 class RemoteSearch extends Component
 {
+    #[Url]
     public $search;
-
-    protected $queryString = ['search'];
 
     public function render()
     {

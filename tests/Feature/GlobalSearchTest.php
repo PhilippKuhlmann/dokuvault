@@ -81,3 +81,15 @@ test('die Treffer lassen sich ohne die View pruefen', function () {
     // Unter zwei Zeichen wird gar nicht gesucht.
     expect(Livewire::test(GlobalSearch::class)->set('search', 'P')->get('groups'))->toBeEmpty();
 });
+
+test('der Suchbegriff kommt weiterhin aus der URL', function () {
+    $this->actingAs(userWithPermissions(['computer_viewAny']));
+    [$customer] = searchFixture();
+
+    // #[Url] statt $queryString: ?search=... muss unveraendert greifen, sonst
+    // brechen geteilte Links auf ein Suchergebnis.
+    Livewire::withQueryParams(['search' => 'PC-Suchtest'])
+        ->test(GlobalSearch::class)
+        ->assertSet('search', 'PC-Suchtest')
+        ->assertSee('PC-Suchtest');
+});

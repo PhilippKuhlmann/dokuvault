@@ -3,13 +3,13 @@
 namespace App\Livewire;
 
 use App\Models\Customer;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 class SearchCustomer extends Component
 {
+    #[Url]
     public $search;
-
-    protected $queryString = ['search'];
 
     public function render()
     {

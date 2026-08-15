@@ -29,13 +29,13 @@ use App\Models\VM;
 use App\Models\Wifi;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 class GlobalSearch extends Component
 {
+    #[Url]
     public $search;
-
-    protected $queryString = ['search'];
 
     /**
      * Durchsuchbare Typen: Slug => [Model, Anzeigename, Permission-Prefix, Suchspalten]

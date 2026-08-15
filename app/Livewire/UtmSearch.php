@@ -3,13 +3,13 @@
 namespace App\Livewire;
 
 use App\Models\SecurepointUTM;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 class UtmSearch extends Component
 {
+    #[Url]
     public $search;
-
-    protected $queryString = ['search'];
 
     public function render()
     {
