@@ -102,3 +102,31 @@ test('die VLAN-Liste bindet das Modal ein', function () {
     // Der alte Weg ist nicht mehr verlinkt.
     expect($inhalt)->not->toContain('/network/create');
 });
+
+test('in der Liste laedt die Seite nach dem Anlegen neu', function () {
+    $this->actingAs(userWithPermissions(['network_create']));
+    [$customer, $site] = netzUmgebung();
+
+    // Die Liste ist eine normale Blade-Seite: Ohne Neuladen stuende das neue
+    // Netz erst nach einem Seitenwechsel darin.
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $customer, 'neuLaden' => true])
+        ->set('site_id', $site->id)
+        ->set('description', 'Frisch')
+        ->set('network', '10.10.93.0')
+        ->call('speichern')
+        ->assertHasNoErrors()
+        ->assertRedirect();
+});
+
+test('am Geraet wird nicht neu geladen, nur ausgewaehlt', function () {
+    $this->actingAs(userWithPermissions(['network_create']));
+    [$customer, $site] = netzUmgebung();
+
+    // Dort wuerde ein Neuladen das halb ausgefuellte IP-Formular kosten.
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $customer, 'siteId' => $site->id])
+        ->set('description', 'Ohne Reload')
+        ->set('network', '10.10.94.0')
+        ->call('speichern')
+        ->assertHasNoErrors()
+        ->assertNoRedirect();
+});

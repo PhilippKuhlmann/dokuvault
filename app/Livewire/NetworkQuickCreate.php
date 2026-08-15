@@ -61,13 +61,22 @@ class NetworkQuickCreate extends Component
 
     public bool $mitSymbol = false;
 
-    public function mount($customer, ?int $siteId = null, string $knopfKlassen = '', string $label = '', bool $mitSymbol = false): void
+    /**
+     * In der VLAN-Liste die Seite neu laden. Die Liste ist eine normale
+     * Blade-Seite - nach dem Speichern rendert nur diese Komponente neu, das
+     * neue Netz stuende sonst erst nach einem Neuladen da. Am Geraet ist das
+     * unnoetig: Dort wird es nur in der Auswahl gesetzt.
+     */
+    public bool $neuLaden = false;
+
+    public function mount($customer, ?int $siteId = null, string $knopfKlassen = '', string $label = '', bool $mitSymbol = false, bool $neuLaden = false): void
     {
         $this->customerId = $customer->id;
         $this->siteId = $siteId;
         $this->knopfKlassen = $knopfKlassen;
         $this->label = $label;
         $this->mitSymbol = $mitSymbol;
+        $this->neuLaden = $neuLaden;
     }
 
     public function speichern(): void
@@ -127,8 +136,12 @@ class NetworkQuickCreate extends Component
             'cidr', 'gateway', 'dns1', 'dns2', 'dhcpStart', 'dhcpEnd');
         $this->subnetmask = '255.255.255.0';
 
-        // Der IP-Block waehlt das neue Netz damit gleich aus; die Liste laedt neu.
+        // Der IP-Block waehlt das neue Netz damit gleich aus.
         $this->dispatch('vlan-angelegt', id: $netz->id);
+
+        if ($this->neuLaden) {
+            $this->redirect(url()->current(), navigate: true);
+        }
     }
 
     public function render()
