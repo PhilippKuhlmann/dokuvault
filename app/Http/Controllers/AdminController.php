@@ -66,7 +66,7 @@ class AdminController extends Controller
                 'name' => $os->name.' ('.$betroffen.' Systeme)',
                 'date' => $os->eol_date,
                 'customer' => null,
-                'route' => route('admin.operatingsystem.index'),
+                'route' => route('admin.eol.index'),
             ]);
         }
 

@@ -26,6 +26,12 @@
                 </x-slot:links>
             </x-aside.dropdown>
 
+            <x-aside.dropdown :label="__('Betriebssysteme')" svg="svg.servers" >
+                <x-slot:links>
+                    <x-aside.dropdownlink :label="__('Support-Ende (EOL)')" href="{{ route('admin.eol.index') }}" />
+                </x-slot:links>
+            </x-aside.dropdown>
+
             <x-aside.dropdown :label="__('Protokoll')" svg="svg.document" >
                 <x-slot:links>
                     <x-aside.dropdownlink :label="__('Aktivitäten')" href="{{ route('admin.activity.index') }}" />

@@ -17,6 +17,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DECTController;
 use App\Http\Controllers\DomainController;
 use App\Http\Controllers\DynDNSController;
+use App\Http\Controllers\EolController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\FTPServerController;
 use App\Http\Controllers\InternetConnectionController;
@@ -120,6 +121,10 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
         Route::get('/operatingsystem/create', [OperatingSystemController::class, 'create'])->name('admin.operatingsystem.create');
         Route::get('/operatingsystem/{operatingSystem}/edit', [OperatingSystemController::class, 'edit'])->name('admin.operatingsystem.edit');
         Route::patch('/operatingsystem/{operatingSystem}', [OperatingSystemController::class, 'update'])->name('admin.operatingsystem.update');
+
+        // Betroffene Geraete nach Kunde: Welcher Kunde hat wie viele Maschinen
+        // auf einem System, dessen Support endet?
+        Route::get('/eol', [EolController::class, 'index'])->name('admin.eol.index');
 
         // Dienste-Katalog (Name und Farbe der Kacheln in den Geraetelisten)
         Route::get('/service', [ServiceController::class, 'index'])->name('admin.service.index');

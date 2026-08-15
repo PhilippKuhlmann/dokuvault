@@ -106,3 +106,48 @@ test('das Admin-Dashboard nennt betroffene Systeme, aber nur mit Geräten', func
     // Ein EOL-System ohne Geraete darauf ist kein Problem und nur Laerm.
     $antwort->assertDontSee('CentOS 7');
 });
+
+test('die EOL-Übersicht gruppiert die betroffenen Geräte nach Kunde', function () {
+    $adminRolle = Role::factory()->create(['id' => Role::IS_ADMIN]);
+    $admin = User::factory()->create(['role_id' => $adminRolle->id]);
+
+    [$kundeA, $siteA, $altesOs, $server] = eolUmgebung('2023-10-10');
+    $kundeA->update(['name' => 'Alpha GmbH']);
+
+    // Zweiter Kunde mit einer VM auf demselben alten System.
+    $kundeB = Customer::factory()->create(['name' => 'Beta AG']);
+    $siteB = Site::factory()->create(['customer_id' => $kundeB->id]);
+    VM::create([
+        'customer_id' => $kundeB->id, 'site_id' => $siteB->id,
+        'name' => 'VM-BETA', 'operating_system_id' => $altesOs->id,
+    ]);
+
+    // Ein Gerät auf einem noch unterstützten System gehört nicht auf die Seite.
+    $neu = OperatingSystem::factory()->create(['name' => 'Windows Server 2025', 'eol_date' => '2034-10-10']);
+    Server::create([
+        'customer_id' => $kundeB->id, 'site_id' => $siteB->id,
+        'name' => 'SRV-NEU', 'operating_system_id' => $neu->id,
+    ]);
+
+    $this->actingAs($admin)->get('/admin/eol')
+        ->assertSee('Alpha GmbH')
+        ->assertSee('Beta AG')
+        ->assertSee('SRV-ALT')
+        ->assertSee('VM-BETA')
+        ->assertDontSee('SRV-NEU');
+});
+
+test('ohne betroffene Geräte bleibt die EOL-Übersicht leer', function () {
+    $adminRolle = Role::factory()->create(['id' => Role::IS_ADMIN]);
+    $admin = User::factory()->create(['role_id' => $adminRolle->id]);
+
+    eolUmgebung(null);
+
+    $this->actingAs($admin)->get('/admin/eol')
+        ->assertOk()
+        ->assertSee('Kein Gerät läuft auf einem System');
+});
+
+test('ohne Admin-Rolle ist die EOL-Übersicht gesperrt', function () {
+    $this->actingAs(userWithPermissions([]))->get('/admin/eol')->assertForbidden();
+});

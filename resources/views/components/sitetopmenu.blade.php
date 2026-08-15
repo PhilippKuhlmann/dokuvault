@@ -13,6 +13,8 @@
         'admin.mailboxprovider' => 'Postfach-Anbieter',
         'admin.operatingsystem' => 'Betriebssysteme',
         'admin.rackcatalogitem' => 'Rack-Katalog',
+        'admin.service' => 'Dienste',
+        'admin.eol' => 'Support-Ende (EOL)',
     ];
 
     $title = $isAdmin
