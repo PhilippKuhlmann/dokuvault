@@ -1,16 +1,10 @@
 @props(['device', 'title' => null])
 
 @php
-    // Die zusaetzlichen Adressen (Relation ipAddresses) standen bisher nur im
-    // Bearbeiten-Formular. Wer die Doku liest, sah sie nie - obwohl genau dort
-    // steht, ueber welches VLAN ein Geraet noch erreichbar ist.
+    // Adressen stehen ausschliesslich in der Relation ipAddresses - eine
+    // IP-Spalte am Geraet gibt es nicht mehr.
     $zeilen = [];
 
-    foreach ([__('Primär') => $device->ip1 ?? $device->ip ?? null, __('Sekundär') => $device->ip2 ?? null] as $rolle => $adresse) {
-        if (filled($adresse)) {
-            $zeilen[] = ['rolle' => $rolle, 'adresse' => $adresse, 'zusatz' => null];
-        }
-    }
 
     $weitereAdressen = $device->relationLoaded('ipAddresses')
         ? $device->ipAddresses

@@ -25,6 +25,9 @@ class InternetConnectionRequest extends FormRequest
             'bandwidth_down' => 'max:255',
             'bandwidth_up' => 'max:255',
             'wan_ip' => 'max:255',
+            // Einwahldaten des Anschlusses - das Passwort liegt verschluesselt.
+            'pppoe_user' => 'nullable|max:255',
+            'pppoe_password' => 'nullable|max:255',
             // Optional: viele Anschluesse bringen zusaetzlich ein geroutetes
             // Netz mit, etwa ein /28 samt eigenem Gateway.
             'subnet' => ['nullable', 'max:255', new IstNetz],
@@ -36,6 +39,6 @@ class InternetConnectionRequest extends FormRequest
 
     public function attributes(): array
     {
-        return ['site_id' => 'Standort', 'provider' => 'Anbieter', 'product' => 'Produkt', 'contract_number' => 'Vertragsnummer', 'connection_type' => 'Anschlussart', 'bandwidth_down' => 'Download', 'bandwidth_up' => 'Upload', 'wan_ip' => 'WAN-IP', 'subnet' => 'Netz', 'subnet_gateway' => 'Gateway des Netzes', 'hotline' => 'Hotline', 'notes' => 'Notizen'];
+        return ['site_id' => 'Standort', 'provider' => 'Anbieter', 'product' => 'Produkt', 'contract_number' => 'Vertragsnummer', 'connection_type' => 'Anschlussart', 'bandwidth_down' => 'Download', 'bandwidth_up' => 'Upload', 'wan_ip' => 'WAN-IP', 'pppoe_user' => 'Einwahl-Benutzer', 'pppoe_password' => 'Einwahl-Passwort', 'subnet' => 'Netz', 'subnet_gateway' => 'Gateway des Netzes', 'hotline' => 'Hotline', 'notes' => 'Notizen'];
     }
 }

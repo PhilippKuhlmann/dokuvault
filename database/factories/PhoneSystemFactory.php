@@ -16,7 +16,6 @@ class PhoneSystemFactory extends Factory
         return [
             'manufacturer' => $m, 'model' => $mo,
             'serialNumber' => strtoupper(fake()->bothify('??########')),
-            'ip1' => fake()->localIpv4(),
             'port' => '443',
             'username' => fake()->userName(),
             'password' => fake()->password(6, 12),

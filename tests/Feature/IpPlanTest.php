@@ -28,19 +28,26 @@ test('IP-Plan listet belegte Adressen und fasst freie Bereiche + DHCP zusammen',
         'dhcpEnd' => '200',
     ]);
 
-    Router::create([
+    // Adressen stehen nur noch im Block "Weitere IP-Adressen" - der IP-Plan
+    // liest sie von dort.
+    $rtr = Router::create([
         'customer_id' => $customer->id, 'site_id' => $site->id,
-        'name' => 'RTR-Core', 'ip' => '192.168.1.1', 'port' => '443',
+        'name' => 'RTR-Core', 'port' => '443',
         'username' => 'admin', 'password' => 'x',
     ]);
-    Server::create([
+    $rtr->ipAddresses()->create(['customer_id' => $customer->id, 'address' => '192.168.1.1']);
+
+    $srv = Server::create([
         'customer_id' => $customer->id, 'site_id' => $site->id,
-        'name' => 'SRV-DC01', 'ip1' => '192.168.1.10', 'operating_system_id' => $os->id,
+        'name' => 'SRV-DC01', 'operating_system_id' => $os->id,
     ]);
-    Computer::create([
+    $srv->ipAddresses()->create(['customer_id' => $customer->id, 'address' => '192.168.1.10']);
+
+    $pc = Computer::create([
         'customer_id' => $customer->id, 'site_id' => $site->id,
-        'name' => 'PC-42', 'ip' => '192.168.1.50', 'operating_system_id' => $os->id,
+        'name' => 'PC-42', 'operating_system_id' => $os->id,
     ]);
+    $pc->ipAddresses()->create(['customer_id' => $customer->id, 'address' => '192.168.1.50']);
 
     $response = $this->get("/{$customer->slug}/ip-plan");
     $response->assertStatus(200);

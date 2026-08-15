@@ -28,8 +28,6 @@ class VMRequest extends FormRequest
             'site_id' => ['required', new BelongsToCustomer('sites')],
             'server_id' => ['nullable', new BelongsToCustomer('servers')],
             'name' => 'required|max:255',
-            'ip1' => 'max:255',
-            'ip2' => 'max:255',
             'services' => 'max:255',
             'operating_system_id' => '',
             'remoteID' => '',
@@ -42,8 +40,6 @@ class VMRequest extends FormRequest
         return [
             'site_id' => 'Standort',
             'name' => 'Name',
-            'ip1' => 'IP 1',
-            'ip2' => 'IP 2',
             'services' => 'Dienste',
             'cidr' => 'CIDR',
             'operating_system_id' => 'Betriebsystem',

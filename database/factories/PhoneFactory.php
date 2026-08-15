@@ -17,7 +17,6 @@ class PhoneFactory extends Factory
             'extension' => fake()->numberBetween(10, 99),
             'manufacturer' => $m, 'model' => $mo,
             'serialNumber' => strtoupper(fake()->bothify('??########')),
-            'ip' => fake()->localIpv4(),
             'mac' => fake()->macAddress(),
             'port' => '443',
             'username' => fake()->userName(),

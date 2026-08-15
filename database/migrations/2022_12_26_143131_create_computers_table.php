@@ -21,7 +21,6 @@ return new class extends Migration
             $table->string('manufacturer')->nullable();
             $table->string('model')->nullable();
             $table->string('serialNumber')->nullable();
-            $table->string('ip')->nullable();
             $table->foreignId('operating_system_id')->nullable();
             $table->string('remoteID')->nullable();
             $table->string('remotePassword')->nullable();

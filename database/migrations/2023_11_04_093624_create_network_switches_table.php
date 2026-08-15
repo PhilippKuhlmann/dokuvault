@@ -21,7 +21,6 @@ return new class extends Migration
             $table->string('serialNumber')->nullable();
             $table->string('username')->nullable();
             $table->string('password')->nullable();
-            $table->string('ip');
             $table->string('port')->nullable();
             $table->timestamps();
             $table->softDeletes();

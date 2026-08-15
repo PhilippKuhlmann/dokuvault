@@ -17,7 +17,6 @@ class RecorderFactory extends Factory
             'name' => 'NVR-'.fake()->randomElement(['Werkstatt', 'Hof', 'Zentrale']),
             'manufacturer' => $m, 'model' => $mo,
             'serialNumber' => strtoupper(fake()->bothify('??########')),
-            'ip' => fake()->localIpv4(), 'port' => '80',
             'username' => 'admin', 'password' => fake()->password(8, 12),
         ];
     }

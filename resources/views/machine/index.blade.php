@@ -11,11 +11,7 @@
                 @forelse ($machines as $machine)
 
                     @php
-                        // ip wird im Formular nicht mehr gepflegt: Adressen kommen aus
-                        // dem IP-Block. Ist die Spalte leer, tritt die erste
-                        // dokumentierte Adresse an ihre Stelle.
-                        $adressen = $machine->relationLoaded('ipAddresses') ? $machine->ipAddresses : $machine->ipAddresses()->get();
-                        $primaer = collect([$machine->ip, $adressen->first()?->address])->filter()->first();
+                        $primaer = $adressen->first()?->address;
                     @endphp
 
                     <x-table.datarow

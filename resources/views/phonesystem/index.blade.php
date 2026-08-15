@@ -6,8 +6,8 @@
 
         @php
             $adressen = $phoneSystem->relationLoaded('ipAddresses') ? $phoneSystem->ipAddresses : $phoneSystem->ipAddresses()->get();
-            $primaer = collect([$phoneSystem->ip1 ?? null, $phoneSystem->ip ?? null, $adressen->first()?->address])->filter()->first();
-            $anzahlIps = collect([$primaer, $phoneSystem->ip2 ?? null])->filter()->count() + $adressen->count();
+            $primaer = $adressen->first()?->address;
+            $anzahlIps = $adressen->count();
         @endphp
         <x-card>
             <x-slot:head>

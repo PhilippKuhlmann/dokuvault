@@ -91,7 +91,7 @@ test('Standort setzt run.site_id, Folgeschritt erbt sie', function () {
 
     $component
         ->set('form.name', 'RTR-Core')
-        ->set('form.ip', '10.10.30.1')
+        ->set('form.ip_address', '10.10.30.1')
         ->set('form.port', '443')
         ->set('form.username', 'admin')
         ->set('form.password', 'geheim123')
@@ -101,6 +101,10 @@ test('Standort setzt run.site_id, Folgeschritt erbt sie', function () {
     $router = Router::where('customer_id', $customer->id)->first();
     expect($router)->not->toBeNull();
     expect($router->site_id)->toBe($site->id);
+
+    // Die IP ist keine Spalte am Geraet mehr: Der Assistent legt sie im Block
+    // "Weitere IP-Adressen" an, wo sie auch das Formular erwartet.
+    expect($router->ipAddresses()->pluck('address')->all())->toBe(['10.10.30.1']);
 });
 
 test('Pflichtfeld leer -> Validierungsfehler, kein Datensatz', function () {

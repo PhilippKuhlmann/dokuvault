@@ -7,8 +7,8 @@
 
         @php
             $adressen = $otherclient->relationLoaded('ipAddresses') ? $otherclient->ipAddresses : $otherclient->ipAddresses()->get();
-            $primaer = collect([$otherclient->ip1 ?? null, $otherclient->ip ?? null, $adressen->first()?->address])->filter()->first();
-            $anzahlIps = collect([$primaer, $otherclient->ip2 ?? null])->filter()->count() + $adressen->count();
+            $primaer = $adressen->first()?->address;
+            $anzahlIps = $adressen->count();
         @endphp
         <x-card>
             <x-slot:head>

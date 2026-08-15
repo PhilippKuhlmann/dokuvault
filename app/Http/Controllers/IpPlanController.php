@@ -2,55 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Accesspoint;
-use App\Models\Camera;
-use App\Models\Computer;
 use App\Models\Customer;
-use App\Models\DECT;
-use App\Models\IoTDevice;
 use App\Models\IpAddress;
-use App\Models\Machine;
-use App\Models\NAS;
 use App\Models\Network;
-use App\Models\NetworkSwitch;
-use App\Models\OtherClient;
-use App\Models\Phone;
-use App\Models\PhoneSystem;
-use App\Models\Printer;
-use App\Models\Recorder;
-use App\Models\Router;
-use App\Models\SecurepointUMA;
-use App\Models\SecurepointUTM;
 use App\Models\Server;
-use App\Models\Ups;
-use App\Models\VM;
 
 class IpPlanController extends Controller
 {
     /**
-     * Geräte-Modelle mit ihren IP-Spalten. Sekundäre Spalten bekommen ein Suffix am Label.
+     * Geräte-Modelle mit ihren verbliebenen IP-Spalten. Die dokumentierten
+     * Adressen kommen aus ip_addresses (siehe unten); als Spalte am Gerät gibt
+     * es nur noch die BMC-Adresse des Servers.
      * [Model, [spalte => label-suffix]]
      */
     protected const IP_SOURCES = [
-        [Server::class, ['ip1' => '', 'ip2' => ' (IP2)', 'bmcIp' => ' (BMC)']],
-        [VM::class, ['ip1' => '', 'ip2' => ' (IP2)']],
-        [NAS::class, ['ip1' => '', 'ip2' => ' (IP2)']],
-        [PhoneSystem::class, ['ip1' => '']],
-        [Computer::class, ['ip' => '']],
-        [Printer::class, ['ip' => '']],
-        [Camera::class, ['ip' => '']],
-        [Recorder::class, ['ip' => '']],
-        [Phone::class, ['ip' => '']],
-        [DECT::class, ['ip' => '']],
-        [NetworkSwitch::class, ['ip' => '']],
-        [Accesspoint::class, ['ip' => '']],
-        [Router::class, ['ip' => '']],
-        [IoTDevice::class, ['ip' => '']],
-        [OtherClient::class, ['ip' => '']],
-        [Ups::class, ['ip' => '']],
-        [Machine::class, ['ip' => '']],
-        [SecurepointUTM::class, ['ip' => '']],
-        [SecurepointUMA::class, ['ip' => '']],
+        [Server::class, ['bmcIp' => ' (BMC)']],
     ];
 
     // Obergrenze an Host-Adressen, die vollständig aufgelistet werden (schützt vor riesigen Subnetzen).

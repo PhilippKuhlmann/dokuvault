@@ -7,8 +7,8 @@
 
         @php
             $adressen = $iotdevice->relationLoaded('ipAddresses') ? $iotdevice->ipAddresses : $iotdevice->ipAddresses()->get();
-            $primaer = collect([$iotdevice->ip1 ?? null, $iotdevice->ip ?? null, $adressen->first()?->address])->filter()->first();
-            $anzahlIps = collect([$primaer, $iotdevice->ip2 ?? null])->filter()->count() + $adressen->count();
+            $primaer = $adressen->first()?->address;
+            $anzahlIps = $adressen->count();
         @endphp
     <x-card>
         <x-slot:head>

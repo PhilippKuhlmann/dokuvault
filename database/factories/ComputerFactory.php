@@ -33,7 +33,6 @@ class ComputerFactory extends Factory
             'manufacturer' => $manufacturer,
             'model' => fake()->randomElement(self::HARDWARE[$manufacturer]),
             'serialNumber' => fake()->ean13(),
-            'ip' => fake()->localIpv4(),
             // Client-Betriebssystem statt einer festen ID aus dem Windows-Server-Block
             'operating_system_id' => OperatingSystem::where('name', 'like', 'Windows 1%')
                 ->inRandomOrder()->value('id') ?? 1,

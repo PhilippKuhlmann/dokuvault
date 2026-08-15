@@ -24,7 +24,6 @@ class SecurepointUMAFactory extends Factory
             'username' => 'admin',
             'password' => fake()->password($minLength = 6, $maxLength = 12),
             'encryptionkey' => fake()->password($minLength = 10, $maxLength = 20),
-            'ip' => '192.168.175.254',
             'urlAdmin' => 'https://192.168.175.254:11115',
             'urlUser' => 'https://192.168.175.254',
         ];

@@ -1,0 +1,87 @@
+<?php
+
+use App\Models\Customer;
+use App\Models\InternetConnection;
+use App\Models\Site;
+use Illuminate\Support\Facades\DB;
+
+/**
+ * Einwahldaten am Internetanschluss. Vorher gab es dafuer keine Stelle - wer
+ * sie festhalten wollte, schrieb sie in die Notizen.
+ */
+function pppoeUmgebung(): array
+{
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+
+    return [$customer, $site];
+}
+
+test('das Formular bietet Felder fuer die Einwahldaten', function () {
+    $this->actingAs(userWithPermissions(['internetconnection_create', 'internetconnection_update']));
+    [$customer, $site] = pppoeUmgebung();
+
+    $anschluss = InternetConnection::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id, 'provider' => 'Telekom',
+    ]);
+
+    foreach (["/{$customer->slug}/internetconnection/create", "/{$customer->slug}/internetconnection/{$anschluss->id}/edit"] as $url) {
+        $inhalt = $this->get($url)->assertOk()->getContent();
+
+        expect($inhalt)->toContain('name="pppoe_user"');
+        expect($inhalt)->toContain('name="pppoe_password"');
+    }
+});
+
+test('die Einwahldaten werden gespeichert, das Passwort verschluesselt', function () {
+    $this->actingAs(userWithPermissions(['internetconnection_create']));
+    [$customer, $site] = pppoeUmgebung();
+
+    $this->post("/{$customer->slug}/internetconnection", [
+        'site_id' => $site->id, 'provider' => 'Telekom',
+        'pppoe_user' => 'anschluss12345@t-online.de',
+        'pppoe_password' => 'geheim123',
+    ])->assertSessionHasNoErrors();
+
+    $anschluss = InternetConnection::firstOrFail();
+    expect($anschluss->pppoe_user)->toBe('anschluss12345@t-online.de');
+    expect($anschluss->pppoe_password)->toBe('geheim123');
+
+    // In der Spalte darf das Kennwort nicht im Klartext stehen.
+    $roh = DB::table('internet_connections')->where('id', $anschluss->id)->value('pppoe_password');
+    expect($roh)->not->toBe('geheim123');
+    expect($roh)->not->toContain('geheim');
+});
+
+test('ohne Einwahldaten bleibt das Passwort leer statt verschluesselt leer', function () {
+    $this->actingAs(userWithPermissions(['internetconnection_create']));
+    [$customer, $site] = pppoeUmgebung();
+
+    $this->post("/{$customer->slug}/internetconnection", [
+        'site_id' => $site->id, 'provider' => 'Vodafone',
+    ])->assertSessionHasNoErrors();
+
+    // Ohne die filled()-Pruefung im Setter stuende hier der Chiffretext eines
+    // Leerstrings - und die Liste zeigte eine Einwahl-Karte ohne Inhalt.
+    expect(DB::table('internet_connections')->value('pppoe_password'))->toBeNull();
+});
+
+test('die Liste zeigt die Einwahldaten nur, wenn sie gepflegt sind', function () {
+    $this->actingAs(userWithPermissions(['internetconnection_viewAny']));
+    [$customer, $site] = pppoeUmgebung();
+
+    InternetConnection::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id, 'provider' => 'Ohne Einwahl',
+    ]);
+
+    $this->get("/{$customer->slug}/internetconnection")->assertOk()->assertDontSee('Einwahl (PPPoE)');
+
+    InternetConnection::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id, 'provider' => 'Mit Einwahl',
+        'pppoe_user' => 'kunde@provider.de',
+    ]);
+
+    $this->get("/{$customer->slug}/internetconnection")->assertOk()
+        ->assertSee('Einwahl (PPPoE)')
+        ->assertSee('kunde@provider.de');
+});

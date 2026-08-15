@@ -19,7 +19,6 @@ class VMFactory extends Factory
     {
         return [
             'name' => 'VM-'.fake()->randomElement(['DC02', 'Exchange', 'RDS01', 'App-ERP', 'SQL02', 'WSUS', 'Webserver', 'Terminal']),
-            'ip1' => fake()->localIpv4(),
             'services' => 'docker,apache2,mariadb',
             'operating_system_id' => fake()->numberBetween($min = 1, $max = 10),
             'remoteID' => fake()->numberBetween($min = 100000000, $max = 999999999),

@@ -15,11 +15,20 @@
                 'Anschlussart' => $ic->connection_type,
             ]" />
             <x-minitablecard :title="__('Technik')" :array="[
-                'Download' => $ic->bandwidth_down,
-                'Upload' => $ic->bandwidth_up,
+                'Download' => $ic->bandbreite($ic->bandwidth_down),
+                'Upload' => $ic->bandbreite($ic->bandwidth_up),
                 'WAN-IP' => $ic->wan_ip,
                 'Hotline' => $ic->hotline,
             ]" />
+
+            {{-- Einwahldaten nur, wenn gepflegt: Nicht jeder Anschluss braucht
+                 PPPoE, und eine leere Karte waere nur Rauschen. --}}
+            @if ($ic->pppoe_user || $ic->pppoe_password)
+                <x-minitablecard :title="__('Einwahl (PPPoE)')" :array="[
+                    'Benutzer' => $ic->pppoe_user,
+                    'Passwort' => $ic->pppoe_password,
+                ]" />
+            @endif
 
             {{-- Nur wenn ein geroutetes Netz hinterlegt ist - die meisten
                  Anschluesse haben nur die eine WAN-Adresse. --}}

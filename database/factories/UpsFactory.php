@@ -16,7 +16,6 @@ class UpsFactory extends Factory
             'manufacturer' => fake()->randomElement(['APC', 'Eaton', 'CyberPower']),
             'model' => fake()->bothify('??-####'),
             'serialNumber' => fake()->ean13(),
-            'ip' => fake()->localIpv4(),
             'capacity' => fake()->randomElement(['750VA', '1500VA', '3000VA']),
             'runtime' => fake()->numberBetween(5, 60).' Min',
         ];

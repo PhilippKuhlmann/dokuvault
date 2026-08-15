@@ -120,11 +120,11 @@ test('jedes Anlegen-Formular sagt, dass IP-Adressen und Zugangsdaten spaeter kom
     }
 });
 
-test('Speichern ohne IP-Feld laesst den Bestandswert stehen', function () {
+test('Speichern der Stammdaten laesst die Adressen im Block stehen', function () {
     // Router steht fuer die neun Typen, deren Request die IP bisher verlangte.
     $this->actingAs(userWithPermissions(['router_update']));
     [$customer, $router] = geraetUmgebung(Router::class);
-    $router->update(['ip' => '10.10.30.1']);
+    $router->ipAddresses()->create(['customer_id' => $customer->id, 'address' => '10.10.30.1']);
 
     $this->patch("/{$customer->slug}/router/{$router->id}", [
         'site_id' => $router->site_id, 'name' => 'RTR-NEU',
@@ -133,5 +133,7 @@ test('Speichern ohne IP-Feld laesst den Bestandswert stehen', function () {
 
     $router->refresh();
     expect($router->name)->toBe('RTR-NEU');
-    expect($router->ip)->toBe('10.10.30.1');
+
+    // Die Adresse haengt am Block und ueberlebt das Speichern der Stammdaten.
+    expect($router->ipAddresses()->pluck('address')->all())->toBe(['10.10.30.1']);
 });

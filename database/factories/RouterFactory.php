@@ -32,7 +32,6 @@ class RouterFactory extends Factory
             'model' => $hardware[1],
             'username' => 'admin',
             'password' => fake()->password($minLength = 6, $maxLength = 12),
-            'ip' => '192.168.'.fake()->numberBetween(1, 254).'.1',
             'port' => '443',
         ];
     }

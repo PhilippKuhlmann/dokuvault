@@ -21,7 +21,6 @@ class NetworkSwitchFactory extends Factory
             'manufacturer' => $m, 'model' => $mo,
             'serialNumber' => strtoupper(fake()->bothify('??####-######')),
             'username' => 'admin', 'password' => fake()->password(8, 14),
-            'ip' => fake()->localIpv4(), 'port' => '443',
         ];
     }
 }

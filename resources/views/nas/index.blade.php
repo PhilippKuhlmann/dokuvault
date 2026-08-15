@@ -7,8 +7,8 @@
 
         @php
             $adressen = $nas->relationLoaded('ipAddresses') ? $nas->ipAddresses : $nas->ipAddresses()->get();
-            $primaer = collect([$nas->ip1 ?? null, $nas->ip ?? null, $adressen->first()?->address])->filter()->first();
-            $anzahlIps = collect([$primaer, $nas->ip2 ?? null])->filter()->count() + $adressen->count();
+            $primaer = $adressen->first()?->address;
+            $anzahlIps = $adressen->count();
         @endphp
         <x-card>
             <x-slot:head>

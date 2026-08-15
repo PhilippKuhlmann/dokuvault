@@ -6,8 +6,8 @@
 
         @php
             $adressen = $securepointuma->relationLoaded('ipAddresses') ? $securepointuma->ipAddresses : $securepointuma->ipAddresses()->get();
-            $primaer = collect([$securepointuma->ip1 ?? null, $securepointuma->ip ?? null, $adressen->first()?->address])->filter()->first();
-            $anzahlIps = collect([$primaer, $securepointuma->ip2 ?? null])->filter()->count() + $adressen->count();
+            $primaer = $adressen->first()?->address;
+            $anzahlIps = $adressen->count();
         @endphp
         <x-card>
             <x-slot:head>

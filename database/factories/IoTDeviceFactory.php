@@ -22,7 +22,6 @@ class IoTDeviceFactory extends Factory
         return [
             'name' => $name, 'manufacturer' => $m, 'model' => $mo,
             'serialNumber' => strtoupper(fake()->bothify('??####-######')),
-            'ip' => fake()->localIpv4(), 'port' => '80',
             'url' => 'http://'.fake()->localIpv4(),
             'username' => 'admin', 'password' => fake()->password(8, 14),
         ];

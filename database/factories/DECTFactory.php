@@ -17,7 +17,6 @@ class DECTFactory extends Factory
             'role' => fake()->randomElement(['Master', 'Slave']),
             'manufacturer' => $m, 'model' => $mo,
             'serialNumber' => strtoupper(fake()->bothify('??########')),
-            'ip' => fake()->localIpv4(),
             'mac' => fake()->macAddress(),
             'port' => '443',
             'username' => fake()->userName(),

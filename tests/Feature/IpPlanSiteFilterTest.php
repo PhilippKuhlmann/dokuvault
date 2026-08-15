@@ -67,13 +67,13 @@ test('IPAM blendet Geraete fremder Standorte im gefilterten VLAN NICHT aus', fun
     $os = OperatingSystem::factory()->create(['name' => 'Windows 11']);
 
     // Geraet steht in Muenchen, hat aber eine IP im Hamburger Netz
-    Computer::create([
+    $fremd = Computer::create([
         'customer_id' => $customer->id,
         'site_id' => $muenchen->id,
         'name' => 'PC-Fremdstandort',
-        'ip' => '10.10.20.50',
         'operating_system_id' => $os->id,
     ]);
+    $fremd->ipAddresses()->create(['customer_id' => $customer->id, 'address' => '10.10.20.50']);
 
     $this->withSession(['site' => $hamburg->id])
         ->get("/{$customer->slug}/ip-plan")

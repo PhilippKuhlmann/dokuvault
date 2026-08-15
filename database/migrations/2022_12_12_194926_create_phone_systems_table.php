@@ -17,7 +17,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
             $table->foreignId('site_id')->constrained('sites')->onDelete('cascade');
-            $table->string('ip1')->nullable();
             $table->string('port')->nullable();
             $table->string('username')->nullable();
             $table->string('password')->nullable();

@@ -20,10 +20,12 @@ function searchFixture(): array
         'customer_id' => $customer->id,
         'site_id' => $site->id,
         'name' => 'PC-Suchtest',
-        'ip' => '10.99.88.77',
         'serialNumber' => 'SN-FINDME-01',
         'operating_system_id' => $os->id,
     ]);
+
+    // Adressen stehen nur noch im Block "Weitere IP-Adressen".
+    $computer->ipAddresses()->create(['customer_id' => $customer->id, 'address' => '10.99.88.77']);
 
     return [$customer, $computer];
 }

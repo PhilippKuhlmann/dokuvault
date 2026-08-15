@@ -19,8 +19,6 @@ return new class extends Migration
             $table->string('manufacturer')->nullable();
             $table->string('model')->nullable();
             $table->string('serialNumber')->nullable();
-            $table->string('ip1')->nullable();
-            $table->string('ip2')->nullable();
             $table->string('port')->nullable();
             $table->string('username');
             $table->string('password');

@@ -26,7 +26,6 @@ class MachineRequest extends FormRequest
         return [
             'site_id' => ['required', new BelongsToCustomer('sites')],
             'name' => 'required|max:255',
-            'ip' => 'nullable|ipv4',
         ];
     }
 
@@ -35,7 +34,6 @@ class MachineRequest extends FormRequest
         return [
             'site_id' => 'Standort',
             'name' => 'Name',
-            'ip' => 'IP',
         ];
     }
 }

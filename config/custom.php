@@ -279,7 +279,7 @@ return [
             'scope' => 'site', 'label_field' => 'name',
             'fields' => [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
-                ['name' => 'ip', 'label' => 'IP-Adresse', 'type' => 'text'],
+                ['name' => 'ip_address', 'label' => 'IP-Adresse', 'type' => 'text'],
                 ['name' => 'port', 'label' => 'Port', 'type' => 'number', 'default' => '443'],
                 ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
                 ['name' => 'password', 'label' => 'Passwort', 'type' => 'password'],
@@ -325,7 +325,7 @@ return [
             'scope' => 'site', 'label_field' => 'name',
             'fields' => [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
-                ['name' => 'ip', 'label' => 'IP-Adresse', 'type' => 'text'],
+                ['name' => 'ip_address', 'label' => 'IP-Adresse', 'type' => 'text'],
                 ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
                 ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
             ],
@@ -338,7 +338,7 @@ return [
             'scope' => 'site', 'label_field' => 'name',
             'fields' => [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
-                ['name' => 'ip', 'label' => 'IP-Adresse', 'type' => 'text'],
+                ['name' => 'ip_address', 'label' => 'IP-Adresse', 'type' => 'text'],
                 ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
                 ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
             ],
@@ -358,7 +358,7 @@ return [
                 ['name' => 'form_factor', 'label' => 'Bauform', 'type' => 'select', 'options' => $serverBauformen, 'default' => 'rack'],
                 ['name' => 'full_depth', 'label' => 'Einbautiefe', 'type' => 'select', 'options' => $serverTiefen, 'default' => 1],
                 ['name' => 'height_units', 'label' => 'Höheneinheiten (HE)', 'type' => 'number', 'default' => 1],
-                ['name' => 'ip1', 'label' => 'IP-Adresse', 'type' => 'text'],
+                ['name' => 'ip_address', 'label' => 'IP-Adresse', 'type' => 'text'],
             ],
         ],
         [
@@ -373,7 +373,7 @@ return [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
                 ['name' => 'server_id', 'label' => 'Host-Server', 'type' => 'select', 'options' => 'servers'],
                 ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'select', 'options' => 'operatingSystems'],
-                ['name' => 'ip1', 'label' => 'IP-Adresse', 'type' => 'text'],
+                ['name' => 'ip_address', 'label' => 'IP-Adresse', 'type' => 'text'],
             ],
         ],
         [
@@ -384,7 +384,7 @@ return [
             'scope' => 'site', 'label_field' => 'name',
             'fields' => [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
-                ['name' => 'ip1', 'label' => 'IP-Adresse', 'type' => 'text'],
+                ['name' => 'ip_address', 'label' => 'IP-Adresse', 'type' => 'text'],
                 ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
                 ['name' => 'password', 'label' => 'Passwort', 'type' => 'password'],
             ],
@@ -399,7 +399,7 @@ return [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
                 ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'select', 'options' => 'operatingSystems'],
                 ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
-                ['name' => 'ip', 'label' => 'IP-Adresse', 'type' => 'text'],
+                ['name' => 'ip_address', 'label' => 'IP-Adresse', 'type' => 'text'],
             ],
         ],
         [
@@ -410,7 +410,7 @@ return [
             'scope' => 'site', 'label_field' => 'name',
             'fields' => [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
-                ['name' => 'ip', 'label' => 'IP-Adresse', 'type' => 'text'],
+                ['name' => 'ip_address', 'label' => 'IP-Adresse', 'type' => 'text'],
                 ['name' => 'password', 'label' => 'Passwort', 'type' => 'password'],
             ],
         ],
@@ -435,7 +435,7 @@ return [
             'fields' => [
                 ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
                 ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
-                ['name' => 'ip1', 'label' => 'IP-Adresse', 'type' => 'text'],
+                ['name' => 'ip_address', 'label' => 'IP-Adresse', 'type' => 'text'],
             ],
         ],
         [

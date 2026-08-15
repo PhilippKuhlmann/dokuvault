@@ -13,7 +13,6 @@ class MachineFactory extends Factory
     {
         return [
             'name' => fake()->randomElement(['CNC-Fräse Halle 1', 'Laserschneider', 'Verpackungsanlage', 'Etikettendrucker Produktion', 'Waage Warenausgang']),
-            'ip' => fake()->localIpv4(),
         ];
     }
 }

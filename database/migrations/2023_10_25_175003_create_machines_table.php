@@ -16,7 +16,6 @@ return new class extends Migration
             $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
             $table->foreignId('site_id')->constrained('sites')->onDelete('cascade');
             $table->string('name');
-            $table->string('ip');
             $table->timestamps();
             $table->softDeletes();
         });

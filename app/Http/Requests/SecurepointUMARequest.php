@@ -30,7 +30,6 @@ class SecurepointUMARequest extends FormRequest
             'username' => 'required|max:255',
             'password' => 'required|max:255',
             'encryptionkey' => 'required|max:255',
-            'ip' => 'nullable|ipv4|max:255',
             'urlAdmin' => 'required|url|max:255',
             'urlUser' => 'nullable|url|max:255',
         ];
@@ -45,7 +44,6 @@ class SecurepointUMARequest extends FormRequest
             'username' => 'Benutzername',
             'password' => 'Passwort',
             'encryptionkey' => 'Verschlüsselungscode',
-            'ip' => 'IP',
             'urlAdmin' => 'Admin URL',
             'urlUser' => 'User URL',
         ];

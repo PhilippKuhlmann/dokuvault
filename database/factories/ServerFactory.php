@@ -29,7 +29,6 @@ class ServerFactory extends Factory
             'manufacturer' => $manufacturer,
             'model' => $model,
             'serialNumber' => strtoupper(fake()->bothify('??######')),
-            'ip1' => fake()->localIpv4(),
             'bmcIp' => fake()->localIpv4(),
             'bmcUser' => 'root',
             'bmcPassword' => fake()->password(10, 14),

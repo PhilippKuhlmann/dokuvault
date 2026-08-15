@@ -30,7 +30,6 @@ class ComputerRequest extends FormRequest
             'manufacturer' => 'max:255',
             'model' => 'max:255',
             'serialNumber' => 'max:255',
-            'ip' => 'max:255',
             'operating_system_id' => 'required',
             'remoteID' => '',
             'remotePassword' => '',
@@ -45,7 +44,6 @@ class ComputerRequest extends FormRequest
             'manufavtuter' => 'Hersteller',
             'model' => 'Model',
             'serialNumber' => 'Seriennummer',
-            'ip' => 'IP',
             'remoteID' => 'RustDesk ID',
             'remotePassword' => 'RustDesk Passwort',
         ];

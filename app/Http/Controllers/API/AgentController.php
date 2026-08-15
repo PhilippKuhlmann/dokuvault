@@ -68,25 +68,29 @@ class AgentController extends Controller
                 'manufacturer' => $host['manufacturer'] ?? null,
                 'model' => $host['model'] ?? null,
                 'serialNumber' => $host['serial'] ?? null,
-                'ip1' => $host['ip'] ?? null,
             ]
         );
+
+        // Die IP ist keine Spalte am Geraet mehr, sondern ein Eintrag im Block
+        // "Weitere IP-Adressen".
+        $this->meldeAdresse($server, $customer->id, $host['ip'] ?? null);
 
         $guestCount = 0;
         foreach ($data['guests'] ?? [] as $guest) {
             $guestOs = OperatingSystem::firstOrCreate(['name' => $this->mapOstype($guest['ostype'] ?? null)]);
 
-            VM::updateOrCreate(
+            $vm = VM::updateOrCreate(
                 ['customer_id' => $customer->id, 'agent_identifier' => $guest['identifier']],
                 [
                     'site_id' => $site->id,
                     'server_id' => $server->id,
                     'operating_system_id' => $guestOs->id,
                     'name' => $guest['name'] ?? ('VM '.($guest['vmid'] ?? '')),
-                    'ip1' => $guest['ip'] ?? null,
                     // 'services' bleibt manuell (Rollen der VM)
                 ]
             );
+
+            $this->meldeAdresse($vm, $customer->id, $guest['ip'] ?? null);
             $guestCount++;
         }
 
@@ -162,6 +166,27 @@ class AgentController extends Controller
             'users_documented' => $userCount,
             'groups_documented' => $groupCount,
         ]);
+    }
+
+    /**
+     * Traegt die gemeldete Adresse im Block "Weitere IP-Adressen" ein.
+     *
+     * updateOrCreate statt create: Der Agent meldet denselben Host wieder und
+     * wieder - sonst stuenden dort nach einer Woche sieben gleiche Zeilen.
+     * Gepflegte Angaben (Netz, Bezeichnung) bleiben dabei unangetastet.
+     */
+    protected function meldeAdresse($geraet, int $customerId, ?string $adresse): void
+    {
+        $adresse = trim((string) $adresse);
+
+        if ($adresse === '') {
+            return;
+        }
+
+        $geraet->ipAddresses()->updateOrCreate(
+            ['address' => $adresse],
+            ['customer_id' => $customerId]
+        );
     }
 
     protected function mapOstype(?string $ostype): string

@@ -42,7 +42,7 @@ test('das Formular bietet kein IP-1- und IP-2-Feld mehr', function () {
 
     $server = Server::create([
         'customer_id' => $customer->id, 'site_id' => $site->id,
-        'name' => 'SRV-01', 'operating_system_id' => $os->id, 'ip1' => '10.0.0.1',
+        'name' => 'SRV-01', 'operating_system_id' => $os->id,
     ]);
 
     foreach (["/{$customer->slug}/server/create", "/{$customer->slug}/server/{$server->id}/edit"] as $url) {
@@ -53,28 +53,7 @@ test('das Formular bietet kein IP-1- und IP-2-Feld mehr', function () {
     }
 });
 
-test('Speichern ohne IP-Felder laesst ein vorhandenes ip1 stehen', function () {
-    $this->actingAs(userWithPermissions(['server_update']));
-    [$customer, $site, $os] = serverFormUmgebung();
-
-    // Altbestand oder vom AutoDoc-Agent geschrieben.
-    $server = Server::create([
-        'customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'SRV-ALT',
-        'operating_system_id' => $os->id, 'ip1' => '10.10.30.10', 'ip2' => '10.10.99.10',
-    ]);
-
-    $this->patch("/{$customer->slug}/server/{$server->id}", [
-        'site_id' => $site->id, 'name' => 'SRV-NEU', 'operating_system_id' => $os->id,
-        'form_factor' => 'rack', 'full_depth' => '1', 'height_units' => 1,
-    ])->assertSessionHasNoErrors();
-
-    $server->refresh();
-    expect($server->name)->toBe('SRV-NEU');
-    expect($server->ip1)->toBe('10.10.30.10');
-    expect($server->ip2)->toBe('10.10.99.10');
-});
-
-test('die Liste zeigt die erste dokumentierte Adresse, wenn ip1 leer ist', function () {
+test('die Liste zeigt die dokumentierte Adresse aus dem IP-Block', function () {
     $this->actingAs(userWithPermissions(['server_viewAny']));
     [$customer, $site, $os] = serverFormUmgebung();
 

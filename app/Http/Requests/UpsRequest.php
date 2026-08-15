@@ -20,7 +20,6 @@ class UpsRequest extends FormRequest
             'manufacturer' => 'max:255',
             'model' => 'max:255',
             'serialNumber' => 'max:255',
-            'ip' => 'max:255',
             'capacity' => 'max:255',
             'runtime' => 'max:255',
             'notes' => 'nullable',

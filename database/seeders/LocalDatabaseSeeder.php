@@ -184,21 +184,42 @@ class LocalDatabaseSeeder extends Seeder
             'dhcpEnd' => '200',
         ]);
 
-        $rtrCore = Router::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'RTR-Core', 'ip' => '10.10.30.1']);
+        $rtrCore = Router::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'RTR-Core']);
         // Router hängt in mehreren VLANs -> zusätzliche Gateway-IP im Clients-VLAN
         $rtrCore->ipAddresses()->create(['customer_id' => $customer->id, 'network_id' => $clientsVlan->id, 'address' => '10.10.20.1', 'label' => 'Gateway Clients']);
 
-        NetworkSwitch::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SW-Core', 'ip' => '10.10.30.2']);
+        NetworkSwitch::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SW-Core']);
         // ein Client im Clients-VLAN, damit dort auch etwas belegt ist
-        Computer::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'PC-Empfang', 'ip' => '10.10.20.50']);
-        $srvDc01 = Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-DC01', 'ip1' => '10.10.30.10', 'bmcIp' => '10.10.30.210']);
+        Computer::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'PC-Empfang']);
+        $srvDc01 = Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-DC01', 'bmcIp' => '10.10.30.210']);
         // Ein Server mit mehreren Beinen - damit im Demo-Datensatz sichtbar ist,
         // dass die Liste alle Adressen zeigt und nicht nur die ersten beiden.
         $srvDc01->ipAddresses()->create(['customer_id' => $customer->id, 'network_id' => $clientsVlan->id, 'address' => '10.10.20.10', 'label' => 'Clients']);
-        Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-FS01', 'ip1' => '10.10.30.11', 'bmcIp' => '10.10.30.211']);
-        Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-HV01', 'ip1' => '10.10.30.12', 'bmcIp' => '10.10.30.212']);
-        NAS::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'NAS-Backup', 'ip1' => '10.10.30.20']);
-        Accesspoint::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'AP-Serverraum', 'ip' => '10.10.30.30']);
+        Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-FS01', 'bmcIp' => '10.10.30.211']);
+        Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-HV01', 'bmcIp' => '10.10.30.212']);
+        NAS::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'NAS-Backup']);
+        Accesspoint::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'AP-Serverraum']);
+
+        // Adressen gehoeren nicht mehr an das Geraet, sondern in den Block
+        // "Weitere IP-Adressen". Hier gebuendelt statt bei jedem create, damit
+        // die Zeilen oben lesbar bleiben.
+        foreach ([
+            [Router::class, 'RTR-Core', '10.10.30.1'],
+            [NetworkSwitch::class, 'SW-Core', '10.10.30.2'],
+            [Computer::class, 'PC-Empfang', '10.10.20.50'],
+            [Server::class, 'SRV-DC01', '10.10.30.10'],
+            [Server::class, 'SRV-FS01', '10.10.30.11'],
+            [Server::class, 'SRV-HV01', '10.10.30.12'],
+            [NAS::class, 'NAS-Backup', '10.10.30.20'],
+            [Accesspoint::class, 'AP-Serverraum', '10.10.30.30'],
+        ] as [$klasse, $name, $adresse]) {
+            $klasse::where('customer_id', $customer->id)->where('name', $name)->first()
+                ?->ipAddresses()->create([
+                    'customer_id' => $customer->id,
+                    'address' => $adresse,
+                    'label' => 'Primär',
+                ]);
+        }
 
         // Patchfeld mit ein paar beschrifteten Dosen - die uebrigen Ports bleiben frei,
         // so wie in einer echten Doku.
@@ -588,8 +609,8 @@ class LocalDatabaseSeeder extends Seeder
             'provider' => 'Deutsche Telekom',
             'product' => 'DeutschlandLAN Glasfaser 1000',
             'connection_type' => 'Glasfaser',
-            'bandwidth_down' => '1000 Mbit/s',
-            'bandwidth_up' => '500 Mbit/s',
+            'bandwidth_down' => '1000',
+            'bandwidth_up' => '500',
             // Der Hauptanschluss bringt ein geroutetes /28 mit - so zeigt die
             // Demo beide Faelle, mit und ohne eigenes Netz.
             'wan_ip' => '203.0.113.2',
@@ -603,8 +624,8 @@ class LocalDatabaseSeeder extends Seeder
             'provider' => 'Vodafone',
             'product' => 'Business Kabel 500',
             'connection_type' => 'Kabel',
-            'bandwidth_down' => '500 Mbit/s',
-            'bandwidth_up' => '50 Mbit/s',
+            'bandwidth_down' => '500',
+            'bandwidth_up' => '50',
         ]);
 
         // USV

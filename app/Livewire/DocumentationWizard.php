@@ -175,6 +175,11 @@ class DocumentationWizard extends Component
                     ->whereNull('deleted_at');
             } elseif ($name === 'operating_system_id') {
                 $fieldRules[] = Rule::exists('operating_systems', 'id')->whereNull('deleted_at');
+            } elseif ($name === 'ip_address') {
+                // Kein Geraetefeld mehr, sondern ein Eintrag im IP-Block - eine
+                // Regel dafuer steht deshalb in keinem FormRequest. Angehaengt
+                // statt als RULE_OVERRIDES, damit das nullable stehen bleibt.
+                $fieldRules[] = 'ipv4';
             }
 
             if (isset(self::RULE_OVERRIDES[$name])) {
@@ -230,7 +235,21 @@ class DocumentationWizard extends Component
             $data['site_id'] = $run->site_id;
         }
 
+        // Die IP ist keine Spalte am Geraet mehr, sondern ein Eintrag im Block
+        // "Weitere IP-Adressen" - dort haengen Netz und Bezeichnung dran.
+        // Deshalb vor dem create() heraus und danach als eigener Datensatz.
+        $adresse = trim((string) ($data['ip_address'] ?? ''));
+        unset($data['ip_address']);
+
         $record = $customer->{$step['relation']}()->create($data);
+
+        if ($adresse !== '' && method_exists($record, 'ipAddresses')) {
+            $record->ipAddresses()->create([
+                'customer_id' => $customer->id,
+                'address' => $adresse,
+                'label' => __('Primär'),
+            ]);
+        }
 
         if ($step['sets_site'] ?? false) {
             $run->update(['site_id' => $record->id]);

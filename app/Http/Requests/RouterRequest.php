@@ -31,7 +31,6 @@ class RouterRequest extends FormRequest
             'serialNumber' => 'nullable|max:255',
             'username' => 'required|max:255',
             'password' => 'required|max:255',
-            'ip' => 'nullable|ipv4|max:255',
             'port' => 'required|numeric',
         ];
     }
@@ -46,7 +45,6 @@ class RouterRequest extends FormRequest
             'serialNumber' => 'Seriennummer',
             'username' => 'Benutzername',
             'password' => 'Passwort',
-            'ip' => 'IP',
             'port' => 'Port',
         ];
     }

@@ -50,7 +50,8 @@ test('Proxmox-Agent legt Host als Server und Gäste als VMs an', function () {
 
     // Gast-IP landet im VM-Feld
     $vm = VM::where('agent_identifier', 'pve01/qemu/100')->first();
-    expect($vm->ip1)->toBe('10.0.0.20');
+    // Die Adresse steht im Block, nicht mehr als Spalte am Geraet.
+    expect($vm->ipAddresses()->pluck('address')->all())->toBe(['10.0.0.20']);
 });
 
 test('Agent überschreibt manuell gepflegte Dienste nicht', function () {

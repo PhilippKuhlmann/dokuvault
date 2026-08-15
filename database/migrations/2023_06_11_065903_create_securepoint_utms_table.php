@@ -24,7 +24,6 @@ return new class extends Migration
             $table->string('password');
             $table->string('cloudBackupPassword')->nullable();
             $table->string('uscpin')->nullable();
-            $table->string('ip');
             $table->string('urlAdmin');
             $table->string('urlUser')->nullable();
             $table->string('urlExternal')->nullable();

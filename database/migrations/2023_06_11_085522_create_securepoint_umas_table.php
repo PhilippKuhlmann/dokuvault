@@ -21,7 +21,6 @@ return new class extends Migration
             $table->string('username');
             $table->string('password');
             $table->longText('encryptionkey');
-            $table->string('ip');
             $table->string('urlAdmin');
             $table->string('urlUser')->nullable();
             $table->timestamps();
