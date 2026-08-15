@@ -4,6 +4,9 @@
 
         <x-create.singlerow :label="__('Name')" name="name" :default="$service->name" />
 
+        {{-- Steht bei der Auswahl im Geraeteformular und als Titel an der Kachel. --}}
+        <x-create.singlerow :label="__('Beschreibung')" name="description" :default="$service->description" />
+
         <x-service.farbwahl :farbe="old('color', $service->color)" :name="$service->name" />
 
     </x-create.main>

@@ -69,13 +69,24 @@ class LocalDatabaseSeeder extends Seeder
 
         // Dienste-Katalog: gilt fuer die ganze Installation, nicht je Kunde.
         // Farbe nach Rolle - was ausfaellt, faellt unterschiedlich schwer auf.
+        // Die Beschreibung steht bei der Auswahl im Geraeteformular und als
+        // Titel an der Kachel; Kuerzel wie "DFS" oder "RDS" erklaeren sich
+        // sonst nur dem, der sie schon kennt.
         foreach ([
-            'AD' => '#b91c1c', 'DNS' => '#dc2626', 'Hyper-V' => '#7c3aed',
-            'SQL' => '#1f73d6', 'Fileserver' => '#3391f0', 'DFS' => '#8ecdff',
-            'Backup' => '#15803d', 'RDS' => '#b45309', 'Print' => '#f59e0b',
-            'docker' => '#0f766e', 'apache2' => '#14b8a6', 'mariadb' => '#1b4176',
-        ] as $name => $farbe) {
-            Service::create(['name' => $name, 'color' => $farbe]);
+            'AD' => ['#b91c1c', 'Verzeichnisdienst: Anmeldung, Benutzer und Gruppenrichtlinien'],
+            'DNS' => ['#dc2626', 'Namensauflösung im Netz'],
+            'Hyper-V' => ['#7c3aed', 'Virtualisierung – auf diesem Host laufen VMs'],
+            'SQL' => ['#1f73d6', 'Datenbankserver'],
+            'Fileserver' => ['#3391f0', 'Dateifreigaben der Abteilungen'],
+            'DFS' => ['#8ecdff', 'Verteiltes Dateisystem über mehrere Standorte'],
+            'Backup' => ['#15803d', 'Sicherung – hier laufen die Aufträge'],
+            'RDS' => ['#b45309', 'Terminalserver für Remote-Arbeitsplätze'],
+            'Print' => ['#f59e0b', 'Druckerwarteschlangen und Treiber'],
+            'docker' => ['#0f766e', 'Container-Laufzeitumgebung'],
+            'apache2' => ['#14b8a6', 'Webserver'],
+            'mariadb' => ['#1b4176', 'Datenbankserver, MySQL-kompatibel'],
+        ] as $name => [$farbe, $beschreibung]) {
+            Service::create(['name' => $name, 'description' => $beschreibung, 'color' => $farbe]);
         }
 
         $customer = Customer::factory()->create([

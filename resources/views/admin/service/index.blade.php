@@ -15,13 +15,14 @@
 
     <div class="m-3">
         <x-table.main>
-            <x-table.head :labels="['Name', 'Darstellung', '', ]" />
+            <x-table.head :labels="['Name', 'Beschreibung', 'Darstellung', '', ]" />
 
             <x-table.body>
 
                 @foreach ($services as $service)
                     <tr class="bg-white border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700/50">
                         <td class="py-2.5 px-4 text-gray-900 dark:text-gray-100">{{ $service->name }}</td>
+                        <td class="py-2.5 px-4 text-gray-600 dark:text-gray-300">{{ $service->description ?: '—' }}</td>
                         <td class="py-2.5 px-4">
                             {{-- Die Farbe direkt als Kachel: So sieht man in der Liste,
                                  wie der Dienst später am Gerät aussieht. --}}

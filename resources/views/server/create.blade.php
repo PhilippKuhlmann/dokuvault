@@ -43,8 +43,8 @@
             <x-create.singlerow :label="__('Rustdesk Passwort')" name="remotePassword" />
         </x-create.abschnitt>
 
-        <x-create.abschnitt :titel="__('Dienste')" :hinweis="__('Mit Komma getrennt angeben (eins,zwei,drei)')">
-            <x-create.singlerow :label="__('Dienste')" name="services" class="sm:col-span-2" />
+        <x-create.abschnitt :titel="__('Dienste')" :hinweis="__('Aus dem Katalog wählen oder eigene ergänzen')">
+            <x-create.dienste />
         </x-create.abschnitt>
 
         {{-- Weitere IP-Adressen und Zugangsdaten haengen am gespeicherten Server;
