@@ -1,8 +1,21 @@
-{{-- max-w-3xl + mx-auto: gleiche Spaltenbreite wie das Formular darueber (x-create.main) --}}
-{{-- Wrapper haelt dieselbe zentrierte Spaltenbreite wie das Formular darueber (x-create.main) --}}
-<div class="mx-auto max-w-3xl px-3">
-<div class="my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700">
-    <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-4">{{ __('Weitere IP-Adressen') }}</div>
+{{-- Eigenstaendig: Wrapper haelt dieselbe zentrierte Spaltenbreite wie das
+     Formular darueber (x-create.main), plus eigener Kartenrahmen.
+     Eingebettet: beides faellt weg, der Block sitzt in der Karte des Formulars
+     und bekommt statt des Rahmens nur eine Trennlinie nach oben. --}}
+<div @class([
+    'mx-auto max-w-3xl px-3' => ! $eingebettet,
+    'px-5 sm:px-6' => $eingebettet,
+])>
+<div @class([
+    'my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700' => ! $eingebettet,
+    'border-t border-gray-100 py-5 dark:border-gray-700' => $eingebettet,
+])>
+    {{-- Der Hinweis trennt diese Karte vom Formular darueber: Dort speichert ein
+         Knopf am Ende, hier wirkt jede Zeile sofort. --}}
+    <div class="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100">{{ __('Weitere IP-Adressen') }}</div>
+        <span class="rounded bg-cerulean-50 px-2 py-0.5 text-xs text-cerulean-700 dark:bg-cerulean-950 dark:text-cerulean-300">{{ __('speichert sofort') }}</span>
+    </div>
 
     @if ($entries->isNotEmpty())
         <table class="w-full text-sm mb-4">
@@ -19,7 +32,7 @@
                     <tr class="border-b border-gray-50 last:border-0 dark:border-gray-700/50">
                         <td class="py-2 pr-4 font-mono text-gray-900 dark:text-gray-100">{{ $entry->address }}</td>
                         <td class="py-2 pr-4 text-gray-600 dark:text-gray-300">
-                            {{ $entry->network ? ($entry->network->description ?: 'VLAN ' . $entry->network->vlanId) : '—' }}
+                            {{ $entry->network?->anzeige() ?: '—' }}
                         </td>
                         <td class="py-2 pr-4 text-gray-600 dark:text-gray-300">{{ $entry->label ?: '—' }}</td>
                         <td class="py-2 text-right">
@@ -63,7 +76,7 @@
                         $octets = explode('.', (string) $network->network);
                         $prefix = count($octets) === 4 ? $octets[0] . '.' . $octets[1] . '.' . $octets[2] . '.' : '';
                     @endphp
-                    <option value="{{ $network->id }}" data-prefix="{{ $prefix }}">{{ $network->description ?: 'VLAN ' . $network->vlanId }} ({{ $network->network }}/{{ $network->cidr }})</option>
+                    <option value="{{ $network->id }}" data-prefix="{{ $prefix }}">{{ $network->anzeige() }} ({{ $network->network }}/{{ $network->cidr }})</option>
                 @endforeach
             </x-input.select>
         </div>
@@ -71,7 +84,7 @@
             <x-input.label :value="__('Bezeichnung (optional)')" />
             <x-input.text wire:model="label" type="text" class="mt-1 w-48" :placeholder="__('z. B. Gateway')" />
         </div>
-        <x-input.button type="button" wire:click="add" :label="__('Hinzufügen')" />
+        <x-input.button type="button" size="feld" wire:click="add" :label="__('Hinzufügen')" />
     </div>
 </div>
 </div>

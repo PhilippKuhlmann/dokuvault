@@ -6,6 +6,7 @@ use App\Models\Accesspoint;
 use App\Models\Camera;
 use App\Models\Certificate;
 use App\Models\Computer;
+use App\Models\Concerns\HasIpAddresses;
 use App\Models\DECT;
 use App\Models\Domain;
 use App\Models\InternetConnection;
@@ -90,9 +91,19 @@ class GlobalSearch extends Component
                     $query->where('customer_id', $user->customer_id);
                 }
 
-                $query->where(function ($q) use ($columns, $term) {
+                // Die zusaetzlich dokumentierten Adressen zaehlen mit. Seit die
+                // Server-Formulare ip1/ip2 nicht mehr fuehren, stehen IP-Adressen
+                // neuer Geraete ausschliesslich dort - ohne das hier faende die
+                // Suche sie nicht mehr.
+                $hatIpBlock = in_array(HasIpAddresses::class, class_uses_recursive($class), true);
+
+                $query->where(function ($q) use ($columns, $term, $hatIpBlock) {
                     foreach ($columns as $column) {
                         $q->orWhere($column, 'like', $term);
+                    }
+
+                    if ($hatIpBlock) {
+                        $q->orWhereHas('ipAddresses', fn ($ip) => $ip->where('address', 'like', $term));
                     }
                 });
 

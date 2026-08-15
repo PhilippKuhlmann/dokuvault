@@ -1,30 +1,41 @@
 <x-app-layout :$customer>
-    <x-create.main :header="__('Router bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('router.update', [$customer, $router]) }}">
+    <x-create.main :header="__('Router bearbeiten')" :labelsubmit="__('Stammdaten speichern')" action="{{ route('router.update', [$customer, $router]) }}" breit>
         @method('PATCH')
 
-        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $router->site_id }}" :array="$sites" />
+        <x-create.abschnitt :titel="__('Identität')" erste>
+            <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $router->site_id }}" :array="$sites" />
 
-        <x-create.singlerow :label="__('Name')" name="name" :default="$router->name" />
+            <x-create.singlerow :label="__('Name')" name="name" :default="$router->name" />
+        </x-create.abschnitt>
 
-        <x-create.singlerow :label="__('Hersteller')" name="manufacturer" :default="$router->manufacturer" />
+        <x-create.abschnitt :titel="__('Hardware')">
+            <x-create.singlerow :label="__('Hersteller')" name="manufacturer" :default="$router->manufacturer" />
 
-        <x-create.doublerow :label1="__('Modell')" name1="model" :default1="$router->model" :label2="__('Seriennummer')" name2="serialNumber" :default2="$router->serialNumber" />
+            <x-create.singlerow :label="__('Modell')" name="model" :default="$router->model" />
 
-        <x-create.singlerow :label="__('Benutzername')" name="username" :default="$router->username" />
+            <x-create.singlerow :label="__('Seriennummer')" name="serialNumber" :default="$router->serialNumber" />
+        </x-create.abschnitt>
 
-        <x-create.singlerow :label="__('Passwort')" name="password" :default="$router->password" />
+        <x-create.abschnitt :titel="__('Zugang')">
+            <x-create.singlerow :label="__('Benutzername')" name="username" :default="$router->username" />
 
-        <x-create.doublerow14 :label1="__('IP')" name1="ip" :default1="$router->ip" :label2="__('Port')" name2="port" :default2="$router->port" type2="number" />
+            <x-create.singlerow :label="__('Passwort')" name="password" :default="$router->password" />
+
+            <x-create.singlerow :label="__('Port')" name="port" :default="$router->port" type="number" />
+        </x-create.abschnitt>
+
+        {{-- In derselben Karte, aber ausserhalb des <form>: HTML erlaubt keine
+             verschachtelten Formulare, und beide Bloecke sind eigenstaendige
+             Livewire-Komponenten. --}}
+        <x-slot:nach>
+            <livewire:device-ip-addresses :model="$router" :customer="$customer" eingebettet />
+            <livewire:device-credentials :model="$router" :customer="$customer" eingebettet />
+        </x-slot>
 
     </x-create.main>
 
-    <livewire:device-ip-addresses :model="$router" :customer="$customer" />
-
-
-    <livewire:device-credentials :model="$router" :customer="$customer" />
-
     @can('router_delete')
-        <x-deletecard action="{{ route('router.destroy', [$customer, $router]) }}" />
+        <x-deletecard action="{{ route('router.destroy', [$customer, $router]) }}" breit />
     @endcan
 
 </x-app-layout>

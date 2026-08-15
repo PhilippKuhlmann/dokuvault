@@ -1,28 +1,41 @@
 <x-app-layout :$customer>
-    <x-create.main :header="__('Camera bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('camera.update', [$customer, $camera]) }}">
+    <x-create.main :header="__('Camera bearbeiten')" :labelsubmit="__('Stammdaten speichern')" action="{{ route('camera.update', [$customer, $camera]) }}" breit>
         @method('PATCH')
 
-        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $camera->site_id }}" :array="$sites" />
+        <x-create.abschnitt :titel="__('Identität')" erste>
+            <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $camera->site_id }}" :array="$sites" />
 
-        <x-create.singlerow :label="__('Name')" name="name" :default="$camera->name" />
+            <x-create.singlerow :label="__('Name')" name="name" :default="$camera->name" />
+        </x-create.abschnitt>
 
-        <x-create.doublerow :label1="__('Hersteller')" name1="manufacturer" :default1="$camera->manufacturer" :label2="__('Model')" name2="model" :default2="$camera->model" />
+        <x-create.abschnitt :titel="__('Hardware')">
+            <x-create.singlerow :label="__('Hersteller')" name="manufacturer" :default="$camera->manufacturer" />
 
-        <x-create.singlerow :label="__('Seriennummer')" name="serialNumber" :default="$camera->serialNumber" />
+            <x-create.singlerow :label="__('Model')" name="model" :default="$camera->model" />
 
-        <x-create.doublerow14 :label1="__('IP')" name1="ip" :default1="$camera->ip" :label2="__('Port')" name2="port" type2="number" :default2="$camera->port" />
+            <x-create.singlerow :label="__('Seriennummer')" name="serialNumber" :default="$camera->serialNumber" />
+        </x-create.abschnitt>
 
-        <x-create.doublerow :label1="__('Benutzer')" name1="username" :default1="$camera->username" :label2="__('Passwort')" name2="password" :default2="$camera->password" />
+        <x-create.abschnitt :titel="__('Zugang')">
+            <x-create.singlerow :label="__('Port')" name="port" type="number" :default="$camera->port" />
+
+            <x-create.singlerow :label="__('Benutzer')" name="username" :default="$camera->username" />
+
+            <x-create.singlerow :label="__('Passwort')" name="password" :default="$camera->password" />
+        </x-create.abschnitt>
+
+        {{-- In derselben Karte, aber ausserhalb des <form>: HTML erlaubt keine
+             verschachtelten Formulare, und beide Bloecke sind eigenstaendige
+             Livewire-Komponenten. --}}
+        <x-slot:nach>
+            <livewire:device-ip-addresses :model="$camera" :customer="$customer" eingebettet />
+            <livewire:device-credentials :model="$camera" :customer="$customer" eingebettet />
+        </x-slot>
 
     </x-create.main>
 
-    <livewire:device-ip-addresses :model="$camera" :customer="$customer" />
-
-
-    <livewire:device-credentials :model="$camera" :customer="$customer" />
-
     @can('camera_delete')
-        <x-deletecard action="{{ route('camera.destroy', [$customer, $camera]) }}" />
+        <x-deletecard action="{{ route('camera.destroy', [$customer, $camera]) }}" breit />
     @endcan
 
 </x-app-layout>

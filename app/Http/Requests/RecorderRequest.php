@@ -29,7 +29,7 @@ class RecorderRequest extends FormRequest
             'manufacturer' => '',
             'model' => '',
             'serialNumber' => '',
-            'ip' => 'required|ipv4',
+            'ip' => 'nullable|ipv4',
             'port' => 'required',
             'username' => '',
             'password' => '',

@@ -8,6 +8,12 @@
             @php
                 $adressen = $server->relationLoaded('ipAddresses') ? $server->ipAddresses : $server->ipAddresses()->get();
                 $anzahlIps = collect([$server->ip1, $server->ip2])->filter()->count() + $adressen->count();
+
+                // ip1 wird im Formular nicht mehr gepflegt (nur noch der IP-Block und
+                // der AutoDoc-Agent schreiben es). Ist es leer, tritt die erste
+                // dokumentierte Adresse an seine Stelle - sonst haette die Karte
+                // eines neu angelegten Servers gar keine IP in der Kopfzeile.
+                $primaer = $server->ip1 ?: $adressen->first()?->address;
             @endphp
 
             <x-slot:head>
@@ -33,9 +39,9 @@
                     {{-- Was man fast immer sucht, steht neben dem Namen statt irgendwo
                          in der Karte. Der Zaehler verraet schon hier, dass mehr da ist. --}}
                     <x-slot:kernwerte>
-                        @if ($server->ip1)
+                        @if ($primaer)
                             <x-kernwert :label="__('IP')" :zaehler="$anzahlIps - 1">
-                                <x-copy :value="$server->ip1" />
+                                <x-copy :value="$primaer" />
                             </x-kernwert>
                         @endif
 

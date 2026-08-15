@@ -6,7 +6,7 @@
 
         @php
             $adressen = $recorder->relationLoaded('ipAddresses') ? $recorder->ipAddresses : $recorder->ipAddresses()->get();
-            $primaer = $recorder->ip1 ?? $recorder->ip;
+            $primaer = collect([$recorder->ip1 ?? null, $recorder->ip ?? null, $adressen->first()?->address])->filter()->first();
             $anzahlIps = collect([$primaer, $recorder->ip2 ?? null])->filter()->count() + $adressen->count();
         @endphp
         <x-card>

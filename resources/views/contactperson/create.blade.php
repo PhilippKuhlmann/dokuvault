@@ -9,6 +9,5 @@
 
             <x-create.singlerow :label="__('E-Mail')" name="mail" />
 
-
     </x-create.main>
 </x-app-layout>

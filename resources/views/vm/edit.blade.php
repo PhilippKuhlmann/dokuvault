@@ -1,40 +1,48 @@
 <x-app-layout :$customer>
-    <x-create.main :header="__('VM bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('vm.update', [$customer, $vm]) }}">
+    <x-create.main :header="__('VM bearbeiten')" :labelsubmit="__('Stammdaten speichern')" action="{{ route('vm.update', [$customer, $vm]) }}" breit>
         @method('PATCH')
 
-        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $vm->site_id }}" :array="$sites" />
+        <x-create.abschnitt :titel="__('Identität')" erste>
+            <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $vm->site_id }}" :array="$sites" />
 
-        <div class="flex flex-col mt-2">
-            <x-input.label for="server_id" :value="__('Host (Server)')" />
-            <x-input.select id="server_id" name="server_id">
-                <option value="">— kein Host —</option>
-                @foreach ($servers as $server)
-                    <option value="{{ $server->id }}" {{ $server->id == $vm->server_id ? 'selected' : '' }}>{{ $server->name }}</option>
-                @endforeach
-            </x-input.select>
-        </div>
+            <div class="flex flex-col mt-2">
+                <x-input.label for="server_id" :value="__('Host (Server)')" />
+                <x-input.select id="server_id" name="server_id">
+                    <option value="">— kein Host —</option>
+                    @foreach ($servers as $server)
+                        <option value="{{ $server->id }}" {{ $server->id == $vm->server_id ? 'selected' : '' }}>{{ $server->name }}</option>
+                    @endforeach
+                </x-input.select>
+            </div>
 
-        <x-create.singlerow :label="__('Name')" name="name" :default="$vm->name" />
+            <x-create.singlerow :label="__('Name')" name="name" :default="$vm->name" />
 
-        <x-create.doublerow :label1="__('IP 1')" name1="ip1" :default1="$vm->ip1" :label2="__('IP 2')" name2="ip2" :default2="$vm->ip2" />
+            <x-edit.select.operatingsystem selector="{{ $vm->operatingSystem?->id }}" :$operatingSystems/>
+        </x-create.abschnitt>
 
-        <x-create.doublerow :label1="__('Rustdesk ID')" name1="remoteID" :default1="$vm->remoteID" :label2="__('Rustdesk Passwort')" name2="remotePassword" :default2="$vm->remotePassword" />
+        <x-create.abschnitt :titel="__('Fernwartung')">
+            <x-create.singlerow :label="__('Rustdesk ID')" name="remoteID" :default="$vm->remoteID" />
 
-        <x-edit.select.operatingsystem selector="{{ $vm->operatingSystem?->id }}" :$operatingSystems/>
+            <x-create.singlerow :label="__('Rustdesk Passwort')" name="remotePassword" :default="$vm->remotePassword" />
+        </x-create.abschnitt>
 
-        <x-create.singlerow :label="__('Dienste Bitte mit komma getrennt angeben (eins,zwei,drei)')" name="services" :default="implode(',', $vm->services)" />
+        <x-create.abschnitt :titel="__('Dienste')" :hinweis="__('Mit Komma getrennt angeben (eins,zwei,drei)')">
+            <x-create.singlerow :label="__('Dienste')" name="services" :default="implode(',', $vm->services)" class="sm:col-span-2" />
+        </x-create.abschnitt>
+
+        {{-- In derselben Karte, aber ausserhalb des <form>: HTML erlaubt keine
+             verschachtelten Formulare, und beide Bloecke sind eigenstaendige
+             Livewire-Komponenten. --}}
+        <x-slot:nach>
+            <livewire:device-ip-addresses :model="$vm" :customer="$customer" eingebettet />
+            <livewire:device-credentials :model="$vm" :customer="$customer" eingebettet />
+        </x-slot>
 
     </x-create.main>
 
-    <livewire:device-ip-addresses :model="$vm" :customer="$customer" />
-
-
-    <livewire:device-credentials :model="$vm" :customer="$customer" />
-
     @can('vm_delete')
-        <x-deletecard action="{{ route('vm.destroy', [$customer, $vm]) }}" />
+        <x-deletecard action="{{ route('vm.destroy', [$customer, $vm]) }}" breit />
     @endcan
-
 
 </x-app-layout>
 

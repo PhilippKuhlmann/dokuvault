@@ -4,7 +4,7 @@
 
         @php
             $adressen = $usv->relationLoaded('ipAddresses') ? $usv->ipAddresses : $usv->ipAddresses()->get();
-            $primaer = $usv->ip1 ?? $usv->ip;
+            $primaer = collect([$usv->ip1 ?? null, $usv->ip ?? null, $adressen->first()?->address])->filter()->first();
             $anzahlIps = collect([$primaer, $usv->ip2 ?? null])->filter()->count() + $adressen->count();
         @endphp
     <x-card>

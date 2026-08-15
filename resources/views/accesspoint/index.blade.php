@@ -7,7 +7,7 @@
 
         @php
             $adressen = $accesspoint->relationLoaded('ipAddresses') ? $accesspoint->ipAddresses : $accesspoint->ipAddresses()->get();
-            $primaer = $accesspoint->ip1 ?? $accesspoint->ip;
+            $primaer = collect([$accesspoint->ip1 ?? null, $accesspoint->ip ?? null, $adressen->first()?->address])->filter()->first();
             $anzahlIps = collect([$primaer, $accesspoint->ip2 ?? null])->filter()->count() + $adressen->count();
         @endphp
         <x-card>

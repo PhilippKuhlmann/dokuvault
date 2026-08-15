@@ -6,6 +6,11 @@
         @php
             $adressen = $vm->relationLoaded('ipAddresses') ? $vm->ipAddresses : $vm->ipAddresses()->get();
             $anzahlIps = collect([$vm->ip1, $vm->ip2])->filter()->count() + $adressen->count();
+
+            // ip1 wird im Formular nicht mehr gepflegt: Adressen kommen aus dem
+            // IP-Block. Ist ip1 leer, tritt die erste dokumentierte Adresse an
+            // seine Stelle - sonst haette eine neue VM keine IP in der Kopfzeile.
+            $primaer = collect([$vm->ip1, $vm->ip2, $adressen->first()?->address])->filter()->first();
         @endphp
 
         <x-card>
@@ -30,9 +35,9 @@
                     {{-- Wie beim Server: das Nachgeschlagene neben den Namen. Statt des
                          Einbauorts steht hier der Host - eine VM steckt in keinem Rack. --}}
                     <x-slot:kernwerte>
-                        @if ($vm->ip1)
+                        @if ($primaer)
                             <x-kernwert :label="__('IP')" :zaehler="$anzahlIps - 1">
-                                <x-copy :value="$vm->ip1" />
+                                <x-copy :value="$primaer" />
                             </x-kernwert>
                         @endif
 

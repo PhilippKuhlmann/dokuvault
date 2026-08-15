@@ -1,30 +1,41 @@
 <x-app-layout :$customer>
-    <x-create.main :header="__('NAS bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('nas.update', [$customer, $nas]) }}">
+    <x-create.main :header="__('NAS bearbeiten')" :labelsubmit="__('Stammdaten speichern')" action="{{ route('nas.update', [$customer, $nas]) }}" breit>
         @method('PATCH')
 
-        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $nas->site_id }}" :array="$sites" />
+        <x-create.abschnitt :titel="__('Identität')" erste>
+            <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $nas->site_id }}" :array="$sites" />
 
-        <x-create.singlerow :label="__('Name')" name="name" :default="$nas->name" />
+            <x-create.singlerow :label="__('Name')" name="name" :default="$nas->name" />
+        </x-create.abschnitt>
 
-        <x-create.doublerow :label1="__('Hersteller')" name1="manufacturer" :default1="$nas->manufacturer" :label2="__('Model')" name2="model" :default2="$nas->model" />
+        <x-create.abschnitt :titel="__('Hardware')">
+            <x-create.singlerow :label="__('Hersteller')" name="manufacturer" :default="$nas->manufacturer" />
 
-        <x-create.singlerow :label="__('Seriennummer')" name="serialNumber" :default="$nas->serialNumber" />
+            <x-create.singlerow :label="__('Model')" name="model" :default="$nas->model" />
 
-        <x-create.doublerow :label1="__('IP 1')" name1="ip1" :default1="$nas->ip1" :label2="__('IP 2')" name2="ip2" :default2="$nas->ip2" />
+            <x-create.singlerow :label="__('Seriennummer')" name="serialNumber" :default="$nas->serialNumber" />
+        </x-create.abschnitt>
 
-        <x-create.singlerow :label="__('Port')" name="port" :default="$nas->port" />
+        <x-create.abschnitt :titel="__('Zugang')">
+            <x-create.singlerow :label="__('Port')" name="port" :default="$nas->port" />
 
-        <x-create.doublerow :label1="__('Benutzer')" name1="username" :default1="$nas->username" :label2="__('Passwort')" name2="password" :default2="$nas->password" />
+            <x-create.singlerow :label="__('Benutzer')" name="username" :default="$nas->username" />
+
+            <x-create.singlerow :label="__('Passwort')" name="password" :default="$nas->password" />
+        </x-create.abschnitt>
+
+        {{-- In derselben Karte, aber ausserhalb des <form>: HTML erlaubt keine
+             verschachtelten Formulare, und beide Bloecke sind eigenstaendige
+             Livewire-Komponenten. --}}
+        <x-slot:nach>
+            <livewire:device-ip-addresses :model="$nas" :customer="$customer" eingebettet />
+            <livewire:device-credentials :model="$nas" :customer="$customer" eingebettet />
+        </x-slot>
 
     </x-create.main>
 
-    <livewire:device-ip-addresses :model="$nas" :customer="$customer" />
-
-
-    <livewire:device-credentials :model="$nas" :customer="$customer" />
-
     @can('nas_delete')
-        <x-deletecard action="{{ route('nas.destroy', [$customer, $nas]) }}" />
+        <x-deletecard action="{{ route('nas.destroy', [$customer, $nas]) }}" breit />
     @endcan
 
 </x-app-layout>

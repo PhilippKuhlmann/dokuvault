@@ -31,7 +31,7 @@ class NetworkSwitchRequest extends FormRequest
             'serialNumber' => 'nullable|max:255',
             'username' => 'nullable',
             'password' => 'nullable',
-            'ip' => 'required|ipv4|max:255',
+            'ip' => 'nullable|ipv4|max:255',
             'port' => 'nullable|numeric',
         ];
     }

@@ -1,30 +1,41 @@
 <x-app-layout :$customer>
-    <x-create.main :header="__('Accesspoint bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('accesspoint.update', [$customer, $accesspoint]) }}">
+    <x-create.main :header="__('Accesspoint bearbeiten')" :labelsubmit="__('Stammdaten speichern')" action="{{ route('accesspoint.update', [$customer, $accesspoint]) }}" breit>
         @method('PATCH')
 
-        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $accesspoint->site_id }}" :array="$sites" />
+        <x-create.abschnitt :titel="__('Identität')" erste>
+            <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $accesspoint->site_id }}" :array="$sites" />
 
-        <x-create.singlerow :label="__('Name')" name="name" :default="$accesspoint->name" />
+            <x-create.singlerow :label="__('Name')" name="name" :default="$accesspoint->name" />
+        </x-create.abschnitt>
 
-        <x-create.singlerow :label="__('Hersteller')" name="manufacturer" :default="$accesspoint->manufacturer" />
+        <x-create.abschnitt :titel="__('Hardware')">
+            <x-create.singlerow :label="__('Hersteller')" name="manufacturer" :default="$accesspoint->manufacturer" />
 
-        <x-create.doublerow :label1="__('Modell')" name1="model" :default1="$accesspoint->model" :label2="__('Seriennummer')" name2="serialNumber" :default2="$accesspoint->serialNumber" />
+            <x-create.singlerow :label="__('Modell')" name="model" :default="$accesspoint->model" />
 
-        <x-create.singlerow :label="__('Benutzername')" name="username" :default="$accesspoint->username" />
+            <x-create.singlerow :label="__('Seriennummer')" name="serialNumber" :default="$accesspoint->serialNumber" />
+        </x-create.abschnitt>
 
-        <x-create.singlerow :label="__('Passwort')" name="password" :default="$accesspoint->password" />
+        <x-create.abschnitt :titel="__('Zugang')">
+            <x-create.singlerow :label="__('Benutzername')" name="username" :default="$accesspoint->username" />
 
-        <x-create.doublerow14 :label1="__('IP')" name1="ip" :default1="$accesspoint->ip" :label2="__('Port')" name2="port" :default2="$accesspoint->port" type2="number" />
+            <x-create.singlerow :label="__('Passwort')" name="password" :default="$accesspoint->password" />
+
+            <x-create.singlerow :label="__('Port')" name="port" :default="$accesspoint->port" type="number" />
+        </x-create.abschnitt>
+
+        {{-- In derselben Karte, aber ausserhalb des <form>: HTML erlaubt keine
+             verschachtelten Formulare, und beide Bloecke sind eigenstaendige
+             Livewire-Komponenten. --}}
+        <x-slot:nach>
+            <livewire:device-ip-addresses :model="$accesspoint" :customer="$customer" eingebettet />
+            <livewire:device-credentials :model="$accesspoint" :customer="$customer" eingebettet />
+        </x-slot>
 
     </x-create.main>
 
-    <livewire:device-ip-addresses :model="$accesspoint" :customer="$customer" />
-
-
-    <livewire:device-credentials :model="$accesspoint" :customer="$customer" />
-
     @can('accesspoint_delete')
-        <x-deletecard action="{{ route('accesspoint.destroy', [$customer, $accesspoint]) }}" />
+        <x-deletecard action="{{ route('accesspoint.destroy', [$customer, $accesspoint]) }}" breit />
     @endcan
 
 </x-app-layout>

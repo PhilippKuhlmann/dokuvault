@@ -106,3 +106,30 @@ test('ungültige IP wird abgelehnt', function () {
 
     expect($router->ipAddresses()->count())->toBe(0);
 });
+
+test('die Netz-Anzeige nennt Beschreibung und VLAN-Nummer', function () {
+    $netz = new Network(['description' => 'Server & Management', 'vlanId' => 30]);
+    expect($netz->anzeige())->toBe('Server & Management · VLAN 30');
+
+    // Steht die Beschreibung auf derselben Zeile schon als Bezeichnung,
+    // bleibt nur die Nummer.
+    expect($netz->anzeige(true))->toBe('VLAN 30');
+
+    expect((new Network(['description' => 'DMZ']))->anzeige())->toBe('DMZ');
+    expect((new Network(['vlanId' => 47]))->anzeige())->toBe('VLAN 47');
+    expect((new Network)->anzeige())->toBeNull();
+});
+
+test('die Listenkarte zeigt zur Adresse den Netznamen samt VLAN-Nummer', function () {
+    $this->actingAs(userWithPermissions(['router_viewAny']));
+    [$customer, $router, $clients] = routerWithNetworks();
+
+    $router->ipAddresses()->create([
+        'customer_id' => $customer->id, 'address' => '10.10.20.5',
+        'network_id' => $clients->id, 'label' => 'PVE GUI',
+    ]);
+
+    $this->get("/{$customer->slug}/router")->assertOk()
+        ->assertSee('10.10.20.5')
+        ->assertSee('Clients · VLAN 20', false);
+});

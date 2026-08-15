@@ -5,7 +5,7 @@
 
         @php
             $adressen = $camera->relationLoaded('ipAddresses') ? $camera->ipAddresses : $camera->ipAddresses()->get();
-            $primaer = $camera->ip1 ?? $camera->ip;
+            $primaer = collect([$camera->ip1 ?? null, $camera->ip ?? null, $adressen->first()?->address])->filter()->first();
             $anzahlIps = collect([$primaer, $camera->ip2 ?? null])->filter()->count() + $adressen->count();
         @endphp
         <x-card>

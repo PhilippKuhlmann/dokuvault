@@ -6,7 +6,7 @@
 
         @php
             $adressen = $dect->relationLoaded('ipAddresses') ? $dect->ipAddresses : $dect->ipAddresses()->get();
-            $primaer = $dect->ip1 ?? $dect->ip;
+            $primaer = collect([$dect->ip1 ?? null, $dect->ip ?? null, $adressen->first()?->address])->filter()->first();
             $anzahlIps = collect([$primaer, $dect->ip2 ?? null])->filter()->count() + $adressen->count();
         @endphp
         <x-card>

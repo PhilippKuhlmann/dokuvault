@@ -7,7 +7,7 @@
 
         @php
             $adressen = $router->relationLoaded('ipAddresses') ? $router->ipAddresses : $router->ipAddresses()->get();
-            $primaer = $router->ip1 ?? $router->ip;
+            $primaer = collect([$router->ip1 ?? null, $router->ip ?? null, $adressen->first()?->address])->filter()->first();
             $anzahlIps = collect([$primaer, $router->ip2 ?? null])->filter()->count() + $adressen->count();
         @endphp
         <x-card>

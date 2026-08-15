@@ -1,19 +1,37 @@
 <x-app-layout :$customer>
-    <x-create.main :header="__('Neues Telefon')" action="{{ route('phone.store', $customer) }}">
+    <x-create.main :header="__('Neues Telefon')" action="{{ route('phone.store', $customer) }}" breit>
+        <x-create.abschnitt :titel="__('Identität')" erste>
+            <x-create.select name="site_id" :value="__('Standort')" :array="$sites" />
 
-        <x-create.select name="site_id" :value="__('Standort')" :array="$sites" />
+            <x-create.singlerow :label="__('Nebenstelle')" name="extension" />
+        </x-create.abschnitt>
 
-        <x-create.singlerow :label="__('Nebenstelle')" name="extension" />
+        <x-create.abschnitt :titel="__('Hardware')">
+            <x-create.singlerow :label="__('Hersteller')" name="manufacturer" />
 
-        <x-create.doublerow :label1="__('Hersteller')" name1="manufacturer" :label2="__('Model')" name2="model" />
+            <x-create.singlerow :label="__('Model')" name="model" />
 
-        <x-create.singlerow :label="__('Seriennummer')" name="serialNumber" />
+            <x-create.singlerow :label="__('Seriennummer')" name="serialNumber" />
 
-        <x-create.doublerow :label1="__('IP')" name1="ip" :label2="__('Port')" name2="port" type2="number" />
+            <x-create.singlerow :label="__('MAC-Adresse')" name="mac" />
+        </x-create.abschnitt>
 
-        <x-create.singlerow :label="__('MAC-Adresse')" name="mac" />
+        <x-create.abschnitt :titel="__('Zugang')">
+            <x-create.singlerow :label="__('Port')" name="port" type="number" />
 
-        <x-create.doublerow :label1="__('Benutzername')" name1="username" :label2="__('Passwort')" name2="password" />
+            <x-create.singlerow :label="__('Benutzername')" name="username" />
+
+            <x-create.singlerow :label="__('Passwort')" name="password" />
+        </x-create.abschnitt>
+
+        {{-- Weitere IP-Adressen und Zugangsdaten haengen am gespeicherten Objekt;
+             beide erscheinen direkt nach dem Anlegen im Bearbeiten-Formular.
+             Das steht hier, damit ihr Fehlen nicht wie ein Mangel aussieht. --}}
+        <x-create.abschnitt :titel="__('IP-Adressen und Zugangsdaten')">
+            <p class="mt-1 text-sm text-gray-500 sm:col-span-2 dark:text-gray-400">
+                {{ __('Lassen sich eintragen, sobald das Gerät angelegt ist.') }}
+            </p>
+        </x-create.abschnitt>
 
     </x-create.main>
 </x-app-layout>

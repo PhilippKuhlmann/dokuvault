@@ -6,7 +6,7 @@
 
         @php
             $adressen = $securepointutm->relationLoaded('ipAddresses') ? $securepointutm->ipAddresses : $securepointutm->ipAddresses()->get();
-            $primaer = $securepointutm->ip1 ?? $securepointutm->ip;
+            $primaer = collect([$securepointutm->ip1 ?? null, $securepointutm->ip ?? null, $adressen->first()?->address])->filter()->first();
             $anzahlIps = collect([$primaer, $securepointutm->ip2 ?? null])->filter()->count() + $adressen->count();
         @endphp
         <x-card>

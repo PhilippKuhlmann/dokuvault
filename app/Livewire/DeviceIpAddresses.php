@@ -23,11 +23,16 @@ class DeviceIpAddresses extends Component
 
     public string $label = '';
 
-    public function mount($model, $customer): void
+    // Eingebettet: ohne eigenen Kartenrahmen, weil der Block dann in der Karte
+    // des Formulars steht (x-create.main, Slot "nach").
+    public bool $eingebettet = false;
+
+    public function mount($model, $customer, bool $eingebettet = false): void
     {
         $this->modelClass = $model::class;
         $this->modelId = $model->id;
         $this->customerId = $customer->id;
+        $this->eingebettet = $eingebettet;
     }
 
     /**

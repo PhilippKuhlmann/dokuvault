@@ -32,7 +32,7 @@ class SecurepointUTMRequest extends FormRequest
             'username' => 'required|max:255',
             'password' => 'required|max:255',
             'cloudBackupPassword' => 'required|max:255',
-            'ip' => 'required|ipv4|max:255',
+            'ip' => 'nullable|ipv4|max:255',
             'urlAdmin' => 'required|url|max:255',
             'urlUser' => 'nullable|url|max:255',
             'urlExternal' => 'nullable|url|max:255',

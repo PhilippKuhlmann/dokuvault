@@ -18,6 +18,5 @@
 
         <x-create.hidden />
 
-
     </x-create.main>
 </x-app-layout>

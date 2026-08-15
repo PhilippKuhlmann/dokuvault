@@ -29,7 +29,7 @@ class NASRequest extends FormRequest
             'manufacturer' => 'max:255',
             'model' => 'max:255',
             'serialNumber' => 'max:255',
-            'ip1' => 'required|max:255',
+            'ip1' => 'nullable|max:255',
             'ip2' => 'max:255',
             'port' => 'numeric',
             'username' => 'required|max:255',

@@ -1,28 +1,39 @@
 <x-app-layout :$customer>
-    <x-create.main :header="__('Drucker bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('printer.update', [$customer, $printer]) }}">
+    <x-create.main :header="__('Drucker bearbeiten')" :labelsubmit="__('Stammdaten speichern')" action="{{ route('printer.update', [$customer, $printer]) }}" breit>
         @method('PATCH')
 
-        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $printer->site_id }}" :array="$sites" />
+        <x-create.abschnitt :titel="__('Identität')" erste>
+            <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $printer->site_id }}" :array="$sites" />
 
-        <x-create.singlerow :label="__('Name')" name="name" :default="$printer->name" />
+            <x-create.singlerow :label="__('Name')" name="name" :default="$printer->name" />
+        </x-create.abschnitt>
 
-        <x-create.doublerow :label1="__('Hersteller')" name1="manufacturer" :default1="$printer->manufacturer" :label2="__('Model')" name2="model" :default2="$printer->model" />
+        <x-create.abschnitt :titel="__('Hardware')">
+            <x-create.singlerow :label="__('Hersteller')" name="manufacturer" :default="$printer->manufacturer" />
 
-        <x-create.singlerow :label="__('Seriennummer')" name="serialNumber" :default="$printer->serialNumber" />
+            <x-create.singlerow :label="__('Model')" name="model" :default="$printer->model" />
 
-        <x-create.singlerow :label="__('IP-Adresse')" name="ip" :default="$printer->ip" />
+            <x-create.singlerow :label="__('Seriennummer')" name="serialNumber" :default="$printer->serialNumber" />
+        </x-create.abschnitt>
 
-        <x-create.doublerow :label1="__('Benutzer')" name1="username" :default1="$printer->username" :label2="__('Passwort')" name2="password" :default2="$printer->password" />
+        <x-create.abschnitt :titel="__('Zugang')">
+            <x-create.singlerow :label="__('Benutzer')" name="username" :default="$printer->username" />
+
+            <x-create.singlerow :label="__('Passwort')" name="password" :default="$printer->password" />
+        </x-create.abschnitt>
+
+        {{-- In derselben Karte, aber ausserhalb des <form>: HTML erlaubt keine
+             verschachtelten Formulare, und beide Bloecke sind eigenstaendige
+             Livewire-Komponenten. --}}
+        <x-slot:nach>
+            <livewire:device-ip-addresses :model="$printer" :customer="$customer" eingebettet />
+            <livewire:device-credentials :model="$printer" :customer="$customer" eingebettet />
+        </x-slot>
 
     </x-create.main>
 
-    <livewire:device-ip-addresses :model="$printer" :customer="$customer" />
-
-
-    <livewire:device-credentials :model="$printer" :customer="$customer" />
-
     @can('printer_delete')
-        <x-deletecard action="{{ route('printer.destroy', [$customer, $printer]) }}" />
+        <x-deletecard action="{{ route('printer.destroy', [$customer, $printer]) }}" breit />
     @endcan
 
 </x-app-layout>

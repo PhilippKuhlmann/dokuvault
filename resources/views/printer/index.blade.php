@@ -6,7 +6,7 @@
 
         @php
             $adressen = $printer->relationLoaded('ipAddresses') ? $printer->ipAddresses : $printer->ipAddresses()->get();
-            $primaer = $printer->ip1 ?? $printer->ip;
+            $primaer = collect([$printer->ip1 ?? null, $printer->ip ?? null, $adressen->first()?->address])->filter()->first();
             $anzahlIps = collect([$primaer, $printer->ip2 ?? null])->filter()->count() + $adressen->count();
         @endphp
     <x-card>

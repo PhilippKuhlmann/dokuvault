@@ -26,7 +26,7 @@ class MachineRequest extends FormRequest
         return [
             'site_id' => ['required', new BelongsToCustomer('sites')],
             'name' => 'required|max:255',
-            'ip' => 'required|ipv4',
+            'ip' => 'nullable|ipv4',
         ];
     }
 

@@ -6,7 +6,7 @@
 
         @php
             $adressen = $phoneSystem->relationLoaded('ipAddresses') ? $phoneSystem->ipAddresses : $phoneSystem->ipAddresses()->get();
-            $primaer = $phoneSystem->ip1 ?? $phoneSystem->ip;
+            $primaer = collect([$phoneSystem->ip1 ?? null, $phoneSystem->ip ?? null, $adressen->first()?->address])->filter()->first();
             $anzahlIps = collect([$primaer, $phoneSystem->ip2 ?? null])->filter()->count() + $adressen->count();
         @endphp
         <x-card>

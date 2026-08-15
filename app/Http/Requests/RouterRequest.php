@@ -31,7 +31,7 @@ class RouterRequest extends FormRequest
             'serialNumber' => 'nullable|max:255',
             'username' => 'required|max:255',
             'password' => 'required|max:255',
-            'ip' => 'required|ipv4|max:255',
+            'ip' => 'nullable|ipv4|max:255',
             'port' => 'required|numeric',
         ];
     }

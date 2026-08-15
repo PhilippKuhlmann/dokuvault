@@ -1,7 +1,21 @@
-{{-- Wrapper haelt dieselbe zentrierte Spaltenbreite wie das Formular darueber (x-create.main) --}}
-<div class="mx-auto max-w-3xl px-3">
-<div class="my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700">
-    <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">{{ __('Zugangsdaten') }}</div>
+{{-- Eigenstaendig: Wrapper haelt dieselbe zentrierte Spaltenbreite wie das
+     Formular darueber (x-create.main), plus eigener Kartenrahmen.
+     Eingebettet: beides faellt weg, der Block sitzt in der Karte des Formulars
+     und bekommt statt des Rahmens nur eine Trennlinie nach oben. --}}
+<div @class([
+    'mx-auto max-w-3xl px-3' => ! $eingebettet,
+    'px-5 sm:px-6' => $eingebettet,
+])>
+<div @class([
+    'my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700' => ! $eingebettet,
+    'border-t border-gray-100 py-5 dark:border-gray-700' => $eingebettet,
+])>
+    {{-- Der Hinweis trennt diese Karte vom Formular darueber: Dort speichert ein
+         Knopf am Ende, hier wirkt jede Verknuepfung sofort. --}}
+    <div class="mb-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100">{{ __('Zugangsdaten') }}</div>
+        <span class="rounded bg-cerulean-50 px-2 py-0.5 text-xs text-cerulean-700 dark:bg-cerulean-950 dark:text-cerulean-300">{{ __('speichert sofort') }}</span>
+    </div>
     <div class="text-xs text-gray-400 dark:text-gray-500 mb-4">
         {{ __('Verknüpft mit „Logins Allgemein" – dasselbe Passwort kann an mehreren Systemen hängen.') }}
     </div>
@@ -106,9 +120,10 @@
             <x-input.label :value="__('Abweichende Verwendung')" />
             <x-input.text wire:model="note" type="text" class="mt-1 w-48" :placeholder="__('nur wenn abweichend')" />
         </div>
-        <x-input.button type="button" wire:click="attach" :label="__('Verknüpfen')" />
+        <x-input.button type="button" size="feld" wire:click="attach" :label="__('Verknüpfen')" />
+        {{-- Textknopf ohne Flaeche, aber auf derselben Hoehe wie die Felder daneben --}}
         <button type="button" wire:click="$set('neu', true)"
-            class="pb-2 text-sm text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400">{{ __('oder neu anlegen') }}</button>
+            class="inline-flex items-center border border-transparent px-2 py-2 text-sm leading-6 text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400">{{ __('oder neu anlegen') }}</button>
     </div>
     @else
 
@@ -132,9 +147,10 @@
             <x-input.label :value="__('Abweichende Verwendung')" />
             <x-input.text wire:model="note" type="text" class="mt-1 w-40" :placeholder="__('nur wenn abweichend')" />
         </div>
-        <x-input.button type="button" wire:click="create" :label="__('Anlegen und verknüpfen')" />
+        <x-input.button type="button" size="feld" wire:click="create" :label="__('Anlegen und verknüpfen')" />
+        {{-- Textknopf ohne Flaeche, aber auf derselben Hoehe wie die Felder daneben --}}
         <button type="button" wire:click="$set('neu', false)"
-            class="pb-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400">{{ __('Abbrechen') }}</button>
+            class="inline-flex items-center border border-transparent px-2 py-2 text-sm leading-6 text-gray-500 hover:text-gray-700 dark:text-gray-400">{{ __('Abbrechen') }}</button>
     </div>
     @endunless
 </div>

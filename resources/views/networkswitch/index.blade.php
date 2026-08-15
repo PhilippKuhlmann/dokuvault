@@ -7,7 +7,7 @@
 
         @php
             $adressen = $networkswitch->relationLoaded('ipAddresses') ? $networkswitch->ipAddresses : $networkswitch->ipAddresses()->get();
-            $primaer = $networkswitch->ip1 ?? $networkswitch->ip;
+            $primaer = collect([$networkswitch->ip1 ?? null, $networkswitch->ip ?? null, $adressen->first()?->address])->filter()->first();
             $anzahlIps = collect([$primaer, $networkswitch->ip2 ?? null])->filter()->count() + $adressen->count();
         @endphp
         <x-card>

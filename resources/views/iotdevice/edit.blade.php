@@ -1,30 +1,43 @@
 <x-app-layout :$customer>
-    <x-create.main :header="__('IoT Gerät bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('iotdevice.update', [$customer, $iotdevice]) }}">
+    <x-create.main :header="__('IoT Gerät bearbeiten')" :labelsubmit="__('Stammdaten speichern')" action="{{ route('iotdevice.update', [$customer, $iotdevice]) }}" breit>
         @method('PATCH')
 
-        <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $iotdevice->site_id }}" :array="$sites" />
+        <x-create.abschnitt :titel="__('Identität')" erste>
+            <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $iotdevice->site_id }}" :array="$sites" />
 
-        <x-create.singlerow :label="__('Name')" name="name" :default="$iotdevice->name" />
+            <x-create.singlerow :label="__('Name')" name="name" :default="$iotdevice->name" />
+        </x-create.abschnitt>
 
-        <x-create.doublerow :label1="__('Hersteller')" name1="manufacturer" :default1="$iotdevice->manufacturer" :label2="__('Model')" name2="model" :default2="$iotdevice->model" />
+        <x-create.abschnitt :titel="__('Hardware')">
+            <x-create.singlerow :label="__('Hersteller')" name="manufacturer" :default="$iotdevice->manufacturer" />
 
-        <x-create.singlerow :label="__('Seriennummer')" name="serialNumber" :default="$iotdevice->serialNumber" />
+            <x-create.singlerow :label="__('Model')" name="model" :default="$iotdevice->model" />
 
-        <x-create.doublerow :label1="__('IP-Adresse')" name1="ip" :default1="$iotdevice->ip" :label2="__('Port')" name2="port" :default2="$iotdevice->port" />
+            <x-create.singlerow :label="__('Seriennummer')" name="serialNumber" :default="$iotdevice->serialNumber" />
+        </x-create.abschnitt>
 
-        <x-create.singlerow :label="__('URL')" name="url" :default="$iotdevice->url" />
+        <x-create.abschnitt :titel="__('Zugang')">
+            <x-create.singlerow :label="__('Port')" name="port" :default="$iotdevice->port" />
 
-        <x-create.doublerow :label1="__('Benutzer')" name1="username" :default1="$iotdevice->username" :label2="__('Passwort')" name2="password" :default2="$iotdevice->password" />
+            <x-create.singlerow :label="__('URL')" name="url" :default="$iotdevice->url" />
+
+            <x-create.singlerow :label="__('Benutzer')" name="username" :default="$iotdevice->username" />
+
+            <x-create.singlerow :label="__('Passwort')" name="password" :default="$iotdevice->password" />
+        </x-create.abschnitt>
+
+        {{-- In derselben Karte, aber ausserhalb des <form>: HTML erlaubt keine
+             verschachtelten Formulare, und beide Bloecke sind eigenstaendige
+             Livewire-Komponenten. --}}
+        <x-slot:nach>
+            <livewire:device-ip-addresses :model="$iotdevice" :customer="$customer" eingebettet />
+            <livewire:device-credentials :model="$iotdevice" :customer="$customer" eingebettet />
+        </x-slot>
 
     </x-create.main>
 
-    <livewire:device-ip-addresses :model="$iotdevice" :customer="$customer" />
-
-
-    <livewire:device-credentials :model="$iotdevice" :customer="$customer" />
-
     @can('iotdevice_delete')
-        <x-deletecard action="{{ route('iotdevice.destroy', [$customer, $iotdevice]) }}" />
+        <x-deletecard action="{{ route('iotdevice.destroy', [$customer, $iotdevice]) }}" breit />
     @endcan
 
 </x-app-layout>

@@ -19,13 +19,14 @@
     foreach ($weitereAdressen as $weitere) {
         $netz = $weitere->network;
         $rolle = $weitere->label ?: __('Weitere');
-        $netzName = $netz ? ($netz->description ?: 'VLAN '.$netz->vlanId) : null;
 
         $zeilen[] = [
             'rolle' => $rolle,
             'adresse' => $weitere->address,
-            // Heisst die Bezeichnung wie das VLAN ("Clients"), stuende sie zweimal da.
-            'zusatz' => $netzName === $rolle ? null : $netzName,
+            // Netzname und VLAN-Nummer zusammen ("DMZ · VLAN 20"): Der Name sagt
+            // wofuer, die Nummer braucht man am Switch. Heisst die Bezeichnung
+            // schon wie das Netz ("Clients"), bleibt nur die Nummer stehen.
+            'zusatz' => $netz?->anzeige($netz->description === $rolle),
         ];
     }
 @endphp
