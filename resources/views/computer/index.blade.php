@@ -42,11 +42,9 @@
 
             <x-credentialscard :device="$computer" />
 
-            <x-minitablecard :title="__('Netzwerk')" :array="[
-            ]" />
-
             <x-minitextcard :title="__('Betriebsystem')">
                 {{ $computer->operatingSystem?->name ?? '—' }}
+                <x-eol :os="$computer->operatingSystem" />
             </x-minitextcard>
 
         </x-slot>

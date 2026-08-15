@@ -24,6 +24,9 @@ class OperatingSystemRequest extends FormRequest
     {
         return [
             'name' => 'required',
+            // Nicht fuer jedes System bekannt - und ein Datum in der
+            // Vergangenheit ist voellig legitim (Windows Server 2012 R2).
+            'eol_date' => 'nullable|date',
         ];
     }
 }

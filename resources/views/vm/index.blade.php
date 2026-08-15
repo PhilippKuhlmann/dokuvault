@@ -23,6 +23,8 @@
 
                     @if ($vm->operatingSystem)
                         <span class="text-sm font-normal text-gray-500 dark:text-gray-400">{{ $vm->operatingSystem->name }}</span>
+
+                        <x-eol :os="$vm->operatingSystem" />
                     @endif
 
                     {{-- Wie beim Server: das Nachgeschlagene neben den Namen. Statt des

@@ -77,9 +77,37 @@ class OperatingSystemsSeeder extends Seeder
             'macOS Ventura',
         ];
 
+        // Offizielle Support-Enden von Microsoft und den Distributionen. Das
+        // Datum haengt am Produkt, nicht an der Edition - Standard und
+        // Datacenter enden am selben Tag.
+        $eol = [
+            'Windows Server 2008 R2' => '2020-01-14',
+            'Windows Server 2012 R2' => '2023-10-10',
+            'Windows Server 2012' => '2023-10-10',
+            'Windows Server 2016' => '2027-01-12',
+            'Windows Server 2019' => '2029-01-09',
+            'Windows Server 2022' => '2031-10-14',
+            'Windows Server 2025' => '2034-10-10',
+            'Windows 10' => '2025-10-14',
+            'Debian 11' => '2026-08-31',
+            'Debian 12' => '2028-06-30',
+            'Ubuntu 20.04' => '2025-05-31',
+            'Ubuntu 22.04' => '2027-06-01',
+            'CentOS 7' => '2024-06-30',
+        ];
+
         foreach ($array as $a) {
+            $datum = null;
+            foreach ($eol as $produkt => $ende) {
+                if (str_starts_with($a, $produkt)) {
+                    $datum = $ende;
+                    break;
+                }
+            }
+
             OperatingSystem::create([
                 'name' => $a,
+                'eol_date' => $datum,
             ]);
         }
 

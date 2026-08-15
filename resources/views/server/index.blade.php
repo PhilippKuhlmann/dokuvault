@@ -26,6 +26,8 @@
                          Identitaet der Maschine, nicht zu den Nachschlagewerten. --}}
                     @if ($server->operatingSystem)
                         <span class="text-sm font-normal text-gray-500 dark:text-gray-400">{{ $server->operatingSystem->name }}</span>
+
+                        <x-eol :os="$server->operatingSystem" />
                     @endif
 
                     {{-- Was man fast immer sucht, steht neben dem Namen statt irgendwo

@@ -14,6 +14,7 @@ use App\Models\LicenseSoftware;
 use App\Models\LicenseWindows;
 use App\Models\NAS;
 use App\Models\NetworkSwitch;
+use App\Models\OperatingSystem;
 use App\Models\Phone;
 use App\Models\Printer;
 use App\Models\Role;
@@ -52,6 +53,23 @@ class AdminController extends Controller
         foreach (Domain::whereNotNull('expiry_date')->whereDate('expiry_date', '<=', $limit)->with('customer')->get() as $d) {
             $expiring->push(['type' => 'Domain', 'name' => $d->name, 'date' => $d->expiry_date, 'customer' => $d->customer, 'route' => $d->customer ? route('domain.index', $d->customer) : null]);
         }
+        // Betriebssysteme haben keinen Kunden - hier zaehlt, wie viele Geraete
+        // betroffen sind. Ohne Geraete darauf ist ein EOL-System kein Problem.
+        foreach (OperatingSystem::whereNotNull('eol_date')->whereDate('eol_date', '<=', $limit)
+            ->withCount(['servers', 'vms'])->get() as $os) {
+            $betroffen = $os->servers_count + $os->vms_count;
+            if ($betroffen === 0) {
+                continue;
+            }
+            $expiring->push([
+                'type' => 'Betriebssystem',
+                'name' => $os->name.' ('.$betroffen.' Systeme)',
+                'date' => $os->eol_date,
+                'customer' => null,
+                'route' => route('admin.operatingsystem.index'),
+            ]);
+        }
+
         $expiring = $expiring->sortBy('date')->take(12)->values();
 
         // Globale Inventar-Statistik (über alle Kunden)

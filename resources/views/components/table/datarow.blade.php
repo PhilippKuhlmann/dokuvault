@@ -16,6 +16,19 @@
                     <a disabled class="text-gray-500">{{ __('Download') }}</a>
                 </td>
             @endif
+        @elseif ($key == 'eol')
+            {{-- $value ist das Betriebssystem selbst: Datum und Zustand kommen
+                 aus derselben Quelle wie das Abzeichen in den Geraetelisten. --}}
+            <td scope="row" class="py-2.5 px-4">
+                @if ($value?->eol_date)
+                    <div class="flex items-center gap-2">
+                        <span class="font-mono text-sm text-gray-900 dark:text-gray-100">{{ $value->eol_date->format('d.m.Y') }}</span>
+                        <x-eol :os="$value" />
+                    </div>
+                @else
+                    <span class="text-gray-400 dark:text-gray-500">—</span>
+                @endif
+            </td>
         @elseif ($key == 'credentials')
             {{-- $value ist hier das Geraet selbst, nicht ein Wert: Die verknuepften
                  Zugangsdaten holt sich die Komponente daraus. --}}

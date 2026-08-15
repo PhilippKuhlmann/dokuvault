@@ -19,7 +19,7 @@
 
 <div class="m-3">
     <x-table.main>
-        <x-table.head :labels="['Name', '', ]" />
+        <x-table.head :labels="['Name', 'Support-Ende', '', ]" />
 
         <x-table.body>
 
@@ -27,7 +27,8 @@
 
                 <x-table.datarow
                     :values="[
-                        $operatingSystem->name
+                        $operatingSystem->name,
+                        'eol' => $operatingSystem,
                     ]"
 
                     editUrl="/{{ Request::path() }}/{{ $operatingSystem->id }}/edit"
