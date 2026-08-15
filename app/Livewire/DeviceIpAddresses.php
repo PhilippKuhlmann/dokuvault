@@ -32,9 +32,9 @@ class DeviceIpAddresses extends Component
     #[Locked]
     public bool $eingebettet = false;
 
-    // Schnell ein VLAN anlegen, ohne das Formular zu verlassen. Nur die
-    // Pflichtangaben - Gateway, DNS und DHCP ergaenzt man spaeter im richtigen
-    // VLAN-Formular.
+    // Ein VLAN anlegen, ohne das Formular zu verlassen. Dieselben Felder wie im
+    // VLAN-Formular - ein Modal, das die Haelfte weglaesst, zwingt sonst doch
+    // wieder zum Nachtragen an anderer Stelle.
     public bool $vlanModal = false;
 
     public string $vlanDescription = '';
@@ -44,6 +44,18 @@ class DeviceIpAddresses extends Component
     public string $vlanNetwork = '';
 
     public string $vlanSubnetmask = '255.255.255.0';
+
+    public $vlanCidr = '';
+
+    public string $vlanGateway = '';
+
+    public string $vlanDns1 = '';
+
+    public string $vlanDns2 = '';
+
+    public string $vlanDhcpStart = '';
+
+    public string $vlanDhcpEnd = '';
 
     public function mount($model, $customer, bool $eingebettet = false): void
     {
@@ -109,11 +121,23 @@ class DeviceIpAddresses extends Component
             'vlanNummer' => ['nullable', 'integer', 'min:1', 'max:4094'],
             'vlanNetwork' => ['required', 'ipv4'],
             'vlanSubnetmask' => ['required', 'ipv4'],
+            'vlanCidr' => ['nullable', 'integer', 'min:0', 'max:32'],
+            'vlanGateway' => ['nullable', 'ipv4'],
+            'vlanDns1' => ['nullable', 'ipv4'],
+            'vlanDns2' => ['nullable', 'ipv4'],
+            'vlanDhcpStart' => ['nullable', 'ipv4'],
+            'vlanDhcpEnd' => ['nullable', 'ipv4'],
         ], [], [
             'vlanDescription' => __('Bezeichnung'),
             'vlanNummer' => __('VLAN-ID'),
             'vlanNetwork' => __('Netz'),
             'vlanSubnetmask' => __('Subnetzmaske'),
+            'vlanCidr' => __('CIDR'),
+            'vlanGateway' => __('Gateway'),
+            'vlanDns1' => __('DNS 1'),
+            'vlanDns2' => __('DNS 2'),
+            'vlanDhcpStart' => __('DHCP-Start'),
+            'vlanDhcpEnd' => __('DHCP-Ende'),
         ]);
 
         $netz = Network::create([
@@ -123,12 +147,19 @@ class DeviceIpAddresses extends Component
             'vlanId' => $daten['vlanNummer'] ?: null,
             'network' => $daten['vlanNetwork'],
             'subnetmask' => $daten['vlanSubnetmask'],
+            'cidr' => $daten['vlanCidr'] ?: null,
+            'gateway' => $daten['vlanGateway'] ?: null,
+            'dns1' => $daten['vlanDns1'] ?: null,
+            'dns2' => $daten['vlanDns2'] ?: null,
+            'dhcpStart' => $daten['vlanDhcpStart'] ?: null,
+            'dhcpEnd' => $daten['vlanDhcpEnd'] ?: null,
         ]);
 
         // Gleich ausgewaehlt: Der Nutzer war beim Eintragen einer Adresse.
         $this->network_id = $netz->id;
 
-        $this->reset('vlanModal', 'vlanDescription', 'vlanNummer', 'vlanNetwork');
+        $this->reset('vlanModal', 'vlanDescription', 'vlanNummer', 'vlanNetwork',
+            'vlanCidr', 'vlanGateway', 'vlanDns1', 'vlanDns2', 'vlanDhcpStart', 'vlanDhcpEnd');
         $this->vlanSubnetmask = '255.255.255.0';
     }
 

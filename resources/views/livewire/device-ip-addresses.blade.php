@@ -106,7 +106,7 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
             wire:key="vlan-modal" x-on:keydown.escape.window="$wire.set('vlanModal', false)">
 
-            <div class="w-full max-w-md rounded-xl border border-gray-200 bg-white p-5 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+            <div class="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-gray-200 bg-white p-5 shadow-lg dark:border-gray-700 dark:bg-gray-800">
                 <div class="mb-4 text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100">
                     {{ __('Neues VLAN') }}
                 </div>
@@ -132,10 +132,52 @@
                         </div>
                     </div>
 
+                    <div class="flex gap-3">
+                        <div class="flex flex-1 flex-col">
+                            <x-input.label :value="__('Subnetzmaske')" />
+                            <x-input.text wire:model="vlanSubnetmask" type="text" class="mt-1" />
+                            @error('vlanSubnetmask') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div class="flex w-1/3 flex-col">
+                            <x-input.label :value="__('CIDR')" />
+                            <x-input.text wire:model="vlanCidr" type="number" class="mt-1" placeholder="24" />
+                            @error('vlanCidr') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
                     <div class="flex flex-col">
-                        <x-input.label :value="__('Subnetzmaske')" />
-                        <x-input.text wire:model="vlanSubnetmask" type="text" class="mt-1" />
-                        @error('vlanSubnetmask') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
+                        <x-input.label :value="__('Gateway')" />
+                        <x-input.text wire:model="vlanGateway" type="text" class="mt-1" placeholder="10.10.20.1" />
+                        @error('vlanGateway') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="flex gap-3">
+                        <div class="flex flex-1 flex-col">
+                            <x-input.label :value="__('DNS 1')" />
+                            <x-input.text wire:model="vlanDns1" type="text" class="mt-1" />
+                            @error('vlanDns1') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div class="flex flex-1 flex-col">
+                            <x-input.label :value="__('DNS 2')" />
+                            <x-input.text wire:model="vlanDns2" type="text" class="mt-1" />
+                            @error('vlanDns2') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <div class="flex flex-1 flex-col">
+                            <x-input.label :value="__('DHCP-Start')" />
+                            <x-input.text wire:model="vlanDhcpStart" type="text" class="mt-1" />
+                            @error('vlanDhcpStart') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div class="flex flex-1 flex-col">
+                            <x-input.label :value="__('DHCP-Ende')" />
+                            <x-input.text wire:model="vlanDhcpEnd" type="text" class="mt-1" />
+                            @error('vlanDhcpEnd') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
+                        </div>
                     </div>
                 </div>
 

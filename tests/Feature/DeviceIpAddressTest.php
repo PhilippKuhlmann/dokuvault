@@ -158,6 +158,11 @@ test('ein VLAN laesst sich im IP-Block anlegen und ist danach ausgewaehlt', func
         ->set('vlanDescription', 'DMZ')
         ->set('vlanNummer', 90)
         ->set('vlanNetwork', '10.10.90.0')
+        ->set('vlanCidr', 24)
+        ->set('vlanGateway', '10.10.90.1')
+        ->set('vlanDns1', '10.10.30.10')
+        ->set('vlanDhcpStart', '10.10.90.100')
+        ->set('vlanDhcpEnd', '10.10.90.200')
         ->call('vlanAnlegen')
         ->assertHasNoErrors();
 
@@ -166,6 +171,13 @@ test('ein VLAN laesst sich im IP-Block anlegen und ist danach ausgewaehlt', func
     // Der Standort kommt vom Geraet, nicht aus dem Formular.
     expect($netz->site_id)->toBe($router->site_id);
     expect($netz->vlanId)->toBe(90);
+
+    // Alle Felder des VLAN-Formulars stehen auch im Modal zur Verfuegung.
+    expect($netz->cidr)->toBe('24');
+    expect($netz->gateway)->toBe('10.10.90.1');
+    expect($netz->dns1)->toBe('10.10.30.10');
+    expect($netz->dhcpStart)->toBe('10.10.90.100');
+    expect($netz->dhcpEnd)->toBe('10.10.90.200');
 
     // Direkt ausgewaehlt und Modal zu - man war mitten im Eintragen einer IP.
     $komponente->assertSet('network_id', $netz->id)->assertSet('vlanModal', false);
