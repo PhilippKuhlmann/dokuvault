@@ -6,7 +6,7 @@
         @php
             $belegt = $patchpanel->ports->filter(fn ($p) => $p->isDocumented());
         @endphp
-        <x-card>
+        <x-card plain>
             <x-slot:head>
                 <x-show.header can="patchpanel_update" editUrl="{{ route('patchpanel.edit', [$customer, $patchpanel]) }}">
                     {{ $patchpanel->name }}
@@ -14,6 +14,11 @@
             </x-slot>
 
             <x-slot:body>
+
+                {{-- Die Blende zuerst: Wer vor dem Schrank steht, sucht einen Port
+                     und nicht den Hersteller. Die Legende ersetzt den frueheren
+                     Zahlenblock "Belegung" - sie sagt dasselbe und zeigt dabei, wo. --}}
+                <x-patchpanel.face :panel="$patchpanel" />
 
                 <x-minitablecard :title="__('Allgemein')" :array="[
                     'Rack' => $patchpanel->einbauort(),
@@ -23,16 +28,13 @@
                     'Höheneinheiten' => $patchpanel->height_units . ' HE',
                 ]" />
 
-                <x-minitablecard :title="__('Belegung')" :array="[
-                    'Ports' => $patchpanel->port_count,
-                    'Dokumentiert' => $belegt->count(),
-                    'Frei' => $patchpanel->port_count - $belegt->count(),
-                ]" />
-
                 @if ($belegt->isNotEmpty())
-                    <div class="w-full">
+                    <div class="w-full mb-5 break-inside-avoid">
                         <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-2">{{ __('Dosen') }}</div>
-                        <table class="w-full text-sm">
+                        {{-- Sechs Spalten passen nicht in eine Kartenspalte; die Tabelle
+                             scrollt fuer sich, damit die Seite nicht seitlich wandert. --}}
+                        <div class="overflow-x-auto">
+                        <table class="w-full min-w-[30rem] text-sm">
                             <thead class="text-xs uppercase tracking-wide text-gray-400 border-b border-gray-100 dark:border-gray-700">
                                 <tr>
                                     <th class="py-2 pr-4 text-left font-semibold">{{ __('Port') }}</th>
@@ -56,6 +58,7 @@
                                 @endforeach
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 @endif
 
