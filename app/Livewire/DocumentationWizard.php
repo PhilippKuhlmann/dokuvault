@@ -362,11 +362,14 @@ class DocumentationWizard extends Component
         $selectOptions = [];
 
         if ($step) {
-            $query = $step['model']::where('customer_id', $customer->id);
-            if (($step['scope'] ?? 'site') === 'site' && $run->site_id) {
-                $query->where('site_id', $run->site_id);
-            }
-            $entries = $query->latest()->limit(50)->get();
+            // Alles, was der Kunde schon hat - nicht nur die Eintraege des
+            // laufenden Durchlaufs und nicht nur die am gewaehlten Standort.
+            // Wer den Assistenten oeffnet, will sehen, was bereits dokumentiert
+            // ist, und Luecken darin nachtragen koennen.
+            $entries = $step['model']::where('customer_id', $customer->id)
+                ->latest()
+                ->limit(50)
+                ->get();
 
             foreach ($step['fields'] as $field) {
                 if (($field['type'] ?? null) === 'select' && is_string($field['options'] ?? null)) {

@@ -1,6 +1,6 @@
 <div class="p-3 sm:p-5">
 
-    <div class="flex items-center justify-between mb-5">
+    <div class="mx-auto mb-5 flex max-w-2xl items-center justify-between">
         <div class="text-3xl font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Dokumentations-Assistent') }}</div>
         <a href="{{ route('customer.dashboard', $customer) }}" class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
             {{ __('Zum Dashboard') }}
@@ -8,7 +8,7 @@
     </div>
 
     @if ($finished)
-        <div class="p-8 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700 max-w-xl text-center">
+        <div class="p-8 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700 mx-auto max-w-xl text-center">
             <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-2">{{ __('Durchlauf abgeschlossen') }}</div>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
                 {{ count($run->completed_steps ?? []) }} {{ Str::plural('Bereich', count($run->completed_steps ?? [])) }} erfasst,
@@ -26,7 +26,7 @@
         {{-- Fortschritt: schlanke segmentierte Leiste statt einzelner Pillen je Schritt
              (Muster aus der IPAM-Auslastungsleiste) - ein Segment je Schritt, Position in Worten. --}}
         @php $currentIndex = collect($steps)->search(fn ($s) => $s['key'] === $step['key']); @endphp
-        <div class="mb-6 max-w-2xl">
+        <div class="mb-6 mx-auto max-w-2xl">
             <div class="flex items-baseline justify-between mb-2">
                 <span class="text-sm font-DINPro-medium text-gray-700 dark:text-gray-300">{{ __($step['group']) }}</span>
                 <span class="text-xs text-gray-400 dark:text-gray-500 font-mono tabular-nums">
@@ -52,7 +52,7 @@
             </div>
         </div>
 
-        <div class="p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700 max-w-2xl">
+        <div class="p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700 mx-auto max-w-2xl">
             <div class="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">{{ __($step['group']) }}</div>
             <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __($step['label']) }}</div>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">{{ __($step['question']) }}</p>
