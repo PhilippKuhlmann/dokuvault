@@ -1,13 +1,12 @@
 <x-app-layout :$customer>
 
-    <x-sitetopmenu can="network_create" />
-
-    {{-- Dasselbe Modal wie im IP-Block am Geraet: ein VLAN anlegen, ohne die
-         Liste zu verlassen. Der Standort wird hier mit abgefragt - anders als
-         am Geraet gibt ihn nichts vor. --}}
-    <div class="px-3 pb-1">
-        <livewire:network-quick-create :customer="$customer" />
-    </div>
+    {{-- Statt des eingebauten "Neu" (fuehrt auf eine eigene Seite) dasselbe
+         Modal wie im IP-Block am Geraet - man bleibt in der Liste. Der Standort
+         wird hier mit abgefragt, anders als am Geraet gibt ihn nichts vor. --}}
+    <x-sitetopmenu can="network_create" :neu="false">
+        <livewire:network-quick-create :customer="$customer"
+            class="inline-flex items-center gap-1.5 rounded-lg bg-cerulean-600 px-4 py-2 text-sm font-DINPro-bold text-white shadow-sm transition-colors hover:bg-cerulean-700" />
+    </x-sitetopmenu>
 
 
     @forelse ($networks as $network)
