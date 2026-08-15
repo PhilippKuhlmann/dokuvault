@@ -265,6 +265,93 @@ class LocalDatabaseSeeder extends Seeder
         ], fn ($item) => $item !== null
             && (! array_key_exists('device_id', $item) || $item['device_id'] !== null)));
 
+        // Weitere Patchfelder und zwei kleine Schraenke. Ein Kunde hat selten nur
+        // einen Serverraum: Etagenverteiler sind meist 12 HE und tragen vor allem
+        // Patchfelder und einen Switch.
+        $patchfeld = function (string $name, Site $standort, int $ports, int $he, array $dosen) use ($customer, $swCore) {
+            $feld = PatchPanel::factory()->create([
+                'customer_id' => $customer->id,
+                'site_id' => $standort->id,
+                'name' => $name,
+                'port_count' => $ports,
+                'height_units' => $he,
+            ]);
+            $feld->syncPorts();
+
+            foreach ($dosen as [$nr, $dose, $raum, $swPort]) {
+                $feld->ports()->where('number', $nr)->update([
+                    'outlet' => $dose,
+                    'label' => $raum,
+                    'network_switch_id' => $swCore?->id,
+                    'switch_port' => $swPort,
+                ]);
+            }
+
+            return $feld;
+        };
+
+        // Grosser Schrank: ein zweites Feld fuer das Obergeschoss.
+        $pfEg02 = $patchfeld('PF-EG-02', $site1, 24, 1, [
+            [3, 'EG 2.03', 'Buero Sued', '13'],
+            [4, 'EG 2.04', 'Buero Sued', '14'],
+            [9, 'EG 2.09', 'Kueche', '19'],
+        ]);
+        $rack->items()->create([
+            'position' => 35, 'height_units' => $pfEg02->height_units,
+            'device_type' => PatchPanel::class, 'device_id' => $pfEg02->id,
+        ]);
+
+        // Etagenverteiler 1. OG - zwei Felder, eines davon 48 Ports auf 2 HE.
+        $rackOg = Rack::factory()->create([
+            'customer_id' => $customer->id,
+            'site_id' => $site1->id,
+            'name' => 'Rack HH-02',
+            'height_units' => 12,
+            'location' => 'Etagenverteiler 1. OG',
+        ]);
+
+        $pfOg01 = $patchfeld('PF-OG-01', $site1, 48, 2, [
+            [1, 'OG 1.01', 'Buero 101', '1'],
+            [2, 'OG 1.02', 'Buero 101', '2'],
+            [7, 'OG 1.07', 'Buero 104', '7'],
+            [26, 'OG 1.26', 'Konferenz', '26'],
+            [31, 'OG 1.31', 'Konferenz', '31'],
+        ]);
+        $pfOg02 = $patchfeld('PF-OG-02', $site1, 24, 1, [
+            [4, 'OG 2.04', 'Technik', '4'],
+            [5, 'OG 2.05', 'Technik', '5'],
+        ]);
+
+        $rackOg->items()->createMany(array_filter([
+            ['position' => 10, 'height_units' => $pfOg01->height_units,
+                'device_type' => PatchPanel::class, 'device_id' => $pfOg01->id],
+            ['position' => 12, 'height_units' => $pfOg02->height_units,
+                'device_type' => PatchPanel::class, 'device_id' => $pfOg02->id],
+            $ausKatalog(9, 'Rangierfeld'),
+            $ausKatalog(1, 'Steckdosenleiste (PDU)', 'rear'),
+        ], fn ($item) => $item !== null));
+
+        // Filiale Muenchen - ein kleiner Schrank mit einem Feld.
+        $rackMuc = Rack::factory()->create([
+            'customer_id' => $customer->id,
+            'site_id' => $site2->id,
+            'name' => 'Rack MUC-01',
+            'height_units' => 12,
+            'location' => 'Technikraum Filiale',
+        ]);
+
+        $pfMuc = $patchfeld('PF-MUC-01', $site2, 24, 1, [
+            [1, 'MUC 1.01', 'Empfang', '1'],
+            [8, 'MUC 1.08', 'Lager', '8'],
+        ]);
+
+        $rackMuc->items()->createMany(array_filter([
+            ['position' => 11, 'height_units' => $pfMuc->height_units,
+                'device_type' => PatchPanel::class, 'device_id' => $pfMuc->id],
+            $ausKatalog(10, 'Rangierfeld'),
+            $ausKatalog(1, 'Steckdosenleiste (PDU)', 'rear'),
+        ], fn ($item) => $item !== null));
+
         ADUser::factory(10)->create([
             'customer_id' => $customer->id,
         ]);
