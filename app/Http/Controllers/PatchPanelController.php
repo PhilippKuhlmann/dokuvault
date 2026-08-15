@@ -13,7 +13,7 @@ class PatchPanelController extends Controller
         $this->authorize('viewAny', PatchPanel::class);
 
         $patchpanels = $this->getFilteredQuery(PatchPanel::class, $customer)
-            ->with('ports.networkSwitch')
+            ->with(['ports.networkSwitch', 'rackItem.rack'])
             ->latest()->paginate(25);
 
         return view('patchpanel.index', compact('customer', 'patchpanels'));

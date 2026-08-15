@@ -11,6 +11,11 @@
         </div>
     </div>
 
+    {{-- Blende ueber dem Formular: Beim Pflegen sieht man direkt, welche Buchse
+         man gerade beschriftet und wo noch Luecken sind. Sie zeigt den
+         gespeicherten Stand und aktualisiert sich beim Speichern mit. --}}
+    <x-patchpanel.face :panel="$panel" />
+
     <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">
         {{ __('Je Port die Dosennummer, den Raum und den Switch-Port eintragen. Die Portanzahl ändert man oben im Formular.') }}
     </p>

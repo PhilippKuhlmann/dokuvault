@@ -2,7 +2,15 @@
 
     <x-sitetopmenu can="patchpanel_create" />
 
-    @forelse ($patchpanels as $patchpanel)
+    {{-- Nach Schrank gruppiert: Wer patcht, steht vor einem Schrank und will
+         dessen Felder beieinander sehen. Gruppiert wird die aktuelle Seite -
+         die Blaetterung bleibt, sonst muesste man alles auf einmal laden. --}}
+    @forelse ($patchpanels->groupBy(fn ($p) => $p->rackItem?->rack?->name ?? __('Ohne Schrank')) as $schrank => $felderImSchrank)
+        <div class="px-3 pt-4 pb-1 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            {{ $schrank }}
+        </div>
+
+        @foreach ($felderImSchrank as $patchpanel)
         @php
             $belegt = $patchpanel->ports->filter(fn ($p) => $p->isDocumented());
         @endphp
@@ -29,11 +37,17 @@
                 ]" />
 
                 @if ($belegt->isNotEmpty())
-                    <div class="w-full mb-5 break-inside-avoid">
-                        <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-2">{{ __('Dosen') }}</div>
+                    {{-- Eingeklappt: Die Blende beantwortet die haeufige Frage schon;
+                         die Tabelle braucht man zum Durchgehen und Drucken. --}}
+                    <div class="w-full mb-5 break-inside-avoid" x-data="{ offen: false }">
+                        <button type="button" x-on:click="offen = ! offen"
+                            class="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400 hover:text-cerulean-600 dark:text-gray-500 dark:hover:text-cerulean-400">
+                            <span x-bind:class="offen && 'rotate-90'" class="transition-transform">&rsaquo;</span>
+                            {{ __('Dosen') }} <span class="font-mono normal-case tracking-normal">({{ $belegt->count() }})</span>
+                        </button>
                         {{-- Sechs Spalten passen nicht in eine Kartenspalte; die Tabelle
                              scrollt fuer sich, damit die Seite nicht seitlich wandert. --}}
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto" x-show="offen" x-cloak>
                         <table class="w-full min-w-[30rem] text-sm">
                             <thead class="text-xs uppercase tracking-wide text-gray-400 border-b border-gray-100 dark:border-gray-700">
                                 <tr>
@@ -64,6 +78,7 @@
 
             </x-slot>
         </x-card>
+        @endforeach
     @empty
         <x-emptystate message="Noch keine Patchfelder dokumentiert." />
     @endforelse
