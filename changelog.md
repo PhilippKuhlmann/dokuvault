@@ -12,6 +12,8 @@
 
 ### Fixed
 
+- **Die Testsuite fiel gelegentlich grundlos aus.** `roles.name` trägt einen UNIQUE-Index, die Factory zog aber Personennamen aus einem endlichen Vorrat — auf der CI kam derselbe Name zweimal („Edgar Rudolph") und riss den ganzen Lauf mit. Der übersprungene Deploy war die Folge. Rollennamen sind jetzt fortlaufend nummeriert und können nicht mehr kollidieren.
+
 - **„PDF erstellen" endete auf der Demo in einer Fehlerseite.** DomPDF hält das ganze Dokument im Speicher: Aus 0,4 MB HTML werden bei einem Kunden mit 26 Servern, 46 VMs und 53 Computern **136 MB Spitzenverbrauch**, davon 84 MB allein im PDF-Aufbau. Auf einem PHP mit den üblichen 128 MB bricht das ab — lokal mit 512 MB fiel es nie auf. Die PDF-Ausgabe hebt das Limit jetzt für ihren eigenen Aufruf auf 256 MB an, sonst bleibt alles beim eingestellten Wert.
 
 - **Die USC-PIN der Securepoint UTM wurde nicht gespeichert.** Formular und Anzeige führten das Feld, die Validierung nicht — und der Controller speichert nur Validiertes. Die Eingabe verschwand kommentarlos. Ein Abgleich über alle 40 Formulare zeigt: Das war der einzige Fall dieser Art.
