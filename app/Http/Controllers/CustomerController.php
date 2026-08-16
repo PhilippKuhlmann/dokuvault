@@ -114,8 +114,46 @@ class CustomerController extends Controller
         ));
     }
 
+    /**
+     * Das eingestellte Speicherlimit in Bytes.
+     *
+     * ini_get liefert "128M", "1G" oder "-1" (unbegrenzt) - ein Vergleich mit
+     * dieser Zeichenkette ginge schief.
+     */
+    protected function speicherGrenzeInBytes(?string $angabe = null): float
+    {
+        $wert = trim($angabe ?? (string) ini_get('memory_limit'));
+
+        if ($wert === '' || $wert === '-1') {
+            return INF;
+        }
+
+        $zahl = (float) $wert;
+
+        return match (strtolower(substr($wert, -1))) {
+            'g' => $zahl * 1024 * 1024 * 1024,
+            'm' => $zahl * 1024 * 1024,
+            'k' => $zahl * 1024,
+            default => $zahl,
+        };
+    }
+
     public function viewPDF(Customer $customer)
     {
+        // DomPDF haelt das ganze Dokument im Speicher, waehrend es die Seiten
+        // aufbaut. Gemessen an einem Kunden mit 26 Servern, 46 VMs und 53
+        // Computern: aus 0,4 MB HTML werden 136 MB Spitzenverbrauch, davon 84
+        // MB allein in DomPDF. Auf einem PHP mit den ueblichen 128 MB endet
+        // das in "Allowed memory size exhausted" - also in einer Fehlerseite
+        // statt in einem PDF, waehrend es lokal mit 512 MB unauffaellig laeuft.
+        //
+        // Nur fuer diesen Aufruf und nur nach oben: Alle uebrigen Seiten
+        // kommen mit dem eingestellten Limit aus, und es global anzuheben
+        // waere ein stiller Freibrief fuer jede andere Schleife.
+        if ($this->speicherGrenzeInBytes() < 256 * 1024 * 1024) {
+            ini_set('memory_limit', '256M');
+        }
+
         // Die Rack-Frontansichten sind SVG. DomPDF rendert SVG weder inline im
         // HTML noch aus einer Daten-URI - nur aus einer Bilddatei innerhalb
         // seines chroot (dem Projektverzeichnis). Deshalb ein kurzlebiger

@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="presentation" aria-hidden="true"
+            width="330" height="32" viewBox="0 0 330 32"
+        class="block h-full w-full">
+<g transform="scale(0.30387, 0.16)">
+    
+    <rect x="1" y="1" width="1084" height="198" rx="7"
+         fill="#e5e7eb"  />
+    <rect x="1" y="1" width="1084" height="198" rx="7" fill="#be123c" fill-opacity="0.14" />
+    
+    <line x1="10" y1="4" x2="1076" y2="4" stroke="#ffffff" stroke-opacity="0.22" stroke-width="3" />
+    <line x1="10" y1="196" x2="1076" y2="196" stroke="#000000" stroke-opacity="0.28" stroke-width="3" />
+    <rect x="1" y="1" width="1084" height="198" rx="7" fill="none" stroke="#be123c" stroke-opacity="0.55" stroke-width="2" />
+
+    
+                    <circle cx="23" cy="50" r="9" fill="none" stroke="#be123c" stroke-opacity="0.5" stroke-width="3" />
+        <circle cx="1063" cy="50" r="9" fill="none" stroke="#be123c" stroke-opacity="0.5" stroke-width="3" />
+                    <circle cx="23" cy="150" r="9" fill="none" stroke="#be123c" stroke-opacity="0.5" stroke-width="3" />
+        <circle cx="1063" cy="150" r="9" fill="none" stroke="#be123c" stroke-opacity="0.5" stroke-width="3" />
+        <line x1="46" y1="6" x2="46" y2="194" stroke="#be123c" stroke-opacity="0.25" stroke-width="2" />
+    <line x1="1040" y1="6" x2="1040" y2="194" stroke="#be123c" stroke-opacity="0.25" stroke-width="2" />
+
+                
+            <rect x="80" y="66" width="300" height="68" rx="6"
+                fill="#be123c" fill-opacity="0.22" stroke="#be123c" stroke-opacity="0.45" stroke-width="2" />
+                            <rect x="100" y="92" width="42" height="16" rx="2" fill="#be123c" fill-opacity="0.4" />
+                            <rect x="158" y="92" width="42" height="16" rx="2" fill="#be123c" fill-opacity="0.4" />
+                            <rect x="216" y="92" width="42" height="16" rx="2" fill="#be123c" fill-opacity="0.4" />
+                        
+                            <circle cx="430" cy="100" r="16"
+                    fill="#be123c" fill-opacity="0.12" stroke="#be123c" stroke-opacity="0.45" stroke-width="2" />
+                            <circle cx="484" cy="100" r="16"
+                    fill="#be123c" fill-opacity="0.12" stroke="#be123c" stroke-opacity="0.45" stroke-width="2" />
+                        
+                            <rect x="560" y="18" width="12" height="164" rx="6"
+                    fill="#be123c" fill-opacity="0.16" />
+                            <rect x="586" y="18" width="12" height="164" rx="6"
+                    fill="#be123c" fill-opacity="0.16" />
+                            <rect x="612" y="18" width="12" height="164" rx="6"
+                    fill="#be123c" fill-opacity="0.16" />
+                            <rect x="638" y="18" width="12" height="164" rx="6"
+                    fill="#be123c" fill-opacity="0.16" />
+                            <rect x="664" y="18" width="12" height="164" rx="6"
+                    fill="#be123c" fill-opacity="0.16" />
+                            <rect x="690" y="18" width="12" height="164" rx="6"
+                    fill="#be123c" fill-opacity="0.16" />
+                            <rect x="716" y="18" width="12" height="164" rx="6"
+                    fill="#be123c" fill-opacity="0.16" />
+                            <rect x="742" y="18" width="12" height="164" rx="6"
+                    fill="#be123c" fill-opacity="0.16" />
+                            <rect x="768" y="18" width="12" height="164" rx="6"
+                    fill="#be123c" fill-opacity="0.16" />
+                            <rect x="794" y="18" width="12" height="164" rx="6"
+                    fill="#be123c" fill-opacity="0.16" />
+                            <rect x="820" y="18" width="12" height="164" rx="6"
+                    fill="#be123c" fill-opacity="0.16" />
+                            <rect x="846" y="18" width="12" height="164" rx="6"
+                    fill="#be123c" fill-opacity="0.16" />
+                            <rect x="872" y="18" width="12" height="164" rx="6"
+                    fill="#be123c" fill-opacity="0.16" />
+                            <rect x="898" y="18" width="12" height="164" rx="6"
+                    fill="#be123c" fill-opacity="0.16" />
+                            <rect x="924" y="18" width="12" height="164" rx="6"
+                    fill="#be123c" fill-opacity="0.16" />
+                            <rect x="950" y="18" width="12" height="164" rx="6"
+                    fill="#be123c" fill-opacity="0.16" />
+                            <rect x="976" y="18" width="12" height="164" rx="6"
+                    fill="#be123c" fill-opacity="0.16" />
+                            <rect x="1002" y="18" width="12" height="164" rx="6"
+                    fill="#be123c" fill-opacity="0.16" />
+                        </g></svg>

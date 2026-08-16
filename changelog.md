@@ -12,6 +12,8 @@
 
 ### Fixed
 
+- **„PDF erstellen" endete auf der Demo in einer Fehlerseite.** DomPDF hält das ganze Dokument im Speicher: Aus 0,4 MB HTML werden bei einem Kunden mit 26 Servern, 46 VMs und 53 Computern **136 MB Spitzenverbrauch**, davon 84 MB allein im PDF-Aufbau. Auf einem PHP mit den üblichen 128 MB bricht das ab — lokal mit 512 MB fiel es nie auf. Die PDF-Ausgabe hebt das Limit jetzt für ihren eigenen Aufruf auf 256 MB an, sonst bleibt alles beim eingestellten Wert.
+
 - **Die USC-PIN der Securepoint UTM wurde nicht gespeichert.** Formular und Anzeige führten das Feld, die Validierung nicht — und der Controller speichert nur Validiertes. Die Eingabe verschwand kommentarlos. Ein Abgleich über alle 40 Formulare zeigt: Das war der einzige Fall dieser Art.
 - **Dieselbe IP-Adresse ließ sich mehrfach vergeben** — zweimal am selben Gerät und zusätzlich an einem zweiten. Danach stand in der Dokumentation, die Adresse gehöre zu beiden, und der IP-Plan zählte sie doppelt als belegt. Jetzt ist eine Adresse pro Kunde eindeutig; was im Papierkorb liegt, blockiert sie nicht.
 - **Das Bearbeiten eines Ansprechpartners endete im Fehler.** Die Routen laufen in `scopeBindings()`, Laravel leitet aus `{contactperson}` den Relationsnamen „contactpeople" ab — die Relation heißt hier `contactpersons`. Liste und Anlegen funktionierten, deshalb fiel es nie auf. Die Bindung wird jetzt gezielt aufgelöst, ohne dieselbe Beziehung ein zweites Mal zu benennen.
