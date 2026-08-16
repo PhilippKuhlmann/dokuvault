@@ -11,6 +11,13 @@
                 @forelse ($machines as $machine)
 
                     @php
+                        // $adressen wurde hier nie gesetzt - die Zeile stammt aus
+                        // den Listen mit Kartenansicht, wo sie oberhalb der
+                        // Schleife steht. Die Seite antwortete deshalb mit 500,
+                        // sobald ueberhaupt eine Maschine da war.
+                        $adressen = $machine->relationLoaded('ipAddresses')
+                            ? $machine->ipAddresses
+                            : $machine->ipAddresses()->get();
                         $primaer = $adressen->first()?->address;
                     @endphp
 

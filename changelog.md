@@ -12,6 +12,8 @@
 
 ### Changed
 
+- **Die Maschinen-Liste antwortete mit 500**: In der Schleife stand ein Zugriff auf `$adressen` — eine Zeile, die aus den Listen mit Kartenansicht stammt, wo sie oberhalb der Schleife gesetzt wird. Sobald eine Maschine angelegt war, war die Seite nicht mehr aufrufbar; leer fiel es nicht auf. Ein Rauchtest ruft jetzt jede der 40 Listen einmal **mit Inhalt** auf und hätte das gefunden.
+
 - **Die Kopfzeile der Gerätekarten am Telefon**: Der Name stand in `text-2xl` und brach mitten durch — aus `srv-hyperv-01.mustermann.local` wurden zwei Zeilen —, und was dahinter gehört (Betriebssystem, Support-Ende) lag unter dem Bearbeiten-Knopf. Am Telefon ist der Name jetzt kleiner gesetzt und passt in eine Zeile; ab 640 px bleibt alles wie bisher. Der Block darf außerdem schmaler werden als sein Inhalt, sonst schiebt er seine Nachbarn aus der Karte, statt umzubrechen. Gilt für alle 27 Listen, die diese Kopfzeile verwenden.
 
 - **Am Handy fehlten Dashboard und die Suchen ganz**: Die fünf Symbole in der Kopfleiste (Dashboard, Kundensuche, Globale Suche, UTM, Rustdesk) tragen `hidden md:flex` und verschwinden unterhalb von 768 px — ersatzlos. Wer am Telefon arbeitete, kam an keinen dieser Wege. Sie stehen jetzt zusätzlich oben in der Seitenleiste, die dort ohnehin die Navigation trägt, mit Beschriftung statt nur als Symbol. Auf breiten Bildschirmen bleibt der Block ausgeblendet, damit nichts doppelt dasteht. Für Kunden-Zugänge sind sie wie bisher nicht sichtbar.
