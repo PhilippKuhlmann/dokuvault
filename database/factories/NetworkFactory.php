@@ -43,8 +43,10 @@ class NetworkFactory extends Factory
             'gateway' => $net.'.1',
             'dns1' => $net.'.10',
             'dns2' => '8.8.8.8',
-            'dhcpStart' => '100',
-            'dhcpEnd' => '250',
+            // Volle Adressen, keine blossen Oktette: Genau das verlangt auch
+            // das VLAN-Formular (ipv4).
+            'dhcpStart' => $net.'.100',
+            'dhcpEnd' => $net.'.250',
         ];
     }
 }

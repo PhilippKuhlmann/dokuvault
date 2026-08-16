@@ -166,8 +166,9 @@ class LocalDatabaseSeeder extends Seeder
             'gateway' => '10.10.30.1',
             'dns1' => '10.10.30.10',
             'dns2' => '8.8.8.8',
-            'dhcpStart' => '100',
-            'dhcpEnd' => '200',
+            // Volle Adressen wie im Formular gefordert, nicht nur das Oktett.
+            'dhcpStart' => '10.10.30.100',
+            'dhcpEnd' => '10.10.30.200',
         ]);
 
         // Clients-VLAN (der Router ist auch hier Gateway -> zweite IP)
@@ -180,8 +181,8 @@ class LocalDatabaseSeeder extends Seeder
             'cidr' => '24',
             'subnetmask' => '255.255.255.0',
             'gateway' => '10.10.20.1',
-            'dhcpStart' => '100',
-            'dhcpEnd' => '200',
+            'dhcpStart' => '10.10.20.100',
+            'dhcpEnd' => '10.10.20.200',
         ]);
 
         $rtrCore = Router::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'RTR-Core']);

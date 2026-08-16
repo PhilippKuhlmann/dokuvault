@@ -4,6 +4,7 @@
 
 ### Changed
 
+- **Demo-Daten: DHCP-Bereiche als volle Adressen**: Im Seeder standen `100` und `200` — nur die letzten Oktette. Der IP-Plan versteht beides, das VLAN-Formular verlangt aber `ipv4`: Was die Demo-Daten enthielten, hätte man selbst gar nicht eintragen können. Jetzt `10.10.30.100` bis `10.10.30.200`.
 - **Die VLAN-Nummer steht jetzt an der IP-Adresse**: In der Übersicht stand unter der Adresse nur der Netzname („Server & Management"), im Formular dasselbe. Beides zusammen ist das, was man braucht — der Name sagt wofür, die Nummer braucht man am Switch: „Server & Management · VLAN 30". Fehlt eines von beiden, bleibt das andere stehen; heißt die Bezeichnung schon wie das Netz, bleibt nur die Nummer. Gilt für alle 18 Listen und den IP-Block samt Auswahlliste. Die IPAM-Ansicht zeigte beides schon.
 - **Alle 19 Geräteformulare auf dasselbe Muster gezogen** (Accesspoint, Kamera, Computer, DECT, IoT, Maschine, NAS, Switch, Sonstige Clients, Telefon, TK-Anlage, Drucker, Recorder, Router, UMA, UTM, USV, VM, Server): Abschnitte nach Identität, Hardware, Zugang, Fernwartung, Diensten und Notizen, zweispaltig auf 1024 px, „← Zurück" oben, IP-Adressen und Zugangsdaten in derselben Karte. 36 Formulare, alle mit einem Rauchtest über sämtliche Anlegen- und Bearbeiten-Routen abgesichert.
 - **Bearbeiten läuft über dasselbe Modal**: Der Stift an einer VLAN-Karte öffnet es mit geladenen Werten, Titel und Knopf wechseln auf „VLAN bearbeiten" und „Speichern". Kein zweites Formular, kein Seitenwechsel — die Liste zeigt die Änderung sofort.
