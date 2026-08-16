@@ -12,6 +12,8 @@
 
 ### Changed
 
+- **Das DSRM-Kennwort lag im Klartext in der Datenbank**: Das Model trug einen Verschlüsselungs-Accessor namens `password()` — eine Spalte dieses Namens gibt es in `ad_domains` aber nicht, sie heißt `dsrmpassword`. Der Accessor lief also ins Leere, während alle übrigen Gerätekennwörter (BMC, Rustdesk) längst verschlüsselt gespeichert wurden. Model und Spalte passen jetzt zusammen; eine Migration verschlüsselt vorhandene Einträge nach und lässt bereits verschlüsselte in Ruhe. Die Spalte wächst dabei von `varchar(255)` auf `text`: Ein Chiffrat misst schon für ein kurzes Kennwort rund 200 Zeichen, bei den erlaubten 255 Eingabezeichen über 600 — in der alten Spalte wäre es still abgeschnitten und damit unbrauchbar gewesen. An Formular, Anzeige und PDF ändert sich nichts.
+
 - **Die Factory für AD-Domänen war leer**: `domain`, `netbios` und `dsrmpassword` sind Pflichtspalten, die Vorgabe lieferte aber ein leeres Array — jedes `ADDomain::factory()->create()` ohne vollständige Angaben brach an der Datenbank ab. Im Seeder fiel das nie auf, weil der alle drei Felder mitgibt. Jetzt erzeugt sie stimmige Werte (`ad.<firma>.de`, NetBIOS in Großbuchstaben und auf 15 Zeichen begrenzt, ein Kennwort), und der Listen-Rauchtest duldet keine Liste mehr, die mangels Testdaten nur leer geprüft wird.
 
 - **Die Maschinen-Liste antwortete mit 500**: In der Schleife stand ein Zugriff auf `$adressen` — eine Zeile, die aus den Listen mit Kartenansicht stammt, wo sie oberhalb der Schleife gesetzt wird. Sobald eine Maschine angelegt war, war die Seite nicht mehr aufrufbar; leer fiel es nicht auf. Ein Rauchtest ruft jetzt jede der 40 Listen einmal **mit Inhalt** auf und hätte das gefunden.

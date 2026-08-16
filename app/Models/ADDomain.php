@@ -18,11 +18,22 @@ class ADDomain extends Model
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
-    protected function password(): Attribute
+    /**
+     * Das DSRM-Kennwort verschluesselt, wie die uebrigen Geraetekennwoerter.
+     *
+     * Hier stand vorher ein Accessor namens password(). Eine Spalte dieses
+     * Namens gibt es in ad_domains nicht - er lief ins Leere, und das Kennwort
+     * stand im Klartext in der Datenbank. Der Methodenname muss zur Spalte
+     * passen, sonst wiederholt sich genau das.
+     */
+    protected function dsrmpassword(): Attribute
     {
         return new Attribute(
-            get: fn ($value) => ! empty($value) ? Crypt::decryptString($value) : null,
-            set: fn ($value) => Crypt::encryptString($value),
+            get: fn ($value) => filled($value) ? Crypt::decryptString($value) : null,
+            // Leer bleibt leer statt zu einem Chiffrat ueber nichts zu werden.
+            // Kein null: Die Spalte ist NOT NULL, und das Feld ist Pflicht -
+            // leer kommt hier ohnehin nur ueber den Seeder oder einen Test an.
+            set: fn ($value) => filled($value) ? Crypt::encryptString($value) : '',
         );
     }
 }
