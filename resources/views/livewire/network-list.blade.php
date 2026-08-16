@@ -13,7 +13,8 @@
     @forelse ($networks as $network)
         <x-card>
             <x-slot:head>
-                <x-show.header can="network_update" editUrl="{{ route('network.edit', [$customer, $network]) }}">
+                {{-- Stift oeffnet das Modal statt einer eigenen Seite - wie das Anlegen. --}}
+                <x-show.header can="network_update" :edit-action="'$dispatch(\'vlan-bearbeiten\', { id: '.$network->id.' })'">
                     VLAN {{ $network->vlanId }} - {{ $network->description }}
                 </x-show.header>
             </x-slot>

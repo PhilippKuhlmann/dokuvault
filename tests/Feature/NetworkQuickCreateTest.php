@@ -5,6 +5,7 @@ use App\Livewire\NetworkQuickCreate;
 use App\Models\Customer;
 use App\Models\Network;
 use App\Models\Site;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
 
 /**
@@ -121,4 +122,46 @@ test('die Liste rendert nach dem Anlegen neu, ohne Seitenwechsel', function () {
 
     Livewire::test(NetworkList::class, ['customer' => $customer])
         ->assertSee('Frisch');
+});
+
+test('der Stift oeffnet dasselbe Modal mit geladenen Werten', function () {
+    $this->actingAs(userWithPermissions(['network_update']));
+    [$customer, $site] = netzUmgebung();
+
+    $netz = Network::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'description' => 'Alt', 'vlanId' => 10, 'network' => '10.10.10.0',
+        'subnetmask' => '255.255.255.0', 'gateway' => '10.10.10.1',
+    ]);
+
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $customer])
+        ->call('bearbeiten', $netz->id)
+        ->assertSet('offen', true)
+        ->assertSet('bearbeiteId', $netz->id)
+        ->assertSet('description', 'Alt')
+        ->assertSet('gateway', '10.10.10.1')
+        // Aendern und speichern legt kein zweites Netz an.
+        ->set('description', 'Neu benannt')
+        ->call('speichern')
+        ->assertHasNoErrors();
+
+    expect(Network::count())->toBe(1);
+    expect($netz->fresh()->description)->toBe('Neu benannt');
+});
+
+test('ein fremdes Netz laesst sich nicht ueber die ID oeffnen', function () {
+    $this->actingAs(userWithPermissions(['network_update']));
+    [$customer] = netzUmgebung();
+
+    $fremd = Customer::factory()->create();
+    $fremdeSite = Site::factory()->create(['customer_id' => $fremd->id]);
+    $fremdesNetz = Network::create([
+        'customer_id' => $fremd->id, 'site_id' => $fremdeSite->id,
+        'description' => 'Fremd', 'network' => '10.99.0.0', 'subnetmask' => '255.255.255.0',
+    ]);
+
+    // bearbeiteId kommt aus dem Browser - ohne Kundenpruefung waere das ein IDOR.
+    expect(fn () => Livewire::test(NetworkQuickCreate::class, ['customer' => $customer])
+        ->call('bearbeiten', $fremdesNetz->id))
+        ->toThrow(ModelNotFoundException::class);
 });

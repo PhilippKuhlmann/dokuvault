@@ -1,4 +1,6 @@
-@props(['editUrl', 'can'])
+{{-- editAction statt editUrl: Dann oeffnet der Stift ein Livewire-Modal statt
+     eine eigene Seite zu laden (siehe VLAN-Liste). --}}
+@props(['editUrl' => null, 'can', 'editAction' => null])
 
 {{-- Der Slot "kernwerte" nimmt die Angaben auf, die man fast immer sucht (IP,
      Einbauort, Zugang). Sie stehen damit in derselben Zeile wie der Name statt
@@ -21,10 +23,19 @@
     @can($can)
         <div class="flex shrink-0 items-center gap-3">
             <div class="flex flex-row space-x-2">
-                <a href="{{ $editUrl }}" title="{{ __('Bearbeiten') }}"
-                    class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-cerulean-600 shadow-sm hover:bg-cerulean-50 hover:border-cerulean-300 focus:outline-none focus:ring-2 focus:ring-cerulean-500 transition-colors dark:bg-gray-800 dark:border-gray-600 dark:text-cerulean-400 dark:hover:bg-gray-700">
-                    <x-svg.edit class="h-5 w-5" />
-                </a>
+                @php
+                    $stiftKlassen = 'inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-cerulean-600 shadow-sm hover:bg-cerulean-50 hover:border-cerulean-300 focus:outline-none focus:ring-2 focus:ring-cerulean-500 transition-colors dark:bg-gray-800 dark:border-gray-600 dark:text-cerulean-400 dark:hover:bg-gray-700';
+                @endphp
+
+                @if ($editAction)
+                    <button type="button" wire:click="{{ $editAction }}" title="{{ __('Bearbeiten') }}" class="{{ $stiftKlassen }}">
+                        <x-svg.edit class="h-5 w-5" />
+                    </button>
+                @else
+                    <a href="{{ $editUrl }}" title="{{ __('Bearbeiten') }}" class="{{ $stiftKlassen }}">
+                        <x-svg.edit class="h-5 w-5" />
+                    </a>
+                @endif
             </div>
         </div>
     @endcan

@@ -24,7 +24,7 @@
 
             <div class="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-gray-200 bg-white p-5 text-left shadow-lg dark:border-gray-700 dark:bg-gray-800">
                 <div class="mb-4 text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100">
-                    {{ __('Neues VLAN') }}
+                    {{ $bearbeiteId ? __('VLAN bearbeiten') : __('Neues VLAN') }}
                 </div>
 
                 <div class="flex flex-col gap-3">
@@ -113,7 +113,7 @@
 
                 <div class="mt-5 flex justify-end gap-2">
                     <x-input.button type="button" color="gray" wire:click="$set('offen', false)" :label="__('Abbrechen')" />
-                    <x-input.button type="button" wire:click="speichern" :label="__('Anlegen')" />
+                    <x-input.button type="button" wire:click="speichern" :label="$bearbeiteId ? __('Speichern') : __('Anlegen')" />
                 </div>
             </div>
         </div>

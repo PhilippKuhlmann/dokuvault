@@ -7,6 +7,7 @@ use App\Models\Site;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 /**
@@ -31,6 +32,9 @@ class NetworkQuickCreate extends Component
     public ?int $siteId = null;
 
     public bool $offen = false;
+
+    /** Gesetzt heisst: bearbeiten statt anlegen. */
+    public ?int $bearbeiteId = null;
 
     public $site_id = '';
 
@@ -70,9 +74,39 @@ class NetworkQuickCreate extends Component
         $this->mitSymbol = $mitSymbol;
     }
 
+    /**
+     * Stift in der Liste: dasselbe Modal, nur mit geladenen Werten.
+     *
+     * Das Netz wird gegen den Kunden geprueft - die ID kommt aus dem Browser,
+     * und ohne die Pruefung liesse sich damit ein fremdes Netz oeffnen.
+     */
+    #[On('vlan-bearbeiten')]
+    public function bearbeiten(int $id): void
+    {
+        Gate::authorize('network_update');
+
+        $netz = Network::where('customer_id', $this->customerId)->findOrFail($id);
+
+        $this->bearbeiteId = $netz->id;
+        $this->site_id = $netz->site_id;
+        $this->description = (string) $netz->description;
+        $this->vlanId = $netz->vlanId;
+        $this->network = (string) $netz->network;
+        $this->subnetmask = (string) $netz->subnetmask;
+        $this->cidr = $netz->cidr;
+        $this->gateway = (string) $netz->gateway;
+        $this->dns1 = (string) $netz->dns1;
+        $this->dns2 = (string) $netz->dns2;
+        $this->dhcpStart = (string) $netz->dhcpStart;
+        $this->dhcpEnd = (string) $netz->dhcpEnd;
+
+        $this->resetErrorBag();
+        $this->offen = true;
+    }
+
     public function speichern(): void
     {
-        Gate::authorize('network_create');
+        Gate::authorize($this->bearbeiteId ? 'network_update' : 'network_create');
 
         $regeln = [
             'description' => ['required', 'max:255'],
@@ -89,7 +123,7 @@ class NetworkQuickCreate extends Component
 
         // Ohne vorgegebenen Standort muss einer gewaehlt werden - und zwar einer
         // dieses Kunden, sonst haengt das Netz an einem fremden Standort.
-        if (! $this->siteId) {
+        if (! $this->siteId || $this->bearbeiteId) {
             $regeln['site_id'] = ['required', Rule::exists('sites', 'id')
                 ->where('customer_id', $this->customerId)->whereNull('deleted_at')];
         }
@@ -108,9 +142,8 @@ class NetworkQuickCreate extends Component
             'dhcpEnd' => __('DHCP-Ende'),
         ]);
 
-        $netz = Network::create([
-            'customer_id' => $this->customerId,
-            'site_id' => $this->siteId ?: $daten['site_id'],
+        $werte = [
+            'site_id' => $this->siteId && ! $this->bearbeiteId ? $this->siteId : $daten['site_id'],
             'description' => $daten['description'],
             'vlanId' => $daten['vlanId'] ?: null,
             'network' => $daten['network'],
@@ -121,9 +154,18 @@ class NetworkQuickCreate extends Component
             'dns2' => $daten['dns2'] ?: null,
             'dhcpStart' => $daten['dhcpStart'] ?: null,
             'dhcpEnd' => $daten['dhcpEnd'] ?: null,
-        ]);
+        ];
 
-        $this->reset('offen', 'site_id', 'description', 'vlanId', 'network',
+        if ($this->bearbeiteId) {
+            // Erneut gegen den Kunden geprueft: bearbeiteId ist zwischen dem
+            // Oeffnen und dem Speichern manipulierbar.
+            $netz = Network::where('customer_id', $this->customerId)->findOrFail($this->bearbeiteId);
+            $netz->update($werte);
+        } else {
+            $netz = Network::create($werte + ['customer_id' => $this->customerId]);
+        }
+
+        $this->reset('offen', 'bearbeiteId', 'site_id', 'description', 'vlanId', 'network',
             'cidr', 'gateway', 'dns1', 'dns2', 'dhcpStart', 'dhcpEnd');
         $this->subnetmask = '255.255.255.0';
 
@@ -138,7 +180,9 @@ class NetworkQuickCreate extends Component
     {
         return view('livewire.network-quick-create', [
             // Nur wenn kein Standort vorgegeben ist - sonst waere die Liste unnoetig.
-            'sites' => $this->siteId
+            // Beim Bearbeiten immer zeigen: Der Standort eines bestehenden
+            // Netzes soll aenderbar sein, auch wenn das Modal am Geraet haengt.
+            'sites' => $this->siteId && ! $this->bearbeiteId
                 ? collect()
                 : Site::where('customer_id', $this->customerId)->orderBy('name')->get(),
         ]);
