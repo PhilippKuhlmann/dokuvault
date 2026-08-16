@@ -96,7 +96,10 @@
                      schon erfasst ist, soll man ueberfliegen und nicht Zeile fuer
                      Zeile lesen. --}}
                 <div class="mb-5 rounded-lg bg-gray-50 p-3 dark:bg-gray-700/40" wire:key="entries-{{ $step['key'] }}">
-                    @php ($bearbeitbar = Route::has($step['key'].'.edit'))
+                    {{-- Kurzform ohne Leerzeichen: "@php (" liest Blade als
+                         Blockanfang und schluckt alles bis zum naechsten
+                         @endphp. --}}
+                    @php($bearbeitbar = Route::has($step['key'].'.edit'))
 
                     <div class="mb-2 flex flex-wrap items-baseline gap-x-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         {{ __('Schon erfasst') }} ({{ $entries->count() }})
@@ -156,9 +159,26 @@
                                 @endif
                             </x-input.select>
                         @else
-                            <x-input.field :name="$field['name']" wire:model="form.{{ $field['name'] }}"
-                                type="{{ $field['type'] ?? 'text' }}" class="mt-1"
-                                placeholder="{{ $field['placeholder'] ?? '' }}" />
+                            {{-- 'sofort' in der Feldliste: Das Feld meldet sich
+                                 waehrend der Eingabe an den Server, weil es ein
+                                 anderes nachzieht (Subnetzmaske und CIDR). Alle
+                                 uebrigen bleiben stumm bis zum Speichern.
+
+                                 Zwei Zweige statt eines Ausdrucks im
+                                 Attributnamen: "wire:model" mit einem
+                                 Blade-Ausdruck dahinter zerlegt den
+                                 Komponenten-Parser, und die Felder verlieren
+                                 dabei alle uebrigen Attribute. --}}
+                            @if ($field['sofort'] ?? false)
+                                <x-input.field :name="$field['name']"
+                                    wire:model.live.debounce.600ms="form.{{ $field['name'] }}"
+                                    type="{{ $field['type'] ?? 'text' }}" class="mt-1"
+                                    placeholder="{{ $field['placeholder'] ?? '' }}" />
+                            @else
+                                <x-input.field :name="$field['name']" wire:model="form.{{ $field['name'] }}"
+                                    type="{{ $field['type'] ?? 'text' }}" class="mt-1"
+                                    placeholder="{{ $field['placeholder'] ?? '' }}" />
+                            @endif
                         @endif
 
                         @error('form.' . $field['name'])

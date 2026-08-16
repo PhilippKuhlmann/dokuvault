@@ -429,3 +429,34 @@ test('ein Sprung auf einen gesperrten Schritt wird verworfen', function () {
     $run = DocumentationRun::where('customer_id', $customer->id)->firstOrFail();
     expect($run->current_step)->toBe('site');
 });
+
+test('im Assistenten fuellen sich Maske und CIDR gegenseitig', function () {
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['network_create', 'site_create']));
+
+    // Dieselbe Rechnung wie im VLAN-Modal, hier ueber das generische
+    // form-Array des Assistenten.
+    Livewire::test(DocumentationWizard::class, ['customer' => $customer])
+        ->set('form.subnetmask', '255.255.0.0')
+        ->assertSet('form.cidr', 16)
+        ->set('form.cidr', 30)
+        ->assertSet('form.subnetmask', '255.255.255.252')
+        ->set('form.subnetmask', 'Unsinn')
+        ->assertSet('form.cidr', 30);
+});
+
+test('die beiden Felder melden sich waehrend der Eingabe an den Server', function () {
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['network_create']));
+
+    // Ohne .blur bliebe die Eingabe bis zum Speichern im Browser und die
+    // Umrechnung liefe nie. Die uebrigen Felder sollen stumm bleiben, sonst
+    // kostet jedes Verlassen eines Feldes eine Anfrage.
+    $html = Livewire::test(DocumentationWizard::class, ['customer' => $customer])
+        ->call('gotoStep', 'network')
+        ->html();
+
+    expect($html)->toContain('wire:model.live.debounce.600ms="form.subnetmask"');
+    expect($html)->toContain('wire:model.live.debounce.600ms="form.cidr"');
+    expect($html)->toContain('wire:model="form.gateway"');
+});

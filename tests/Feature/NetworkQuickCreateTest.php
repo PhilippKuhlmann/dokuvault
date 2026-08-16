@@ -104,7 +104,9 @@ test('die VLAN-Liste bindet das Modal ein', function () {
     // gleiche Stelle, gleiche Optik, nur ohne Seitenwechsel.
     $inhalt = $this->get("/{$customer->slug}/network")->assertOk()->getContent();
 
-    expect($inhalt)->toContain("wire:click=\"\$set('offen', true)\"");
+    // neu() statt $set('offen', true): Die Methode raeumt vorher auf, sonst
+    // oeffnet der Knopf nach einem abgebrochenen Bearbeiten das alte VLAN.
+    expect($inhalt)->toContain('wire:click="neu"');
     expect($inhalt)->toContain('bg-cerulean-600');
     // Der alte Weg ist nicht mehr verlinkt.
     expect($inhalt)->not->toContain('/network/create');
@@ -345,4 +347,77 @@ test('die Ueberschrift bleibt beim Rerender stehen', function () {
     expect($komponente->html())->toMatch($ueberschrift);
 
     expect($komponente->set('search', 'egal')->html())->toMatch($ueberschrift);
+});
+
+test('Maske und CIDR fuellen sich gegenseitig', function () {
+    $this->actingAs(userWithPermissions(['network_create']));
+    [$customer, $site] = netzUmgebung();
+
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $customer])
+        // Vorgabe: beide Felder stimmen von Anfang an ueberein.
+        ->assertSet('subnetmask', '255.255.255.0')
+        ->assertSet('cidr', 24)
+        ->set('subnetmask', '255.255.0.0')
+        ->assertSet('cidr', 16)
+        ->set('cidr', 28)
+        ->assertSet('subnetmask', '255.255.255.240')
+        // Ein Tippfehler soll das andere Feld nicht leeren.
+        ->set('subnetmask', '255.0.255.0')
+        ->assertSet('cidr', 28)
+        ->set('cidr', 99)
+        ->assertSet('subnetmask', '255.0.255.0');
+});
+
+test('beim Bearbeiten wird eine fehlende CIDR aus der Maske ergaenzt', function () {
+    $this->actingAs(userWithPermissions(['network_update']));
+    [$customer, $site] = netzUmgebung();
+
+    // Bestandsdaten: Maske da, Zahl nie eingetragen.
+    $netz = Network::factory()->create([
+        'customer_id' => $customer->id,
+        'site_id' => $site->id,
+        'subnetmask' => '255.255.252.0',
+        'cidr' => null,
+    ]);
+
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $customer])
+        ->call('bearbeiten', $netz->id)
+        ->assertSet('cidr', 22);
+});
+
+test('nach Abbrechen legt Neu wieder ein neues VLAN an', function () {
+    $this->actingAs(userWithPermissions(['network_create', 'network_update']));
+    [$customer, $site] = netzUmgebung();
+
+    $netz = Network::factory()->create([
+        'customer_id' => $customer->id,
+        'site_id' => $site->id,
+        'description' => 'Bestehendes',
+    ]);
+
+    // Der gemeldete Ablauf: bearbeiten, abbrechen, neu. Vorher setzte
+    // "Abbrechen" nur offen=false - bearbeiteId blieb stehen, das Modal kam
+    // als "VLAN bearbeiten" mit den alten Werten wieder hoch, und ein
+    // Speichern haette das bestehende Netz ueberschrieben.
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $customer])
+        ->call('bearbeiten', $netz->id)
+        ->assertSet('bearbeiteId', $netz->id)
+        ->call('abbrechen')
+        ->assertSet('offen', false)
+        ->assertSet('bearbeiteId', null)
+        ->call('neu')
+        ->assertSet('offen', true)
+        ->assertSet('bearbeiteId', null)
+        ->assertSet('description', '')
+        ->assertSet('subnetmask', '255.255.255.0')
+        ->assertSet('cidr', 24)
+        // Und das Speichern legt an, statt zu ueberschreiben.
+        ->set('site_id', $site->id)
+        ->set('description', 'Frisch angelegt')
+        ->set('network', '10.10.95.0')
+        ->call('speichern')
+        ->assertHasNoErrors();
+
+    expect($netz->fresh()->description)->toBe('Bestehendes');
+    expect(Network::where('description', 'Frisch angelegt')->exists())->toBeTrue();
 });

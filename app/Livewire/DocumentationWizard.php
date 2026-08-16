@@ -57,6 +57,34 @@ class DocumentationWizard extends Component
         'server_id' => 'servers',
     ];
 
+    /**
+     * Subnetzmaske und CIDR sind zwei Schreibweisen fuer dieselbe Angabe -
+     * wer eine eintraegt, bekommt die andere dazu. Dieselbe Rechnung wie im
+     * VLAN-Modal, sie steht im Model.
+     *
+     * Bleibt die Eingabe unvollstaendig oder falsch, wird das Partnerfeld
+     * nicht angefasst: Eine geleerte Angabe waere schlimmer als eine, die
+     * noch nicht passt.
+     */
+    public function updatedForm(mixed $wert, string $schluessel): void
+    {
+        if ($schluessel === 'subnetmask') {
+            $cidr = Network::cidrAusMaske(is_string($wert) ? $wert : null);
+
+            if ($cidr !== null) {
+                $this->form['cidr'] = $cidr;
+            }
+        }
+
+        if ($schluessel === 'cidr') {
+            $maske = Network::maskeAusCidr(is_scalar($wert) ? $wert : null);
+
+            if ($maske !== null) {
+                $this->form['subnetmask'] = $maske;
+            }
+        }
+    }
+
     public function mount(Customer $customer): void
     {
         $this->customerId = $customer->id;

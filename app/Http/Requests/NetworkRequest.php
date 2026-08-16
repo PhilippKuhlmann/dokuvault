@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Network;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -15,6 +16,29 @@ class NetworkRequest extends FormRequest
     public function authorize()
     {
         return true;
+    }
+
+    /**
+     * Fehlt eine der beiden Schreibweisen, wird sie aus der anderen ergaenzt.
+     *
+     * Im VLAN-Modal und im Assistenten passiert das schon bei der Eingabe.
+     * Das alte Formular unter /network/create ist kein Livewire - dort faellt
+     * die Ergaenzung hier an, damit nicht die halbe Angabe gespeichert wird.
+     * Sind beide gefuellt, bleiben beide stehen: Ein Widerspruch ist eine
+     * Eingabe und keine Luecke, die zu ueberschreiben waere anmassend.
+     */
+    protected function prepareForValidation(): void
+    {
+        $maske = $this->input('subnetmask');
+        $cidr = $this->input('cidr');
+
+        if (blank($cidr) && filled($maske)) {
+            $this->merge(['cidr' => Network::cidrAusMaske($maske)]);
+        }
+
+        if (blank($maske) && filled($cidr)) {
+            $this->merge(['subnetmask' => Network::maskeAusCidr($cidr)]);
+        }
     }
 
     /**

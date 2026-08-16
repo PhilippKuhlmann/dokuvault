@@ -49,7 +49,8 @@ class NetworkQuickCreate extends Component
 
     public string $subnetmask = '255.255.255.0';
 
-    public $cidr = '';
+    /** Passt zur Vorgabe der Maske - beide Felder starten uebereinstimmend. */
+    public $cidr = 24;
 
     public string $gateway = '';
 
@@ -96,7 +97,9 @@ class NetworkQuickCreate extends Component
         $this->vlanId = $netz->vlanId;
         $this->network = (string) $netz->network;
         $this->subnetmask = (string) $netz->subnetmask;
-        $this->cidr = $netz->cidr;
+        // Bestandsnetze haben teils nur die Maske. Dann die Zahl daraus
+        // ergaenzen, statt das Feld leer zu zeigen.
+        $this->cidr = $netz->cidr ?? Network::cidrAusMaske($netz->subnetmask) ?? '';
         $this->gateway = (string) $netz->gateway;
         $this->dns1 = (string) $netz->dns1;
         $this->dns2 = (string) $netz->dns2;
@@ -106,6 +109,70 @@ class NetworkQuickCreate extends Component
         $this->resetErrorBag();
         $this->loeschenGefragt = false;
         $this->offen = true;
+    }
+
+    /**
+     * Maske und CIDR sagen dasselbe in zwei Schreibweisen - wer eines
+     * eintraegt, bekommt das andere dazu.
+     *
+     * Ergibt die Eingabe keine gueltige Maske (Tippfehler, halb getippt),
+     * bleibt das Partnerfeld unberuehrt, statt es zu leeren: Sonst waere die
+     * Angabe weg, sobald man sich einmal vertippt.
+     */
+    public function updatedSubnetmask(): void
+    {
+        $cidr = Network::cidrAusMaske($this->subnetmask);
+
+        if ($cidr !== null) {
+            $this->cidr = $cidr;
+        }
+    }
+
+    public function updatedCidr(): void
+    {
+        $maske = Network::maskeAusCidr($this->cidr);
+
+        if ($maske !== null) {
+            $this->subnetmask = $maske;
+        }
+    }
+
+    /**
+     * Alles zurueck auf Anfang - ein Ort dafuer, weil es sonst an vier Stellen
+     * dieselbe lange Feldliste waere und eine davon irgendwann abweicht.
+     */
+    protected function formularLeeren(): void
+    {
+        // subnetmask und cidr sind mit dabei: reset() setzt auf die Vorgaben
+        // der Klasse zurueck, also auf 255.255.255.0 und 24 - die beiden
+        // gehoeren zusammen und sollen es auch beim Aufraeumen bleiben.
+        $this->reset('offen', 'bearbeiteId', 'loeschenGefragt', 'site_id', 'description',
+            'vlanId', 'network', 'subnetmask', 'cidr', 'gateway', 'dns1', 'dns2',
+            'dhcpStart', 'dhcpEnd');
+        $this->resetErrorBag();
+    }
+
+    /**
+     * Der Knopf "Neu".
+     *
+     * Vorher setzte er nur offen=true. Wer davor ein VLAN bearbeitet und
+     * abgebrochen hatte, bekam das Modal mit "VLAN bearbeiten", den alten
+     * Werten und der alten bearbeiteId - ein Speichern haette das bestehende
+     * Netz ueberschrieben statt ein neues anzulegen.
+     */
+    public function neu(): void
+    {
+        $this->formularLeeren();
+        $this->offen = true;
+    }
+
+    /**
+     * Abbrechen und Escape: schliessen und aufraeumen. Nur zu schliessen
+     * reicht nicht, der Zustand bliebe sonst im naechsten Aufschlag stehen.
+     */
+    public function abbrechen(): void
+    {
+        $this->formularLeeren();
     }
 
     public function speichern(): void
@@ -174,9 +241,7 @@ class NetworkQuickCreate extends Component
             : __('VLAN angelegt.'));
 
         // Erst nach der Meldung: bearbeiteId entscheidet ueber ihren Wortlaut.
-        $this->reset('offen', 'bearbeiteId', 'loeschenGefragt', 'site_id', 'description',
-            'vlanId', 'network', 'cidr', 'gateway', 'dns1', 'dns2', 'dhcpStart', 'dhcpEnd');
-        $this->subnetmask = '255.255.255.0';
+        $this->formularLeeren();
 
         // Der IP-Block waehlt das neue Netz damit gleich aus, die Liste rendert
         // neu. Kein Redirect mehr: Seit die Liste selbst Livewire ist, genuegt
@@ -206,9 +271,7 @@ class NetworkQuickCreate extends Component
             ->findOrFail($this->bearbeiteId)
             ->delete();
 
-        $this->reset('offen', 'bearbeiteId', 'loeschenGefragt', 'site_id', 'description', 'vlanId', 'network',
-            'cidr', 'gateway', 'dns1', 'dns2', 'dhcpStart', 'dhcpEnd');
-        $this->subnetmask = '255.255.255.0';
+        $this->formularLeeren();
 
         $this->dispatch('hinweis', text: __('VLAN gelöscht.'));
         $this->dispatch('vlan-angelegt', id: 0);

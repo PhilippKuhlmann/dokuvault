@@ -307,8 +307,10 @@ return [
                 ['name' => 'description', 'label' => 'Bezeichnung', 'type' => 'text'],
                 ['name' => 'vlanId', 'label' => 'VLAN-ID', 'type' => 'number'],
                 ['name' => 'network', 'label' => 'Netzadresse', 'type' => 'text', 'placeholder' => '10.10.20.0'],
-                ['name' => 'subnetmask', 'label' => 'Subnetzmaske', 'type' => 'text', 'default' => '255.255.255.0'],
-                ['name' => 'cidr', 'label' => 'CIDR', 'type' => 'number', 'default' => '24'],
+                // 'sofort': Die beiden rechnen sich gegenseitig aus und muessen
+                // dafuer beim Verlassen des Feldes zum Server.
+                ['name' => 'subnetmask', 'label' => 'Subnetzmaske', 'type' => 'text', 'default' => '255.255.255.0', 'sofort' => true],
+                ['name' => 'cidr', 'label' => 'CIDR', 'type' => 'number', 'default' => '24', 'sofort' => true],
                 ['name' => 'gateway', 'label' => 'Gateway', 'type' => 'text'],
                 ['name' => 'dns1', 'label' => 'DNS 1', 'type' => 'text'],
                 ['name' => 'dns2', 'label' => 'DNS 2', 'type' => 'text'],

@@ -5,7 +5,7 @@
         {{-- Zwei Auftritte: als Textlink neben der VLAN-Auswahl am Geraet, als
              voller Knopf im Kopf der Liste. Deshalb Klassen und Beschriftung
              von aussen statt merge() - sonst stapeln sich text-xs und text-sm. --}}
-        <button type="button" wire:click="$set('offen', true)"
+        <button type="button" wire:click="neu"
             class="{{ $knopfKlassen ?: 'text-xs text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400' }}">
             @if ($mitSymbol)
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" xmlns="http://www.w3.org/2000/svg">
@@ -20,7 +20,7 @@
         {{-- max-h/overflow: zehn Felder passen auf kleinen Bildschirmen sonst
              nicht ins Bild. --}}
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-            x-on:keydown.escape.window="$wire.set('offen', false)">
+            x-on:keydown.escape.window="$wire.abbrechen()">
 
             <div class="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-gray-200 bg-white p-5 text-left shadow-lg dark:border-gray-700 dark:bg-gray-800">
                 {{-- Bei der Rueckfrage keine Ueberschrift: Der rote Kasten stellt
@@ -70,13 +70,19 @@
                     <div class="flex gap-3">
                         <div class="flex flex-1 flex-col">
                             <x-input.label :value="__('Subnetzmaske')" />
-                            <x-input.text wire:model="subnetmask" type="text" class="mt-1" />
+                            {{-- .live, damit die Umrechnung ueberhaupt laeuft:
+                                 .blur schreibt den Wert nur in den Browser und
+                                 schickt keine Anfrage - der Hook auf dem Server
+                                 feuert dann nie. Das debounce haelt die Anfragen
+                                 im Zaum, halb getippte Masken ergeben ohnehin
+                                 keine Zahl und lassen das Partnerfeld in Ruhe. --}}
+                            <x-input.text wire:model.live.debounce.600ms="subnetmask" type="text" class="mt-1" />
                             @error('subnetmask') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="flex w-1/3 flex-col">
                             <x-input.label :value="__('CIDR')" />
-                            <x-input.text wire:model="cidr" type="number" class="mt-1" placeholder="24" />
+                            <x-input.text wire:model.live.debounce.600ms="cidr" type="number" class="mt-1" placeholder="24" />
                             @error('cidr') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
                     </div>
@@ -145,7 +151,9 @@
                             @endcan
                         @endif
 
-                        <x-input.button type="button" color="gray" wire:click="$set('offen', false)" :label="__('Abbrechen')" />
+                        {{-- abbrechen() statt offen=false: sonst bleibt bearbeiteId stehen
+                             und das naechste "Neu" oeffnet das Bearbeiten-Modal. --}}
+                        <x-input.button type="button" color="gray" wire:click="abbrechen" :label="__('Abbrechen')" />
                         <x-input.button type="button" wire:click="speichern" :label="$bearbeiteId ? __('Speichern') : __('Anlegen')" />
                     </div>
                 @endif

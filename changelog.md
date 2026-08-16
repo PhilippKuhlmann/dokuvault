@@ -4,11 +4,15 @@
 
 ### Added
 
+- **Subnetzmaske und CIDR rechnen sich gegenseitig aus**: Beide sagen dasselbe in zwei Schreibweisen. Wer `255.255.0.0` einträgt, bekommt `16`; wer `28` einträgt, bekommt `255.255.255.240`. Gilt im VLAN-Modal und im Assistenten. Eine unvollständige oder falsche Eingabe lässt das andere Feld in Ruhe, statt es zu leeren — ein Vertipper soll nicht die schon getippte Angabe kosten. Das alte Formular unter `/network/create` ist kein Livewire; dort wird die fehlende Schreibweise beim Speichern ergänzt. Sind beide von Hand gefüllt und widersprechen sich, bleiben beide stehen: Das ist eine Eingabe und keine Lücke. Die vollständige Präfixtabelle von /0 bis /32 liegt als Test bei.
+
 - **Suche in der VLAN-Liste**: Ein Feld in der Kopfleiste filtert während des Tippens über Bezeichnung, VLAN-Nummer, Netzadresse und Gateway — die vier Angaben, nach denen man ein VLAN sucht. DNS und DHCP bleiben draußen, danach sucht niemand. Der Begriff steht in der Adresse (`?search=…`), ein gefiltertes Ergebnis lässt sich also weitergeben; nach jedem Tastendruck geht die Liste zurück auf Seite eins, sonst suchte man auf Seite drei ins Leere. Findet nichts, sagt die Liste „Kein VLAN passt zu …" statt „Noch keine Einträge vorhanden." — das ist ein Unterschied.
 
 - **Erfolgsmeldungen unten rechts**: Anlegen, Speichern und Löschen im VLAN-Modal quittieren sich mit einer Einblendung („VLAN angelegt.", „VLAN gespeichert.", „VLAN gelöscht."), die nach vier Sekunden von selbst geht und einen Schließen-Knopf hat. Den Kasten gab es schon, er hing aber allein an `session('success')` — bei Aktionen ohne Seitenwechsel kam die Meldung frühestens beim nächsten Laden an, also nie. Jetzt steht er immer im Dokument und hört zusätzlich auf ein Ereignis aus Livewire. Für Vorleseprogramme ist er als `role="status"` ausgezeichnet, wird also angesagt, ohne die Eingabe zu unterbrechen.
 
 ### Changed
+
+- **„Neu" öffnete nach einem abgebrochenen Bearbeiten das alte VLAN**: „Abbrechen" schloss nur das Fenster und ließ die Kennung des bearbeiteten Netzes stehen. Der nächste Klick auf „Neu" kam deshalb als „VLAN bearbeiten" mit den alten Werten hoch — ein Speichern hätte das bestehende Netz überschrieben statt ein neues anzulegen. Abbrechen, Escape und „Neu" räumen jetzt alle auf, über dieselbe Stelle im Code.
 
 - **Die Überschrift der VLAN-Liste blieb nach jeder Aktion weg**: `x-sitetopmenu` leitet den Seitentitel aus dem Routennamen ab. Das geht, solange die Seite normal geladen wird — beim Rerender einer Livewire-Komponente heißt die laufende Route aber `livewire.update`, und die Überschrift verschwand ersatzlos, nach dem Anlegen, nach dem Löschen und künftig bei jedem Tastendruck in der Suche. Die Kopfleiste nimmt jetzt einen Titel entgegen; die 47 übrigen Listen leiten ihn weiter aus der Route ab.
 
