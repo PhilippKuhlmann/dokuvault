@@ -37,7 +37,12 @@ test('mit vorgegebenem Standort entfaellt die Auswahl und das Netz erbt ihn', fu
         ->call('speichern')
         ->assertHasNoErrors()
         // Der IP-Block haengt daran und waehlt das neue Netz aus.
-        ->assertDispatched('vlan-angelegt');
+        ->assertDispatched('vlan-angelegt')
+        ->assertDispatched('hinweis')
+        // Modal zu und Felder geleert - sonst steht die Eingabe beim naechsten
+        // Oeffnen noch da.
+        ->assertSet('offen', false)
+        ->assertSet('description', '');
 
     $netz = Network::where('description', 'DMZ')->firstOrFail();
     expect($netz->customer_id)->toBe($customer->id);
@@ -206,4 +211,31 @@ test('ohne network_delete bleibt das VLAN bestehen', function () {
         ->assertForbidden();
 
     expect(Network::count())->toBe(1);
+});
+
+test('jede Aktion meldet sich unten rechts mit eigenem Wortlaut', function () {
+    $this->actingAs(userWithPermissions([
+        'network_viewAny', 'network_create', 'network_update', 'network_delete',
+    ]));
+    [$customer, $site] = netzUmgebung();
+
+    // Der Wortlaut ist der Punkt: "angelegt" und "gespeichert" gehen durch
+    // dieselbe Methode und haben sich frueher schon einmal vertauscht, weil das
+    // dispatch nach dem reset() stand und bearbeiteId dort bereits leer war.
+    $komponente = Livewire::test(NetworkQuickCreate::class, ['customer' => $customer])
+        ->set('site_id', $site->id)
+        ->set('description', 'Meldungsprobe')
+        ->set('network', '10.10.94.0')
+        ->call('speichern')
+        ->assertDispatched('hinweis', text: __('VLAN angelegt.'));
+
+    $netz = Network::where('description', 'Meldungsprobe')->sole();
+
+    $komponente
+        ->call('bearbeiten', $netz->id)
+        ->call('speichern')
+        ->assertDispatched('hinweis', text: __('VLAN gespeichert.'))
+        ->call('bearbeiten', $netz->id)
+        ->call('loeschen')
+        ->assertDispatched('hinweis', text: __('VLAN gelöscht.'));
 });

@@ -169,8 +169,13 @@ class NetworkQuickCreate extends Component
             $netz = Network::create($werte + ['customer_id' => $this->customerId]);
         }
 
-        $this->reset('offen', 'bearbeiteId', 'loeschenGefragt', 'site_id', 'description', 'vlanId', 'network',
-            'cidr', 'gateway', 'dns1', 'dns2', 'dhcpStart', 'dhcpEnd');
+        $this->dispatch('hinweis', text: $this->bearbeiteId
+            ? __('VLAN gespeichert.')
+            : __('VLAN angelegt.'));
+
+        // Erst nach der Meldung: bearbeiteId entscheidet ueber ihren Wortlaut.
+        $this->reset('offen', 'bearbeiteId', 'loeschenGefragt', 'site_id', 'description',
+            'vlanId', 'network', 'cidr', 'gateway', 'dns1', 'dns2', 'dhcpStart', 'dhcpEnd');
         $this->subnetmask = '255.255.255.0';
 
         // Der IP-Block waehlt das neue Netz damit gleich aus, die Liste rendert
@@ -205,6 +210,7 @@ class NetworkQuickCreate extends Component
             'cidr', 'gateway', 'dns1', 'dns2', 'dhcpStart', 'dhcpEnd');
         $this->subnetmask = '255.255.255.0';
 
+        $this->dispatch('hinweis', text: __('VLAN gelöscht.'));
         $this->dispatch('vlan-angelegt', id: 0);
     }
 
