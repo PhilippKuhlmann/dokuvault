@@ -5,11 +5,17 @@
 {{-- Der Slot "kernwerte" nimmt die Angaben auf, die man fast immer sucht (IP,
      Einbauort, Zugang). Sie stehen damit in derselben Zeile wie der Name statt
      irgendwo in der Karte. Ohne den Slot bleibt die Kopfzeile wie vorher. --}}
-<div class="flex w-full items-start justify-between gap-4 p-3">
+<div class="flex w-full items-start justify-between gap-3 p-3">
     {{-- Name und Kernwerte umbrechen zusammen; der Bearbeiten-Knopf bleibt
          rechts oben stehen und rutscht nicht in eine zweite Zeile. --}}
     <div class="flex min-w-0 flex-wrap items-center gap-x-6 gap-y-2">
-        <div class="flex gap-3 items-center text-2xl dark:text-gray-100">
+        {{-- Auf schmalen Bildschirmen kleiner: In text-2xl brach ein Name wie
+             srv-hyperv-01.mustermann.local mitten durch, und was dahinter steht
+             (Betriebssystem, Support-Ende) lag unter dem Bearbeiten-Knopf.
+             min-w-0 laesst den Block schmaler werden als seinen Inhalt - ohne
+             das schiebt ein Flex-Kind seine Nachbarn aus der Karte, statt
+             umzubrechen. --}}
+        <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 break-words text-base leading-tight sm:gap-x-3 sm:text-2xl dark:text-gray-100">
             {{ $slot }}
         </div>
 
