@@ -165,3 +165,41 @@ test('ein fremdes Netz laesst sich nicht ueber die ID oeffnen', function () {
         ->call('bearbeiten', $fremdesNetz->id))
         ->toThrow(ModelNotFoundException::class);
 });
+
+test('im Bearbeiten-Modal laesst sich das VLAN loeschen', function () {
+    $this->actingAs(userWithPermissions(['network_update', 'network_delete']));
+    [$customer, $site] = netzUmgebung();
+
+    $netz = Network::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'description' => 'Weg damit', 'network' => '10.10.11.0', 'subnetmask' => '255.255.255.0',
+    ]);
+
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $customer])
+        ->call('bearbeiten', $netz->id)
+        ->call('loeschen')
+        ->assertSet('offen', false)
+        // Die Liste laedt daraufhin neu.
+        ->assertDispatched('vlan-angelegt');
+
+    // Papierkorb, nicht endgueltig - wie beim Loeschen ueber die alte Seite.
+    expect(Network::count())->toBe(0);
+    expect(Network::withTrashed()->count())->toBe(1);
+});
+
+test('ohne network_delete bleibt das VLAN bestehen', function () {
+    $this->actingAs(userWithPermissions(['network_update']));
+    [$customer, $site] = netzUmgebung();
+
+    $netz = Network::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'description' => 'Bleibt', 'network' => '10.10.12.0', 'subnetmask' => '255.255.255.0',
+    ]);
+
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $customer])
+        ->call('bearbeiten', $netz->id)
+        ->call('loeschen')
+        ->assertForbidden();
+
+    expect(Network::count())->toBe(1);
+});

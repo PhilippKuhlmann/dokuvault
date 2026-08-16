@@ -176,6 +176,34 @@ class NetworkQuickCreate extends Component
         $this->dispatch('vlan-angelegt', id: $netz->id);
     }
 
+    /**
+     * Loeschen aus dem Bearbeiten-Modal - im eigenen Formular gab es dafuer die
+     * Loeschen-Karte, hier fehlte der Weg.
+     *
+     * Wie beim Speichern gegen den Kunden geprueft; die ID kommt aus dem
+     * Browser. Das Netz landet im Papierkorb (SoftDelete), verknuepfte
+     * IP-Adressen behalten ihre network_id und laufen ins Leere - dasselbe
+     * Verhalten wie beim Loeschen ueber die alte Seite.
+     */
+    public function loeschen(): void
+    {
+        Gate::authorize('network_delete');
+
+        if (! $this->bearbeiteId) {
+            return;
+        }
+
+        Network::where('customer_id', $this->customerId)
+            ->findOrFail($this->bearbeiteId)
+            ->delete();
+
+        $this->reset('offen', 'bearbeiteId', 'site_id', 'description', 'vlanId', 'network',
+            'cidr', 'gateway', 'dns1', 'dns2', 'dhcpStart', 'dhcpEnd');
+        $this->subnetmask = '255.255.255.0';
+
+        $this->dispatch('vlan-angelegt', id: 0);
+    }
+
     public function render()
     {
         return view('livewire.network-quick-create', [

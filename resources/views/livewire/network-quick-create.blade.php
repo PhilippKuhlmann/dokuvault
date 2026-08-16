@@ -111,7 +111,17 @@
                     </div>
                 </div>
 
-                <div class="mt-5 flex justify-end gap-2">
+                <div class="mt-5 flex flex-wrap items-center justify-end gap-2">
+                    {{-- Nur beim Bearbeiten, und mit Rueckfrage: Der Knopf sitzt
+                         neben "Speichern", da soll kein Klick daneben genuegen. --}}
+                    @if ($bearbeiteId)
+                        @can('network_delete')
+                            <x-input.button type="button" color="red" wire:click="loeschen"
+                                wire:confirm="{{ __('VLAN wirklich löschen?') }}" :label="__('Löschen')"
+                                class="mr-auto" />
+                        @endcan
+                    @endif
+
                     <x-input.button type="button" color="gray" wire:click="$set('offen', false)" :label="__('Abbrechen')" />
                     <x-input.button type="button" wire:click="speichern" :label="$bearbeiteId ? __('Speichern') : __('Anlegen')" />
                 </div>
