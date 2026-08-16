@@ -61,35 +61,13 @@ class NetworkQuickCreate extends Component
 
     public bool $mitSymbol = false;
 
-    /**
-     * In der VLAN-Liste die Seite neu laden. Die Liste ist eine normale
-     * Blade-Seite - nach dem Speichern rendert nur diese Komponente neu, das
-     * neue Netz stuende sonst erst nach einem Neuladen da. Am Geraet ist das
-     * unnoetig: Dort wird es nur in der Auswahl gesetzt.
-     */
-    /**
-     * Ziel, auf das nach dem Anlegen umgeleitet wird - leer heisst: nicht
-     * umleiten.
-     *
-     * Die Liste ist eine gewoehnliche Blade-Seite; ohne Neuladen stuende das
-     * neue Netz erst nach einem Seitenwechsel darin. Am Geraet bleibt es leer,
-     * dort wuerde ein Neuladen das halb ausgefuellte IP-Formular kosten.
-     *
-     * Die Adresse kommt von aussen und wird nicht selbst ermittelt:
-     * url()->current() liefert im Livewire-Kontext /livewire/update - auch in
-     * mount() - und ein Redirect dorthin endet in einem 405.
-     */
-    #[Locked]
-    public string $zielNachAnlegen = '';
-
-    public function mount($customer, ?int $siteId = null, string $knopfKlassen = '', string $label = '', bool $mitSymbol = false, string $zielNachAnlegen = ''): void
+    public function mount($customer, ?int $siteId = null, string $knopfKlassen = '', string $label = '', bool $mitSymbol = false): void
     {
         $this->customerId = $customer->id;
         $this->siteId = $siteId;
         $this->knopfKlassen = $knopfKlassen;
         $this->label = $label;
         $this->mitSymbol = $mitSymbol;
-        $this->zielNachAnlegen = $zielNachAnlegen;
     }
 
     public function speichern(): void
@@ -149,15 +127,11 @@ class NetworkQuickCreate extends Component
             'cidr', 'gateway', 'dns1', 'dns2', 'dhcpStart', 'dhcpEnd');
         $this->subnetmask = '255.255.255.0';
 
-        // Der IP-Block waehlt das neue Netz damit gleich aus.
+        // Der IP-Block waehlt das neue Netz damit gleich aus, die Liste rendert
+        // neu. Kein Redirect mehr: Seit die Liste selbst Livewire ist, genuegt
+        // das Event - das erspart den Seitenwechsel samt seiner Fallstricke
+        // (405 auf der Update-Adresse, verlorener Dunkelmodus).
         $this->dispatch('vlan-angelegt', id: $netz->id);
-
-        if ($this->zielNachAnlegen !== '') {
-            // Bewusst ohne navigate: Livewires SPA-Navigation tauscht nur den
-            // Inhalt, das Theme-Skript im <head> laeuft dabei nicht erneut -
-            // die Seite landete im hellen Modus und der Umschalter war tot.
-            $this->redirect($this->zielNachAnlegen);
-        }
     }
 
     public function render()

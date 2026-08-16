@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\NetworkList;
 use App\Livewire\NetworkQuickCreate;
 use App\Models\Customer;
 use App\Models\Network;
@@ -103,34 +104,21 @@ test('die VLAN-Liste bindet das Modal ein', function () {
     expect($inhalt)->not->toContain('/network/create');
 });
 
-test('in der Liste laedt die Seite nach dem Anlegen neu', function () {
-    $this->actingAs(userWithPermissions(['network_create']));
+test('die Liste rendert nach dem Anlegen neu, ohne Seitenwechsel', function () {
+    $this->actingAs(userWithPermissions(['network_viewAny', 'network_create']));
     [$customer, $site] = netzUmgebung();
 
-    // Die Liste ist eine normale Blade-Seite: Ohne Neuladen stuende das neue
-    // Netz erst nach einem Seitenwechsel darin.
-    Livewire::test(NetworkQuickCreate::class, ['customer' => $customer, 'zielNachAnlegen' => "/{$customer->slug}/network"])
+    // Seit die Liste selbst Livewire ist, genuegt das Event - kein Redirect
+    // mehr, der auf der Update-Adresse landen oder den Dunkelmodus kosten kann.
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $customer])
         ->set('site_id', $site->id)
         ->set('description', 'Frisch')
         ->set('network', '10.10.93.0')
         ->call('speichern')
         ->assertHasNoErrors()
-        // Auf die Liste, nicht auf /livewire/update: url()->current() liefert
-        // im Livewire-Kontext die Update-Adresse - auch in mount() - und ein
-        // Redirect dorthin endet in einem 405. Deshalb kommt das Ziel aus der
-        // View.
-        ->assertRedirect("/{$customer->slug}/network");
-});
+        ->assertNoRedirect()
+        ->assertDispatched('vlan-angelegt');
 
-test('am Geraet wird nicht neu geladen, nur ausgewaehlt', function () {
-    $this->actingAs(userWithPermissions(['network_create']));
-    [$customer, $site] = netzUmgebung();
-
-    // Dort wuerde ein Neuladen das halb ausgefuellte IP-Formular kosten.
-    Livewire::test(NetworkQuickCreate::class, ['customer' => $customer, 'siteId' => $site->id])
-        ->set('description', 'Ohne Reload')
-        ->set('network', '10.10.94.0')
-        ->call('speichern')
-        ->assertHasNoErrors()
-        ->assertNoRedirect();
+    Livewire::test(NetworkList::class, ['customer' => $customer])
+        ->assertSee('Frisch');
 });
