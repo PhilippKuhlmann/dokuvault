@@ -23,10 +23,15 @@
             x-on:keydown.escape.window="$wire.set('offen', false)">
 
             <div class="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-gray-200 bg-white p-5 text-left shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                <div class="mb-4 text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100">
-                    {{ $bearbeiteId ? __('VLAN bearbeiten') : __('Neues VLAN') }}
-                </div>
+                {{-- Bei der Rueckfrage keine Ueberschrift: Der rote Kasten stellt
+                     die Frage schon, zweimal dasselbe waere Fuellmaterial. --}}
+                @unless ($loeschenGefragt)
+                    <div class="mb-4 text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100">
+                        {{ $bearbeiteId ? __('VLAN bearbeiten') : __('Neues VLAN') }}
+                    </div>
+                @endunless
 
+                @unless ($loeschenGefragt)
                 <div class="flex flex-col gap-3">
                     {{-- Nur ohne vorgegebenen Standort: Am Geraet erbt das Netz dessen Standort. --}}
                     @if ($sites->isNotEmpty())
@@ -111,31 +116,39 @@
                     </div>
                 </div>
 
-                <div class="mt-5 flex flex-wrap items-center justify-end gap-2">
-                    {{-- Nur beim Bearbeiten, und mit Rueckfrage: Der Knopf sitzt
-                         neben "Speichern", da soll kein Klick daneben genuegen. --}}
-                    @if ($bearbeiteId)
-                        @can('network_delete')
-                            @if ($loeschenGefragt)
-                                {{-- Rueckfrage im Modal statt als Browser-Dialog: Der
-                                     laesst sich nicht gestalten und sieht auf jedem
-                                     System anders aus. --}}
-                                <span class="mr-auto flex flex-wrap items-center gap-2">
-                                    <span class="text-sm text-gray-600 dark:text-gray-300">{{ __('Wirklich löschen?') }}</span>
-                                    <x-input.button type="button" color="red" wire:click="loeschen" :label="__('Ja, löschen')" />
-                                    <button type="button" wire:click="$set('loeschenGefragt', false)"
-                                        class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400">{{ __('Nein') }}</button>
-                                </span>
-                            @else
+                @endunless
+
+                @if ($loeschenGefragt)
+                    {{-- Die Rueckfrage ersetzt die Felder, statt unter ihnen zu
+                         haengen: Bei zehn Feldern stand sie sonst ausserhalb des
+                         Sichtbereichs und man musste erst dorthin scrollen. --}}
+                    <div class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-900/20">
+                        <div class="text-sm font-medium text-red-800 dark:text-red-300">
+                            {{ __('Dieses VLAN löschen?') }}
+                        </div>
+                        <p class="mt-1 text-xs text-red-700/80 dark:text-red-400/80">
+                            {{ __('Es landet im Papierkorb und lässt sich von dort wiederherstellen.') }}
+                        </p>
+
+                        <div class="mt-4 flex justify-end gap-2">
+                            <x-input.button type="button" color="gray"
+                                wire:click="$set('loeschenGefragt', false)" :label="__('Abbrechen')" />
+                            <x-input.button type="button" color="red" wire:click="loeschen" :label="__('Löschen')" />
+                        </div>
+                    </div>
+                @else
+                    <div class="mt-5 flex flex-wrap items-center justify-end gap-2">
+                        @if ($bearbeiteId)
+                            @can('network_delete')
                                 <x-input.button type="button" color="red" class="mr-auto"
                                     wire:click="$set('loeschenGefragt', true)" :label="__('Löschen')" />
-                            @endif
-                        @endcan
-                    @endif
+                            @endcan
+                        @endif
 
-                    <x-input.button type="button" color="gray" wire:click="$set('offen', false)" :label="__('Abbrechen')" />
-                    <x-input.button type="button" wire:click="speichern" :label="$bearbeiteId ? __('Speichern') : __('Anlegen')" />
-                </div>
+                        <x-input.button type="button" color="gray" wire:click="$set('offen', false)" :label="__('Abbrechen')" />
+                        <x-input.button type="button" wire:click="speichern" :label="$bearbeiteId ? __('Speichern') : __('Anlegen')" />
+                    </div>
+                @endif
             </div>
         </div>
     @endif
