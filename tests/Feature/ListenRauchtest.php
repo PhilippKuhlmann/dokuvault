@@ -57,7 +57,7 @@ test('jede Liste rendert mit Inhalt', function () {
             ->assertOk("Liste {$key} ({$label}) rendert nicht");
     }
 
-    // Sichtbar halten, welche Listen mangels Testdaten nur leer geprueft
-    // wurden - sonst waehnt man sich in falscher Sicherheit.
-    expect($ohneDaten)->toBe(['addomain'], 'Liste ohne Testdaten: '.implode(', ', $ohneDaten));
+    // Keine Liste darf mangels Testdaten nur leer geprueft werden - sonst
+    // waehnt man sich in falscher Sicherheit, wie bei den Maschinen.
+    expect($ohneDaten)->toBe([], 'Liste ohne Testdaten: '.implode(', ', $ohneDaten));
 });
