@@ -116,9 +116,20 @@
                          neben "Speichern", da soll kein Klick daneben genuegen. --}}
                     @if ($bearbeiteId)
                         @can('network_delete')
-                            <x-input.button type="button" color="red" wire:click="loeschen"
-                                wire:confirm="{{ __('VLAN wirklich löschen?') }}" :label="__('Löschen')"
-                                class="mr-auto" />
+                            @if ($loeschenGefragt)
+                                {{-- Rueckfrage im Modal statt als Browser-Dialog: Der
+                                     laesst sich nicht gestalten und sieht auf jedem
+                                     System anders aus. --}}
+                                <span class="mr-auto flex flex-wrap items-center gap-2">
+                                    <span class="text-sm text-gray-600 dark:text-gray-300">{{ __('Wirklich löschen?') }}</span>
+                                    <x-input.button type="button" color="red" wire:click="loeschen" :label="__('Ja, löschen')" />
+                                    <button type="button" wire:click="$set('loeschenGefragt', false)"
+                                        class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400">{{ __('Nein') }}</button>
+                                </span>
+                            @else
+                                <x-input.button type="button" color="red" class="mr-auto"
+                                    wire:click="$set('loeschenGefragt', true)" :label="__('Löschen')" />
+                            @endif
                         @endcan
                     @endif
 

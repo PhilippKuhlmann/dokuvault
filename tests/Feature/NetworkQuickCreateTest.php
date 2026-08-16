@@ -177,8 +177,12 @@ test('im Bearbeiten-Modal laesst sich das VLAN loeschen', function () {
 
     Livewire::test(NetworkQuickCreate::class, ['customer' => $customer])
         ->call('bearbeiten', $netz->id)
+        // Erst die Rueckfrage im Modal, dann das Loeschen - kein Browser-Dialog.
+        ->assertSet('loeschenGefragt', false)
+        ->set('loeschenGefragt', true)
         ->call('loeschen')
         ->assertSet('offen', false)
+        ->assertSet('loeschenGefragt', false)
         // Die Liste laedt daraufhin neu.
         ->assertDispatched('vlan-angelegt');
 

@@ -36,6 +36,9 @@ class NetworkQuickCreate extends Component
     /** Gesetzt heisst: bearbeiten statt anlegen. */
     public ?int $bearbeiteId = null;
 
+    /** Rueckfrage vor dem Loeschen - als eigene Ansicht statt als Browser-Dialog. */
+    public bool $loeschenGefragt = false;
+
     public $site_id = '';
 
     public string $description = '';
@@ -101,6 +104,7 @@ class NetworkQuickCreate extends Component
         $this->dhcpEnd = (string) $netz->dhcpEnd;
 
         $this->resetErrorBag();
+        $this->loeschenGefragt = false;
         $this->offen = true;
     }
 
@@ -165,7 +169,7 @@ class NetworkQuickCreate extends Component
             $netz = Network::create($werte + ['customer_id' => $this->customerId]);
         }
 
-        $this->reset('offen', 'bearbeiteId', 'site_id', 'description', 'vlanId', 'network',
+        $this->reset('offen', 'bearbeiteId', 'loeschenGefragt', 'site_id', 'description', 'vlanId', 'network',
             'cidr', 'gateway', 'dns1', 'dns2', 'dhcpStart', 'dhcpEnd');
         $this->subnetmask = '255.255.255.0';
 
@@ -197,7 +201,7 @@ class NetworkQuickCreate extends Component
             ->findOrFail($this->bearbeiteId)
             ->delete();
 
-        $this->reset('offen', 'bearbeiteId', 'site_id', 'description', 'vlanId', 'network',
+        $this->reset('offen', 'bearbeiteId', 'loeschenGefragt', 'site_id', 'description', 'vlanId', 'network',
             'cidr', 'gateway', 'dns1', 'dns2', 'dhcpStart', 'dhcpEnd');
         $this->subnetmask = '255.255.255.0';
 
