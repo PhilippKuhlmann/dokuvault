@@ -51,21 +51,35 @@ class CustomerController extends Controller
 
         // Inventar-Zähler (in einer Abfrage via loadCount)
         $customer->loadCount([
-            'servers', 'computers', 'vms', 'nas', 'networks',
-            'wifis', 'printers', 'cameras', 'phones', 'adusers',
+            'internetconnections', 'securepointutms', 'routers', 'networkswitches',
+            'accesspoints', 'networks', 'wifis', 'racks', 'patchpanels',
+            'servers', 'vms', 'nas', 'computers', 'printers', 'cameras',
+            'phones', 'adusers',
         ]);
 
         $tiles = [
-            ['label' => 'Server',    'icon' => 'svg.servers',  'count' => $customer->servers_count,   'route' => route('server.index', $customer),   'can' => 'server_viewAny'],
-            ['label' => 'Computer',  'icon' => 'svg.computer', 'count' => $customer->computers_count, 'route' => route('computer.index', $customer), 'can' => 'computer_viewAny'],
-            ['label' => 'VMs',       'icon' => 'svg.server',   'count' => $customer->vms_count,       'route' => route('vm.index', $customer),       'can' => 'vm_viewAny'],
-            ['label' => 'NAS',       'icon' => 'svg.db',       'count' => $customer->nas_count,       'route' => route('nas.index', $customer),      'can' => 'nas_viewAny'],
-            ['label' => 'Netzwerke', 'icon' => 'svg.wifi',     'count' => $customer->networks_count,  'route' => route('network.index', $customer), 'can' => 'network_viewAny'],
-            ['label' => 'WLAN',      'icon' => 'svg.signal',   'count' => $customer->wifis_count,     'route' => route('wifi.index', $customer),     'can' => 'wifi_viewAny'],
-            ['label' => 'Drucker',   'icon' => 'svg.printer',  'count' => $customer->printers_count,  'route' => route('printer.index', $customer), 'can' => 'printer_viewAny'],
-            ['label' => 'Kameras',   'icon' => 'svg.cam',      'count' => $customer->cameras_count,   'route' => route('camera.index', $customer),  'can' => 'camera_viewAny'],
-            ['label' => 'Telefone',  'icon' => 'svg.phone',    'count' => $customer->phones_count,    'route' => route('phone.index', $customer),   'can' => 'phone_viewAny'],
-            ['label' => 'AD-User',   'icon' => 'svg.user',     'count' => $customer->adusers_count,   'route' => route('aduser.index', $customer),  'can' => 'aduser_viewAny'],
+            // Von aussen nach innen, so wie man vor Ort danach sucht: erst
+            // der Anschluss und was daran haengt, dann die Server, dann die
+            // Arbeitsplaetze. Firewall, Router, Switches, Accesspoints,
+            // Schraenke und Patchfelder fehlten hier ganz - man konnte sie
+            // dokumentieren, sah sie aber in der Uebersicht nie wieder.
+            ['label' => 'Internet / WAN', 'icon' => 'svg.link',     'count' => $customer->internetconnections_count, 'route' => route('internetconnection.index', $customer), 'can' => 'internetconnection_viewAny'],
+            ['label' => 'Securepoint UTM', 'icon' => 'svg.fire',     'count' => $customer->securepointutms_count,     'route' => route('securepointutm.index', $customer),     'can' => 'securepointutm_viewAny'],
+            ['label' => 'Router',         'icon' => 'svg.wifi',     'count' => $customer->routers_count,             'route' => route('router.index', $customer),             'can' => 'router_viewAny'],
+            ['label' => 'Switches',       'icon' => 'svg.group',    'count' => $customer->networkswitches_count,     'route' => route('networkswitch.index', $customer),      'can' => 'networkswitch_viewAny'],
+            ['label' => 'Accesspoints',   'icon' => 'svg.signal',   'count' => $customer->accesspoints_count,        'route' => route('accesspoint.index', $customer),        'can' => 'accesspoint_viewAny'],
+            ['label' => 'Netzwerke',      'icon' => 'svg.wifi',     'count' => $customer->networks_count,            'route' => route('network.index', $customer),            'can' => 'network_viewAny'],
+            ['label' => 'WLAN',           'icon' => 'svg.signal',   'count' => $customer->wifis_count,               'route' => route('wifi.index', $customer),               'can' => 'wifi_viewAny'],
+            ['label' => 'Serverschränke', 'icon' => 'svg.folder',   'count' => $customer->racks_count,               'route' => route('rack.index', $customer),               'can' => 'rack_viewAny'],
+            ['label' => 'Patchfelder',    'icon' => 'svg.link',     'count' => $customer->patchpanels_count,         'route' => route('patchpanel.index', $customer),         'can' => 'patchpanel_viewAny'],
+            ['label' => 'Server',         'icon' => 'svg.servers',  'count' => $customer->servers_count,             'route' => route('server.index', $customer),             'can' => 'server_viewAny'],
+            ['label' => 'VMs',            'icon' => 'svg.server',   'count' => $customer->vms_count,                 'route' => route('vm.index', $customer),                 'can' => 'vm_viewAny'],
+            ['label' => 'NAS',            'icon' => 'svg.db',       'count' => $customer->nas_count,                 'route' => route('nas.index', $customer),                'can' => 'nas_viewAny'],
+            ['label' => 'Computer',       'icon' => 'svg.computer', 'count' => $customer->computers_count,           'route' => route('computer.index', $customer),           'can' => 'computer_viewAny'],
+            ['label' => 'Drucker',        'icon' => 'svg.printer',  'count' => $customer->printers_count,            'route' => route('printer.index', $customer),            'can' => 'printer_viewAny'],
+            ['label' => 'Kameras',        'icon' => 'svg.cam',      'count' => $customer->cameras_count,             'route' => route('camera.index', $customer),             'can' => 'camera_viewAny'],
+            ['label' => 'Telefone',       'icon' => 'svg.phone',    'count' => $customer->phones_count,              'route' => route('phone.index', $customer),              'can' => 'phone_viewAny'],
+            ['label' => 'AD-User',        'icon' => 'svg.user',     'count' => $customer->adusers_count,             'route' => route('aduser.index', $customer),             'can' => 'aduser_viewAny'],
         ];
 
         // Software-Lizenzen, die in den nächsten 60 Tagen ablaufen oder bereits abgelaufen sind

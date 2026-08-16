@@ -91,7 +91,7 @@
     ]" />
 
     <x-pdf.section :title="__('Ansprechpartner')" :items="$customer->contactpersons" :titleField="fn($c) => trim(($c->first_name ?? '').' '.($c->last_name ?? ''))" :groups="[
-        'Kontakt' => ['Telefon' => 'phone', 'E-Mail' => 'mail'],
+        'Kontakt' => ['Funktion' => 'role', 'Telefon' => 'phone', 'E-Mail' => 'mail'],
     ]" />
 
     {{-- Netzwerk --}}

@@ -42,7 +42,7 @@
 
             <x-credentialscard :device="$computer" />
 
-            <x-minitextcard :title="__('Betriebsystem')">
+            <x-minitextcard :title="__('Betriebssystem')">
                 {{ $computer->operatingSystem?->name ?? '—' }}
                 <x-eol :os="$computer->operatingSystem" />
             </x-minitextcard>

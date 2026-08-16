@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\Network;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Unique;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -59,14 +60,33 @@ class DeviceIpAddresses extends Component
         return $device;
     }
 
+    /**
+     * Die Adresse darf beim Kunden noch nicht vergeben sein.
+     *
+     * Geloeschte Eintraege zaehlen nicht mit: Was im Papierkorb liegt, belegt
+     * keine Adresse - sonst blieben Adressen nach dem Aufraeumen gesperrt.
+     */
+    protected function nochNichtVergeben(): Unique
+    {
+        return Rule::unique('ip_addresses', 'address')
+            ->where('customer_id', $this->customerId)
+            ->whereNull('deleted_at');
+    }
+
     public function add(): void
     {
         $device = $this->device();
 
         $validated = $this->validate([
-            'address' => ['required', 'ip'],
+            // Eine Adresse gibt es beim selben Kunden nur einmal. Vorher liess
+            // sich dieselbe IP zweimal am selben Geraet und zusaetzlich an
+            // einem zweiten eintragen - danach stand in der Doku, sie gehoere
+            // zu beiden, und der IP-Plan zeigte sie doppelt als belegt.
+            'address' => ['required', 'ip', $this->nochNichtVergeben()],
             'network_id' => ['nullable', Rule::exists('networks', 'id')->where('customer_id', $this->customerId)],
             'label' => ['nullable', 'max:255'],
+        ], [
+            'address.unique' => __('Diese Adresse ist bei diesem Kunden schon vergeben.'),
         ]);
 
         $device->ipAddresses()->create([

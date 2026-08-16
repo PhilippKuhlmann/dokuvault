@@ -5,6 +5,8 @@
 
             <x-create.singlerow :label="__('Nachname')" name="last_name" />
 
+            <x-create.singlerow :label="__('Funktion')" name="role" />
+
             <x-create.singlerow :label="__('Telefonnummer')" name="phone" />
 
             <x-create.singlerow :label="__('E-Mail')" name="mail" />

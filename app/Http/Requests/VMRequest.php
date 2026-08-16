@@ -29,7 +29,9 @@ class VMRequest extends FormRequest
             'server_id' => ['nullable', new BelongsToCustomer('servers')],
             'name' => 'required|max:255',
             'services' => 'max:255',
-            'operating_system_id' => '',
+            // Die Spalte ist NOT NULL - ohne Regel endete eine leere
+            // Auswahl in einem Datenbankfehler statt in einer Meldung.
+            'operating_system_id' => 'required',
             'remoteID' => '',
             'remotePassword' => '',
         ];
@@ -42,7 +44,7 @@ class VMRequest extends FormRequest
             'name' => 'Name',
             'services' => 'Dienste',
             'cidr' => 'CIDR',
-            'operating_system_id' => 'Betriebsystem',
+            'operating_system_id' => 'Betriebssystem',
             'remoteID' => 'Rustdesk ID',
             'remotePassword' => 'Rustdesk Password',
         ];

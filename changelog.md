@@ -10,6 +10,20 @@
 
 - **Erfolgsmeldungen unten rechts**: Anlegen, Speichern und Löschen im VLAN-Modal quittieren sich mit einer Einblendung („VLAN angelegt.", „VLAN gespeichert.", „VLAN gelöscht."), die nach vier Sekunden von selbst geht und einen Schließen-Knopf hat. Den Kasten gab es schon, er hing aber allein an `session('success')` — bei Aktionen ohne Seitenwechsel kam die Meldung frühestens beim nächsten Laden an, also nie. Jetzt steht er immer im Dokument und hört zusätzlich auf ein Ereignis aus Livewire. Für Vorleseprogramme ist er als `role="status"` ausgezeichnet, wird also angesagt, ohne die Eingabe zu unterbrechen.
 
+### Fixed
+
+- **Die USC-PIN der Securepoint UTM wurde nicht gespeichert.** Formular und Anzeige führten das Feld, die Validierung nicht — und der Controller speichert nur Validiertes. Die Eingabe verschwand kommentarlos. Ein Abgleich über alle 40 Formulare zeigt: Das war der einzige Fall dieser Art.
+- **Dieselbe IP-Adresse ließ sich mehrfach vergeben** — zweimal am selben Gerät und zusätzlich an einem zweiten. Danach stand in der Dokumentation, die Adresse gehöre zu beiden, und der IP-Plan zählte sie doppelt als belegt. Jetzt ist eine Adresse pro Kunde eindeutig; was im Papierkorb liegt, blockiert sie nicht.
+- **Das Bearbeiten eines Ansprechpartners endete im Fehler.** Die Routen laufen in `scopeBindings()`, Laravel leitet aus `{contactperson}` den Relationsnamen „contactpeople" ab — die Relation heißt hier `contactpersons`. Liste und Anlegen funktionierten, deshalb fiel es nie auf. Die Bindung wird jetzt gezielt aufgelöst, ohne dieselbe Beziehung ein zweites Mal zu benennen.
+- **Die Löschwarnung war falsch:** „wird das Objekt unwiederruflich gelöscht" — es gibt einen Papierkorb, aus dem sich alles zurückholen lässt. Neuer Text sagt das, samt korrigierter Schreibweise. Betrifft alle 43 Bearbeiten-Formulare.
+- **Das Betriebssystem war beim Anlegen vorausgewählt** (der erste Eintrag der Liste). Wer das übersah, dokumentierte still das falsche. Jetzt „— bitte wählen —"; bei VM und Windows-Lizenz wurde die Pflichtregel nachgezogen, deren Spalten NOT NULL sind — eine leere Auswahl hätte sonst einen Datenbankfehler statt einer Meldung ergeben. Nebenbei die Schreibweise „Betriebsystem" korrigiert.
+
+### Added
+
+- **Ansprechpartner haben eine Funktion** („Geschäftsführung", „IT-Verantwortlicher", „Lagerleitung"). Bisher standen nur Name, Telefon und E-Mail da — bei drei Kontakten wusste hinterher niemand mehr, wen er wofür anruft. Steht auch in der Liste und im PDF.
+- **Das Kunden-Dashboard zählt die ganze Infrastruktur**: Internetanschluss, Firewall, Router, Switches, Accesspoints, Serverschränke und Patchfelder fehlten in der Übersicht — man konnte sie erfassen und sah sie dort nie wieder. Die Kacheln stehen jetzt von außen nach innen: erst der Anschluss und was daran hängt, dann die Server, dann die Arbeitsplätze.
+- **Der Listen-Rauchtest prüft auch Anlegen- und Bearbeiten-Formulare.** Nur die Listen zu prüfen hätte den kaputten Ansprechpartner nie gezeigt.
+
 ### Changed
 
 - **Kennwörter ab 32 Zeichen ließen sich nicht speichern**: Die Kennwortfelder werden verschlüsselt abgelegt, ihre Spalten waren aber `varchar(255)` — so breit wie früher der Klartext. Ein Chiffrat ist länger als sein Klartext: 16 Zeichen ergeben 228, ab 32 Zeichen sind es 256. MySQL meldete dann „Data too long for column", das Speichern brach ab — bei erzeugten Kennwörtern also regelmäßig. 26 Spalten in 23 Tabellen sind jetzt `text` (Server, VMs, Switches, Router, WLAN, Accesspoints, Telefone, Kameras, Logins, Lizenzen und weitere). Bestehende Einträge bleiben unverändert und lesbar. Ein Test findet die verschlüsselten Felder künftig selbst und meldet jedes neue, dessen Spalte zu klein ist oder dessen Accessor gar keine Spalte trifft — der Fehler beim DSRM-Kennwort wäre damit aufgefallen.

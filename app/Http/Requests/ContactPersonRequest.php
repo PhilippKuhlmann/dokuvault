@@ -25,6 +25,8 @@ class ContactPersonRequest extends FormRequest
         return [
             'first_name' => 'required',
             'last_name' => 'required',
+            // Wer wofuer zustaendig ist, entscheidet, wen man anruft.
+            'role' => 'nullable|max:255',
             'phone' => '',
             'mail' => '',
         ];
@@ -35,6 +37,7 @@ class ContactPersonRequest extends FormRequest
         return [
             'first_name' => 'Vorname',
             'last_name' => 'Nachname',
+            'role' => 'Funktion',
             'phone' => 'Telefonnummer',
             'mail' => 'E-Mail',
         ];

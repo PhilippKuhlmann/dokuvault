@@ -21,7 +21,7 @@
 
             <x-aside.dropdown :label="__('Auswahlmenüs')" svg="svg.computer" >
                 <x-slot:links>
-                    <x-aside.dropdownlink :label="__('Betriebsysteme')" href="{{ route('admin.operatingsystem.index') }}" />
+                    <x-aside.dropdownlink :label="__('Betriebssysteme')" href="{{ route('admin.operatingsystem.index') }}" />
                     <x-aside.dropdownlink :label="__('Mail Anbieter')" href="{{ route('admin.mailboxprovider.index') }}" />
                     <x-aside.dropdownlink :label="__('Dienste')" href="{{ route('admin.service.index') }}" />
                     <x-aside.dropdownlink :label="__('Rack-Katalog')" href="{{ route('admin.rackcatalogitem.index') }}" />

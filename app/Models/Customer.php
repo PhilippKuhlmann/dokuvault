@@ -184,6 +184,30 @@ class Customer extends Model
         return $this->hasMany(Camera::class);
     }
 
+    /**
+     * Kind-Bindung fuer Ansprechpartner von Hand aufloesen.
+     *
+     * Die Routen laufen in scopeBindings(). Laravel bildet aus dem Parameter
+     * {contactperson} den Plural "contactpeople" und sucht eine Relation
+     * dieses Namens - die heisst hier aber contactpersons. Jedes Bearbeiten
+     * eines Ansprechpartners endete deshalb im Fehler, waehrend Liste und
+     * Anlegen liefen.
+     *
+     * Kein zweiter Relationsname als Abkuerzung: Dieselbe Beziehung unter zwei
+     * Namen hat hier schon einmal Aufraeumarbeit gekostet, ein Test haelt das
+     * seitdem fest.
+     */
+    public function resolveChildRouteBinding($childType, $value, $field = null)
+    {
+        if ($childType === 'contactperson') {
+            return $this->contactpersons()
+                ->where($field ?? (new ContactPerson)->getRouteKeyName(), $value)
+                ->firstOrFail();
+        }
+
+        return parent::resolveChildRouteBinding($childType, $value, $field);
+    }
+
     public function contactpersons()
     {
         return $this->hasMany(ContactPerson::class);

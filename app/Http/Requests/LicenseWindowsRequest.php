@@ -23,7 +23,9 @@ class LicenseWindowsRequest extends FormRequest
     public function rules()
     {
         return [
-            'operating_system_id' => '',
+            // Die Spalte ist NOT NULL - ohne Regel endete eine leere
+            // Auswahl in einem Datenbankfehler statt in einer Meldung.
+            'operating_system_id' => 'required',
             'key' => 'required|max:255',
             'file_path' => 'nullable',
             'file_name' => 'nullable',
@@ -33,7 +35,7 @@ class LicenseWindowsRequest extends FormRequest
     public function attributes()
     {
         return [
-            'operating_system_id' => 'Betriebsystem',
+            'operating_system_id' => 'Betriebssystem',
             'key' => 'Key',
             'file_path' => 'Datei',
             'file_name' => 'Datei Name',

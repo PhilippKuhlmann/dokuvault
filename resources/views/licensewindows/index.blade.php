@@ -4,7 +4,7 @@
 
     <div class="m-3">
         <x-table.main>
-            <x-table.head :labels="['Betriebsystem', 'Key', 'Download', '', ]" />
+            <x-table.head :labels="['Betriebssystem', 'Key', 'Download', '', ]" />
 
             <x-table.body>
 

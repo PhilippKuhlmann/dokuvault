@@ -32,6 +32,10 @@ class SecurepointUTMRequest extends FormRequest
             'username' => 'required|max:255',
             'password' => 'required|max:255',
             'cloudBackupPassword' => 'required|max:255',
+            // Ohne Regel faellt das Feld aus validated() heraus, und der
+            // Controller speichert nur Validiertes: Die eingegebene PIN
+            // verschwand kommentarlos, obwohl Formular und Anzeige sie fuehren.
+            'uscpin' => 'nullable|max:255',
             'urlAdmin' => 'required|url|max:255',
             'urlUser' => 'nullable|url|max:255',
             'urlExternal' => 'nullable|url|max:255',
@@ -48,6 +52,7 @@ class SecurepointUTMRequest extends FormRequest
             'username' => 'Benutzername',
             'password' => 'Passwort',
             'cloudBackupPassword' => 'Cloud Backup Passwort',
+            'uscpin' => 'USC-PIN',
             'urlAdmin' => 'Admin URL',
             'urlUser' => 'User URL',
             'utlExternal' => 'Externe URL',

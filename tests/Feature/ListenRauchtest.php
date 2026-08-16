@@ -55,6 +55,22 @@ test('jede Liste rendert mit Inhalt', function () {
 
         $this->get(route($key.'.index', $customer))
             ->assertOk("Liste {$key} ({$label}) rendert nicht");
+
+        // Auch das Anlegen- und das Bearbeiten-Formular: Beim Ansprechpartner
+        // war die Bearbeiten-Seite kaputt (die Routenbindung suchte eine
+        // Relation, die es nicht gab), waehrend Liste und Anlegen liefen -
+        // eine Luecke, die nur die Liste zu pruefen nie gezeigt haette.
+        if (Route::has($key.'.create')) {
+            $this->get(route($key.'.create', $customer))
+                ->assertOk("Anlegen-Formular {$key} ({$label}) rendert nicht");
+        }
+
+        $eintrag = $klasse::where('customer_id', $customer->id)->first();
+
+        if ($eintrag && Route::has($key.'.edit')) {
+            $this->get(route($key.'.edit', [$customer, $eintrag]))
+                ->assertOk("Bearbeiten-Formular {$key} ({$label}) rendert nicht");
+        }
     }
 
     // Keine Liste darf mangels Testdaten nur leer geprueft werden - sonst

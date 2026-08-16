@@ -66,7 +66,7 @@ class ServerRequest extends FormRequest
             'bmcUser' => 'BMC Benutzer',
             'bmcPassword' => 'BMC Passwort',
             'services' => 'Dienste',
-            'operating_system_id' => 'Betriebsystem',
+            'operating_system_id' => 'Betriebssystem',
             'remoteID' => 'Rustdesk ID',
             'remotePassword' => 'Rustdesk Passwort',
         ];

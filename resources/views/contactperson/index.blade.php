@@ -4,7 +4,7 @@
 
     <div class="m-3">
         <x-table.main>
-            <x-table.head :labels="['Name', 'Tel.', 'E-Mail', '', ]" />
+            <x-table.head :labels="['Name', 'Funktion', 'Tel.', 'E-Mail', '', ]" />
 
             <x-table.body>
 
@@ -13,6 +13,7 @@
                     <x-table.datarow
                         :values="[
                             $contactperson->first_name . ' ' . $contactperson->last_name,
+                            $contactperson->role,
                             $contactperson->phone,
                             $contactperson->mail,
 

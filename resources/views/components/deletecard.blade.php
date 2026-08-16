@@ -9,11 +9,16 @@
             <x-svg.info class="w-5 h-5 mr-2" />
             <h3 class="text-lg font-medium">ACHTUNG</h3>
         </div>
+        {{-- Vorher stand hier "unwiederruflich geloescht" - falsch geschrieben
+             und sachlich falsch dazu: Geloeschtes landet im Papierkorb und
+             laesst sich von dort zurueckholen. Wer das nicht weiss, traut sich
+             nicht zu loeschen oder erschrickt hinterher unnoetig. --}}
         <div class="mt-2 mb-4 text-sm">
-            {{ __('Mit dem Klick auf Löschen wird das Objekt unwiederruflich gelöscht!') }}
+            {{ __('Der Eintrag wandert in den Papierkorb und lässt sich von dort wiederherstellen.') }}
         </div>
         <div class="flex">
-            <form method="POST" action="{{ $action }}" onsubmit="return confirm('Objekt wirklich unwiderruflich löschen?')">
+            <form method="POST" action="{{ $action }}"
+                onsubmit="return confirm('{{ __('Eintrag in den Papierkorb verschieben?') }}')">
                 @csrf
                 @method('delete')
                 <x-input.button color="red" :label="__('Löschen!')" />
