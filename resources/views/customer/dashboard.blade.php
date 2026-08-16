@@ -33,18 +33,29 @@
             @endif
         @endcanany
 
-        {{-- Inventar-Übersicht --}}
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-6">
+        {{-- Inventar-Übersicht.
+
+             Kompakter als zuvor: Seit auch Firewall, Router, Switches,
+             Accesspoints, Schraenke und Patchfelder mitzaehlen, sind es
+             siebzehn Kacheln statt zehn - in der alten Groesse fuellten sie
+             den Bildschirm, bevor irgendetwas Inhaltliches kam. Die Zahlen
+             sind Nachschlagewerte, keine Schlagzeilen: kleineres Symbol,
+             kleinere Zahl, mehr Kacheln je Zeile. --}}
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 mb-6">
             @foreach ($tiles as $tile)
                 @can($tile['can'])
                     <a href="{{ $tile['route'] }}"
-                        class="group flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 shadow-sm transition hover:border-cerulean-300 hover:shadow-md dark:bg-gray-800 dark:border-gray-700 dark:hover:border-cerulean-500">
-                        <span class="flex items-center justify-center w-11 h-11 rounded-lg bg-cerulean-50 text-cerulean-600 transition-colors group-hover:bg-cerulean-100 dark:bg-gray-700 dark:text-cerulean-400 shrink-0">
-                            <x-dynamic-component :component="$tile['icon']" class="w-6 h-6" />
+                        class="group flex items-center gap-2 px-2.5 py-2 bg-white rounded-lg border border-gray-200 shadow-sm transition hover:border-cerulean-300 hover:shadow-md dark:bg-gray-800 dark:border-gray-700 dark:hover:border-cerulean-500">
+                        <span class="flex items-center justify-center w-7 h-7 rounded-md bg-cerulean-50 text-cerulean-600 transition-colors group-hover:bg-cerulean-100 dark:bg-gray-700 dark:text-cerulean-400 shrink-0">
+                            <x-dynamic-component :component="$tile['icon']" class="w-4 h-4" />
                         </span>
-                        <span class="flex flex-col">
-                            <span class="text-2xl font-bold leading-none text-chathams-blue-800 dark:text-gray-100">{{ $tile['count'] }}</span>
-                            <span class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ $tile['label'] }}</span>
+                        <span class="flex min-w-0 flex-col">
+                            <span class="text-base font-bold leading-none text-chathams-blue-800 dark:text-gray-100">{{ $tile['count'] }}</span>
+                            {{-- Lange Beschriftungen wie "Serverschränke" passen
+                                 in der schmalen Kachel nur gekuerzt; der volle
+                                 Text steht im title. --}}
+                            <span class="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400"
+                                title="{{ __($tile['label']) }}">{{ __($tile['label']) }}</span>
                         </span>
                     </a>
                 @endcan
