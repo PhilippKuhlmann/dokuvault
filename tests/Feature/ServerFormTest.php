@@ -88,8 +88,11 @@ test('das Formular hat oben einen Zurueck-Link auf die Liste', function () {
         // Das href aus genau diesem Anker ziehen: assertSee wuerde die Listen-URL
         // auch in der Seitenleiste finden und den Link selbst nie pruefen. Der
         // Text muss mit rein, sonst trifft das Muster den ersten beliebigen
-        // Anker mit Symbol - davon hat die Seitenleiste ein Dutzend.
-        preg_match('#<a href="([^"]+)"[^>]*>\s*<svg.*?</svg>\s*Zurück\s*</a>#s', $inhalt, $treffer);
+        // Anker mit Symbol - davon hat die Seitenleiste ein Dutzend. Und der
+        // Mittelteil darf kein </a> enthalten, sonst spannt er vom ersten
+        // Anker der Seite bis zum "Zurueck" weiter unten und liefert dessen
+        // Adresse.
+        preg_match('#<a href="([^"]+)"[^>]*>(?:(?!</a>).)*?Zurück\s*</a>#s', $inhalt, $treffer);
 
         expect($treffer[1] ?? null)->toEndWith("/{$customer->slug}/server");
     }

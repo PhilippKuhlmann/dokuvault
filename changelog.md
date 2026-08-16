@@ -12,6 +12,8 @@
 
 ### Changed
 
+- **Am Handy fehlten Dashboard und die Suchen ganz**: Die fünf Symbole in der Kopfleiste (Dashboard, Kundensuche, Globale Suche, UTM, Rustdesk) tragen `hidden md:flex` und verschwinden unterhalb von 768 px — ersatzlos. Wer am Telefon arbeitete, kam an keinen dieser Wege. Sie stehen jetzt zusätzlich oben in der Seitenleiste, die dort ohnehin die Navigation trägt, mit Beschriftung statt nur als Symbol. Auf breiten Bildschirmen bleibt der Block ausgeblendet, damit nichts doppelt dasteht. Für Kunden-Zugänge sind sie wie bisher nicht sichtbar.
+
 - **„Neu" öffnete nach einem abgebrochenen Bearbeiten das alte VLAN**: „Abbrechen" schloss nur das Fenster und ließ die Kennung des bearbeiteten Netzes stehen. Der nächste Klick auf „Neu" kam deshalb als „VLAN bearbeiten" mit den alten Werten hoch — ein Speichern hätte das bestehende Netz überschrieben statt ein neues anzulegen. Abbrechen, Escape und „Neu" räumen jetzt alle auf, über dieselbe Stelle im Code.
 
 - **Die Überschrift der VLAN-Liste blieb nach jeder Aktion weg**: `x-sitetopmenu` leitet den Seitentitel aus dem Routennamen ab. Das geht, solange die Seite normal geladen wird — beim Rerender einer Livewire-Komponente heißt die laufende Route aber `livewire.update`, und die Überschrift verschwand ersatzlos, nach dem Anlegen, nach dem Löschen und künftig bei jedem Tastendruck in der Suche. Die Kopfleiste nimmt jetzt einen Titel entgegen; die 47 übrigen Listen leiten ihn weiter aus der Route ab.
