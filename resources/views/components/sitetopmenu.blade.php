@@ -1,6 +1,11 @@
 {{-- $neu = false: Die Liste bringt ihren eigenen Anlegen-Knopf mit (z. B. das
-     VLAN-Modal), sonst staenden zwei nebeneinander. --}}
-@props(['can' => null, 'neu' => true])
+     VLAN-Modal), sonst staenden zwei nebeneinander.
+
+     $titel: nur fuer Listen, die selbst Livewire sind. Der Titel unten wird
+     sonst aus dem Routennamen abgeleitet - beim Rerender einer Livewire-
+     Komponente heisst die laufende Route aber "livewire.update", und die
+     Ueberschrift verschwand nach jeder Aktion. --}}
+@props(['can' => null, 'neu' => true, 'titel' => null])
 
 @php
     $routeName = \Illuminate\Support\Facades\Route::currentRouteName() ?? '';
@@ -19,9 +24,9 @@
         'admin.eol' => 'Support-Ende (EOL)',
     ];
 
-    $title = $isAdmin
+    $title = $titel ?? ($isAdmin
         ? ($adminTitles[$titleKey] ?? null)
-        : (__(config('custom.list_titles')[$titleKey] ?? config('custom.trashables')[$titleKey][1] ?? ''));
+        : (__(config('custom.list_titles')[$titleKey] ?? config('custom.trashables')[$titleKey][1] ?? '')));
 @endphp
 
 <div class="flex flex-wrap w-full items-center justify-between gap-3 px-3 pt-4 pb-1">

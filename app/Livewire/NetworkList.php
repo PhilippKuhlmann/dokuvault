@@ -7,6 +7,7 @@ use App\Models\Network;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -25,6 +26,22 @@ class NetworkList extends Component
 
     #[Locked]
     public int $customerId;
+
+    /**
+     * Wie in den uebrigen Suchkomponenten in der Adresse - ein gefiltertes
+     * Ergebnis laesst sich damit weitergeben.
+     */
+    #[Url]
+    public string $search = '';
+
+    /**
+     * Nach jedem Tastendruck zurueck auf Seite eins: Sonst sucht man auf
+     * Seite drei und sieht nichts, obwohl es Treffer gibt.
+     */
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
 
     public function mount(Customer $customer): void
     {
@@ -63,6 +80,22 @@ class NetworkList extends Component
 
         if ($site && $site !== 'all' && $customer->sites()->whereKey($site)->exists()) {
             $query->where('site_id', $site);
+        }
+
+        // Gesucht wird in dem, was man im Kopf hat, wenn man ein VLAN sucht:
+        // Bezeichnung, Nummer, Netz und Gateway. Die DNS- und DHCP-Felder
+        // bleiben draussen - danach sucht niemand, sie wuerden nur die
+        // Trefferliste aufblaehen. Der Klammerausdruck ist noetig, damit das
+        // ODER den Kunden- und Standortfilter nicht aushebelt.
+        if ($this->search !== '') {
+            $begriff = '%'.str_replace(['%', '_'], ['\%', '\_'], $this->search).'%';
+
+            $query->where(function ($treffer) use ($begriff) {
+                $treffer->where('description', 'like', $begriff)
+                    ->orWhere('vlanId', 'like', $begriff)
+                    ->orWhere('network', 'like', $begriff)
+                    ->orWhere('gateway', 'like', $begriff);
+            });
         }
 
         return view('livewire.network-list', [

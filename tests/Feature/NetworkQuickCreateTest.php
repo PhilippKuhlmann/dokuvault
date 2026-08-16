@@ -239,3 +239,110 @@ test('jede Aktion meldet sich unten rechts mit eigenem Wortlaut', function () {
         ->call('loeschen')
         ->assertDispatched('hinweis', text: __('VLAN gelöscht.'));
 });
+
+test('die VLAN-Liste laesst sich durchsuchen', function () {
+    $this->actingAs(userWithPermissions(['network_viewAny']));
+    [$customer, $site] = netzUmgebung();
+
+    $netz = fn (array $werte) => Network::factory()->create($werte + [
+        'customer_id' => $customer->id,
+        'site_id' => $site->id,
+    ]);
+
+    $netz(['description' => 'Serverraum', 'vlanId' => 30, 'network' => '10.10.30.0', 'gateway' => '10.10.30.1']);
+    $netz(['description' => 'Gaeste-WLAN', 'vlanId' => 40, 'network' => '10.10.40.0', 'gateway' => '10.10.40.1']);
+
+    // Je ein Begriff aus den vier durchsuchten Spalten - Bezeichnung, Nummer,
+    // Netz und Gateway. Jeder muss genau eines der beiden Netze treffen.
+    $faelle = [
+        'Gaeste' => 'Gaeste-WLAN',      // Bezeichnung
+        '40' => 'Gaeste-WLAN',          // VLAN-Nummer
+        '10.10.30.0' => 'Serverraum',   // Netz
+        '10.10.30.1' => 'Serverraum',   // Gateway
+    ];
+
+    foreach ($faelle as $begriff => $treffer) {
+        $daneben = $treffer === 'Serverraum' ? 'Gaeste-WLAN' : 'Serverraum';
+
+        Livewire::test(NetworkList::class, ['customer' => $customer])
+            ->set('search', (string) $begriff)
+            ->assertSee($treffer)
+            ->assertDontSee($daneben);
+    }
+});
+
+test('ohne Treffer sagt die Liste, dass der Begriff nicht passt', function () {
+    $this->actingAs(userWithPermissions(['network_viewAny']));
+    [$customer, $site] = netzUmgebung();
+
+    Network::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id, 'description' => 'Clients']);
+
+    // Ohne Begriff heisst es "noch keine Eintraege" - das waere hier gelogen.
+    Livewire::test(NetworkList::class, ['customer' => $customer])
+        ->set('search', 'gibtesnicht')
+        ->assertSee('Kein VLAN passt zu')
+        ->assertDontSee('Noch keine Einträge vorhanden.');
+});
+
+test('die Suche bleibt am Kunden haengen', function () {
+    $this->actingAs(userWithPermissions(['network_viewAny']));
+    [$customer, $site] = netzUmgebung();
+
+    // Beide Kunden benutzen denselben privaten Adressbereich - der Normalfall.
+    $fremder = Customer::factory()->create();
+    Network::factory()->create([
+        'customer_id' => $fremder->id,
+        'site_id' => Site::factory()->create(['customer_id' => $fremder->id])->id,
+        'description' => 'Fremdnetz',
+        'network' => '192.168.178.0',
+        'gateway' => '192.168.178.1',
+    ]);
+    Network::factory()->create([
+        'customer_id' => $customer->id,
+        'site_id' => $site->id,
+        'description' => 'Eigennetz',
+        'network' => '192.168.178.0',
+        'gateway' => '192.168.178.1',
+    ]);
+
+    // Der Punkt ist die Klammer um die vier ODER-Bedingungen. Ohne sie liest
+    // MySQL "customer_id = X AND description LIKE ... OR network LIKE ..." -
+    // die spaeteren ODER-Zweige stehen dann ohne Kundenfilter da und die
+    // Suche nach einer Adresse zeigt die VLANs aller Kunden.
+    Livewire::test(NetworkList::class, ['customer' => $customer])
+        ->set('search', '192.168.178.0')
+        ->assertSee('Eigennetz')
+        ->assertDontSee('Fremdnetz');
+});
+
+test('nach dem Tippen steht die Liste wieder auf Seite eins', function () {
+    $this->actingAs(userWithPermissions(['network_viewAny']));
+    [$customer, $site] = netzUmgebung();
+
+    Network::factory()->count(30)->create(['customer_id' => $customer->id, 'site_id' => $site->id]);
+
+    Livewire::test(NetworkList::class, ['customer' => $customer])
+        ->call('gotoPage', 2)
+        ->assertSet('paginators.page', 2)
+        ->set('search', 'irgendwas')
+        ->assertSet('paginators.page', 1);
+});
+
+test('die Ueberschrift bleibt beim Rerender stehen', function () {
+    $this->actingAs(userWithPermissions(['network_viewAny']));
+    [$customer] = netzUmgebung();
+
+    // x-sitetopmenu leitet den Titel sonst aus dem Routennamen ab. Beim
+    // Livewire-Update heisst die Route "livewire.update" - die Ueberschrift
+    // verschwand nach jeder Suche, jedem Anlegen und jedem Loeschen.
+    //
+    // Geprueft wird der Titel-Container, nicht bloss das Wort: "VLANs" steht
+    // auch in der Vorleser-Beschriftung des Suchfelds, ein assertSee waere
+    // immer gruen.
+    $ueberschrift = '/font-CoconPro[^>]*>\s*VLANs\s*</';
+
+    $komponente = Livewire::test(NetworkList::class, ['customer' => $customer]);
+    expect($komponente->html())->toMatch($ueberschrift);
+
+    expect($komponente->set('search', 'egal')->html())->toMatch($ueberschrift);
+});
