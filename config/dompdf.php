@@ -45,7 +45,13 @@ return [
          * Times-Roman, Times-Bold, Times-BoldItalic, Times-Italic,
          * Symbol, ZapfDingbats.
          */
-        'font_dir' => public_path('fonts'), // advised by dompdf (https://github.com/dompdf/dompdf/pull/782)
+        // DomPDF legt hier seine Schriftenliste (installed-fonts.json) und die
+        // aufbereiteten Schriften ab - es braucht also Schreibrechte. Der
+        // Vorschlag aus der DomPDF-Doku zeigt auf public/fonts; dort darf der
+        // Webserver nicht schreiben, und beim ersten PDF endete das in
+        // "Permission denied" und einer Fehlerseite. Unterhalb von storage/
+        // ist der Ordner ohnehin beschreibbar und liegt nicht im Web.
+        'font_dir' => storage_path('fonts'),
 
         /**
          * The location of the DOMPDF font cache directory
@@ -55,7 +61,7 @@ return [
          *
          * Note: This directory must exist and be writable by the webserver process.
          */
-        'font_cache' => public_path('fonts'),
+        'font_cache' => storage_path('fonts'),
 
         /**
          * The location of a temporary directory.

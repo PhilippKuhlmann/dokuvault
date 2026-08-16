@@ -63,6 +63,10 @@ php artisan down --retry=15 || true
 trap 'php artisan up || true' EXIT
 
 echo "==> Migrationen"
+# DomPDF legt seine Schriftenliste hier ab und braucht Schreibrechte -
+# fehlte der Ordner, endete "PDF erstellen" in einer Fehlerseite.
+mkdir -p storage/fonts
+
 php artisan migrate --force
 
 echo "==> Caches neu aufbauen"

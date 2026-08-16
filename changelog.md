@@ -12,6 +12,8 @@
 
 ### Fixed
 
+- **„PDF erstellen" scheiterte an fehlenden Schreibrechten.** DomPDF legt seine Schriftenliste (`installed-fonts.json`) und die aufbereiteten Schriften im konfigurierten Schriftordner ab — der zeigte auf `public/fonts`, wo der Webserver zu Recht nicht schreiben darf: `Permission denied`, Fehlerseite statt PDF. Der Ordner liegt jetzt unter `storage/fonts`, außerhalb des Web-Verzeichnisses, und wird beim Deploy angelegt.
+
 - **Die Testsuite fiel gelegentlich grundlos aus.** `roles.name` trägt einen UNIQUE-Index, die Factory zog aber Personennamen aus einem endlichen Vorrat — auf der CI kam derselbe Name zweimal („Edgar Rudolph") und riss den ganzen Lauf mit. Der übersprungene Deploy war die Folge. Rollennamen sind jetzt fortlaufend nummeriert und können nicht mehr kollidieren.
 
 - **„PDF erstellen" endete auf der Demo in einer Fehlerseite.** DomPDF hält das ganze Dokument im Speicher: Aus 0,4 MB HTML werden bei einem Kunden mit 26 Servern, 46 VMs und 53 Computern **136 MB Spitzenverbrauch**, davon 84 MB allein im PDF-Aufbau. Auf einem PHP mit den üblichen 128 MB bricht das ab — lokal mit 512 MB fiel es nie auf. Die PDF-Ausgabe hebt das Limit jetzt für ihren eigenen Aufruf auf 256 MB an, sonst bleibt alles beim eingestellten Wert.
