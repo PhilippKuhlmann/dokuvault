@@ -36,6 +36,8 @@
 
 ### Changed
 
+- **Die Kundensuche lädt höchstens 50 Treffer.** Sie holte bisher alle — die einzige Stelle der Anwendung, die mit dem Bestand linear mitwuchs (alle Listen paginieren, die globale Suche begrenzt je Objekttyp auf 20). Gibt es mehr Treffer, steht das jetzt unter der Liste, damit niemand den Kunden vermisst, der knapp nicht mehr dabei ist.
+
 - **Die Inventar-Kacheln auf dem Kunden-Dashboard sind kleiner.** Seit auch Firewall, Router, Switches, Accesspoints, Schränke und Patchfelder mitzählen, sind es siebzehn statt zehn — in der alten Größe füllten sie den Bildschirm, bevor irgendetwas Inhaltliches kam. Kleineres Symbol, kleinere Zahl, mehr Kacheln je Zeile (bis zu acht auf breiten Monitoren, zwei am Telefon, damit dort nichts abgeschnitten wird).
 
 - **Kennwörter ab 32 Zeichen ließen sich nicht speichern**: Die Kennwortfelder werden verschlüsselt abgelegt, ihre Spalten waren aber `varchar(255)` — so breit wie früher der Klartext. Ein Chiffrat ist länger als sein Klartext: 16 Zeichen ergeben 228, ab 32 Zeichen sind es 256. MySQL meldete dann „Data too long for column", das Speichern brach ab — bei erzeugten Kennwörtern also regelmäßig. 26 Spalten in 23 Tabellen sind jetzt `text` (Server, VMs, Switches, Router, WLAN, Accesspoints, Telefone, Kameras, Logins, Lizenzen und weitere). Bestehende Einträge bleiben unverändert und lesbar. Ein Test findet die verschlüsselten Felder künftig selbst und meldet jedes neue, dessen Spalte zu klein ist oder dessen Accessor gar keine Spalte trifft — der Fehler beim DSRM-Kennwort wäre damit aufgefallen.

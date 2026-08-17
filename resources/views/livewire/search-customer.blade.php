@@ -59,6 +59,15 @@
                         </a>
                     @endforeach
                 </div>
+
+                {{-- Die Liste zeigt hoechstens fuenfzig Treffer. Ohne diesen
+                     Hinweis sieht es aus, als gaebe es keine weiteren - und
+                     jemand sucht den Kunden, der knapp nicht mehr dabei ist. --}}
+                @if ($weitere > 0)
+                    <div class="mt-2 px-3 text-xs text-gray-500 dark:text-gray-400">
+                        {{ __('Weitere Treffer vorhanden — Suchbegriff verfeinern.') }}
+                    </div>
+                @endif
             @endempty
 
         </div>
