@@ -52,6 +52,8 @@
                     'Port' => $networkswitch->port,
                 ]" />
 
+                <x-beschaffungcard :device="$networkswitch" />
+
             </x-slot>
         </x-card>
     @empty

@@ -47,6 +47,8 @@
                 <x-eol :os="$computer->operatingSystem" />
             </x-minitextcard>
 
+            <x-beschaffungcard :device="$computer" />
+
         </x-slot>
     </x-card>
 @empty

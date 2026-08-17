@@ -46,6 +46,8 @@
                     'Passwort' => $phoneSystem->password,
                 ]" />
 
+                <x-beschaffungcard :device="$phoneSystem" />
+
             </x-slot>
         </x-card>
     @empty

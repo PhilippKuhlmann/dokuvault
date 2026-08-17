@@ -48,6 +48,8 @@
                     'Port' => $accesspoint->port,
                 ]" />
 
+                <x-beschaffungcard :device="$accesspoint" />
+
             </x-slot>
         </x-card>
     @empty

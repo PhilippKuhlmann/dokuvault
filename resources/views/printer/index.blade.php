@@ -47,6 +47,8 @@
                 'Passwort' => $printer->password,
             ]" />
 
+            <x-beschaffungcard :device="$printer" />
+
         </x-slot>
     </x-card>
 @empty

@@ -44,6 +44,8 @@
                 <x-minitextcard :title="__('Notizen')">{{ $usv->notes }}</x-minitextcard>
             @endif
 
+            <x-beschaffungcard :device="$usv" />
+
         </x-slot>
     </x-card>
     @empty

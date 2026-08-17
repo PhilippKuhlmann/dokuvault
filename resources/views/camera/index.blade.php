@@ -46,6 +46,8 @@
                     'Passwort' => $camera->password,
                 ]" />
 
+                <x-beschaffungcard :device="$camera" />
+
             </x-slot>
         </x-card>
     @empty

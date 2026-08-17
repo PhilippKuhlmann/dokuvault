@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
+use App\Models\Concerns\HatBeschaffung;
 use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,6 +17,7 @@ class Phone extends Model
     use HasCredentials;
     use HasFactory, SoftDeletes;
     use HasIpAddresses;
+    use HatBeschaffung;
     use TracksChanges;
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];

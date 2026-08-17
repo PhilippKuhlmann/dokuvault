@@ -2,12 +2,15 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidiertBeschaffung;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RecorderRequest extends FormRequest
 {
+    use ValidiertBeschaffung;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -32,6 +35,7 @@ class RecorderRequest extends FormRequest
             'port' => 'required',
             'username' => '',
             'password' => '',
+            ...$this->beschaffungRegeln(),
         ];
     }
 
@@ -46,6 +50,7 @@ class RecorderRequest extends FormRequest
             'port' => 'Port',
             'username' => 'Benutzername',
             'password' => 'Passwort',
+            ...$this->beschaffungBezeichnungen(),
         ];
     }
 }

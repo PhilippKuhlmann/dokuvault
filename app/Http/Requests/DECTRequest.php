@@ -2,12 +2,15 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidiertBeschaffung;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class DECTRequest extends FormRequest
 {
+    use ValidiertBeschaffung;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -33,6 +36,7 @@ class DECTRequest extends FormRequest
             'mac' => 'max:255',
             'username' => 'max:255',
             'password' => 'max:255',
+            ...$this->beschaffungRegeln(),
         ];
     }
 
@@ -48,6 +52,7 @@ class DECTRequest extends FormRequest
             'mac' => 'MAC-Adresse',
             'username' => 'Benutzername',
             'password' => 'Passwort',
+            ...$this->beschaffungBezeichnungen(),
         ];
     }
 }

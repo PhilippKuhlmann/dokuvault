@@ -24,6 +24,8 @@
             <x-create.singlerow :label="__('Passwort')" name="password" :default="$nas->password" />
         </x-create.abschnitt>
 
+        <x-create.beschaffung :model="$nas" />
+
         {{-- In derselben Karte, aber ausserhalb des <form>: HTML erlaubt keine
              verschachtelten Formulare, und beide Bloecke sind eigenstaendige
              Livewire-Komponenten. --}}

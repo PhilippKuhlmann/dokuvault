@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
+use App\Models\Concerns\HatBeschaffung;
 use App\Models\Concerns\IstEinbaubar;
 use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,6 +16,7 @@ class Ups extends Model
     use HasCredentials;
     use HasFactory, SoftDeletes;
     use HasIpAddresses;
+    use HatBeschaffung;
     use IstEinbaubar;
     use TracksChanges;
 

@@ -24,6 +24,8 @@
             <x-create.singlerow :label="__('Port')" name="port" :default="$networkswitch->port" type="number" />
         </x-create.abschnitt>
 
+        <x-create.beschaffung :model="$networkswitch" />
+
         {{-- In derselben Karte, aber ausserhalb des <form>: HTML erlaubt keine
              verschachtelten Formulare, und beide Bloecke sind eigenstaendige
              Livewire-Komponenten. --}}

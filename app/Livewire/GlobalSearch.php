@@ -9,6 +9,7 @@ use App\Models\Computer;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\DECT;
 use App\Models\Domain;
+use App\Models\Firewall;
 use App\Models\InternetConnection;
 use App\Models\IoTDevice;
 use App\Models\Machine;
@@ -56,6 +57,7 @@ class GlobalSearch extends Component
         'phonesystem' => [PhoneSystem::class, 'TK-Anlagen', 'phonesystem', ['serialNumber']],
         'networkswitch' => [NetworkSwitch::class, 'Switches', 'networkswitch', ['name', 'serialNumber']],
         'accesspoint' => [Accesspoint::class, 'Accesspoints', 'accesspoint', ['name', 'serialNumber']],
+        'firewall' => [Firewall::class, 'Firewalls', 'firewall', ['name', 'serialNumber']],
         'router' => [Router::class, 'Router', 'router', ['name', 'serialNumber']],
         'wifi' => [Wifi::class, 'WLAN', 'wifi', ['ssid']],
         'iotdevice' => [IoTDevice::class, 'IoT-Geräte', 'iotdevice', ['name', 'serialNumber']],

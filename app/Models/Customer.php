@@ -64,6 +64,11 @@ class Customer extends Model
         return $this->hasMany(Router::class);
     }
 
+    public function firewalls()
+    {
+        return $this->hasMany(Firewall::class);
+    }
+
     public function securepointumas()
     {
         return $this->hasMany(SecurepointUMA::class);

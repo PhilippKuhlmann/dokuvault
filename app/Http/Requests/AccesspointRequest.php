@@ -2,12 +2,15 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidiertBeschaffung;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AccesspointRequest extends FormRequest
 {
+    use ValidiertBeschaffung;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -32,6 +35,7 @@ class AccesspointRequest extends FormRequest
             'username' => 'nullable|max:255',
             'password' => 'nullable|max:255',
             'port' => 'nullable|numeric',
+            ...$this->beschaffungRegeln(),
         ];
     }
 
@@ -46,6 +50,7 @@ class AccesspointRequest extends FormRequest
             'username' => 'Benutzername',
             'password' => 'Passwort',
             'port' => 'Port',
+            ...$this->beschaffungBezeichnungen(),
         ];
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CustomerRequest;
 use App\Jobs\KundenPdfErzeugen;
 use App\Models\Certificate;
+use App\Models\Concerns\HatBeschaffung;
 use App\Models\ContactPerson;
 use App\Models\Customer;
 use App\Models\DocumentationRun;
@@ -12,6 +13,8 @@ use App\Models\LicenseSoftware;
 use App\Models\PdfExport;
 use App\Models\Role;
 use App\Models\Site;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -52,7 +55,7 @@ class CustomerController extends Controller
 
         // Inventar-Zähler (in einer Abfrage via loadCount)
         $customer->loadCount([
-            'internetconnections', 'securepointutms', 'routers', 'networkswitches',
+            'internetconnections', 'firewalls', 'securepointutms', 'routers', 'networkswitches',
             'accesspoints', 'networks', 'wifis', 'racks', 'patchpanels',
             'servers', 'vms', 'nas', 'computers', 'printers', 'cameras',
             'phones', 'adusers',
@@ -65,6 +68,7 @@ class CustomerController extends Controller
             // Schraenke und Patchfelder fehlten hier ganz - man konnte sie
             // dokumentieren, sah sie aber in der Uebersicht nie wieder.
             ['label' => 'Internet / WAN', 'icon' => 'svg.link',     'count' => $customer->internetconnections_count, 'route' => route('internetconnection.index', $customer), 'can' => 'internetconnection_viewAny'],
+            ['label' => 'Firewalls',      'icon' => 'svg.fire',     'count' => $customer->firewalls_count,           'route' => route('firewall.index', $customer),           'can' => 'firewall_viewAny'],
             ['label' => 'Securepoint UTM', 'icon' => 'svg.fire',     'count' => $customer->securepointutms_count,     'route' => route('securepointutm.index', $customer),     'can' => 'securepointutm_viewAny'],
             ['label' => 'Router',         'icon' => 'svg.wifi',     'count' => $customer->routers_count,             'route' => route('router.index', $customer),             'can' => 'router_viewAny'],
             ['label' => 'Switches',       'icon' => 'svg.group',    'count' => $customer->networkswitches_count,     'route' => route('networkswitch.index', $customer),      'can' => 'networkswitch_viewAny'],
@@ -97,6 +101,10 @@ class CustomerController extends Controller
             ->orderBy('expiry_date')
             ->get();
 
+        // Hardware, deren Garantie in den nächsten 60 Tagen ausläuft oder schon
+        // ausgelaufen ist - dieselbe Frist wie bei Lizenzen und Zertifikaten.
+        $expiringWarranties = $this->ablaufendeGarantien($customer);
+
         // Einstieg zum Dokumentations-Assistenten: anbieten, wenn ein Durchlauf dieses Nutzers
         // offen ist ("Fortsetzen") oder der Kunde insgesamt noch kaum Inventar hat.
         $openWizardRun = DocumentationRun::where('customer_id', $customer->id)
@@ -111,8 +119,47 @@ class CustomerController extends Controller
 
         return view('customer.dashboard', compact(
             'customer', 'sites', 'contactpersons', 'tiles', 'expiringLicenses', 'expiringCertificates',
-            'openWizardRun', 'inventoryCount'
+            'expiringWarranties', 'openWizardRun', 'inventoryCount'
         ));
+    }
+
+    /**
+     * Hardware, deren Garantie ablaeuft - ueber alle Geraetearten hinweg.
+     *
+     * Die Geraeteliste kommt aus config('custom.trashables') und wird auf die
+     * Models eingeschraenkt, die HatBeschaffung einbinden. Damit gibt es keine
+     * zweite Liste, die man beim naechsten Geraetetyp vergessen kann: Wer den
+     * Trait einbaut, ist hier automatisch dabei.
+     *
+     * Je Geraeteart wird die Sichtbarkeit geprueft. Ohne das stuenden auf dem
+     * Dashboard Geraete, deren Liste der Nutzer nicht oeffnen darf.
+     */
+    private function ablaufendeGarantien(Customer $customer, int $tage = 60): Collection
+    {
+        return collect(config('custom.trashables'))
+            ->filter(fn ($eintrag, $slug) => in_array(HatBeschaffung::class, class_uses_recursive($eintrag[0]), true)
+                && Gate::allows($slug.'_viewAny'))
+            ->flatMap(function ($eintrag, $slug) use ($customer, $tage) {
+                [$klasse, $bezeichnung] = $eintrag;
+
+                return $klasse::where('customer_id', $customer->id)
+                    ->garantieLaeuftAb($tage)
+                    ->orderBy('warranty_until')
+                    // Mehr als eine Handvoll je Geraeteart passt nicht auf die
+                    // Karte; die vollstaendige Liste steht hinter dem Link.
+                    ->limit(10)
+                    ->get()
+                    ->map(fn ($geraet) => [
+                        // Telefone und einige andere haben keine name-Spalte.
+                        'name' => $geraet->name ?? $geraet->serialNumber ?? '—',
+                        'art' => $bezeichnung,
+                        'datum' => $geraet->warranty_until,
+                        'tage' => $geraet->garantieTage(),
+                        'url' => route($slug.'.index', $customer),
+                    ]);
+            })
+            ->sortBy('datum')
+            ->values();
     }
 
     /**

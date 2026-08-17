@@ -124,6 +124,36 @@
                 </div>
             @endcan
 
+            {{-- Ablaufende Garantien.
+
+                 Über alle Gerätearten hinweg: Die Frage "ist die Kiste noch in
+                 Garantie?" stellt sich nicht je Liste, sondern beim Kunden. --}}
+            <div class="col-span-2 p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Ablaufende Garantien') }}</div>
+                <div class="divide-y divide-gray-100 dark:divide-gray-700">
+                    @forelse ($expiringWarranties as $garantie)
+                        <a href="{{ $garantie['url'] }}"
+                            class="flex items-center justify-between gap-3 py-2.5 -mx-2 px-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <span class="min-w-0">
+                                <span class="block truncate text-gray-800 dark:text-gray-100">{{ $garantie['name'] }}</span>
+                                <span class="block text-xs text-gray-400 dark:text-gray-500">{{ __($garantie['art']) }}</span>
+                            </span>
+                            @if ($garantie['tage'] < 0)
+                                <span class="shrink-0 text-sm font-medium text-red-600 dark:text-red-400">abgelaufen</span>
+                            @elseif ($garantie['tage'] == 0)
+                                <span class="shrink-0 text-sm font-medium text-red-600 dark:text-red-400">heute</span>
+                            @elseif ($garantie['tage'] <= 14)
+                                <span class="shrink-0 text-sm font-medium text-amber-600 dark:text-amber-400">in {{ $garantie['tage'] }} Tagen</span>
+                            @else
+                                <span class="shrink-0 text-sm text-gray-500 dark:text-gray-400">in {{ $garantie['tage'] }} Tagen</span>
+                            @endif
+                        </a>
+                    @empty
+                        <div class="py-3 text-sm text-gray-400 dark:text-gray-500">{{ __('Keine ablaufenden Garantien 🎉') }}</div>
+                    @endforelse
+                </div>
+            </div>
+
         </div>
 
         <div class="flex flex-wrap gap-5">

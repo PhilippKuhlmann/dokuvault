@@ -2,11 +2,14 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidiertBeschaffung;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpsRequest extends FormRequest
 {
+    use ValidiertBeschaffung;
+
     public function authorize(): bool
     {
         return true;
@@ -23,11 +26,13 @@ class UpsRequest extends FormRequest
             'capacity' => 'max:255',
             'runtime' => 'max:255',
             'notes' => 'nullable',
+            ...$this->beschaffungRegeln(),
         ];
     }
 
     public function attributes(): array
     {
-        return ['site_id' => 'Standort', 'name' => 'Name', 'manufacturer' => 'Hersteller', 'model' => 'Model', 'serialNumber' => 'Seriennummer', 'ip' => 'IP', 'capacity' => 'Kapazität', 'runtime' => 'Laufzeit', 'notes' => 'Notizen'];
+        return ['site_id' => 'Standort', 'name' => 'Name', 'manufacturer' => 'Hersteller', 'model' => 'Model', 'serialNumber' => 'Seriennummer', 'ip' => 'IP', 'capacity' => 'Kapazität', 'runtime' => 'Laufzeit', 'notes' => 'Notizen',
+            ...$this->beschaffungBezeichnungen()];
     }
 }

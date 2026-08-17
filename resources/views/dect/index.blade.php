@@ -48,6 +48,8 @@
                     'Passwort' => $dect->password,
                 ]" />
 
+                <x-beschaffungcard :device="$dect" />
+
             </x-slot>
         </x-card>
     @empty

@@ -48,6 +48,8 @@
                     'Passwort' => $otherclient->password
                 ]" />
 
+                <x-beschaffungcard :device="$otherclient" />
+
             </x-slot>
         </x-card>
     @empty

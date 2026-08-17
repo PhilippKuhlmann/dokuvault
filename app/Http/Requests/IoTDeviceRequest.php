@@ -2,12 +2,15 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidiertBeschaffung;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class IoTDeviceRequest extends FormRequest
 {
+    use ValidiertBeschaffung;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -33,6 +36,7 @@ class IoTDeviceRequest extends FormRequest
             'url' => 'nullable|url',
             'username' => 'nullable',
             'password' => 'nullable',
+            ...$this->beschaffungRegeln(),
         ];
     }
 
@@ -48,6 +52,7 @@ class IoTDeviceRequest extends FormRequest
             'url' => 'URL',
             'username' => 'Benutzer',
             'password' => 'Passwort',
+            ...$this->beschaffungBezeichnungen(),
         ];
     }
 }

@@ -53,6 +53,8 @@
             <x-create.dienste :default="implode(',', $server->services)" />
         </x-create.abschnitt>
 
+        <x-create.beschaffung :model="$server" />
+
         {{-- In derselben Karte, aber ausserhalb des <form>: HTML erlaubt keine
              verschachtelten Formulare, und beide Bloecke sind eigenstaendige
              Livewire-Komponenten. --}}

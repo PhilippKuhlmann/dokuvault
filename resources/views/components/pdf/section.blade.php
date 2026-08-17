@@ -7,7 +7,10 @@
 
 @php
     $count = count($groups);
-    $width = $count <= 1 ? 97 : ($count === 2 ? 47 : 30);
+    // Aus der Gruppenzahl gerechnet statt in Stufen: Mit der alten
+    // Fallunterscheidung bekamen vier Gruppen je 30 Prozent - zusammen 120,
+    // also brach die vierte Spalte um. Betraf schon "Internet / WAN".
+    $width = $count <= 1 ? 97 : intdiv(94, $count);
 @endphp
 
 <div class="section">

@@ -5,6 +5,7 @@ use App\Http\Requests\ADDomainRequest;
 use App\Http\Requests\BackupRequest;
 use App\Http\Requests\ComputerRequest;
 use App\Http\Requests\ContactPersonRequest;
+use App\Http\Requests\FirewallRequest;
 use App\Http\Requests\InternetConnectionRequest;
 use App\Http\Requests\NASRequest;
 use App\Http\Requests\NetworkRequest;
@@ -28,6 +29,7 @@ use App\Models\ContactPerson;
 use App\Models\DECT;
 use App\Models\Domain;
 use App\Models\DynDNS;
+use App\Models\Firewall;
 use App\Models\FTPServer;
 use App\Models\InternetConnection;
 use App\Models\IoTDevice;
@@ -87,6 +89,7 @@ return [
         'VM',
         'NAS',
         'SecurepointUTM',
+        'Firewall',
         'Router',
         'Network',
         'NetworkSwitch',
@@ -136,6 +139,7 @@ return [
         'nas' => [NAS::class, 'NAS'],
         'securepointutm' => [SecurepointUTM::class, 'Securepoint UTM'],
         'securepointuma' => [SecurepointUMA::class, 'E-Mail-Archivierung'],
+        'firewall' => [Firewall::class, 'Firewall'],
         'router' => [Router::class, 'Router'],
         'network' => [Network::class, 'Netzwerk'],
         'networkswitch' => [NetworkSwitch::class, 'Switch'],
@@ -278,6 +282,25 @@ return [
                 ['name' => 'subnet_gateway', 'label' => 'Gateway des Netzes', 'type' => 'text'],
                 ['name' => 'pppoe_user', 'label' => 'Einwahl-Benutzer (PPPoE)', 'type' => 'text'],
                 ['name' => 'pppoe_password', 'label' => 'Einwahl-Passwort', 'type' => 'text'],
+            ],
+        ],
+        [
+            'key' => 'firewall', 'group' => 'Netzwerk', 'label' => 'Firewall',
+            'question' => 'Welche Firewall schützt das Netz?',
+            'model' => Firewall::class, 'relation' => 'firewalls',
+            'request' => FirewallRequest::class, 'permission' => 'firewall_create',
+            'scope' => 'site', 'label_field' => 'name',
+            'fields' => [
+                ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+                ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
+                ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
+                ['name' => 'firmware', 'label' => 'Firmware', 'type' => 'text'],
+                ['name' => 'ip_address', 'label' => 'IP-Adresse', 'type' => 'text'],
+                ['name' => 'management_url', 'label' => 'Verwaltungsoberfläche', 'type' => 'text'],
+                ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
+                ['name' => 'password', 'label' => 'Passwort', 'type' => 'password'],
+                ['name' => 'subscription_until', 'label' => 'Subscription bis', 'type' => 'date'],
+                ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
             ],
         ],
         [
@@ -543,6 +566,7 @@ return [
         'patchpanel' => [PatchPanel::class, 'Patchfeld', 'patchpanel'],
         'nas' => [NAS::class, 'NAS', 'nas'],
         'router' => [Router::class, 'Router', 'router'],
+        'firewall' => [Firewall::class, 'Firewall', 'router'],
         'ups' => [Ups::class, 'USV', 'ups'],
         // PhoneSystem fehlt bewusst: die Tabelle hat keine name-Spalte,
         // ein Einbau hätte in der Rack-Ansicht keinen Anzeigenamen.

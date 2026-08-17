@@ -2,11 +2,14 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidiertBeschaffung;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SecurepointUTMRequest extends FormRequest
 {
+    use ValidiertBeschaffung;
+
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -39,6 +42,7 @@ class SecurepointUTMRequest extends FormRequest
             'urlAdmin' => 'required|url|max:255',
             'urlUser' => 'nullable|url|max:255',
             'urlExternal' => 'nullable|url|max:255',
+            ...$this->beschaffungRegeln(),
         ];
     }
 
@@ -56,6 +60,7 @@ class SecurepointUTMRequest extends FormRequest
             'urlAdmin' => 'Admin URL',
             'urlUser' => 'User URL',
             'utlExternal' => 'Externe URL',
+            ...$this->beschaffungBezeichnungen(),
         ];
     }
 }

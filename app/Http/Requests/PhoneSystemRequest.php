@@ -2,11 +2,14 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidiertBeschaffung;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Foundation\Http\FormRequest;
 
 class PhoneSystemRequest extends FormRequest
 {
+    use ValidiertBeschaffung;
+
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -33,6 +36,7 @@ class PhoneSystemRequest extends FormRequest
             'port' => 'max:255',
             'username' => 'max:255',
             'password' => 'max:255',
+            ...$this->beschaffungRegeln(),
         ];
     }
 
@@ -47,6 +51,7 @@ class PhoneSystemRequest extends FormRequest
             'port' => 'Port',
             'username' => 'Benutzername',
             'password' => 'Passwort',
+            ...$this->beschaffungBezeichnungen(),
         ];
     }
 }

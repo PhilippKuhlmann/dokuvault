@@ -80,6 +80,8 @@
                 {{-- Betriebssystem steht jetzt in der Kopfzeile - hier waere es doppelt. --}}
                 <x-minitagcard :title="__('Dienste')" :array="$server->services" />
 
+                <x-beschaffungcard :device="$server" />
+
             </x-slot>
         </x-card>
     @empty

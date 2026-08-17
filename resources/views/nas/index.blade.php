@@ -52,6 +52,8 @@
                     'Passwort' => $nas->password,
                 ]" />
 
+                <x-beschaffungcard :device="$nas" />
+
             </x-slot>
         </x-card>
     @empty

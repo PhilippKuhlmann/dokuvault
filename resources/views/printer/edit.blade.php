@@ -22,6 +22,8 @@
             <x-create.singlerow :label="__('Passwort')" name="password" :default="$printer->password" />
         </x-create.abschnitt>
 
+        <x-create.beschaffung :model="$printer" />
+
         {{-- In derselben Karte, aber ausserhalb des <form>: HTML erlaubt keine
              verschachtelten Formulare, und beide Bloecke sind eigenstaendige
              Livewire-Komponenten. --}}

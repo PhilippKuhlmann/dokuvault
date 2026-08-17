@@ -51,6 +51,8 @@
                     'Passwort' => $recorder->password,
                 ]" />
 
+                <x-beschaffungcard :device="$recorder" />
+
             </x-slot>
         </x-card>
     @empty

@@ -9,6 +9,7 @@ use App\Models\Certificate;
 use App\Models\Computer;
 use App\Models\Customer;
 use App\Models\Domain;
+use App\Models\Firewall;
 use App\Models\LicenseAccess;
 use App\Models\LicenseSoftware;
 use App\Models\LicenseWindows;
@@ -55,7 +56,7 @@ class AdminController extends Controller
             'vms' => VM::count(),
             'computers' => Computer::count(),
             'nas' => NAS::count(),
-            'netzwerk' => NetworkSwitch::count() + Accesspoint::count() + Router::count(),
+            'netzwerk' => NetworkSwitch::count() + Accesspoint::count() + Router::count() + Firewall::count(),
             'wifis' => Wifi::count(),
             'printers' => Printer::count(),
             'cameras' => Camera::count(),

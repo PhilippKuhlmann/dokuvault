@@ -50,6 +50,8 @@
                     'Externe URL' => $securepointutm->urlExternal,
                 ]" />
 
+                <x-beschaffungcard :device="$securepointutm" />
+
             </x-slot>
         </x-card>
     @empty

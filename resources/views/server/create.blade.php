@@ -50,6 +50,8 @@
         {{-- Weitere IP-Adressen und Zugangsdaten haengen am gespeicherten Server;
              beide erscheinen direkt nach dem Anlegen im Bearbeiten-Formular.
              Das steht hier, damit ihr Fehlen nicht wie ein Mangel aussieht. --}}
+        <x-create.beschaffung />
+
         <x-create.abschnitt :titel="__('IP-Adressen und Zugangsdaten')">
             <p class="mt-1 text-sm text-gray-500 sm:col-span-2 dark:text-gray-400">
                 {{ __('Lassen sich eintragen, sobald das Gerät angelegt ist.') }}

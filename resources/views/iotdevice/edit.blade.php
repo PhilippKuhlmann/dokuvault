@@ -26,6 +26,8 @@
             <x-create.singlerow :label="__('Passwort')" name="password" :default="$iotdevice->password" />
         </x-create.abschnitt>
 
+        <x-create.beschaffung :model="$iotdevice" />
+
         {{-- In derselben Karte, aber ausserhalb des <form>: HTML erlaubt keine
              verschachtelten Formulare, und beide Bloecke sind eigenstaendige
              Livewire-Komponenten. --}}

@@ -24,6 +24,8 @@
             <x-create.singlerow :label="__('Notizen')" name="notes" :default="$ups->notes" class="sm:col-span-2" />
         </x-create.abschnitt>
 
+        <x-create.beschaffung :model="$ups" />
+
         {{-- In derselben Karte, aber ausserhalb des <form>: HTML erlaubt keine
              verschachtelten Formulare, und beide Bloecke sind eigenstaendige
              Livewire-Komponenten. --}}

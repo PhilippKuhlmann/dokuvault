@@ -2,12 +2,15 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidiertBeschaffung;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class ServerRequest extends FormRequest
 {
+    use ValidiertBeschaffung;
+
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -50,6 +53,7 @@ class ServerRequest extends FormRequest
             'operating_system_id' => 'required',
             'remoteID' => '',
             'remotePassword' => '',
+            ...$this->beschaffungRegeln(),
         ];
     }
 
@@ -69,6 +73,7 @@ class ServerRequest extends FormRequest
             'operating_system_id' => 'Betriebssystem',
             'remoteID' => 'Rustdesk ID',
             'remotePassword' => 'Rustdesk Passwort',
+            ...$this->beschaffungBezeichnungen(),
         ];
     }
 }

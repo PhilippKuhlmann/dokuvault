@@ -53,6 +53,9 @@
                         @can('internetconnection_viewAny')
                             <x-aside.dropdownlink :label="__('Internet / WAN')" href="{{ route('internetconnection.index', $customer) }}" />
                         @endcan
+                        @can('firewall_viewAny')
+                            <x-aside.dropdownlink :label="__('Firewall')" href="{{ route('firewall.index', $customer) }}" />
+                        @endcan
                         @can('securepointutm_viewAny')
                             <x-aside.dropdownlink :label="__('Securepoint UTM')"
                                 href="{{ route('securepointutm.index', $customer) }}" />

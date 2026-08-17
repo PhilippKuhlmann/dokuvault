@@ -48,6 +48,8 @@
                     'Passwort' => $phone->password,
                 ]" />
 
+                <x-beschaffungcard :device="$phone" />
+
             </x-slot>
         </x-card>
     @empty

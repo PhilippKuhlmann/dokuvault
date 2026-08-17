@@ -24,6 +24,8 @@
             <x-create.singlerow :label="__('Port')" name="port" :default="$router->port" type="number" />
         </x-create.abschnitt>
 
+        <x-create.beschaffung :model="$router" />
+
         {{-- In derselben Karte, aber ausserhalb des <form>: HTML erlaubt keine
              verschachtelten Formulare, und beide Bloecke sind eigenstaendige
              Livewire-Komponenten. --}}

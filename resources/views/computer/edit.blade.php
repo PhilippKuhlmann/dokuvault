@@ -24,6 +24,8 @@
             <x-create.singlerow :label="__('Rustdesk Passwort')" name="remotePassword" :default="$computer->remotePassword" />
         </x-create.abschnitt>
 
+        <x-create.beschaffung :model="$computer" />
+
         {{-- In derselben Karte, aber ausserhalb des <form>: HTML erlaubt keine
              verschachtelten Formulare, und beide Bloecke sind eigenstaendige
              Livewire-Komponenten. --}}

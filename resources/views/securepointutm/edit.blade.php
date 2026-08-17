@@ -30,6 +30,8 @@
             <x-create.singlerow :label="__('Externe URL')" name="urlExternal" :default="$securepointutm->urlExternal" />
         </x-create.abschnitt>
 
+        <x-create.beschaffung :model="$securepointutm" />
+
         {{-- In derselben Karte, aber ausserhalb des <form>: HTML erlaubt keine
              verschachtelten Formulare, und beide Bloecke sind eigenstaendige
              Livewire-Komponenten. --}}

@@ -15,6 +15,7 @@ use App\Models\Customer;
 use App\Models\DECT;
 use App\Models\Domain;
 use App\Models\DynDNS;
+use App\Models\Firewall;
 use App\Models\FTPServer;
 use App\Models\InternetConnection;
 use App\Models\IoTDevice;
@@ -132,6 +133,11 @@ class LocalDatabaseSeeder extends Seeder
         ]);
 
         Router::factory(2)->create([
+            'customer_id' => $customer->id,
+            'site_id' => $site1->id,
+        ]);
+
+        Firewall::factory(1)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);

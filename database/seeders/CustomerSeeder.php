@@ -8,6 +8,7 @@ use App\Models\ADUser;
 use App\Models\Computer;
 use App\Models\ContactPerson;
 use App\Models\Customer;
+use App\Models\Firewall;
 use App\Models\LicenseSoftware;
 use App\Models\Network;
 use App\Models\NetworkSwitch;
@@ -53,6 +54,11 @@ class CustomerSeeder extends Seeder
             ]);
 
             Router::factory(1)->create([
+                'customer_id' => $customer->id,
+                'site_id' => $site1->id,
+            ]);
+
+            Firewall::factory(1)->create([
                 'customer_id' => $customer->id,
                 'site_id' => $site1->id,
             ]);

@@ -52,6 +52,8 @@
                     'Port' => $router->port,
                 ]" />
 
+                <x-beschaffungcard :device="$router" />
+
             </x-slot>
         </x-card>
     @empty

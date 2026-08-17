@@ -19,6 +19,7 @@ use App\Http\Controllers\DomainController;
 use App\Http\Controllers\DynDNSController;
 use App\Http\Controllers\EolController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\FirewallController;
 use App\Http\Controllers\FTPServerController;
 use App\Http\Controllers\InternetConnectionController;
 use App\Http\Controllers\IoTDeviceController;
@@ -191,6 +192,7 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::resource('contactperson', ContactPersonController::class)->except(['show']);
 
             Route::resource('router', RouterController::class)->except(['show']);
+            Route::resource('firewall', FirewallController::class)->except(['show']);
             Route::resource('securepointutm', SecurepointUTMController::class)->except(['show']);
             Route::resource('securepointuma', SecurepointUMAController::class)->except(['show']);
             Route::resource('network', NetworkController::class)->except(['show']);

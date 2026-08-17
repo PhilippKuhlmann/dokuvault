@@ -2,12 +2,15 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidiertBeschaffung;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RouterRequest extends FormRequest
 {
+    use ValidiertBeschaffung;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -32,6 +35,7 @@ class RouterRequest extends FormRequest
             'username' => 'required|max:255',
             'password' => 'required|max:255',
             'port' => 'required|numeric',
+            ...$this->beschaffungRegeln(),
         ];
     }
 
@@ -46,6 +50,7 @@ class RouterRequest extends FormRequest
             'username' => 'Benutzername',
             'password' => 'Passwort',
             'port' => 'Port',
+            ...$this->beschaffungBezeichnungen(),
         ];
     }
 }
