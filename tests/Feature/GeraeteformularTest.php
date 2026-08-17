@@ -5,6 +5,7 @@ use App\Models\Camera;
 use App\Models\Computer;
 use App\Models\Customer;
 use App\Models\DECT;
+use App\Models\Firewall;
 use App\Models\IoTDevice;
 use App\Models\Machine;
 use App\Models\NAS;
@@ -17,7 +18,6 @@ use App\Models\Printer;
 use App\Models\Recorder;
 use App\Models\Router;
 use App\Models\SecurepointUMA;
-use App\Models\SecurepointUTM;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\Ups;
@@ -47,7 +47,7 @@ const GERAETE = [
     'recorder' => Recorder::class,
     'router' => Router::class,
     'securepointuma' => SecurepointUMA::class,
-    'securepointutm' => SecurepointUTM::class,
+    'firewall' => Firewall::class,
     'ups' => Ups::class,
     'vm' => VM::class,
     'server' => Server::class,

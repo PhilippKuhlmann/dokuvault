@@ -12,7 +12,7 @@ $models = [
     'Server',
     'VM',
     'NAS',
-    'SecurepointUTM',
+    'Firewall',
     'Router',
     'Network',
     'NetworkSwitch',

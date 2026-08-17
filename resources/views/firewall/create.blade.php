@@ -6,14 +6,33 @@
             <x-create.singlerow :label="__('Name')" name="name" />
         </x-create.abschnitt>
 
-        <x-create.abschnitt :titel="__('Hardware')">
-            <x-create.singlerow :label="__('Hersteller')" name="manufacturer" />
+        {{-- Der Hersteller steuert, ob die Securepoint-Felder erscheinen: Eine UTM
+             hat eine USC-PIN und ein Cloud-Backup-Kennwort, kein anderes Geraet.
+             Freitext statt Auswahlliste, damit jeder Hersteller eintragbar
+             bleibt - deshalb wird verglichen und nicht auf Gleichheit geprueft. --}}
+        <x-create.abschnitt :titel="__('Hardware')"
+            x-data="{ hersteller: '{{ old('manufacturer', '') }}' }">
+            <x-create.singlerow :label="__('Hersteller')" name="manufacturer" x-model="hersteller" />
 
             <x-create.singlerow :label="__('Modell')" name="model" />
 
             <x-create.singlerow :label="__('Seriennummer')" name="serialNumber" />
 
             <x-create.singlerow :label="__('Firmware')" name="firmware" />
+
+            <x-create.options :label="__('Bauform')" name="form_factor"
+                :options="config('custom.firewall_form_factors')" default="appliance" />
+
+            <div x-show="hersteller.toLowerCase().includes('securepoint')" x-cloak
+                class="grid grid-cols-1 gap-x-4 sm:col-span-2 sm:grid-cols-2">
+                <x-create.singlerow :label="__('USC-PIN')" name="usc_pin" />
+
+                <x-create.singlerow :label="__('Cloud-Backup-Kennwort')" name="cloud_backup_password" />
+
+                <x-create.singlerow :label="__('Benutzerportal')" name="url_user" />
+
+                <x-create.singlerow :label="__('Externer Zugang')" name="url_external" />
+            </div>
         </x-create.abschnitt>
 
         <x-create.abschnitt :titel="__('Zugang')">

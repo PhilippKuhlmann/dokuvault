@@ -43,6 +43,36 @@ class Firewall extends Model
         );
     }
 
+    /**
+     * Die USC-PIN entsperrt die Konsole, das Cloud-Backup-Kennwort die
+     * Sicherung - beides gehoert verschluesselt in die Tabelle.
+     */
+    protected function uscPin(): Attribute
+    {
+        return new Attribute(
+            get: fn ($value) => ! empty($value) ? Crypt::decryptString($value) : null,
+            set: fn ($value) => ! empty($value) ? Crypt::encryptString($value) : null,
+        );
+    }
+
+    protected function cloudBackupPassword(): Attribute
+    {
+        return new Attribute(
+            get: fn ($value) => ! empty($value) ? Crypt::decryptString($value) : null,
+            set: fn ($value) => ! empty($value) ? Crypt::encryptString($value) : null,
+        );
+    }
+
+    /**
+     * Securepoint-Geraete haben vier Felder, die es bei keinem anderen
+     * Hersteller gibt. Der Hersteller ist Freitext, deshalb wird verglichen und
+     * nicht auf Gleichheit geprueft: "Securepoint GmbH" ist dasselbe.
+     */
+    public function istSecurepoint(): bool
+    {
+        return str_contains(strtolower((string) $this->manufacturer), 'securepoint');
+    }
+
     public function customer()
     {
         return $this->belongsTo(Customer::class);

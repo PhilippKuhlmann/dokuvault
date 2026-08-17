@@ -10,9 +10,15 @@
   - Das Kunden-Dashboard hat eine dritte Ablauf-Karte: **Ablaufende Garantien**, über alle Gerätearten hinweg, mit derselben Frist von 60 Tagen wie Lizenzen und Zertifikate. Sie zeigt nur Gerätearten, deren Liste der angemeldete Nutzer auch öffnen darf. Kostet 5–6 ms bei einem Kunden mit vollem Bestand.
   - Auch im PDF: Die vier Felder stehen bei den Hardware-Stammdaten jedes Geräts.
 
+- **Die Securepoint UTM ist in der Firewall aufgegangen.** Zwei Objekte für dieselbe Gerätegattung bedeuteten zwei Einträge in Sidebar, Dashboard, PDF und Suche — und ein Gerätetausch von Securepoint auf Sophos hieß löschen und neu anlegen. Jetzt unterscheidet der **Hersteller**, nicht der Gerätetyp.
+  - Die vier Felder, die es nur bei Securepoint gibt (USC-PIN, Cloud-Backup-Kennwort, Benutzerportal, externer Zugang), erscheinen im Formular erst, wenn „Securepoint" im Herstellerfeld steht — dasselbe Muster, mit dem die Bauform beim Server über Einbautiefe und Höheneinheiten entscheidet. In der Liste blendet sich der Block aus, wenn nichts gefüllt ist.
+  - `urlAdmin` ist die Verwaltungsoberfläche, die es ohnehin gibt; `type` („Appliance" oder „VM") wurde zur **Bauform**, die für jede Firewall taugt — eine OPNsense läuft oft als VM.
+  - **Kein Datenumzug**, die Anwendung ist noch nicht produktiv: Die Tabelle `securepoint_utms` und ihre vier Berechtigungen werden entfernt, die Demo-Daten entstehen als Firewall mit Hersteller Securepoint neu.
+  - Was dabei leicht übersehen wird: IP-Adressen, Zugangsdaten, Schrankeinbauten und das Änderungsprotokoll zeigen mit einem **Klassennamen** auf das Gerät. Bleibt der alte stehen, bricht jede Seite, die ihn auflöst, mit „Class not found" — nachgemessen, nicht vermutet. Die Migration entfernt diese Verweise, statt sie umzubiegen: Die alten Ids würden sonst zufällig auf ein fremdes Gerät zeigen.
+  - Die kundenübergreifende UTM-Übersicht unter `/utmsearch` entfällt ersatzlos, samt ihrer drei Verknüpfungen in den Navigationen.
+
 - **Firewall als eigenes Gerät.** Firewalls gab es nur herstellergebunden als Securepoint UTM. Wer eine Sophos, Fortigate, OPNsense oder pfSense dokumentiert, musste sie in „Router" pressen — dabei ist die Firewall in fast jedem Netz das Gerät, nach dem zuerst gefragt wird. Vollständig eingebunden: Liste, Anlegen, Bearbeiten, Papierkorb, Serverschrank, globale Suche, PDF, Erstaufnahme-Assistent und eine Dashboard-Kachel.
   - Drei Felder, die es nur hier braucht: **Firmware** (bei einer Firewall ist der Versionsstand eine Sicherheitsfrage, keine Randnotiz), **Verwaltungsoberfläche** (die hängt selten auf der WAN-Adresse) und **Subscription bis** — ohne gültige Subscription bekommt eine UTM keine Signaturen mehr. Das ist ein anderes Datum als die Hardware-Garantie und deshalb ein eigenes Feld.
-  - Die Securepoint UTM bleibt als eigenes Objekt bestehen: Sie hat Felder, die es nur dort gibt (USC-PIN, Cloud-Backup-Kennwort, drei getrennte Oberflächen).
   - Das Kennwort liegt verschlüsselt in der Tabelle, der Standort wird gegen den Mandanten geprüft. Beides hält je ein Test fest.
 
 ### Fixed

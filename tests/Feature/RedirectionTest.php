@@ -20,11 +20,6 @@ test('the application redirect to login on profile url for unauthenticated user'
     $response->assertRedirect('/login');
 });
 
-test('the application redirect to login on utmsearch url for unauthenticated user', function () {
-    $response = $this->get('/utmsearch');
-    $response->assertRedirect('/login');
-});
-
 test('the application redirect to login on remotesearch url for unauthenticated user', function () {
     $response = $this->get('/remotesearch');
     $response->assertRedirect('/login');

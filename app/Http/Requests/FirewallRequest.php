@@ -6,6 +6,7 @@ use App\Http\Requests\Concerns\ValidiertBeschaffung;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class FirewallRequest extends FormRequest
 {
@@ -34,6 +35,11 @@ class FirewallRequest extends FormRequest
             'username' => 'nullable|max:255',
             'password' => 'nullable|max:255',
             'port' => 'nullable|numeric',
+            'form_factor' => ['nullable', Rule::in(array_keys(config('custom.firewall_form_factors')))],
+            'url_user' => 'nullable|max:255',
+            'url_external' => 'nullable|max:255',
+            'usc_pin' => 'nullable|max:255',
+            'cloud_backup_password' => 'nullable|max:255',
             'subscription_until' => 'nullable|date',
             'height_units' => 'nullable|integer|min:1|max:48',
             'full_depth' => 'nullable|boolean',
@@ -55,6 +61,11 @@ class FirewallRequest extends FormRequest
             'username' => 'Benutzername',
             'password' => 'Passwort',
             'port' => 'Port',
+            'form_factor' => 'Bauform',
+            'url_user' => 'Benutzerportal',
+            'url_external' => 'Externer Zugang',
+            'usc_pin' => 'USC-PIN',
+            'cloud_backup_password' => 'Cloud-Backup-Kennwort',
             'subscription_until' => 'Subscription bis',
             'height_units' => 'Höheneinheiten',
             'full_depth' => 'Volle Tiefe',

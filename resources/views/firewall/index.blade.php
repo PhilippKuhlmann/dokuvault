@@ -43,6 +43,7 @@
                     'Modell' => $firewall->model,
                     'Seriennummer' => $firewall->serialNumber,
                     'Firmware' => $firewall->firmware,
+                    'Bauform' => __(config('custom.firewall_form_factors')[$firewall->form_factor] ?? ''),
                 ]" />
 
                 <x-credentialscard :device="$firewall" />
@@ -52,6 +53,17 @@
                     'Benutzername' => $firewall->username,
                     'Passwort' => $firewall->password,
                     'Port' => $firewall->port,
+                ]" />
+
+                {{-- Die Karte blendet sich selbst aus, wenn nichts gefuellt ist -
+                     bei einer Sophos bleiben diese vier Felder leer. Die
+                     Beschriftungen sind so gewaehlt, dass minitablecard die
+                     Geheimnisse maskiert. --}}
+                <x-minitablecard :title="__('Securepoint')" :array="[
+                    'USC-PIN' => $firewall->usc_pin,
+                    'Cloud Backup Passwort' => $firewall->cloud_backup_password,
+                    'User URL' => $firewall->url_user,
+                    'Externe URL' => $firewall->url_external,
                 ]" />
 
                 <x-minitablecard :title="__('Subscription')" :array="[

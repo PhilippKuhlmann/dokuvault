@@ -52,7 +52,6 @@ use App\Models\Rack;
 use App\Models\Recorder;
 use App\Models\Router;
 use App\Models\SecurepointUMA;
-use App\Models\SecurepointUTM;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\Ups;
@@ -88,7 +87,6 @@ return [
         'Server',
         'VM',
         'NAS',
-        'SecurepointUTM',
         'Firewall',
         'Router',
         'Network',
@@ -137,7 +135,6 @@ return [
         'server' => [Server::class, 'Server'],
         'vm' => [VM::class, 'VM'],
         'nas' => [NAS::class, 'NAS'],
-        'securepointutm' => [SecurepointUTM::class, 'Securepoint UTM'],
         'securepointuma' => [SecurepointUMA::class, 'E-Mail-Archivierung'],
         'firewall' => [Firewall::class, 'Firewall'],
         'router' => [Router::class, 'Router'],
@@ -547,6 +544,21 @@ return [
     |
     */
     'server_form_factors' => $serverBauformen,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Bauform einer Firewall
+    |--------------------------------------------------------------------------
+    |
+    | Eine Appliance steht im Schrank, eine virtuelle Firewall (OPNsense,
+    | pfSense, auch die Securepoint UTM) laeuft auf einem Host. Die Bauform
+    | entscheidet, ob ein Einbau ueberhaupt in Frage kommt.
+    |
+    */
+    'firewall_form_factors' => [
+        'appliance' => 'Appliance',
+        'vm' => 'Virtuelle Maschine',
+    ],
 
     /*
     |--------------------------------------------------------------------------

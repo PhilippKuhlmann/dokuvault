@@ -40,7 +40,6 @@ use App\Models\Recorder;
 use App\Models\Role;
 use App\Models\Router;
 use App\Models\SecurepointUMA;
-use App\Models\SecurepointUTM;
 use App\Models\Server;
 use App\Models\Service;
 use App\Models\Site;
@@ -127,19 +126,25 @@ class LocalDatabaseSeeder extends Seeder
             'customer_id' => $customer->id,
         ]);
 
-        SecurepointUTM::factory(1)->create([
-            'customer_id' => $customer->id,
-            'site_id' => $site1->id,
-        ]);
-
         Router::factory(2)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
 
+        // Eine Securepoint mit ihren Sonderfeldern, damit in der Demo zu sehen
+        // ist, dass sie nur bei diesem Hersteller erscheinen.
         Firewall::factory(1)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
+            'manufacturer' => 'Securepoint',
+            'model' => 'RC300 G5',
+            'form_factor' => 'appliance',
+            'firmware' => '12.6.2',
+            'management_url' => 'https://192.168.175.1:11115',
+            'url_user' => 'https://192.168.175.1',
+            'url_external' => 'https://utm.mustermann-gmbh.de:11115',
+            'usc_pin' => '448213',
+            'cloud_backup_password' => 'Wolke!2026sicher',
         ]);
 
         SecurepointUMA::factory(1)->create([
@@ -547,8 +552,8 @@ class LocalDatabaseSeeder extends Seeder
         // Der einzige Fall im Datensatz, in dem die Notiz etwas beiträgt: dasselbe
         // root-Passwort, an der Firewall aber über die serielle Konsole statt SSH.
         // Überall sonst bleibt sie leer - sie soll den Namen nicht wiederholen.
-        $utm = SecurepointUTM::where('customer_id', $customer->id)->first();
-        $utm?->credentialLinks()->create([
+        $firewall = Firewall::where('customer_id', $customer->id)->first();
+        $firewall?->credentialLinks()->create([
             'customer_id' => $customer->id,
             'login_general_id' => $rootLogin->id,
             'note' => 'Serielle Konsole',

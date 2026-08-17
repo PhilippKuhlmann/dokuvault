@@ -102,12 +102,6 @@
         'Geroutetes Netz' => ['Netz' => 'subnet', 'Gateway' => 'subnet_gateway', 'Nutzbar' => fn($i) => $i->nutzbarerBereich()],
     ]" />
 
-    <x-pdf.section :title="__('Securepoint UTM')" :items="$customer->securepointutms" :titleField="fn($u) => $u->type ?: 'UTM #'.$u->id" :groups="[
-        'Allgemein' => ['Art' => 'type', 'Seriennummer' => 'serialNumber', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
-        'Login' => ['Benutzername' => 'username', 'Passwort' => 'password', 'Cloud Backup' => 'cloudBackupPassword', 'USC-PIN' => 'uscpin'],
-        'URL' => ['Admin URL' => 'urlAdmin', 'User URL' => 'urlUser', 'Externe URL' => 'urlExternal'],
-    ]" />
-
     <x-pdf.section :title="__('Firewalls')" :items="$customer->firewalls" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Firmware' => 'firmware', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
         'Zugang' => ['Oberfläche' => 'management_url', 'Benutzername' => 'username', 'Passwort' => 'password', 'Port' => 'port'],

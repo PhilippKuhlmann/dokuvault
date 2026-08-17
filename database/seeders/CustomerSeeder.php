@@ -14,7 +14,6 @@ use App\Models\Network;
 use App\Models\NetworkSwitch;
 use App\Models\Printer;
 use App\Models\Router;
-use App\Models\SecurepointUTM;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\VM;
@@ -121,15 +120,6 @@ class CustomerSeeder extends Seeder
                 'customer_id' => $customer->id,
             ]);
 
-            SecurepointUTM::factory(1)->create([
-                'customer_id' => $customer->id,
-                'site_id' => $site1->id,
-            ]);
-
-            SecurepointUTM::factory(1)->create([
-                'customer_id' => $customer->id,
-                'site_id' => $site2->id,
-            ]);
         }
     }
 }

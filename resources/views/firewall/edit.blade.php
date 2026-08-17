@@ -8,14 +8,31 @@
             <x-create.singlerow :label="__('Name')" name="name" :default="$firewall->name" />
         </x-create.abschnitt>
 
-        <x-create.abschnitt :titel="__('Hardware')">
-            <x-create.singlerow :label="__('Hersteller')" name="manufacturer" :default="$firewall->manufacturer" />
+        {{-- Wie im Anlegen-Formular: Die Securepoint-Felder haengen am
+             Herstellernamen, nicht an einem eigenen Geraetetyp. --}}
+        <x-create.abschnitt :titel="__('Hardware')"
+            x-data="{ hersteller: '{{ old('manufacturer', $firewall->manufacturer) }}' }">
+            <x-create.singlerow :label="__('Hersteller')" name="manufacturer" :default="$firewall->manufacturer" x-model="hersteller" />
 
             <x-create.singlerow :label="__('Modell')" name="model" :default="$firewall->model" />
 
             <x-create.singlerow :label="__('Seriennummer')" name="serialNumber" :default="$firewall->serialNumber" />
 
             <x-create.singlerow :label="__('Firmware')" name="firmware" :default="$firewall->firmware" />
+
+            <x-create.options :label="__('Bauform')" name="form_factor"
+                :options="config('custom.firewall_form_factors')" :default="$firewall->form_factor" />
+
+            <div x-show="hersteller.toLowerCase().includes('securepoint')" x-cloak
+                class="grid grid-cols-1 gap-x-4 sm:col-span-2 sm:grid-cols-2">
+                <x-create.singlerow :label="__('USC-PIN')" name="usc_pin" :default="$firewall->usc_pin" />
+
+                <x-create.singlerow :label="__('Cloud-Backup-Kennwort')" name="cloud_backup_password" :default="$firewall->cloud_backup_password" />
+
+                <x-create.singlerow :label="__('Benutzerportal')" name="url_user" :default="$firewall->url_user" />
+
+                <x-create.singlerow :label="__('Externer Zugang')" name="url_external" :default="$firewall->url_external" />
+            </div>
         </x-create.abschnitt>
 
         <x-create.abschnitt :titel="__('Zugang')">

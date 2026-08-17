@@ -3,10 +3,10 @@
 use App\Livewire\DeviceIpAddresses;
 use App\Models\ContactPerson;
 use App\Models\Customer;
+use App\Models\Firewall;
 use App\Models\IpAddress;
 use App\Models\NetworkSwitch;
 use App\Models\OperatingSystem;
-use App\Models\SecurepointUTM;
 use App\Models\Server;
 use App\Models\Site;
 use Livewire\Livewire;
@@ -15,24 +15,25 @@ use Livewire\Livewire;
  * Befunde aus dem Praxistest an einer erfundenen Firma - jeder Fall ist dort
  * beim Dokumentieren aufgefallen, nicht am Code.
  */
-test('die USC-PIN der UTM wird gespeichert', function () {
-    $this->actingAs(userWithPermissions(['securepointutm_create', 'securepointutm_viewAny']));
+test('die USC-PIN einer Securepoint-Firewall wird gespeichert', function () {
+    $this->actingAs(userWithPermissions(['firewall_create', 'firewall_viewAny']));
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
 
     // Sie fehlte in den Regeln, der Controller speichert validated() - die
     // Eingabe verschwand ohne Meldung.
-    $this->post("/{$customer->slug}/securepointutm", [
+    $this->post("/{$customer->slug}/firewall", [
         'site_id' => $site->id,
         'name' => 'FW-01',
+        'manufacturer' => 'Securepoint',
         'username' => 'admin',
         'password' => 'geheim',
-        'cloudBackupPassword' => 'backup',
-        'uscpin' => '448213',
-        'urlAdmin' => 'https://10.0.0.1:11115',
+        'cloud_backup_password' => 'backup',
+        'usc_pin' => '448213',
+        'management_url' => 'https://10.0.0.1:11115',
     ])->assertRedirect();
 
-    expect(SecurepointUTM::where('name', 'FW-01')->sole()->uscpin)->toBe('448213');
+    expect(Firewall::where('name', 'FW-01')->sole()->usc_pin)->toBe('448213');
 });
 
 test('dieselbe IP-Adresse laesst sich beim Kunden nur einmal vergeben', function () {
@@ -122,7 +123,7 @@ test('der Ansprechpartner hat eine Funktion', function () {
 
 test('das Dashboard zaehlt auch die Netzwerk-Infrastruktur', function () {
     $this->actingAs(userWithPermissions([
-        'securepointutm_viewAny', 'router_viewAny', 'networkswitch_viewAny',
+        'firewall_viewAny', 'router_viewAny', 'networkswitch_viewAny',
         'accesspoint_viewAny', 'rack_viewAny', 'patchpanel_viewAny', 'internetconnection_viewAny',
     ]));
     $customer = Customer::factory()->create();
@@ -131,7 +132,7 @@ test('das Dashboard zaehlt auch die Netzwerk-Infrastruktur', function () {
     // Uebersicht - man konnte sie erfassen und sah sie dort nie wieder.
     $inhalt = $this->get(route('customer.dashboard', $customer))->assertOk()->getContent();
 
-    foreach (['Internet / WAN', 'Securepoint UTM', 'Switches', 'Accesspoints', 'Serverschränke', 'Patchfelder'] as $kachel) {
+    foreach (['Internet / WAN', 'Firewalls', 'Switches', 'Accesspoints', 'Serverschränke', 'Patchfelder'] as $kachel) {
         expect($inhalt)->toContain($kachel);
     }
 });

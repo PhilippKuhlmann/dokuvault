@@ -13,7 +13,6 @@
                         <x-aside.toplink :label="__('Dashboard')" svg="svg.home" :href="route('customer.dashboard', $customer)" />
                         <x-aside.toplink :label="__('Kundensuche')" svg="svg.search" :href="route('customer.search')" />
                         <x-aside.toplink :label="__('Globale Suche')" svg="svg.db" :href="route('search.global')" />
-                        <x-aside.toplink :label="__('UTM Suche')" svg="svg.software.securepoint" :href="route('search.utm')" />
                         <x-aside.toplink :label="__('Rustdesk Suche')" svg="svg.software.rustdesk" :href="route('search.remote')" />
                     </ul>
                 </li>
@@ -47,7 +46,7 @@
                 </x-aside.dropdown>
             @endcanany
 
-            @canany(['securepointutm_viewAny', 'router_viewAny', 'network_viewAny', 'wifi_viewAny', 'networkswitch_viewAny', 'accesspoint_viewAny', 'internetconnection_viewAny', 'rack_viewAny', 'patchpanel_viewAny'])
+            @canany(['firewall_viewAny', 'router_viewAny', 'network_viewAny', 'wifi_viewAny', 'networkswitch_viewAny', 'accesspoint_viewAny', 'internetconnection_viewAny', 'rack_viewAny', 'patchpanel_viewAny'])
                 <x-aside.dropdown :label="__('Netzwerk')" svg="svg.wifi">
                     <x-slot:links>
                         @can('internetconnection_viewAny')
@@ -55,10 +54,6 @@
                         @endcan
                         @can('firewall_viewAny')
                             <x-aside.dropdownlink :label="__('Firewall')" href="{{ route('firewall.index', $customer) }}" />
-                        @endcan
-                        @can('securepointutm_viewAny')
-                            <x-aside.dropdownlink :label="__('Securepoint UTM')"
-                                href="{{ route('securepointutm.index', $customer) }}" />
                         @endcan
                         @can('router_viewAny')
                             <x-aside.dropdownlink :label="__('Router')" href="{{ route('router.index', $customer) }}" />

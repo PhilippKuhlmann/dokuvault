@@ -49,7 +49,6 @@ use App\Http\Controllers\RecorderController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RouterController;
 use App\Http\Controllers\SecurepointUMAController;
-use App\Http\Controllers\SecurepointUTMController;
 use App\Http\Controllers\ServerController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SiteController;
@@ -61,7 +60,6 @@ use App\Http\Controllers\WifiController;
 use App\Http\Controllers\WizardController;
 use App\Livewire\GlobalSearch;
 use App\Livewire\RemoteSearch;
-use App\Livewire\UtmSearch;
 use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/auth.php';
@@ -78,7 +76,6 @@ Route::post('/locale/{locale}', [LocaleController::class, 'update'])->name('loca
 Route::middleware(['auth', 'isTechniker'])->group(function () {
 
     // GlobalSearch
-    Route::get('/utmsearch', UtmSearch::class)->name('search.utm');
     Route::get('/remotesearch', RemoteSearch::class)->name('search.remote');
 });
 
@@ -193,7 +190,6 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
 
             Route::resource('router', RouterController::class)->except(['show']);
             Route::resource('firewall', FirewallController::class)->except(['show']);
-            Route::resource('securepointutm', SecurepointUTMController::class)->except(['show']);
             Route::resource('securepointuma', SecurepointUMAController::class)->except(['show']);
             Route::resource('network', NetworkController::class)->except(['show']);
             Route::resource('accesspoint', AccesspointController::class)->except(['show']);

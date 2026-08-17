@@ -3,6 +3,8 @@
 use App\Livewire\GlobalSearch;
 use App\Models\Customer;
 use App\Models\Firewall;
+use App\Models\LoginGeneral;
+use App\Models\Permission;
 use App\Models\Site;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -127,4 +129,97 @@ test('die Firewall ist im Serverschrank platzierbar', function () {
 test('die Firewall steht im Papierkorb und in den Berechtigungen', function () {
     expect(config('custom.trashables'))->toHaveKey('firewall');
     expect(config('custom.permissions'))->toContain('Firewall');
+});
+
+test('die Securepoint-Felder gehoeren zur Firewall', function () {
+    [$customer, $site] = kundeMitStandort();
+    $this->actingAs(userWithPermissions(['firewall_viewAny', 'firewall_create']));
+
+    // Eine UTM ist eine Firewall - sie unterscheidet sich im Hersteller, nicht
+    // im Geraetetyp.
+    $this->post(route('firewall.store', $customer), [
+        'site_id' => $site->id,
+        'name' => 'UTM-01',
+        'manufacturer' => 'Securepoint',
+        'form_factor' => 'appliance',
+        'management_url' => 'https://10.0.0.1:11115',
+        'url_user' => 'https://10.0.0.1',
+        'url_external' => 'https://utm.example.de:11115',
+        'usc_pin' => '448213',
+        'cloud_backup_password' => 'Wolke!2026',
+    ])->assertRedirect();
+
+    $utm = Firewall::where('name', 'UTM-01')->sole();
+
+    expect($utm->istSecurepoint())->toBeTrue();
+    expect($utm->usc_pin)->toBe('448213');
+    expect($utm->cloud_backup_password)->toBe('Wolke!2026');
+    expect($utm->url_external)->toBe('https://utm.example.de:11115');
+
+    // Beide Geheimnisse liegen verschluesselt in der Tabelle.
+    foreach (['usc_pin', 'cloud_backup_password'] as $spalte) {
+        $roh = DB::table('firewalls')->where('id', $utm->id)->value($spalte);
+        expect($roh)->not->toBe('448213')->and($roh)->not->toBe('Wolke!2026');
+        expect(Crypt::decryptString($roh))->not->toBeEmpty();
+    }
+
+    $this->get(route('firewall.index', $customer))->assertSee('Securepoint');
+});
+
+test('bei anderen Herstellern bleiben die Securepoint-Felder aus der Liste', function () {
+    [$customer, $site] = kundeMitStandort();
+    $this->actingAs(userWithPermissions(['firewall_viewAny']));
+
+    Firewall::factory()->create([
+        'customer_id' => $customer->id,
+        'site_id' => $site->id,
+        'name' => 'FW-Sophos',
+        'manufacturer' => 'Sophos',
+        'usc_pin' => null,
+        'cloud_backup_password' => null,
+        'url_user' => null,
+        'url_external' => null,
+    ]);
+
+    // Die Karte blendet sich aus, wenn nichts gefuellt ist - eine Sophos hat
+    // keine USC-PIN, und ein leerer Block sieht wie eine Luecke aus.
+    $antwort = $this->get(route('firewall.index', $customer));
+    $antwort->assertSee('FW-Sophos');
+    $antwort->assertDontSee('USC-PIN');
+});
+
+test('von der Securepoint UTM ist nichts uebrig geblieben', function () {
+    expect(Schema::hasTable('securepoint_utms'))->toBeFalse();
+    expect(file_exists(app_path('Models/SecurepointUTM.php')))->toBeFalse();
+    expect(config('custom.trashables'))->not->toHaveKey('securepointutm');
+    expect(config('custom.permissions'))->not->toContain('SecurepointUTM');
+
+    // Die Rechte sind weg, damit sie nicht in der Rollenverwaltung auf eine
+    // Seite zeigen, die es nicht mehr gibt.
+    expect(Permission::where('name', 'like', 'securepointutm_%')->exists())->toBeFalse();
+});
+
+test('die Migration raeumt Verweise auf die entfernte Klasse ab', function () {
+    // Ein Verweis auf eine geloeschte Klasse bricht jede Seite, die ihn
+    // aufloest, mit "Class not found" - gemessen an der Zugangsdaten-Seite und
+    // am Verlauf. Deshalb entfernt die Migration ihn.
+    $customer = Customer::factory()->create();
+    $login = LoginGeneral::factory()->create(['customer_id' => $customer->id]);
+
+    DB::table('credential_links')->insert([
+        'customer_id' => $customer->id,
+        'login_general_id' => $login->id,
+        'credentialable_type' => 'App\Models\SecurepointUTM',
+        'credentialable_id' => 999,
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+
+    expect(DB::table('credential_links')->where('credentialable_type', 'App\Models\SecurepointUTM')->count())->toBe(1);
+
+    $migration = require database_path('migrations/2026_08_17_160100_drop_securepoint_utms.php');
+    $migration->up();
+
+    expect(DB::table('credential_links')->where('credentialable_type', 'App\Models\SecurepointUTM')->count())->toBe(0);
+    // Fremde Verknuepfungen bleiben unangetastet.
+    expect(DB::table('credential_links')->count())->toBe(0);
 });

@@ -23,7 +23,6 @@ test('die Seitenleiste fuehrt die Kopfzeilen-Wege fuer schmale Bildschirme', fun
     foreach ([
         route('customer.search'),
         route('search.global'),
-        route('search.utm'),
         route('search.remote'),
     ] as $ziel) {
         expect(substr_count($inhalt, 'href="'.$ziel.'"'))->toBeGreaterThanOrEqual(2, $ziel);

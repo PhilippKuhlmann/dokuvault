@@ -55,7 +55,7 @@ class CustomerController extends Controller
 
         // Inventar-Zähler (in einer Abfrage via loadCount)
         $customer->loadCount([
-            'internetconnections', 'firewalls', 'securepointutms', 'routers', 'networkswitches',
+            'internetconnections', 'firewalls', 'routers', 'networkswitches',
             'accesspoints', 'networks', 'wifis', 'racks', 'patchpanels',
             'servers', 'vms', 'nas', 'computers', 'printers', 'cameras',
             'phones', 'adusers',
@@ -69,7 +69,6 @@ class CustomerController extends Controller
             // dokumentieren, sah sie aber in der Uebersicht nie wieder.
             ['label' => 'Internet / WAN', 'icon' => 'svg.link',     'count' => $customer->internetconnections_count, 'route' => route('internetconnection.index', $customer), 'can' => 'internetconnection_viewAny'],
             ['label' => 'Firewalls',      'icon' => 'svg.fire',     'count' => $customer->firewalls_count,           'route' => route('firewall.index', $customer),           'can' => 'firewall_viewAny'],
-            ['label' => 'Securepoint UTM', 'icon' => 'svg.fire',     'count' => $customer->securepointutms_count,     'route' => route('securepointutm.index', $customer),     'can' => 'securepointutm_viewAny'],
             ['label' => 'Router',         'icon' => 'svg.wifi',     'count' => $customer->routers_count,             'route' => route('router.index', $customer),             'can' => 'router_viewAny'],
             ['label' => 'Switches',       'icon' => 'svg.group',    'count' => $customer->networkswitches_count,     'route' => route('networkswitch.index', $customer),      'can' => 'networkswitch_viewAny'],
             ['label' => 'Accesspoints',   'icon' => 'svg.signal',   'count' => $customer->accesspoints_count,        'route' => route('accesspoint.index', $customer),        'can' => 'accesspoint_viewAny'],

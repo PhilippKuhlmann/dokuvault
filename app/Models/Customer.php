@@ -54,11 +54,6 @@ class Customer extends Model
         return $this->hasMany(PatchPanel::class);
     }
 
-    public function securepointutms()
-    {
-        return $this->hasMany(SecurepointUTM::class);
-    }
-
     public function routers()
     {
         return $this->hasMany(Router::class);
