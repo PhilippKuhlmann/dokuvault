@@ -7,6 +7,7 @@ use App\Models\DocumentationRun;
 use App\Models\Network;
 use App\Models\OperatingSystem;
 use App\Models\Server;
+use App\Models\Setting;
 use App\Models\Site;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Foundation\Http\FormRequest;
@@ -153,8 +154,34 @@ class DocumentationWizard extends Component
     {
         return collect(config('custom.wizard_steps'))
             ->filter(fn (array $step) => Gate::allows($step['permission']))
+            ->map(fn (array $step) => $this->fernwartungBeschriften($step))
             ->values()
             ->all();
+    }
+
+    /**
+     * Die beiden Fernwartungsfelder heissen nach dem eingestellten Werkzeug.
+     *
+     * Die Ersetzung passiert hier und nicht in der Konfiguration: "php artisan
+     * config:cache" friert config/custom.php ein, ein Wert aus der Datenbank
+     * waere darin fuer immer eingebacken und liesse sich ueber die
+     * Einstellungen nicht mehr aendern.
+     */
+    protected function fernwartungBeschriften(array $step): array
+    {
+        $tool = Setting::fernwartung();
+
+        $step['fields'] = collect($step['fields'] ?? [])->map(function (array $feld) use ($tool) {
+            $feld['label'] = match ($feld['name'] ?? null) {
+                'remoteID' => $tool['id_label'],
+                'remotePassword' => $tool['password_label'],
+                default => $feld['label'] ?? '',
+            };
+
+            return $feld;
+        })->all();
+
+        return $step;
     }
 
     protected function currentStep(DocumentationRun $run): ?array

@@ -408,8 +408,8 @@ return [
                 ['name' => 'bmcIp', 'label' => 'BMC IP', 'type' => 'text'],
                 ['name' => 'bmcUser', 'label' => 'BMC User', 'type' => 'text'],
                 ['name' => 'bmcPassword', 'label' => 'BMC Passwort', 'type' => 'text'],
-                ['name' => 'remoteID', 'label' => 'Rustdesk ID', 'type' => 'text'],
-                ['name' => 'remotePassword', 'label' => 'Rustdesk Passwort', 'type' => 'text'],
+                ['name' => 'remoteID', 'label' => 'Fernwartungs-ID', 'type' => 'text'],
+                ['name' => 'remotePassword', 'label' => 'Fernwartungs-Kennwort', 'type' => 'text'],
             ],
         ],
         [
@@ -425,8 +425,8 @@ return [
                 ['name' => 'server_id', 'label' => 'Host-Server', 'type' => 'select', 'options' => 'servers'],
                 ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'select', 'options' => 'operatingSystems'],
                 ['name' => 'ip_address', 'label' => 'IP-Adresse', 'type' => 'text'],
-                ['name' => 'remoteID', 'label' => 'Rustdesk ID', 'type' => 'text'],
-                ['name' => 'remotePassword', 'label' => 'Rustdesk Passwort', 'type' => 'text'],
+                ['name' => 'remoteID', 'label' => 'Fernwartungs-ID', 'type' => 'text'],
+                ['name' => 'remotePassword', 'label' => 'Fernwartungs-Kennwort', 'type' => 'text'],
             ],
         ],
         [
@@ -459,8 +459,8 @@ return [
                 ['name' => 'ip_address', 'label' => 'IP-Adresse', 'type' => 'text'],
                 ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
                 ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
-                ['name' => 'remoteID', 'label' => 'Rustdesk ID', 'type' => 'text'],
-                ['name' => 'remotePassword', 'label' => 'Rustdesk Passwort', 'type' => 'text'],
+                ['name' => 'remoteID', 'label' => 'Fernwartungs-ID', 'type' => 'text'],
+                ['name' => 'remotePassword', 'label' => 'Fernwartungs-Kennwort', 'type' => 'text'],
             ],
         ],
         [
@@ -555,6 +555,52 @@ return [
     | entscheidet, ob ein Einbau ueberhaupt in Frage kommt.
     |
     */
+    /*
+    |--------------------------------------------------------------------------
+    | Fernwartungsloesungen
+    |--------------------------------------------------------------------------
+    |
+    | Welche im Haus benutzt wird, stellt ein Admin unter Einstellungen ein;
+    | hier stehen die Muster. {id} und {password} werden ersetzt.
+    |
+    | Nur RustDesk uebergibt das Kennwort im Link. TeamViewer und AnyDesk
+    | koennen das nicht - dort oeffnet der Knopf die Verbindung, das Kennwort
+    | steht weiterhin zum Kopieren daneben. Ein Muster ohne {password} ist
+    | deshalb kein Fehler, sondern der Normalfall.
+    |
+    */
+    'remote_tools' => [
+        'rustdesk' => [
+            'label' => 'RustDesk',
+            'url' => 'rustdesk://connection/new/{id}?password={password}',
+            'icon' => 'svg.software.rustdesk',
+            'id_label' => 'RustDesk ID',
+            'password_label' => 'RustDesk Passwort',
+        ],
+        'teamviewer' => [
+            'label' => 'TeamViewer',
+            'url' => 'teamviewer10://control?device={id}',
+            'icon' => 'svg.remote',
+            'id_label' => 'TeamViewer ID',
+            'password_label' => 'TeamViewer Kennwort',
+        ],
+        'anydesk' => [
+            'label' => 'AnyDesk',
+            'url' => 'anydesk:{id}',
+            'icon' => 'svg.remote',
+            'id_label' => 'AnyDesk-Adresse',
+            'password_label' => 'AnyDesk Kennwort',
+        ],
+        'custom' => [
+            'label' => 'Andere Lösung',
+            // Wird durch das im Admin-Bereich hinterlegte Muster ersetzt.
+            'url' => '',
+            'icon' => 'svg.remote',
+            'id_label' => 'Fernwartungs-ID',
+            'password_label' => 'Fernwartungs-Kennwort',
+        ],
+    ],
+
     'firewall_form_factors' => [
         'appliance' => 'Appliance',
         'vm' => 'Virtuelle Maschine',

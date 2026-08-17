@@ -13,14 +13,10 @@
 
             <x-slot:head>
                 <x-show.header can="server_update" editUrl="{{ route('server.edit', [$customer, $server]) }}">
-                    {{-- Rustdesk bleibt der erste Knopf in der Kopfzeile: taeglich benutzt. --}}
-                    @if ($server->remoteID AND $server->remotePassword)
-                        <x-input.linkbutton link="rustdesk://connection/new/{{ $server->remoteID }}?password={{ $server->remotePassword }}">
-                            <x-slot:label>
-                                <x-svg.software.rustdesk class="h-6 w-6 !fill-cerulean-500 hover:!fill-cerulean-400" />
-                            </x-slot:label>
-                        </x-input.linkbutton>
-                    @endif
+                    {{-- Die Fernwartung bleibt der erste Knopf in der Kopfzeile:
+                         taeglich benutzt. Welches Werkzeug dahinter steckt,
+                         steht in den Einstellungen. --}}
+                    <x-remote.button :device="$server" />
                     {{ $server->name }}
 
                     {{-- Betriebssystem klein hinter den Namen: Es gehoert zur
@@ -59,10 +55,10 @@
                     'BMC Passwort' => $server->bmcPassword,
                 ]" />
 
-                {{-- Die Rustdesk-Kennung auch als Text: Wenn der Knopf nicht greift
+                {{-- Die Fernwartungs-Kennung auch als Text: Wenn der Knopf nicht greift
                      (anderer Rechner, kein Client), braucht man die ID zum Abtippen. --}}
                 <x-minitablecard :title="__('Fernwartung')" :array="[
-                    'Rustdesk ID' => $server->remoteID,
+                    \App\Models\Setting::fernwartung()['id_label'] => $server->remoteID,
                     'Passwort' => $server->remotePassword,
                 ]" />
 

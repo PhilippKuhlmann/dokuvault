@@ -13,6 +13,10 @@
     <env name="APP_ENV" value="testing"/>
     <env name="BCRYPT_ROUNDS" value="4"/>
     <env name="CACHE_DRIVER" value="array"/>
+    <!-- Seit Laravel 11 heisst die Variable CACHE_STORE. Ohne sie lief der
+         Cache in Tests auf dem echten Treiber weiter, und ein Eintrag aus
+         einem Test war im naechsten noch da. -->
+    <env name="CACHE_STORE" value="array"/>
     <server name="DB_CONNECTION" value="sqlite"/>
     <server name="DB_DATABASE" value=":memory:"/>
     <env name="MAIL_MAILER" value="array"/>

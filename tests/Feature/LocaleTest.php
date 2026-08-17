@@ -161,6 +161,10 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
         ->merge(array_values(config('custom.rack_appearances', [])))
         ->merge(array_values(config('custom.server_form_factors', [])))
         ->merge(array_values(config('custom.firewall_form_factors', [])))
+        // Fernwartung: Beschriftungen der Werkzeuge und ihrer Felder.
+        ->merge(collect(config('custom.remote_tools', []))->flatMap(fn ($t) => [
+            $t['label'] ?? null, $t['id_label'] ?? null, $t['password_label'] ?? null,
+        ]))
         ->merge(array_values(config('custom.server_depths', [])))
         ->merge(collect(config('custom.trashables', []))->map(fn ($t) => $t[1] ?? null))
         ->merge(collect(config('custom.rack_device_types', []))->map(fn ($t) => $t[1] ?? null))

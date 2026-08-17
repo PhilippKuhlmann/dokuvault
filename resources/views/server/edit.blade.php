@@ -44,9 +44,9 @@
 
             <x-create.singlerow :label="__('BMC Passwort')" name="bmcPassword" :default="$server->bmcPassword" />
 
-            <x-create.singlerow :label="__('Rustdesk ID')" name="remoteID" :default="$server->remoteID" />
+            <x-create.singlerow :label="\App\Models\Setting::fernwartung()['id_label']" name="remoteID" :default="$server->remoteID" />
 
-            <x-create.singlerow :label="__('Rustdesk Passwort')" name="remotePassword" :default="$server->remotePassword" />
+            <x-create.singlerow :label="\App\Models\Setting::fernwartung()['password_label']" name="remotePassword" :default="$server->remotePassword" />
         </x-create.abschnitt>
 
         <x-create.abschnitt :titel="__('Dienste')" :hinweis="__('Aus dem Katalog wählen oder eigene ergänzen')">

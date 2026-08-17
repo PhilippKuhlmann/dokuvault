@@ -38,9 +38,9 @@
 
             <x-create.singlerow :label="__('BMC Passwort')" name="bmcPassword" />
 
-            <x-create.singlerow :label="__('Rustdesk ID')" name="remoteID" />
+            <x-create.singlerow :label="\App\Models\Setting::fernwartung()['id_label']" name="remoteID" />
 
-            <x-create.singlerow :label="__('Rustdesk Passwort')" name="remotePassword" />
+            <x-create.singlerow :label="\App\Models\Setting::fernwartung()['password_label']" name="remotePassword" />
         </x-create.abschnitt>
 
         <x-create.abschnitt :titel="__('Dienste')" :hinweis="__('Aus dem Katalog wählen oder eigene ergänzen')">

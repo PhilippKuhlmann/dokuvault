@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Setting;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -45,8 +46,8 @@ class VMRequest extends FormRequest
             'services' => 'Dienste',
             'cidr' => 'CIDR',
             'operating_system_id' => 'Betriebssystem',
-            'remoteID' => 'Rustdesk ID',
-            'remotePassword' => 'Rustdesk Password',
+            'remoteID' => Setting::fernwartung()['id_label'],
+            'remotePassword' => Setting::fernwartung()['password_label'],
         ];
     }
 }

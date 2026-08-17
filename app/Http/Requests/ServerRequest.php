@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\ValidiertBeschaffung;
+use App\Models\Setting;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -71,8 +72,8 @@ class ServerRequest extends FormRequest
             'bmcPassword' => 'BMC Passwort',
             'services' => 'Dienste',
             'operating_system_id' => 'Betriebssystem',
-            'remoteID' => 'Rustdesk ID',
-            'remotePassword' => 'Rustdesk Passwort',
+            'remoteID' => Setting::fernwartung()['id_label'],
+            'remotePassword' => Setting::fernwartung()['password_label'],
             ...$this->beschaffungBezeichnungen(),
         ];
     }

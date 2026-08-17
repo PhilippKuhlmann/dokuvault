@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\ValidiertBeschaffung;
+use App\Models\Setting;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -48,8 +49,8 @@ class ComputerRequest extends FormRequest
             'manufavtuter' => 'Hersteller',
             'model' => 'Model',
             'serialNumber' => 'Seriennummer',
-            'remoteID' => 'RustDesk ID',
-            'remotePassword' => 'RustDesk Passwort',
+            'remoteID' => Setting::fernwartung()['id_label'],
+            'remotePassword' => Setting::fernwartung()['password_label'],
             ...$this->beschaffungBezeichnungen(),
         ];
     }

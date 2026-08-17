@@ -19,9 +19,9 @@
         </x-create.abschnitt>
 
         <x-create.abschnitt :titel="__('Fernwartung')">
-            <x-create.singlerow :label="__('Rustdesk ID')" name="remoteID" :default="$computer->remoteID" />
+            <x-create.singlerow :label="\App\Models\Setting::fernwartung()['id_label']" name="remoteID" :default="$computer->remoteID" />
 
-            <x-create.singlerow :label="__('Rustdesk Passwort')" name="remotePassword" :default="$computer->remotePassword" />
+            <x-create.singlerow :label="\App\Models\Setting::fernwartung()['password_label']" name="remotePassword" :default="$computer->remotePassword" />
         </x-create.abschnitt>
 
         <x-create.beschaffung :model="$computer" />

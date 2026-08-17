@@ -10,6 +10,11 @@
   - Das Kunden-Dashboard hat eine dritte Ablauf-Karte: **Ablaufende Garantien**, über alle Gerätearten hinweg, mit derselben Frist von 60 Tagen wie Lizenzen und Zertifikate. Sie zeigt nur Gerätearten, deren Liste der angemeldete Nutzer auch öffnen darf. Kostet 5–6 ms bei einem Kunden mit vollem Bestand.
   - Auch im PDF: Die vier Felder stehen bei den Hardware-Stammdaten jedes Geräts.
 
+- **Die Fernwartungslösung ist einstellbar.** Der Verbinden-Knopf war fest auf RustDesk verdrahtet — in vier Views, mit vier Beschriftungen und einem Icon. Wer TeamViewer benutzt, hätte jede Stelle einzeln ändern müssen. Unter **Administration → Einstellungen** steht jetzt zur Wahl: RustDesk, TeamViewer, AnyDesk oder ein eigenes URL-Muster. Bestehende Installationen bleiben ohne Zutun bei RustDesk.
+  - Der Knopf kommt aus **einer** Komponente statt aus vier Views, und die Felder am Gerät heißen nach dem eingestellten Werkzeug („TeamViewer ID" statt „Rustdesk ID") — in Formularen, Listen und im Erstaufnahme-Assistenten.
+  - **Nur RustDesk übergibt das Kennwort im Link.** TeamViewer und AnyDesk können das nicht; dort öffnet der Knopf die Verbindung, und das Kennwort steht weiterhin zum Kopieren am Gerät. Die Einstellungsseite sagt das bei jeder Lösung dazu, statt es den Anwender herausfinden zu lassen.
+  - Beim eigenen Muster wird geprüft, womit es beginnt: Aus dem Muster wird ein anklickbarer Link in jeder Geräteliste, `javascript:` oder `data:` wären damit ausführbarer Code. Fehlt `{id}`, führt der Knopf nirgendwohin — auch das wird abgelehnt.
+
 - **Die Securepoint UTM ist in der Firewall aufgegangen.** Zwei Objekte für dieselbe Gerätegattung bedeuteten zwei Einträge in Sidebar, Dashboard, PDF und Suche — und ein Gerätetausch von Securepoint auf Sophos hieß löschen und neu anlegen. Jetzt unterscheidet der **Hersteller**, nicht der Gerätetyp.
   - Die vier Felder, die es nur bei Securepoint gibt (USC-PIN, Cloud-Backup-Kennwort, Benutzerportal, externer Zugang), erscheinen im Formular erst, wenn „Securepoint" im Herstellerfeld steht — dasselbe Muster, mit dem die Bauform beim Server über Einbautiefe und Höheneinheiten entscheidet. In der Liste blendet sich der Block aus, wenn nichts gefüllt ist.
   - `urlAdmin` ist die Verwaltungsoberfläche, die es ohnehin gibt; `type` („Appliance" oder „VM") wurde zur **Bauform**, die für jede Firewall taugt — eine OPNsense läuft oft als VM.
@@ -22,6 +27,8 @@
   - Das Kennwort liegt verschlüsselt in der Tabelle, der Standort wird gegen den Mandanten geprüft. Beides hält je ein Test fest.
 
 ### Fixed
+
+- **Der Cache in der Testumgebung war nie isoliert.** `phpunit.xml` setzte `CACHE_DRIVER` — seit Laravel 11 heißt die Variable `CACHE_STORE`. Die Tests liefen damit auf dem echten Treiber, und ein Cache-Eintrag aus einem Test war im nächsten noch da. Gefunden, als ein neuer Test genau daran scheiterte.
 
 - **Vier Spaltengruppen liefen im PDF um.** Die Spaltenbreite wurde in Stufen gesetzt (1 → 97 %, 2 → 47 %, sonst 30 %); bei vier Gruppen ergab das 120 %, also brach die vierte Spalte in die nächste Zeile. Betraf schon „Internet / WAN". Die Breite wird jetzt aus der Gruppenzahl gerechnet.
 

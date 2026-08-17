@@ -51,6 +51,7 @@ use App\Http\Controllers\RouterController;
 use App\Http\Controllers\SecurepointUMAController;
 use App\Http\Controllers\ServerController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\TrashController;
 use App\Http\Controllers\UpsController;
@@ -82,6 +83,10 @@ Route::middleware(['auth', 'isTechniker'])->group(function () {
 // Admin Bereich
 Route::middleware(['auth', 'isAdmin'])->group(function () {
     Route::prefix('admin')->group(function () {
+
+        // Einstellungen der Installation
+        Route::get('/setting', [SettingController::class, 'index'])->name('admin.setting.index');
+        Route::patch('/setting', [SettingController::class, 'update'])->name('admin.setting.update');
 
         // Aktivitätsprotokoll
         Route::get('/activity', [ActivityController::class, 'index'])->name('admin.activity.index');

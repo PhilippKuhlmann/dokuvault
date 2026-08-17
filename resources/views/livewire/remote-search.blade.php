@@ -40,7 +40,7 @@
                                 {{ $remote['name'] }}
                             </td>
                             <td class="py-3 px-4">
-                                <x-input.linkbutton :label="__('Verbinden')" link="rustdesk://connection/new/{{ $remote['remoteID'] }}?password={{ $remote['remotePassword'] }}"  />
+                                <x-remote.button :id="$remote['remoteID']" :password="$remote['remotePassword']" stil="label" />
                             </td>
 
                         </tr>

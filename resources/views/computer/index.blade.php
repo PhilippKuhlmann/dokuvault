@@ -14,7 +14,7 @@
         <x-slot:head>
             <x-show.header can="computer_update" editUrl="{{ route('computer.edit', [$customer, $computer]) }}">
                 @if ($computer->remoteID AND $computer->remotePassword)
-                    <a href="rustdesk://connection/new/{{ $computer->remoteID }}?password={{ $computer->remotePassword }}" class="bg-cerulean-600 text-white rounded-lg px-4 py-2 text-sm mr-5 hover:bg-cerulean-700">{{ __('Verbinden') }}</a>
+                    <x-remote.button :device="$computer" stil="text" />
                 @endif
                 {{ $computer->name }}
 
