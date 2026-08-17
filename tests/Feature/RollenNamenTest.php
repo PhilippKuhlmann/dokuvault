@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Role;
+
 test('Rollennamen sind der Reihe nach vergeben und koennen nicht kollidieren', function () {
     // roles.name ist unique, die Factory zog aber Personennamen aus einem
     // endlichen Vorrat. Auf der CI kam derselbe Name zweimal ("Edgar
@@ -9,7 +11,7 @@ test('Rollennamen sind der Reihe nach vergeben und koennen nicht kollidieren', f
     // Versuch nicht. Deshalb prueft der Test die Eigenschaft, die den Fall
     // ausschliesst: Jeder Name traegt eine laufende Nummer, zwei Rollen
     // koennen also gar nicht gleich heissen.
-    $namen = collect(range(1, 50))->map(fn () => App\Models\Role::factory()->create()->name);
+    $namen = collect(range(1, 50))->map(fn () => Role::factory()->create()->name);
 
     expect($namen->unique())->toHaveCount(50);
 
