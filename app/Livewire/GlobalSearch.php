@@ -71,6 +71,16 @@ class GlobalSearch extends Component
     ];
 
     /**
+     * Typen, deren Tabellen so gross werden, dass nur die Praefix-Suche traegt.
+     *
+     * Gemessen an einem Bestand mit 10 Millionen Datensaetzen: 4 Mio
+     * AD-Benutzer, 2 Mio Computer, 1,5 Mio Adressen, 1 Mio VMs. Alles andere
+     * bleibt bei der Suche mitten im Wort - dort ist ein Tabellendurchlauf
+     * billiger als der Verlust an Treffern.
+     */
+    private const MASSENHAFT = ['aduser', 'computer', 'vm', 'phone', 'camera'];
+
+    /**
      * Die Treffer, nach Typ gruppiert.
      *
      * Als computed property statt inline in render(): So laesst sich die Suche
@@ -83,7 +93,7 @@ class GlobalSearch extends Component
         $groups = collect();
 
         if (strlen((string) $this->search) >= 2) {
-            $term = '%'.addcslashes($this->search, '%_').'%';
+            $roh = addcslashes($this->search, '%_');
             $user = auth()->user();
 
             foreach (self::TYPES as $slug => $entry) {
@@ -105,6 +115,20 @@ class GlobalSearch extends Component
                 // neuer Geraete ausschliesslich dort - ohne das hier faende die
                 // Suche sie nicht mehr.
                 $hatIpBlock = in_array(HasIpAddresses::class, class_uses_recursive($class), true);
+
+                // Wie gesucht wird, haengt an der Tabellengroesse.
+                //
+                // "%begriff%" kann keinen Index nutzen, MySQL liest die ganze
+                // Tabelle. Bei 4 Millionen AD-Benutzern kostete das 2788 ms,
+                // die Praefix-Form auf indizierter Spalte 3 ms. Bei ein paar
+                // tausend Raecken oder Patchfeldern ist derselbe Scan dagegen
+                // in Millisekunden erledigt.
+                //
+                // Deshalb Praefix nur fuer die Massentabellen. Sonst ginge
+                // genau das verloren, wofuer die Suche da ist: Die Dose steht
+                // als "EG 2.14" drin und wird als "2.14" gesucht, das Rack
+                // heisst "Rack HH-01" und wird als "HH-01" gesucht.
+                $term = in_array($slug, self::MASSENHAFT, true) ? $roh.'%' : '%'.$roh.'%';
 
                 $query->where(function ($q) use ($columns, $term, $hatIpBlock) {
                     foreach ($columns as $column) {

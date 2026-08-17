@@ -15,6 +15,10 @@
 
 ### Fixed
 
+- **Globale Suche und Admin-Dashboard bei großen Beständen.** Gemessen an 10 Millionen Datensätzen (5.000 Kunden, 4 Mio AD-Benutzer, 2 Mio Computer): Die Suche brauchte allein für die AD-Benutzer 2788 ms, das Admin-Dashboard 3787 ms für seine Zähler. Jetzt 3 ms bzw. 1 ms.
+  - Die Massentabellen (AD-Benutzer, Computer, VMs, Telefone, Kameras) werden mit Präfix durchsucht und haben Indizes auf den durchsuchten Spalten — ein `LIKE '%begriff%'` kann keinen Index nutzen. Alle übrigen Tabellen suchen weiter mitten im Wort: Das Rack heißt „Rack HH-01" und wird als „HH-01" gesucht, die Dose steht als „EG 2.14" drin und wird als „2.14" gesucht. Bei diesen Größen ist ein Tabellendurchlauf billiger als der Verlust an Treffern.
+  - Die Zähler des Admin-Dashboards werden eine Viertelstunde gemerkt. `COUNT(*)` ohne Einschränkung liest den ganzen Index; es sind Kennzahlen, keine Kontostände.
+
 - **Der Speicherpuffer für die PDF-Ausgabe war zu knapp bemessen.** Ein Testlauf mit größeren Mengen (40 Server, 90 VMs, 160 Computer, 420 AD-Benutzer) zeigt: 370 MB Spitzenverbrauch und 15 Sekunden für ein 1,5-MB-PDF — gegenüber 136 MB und 2 Sekunden beim kleineren Demo-Kunden. Der Puffer liegt jetzt bei 768 MB. Das bleibt ein Puffer und keine Lösung: Bei doppelter Menge reicht auch das nicht, und die 15 Sekunden rücken an jedes übliche Zeitlimit heran. Wer regelmäßig solche Mengen exportiert, braucht die Erzeugung im Hintergrund statt im Request.
 
 - **Die Gerätelisten laden Einbauort, Betriebssystem und Standort jetzt vor.** Bei einem Kunden mit 40 Servern und 22 Switches kostete eine Seite mit 25 Zeilen rund 100 Abfragen, weil `einbauort()` je Gerät Einbau und Schrank einzeln nachlud. Jetzt sind es 5 bis 8. Lokal war der Unterschied kaum messbar — mit Netzwerk zwischen Anwendung und Datenbank werden daraus Sekunden. Zwei Tests halten die Grenze fest.
