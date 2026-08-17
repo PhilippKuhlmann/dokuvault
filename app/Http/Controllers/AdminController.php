@@ -80,9 +80,6 @@ class AdminController extends Controller
             ['label' => 'Kunden',   'icon' => 'svg.office',   'count' => $zahlen['customers'],  'route' => route('admin.customer.index')],
             ['label' => 'Rollen',   'icon' => 'svg.group',    'count' => $zahlen['roles'],      'route' => route('admin.role.index')],
             ['label' => 'Aktivitäten', 'icon' => 'svg.document', 'count' => $zahlen['activities'], 'route' => route('admin.activity.index')],
-            // Ohne Zahl: Es gibt nichts zu zaehlen, aber die Seite muss
-            // erreichbar sein.
-            ['label' => 'Einstellungen', 'icon' => 'svg.remote', 'count' => '', 'route' => route('admin.setting.index')],
         ];
 
         // Globale Ablauf-Übersicht (<= 60 Tage, inkl. bereits abgelaufen) über alle Kunden

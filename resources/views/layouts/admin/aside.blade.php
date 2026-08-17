@@ -34,6 +34,12 @@
                 </x-slot:links>
             </x-aside.dropdown>
 
+            <x-aside.dropdown :label="__('Einstellungen')" svg="svg.settings" >
+                <x-slot:links>
+                    <x-aside.dropdownlink :label="__('Fernwartung')" href="{{ route('admin.setting.index') }}" />
+                </x-slot:links>
+            </x-aside.dropdown>
+
             <x-aside.dropdown :label="__('Protokoll')" svg="svg.document" >
                 <x-slot:links>
                     <x-aside.dropdownlink :label="__('Aktivitäten')" href="{{ route('admin.activity.index') }}" />

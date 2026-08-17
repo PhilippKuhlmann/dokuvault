@@ -134,3 +134,22 @@ test('die Einstellung kostet keine Abfrage je Geraet', function () {
     // Abfrage waere die Folge gewesen. Gemessen hatte die Liste 114 statt 8.
     expect($abfragen)->toBeLessThan(20, "Liste braucht {$abfragen} Abfragen");
 });
+
+test('die Einstellungen stehen im Admin-Menue', function () {
+    $this->actingAs(adminNutzer());
+
+    // Als Aufklappmenue angelegt, weil weitere Einstellungen folgen werden -
+    // eine Kachel im Dashboard-Raster ohne Zahl war dafuer der falsche Ort.
+    $antwort = $this->get(route('admin.dashboard'));
+
+    $antwort->assertSee('Einstellungen');
+    $antwort->assertSee(route('admin.setting.index'), false);
+
+    // Und der Weg dahinter funktioniert auch.
+    $this->get(route('admin.setting.index'))
+        ->assertOk()
+        ->assertSee('Fernwartung')
+        ->assertSee('RustDesk')
+        ->assertSee('TeamViewer')
+        ->assertSee('AnyDesk');
+});
