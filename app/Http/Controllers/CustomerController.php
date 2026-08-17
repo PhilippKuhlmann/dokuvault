@@ -3,15 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CustomerRequest;
+use App\Jobs\KundenPdfErzeugen;
 use App\Models\Certificate;
 use App\Models\ContactPerson;
 use App\Models\Customer;
 use App\Models\DocumentationRun;
 use App\Models\LicenseSoftware;
+use App\Models\PdfExport;
 use App\Models\Role;
 use App\Models\Site;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class CustomerController extends Controller
@@ -115,81 +116,57 @@ class CustomerController extends Controller
     }
 
     /**
-     * Das eingestellte Speicherlimit in Bytes.
+     * Die Dokumentation als PDF - in Auftrag gegeben, nicht sofort gerendert.
      *
-     * ini_get liefert "128M", "1G" oder "-1" (unbegrenzt) - ein Vergleich mit
-     * dieser Zeichenkette ginge schief.
+     * Gemessen an zwei Kunden: 26 Server, 46 VMs, 53 Computer brauchen 136 MB
+     * und 2 Sekunden, 40 Server, 90 VMs, 160 Computer schon 370 MB und 15
+     * Sekunden. Im Request war das erst eine Fehlerseite und dann ein Rennen
+     * gegen das Zeitlimit. Jetzt legt der Klick einen Auftrag an, den der
+     * Scheduler abarbeitet; die Seite fragt den Stand ab.
      */
-    protected function speicherGrenzeInBytes(?string $angabe = null): float
-    {
-        $wert = trim($angabe ?? (string) ini_get('memory_limit'));
-
-        if ($wert === '' || $wert === '-1') {
-            return INF;
-        }
-
-        $zahl = (float) $wert;
-
-        return match (strtolower(substr($wert, -1))) {
-            'g' => $zahl * 1024 * 1024 * 1024,
-            'm' => $zahl * 1024 * 1024,
-            'k' => $zahl * 1024,
-            default => $zahl,
-        };
-    }
-
     public function viewPDF(Customer $customer)
     {
-        // DomPDF haelt das ganze Dokument im Speicher, waehrend es die Seiten
-        // aufbaut, und der Bedarf waechst mit dem Kunden. Gemessen:
-        //
-        //   26 Server, 46 VMs, 53 Computer   ->  136 MB,  2 s
-        //   40 Server, 90 VMs, 160 Computer  ->  370 MB, 15 s
-        //
-        // Auf einem PHP mit den ueblichen 128 MB bricht schon der kleinere Fall
-        // ab ("Allowed memory size exhausted"), und zwar mit einer Fehlerseite
-        // statt eines PDF.
-        //
-        // Nur fuer diesen Aufruf und nur nach oben: Alle uebrigen Seiten kommen
-        // mit dem eingestellten Limit aus, und es global anzuheben waere ein
-        // stiller Freibrief fuer jede andere Schleife.
-        //
-        // Das ist ein Puffer, keine Loesung: Bei einem Kunden mit dem Doppelten
-        // dieser Zahlen reicht auch das nicht, und die 15 Sekunden ruecken an
-        // jedes uebliche Zeitlimit heran. Wer regelmaessig solche Mengen
-        // exportiert, braucht die Erzeugung im Hintergrund statt im Request.
-        if ($this->speicherGrenzeInBytes() < 768 * 1024 * 1024) {
-            ini_set('memory_limit', '768M');
-        }
+        $this->authorize('create_pdf');
 
-        // Die Rack-Frontansichten sind SVG. DomPDF rendert SVG weder inline im
-        // HTML noch aus einer Daten-URI - nur aus einer Bilddatei innerhalb
-        // seines chroot (dem Projektverzeichnis). Deshalb ein kurzlebiger
-        // Ordner, den die Blade befuellt und der danach wieder verschwindet -
-        // auch wenn das Rendern fehlschlaegt.
-        $svgDir = storage_path('app/pdf-svg/'.Str::uuid());
-        File::ensureDirectoryExists($svgDir);
+        $laufend = PdfExport::where('customer_id', $customer->id)
+            ->where('user_id', auth()->id())
+            ->whereIn('status', [PdfExport::OFFEN, PdfExport::LAEUFT])
+            ->exists();
 
-        try {
-            $pdf = Pdf::loadView('pdf.customer', [
-                'customer' => $customer,
-                'svgDir' => $svgDir,
+        // Kein zweiter Auftrag, solange einer laeuft: Wer zweimal klickt, soll
+        // nicht zweimal 370 MB anfordern.
+        if (! $laufend) {
+            $export = PdfExport::create([
+                'customer_id' => $customer->id,
+                'user_id' => auth()->id(),
+                'status' => PdfExport::OFFEN,
             ]);
 
-            $output = $pdf->output();
-        } finally {
-            File::deleteDirectory($svgDir);
+            KundenPdfErzeugen::dispatch($export->id);
         }
 
-        return response($output, 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="dokumentation.pdf"',
-        ]);
+        return back()->with('success', __('PDF wird erstellt — der Stand steht auf dieser Seite.'));
+    }
 
-        // return pdf()
-        //     ->view('pdf.customer', compact('customer'))
-        //     ->footerView('pdf.footer')
-        //     ->name('dokumentation.pdf');
+    /**
+     * Das fertige PDF ausliefern.
+     *
+     * Nur an den Besteller: Die Datei enthaelt alle Zugangsdaten des Kunden,
+     * eine ID in der Adresse darf also nicht genuegen.
+     */
+    public function downloadPDF(Customer $customer, PdfExport $pdfExport)
+    {
+        $this->authorize('create_pdf');
+
+        abort_if($pdfExport->customer_id !== $customer->id, 404);
+        abort_if($pdfExport->user_id !== auth()->id(), 403);
+        abort_unless($pdfExport->istFertig() && $pdfExport->path, 404);
+        abort_unless(Storage::disk('local')->exists($pdfExport->path), 410);
+
+        return Storage::disk('local')->download(
+            $pdfExport->path,
+            Str::slug($customer->name).'-dokumentation.pdf'
+        );
     }
 
     // ADMIN Bereich

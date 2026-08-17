@@ -17,3 +17,29 @@ use Illuminate\Support\Facades\Artisan;
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+/*
+|--------------------------------------------------------------------------
+| Zeitplan
+|--------------------------------------------------------------------------
+|
+| Angetrieben von einer einzigen Cron-Zeile auf dem Server:
+|
+|   * * * * * cd /var/www/dokuvault && php artisan schedule:run >> /dev/null 2>&1
+|
+| Ein dauerhaft laufender Queue-Worker waere die andere Moeglichkeit, braucht
+| aber einen Dienst mit Neustart nach jedem Deploy. Der Minutentakt genuegt
+| hier: Ein PDF ist ohnehin keine Sekundensache.
+*/
+
+// Die Warteschlange leeren und dann beenden - kein Dauerlaeufer, der nach
+// einem Deploy mit altem Code weiterarbeitet. Die Laufzeit bleibt unter einer
+// Minute, damit sich zwei Laeufe nicht ins Gehege kommen; withoutOverlapping
+// sichert das zusaetzlich ab, denn ein grosses PDF dauert laenger.
+Schedule::command('queue:work --stop-when-empty --max-time=55 --tries=1')
+    ->everyMinute()
+    ->withoutOverlapping(10);
+
+// Fertige PDF wieder loeschen: Sie enthalten alle Zugangsdaten des Kunden und
+// haben nach dem Abholen keinen Grund, liegen zu bleiben.
+Schedule::command('pdf:aufraeumen')->dailyAt('03:30');

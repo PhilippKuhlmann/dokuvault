@@ -36,6 +36,29 @@ Give the deploy user write permissions so `deploy.sh` can work, and make `storag
 chmod +x deploy.sh
 ```
 
+### 1b. One cron line (required for PDF export)
+
+The customer documentation as PDF is no longer built inside the request: measured on a customer
+with 40 servers, 90 VMs and 160 computers it needs **370 MB and 15 seconds**, which runs into the
+memory limit first and the time limit next. Instead a job is queued and picked up by the
+scheduler, so add this single line to the crontab of the deploy user:
+
+```
+* * * * * cd /var/www/dokuvault && php artisan schedule:run >> /dev/null 2>&1
+```
+
+The scheduler drains the queue every minute (`queue:work --stop-when-empty`) and deletes finished
+PDFs once a day — they contain every credential of that customer in plain text, so they are not
+kept longer than a day.
+
+Without this line the export stays in the queue forever. The customer dashboard says so after five
+minutes instead of spinning endlessly, but nobody gets a PDF. `QUEUE_CONNECTION=database` has to be
+set in `.env` as well; `.env.example` ships with it.
+
+If you prefer a permanently running worker (reacting in seconds rather than once a minute), use a
+systemd unit running `php artisan queue:work` and restart it after each deploy. The cron line is
+the smaller setup and enough for PDFs.
+
 ### 2. SSH key for GitHub
 
 On **your own machine**, create a key pair used only for deploying:

@@ -162,6 +162,9 @@ Route::middleware('auth')->get('/search', GlobalSearch::class)->name('search.glo
 Route::get('/customer/search', [CustomerController::class, 'search'])->name('customer.search');
 Route::get('/{customer}', [CustomerController::class, 'dashboard'])->name('customer.dashboard');
 Route::post('/{customer}/view-pdf', [CustomerController::class, 'viewPDF'])->name('customer.view-pdf');
+// Das fertige PDF abholen. Nur der Besteller darf es laden - es enthaelt alle
+// Zugangsdaten des Kunden.
+Route::get('/{customer}/pdf/{pdfExport}', [CustomerController::class, 'downloadPDF'])->name('customer.pdf-download');
 
 Route::middleware(['auth', 'isCustomer'])->group(function () {
     Route::prefix('{customer}')->group(function () {

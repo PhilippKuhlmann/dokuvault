@@ -6,10 +6,10 @@
                 {{ $customer->name }}
             </div>
             @can('create_pdf')
-                <form action="{{ route('customer.view-pdf', $customer) }}" method="POST" target="__blank">
-                    @csrf
-                    <x-input.button :label="__('PDF erstellen')" />
-                </form>
+                {{-- Knopf und Stand in einer Komponente: Das PDF entsteht im
+                     Hintergrund, ohne Anzeige waere nach dem Klick nichts zu
+                     sehen. --}}
+                <livewire:pdf-export-status :customer="$customer" />
             @endcan
         </div>
 
