@@ -141,17 +141,25 @@ class CustomerController extends Controller
     public function viewPDF(Customer $customer)
     {
         // DomPDF haelt das ganze Dokument im Speicher, waehrend es die Seiten
-        // aufbaut. Gemessen an einem Kunden mit 26 Servern, 46 VMs und 53
-        // Computern: aus 0,4 MB HTML werden 136 MB Spitzenverbrauch, davon 84
-        // MB allein in DomPDF. Auf einem PHP mit den ueblichen 128 MB endet
-        // das in "Allowed memory size exhausted" - also in einer Fehlerseite
-        // statt in einem PDF, waehrend es lokal mit 512 MB unauffaellig laeuft.
+        // aufbaut, und der Bedarf waechst mit dem Kunden. Gemessen:
         //
-        // Nur fuer diesen Aufruf und nur nach oben: Alle uebrigen Seiten
-        // kommen mit dem eingestellten Limit aus, und es global anzuheben
-        // waere ein stiller Freibrief fuer jede andere Schleife.
-        if ($this->speicherGrenzeInBytes() < 256 * 1024 * 1024) {
-            ini_set('memory_limit', '256M');
+        //   26 Server, 46 VMs, 53 Computer   ->  136 MB,  2 s
+        //   40 Server, 90 VMs, 160 Computer  ->  370 MB, 15 s
+        //
+        // Auf einem PHP mit den ueblichen 128 MB bricht schon der kleinere Fall
+        // ab ("Allowed memory size exhausted"), und zwar mit einer Fehlerseite
+        // statt eines PDF.
+        //
+        // Nur fuer diesen Aufruf und nur nach oben: Alle uebrigen Seiten kommen
+        // mit dem eingestellten Limit aus, und es global anzuheben waere ein
+        // stiller Freibrief fuer jede andere Schleife.
+        //
+        // Das ist ein Puffer, keine Loesung: Bei einem Kunden mit dem Doppelten
+        // dieser Zahlen reicht auch das nicht, und die 15 Sekunden ruecken an
+        // jedes uebliche Zeitlimit heran. Wer regelmaessig solche Mengen
+        // exportiert, braucht die Erzeugung im Hintergrund statt im Request.
+        if ($this->speicherGrenzeInBytes() < 768 * 1024 * 1024) {
+            ini_set('memory_limit', '768M');
         }
 
         // Die Rack-Frontansichten sind SVG. DomPDF rendert SVG weder inline im
