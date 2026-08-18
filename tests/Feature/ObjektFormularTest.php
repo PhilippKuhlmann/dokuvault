@@ -9,6 +9,7 @@ use App\Models\Customer;
 use App\Models\Domain;
 use App\Models\Machine;
 use App\Models\Network;
+use App\Models\OperatingSystem;
 use App\Models\Site;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
@@ -153,6 +154,7 @@ test('jede umgestellte Liste zeigt einen Bearbeiten-Knopf', function () {
     // Datensatz - ohne Netz scheitert die WifiFactory, bevor die Liste
     // ueberhaupt gerendert wird.
     Network::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id]);
+    $os = OperatingSystem::factory()->create(['name' => 'Debian 13']);
 
     $ohneKnopf = [];
 
@@ -162,9 +164,12 @@ test('jede umgestellte Liste zeigt einen Bearbeiten-Knopf', function () {
         $klasse = $einstellung['model'];
         $werte = ['customer_id' => $customer->id];
 
-        // Einige Tabellen verlangen einen Standort.
-        if (Schema::hasColumn((new $klasse)->getTable(), 'site_id')) {
-            $werte['site_id'] = $site->id;
+        // Einige Tabellen verlangen einen Standort, andere ein Betriebssystem -
+        // die Factories setzen dessen Id sonst auf gut Glueck.
+        foreach (['site_id' => $site->id, 'operating_system_id' => $os->id] as $spalte => $wert) {
+            if (Schema::hasColumn((new $klasse)->getTable(), $spalte)) {
+                $werte[$spalte] = $wert;
+            }
         }
 
         $klasse::factory()->create($werte);
@@ -220,7 +225,13 @@ test('Typen mit IP-Adressen und Zugangsdaten zeigen beide Bloecke beim Bearbeite
         $this->actingAs(userWithPermissions([$typ.'_viewAny', $typ.'_update']));
 
         $klasse = $einstellung['model'];
-        $objekt = $klasse::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id]);
+        $werte = ['customer_id' => $customer->id, 'site_id' => $site->id];
+
+        if (Schema::hasColumn((new $klasse)->getTable(), 'operating_system_id')) {
+            $werte['operating_system_id'] = OperatingSystem::factory()->create(['name' => 'Debian 13'])->id;
+        }
+
+        $objekt = $klasse::factory()->create($werte);
 
         $html = Livewire::test(ObjektFormular::class, ['typ' => $typ, 'customer' => $customer])
             ->call('bearbeiten', $typ, $objekt->id)

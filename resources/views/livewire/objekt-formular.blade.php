@@ -36,6 +36,12 @@
                                             <option value="{{ $site->id }}">{{ $site->name }}</option>
                                         @endforeach
                                     </x-input.select>
+                                @elseif ($feld['type'] === 'schalter')
+                                    <label class="mt-1 inline-flex items-center gap-2">
+                                        <input type="checkbox" wire:model="form.{{ $feld['name'] }}"
+                                            class="rounded border-gray-300 text-cerulean-600 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700" />
+                                        <span class="text-sm text-gray-700 dark:text-gray-300">{{ __('Ja') }}</span>
+                                    </label>
                                 @elseif ($feld['type'] === 'auswahl')
                                     <x-input.select :name="$feld['name']" wire:model="form.{{ $feld['name'] }}" class="mt-1">
                                         <option value="">— {{ __('bitte wählen') }} —</option>

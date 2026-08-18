@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Customer;
+use App\Models\Setting;
 use App\Models\Site;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Support\Facades\Gate;
@@ -96,9 +97,13 @@ class ObjektFormular extends Component
         foreach ($this->einstellung()['felder'] as $feld) {
             $wert = $objekt->{$feld['name']};
             // Datumsfelder kommen je nach Model als Carbon oder als Text.
-            $this->form[$feld['name']] = $wert instanceof \DateTimeInterface
-                ? $wert->format('Y-m-d')
-                : (string) $wert;
+            // Dienste kommen als Array aus dem Model (explode beim Lesen),
+            // gespeichert wird die Komma-Liste - deshalb wieder zusammenfuegen.
+            $this->form[$feld['name']] = match (true) {
+                $wert instanceof \DateTimeInterface => $wert->format('Y-m-d'),
+                is_array($wert) => implode(',', $wert),
+                default => (string) $wert,
+            };
         }
 
         $this->bearbeiteId = $objekt->id;
@@ -221,10 +226,20 @@ class ObjektFormular extends Component
         // gegenueber der Seite, die es ersetzt.
         $objekt = $this->bearbeiteId ? $this->objektHolen($this->bearbeiteId) : null;
 
+        $felder = array_map(function (array $feld) {
+            $feld['label'] = match ($feld['name']) {
+                'remoteID' => Setting::fernwartung()['id_label'],
+                'remotePassword' => Setting::fernwartung()['password_label'],
+                default => $feld['label'],
+            };
+
+            return $feld;
+        }, $einstellung['felder']);
+
         return view('livewire.objekt-formular', [
             'objekt' => $objekt,
             'mitBloecken' => (bool) ($einstellung['bloecke'] ?? false),
-            'felder' => $einstellung['felder'],
+            'felder' => $felder,
             'einzahl' => $einstellung['einzahl'],
             // Nur laden, wenn ein Standortfeld vorkommt.
             'sites' => collect($einstellung['felder'])->contains('type', 'standort')

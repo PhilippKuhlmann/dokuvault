@@ -238,7 +238,13 @@ test('die Zugangsdaten der Liste kosten keine Abfrage je Gerät', function () {
     };
 
     $eine = $messen();
-    expect($eine)->toBe(2);
+
+    // Zwei Abfragen je Rendern - eine fuer die Verknuepfungen, eine fuer die
+    // Logins. Seit die Liste eine Livewire-Komponente ist, rendert der volle
+    // Seitenaufruf sie zweimal, deshalb vier statt zwei. Entscheidend ist
+    // nicht die absolute Zahl, sondern dass sie unten mit fuenf Geraeten
+    // dieselbe bleibt - das ist der Schutz vor einer Abfrage je Zeile.
+    expect($eine)->toBeLessThanOrEqual(4);
 
     // Vier weitere VMs mit demselben Login: ohne Vorladen in
     // Controller::getFilteredQuery kaeme je Gerät eine eigene Abfrage dazu.

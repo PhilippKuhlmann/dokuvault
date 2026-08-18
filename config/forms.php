@@ -1,34 +1,66 @@
 <?php
 
+use App\Http\Requests\AccesspointRequest;
 use App\Http\Requests\ADDomainRequest;
 use App\Http\Requests\ADGroupRequest;
 use App\Http\Requests\BackupRequest;
+use App\Http\Requests\CameraRequest;
 use App\Http\Requests\CertificateRequest;
+use App\Http\Requests\ComputerRequest;
 use App\Http\Requests\ContactPersonRequest;
+use App\Http\Requests\DECTRequest;
 use App\Http\Requests\DomainRequest;
 use App\Http\Requests\DynDNSRequest;
 use App\Http\Requests\FTPServerRequest;
+use App\Http\Requests\IoTDeviceRequest;
 use App\Http\Requests\LoginGeneralRequest;
 use App\Http\Requests\LoginWebsiteRequest;
 use App\Http\Requests\MachineRequest;
 use App\Http\Requests\MailboxRequest;
+use App\Http\Requests\NASRequest;
+use App\Http\Requests\NetworkSwitchRequest;
+use App\Http\Requests\OtherClientRequest;
+use App\Http\Requests\PhoneRequest;
+use App\Http\Requests\PhoneSystemRequest;
+use App\Http\Requests\PrinterRequest;
 use App\Http\Requests\RackRequest;
+use App\Http\Requests\RecorderRequest;
+use App\Http\Requests\RouterRequest;
+use App\Http\Requests\UpsRequest;
+use App\Http\Requests\VMRequest;
 use App\Http\Requests\WifiRequest;
+use App\Models\Accesspoint;
 use App\Models\ADDomain;
 use App\Models\ADGroup;
 use App\Models\Backup;
+use App\Models\Camera;
 use App\Models\Certificate;
+use App\Models\Computer;
 use App\Models\ContactPerson;
+use App\Models\DECT;
 use App\Models\Domain;
 use App\Models\DynDNS;
 use App\Models\FTPServer;
+use App\Models\IoTDevice;
 use App\Models\LoginGeneral;
 use App\Models\LoginWebsite;
 use App\Models\Machine;
 use App\Models\Mailbox;
 use App\Models\MailboxProvider;
+use App\Models\NAS;
 use App\Models\Network;
+use App\Models\NetworkSwitch;
+use App\Models\OperatingSystem;
+use App\Models\OtherClient;
+use App\Models\Phone;
+use App\Models\PhoneSystem;
+use App\Models\Printer;
 use App\Models\Rack;
+use App\Models\Recorder;
+use App\Models\Router;
+use App\Models\Server;
+use App\Models\Ups;
+use App\Models\VM;
 use App\Models\Wifi;
 
 /*
@@ -207,6 +239,292 @@ return [
         'felder' => [
             ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
             ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+        ],
+    ],
+    'accesspoint' => [
+        'model' => Accesspoint::class, 'request' => AccesspointRequest::class,
+        'relation' => 'accesspoints', 'einzahl' => 'Accesspoint', 'suchfelder' => ['name', 'model', 'serialNumber'],
+        'bloecke' => true,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
+            ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
+            ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
+            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
+            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+            ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
+            ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
+            ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
+            ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
+            ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+        ],
+    ],
+    'camera' => [
+        'model' => Camera::class, 'request' => CameraRequest::class,
+        'relation' => 'cameras', 'einzahl' => 'Kamera', 'suchfelder' => ['name', 'model', 'serialNumber'],
+        'bloecke' => true,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
+            ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
+            ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
+            ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
+            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
+            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+            ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
+            ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
+            ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
+            ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+        ],
+    ],
+    'computer' => [
+        'model' => Computer::class, 'request' => ComputerRequest::class,
+        'relation' => 'computers', 'einzahl' => 'Computer', 'suchfelder' => ['name', 'model', 'serialNumber'],
+        'bloecke' => true,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'manufacturer', 'label' => 'Manufacturer', 'type' => 'text'],
+            ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
+            ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
+            ['name' => 'operating_system_id', 'label' => 'Operating System Id', 'type' => 'auswahl',
+                'quelle' => OperatingSystem::class, 'anzeige' => 'name'],
+            ['name' => 'remoteID', 'label' => 'Fernwartungs-ID', 'type' => 'text'],
+            ['name' => 'remotePassword', 'label' => 'Fernwartungs-Kennwort', 'type' => 'text'],
+            ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
+            ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
+            ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
+            ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+        ],
+    ],
+    'dect' => [
+        'model' => DECT::class, 'request' => DECTRequest::class,
+        'relation' => 'dects', 'einzahl' => 'DECT', 'suchfelder' => ['model', 'serialNumber'],
+        'bloecke' => true,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'role', 'label' => 'Rolle', 'type' => 'text'],
+            ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
+            ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
+            ['name' => 'serialNumber', 'label' => 'Seriennmmer', 'type' => 'text'],
+            ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
+            ['name' => 'mac', 'label' => 'MAC-Adresse', 'type' => 'text'],
+            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
+            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+            ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
+            ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
+            ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
+            ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+        ],
+    ],
+    'iotdevice' => [
+        'model' => IoTDevice::class, 'request' => IoTDeviceRequest::class,
+        'relation' => 'iotdevices', 'einzahl' => 'IoT-Gerät', 'suchfelder' => ['name', 'model', 'serialNumber'],
+        'bloecke' => true,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'manufacturer', 'label' => 'Manufacturer', 'type' => 'text'],
+            ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
+            ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
+            ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
+            ['name' => 'url', 'label' => 'URL', 'type' => 'text'],
+            ['name' => 'username', 'label' => 'Benutzer', 'type' => 'text'],
+            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+            ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
+            ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
+            ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
+            ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+        ],
+    ],
+    'nas' => [
+        'model' => NAS::class, 'request' => NASRequest::class,
+        'relation' => 'nas', 'einzahl' => 'NAS', 'suchfelder' => ['name', 'model', 'serialNumber'],
+        'bloecke' => true,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
+            ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
+            ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
+            ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
+            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
+            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+            ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
+            ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
+            ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
+            ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+        ],
+    ],
+    'networkswitch' => [
+        'model' => NetworkSwitch::class, 'request' => NetworkSwitchRequest::class,
+        'relation' => 'networkswitches', 'einzahl' => 'Switch', 'suchfelder' => ['name', 'model', 'serialNumber'],
+        'bloecke' => true,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
+            ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
+            ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
+            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
+            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+            ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
+            ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
+            ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
+            ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
+            ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+        ],
+    ],
+    'otherclient' => [
+        'model' => OtherClient::class, 'request' => OtherClientRequest::class,
+        'relation' => 'otherclients', 'einzahl' => 'Sonstiger Client', 'suchfelder' => ['name', 'model', 'serialNumber'],
+        'bloecke' => true,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'manufacturer', 'label' => 'Manufacturer', 'type' => 'text'],
+            ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
+            ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
+            ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
+            ['name' => 'username', 'label' => 'Benutzer', 'type' => 'text'],
+            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+            ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
+            ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
+            ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
+            ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+        ],
+    ],
+    'phone' => [
+        'model' => Phone::class, 'request' => PhoneRequest::class,
+        'relation' => 'phones', 'einzahl' => 'Telefon', 'suchfelder' => ['model', 'serialNumber'],
+        'bloecke' => true,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'extension', 'label' => 'Nebenstelle', 'type' => 'text'],
+            ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
+            ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
+            ['name' => 'serialNumber', 'label' => 'Seriennmmer', 'type' => 'text'],
+            ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
+            ['name' => 'mac', 'label' => 'MAC-Adresse', 'type' => 'text'],
+            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
+            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+            ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
+            ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
+            ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
+            ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+        ],
+    ],
+    'phonesystem' => [
+        'model' => PhoneSystem::class, 'request' => PhoneSystemRequest::class,
+        'relation' => 'phonesystems', 'einzahl' => 'TK-Anlage', 'suchfelder' => ['model', 'serialNumber'],
+        'bloecke' => true,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
+            ['name' => 'type', 'label' => 'Typ', 'type' => 'text'],
+            ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
+            ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
+            ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
+            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
+            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+            ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
+            ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
+            ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
+            ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+        ],
+    ],
+    'printer' => [
+        'model' => Printer::class, 'request' => PrinterRequest::class,
+        'relation' => 'printers', 'einzahl' => 'Drucker', 'suchfelder' => ['name', 'model', 'serialNumber'],
+        'bloecke' => true,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
+            ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
+            ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
+            ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
+            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
+            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+            ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
+            ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
+            ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
+            ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+        ],
+    ],
+    'recorder' => [
+        'model' => Recorder::class, 'request' => RecorderRequest::class,
+        'relation' => 'recorders', 'einzahl' => 'Recorder', 'suchfelder' => ['name', 'model', 'serialNumber'],
+        'bloecke' => true,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
+            ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
+            ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
+            ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
+            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
+            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+            ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
+            ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
+            ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
+            ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+        ],
+    ],
+    'router' => [
+        'model' => Router::class, 'request' => RouterRequest::class,
+        'relation' => 'routers', 'einzahl' => 'Router', 'suchfelder' => ['name', 'model', 'serialNumber'],
+        'bloecke' => true,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
+            ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
+            ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
+            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
+            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+            ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
+            ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
+            ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
+            ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
+            ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+        ],
+    ],
+    'ups' => [
+        'model' => Ups::class, 'request' => UpsRequest::class,
+        'relation' => 'ups', 'einzahl' => 'USV', 'suchfelder' => ['name', 'model', 'serialNumber'],
+        'bloecke' => true,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
+            ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
+            ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
+            ['name' => 'capacity', 'label' => 'Kapazität', 'type' => 'text'],
+            ['name' => 'runtime', 'label' => 'Laufzeit', 'type' => 'text'],
+            ['name' => 'notes', 'label' => 'Notizen', 'type' => 'text'],
+            ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
+            ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
+            ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
+            ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+        ],
+    ],
+    'vm' => [
+        'model' => VM::class, 'request' => VMRequest::class,
+        'relation' => 'vms', 'einzahl' => 'VM', 'suchfelder' => ['name'],
+        'bloecke' => true,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'server_id', 'label' => 'Server Id', 'type' => 'auswahl',
+                'quelle' => Server::class, 'anzeige' => 'name'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'services', 'label' => 'Dienste', 'type' => 'text'],
+            ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'auswahl',
+                'quelle' => OperatingSystem::class, 'anzeige' => 'name'],
+            ['name' => 'remoteID', 'label' => 'Fernwartungs-ID', 'type' => 'text'],
+            ['name' => 'remotePassword', 'label' => 'Fernwartungs-Kennwort', 'type' => 'text'],
         ],
     ],
 ];

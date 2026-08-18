@@ -2,6 +2,8 @@
 
 namespace App\Livewire;
 
+use App\Models\Concerns\HasCredentials;
+use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
@@ -72,8 +74,27 @@ class ObjektListe extends Component
 
         $abfrage = $klasse::where('customer_id', $this->customerId);
 
-        // Ohne Vorladen eine Abfrage je Zeile - der Login zeigt seine
-        // Verknuepfungen direkt in der Tabelle.
+        // Dasselbe Vorladen wie in den Controllern (siehe
+        // Controller::zugangsdatenVorladen): Ohne das kostet eine Seite mit 25
+        // Geraeten rund hundert Abfragen statt acht. Die Bedingungen sind
+        // dieselben - Zugangsdaten und Adressen nur, wo das Model sie fuehrt,
+        // sonst zaehlt eine Liste ohne beides zwei Abfragen zu viel.
+        $traits = class_uses_recursive($klasse);
+
+        if (in_array(HasCredentials::class, $traits, true)) {
+            $abfrage->with('credentialLinks.login');
+        }
+
+        if (in_array(HasIpAddresses::class, $traits, true)) {
+            $abfrage->with('ipAddresses.network');
+        }
+
+        foreach (['rackItem.rack', 'operatingSystem', 'site'] as $relation) {
+            if (method_exists($klasse, explode('.', $relation)[0])) {
+                $abfrage->with($relation);
+            }
+        }
+
         if (! empty($einstellung['mitladen'])) {
             $abfrage->with($einstellung['mitladen']);
         }
