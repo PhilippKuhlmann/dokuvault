@@ -97,6 +97,9 @@ class DeviceIpAddresses extends Component
         ]);
 
         $this->reset('address', 'network_id', 'label');
+        // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
+        // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
+        $this->dispatch('geraet-geaendert');
     }
 
     /**
@@ -108,6 +111,9 @@ class DeviceIpAddresses extends Component
     public function vlanUebernehmen(int $id): void
     {
         $this->network_id = $id;
+        // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
+        // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
+        $this->dispatch('geraet-geaendert');
     }
 
     public function remove(int $id): void
@@ -115,6 +121,9 @@ class DeviceIpAddresses extends Component
         $device = $this->device();
 
         $device->ipAddresses()->whereKey($id)->delete();
+        // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
+        // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
+        $this->dispatch('geraet-geaendert');
     }
 
     public function render()

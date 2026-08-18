@@ -56,6 +56,15 @@ class ObjektListe extends Component
         }
     }
 
+    /**
+     * IP-Adressen und Zugangsdaten werden in eigenen Bloecken im Modal
+     * gepflegt. Die Liste zeigt sie in ihren Spalten und muss deshalb auch auf
+     * deren Aenderungen neu zeichnen - ein leerer Rumpf genuegt, Livewire
+     * rendert nach jedem Aufruf ohnehin neu.
+     */
+    #[On('geraet-geaendert')]
+    public function geraetGeaendert(): void {}
+
     public function render()
     {
         $einstellung = config('forms.'.$this->typ);

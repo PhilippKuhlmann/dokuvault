@@ -86,6 +86,9 @@ class DeviceCredentials extends Component
         ]);
 
         $this->verknuepfen($device, (int) $validated['login_id'], $validated['note']);
+        // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
+        // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
+        $this->dispatch('geraet-geaendert');
     }
 
     public function create(): void
@@ -109,6 +112,9 @@ class DeviceCredentials extends Component
 
         $this->verknuepfen($device, $login->id, $validated['note']);
         $this->reset('name', 'username', 'password', 'neu');
+        // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
+        // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
+        $this->dispatch('geraet-geaendert');
     }
 
     /** Doppelte Verknüpfungen still übergehen - der Unique-Index würde sonst 500 werfen. */
@@ -128,6 +134,9 @@ class DeviceCredentials extends Component
         $device = $this->device();
 
         $device->credentialLinks()->whereKey($id)->delete();
+        // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
+        // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
+        $this->dispatch('geraet-geaendert');
     }
 
     public function render()

@@ -1,11 +1,13 @@
 <?php
 
+use App\Livewire\DeviceIpAddresses;
 use App\Livewire\ObjektFormular;
 use App\Livewire\ObjektListe;
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
 use App\Models\Domain;
+use App\Models\Machine;
 use App\Models\Site;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
@@ -244,4 +246,45 @@ test('ein Model mit IP-Adressen oder Zugangsdaten ist als Bloecke-Typ eingetrage
     }
 
     expect($ohne)->toBe([], "Fuehrt IP-Adressen oder Zugangsdaten, hat aber 'bloecke' nicht gesetzt: ".implode(', ', $ohne));
+});
+
+test('eine im Block ergaenzte IP-Adresse meldet sich an die Liste', function () {
+    // Gemeldet: Nach dem Hinzufuegen stand die Tabellenzeile weiter auf dem
+    // alten Stand. Die Bloecke speicherten, sagten aber niemandem Bescheid.
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $this->actingAs(userWithPermissions(['machine_viewAny', 'machine_update', 'network_viewAny']));
+
+    $maschine = Machine::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+    ]);
+
+    Livewire::test(DeviceIpAddresses::class, [
+        'model' => $maschine, 'customer' => $customer, 'eingebettet' => true,
+    ])
+        ->set('address', '10.10.10.42')
+        ->call('add')
+        ->assertDispatched('geraet-geaendert');
+
+    // Und die Liste zeigt sie danach auch.
+    Livewire::test(ObjektListe::class, ['typ' => 'machine', 'customer' => $customer])
+        ->assertSee('10.10.10.42');
+});
+
+test('die Liste zeichnet auf die Meldung der Bloecke neu', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $this->actingAs(userWithPermissions(['machine_viewAny']));
+
+    $maschine = Machine::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+    ]);
+
+    $liste = Livewire::test(ObjektListe::class, ['typ' => 'machine', 'customer' => $customer])
+        ->assertDontSee('10.10.10.43');
+
+    $maschine->ipAddresses()->create(['customer_id' => $customer->id, 'address' => '10.10.10.43']);
+
+    // Ohne den Zuhoerer bliebe die Zeile auf dem Stand von vorhin.
+    $liste->dispatch('geraet-geaendert')->assertSee('10.10.10.43');
 });
