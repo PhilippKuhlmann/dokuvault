@@ -13,6 +13,7 @@ use App\Http\Requests\LoginWebsiteRequest;
 use App\Http\Requests\MachineRequest;
 use App\Http\Requests\MailboxRequest;
 use App\Http\Requests\RackRequest;
+use App\Http\Requests\WifiRequest;
 use App\Models\ADDomain;
 use App\Models\ADGroup;
 use App\Models\Backup;
@@ -26,7 +27,9 @@ use App\Models\LoginWebsite;
 use App\Models\Machine;
 use App\Models\Mailbox;
 use App\Models\MailboxProvider;
+use App\Models\Network;
 use App\Models\Rack;
+use App\Models\Wifi;
 
 /*
 |--------------------------------------------------------------------------
@@ -157,6 +160,19 @@ return [
             ['name' => 'domain', 'label' => 'Domäne', 'type' => 'text'],
             ['name' => 'netbios', 'label' => 'NetBIOS', 'type' => 'text'],
             ['name' => 'dsrmpassword', 'label' => 'DSRM Passwort', 'type' => 'text'],
+        ],
+    ],
+    'wifi' => [
+        'model' => Wifi::class, 'request' => WifiRequest::class,
+        'relation' => 'wifis', 'einzahl' => 'WLAN', 'suchfelder' => ['ssid', 'encryption'],
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'ssid', 'label' => 'SSID', 'type' => 'text'],
+            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+            ['name' => 'encryption', 'label' => 'Verschlüsselung', 'type' => 'text'],
+            // Das Netz gehoert dem Kunden - die Auswahl wird darauf eingeschraenkt.
+            ['name' => 'network_id', 'label' => 'Netzwerk', 'type' => 'auswahl',
+                'quelle' => Network::class, 'anzeige' => 'description'],
         ],
     ],
     'mailbox' => [

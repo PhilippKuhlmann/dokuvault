@@ -8,6 +8,7 @@ use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
 use App\Models\Domain;
 use App\Models\Machine;
+use App\Models\Network;
 use App\Models\Site;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
@@ -147,6 +148,11 @@ test('jede umgestellte Liste zeigt einen Bearbeiten-Knopf', function () {
     // Ein unbekanntes Attribut wirft nichts - der Stift fehlte einfach.
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
+
+    // Einige Factories setzen einen Fremdschluessel auf einen vorhandenen
+    // Datensatz - ohne Netz scheitert die WifiFactory, bevor die Liste
+    // ueberhaupt gerendert wird.
+    Network::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id]);
 
     $ohneKnopf = [];
 
