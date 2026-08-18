@@ -172,7 +172,7 @@ return [
             ['name' => 'encryption', 'label' => 'Verschlüsselung', 'type' => 'text'],
             // Das Netz gehoert dem Kunden - die Auswahl wird darauf eingeschraenkt.
             ['name' => 'network_id', 'label' => 'Netzwerk', 'type' => 'auswahl',
-                'quelle' => Network::class, 'anzeige' => 'description'],
+                'quelle' => Network::class, 'anzeige' => 'VLAN {vlanId} · {description}'],
         ],
     ],
     'mailbox' => [

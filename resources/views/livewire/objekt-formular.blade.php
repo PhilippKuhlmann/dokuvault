@@ -39,8 +39,8 @@
                                 @elseif ($feld['type'] === 'auswahl')
                                     <x-input.select :name="$feld['name']" wire:model="form.{{ $feld['name'] }}" class="mt-1">
                                         <option value="">— {{ __('bitte wählen') }} —</option>
-                                        @foreach (($auswahlen[$feld['name']] ?? []) as $eintrag)
-                                            <option value="{{ $eintrag->id }}">{{ $eintrag->{$feld['anzeige']} }}</option>
+                                        @foreach (($auswahlen[$feld['name']] ?? []) as $id => $beschriftung)
+                                            <option value="{{ $id }}">{{ $beschriftung }}</option>
                                         @endforeach
                                     </x-input.select>
                                 @else

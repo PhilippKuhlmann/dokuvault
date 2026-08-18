@@ -376,3 +376,36 @@ test('leere Felder werden als null gespeichert, nicht als Leerstring', function 
     expect($roh->expiry_date)->toBeNull();
     expect($roh->registrar)->toBeNull();
 });
+
+test('die Netz-Auswahl zeigt VLAN-Nummer und Bezeichnung', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $this->actingAs(userWithPermissions(['wifi_create', 'wifi_viewAny']));
+
+    Network::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'vlanId' => 20, 'description' => 'Clients',
+    ]);
+
+    // Ohne die Nummer sind zwei Netze mit aehnlicher Bezeichnung nicht zu
+    // unterscheiden - im Netz spricht ohnehin jeder von der VLAN-Nummer.
+    Livewire::test(ObjektFormular::class, ['typ' => 'wifi', 'customer' => $customer])
+        ->call('neu')
+        ->assertSee('VLAN 20 · Clients');
+});
+
+test('ein Netz ohne Bezeichnung laesst kein einsames Trennzeichen stehen', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $this->actingAs(userWithPermissions(['wifi_create', 'wifi_viewAny']));
+
+    Network::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'vlanId' => 99, 'description' => null,
+    ]);
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'wifi', 'customer' => $customer])
+        ->call('neu')
+        ->assertSee('VLAN 99')
+        ->assertDontSee('VLAN 99 ·');
+});

@@ -187,6 +187,30 @@ class ObjektFormular extends Component
         $this->dispatch('objekt-gespeichert', typ: $this->typ);
     }
 
+    /**
+     * Beschriftung eines Auswahleintrags. Entweder ein Feldname oder ein Muster
+     * mit Platzhaltern wie "VLAN {vlanId} · {description}".
+     *
+     * Ein Muster statt einer Closure, weil config/forms.php mit
+     * "php artisan config:cache" eingefroren wird - Closures ueberleben das
+     * nicht. Leere Platzhalter fallen mitsamt ihrem Trennzeichen weg, damit
+     * bei einem VLAN ohne Bezeichnung kein einsames Trennzeichen stehen bleibt.
+     */
+    protected function beschriftung($eintrag, string $muster): string
+    {
+        if (! str_contains($muster, '{')) {
+            return (string) $eintrag->{$muster};
+        }
+
+        $text = preg_replace_callback(
+            '/\{(\w+)\}/',
+            fn ($treffer) => (string) ($eintrag->{$treffer[1]} ?? ''),
+            $muster
+        );
+
+        return trim(preg_replace('/\s*·\s*·\s*/', ' · ', trim($text)), " ·\t");
+    }
+
     public function render()
     {
         $einstellung = $this->einstellung();
@@ -219,7 +243,14 @@ class ObjektFormular extends Component
                         $abfrage->where('customer_id', $this->customerId);
                     }
 
-                    return [$feld['name'] => $abfrage->orderBy($feld['anzeige'])->get()];
+                    // Sortiert wird nach dem ersten genannten Feld - bei einem
+                    // Muster also nach dem, was vorne steht.
+                    $sortierung = preg_match('/\{(\w+)\}/', $feld['anzeige'], $t)
+                        ? $t[1]
+                        : $feld['anzeige'];
+
+                    return [$feld['name'] => $abfrage->orderBy($sortierung)->get()
+                        ->mapWithKeys(fn ($eintrag) => [$eintrag->id => $this->beschriftung($eintrag, $feld['anzeige'])])];
                 }),
         ]);
     }
