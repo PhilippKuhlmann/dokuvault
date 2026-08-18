@@ -175,3 +175,21 @@ test('jede umgestellte Liste zeigt einen Bearbeiten-Knopf', function () {
 
     expect($ohneKnopf)->toBe([], 'Ohne Bearbeiten-Knopf: '.implode(', ', $ohneKnopf));
 });
+
+test('kein Teilstueck ist als Karte abgelegt, obwohl es eine Tabellenzeile ist', function () {
+    // Genau das war bei Maschine und Ansprechpartner passiert: Die Datei lag als
+    // _karte, enthielt aber x-table.datarow. Die generische Liste rendert eine
+    // Karte ohne Rahmen - also eine Tabellenzeile ohne Tabelle und ohne
+    // Spaltenkoepfe. Es sieht kaputt aus, wirft aber keinen Fehler.
+    $falsch = [];
+
+    foreach (array_keys(config('forms')) as $typ) {
+        $karte = resource_path("views/$typ/_karte.blade.php");
+
+        if (file_exists($karte) && str_contains(file_get_contents($karte), 'x-table.datarow')) {
+            $falsch[] = $typ;
+        }
+    }
+
+    expect($falsch)->toBe([], 'Als Karte abgelegt, ist aber eine Tabellenzeile: '.implode(', ', $falsch));
+});

@@ -1,7 +1,5 @@
-{{-- Ein Eintrag in der Liste. Als eigenes Teilstueck, damit die
-     generische Liste (App\Livewire\ObjektListe) es einbinden kann -
-     die Karte bleibt beim Typ, weil gerade ihre Unterschiede die
-     Information tragen. --}}
+{{-- Eine Zeile der Tabelle. Der Rahmen steht in der generischen Liste,
+     die Spalten bleiben beim Typ. --}}
                     @php
                         // $adressen wurde hier nie gesetzt - die Zeile stammt aus
                         // den Listen mit Kartenansicht, wo sie oberhalb der

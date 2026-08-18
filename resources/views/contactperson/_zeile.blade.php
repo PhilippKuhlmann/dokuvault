@@ -1,7 +1,5 @@
-{{-- Ein Eintrag in der Liste. Als eigenes Teilstueck, damit die
-     generische Liste (App\Livewire\ObjektListe) es einbinden kann -
-     die Karte bleibt beim Typ, weil gerade ihre Unterschiede die
-     Information tragen. --}}
+{{-- Eine Zeile der Tabelle. Der Rahmen steht in der generischen Liste,
+     die Spalten bleiben beim Typ. --}}
                     <x-table.datarow
                         :values="[
                             $eintrag->first_name . ' ' . $eintrag->last_name,
