@@ -17,7 +17,7 @@
                 @foreach ($tools as $key => $tool)
                     <label class="flex items-start gap-3 p-3 rounded-lg border transition cursor-pointer
                         border-gray-200 hover:border-cerulean-300 dark:border-gray-700 dark:hover:border-cerulean-500"
-                        :class="tool === '{{ $key }}' ? 'border-cerulean-500 bg-cerulean-50 dark:bg-cerulean-900/20' : ''">
+                        :class="tool === '{{ $key }}' ? 'border-cerulean-500 bg-cerulean-50 dark:bg-cerulean-950' : ''">
                         <input type="radio" name="remote_tool" value="{{ $key }}" x-model="tool"
                             class="mt-1 text-cerulean-600 focus:ring-cerulean-500 dark:bg-gray-700 dark:border-gray-600" />
                         <span class="min-w-0">
