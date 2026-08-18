@@ -420,3 +420,32 @@ test('ein Netz ohne Bezeichnung laesst kein einsames Trennzeichen stehen', funct
         ->assertSee('VLAN 99')
         ->assertDontSee('VLAN 99 ·');
 });
+
+test('Typen mit eigener Bearbeitungs-Oberflaeche bleiben bei ihrer Seite', function () {
+    // Der Serverschrank hatte einen Editor mit Drag-und-Drop im
+    // Bearbeiten-Formular. Im Modal fehlte der ersatzlos - und weil die Liste
+    // trotzdem rendert und alle Felder da sind, faellt es in keinem anderen
+    // Test auf. Ein Livewire-Block im alten Formular ist deshalb das Zeichen,
+    // dass der Typ eine eigene Seite braucht.
+    //
+    // Ausgenommen sind die beiden Bloecke, die das Modal selbst mitbringt.
+    $uebernommen = ['device-ip-addresses', 'device-credentials'];
+
+    $falsch = [];
+
+    foreach (array_keys(config('forms')) as $typ) {
+        $edit = resource_path("views/$typ/edit.blade.php");
+
+        if (! file_exists($edit)) {
+            continue;
+        }
+
+        preg_match_all('/<livewire:([\w-]+)/', file_get_contents($edit), $treffer);
+
+        foreach (array_diff(array_unique($treffer[1]), $uebernommen) as $block) {
+            $falsch[] = "$typ ($block)";
+        }
+    }
+
+    expect($falsch)->toBe([], 'Diese Typen bringen eine eigene Oberfläche mit und gehören nicht ins Modal: '.implode(', ', $falsch));
+});

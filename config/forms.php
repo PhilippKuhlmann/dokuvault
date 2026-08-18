@@ -23,7 +23,6 @@ use App\Http\Requests\OtherClientRequest;
 use App\Http\Requests\PhoneRequest;
 use App\Http\Requests\PhoneSystemRequest;
 use App\Http\Requests\PrinterRequest;
-use App\Http\Requests\RackRequest;
 use App\Http\Requests\RecorderRequest;
 use App\Http\Requests\RouterRequest;
 use App\Http\Requests\UpsRequest;
@@ -55,7 +54,6 @@ use App\Models\OtherClient;
 use App\Models\Phone;
 use App\Models\PhoneSystem;
 use App\Models\Printer;
-use App\Models\Rack;
 use App\Models\Recorder;
 use App\Models\Router;
 use App\Models\Server;
@@ -218,17 +216,6 @@ return [
             // Ein globaler Katalog, den ein Admin pflegt - keine customer_id.
             ['name' => 'mailbox_provider_id', 'label' => 'Anbieter', 'type' => 'auswahl',
                 'quelle' => MailboxProvider::class, 'anzeige' => 'name'],
-        ],
-    ],
-    'rack' => [
-        'model' => Rack::class, 'request' => RackRequest::class,
-        'relation' => 'racks', 'einzahl' => 'Serverschrank', 'suchfelder' => ['name', 'location'],
-        'felder' => [
-            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
-            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
-            ['name' => 'location', 'label' => 'Aufstellort', 'type' => 'text'],
-            ['name' => 'height_units', 'label' => 'Höheneinheiten', 'type' => 'number'],
-            ['name' => 'note', 'label' => 'Notiz', 'type' => 'text'],
         ],
     ],
     'machine' => [
