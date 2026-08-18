@@ -168,7 +168,15 @@ class ObjektFormular extends Component
     {
         $einstellung = $this->einstellung();
 
+        // Geraete fuehren IP-Adressen und Zugangsdaten in eigenen Bloecken. Die
+        // haengen am gespeicherten Objekt und koennen deshalb erst beim
+        // Bearbeiten erscheinen - ohne sie waere das Modal ein Rueckschritt
+        // gegenueber der Seite, die es ersetzt.
+        $objekt = $this->bearbeiteId ? $this->objektHolen($this->bearbeiteId) : null;
+
         return view('livewire.objekt-formular', [
+            'objekt' => $objekt,
+            'mitBloecken' => (bool) ($einstellung['bloecke'] ?? false),
             'felder' => $einstellung['felder'],
             'einzahl' => $einstellung['einzahl'],
             // Nur laden, wenn ein Standortfeld vorkommt.

@@ -170,6 +170,8 @@ return [
     'machine' => [
         'model' => Machine::class, 'request' => MachineRequest::class,
         'relation' => 'machines', 'einzahl' => 'Maschine', 'suchfelder' => ['name'],
+        // Fuehrt IP-Adressen und Zugangsdaten - beide erscheinen beim Bearbeiten.
+        'bloecke' => true,
         'felder' => [
             ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
             ['name' => 'name', 'label' => 'Name', 'type' => 'text'],

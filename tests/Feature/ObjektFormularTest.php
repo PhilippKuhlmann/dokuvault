@@ -2,6 +2,8 @@
 
 use App\Livewire\ObjektFormular;
 use App\Livewire\ObjektListe;
+use App\Models\Concerns\HasCredentials;
+use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
 use App\Models\Domain;
 use App\Models\Site;
@@ -192,4 +194,54 @@ test('kein Teilstueck ist als Karte abgelegt, obwohl es eine Tabellenzeile ist',
     }
 
     expect($falsch)->toBe([], 'Als Karte abgelegt, ist aber eine Tabellenzeile: '.implode(', ', $falsch));
+});
+
+test('Typen mit IP-Adressen und Zugangsdaten zeigen beide Bloecke beim Bearbeiten', function () {
+    // Der gemeldete Verlust: Ueber die alte Seite liessen sich IP-Adressen und
+    // Zugangsdaten pflegen, im Modal fehlten sie zunaechst ganz.
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+
+    $fehlend = [];
+
+    foreach (config('forms') as $typ => $einstellung) {
+        if (empty($einstellung['bloecke'])) {
+            continue;
+        }
+
+        $this->actingAs(userWithPermissions([$typ.'_viewAny', $typ.'_update']));
+
+        $klasse = $einstellung['model'];
+        $objekt = $klasse::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id]);
+
+        $html = Livewire::test(ObjektFormular::class, ['typ' => $typ, 'customer' => $customer])
+            ->call('bearbeiten', $typ, $objekt->id)
+            ->html();
+
+        foreach (['IP-Adressen' => 'IP', 'Zugangsdaten' => 'Zugangsdaten'] as $block => $wort) {
+            if (! str_contains($html, $wort)) {
+                $fehlend[] = "$typ: $block";
+            }
+        }
+    }
+
+    expect($fehlend)->toBe([], 'Im Bearbeiten-Modal fehlen: '.implode(', ', $fehlend));
+});
+
+test('ein Model mit IP-Adressen oder Zugangsdaten ist als Bloecke-Typ eingetragen', function () {
+    // Damit der naechste Geraetetyp die Bloecke nicht stillschweigend verliert.
+    $ohne = [];
+
+    foreach (config('forms') as $typ => $einstellung) {
+        $traits = class_uses_recursive($einstellung['model']);
+
+        $fuehrtBloecke = in_array(HasIpAddresses::class, $traits, true)
+            || in_array(HasCredentials::class, $traits, true);
+
+        if ($fuehrtBloecke && empty($einstellung['bloecke'])) {
+            $ohne[] = $typ;
+        }
+    }
+
+    expect($ohne)->toBe([], "Fuehrt IP-Adressen oder Zugangsdaten, hat aber 'bloecke' nicht gesetzt: ".implode(', ', $ohne));
 });

@@ -17,7 +17,7 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
             x-on:keydown.escape.window="$wire.abbrechen()">
 
-            <div class="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-gray-200 bg-white p-5 text-left shadow-lg dark:border-gray-700 dark:bg-gray-800">
+            <div class="max-h-[90vh] w-full {{ $mitBloecken && $bearbeiteId ? 'max-w-2xl' : 'max-w-md' }} overflow-y-auto rounded-xl border border-gray-200 bg-white p-5 text-left shadow-lg dark:border-gray-700 dark:bg-gray-800">
 
                 @unless ($loeschenGefragt)
                     <div class="mb-4 text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100">
@@ -47,6 +47,25 @@
                             </div>
                         @endforeach
                     </div>
+                    @if ($mitBloecken)
+                        @if ($bearbeiteId)
+                            {{-- Eigene Livewire-Bloecke mit eigenem Speichern -
+                                 deshalb ausserhalb der Felder darueber. --}}
+                            <div class="mt-5 border-t border-gray-100 pt-4 dark:border-gray-700">
+                                <livewire:device-ip-addresses :model="$objekt" :customer="$objekt->customer" eingebettet
+                                    :key="'ip-'.$typ.'-'.$objekt->id" />
+                                <livewire:device-credentials :model="$objekt" :customer="$objekt->customer" eingebettet
+                                    :key="'zug-'.$typ.'-'.$objekt->id" />
+                            </div>
+                        @else
+                            {{-- Beim Anlegen haengt noch nichts am Objekt. Der Hinweis
+                                 stand auch im alten Formular, damit das Fehlen nicht
+                                 wie ein Mangel aussieht. --}}
+                            <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                                {{ __('IP-Adressen und Zugangsdaten lassen sich eintragen, sobald der Eintrag angelegt ist.') }}
+                            </p>
+                        @endif
+                    @endif
                 @endunless
 
                 @if ($loeschenGefragt)
