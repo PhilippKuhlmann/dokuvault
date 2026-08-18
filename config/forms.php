@@ -115,6 +115,7 @@ return [
     'logingeneral' => [
         'model' => LoginGeneral::class, 'request' => LoginGeneralRequest::class,
         'relation' => 'logingenerals', 'einzahl' => 'Login', 'suchfelder' => ['name', 'username', 'description'],
+        'mitladen' => ['links.credentialable'],
         'felder' => [
             ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
             ['name' => 'description', 'label' => 'Beschreibung', 'type' => 'text'],

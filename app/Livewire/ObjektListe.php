@@ -63,6 +63,12 @@ class ObjektListe extends Component
 
         $abfrage = $klasse::where('customer_id', $this->customerId);
 
+        // Ohne Vorladen eine Abfrage je Zeile - der Login zeigt seine
+        // Verknuepfungen direkt in der Tabelle.
+        if (! empty($einstellung['mitladen'])) {
+            $abfrage->with($einstellung['mitladen']);
+        }
+
         if ($this->search !== '') {
             $begriff = '%'.addcslashes($this->search, '%_').'%';
 

@@ -1,29 +1,5 @@
 <x-app-layout :$customer>
-    <x-sitetopmenu can="certificate_create" />
-    @forelse ($certificates as $certificate)
-    <x-card>
-        <x-slot:head>
-            <x-show.header can="certificate_update" editUrl="{{ route('certificate.edit', [$customer, $certificate]) }}">
-                {{ $certificate->name }}
-            </x-show.header>
-        </x-slot>
-        <x-slot:body>
-            <x-minitablecard :title="__('Allgemein')" :array="[
-                'Domain / CN' => $certificate->common_name,
-                'Aussteller' => $certificate->issuer,
-                'Typ' => $certificate->type,
-            ]" />
-            <x-minitablecard :title="__('Gültigkeit')" :array="[
-                'Ausgestellt am' => $certificate->issued_date ? \Carbon\Carbon::parse($certificate->issued_date)->format('d.m.Y') : null,
-                'Ablaufdatum' => $certificate->expiry_date ? \Carbon\Carbon::parse($certificate->expiry_date)->format('d.m.Y') : null,
-            ]" />
-            @if ($certificate->notes)
-                <x-minitextcard :title="__('Notizen')">{{ $certificate->notes }}</x-minitextcard>
-            @endif
-        </x-slot>
-    </x-card>
-    @empty
-    <x-emptystate />
-@endforelse
-    <div class="px-3 pb-3">{{ $certificates->links() }}</div>
+    {{-- Liste und Formular sind Livewire: Ein im Modal angelegter Eintrag
+         erscheint sofort, ohne die Seite neu zu laden. --}}
+    <livewire:objekt-liste typ="certificate" :customer="$customer" />
 </x-app-layout>

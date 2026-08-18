@@ -114,3 +114,25 @@ test('die Liste sucht und zeigt den Anlegen-Knopf', function () {
         ->assertSee('treffer.de')
         ->assertDontSee('anderes.de');
 });
+
+test('jede Liste aus config/forms ist auf das Modal umgestellt', function () {
+    // Bleibt eine Liste auf der alten Seite, faellt das sonst erst auf, wenn
+    // jemand dort auf "Neu" klickt und auf einer Seite landet statt im Modal.
+    $offen = [];
+
+    foreach (array_keys(config('forms')) as $typ) {
+        $index = resource_path("views/$typ/index.blade.php");
+
+        if (! str_contains(file_get_contents($index), 'livewire:objekt-liste')) {
+            $offen[] = $typ;
+        }
+
+        // Und die Karte bzw. Tabellenzeile muss es geben, sonst rendert die
+        // Liste ins Leere.
+        if (! view()->exists($typ.'._karte') && ! view()->exists($typ.'._zeile')) {
+            $offen[] = $typ.' (ohne Teilstück)';
+        }
+    }
+
+    expect($offen)->toBe([], 'Noch nicht umgestellt: '.implode(', ', $offen));
+});

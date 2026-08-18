@@ -17,10 +17,32 @@
         <livewire:objekt-formular :typ="$typ" :customer="$customer" :key="'formular-'.$typ" />
     </x-sitetopmenu>
 
-    @forelse ($eintraege as $eintrag)
-        <div wire:key="{{ $typ }}-{{ $eintrag->id }}">
-            @include($typ.'._karte', ['eintrag' => $eintrag, 'customer' => $customer])
+    {{-- Zwei Darstellungen im Bestand: Die meisten Listen zeigen Karten, einige
+         eine Tabelle. Welche es ist, entscheidet die Datei beim Typ - eine
+         erzwungene Vereinheitlichung waere ein zweiter Umbau in einem. --}}
+    @php ($alsTabelle = view()->exists($typ.'._zeile'))
+
+    @if ($alsTabelle && $eintraege->isNotEmpty())
+        <div class="m-3">
+            <x-table.main>
+                @include($typ.'._spalten')
+                <x-table.body>
+                    @foreach ($eintraege as $eintrag)
+                        <div wire:key="{{ $typ }}-{{ $eintrag->id }}" class="contents">
+                            @include($typ.'._zeile', ['eintrag' => $eintrag, 'customer' => $customer])
+                        </div>
+                    @endforeach
+                </x-table.body>
+            </x-table.main>
         </div>
+    @endif
+
+    @forelse ($eintraege as $eintrag)
+        @unless ($alsTabelle)
+            <div wire:key="{{ $typ }}-{{ $eintrag->id }}">
+                @include($typ.'._karte', ['eintrag' => $eintrag, 'customer' => $customer])
+            </div>
+        @endunless
     @empty
         @if ($search !== '')
             {{-- Unterschied mit Ansage: "nichts gefunden" ist etwas anderes als
