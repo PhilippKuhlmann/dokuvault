@@ -11,6 +11,7 @@ use App\Http\Requests\FTPServerRequest;
 use App\Http\Requests\LoginGeneralRequest;
 use App\Http\Requests\LoginWebsiteRequest;
 use App\Http\Requests\MachineRequest;
+use App\Http\Requests\RackRequest;
 use App\Models\ADDomain;
 use App\Models\ADGroup;
 use App\Models\Backup;
@@ -22,6 +23,7 @@ use App\Models\FTPServer;
 use App\Models\LoginGeneral;
 use App\Models\LoginWebsite;
 use App\Models\Machine;
+use App\Models\Rack;
 
 /*
 |--------------------------------------------------------------------------
@@ -152,6 +154,17 @@ return [
             ['name' => 'domain', 'label' => 'Domäne', 'type' => 'text'],
             ['name' => 'netbios', 'label' => 'NetBIOS', 'type' => 'text'],
             ['name' => 'dsrmpassword', 'label' => 'DSRM Passwort', 'type' => 'text'],
+        ],
+    ],
+    'rack' => [
+        'model' => Rack::class, 'request' => RackRequest::class,
+        'relation' => 'racks', 'einzahl' => 'Serverschrank', 'suchfelder' => ['name', 'location'],
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'location', 'label' => 'Aufstellort', 'type' => 'text'],
+            ['name' => 'height_units', 'label' => 'Höheneinheiten', 'type' => 'number'],
+            ['name' => 'note', 'label' => 'Notiz', 'type' => 'text'],
         ],
     ],
     'machine' => [
