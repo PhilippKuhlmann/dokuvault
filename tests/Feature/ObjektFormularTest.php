@@ -325,3 +325,28 @@ test('ein fremder Standort wird im Modal weiterhin abgelehnt', function () {
 
     expect(Machine::where('name', 'CNC-Fremd')->exists())->toBeFalse();
 });
+
+test('Anlegen, Speichern und Loeschen quittieren sich mit einer Meldung', function () {
+    // Gemeldet: Die Einblendung unten rechts fehlte. Sie hoert auf 'hinweis' mit
+    // einem text-Parameter - mein erstes 'success' hat niemand mitbekommen, und
+    // ein Ereignis ins Leere wirft nichts.
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['domain_create', 'domain_update', 'domain_delete', 'domain_viewAny']));
+
+    $modal = Livewire::test(ObjektFormular::class, ['typ' => 'domain', 'customer' => $customer])
+        ->call('neu')
+        ->set('form.name', 'meldung.de')
+        ->call('speichern')
+        ->assertDispatched('hinweis', text: 'Domain angelegt.');
+
+    $domain = Domain::where('name', 'meldung.de')->sole();
+
+    $modal->call('bearbeiten', 'domain', $domain->id)
+        ->set('form.registrar', 'Hetzner')
+        ->call('speichern')
+        ->assertDispatched('hinweis', text: 'Domain gespeichert.');
+
+    $modal->call('bearbeiten', 'domain', $domain->id)
+        ->call('loeschen')
+        ->assertDispatched('hinweis', text: 'Domain gelöscht.');
+});

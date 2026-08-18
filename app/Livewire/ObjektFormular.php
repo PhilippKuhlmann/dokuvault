@@ -164,8 +164,8 @@ class ObjektFormular extends Component
         $this->offen = false;
         $this->formularLeeren();
 
+        $this->dispatch('hinweis', text: __($meldung));
         $this->dispatch('objekt-gespeichert', typ: $this->typ);
-        $this->dispatch('success', __($meldung));
     }
 
     public function loeschen(): void
@@ -177,8 +177,8 @@ class ObjektFormular extends Component
         $this->offen = false;
         $this->formularLeeren();
 
+        $this->dispatch('hinweis', text: __($this->einstellung()['einzahl'].' gelöscht.'));
         $this->dispatch('objekt-gespeichert', typ: $this->typ);
-        $this->dispatch('success', __($this->einstellung()['einzahl'].' gelöscht.'));
     }
 
     public function render()

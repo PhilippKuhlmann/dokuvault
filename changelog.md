@@ -14,6 +14,7 @@
   - Validiert wird mit demselben Request, den auch der Controller benutzt — eine zweite Regelmenge wäre die Stelle, an der die beiden Wege auseinanderlaufen.
   - Die Feldlisten wurden aus den bestehenden Formularen ausgelesen und **gegen die Validierungsregeln geprüft**. Nur Typen, bei denen beide deckungsgleich sind, kommen in Frage: Ein Feld, das aus der Definition fällt, ließe sich im Modal nicht mehr ausfüllen — ohne Fehlermeldung. Ein Test hält das fest.
   - Deshalb bleiben Lizenzen, WLAN, Postfach, AD-Benutzer und Serverschrank vorerst bei Seiten: Dort gibt es Datei-Uploads, Auswahllisten und Schalter, die die Extraktion nicht erfasst.
+  - Anlegen, Speichern und Löschen quittieren sich mit derselben Einblendung unten rechts wie beim VLAN („Domain angelegt.", „Postfach gespeichert.", „Serverschrank gelöscht.").
   - Das VLAN-Modal hat die Verbesserungen zurückbekommen, die beim Umbau entstanden sind: Die Knopfleiste haftet am unteren Rand, statt bei zehn Feldern aus dem Bild zu rutschen, und unter der Lösch-Rückfrage steht wieder Abstand.
   - Knopfleiste und Suchfeld sind dieselben Bausteine wie im VLAN-Modal: Löschen links abgesetzt, Abbrechen und Speichern rechts, „Anlegen" statt „Speichern" beim neuen Eintrag, und die Suche mit Lupe im Feld.
   - Die Darstellung bleibt beim Typ: Kartenlisten liefern `_karte.blade.php`, Tabellenlisten `_zeile.blade.php` und `_spalten.blade.php`. Eine erzwungene Vereinheitlichung wäre ein zweiter Umbau im ersten gewesen — fünf der elf Listen sind Tabellen, und das aus gutem Grund.
