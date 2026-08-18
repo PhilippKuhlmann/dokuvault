@@ -440,9 +440,19 @@ test('Typen mit eigener Bearbeitungs-Oberflaeche bleiben bei ihrer Seite', funct
             continue;
         }
 
-        preg_match_all('/<livewire:([\w-]+)/', file_get_contents($edit), $treffer);
+        $inhalt = file_get_contents($edit);
 
-        foreach (array_diff(array_unique($treffer[1]), $uebernommen) as $block) {
+        preg_match_all('/<livewire:([\w-]+)/', $inhalt, $treffer);
+        $bloecke = array_diff(array_unique($treffer[1]), $uebernommen);
+
+        // Auch Blade-Komponenten koennen eine eigene Oberflaeche sein: Die
+        // Dienste-Auswahl bringt Katalog, Kacheln und ein Freitextfeld mit -
+        // im Modal blieb davon ein Textfeld uebrig.
+        if (str_contains($inhalt, 'x-create.dienste')) {
+            $bloecke[] = 'x-create.dienste';
+        }
+
+        foreach ($bloecke as $block) {
             $falsch[] = "$typ ($block)";
         }
     }

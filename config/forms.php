@@ -26,7 +26,6 @@ use App\Http\Requests\PrinterRequest;
 use App\Http\Requests\RecorderRequest;
 use App\Http\Requests\RouterRequest;
 use App\Http\Requests\UpsRequest;
-use App\Http\Requests\VMRequest;
 use App\Http\Requests\WifiRequest;
 use App\Models\Accesspoint;
 use App\Models\ADDomain;
@@ -56,9 +55,7 @@ use App\Models\PhoneSystem;
 use App\Models\Printer;
 use App\Models\Recorder;
 use App\Models\Router;
-use App\Models\Server;
 use App\Models\Ups;
-use App\Models\VM;
 use App\Models\Wifi;
 
 /*
@@ -496,22 +493,6 @@ return [
             ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
             ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
             ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
-        ],
-    ],
-    'vm' => [
-        'model' => VM::class, 'request' => VMRequest::class,
-        'relation' => 'vms', 'einzahl' => 'VM', 'suchfelder' => ['name'],
-        'bloecke' => true,
-        'felder' => [
-            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
-            ['name' => 'server_id', 'label' => 'Server Id', 'type' => 'auswahl',
-                'quelle' => Server::class, 'anzeige' => 'name'],
-            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
-            ['name' => 'services', 'label' => 'Dienste', 'type' => 'text'],
-            ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'auswahl',
-                'quelle' => OperatingSystem::class, 'anzeige' => 'name'],
-            ['name' => 'remoteID', 'label' => 'Fernwartungs-ID', 'type' => 'text'],
-            ['name' => 'remotePassword', 'label' => 'Fernwartungs-Kennwort', 'type' => 'text'],
         ],
     ],
 ];
