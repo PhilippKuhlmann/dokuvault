@@ -4,6 +4,7 @@ use App\Livewire\ObjektFormular;
 use App\Livewire\ObjektListe;
 use App\Models\Customer;
 use App\Models\Domain;
+use App\Models\Site;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
 
@@ -135,4 +136,35 @@ test('jede Liste aus config/forms ist auf das Modal umgestellt', function () {
     }
 
     expect($offen)->toBe([], 'Noch nicht umgestellt: '.implode(', ', $offen));
+});
+
+test('jede umgestellte Liste zeigt einen Bearbeiten-Knopf', function () {
+    // Der Fall, der mir durchgerutscht ist: x-table.datarow kannte nur editUrl.
+    // Ein unbekanntes Attribut wirft nichts - der Stift fehlte einfach.
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+
+    $ohneKnopf = [];
+
+    foreach (config('forms') as $typ => $einstellung) {
+        $this->actingAs(userWithPermissions([$typ.'_viewAny', $typ.'_update']));
+
+        $klasse = $einstellung['model'];
+        $werte = ['customer_id' => $customer->id];
+
+        // Einige Tabellen verlangen einen Standort.
+        if (Schema::hasColumn((new $klasse)->getTable(), 'site_id')) {
+            $werte['site_id'] = $site->id;
+        }
+
+        $klasse::factory()->create($werte);
+
+        $html = Livewire::test(ObjektListe::class, ['typ' => $typ, 'customer' => $customer])->html();
+
+        if (! str_contains($html, 'objekt-bearbeiten')) {
+            $ohneKnopf[] = $typ;
+        }
+    }
+
+    expect($ohneKnopf)->toBe([], 'Ohne Bearbeiten-Knopf: '.implode(', ', $ohneKnopf));
 });
