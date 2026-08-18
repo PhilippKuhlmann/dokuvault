@@ -17,7 +17,7 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
             x-on:keydown.escape.window="$wire.abbrechen()">
 
-            <div class="max-h-[90vh] w-full {{ $mitBloecken && $bearbeiteId ? 'max-w-2xl' : 'max-w-md' }} overflow-y-auto rounded-xl border border-gray-200 bg-white p-5 text-left shadow-lg dark:border-gray-700 dark:bg-gray-800">
+            <div class="max-h-[90vh] w-full {{ $mitBloecken && $bearbeiteId ? 'max-w-2xl' : 'max-w-md' }} overflow-y-auto rounded-xl border border-gray-200 bg-white px-5 pt-5 text-left shadow-lg dark:border-gray-700 dark:bg-gray-800">
 
                 @unless ($loeschenGefragt)
                     <div class="mb-4 text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100">
@@ -80,7 +80,7 @@
                             {{ __('Der Eintrag landet im Papierkorb und lässt sich von dort wiederherstellen.') }}
                         </p>
 
-                        <div class="mt-4 flex justify-end gap-2">
+                        <div class="mt-4 flex justify-end gap-2 pb-5">
                             <x-input.button type="button" color="gray"
                                 wire:click="$set('loeschenGefragt', false)" :label="__('Abbrechen')" />
                             <x-input.button type="button" color="red" wire:click="loeschen" :label="__('Löschen')" />
@@ -92,7 +92,7 @@
                          ausserhalb des Bildes liegt und erst gescrollt werden muss.
                          Der eigene Hintergrund verhindert, dass Felder darunter
                          durchscheinen. --}}
-                    <div class="sticky bottom-0 -mx-5 -mb-5 mt-5 flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 bg-white px-5 py-4 dark:border-gray-700 dark:bg-gray-800">
+                    <div class="sticky bottom-0 -mx-5 mt-5 flex flex-wrap items-center justify-end gap-2 rounded-b-xl border-t border-gray-100 bg-white px-5 py-4 dark:border-gray-700 dark:bg-gray-800">
                         @if ($bearbeiteId)
                             @can($typ.'_delete')
                                 <x-input.button type="button" color="red" class="mr-auto"
