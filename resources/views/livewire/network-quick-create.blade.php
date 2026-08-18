@@ -22,7 +22,7 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
             x-on:keydown.escape.window="$wire.abbrechen()">
 
-            <div class="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-gray-200 bg-white p-5 text-left shadow-lg dark:border-gray-700 dark:bg-gray-800">
+            <div class="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-gray-200 bg-white px-5 pt-5 text-left shadow-lg dark:border-gray-700 dark:bg-gray-800">
                 {{-- Bei der Rueckfrage keine Ueberschrift: Der rote Kasten stellt
                      die Frage schon, zweimal dasselbe waere Fuellmaterial. --}}
                 @unless ($loeschenGefragt)
@@ -128,7 +128,7 @@
                     {{-- Die Rueckfrage ersetzt die Felder, statt unter ihnen zu
                          haengen: Bei zehn Feldern stand sie sonst ausserhalb des
                          Sichtbereichs und man musste erst dorthin scrollen. --}}
-                    <div class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-900/20">
+                    <div class="mb-5 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-900/20">
                         <div class="text-sm font-medium text-red-800 dark:text-red-300">
                             {{ __('Dieses VLAN löschen?') }}
                         </div>
@@ -143,7 +143,7 @@
                         </div>
                     </div>
                 @else
-                    <div class="mt-5 flex flex-wrap items-center justify-end gap-2">
+                    <div class="sticky bottom-0 -mx-5 mt-5 flex flex-wrap items-center justify-end gap-2 rounded-b-xl border-t border-gray-100 bg-white px-5 py-4 dark:border-gray-700 dark:bg-gray-800">
                         @if ($bearbeiteId)
                             @can('network_delete')
                                 <x-input.button type="button" color="red" class="mr-auto"
