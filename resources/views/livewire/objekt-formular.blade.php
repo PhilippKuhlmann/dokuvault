@@ -51,7 +51,10 @@
                         @if ($bearbeiteId)
                             {{-- Eigene Livewire-Bloecke mit eigenem Speichern -
                                  deshalb ausserhalb der Felder darueber. --}}
-                            <div class="mt-5 border-t border-gray-100 pt-4 dark:border-gray-700">
+                            {{-- Keine eigene Trennlinie: Der Block bringt im
+                                 eingebetteten Zustand selbst eine mit, zwei
+                                 uebereinander sahen aus wie ein Fehler. --}}
+                            <div class="mt-1">
                                 <livewire:device-ip-addresses :model="$objekt" :customer="$objekt->customer" eingebettet randlos
                                     :key="'ip-'.$typ.'-'.$objekt->id" />
                                 <livewire:device-credentials :model="$objekt" :customer="$objekt->customer" eingebettet randlos
