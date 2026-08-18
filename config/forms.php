@@ -11,6 +11,7 @@ use App\Http\Requests\FTPServerRequest;
 use App\Http\Requests\LoginGeneralRequest;
 use App\Http\Requests\LoginWebsiteRequest;
 use App\Http\Requests\MachineRequest;
+use App\Http\Requests\MailboxRequest;
 use App\Http\Requests\RackRequest;
 use App\Models\ADDomain;
 use App\Models\ADGroup;
@@ -23,6 +24,8 @@ use App\Models\FTPServer;
 use App\Models\LoginGeneral;
 use App\Models\LoginWebsite;
 use App\Models\Machine;
+use App\Models\Mailbox;
+use App\Models\MailboxProvider;
 use App\Models\Rack;
 
 /*
@@ -154,6 +157,19 @@ return [
             ['name' => 'domain', 'label' => 'Domäne', 'type' => 'text'],
             ['name' => 'netbios', 'label' => 'NetBIOS', 'type' => 'text'],
             ['name' => 'dsrmpassword', 'label' => 'DSRM Passwort', 'type' => 'text'],
+        ],
+    ],
+    'mailbox' => [
+        'model' => Mailbox::class, 'request' => MailboxRequest::class,
+        'relation' => 'mailboxes', 'einzahl' => 'Postfach', 'suchfelder' => ['name', 'mailAdress', 'username'],
+        'felder' => [
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'mailAdress', 'label' => 'E-Mail Adresse', 'type' => 'email'],
+            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
+            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+            // Ein globaler Katalog, den ein Admin pflegt - keine customer_id.
+            ['name' => 'mailbox_provider_id', 'label' => 'Anbieter', 'type' => 'auswahl',
+                'quelle' => MailboxProvider::class, 'anzeige' => 'name'],
         ],
     ],
     'rack' => [

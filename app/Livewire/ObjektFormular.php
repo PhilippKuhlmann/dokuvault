@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\Site;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -199,6 +200,21 @@ class ObjektFormular extends Component
             'sites' => collect($einstellung['felder'])->contains('type', 'standort')
                 ? Site::where('customer_id', $this->customerId)->orderBy('name')->get()
                 : collect(),
+            // Auswahllisten aus einer Tabelle, z. B. die Postfach-Anbieter. Was
+            // dem Kunden gehoert, wird auf ihn eingeschraenkt; globale Kataloge
+            // wie die Anbieter haben keine customer_id.
+            'auswahlen' => collect($einstellung['felder'])
+                ->where('type', 'auswahl')
+                ->mapWithKeys(function ($feld) {
+                    $klasse = $feld['quelle'];
+                    $abfrage = $klasse::query();
+
+                    if (Schema::hasColumn((new $klasse)->getTable(), 'customer_id')) {
+                        $abfrage->where('customer_id', $this->customerId);
+                    }
+
+                    return [$feld['name'] => $abfrage->orderBy($feld['anzeige'])->get()];
+                }),
         ]);
     }
 }

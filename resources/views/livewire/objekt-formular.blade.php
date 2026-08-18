@@ -36,6 +36,13 @@
                                             <option value="{{ $site->id }}">{{ $site->name }}</option>
                                         @endforeach
                                     </x-input.select>
+                                @elseif ($feld['type'] === 'auswahl')
+                                    <x-input.select :name="$feld['name']" wire:model="form.{{ $feld['name'] }}" class="mt-1">
+                                        <option value="">— {{ __('bitte wählen') }} —</option>
+                                        @foreach (($auswahlen[$feld['name']] ?? []) as $eintrag)
+                                            <option value="{{ $eintrag->id }}">{{ $eintrag->{$feld['anzeige']} }}</option>
+                                        @endforeach
+                                    </x-input.select>
                                 @else
                                     <x-input.text wire:model="form.{{ $feld['name'] }}"
                                         type="{{ $feld['type'] }}" class="mt-1" />
