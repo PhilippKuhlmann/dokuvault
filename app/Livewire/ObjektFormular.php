@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Customer;
 use App\Models\Site;
+use App\Rules\BelongsToCustomer;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -129,8 +130,23 @@ class ObjektFormular extends Component
         $regeln = $this->einstellung()['request'];
         $request = new $regeln;
 
+        // Die Mandantenregel holt den Kunden sonst aus der Route - die heisst
+        // hier livewire.update und kennt ihn nicht.
+        $regelnMitKunde = collect($request->rules())->map(function ($regel) {
+            if (! is_array($regel)) {
+                return $regel;
+            }
+
+            return array_map(
+                fn ($einzeln) => $einzeln instanceof BelongsToCustomer
+                    ? new BelongsToCustomer($einzeln->tabelle(), $this->customerId)
+                    : $einzeln,
+                $regel
+            );
+        })->all();
+
         $daten = $this->validate(
-            collect($request->rules())->mapWithKeys(fn ($regel, $feld) => ['form.'.$feld => $regel])->all(),
+            collect($regelnMitKunde)->mapWithKeys(fn ($regel, $feld) => ['form.'.$feld => $regel])->all(),
             [],
             collect($request->attributes())->mapWithKeys(fn ($name, $feld) => ['form.'.$feld => $name])->all()
         )['form'];

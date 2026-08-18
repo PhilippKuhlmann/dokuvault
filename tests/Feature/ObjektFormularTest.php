@@ -288,3 +288,40 @@ test('die Liste zeichnet auf die Meldung der Bloecke neu', function () {
     // Ohne den Zuhoerer bliebe die Zeile auf dem Stand von vorhin.
     $liste->dispatch('geraet-geaendert')->assertSee('10.10.10.43');
 });
+
+test('ein Standort des eigenen Kunden wird im Modal angenommen', function () {
+    // Gemeldet: "Die Auswahl fuer Standort gehoert nicht zu diesem Kunden" - und
+    // zwar bei einem Standort, der sehr wohl dazu gehoerte. Die Regel holt den
+    // Kunden aus der Route; die heisst bei Livewire livewire.update und kennt
+    // ihn nicht, also war er null und die Pruefung schlug immer fehl.
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id, 'name' => 'Halle Ost']);
+    $this->actingAs(userWithPermissions(['machine_create', 'machine_viewAny']));
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'machine', 'customer' => $customer])
+        ->call('neu')
+        ->set('form.site_id', $site->id)
+        ->set('form.name', 'CNC-Fraese 7')
+        ->call('speichern')
+        ->assertHasNoErrors()
+        ->assertSet('offen', false);
+
+    expect(Machine::where('name', 'CNC-Fraese 7')->sole()->site_id)->toBe($site->id);
+});
+
+test('ein fremder Standort wird im Modal weiterhin abgelehnt', function () {
+    // Der Schutz muss bleiben - er war ja der Sinn der Regel.
+    $customer = Customer::factory()->create();
+    $fremd = Customer::factory()->create();
+    $fremderStandort = Site::factory()->create(['customer_id' => $fremd->id]);
+    $this->actingAs(userWithPermissions(['machine_create']));
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'machine', 'customer' => $customer])
+        ->call('neu')
+        ->set('form.site_id', $fremderStandort->id)
+        ->set('form.name', 'CNC-Fremd')
+        ->call('speichern')
+        ->assertHasErrors('form.site_id');
+
+    expect(Machine::where('name', 'CNC-Fremd')->exists())->toBeFalse();
+});

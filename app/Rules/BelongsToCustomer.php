@@ -13,7 +13,18 @@ use Illuminate\Support\Facades\Schema;
  */
 class BelongsToCustomer implements ValidationRule
 {
-    public function __construct(protected string $table) {}
+    /**
+     * Ohne $customerId kommt der Kunde aus der Route. Livewire-Komponenten
+     * haben den Parameter nicht - dort laeuft jede Anfrage gegen
+     * livewire.update, der Kunde waere null und die Pruefung schlueg immer
+     * fehl. Sie geben ihn deshalb mit.
+     */
+    public function __construct(protected string $table, protected ?int $customerId = null) {}
+
+    public function tabelle(): string
+    {
+        return $this->table;
+    }
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
@@ -22,8 +33,12 @@ class BelongsToCustomer implements ValidationRule
             return;
         }
 
-        $customer = request()->route('customer');
-        $customerId = is_object($customer) ? $customer->getKey() : $customer;
+        if ($this->customerId !== null) {
+            $customerId = $this->customerId;
+        } else {
+            $customer = request()->route('customer');
+            $customerId = is_object($customer) ? $customer->getKey() : $customer;
+        }
 
         $query = DB::table($this->table)
             ->where('id', $value)
