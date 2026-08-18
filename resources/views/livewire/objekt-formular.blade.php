@@ -52,9 +52,9 @@
                             {{-- Eigene Livewire-Bloecke mit eigenem Speichern -
                                  deshalb ausserhalb der Felder darueber. --}}
                             <div class="mt-5 border-t border-gray-100 pt-4 dark:border-gray-700">
-                                <livewire:device-ip-addresses :model="$objekt" :customer="$objekt->customer" eingebettet
+                                <livewire:device-ip-addresses :model="$objekt" :customer="$objekt->customer" eingebettet randlos
                                     :key="'ip-'.$typ.'-'.$objekt->id" />
-                                <livewire:device-credentials :model="$objekt" :customer="$objekt->customer" eingebettet
+                                <livewire:device-credentials :model="$objekt" :customer="$objekt->customer" eingebettet randlos
                                     :key="'zug-'.$typ.'-'.$objekt->id" />
                             </div>
                         @else

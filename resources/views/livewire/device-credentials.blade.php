@@ -4,7 +4,7 @@
      und bekommt statt des Rahmens nur eine Trennlinie nach oben. --}}
 <div @class([
     'mx-auto max-w-3xl px-3' => ! $eingebettet,
-    'px-5 sm:px-6' => $eingebettet,
+    'px-5 sm:px-6' => $eingebettet && ! $randlos,
 ])>
 <div @class([
     'my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700' => ! $eingebettet,

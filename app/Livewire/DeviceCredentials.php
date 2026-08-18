@@ -47,12 +47,16 @@ class DeviceCredentials extends Component
     #[Locked]
     public bool $eingebettet = false;
 
-    public function mount($model, $customer, bool $eingebettet = false): void
+    /** Im Modal bringt der Rahmen das Padding mit - dann keins vom Block. */
+    public bool $randlos = false;
+
+    public function mount($model, $customer, bool $eingebettet = false, bool $randlos = false): void
     {
         $this->modelClass = $model::class;
         $this->modelId = $model->id;
         $this->customerId = $customer->id;
         $this->eingebettet = $eingebettet;
+        $this->randlos = $randlos;
     }
 
     /**
