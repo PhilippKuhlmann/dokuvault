@@ -159,9 +159,16 @@ test('jede umgestellte Liste zeigt einen Bearbeiten-Knopf', function () {
 
         $klasse::factory()->create($werte);
 
-        $html = Livewire::test(ObjektListe::class, ['typ' => $typ, 'customer' => $customer])->html();
+        // Entities aufloesen: Blade schreibt die Anfuehrungszeichen im
+        // wire:click als &#039;, die Suche nach dem Ausdruck ginge sonst leer aus.
+        $html = html_entity_decode(
+            Livewire::test(ObjektListe::class, ['typ' => $typ, 'customer' => $customer])->html()
+        );
 
-        if (! str_contains($html, 'objekt-bearbeiten')) {
+        // Auf wire:click pruefen, nicht auf den blossen Text: Ein unbekanntes
+        // Attribut reicht Blade unveraendert ins Element durch - der Name des
+        // Ereignisses stand also auch dann im HTML, wenn gar kein Knopf da war.
+        if (! str_contains($html, 'wire:click="$dispatch(\'objekt-bearbeiten\'')) {
             $ohneKnopf[] = $typ;
         }
     }
