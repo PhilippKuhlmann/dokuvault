@@ -1,7 +1,7 @@
-{{-- Knopf und Modal fuer jeden Typ aus config/forms.php.
+{{-- Knopf plus Modal fuer jeden Typ aus config/forms.php.
 
-     Der Aufbau folgt dem VLAN-Modal: fester Rahmen, Felder darin, Loeschen als
-     Rueckfrage im selben Fenster statt auf einer eigenen Seite. --}}
+     Aufbau und Knopfleiste folgen dem VLAN-Modal: Loeschen links abgesetzt,
+     Abbrechen und Speichern rechts, die Rueckfrage ersetzt die Felder. --}}
 <div class="inline">
     @can($typ.'_create')
         <button type="button" wire:click="neu"
@@ -37,52 +37,52 @@
                                         @endforeach
                                     </x-input.select>
                                 @else
-                                    <x-input.field :name="$feld['name']" wire:model="form.{{ $feld['name'] }}"
+                                    <x-input.text wire:model="form.{{ $feld['name'] }}"
                                         type="{{ $feld['type'] }}" class="mt-1" />
                                 @endif
 
                                 @error('form.'.$feld['name'])
-                                    <span class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</span>
+                                    <span class="mt-1 text-xs text-red-600">{{ $message }}</span>
                                 @enderror
                             </div>
                         @endforeach
                     </div>
+                @endunless
 
-                    <div class="mt-5 flex items-center justify-between gap-3">
-                        {{-- Loeschen nur beim Bearbeiten und links abgesetzt: Es soll
-                             nicht neben "Speichern" liegen. --}}
-                        <div>
-                            @if ($bearbeiteId)
-                                @can($typ.'_delete')
-                                    <button type="button" wire:click="$set('loeschenGefragt', true)"
-                                        class="text-sm text-red-600 hover:text-red-700 dark:text-red-400">{{ __('Löschen') }}</button>
-                                @endcan
-                            @endif
+                @if ($loeschenGefragt)
+                    {{-- Die Rueckfrage ersetzt die Felder, statt unter ihnen zu
+                         haengen: Bei vielen Feldern stand sie sonst ausserhalb
+                         des Sichtbereichs. --}}
+                    <div class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-900/20">
+                        <div class="text-sm font-medium text-red-800 dark:text-red-300">
+                            {{ __($einzahl) }} {{ __('löschen?') }}
                         </div>
+                        <p class="mt-1 text-xs text-red-700/80 dark:text-red-400/80">
+                            {{ __('Der Eintrag landet im Papierkorb und lässt sich von dort wiederherstellen.') }}
+                        </p>
 
-                        <div class="flex items-center gap-3">
-                            <button type="button" wire:click="abbrechen"
-                                class="text-sm text-gray-600 hover:text-gray-800 dark:text-gray-300">{{ __('Abbrechen') }}</button>
-                            <x-input.button wire:click="speichern" type="button" :label="__('Speichern')" />
+                        <div class="mt-4 flex justify-end gap-2">
+                            <x-input.button type="button" color="gray"
+                                wire:click="$set('loeschenGefragt', false)" :label="__('Abbrechen')" />
+                            <x-input.button type="button" color="red" wire:click="loeschen" :label="__('Löschen')" />
                         </div>
                     </div>
                 @else
-                    <div class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-900/20">
-                        <div class="font-DINPro-bold text-red-800 dark:text-red-300">
-                            {{ __(':objekt wirklich löschen?', ['objekt' => __($einzahl)]) }}
-                        </div>
-                        <p class="mt-1 text-sm text-red-700 dark:text-red-400">
-                            {{ __('Der Eintrag landet im Papierkorb und lässt sich dort wiederherstellen.') }}
-                        </p>
-                    </div>
+                    <div class="mt-5 flex flex-wrap items-center justify-end gap-2">
+                        @if ($bearbeiteId)
+                            @can($typ.'_delete')
+                                <x-input.button type="button" color="red" class="mr-auto"
+                                    wire:click="$set('loeschenGefragt', true)" :label="__('Löschen')" />
+                            @endcan
+                        @endif
 
-                    <div class="mt-4 flex items-center justify-end gap-3">
-                        <button type="button" wire:click="$set('loeschenGefragt', false)"
-                            class="text-sm text-gray-600 hover:text-gray-800 dark:text-gray-300">{{ __('Abbrechen') }}</button>
-                        <button type="button" wire:click="loeschen"
-                            class="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-DINPro-bold hover:bg-red-700">{{ __('Löschen') }}</button>
+                        {{-- abbrechen() statt offen=false: sonst bleibt bearbeiteId stehen
+                             und das naechste "Neu" oeffnet das Bearbeiten-Modal. --}}
+                        <x-input.button type="button" color="gray" wire:click="abbrechen" :label="__('Abbrechen')" />
+                        <x-input.button type="button" wire:click="speichern"
+                            :label="$bearbeiteId ? __('Speichern') : __('Anlegen')" />
                     </div>
-                @endunless
+                @endif
             </div>
         </div>
     @endif

@@ -14,6 +14,7 @@
   - Validiert wird mit demselben Request, den auch der Controller benutzt — eine zweite Regelmenge wäre die Stelle, an der die beiden Wege auseinanderlaufen.
   - Die Feldlisten wurden aus den bestehenden Formularen ausgelesen und **gegen die Validierungsregeln geprüft**. Nur Typen, bei denen beide deckungsgleich sind, kommen in Frage: Ein Feld, das aus der Definition fällt, ließe sich im Modal nicht mehr ausfüllen — ohne Fehlermeldung. Ein Test hält das fest.
   - Deshalb bleiben Lizenzen, WLAN, Postfach, AD-Benutzer und Serverschrank vorerst bei Seiten: Dort gibt es Datei-Uploads, Auswahllisten und Schalter, die die Extraktion nicht erfasst.
+  - Knopfleiste und Suchfeld sind dieselben Bausteine wie im VLAN-Modal: Löschen links abgesetzt, Abbrechen und Speichern rechts, „Anlegen" statt „Speichern" beim neuen Eintrag, und die Suche mit Lupe im Feld.
   - Die Karte einer Liste bleibt beim Typ (`<typ>/_karte.blade.php`). Eine generische Karte hätte jede Liste gleich aussehen lassen, und gerade die Unterschiede tragen hier die Information.
 
 - **Die Fernwartungslösung ist einstellbar.** Der Verbinden-Knopf war fest auf RustDesk verdrahtet — in vier Views, mit vier Beschriftungen und einem Icon. Wer TeamViewer benutzt, hätte jede Stelle einzeln ändern müssen. Unter **Administration → Einstellungen** steht jetzt zur Wahl: RustDesk, TeamViewer, AnyDesk oder ein eigenes URL-Muster. Bestehende Installationen bleiben ohne Zutun bei RustDesk.
