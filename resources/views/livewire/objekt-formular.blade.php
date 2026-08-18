@@ -75,7 +75,7 @@
                     {{-- Die Rueckfrage ersetzt die Felder, statt unter ihnen zu
                          haengen: Bei vielen Feldern stand sie sonst ausserhalb
                          des Sichtbereichs. --}}
-                    <div class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-900/20">
+                    <div class="mb-5 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-900/20">
                         <div class="text-sm font-medium text-red-800 dark:text-red-300">
                             {{ __($einzahl) }} {{ __('löschen?') }}
                         </div>
@@ -83,7 +83,7 @@
                             {{ __('Der Eintrag landet im Papierkorb und lässt sich von dort wiederherstellen.') }}
                         </p>
 
-                        <div class="mt-4 flex justify-end gap-2 pb-5">
+                        <div class="mt-4 flex justify-end gap-2">
                             <x-input.button type="button" color="gray"
                                 wire:click="$set('loeschenGefragt', false)" :label="__('Abbrechen')" />
                             <x-input.button type="button" color="red" wire:click="loeschen" :label="__('Löschen')" />
