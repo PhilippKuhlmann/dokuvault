@@ -152,6 +152,12 @@ class ObjektFormular extends Component
             collect($request->attributes())->mapWithKeys(fn ($name, $feld) => ['form.'.$feld => $name])->all()
         )['form'];
 
+        // Leere Felder als null, nicht als Leerstring: MySQL lehnt '' fuer eine
+        // date-Spalte ab ("Incorrect date value"), waehrend SQLite es
+        // durchlaesst - in den Tests bleibt das deshalb unsichtbar. Fachlich ist
+        // null ohnehin richtig: kein Wert ist kein leerer Wert.
+        $daten = array_map(fn ($wert) => $wert === '' ? null : $wert, $daten);
+
         if ($this->bearbeiteId) {
             $this->objektHolen($this->bearbeiteId)->update($daten);
             $meldung = $this->einstellung()['einzahl'].' gespeichert.';

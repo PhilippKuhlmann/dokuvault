@@ -350,3 +350,23 @@ test('Anlegen, Speichern und Loeschen quittieren sich mit einer Meldung', functi
         ->call('loeschen')
         ->assertDispatched('hinweis', text: 'Domain gelöscht.');
 });
+
+test('leere Felder werden als null gespeichert, nicht als Leerstring', function () {
+    // MySQL lehnt '' fuer eine date-Spalte ab: "Incorrect date value" - ein 500er
+    // beim Anlegen einer Domain ohne Ablaufdatum. SQLite laesst es durch, der
+    // Fehler war in den Tests also nicht zu sehen. Geprueft wird deshalb der
+    // Wert selbst.
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['domain_create', 'domain_viewAny']));
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'domain', 'customer' => $customer])
+        ->call('neu')
+        ->set('form.name', 'ohnedatum.de')
+        ->call('speichern')
+        ->assertHasNoErrors();
+
+    $roh = DB::table('domains')->where('name', 'ohnedatum.de')->first();
+
+    expect($roh->expiry_date)->toBeNull();
+    expect($roh->registrar)->toBeNull();
+});
