@@ -87,7 +87,12 @@
                         </div>
                     </div>
                 @else
-                    <div class="mt-5 flex flex-wrap items-center justify-end gap-2">
+                    {{-- Am unteren Rand haften: Mit den Bloecken fuer IP-Adressen und
+                         Zugangsdaten wird das Modal so hoch, dass Speichern sonst
+                         ausserhalb des Bildes liegt und erst gescrollt werden muss.
+                         Der eigene Hintergrund verhindert, dass Felder darunter
+                         durchscheinen. --}}
+                    <div class="sticky bottom-0 -mx-5 -mb-5 mt-5 flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 bg-white px-5 py-4 dark:border-gray-700 dark:bg-gray-800">
                         @if ($bearbeiteId)
                             @can($typ.'_delete')
                                 <x-input.button type="button" color="red" class="mr-auto"
