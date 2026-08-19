@@ -41,7 +41,22 @@
                                 {{-- Felder, die nur zu einer Bauform gehoeren: Ein
                                      Standserver hat keine Einbautiefe. --}}
                                 @if (! empty($feld['sichtbar_wenn']))
-                                    x-show="$wire.form.{{ array_key_first($feld['sichtbar_wenn']) }} === '{{ reset($feld['sichtbar_wenn']) }}'"
+                                    @php
+                                        $bedingung = $feld['sichtbar_wenn'];
+                                        $anderesFeld = array_key_first($bedingung);
+                                        $erwartet = reset($bedingung);
+                                        // Ein Freitextfeld wie der Hersteller wird verglichen,
+                                        // nicht auf Gleichheit geprueft: "Securepoint GmbH" ist
+                                        // dasselbe wie "Securepoint".
+                                        $ausdruck = is_array($erwartet) && isset($erwartet['enthaelt'])
+                                            ? "(\$wire.form.{$anderesFeld} || '').toLowerCase().includes('".strtolower($erwartet['enthaelt'])."')"
+                                            : "\$wire.form.{$anderesFeld} === '{$erwartet}'";
+                                    @endphp
+                                    {{-- Unescaped, weil der Ausdruck JavaScript ist und aus
+                         config/forms.php stammt, nicht aus einer Eingabe. Mit
+                         {{ }} wuerden die Anfuehrungszeichen zu &#039; und der
+                         Vergleich schluege immer fehl. --}}
+                    x-show="{!! $ausdruck !!}"
                                     x-cloak
                                 @endif>
                                 @unless ($feld['type'] === 'dienste')

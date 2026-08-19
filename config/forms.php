@@ -11,6 +11,7 @@ use App\Http\Requests\ContactPersonRequest;
 use App\Http\Requests\DECTRequest;
 use App\Http\Requests\DomainRequest;
 use App\Http\Requests\DynDNSRequest;
+use App\Http\Requests\FirewallRequest;
 use App\Http\Requests\FTPServerRequest;
 use App\Http\Requests\IoTDeviceRequest;
 use App\Http\Requests\LoginGeneralRequest;
@@ -40,6 +41,7 @@ use App\Models\ContactPerson;
 use App\Models\DECT;
 use App\Models\Domain;
 use App\Models\DynDNS;
+use App\Models\Firewall;
 use App\Models\FTPServer;
 use App\Models\IoTDevice;
 use App\Models\LoginGeneral;
@@ -129,6 +131,46 @@ return [
             ['name' => 'last_success', 'label' => 'Letzter Erfolg', 'type' => 'date'],
             ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
             ['name' => 'notes', 'label' => 'Notizen', 'type' => 'text'],
+        ],
+    ],
+    'firewall' => [
+        'model' => Firewall::class, 'request' => FirewallRequest::class,
+        'relation' => 'firewalls', 'einzahl' => 'Firewall', 'suchfelder' => ['name', 'serialNumber'],
+        'bloecke' => true,
+        'spalten' => 2,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
+            ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
+            ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
+            ['name' => 'firmware', 'label' => 'Firmware', 'type' => 'text'],
+            ['name' => 'form_factor', 'label' => 'Bauform', 'type' => 'optionen',
+                'quelle' => 'custom.firewall_form_factors'],
+            ['name' => 'management_url', 'label' => 'Verwaltungsoberfläche', 'type' => 'text'],
+            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
+            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+            ['name' => 'port', 'label' => 'Port', 'type' => 'number'],
+            ['name' => 'subscription_until', 'label' => 'Subscription bis', 'type' => 'date'],
+            // Nur bei Securepoint. Der Hersteller ist Freitext, deshalb wird
+            // verglichen und nicht auf Gleichheit geprueft.
+            ['name' => 'url_user', 'label' => 'Benutzerportal', 'type' => 'text',
+                'sichtbar_wenn' => ['manufacturer' => ['enthaelt' => 'securepoint']]],
+            ['name' => 'url_external', 'label' => 'Externer Zugang', 'type' => 'text',
+                'sichtbar_wenn' => ['manufacturer' => ['enthaelt' => 'securepoint']]],
+            ['name' => 'usc_pin', 'label' => 'USC-PIN', 'type' => 'text',
+                'sichtbar_wenn' => ['manufacturer' => ['enthaelt' => 'securepoint']]],
+            ['name' => 'cloud_backup_password', 'label' => 'Cloud-Backup-Kennwort', 'type' => 'text',
+                'sichtbar_wenn' => ['manufacturer' => ['enthaelt' => 'securepoint']]],
+            ['name' => 'height_units', 'label' => 'Höheneinheiten (HE)', 'type' => 'number',
+                'sichtbar_wenn' => ['form_factor' => 'appliance']],
+            ['name' => 'full_depth', 'label' => 'Volle Tiefe', 'type' => 'schalter',
+                'sichtbar_wenn' => ['form_factor' => 'appliance']],
+            ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
+            ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
+            ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
+            ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+            ['name' => 'notes', 'label' => 'Notizen', 'type' => 'text', 'breit' => true],
         ],
     ],
     'ftpserver' => [

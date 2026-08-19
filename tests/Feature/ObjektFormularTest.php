@@ -7,6 +7,7 @@ use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
 use App\Models\Domain;
+use App\Models\Firewall;
 use App\Models\Machine;
 use App\Models\Network;
 use App\Models\OperatingSystem;
@@ -586,4 +587,45 @@ test('ein leeres Pflichtfeld mit Standardwert scheitert nicht an null', function
     $server = Server::where('name', 'SRV-OhneHE')->sole();
 
     expect($server->height_units)->not->toBeNull();
+});
+
+test('eine Securepoint-Firewall laesst sich im Modal anlegen', function () {
+    // Der Weg, an dem der Server gescheitert ist: anlegen, nicht bearbeiten.
+    // Dort ist alles leer, und genau da zeigen sich Vorbelegung, Pflichtfelder
+    // und Standardwerte.
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $this->actingAs(userWithPermissions(['firewall_create', 'firewall_viewAny']));
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'firewall', 'customer' => $customer])
+        ->call('neu')
+        ->assertSet('form.form_factor', 'appliance')
+        ->set('form.site_id', $site->id)
+        ->set('form.name', 'FW-Modal')
+        ->set('form.manufacturer', 'Securepoint GmbH')
+        ->set('form.usc_pin', '112233')
+        ->call('speichern')
+        ->assertHasNoErrors()
+        ->assertSet('offen', false);
+
+    $firewall = Firewall::where('name', 'FW-Modal')->sole();
+
+    expect($firewall->usc_pin)->toBe('112233')
+        ->and($firewall->height_units)->not->toBeNull();
+});
+
+test('die Securepoint-Felder erscheinen nur beim passenden Hersteller', function () {
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['firewall_create']));
+
+    $html = Livewire::test(ObjektFormular::class, ['typ' => 'firewall', 'customer' => $customer])
+        ->call('neu')
+        ->html();
+
+    // Der Hersteller ist Freitext - deshalb wird verglichen, nicht auf
+    // Gleichheit geprueft: "Securepoint GmbH" ist dasselbe wie "Securepoint".
+    expect($html)->toContain("toLowerCase().includes('securepoint')")
+        // Und der Ausdruck darf nicht escaped im Attribut landen, sonst
+        // vergleicht der Browser gegen &#039;.
+        ->and($html)->not->toContain('&#039;securepoint&#039;');
 });
