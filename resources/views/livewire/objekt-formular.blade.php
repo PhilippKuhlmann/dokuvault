@@ -27,7 +27,9 @@
                     <div class="flex flex-col gap-3">
                         @foreach ($felder as $feld)
                             <div class="flex flex-col" wire:key="feld-{{ $feld['name'] }}">
-                                <x-input.label :value="__($feld['label'])" />
+                                @unless ($feld['type'] === 'dienste')
+                                    <x-input.label :value="__($feld['label'])" />
+                                @endunless
 
                                 @if ($feld['type'] === 'standort')
                                     <x-input.select :name="$feld['name']" wire:model="form.{{ $feld['name'] }}" class="mt-1">
@@ -36,6 +38,13 @@
                                             <option value="{{ $site->id }}">{{ $site->name }}</option>
                                         @endforeach
                                     </x-input.select>
+                                @elseif ($feld['type'] === 'dienste')
+                                    {{-- Dieselbe Auswahl wie auf der Seite: Kacheln,
+                                         Katalog aus der Administration, Freitext.
+                                         Sie meldet jede Aenderung an Livewire, statt
+                                         ein verstecktes Formularfeld zu fuellen. --}}
+                                    <x-create.dienste :default="$form[$feld['name']] ?? ''"
+                                        wire-model="form.{{ $feld['name'] }}" />
                                 @elseif ($feld['type'] === 'schalter')
                                     <label class="mt-1 inline-flex items-center gap-2">
                                         <input type="checkbox" wire:model="form.{{ $feld['name'] }}"

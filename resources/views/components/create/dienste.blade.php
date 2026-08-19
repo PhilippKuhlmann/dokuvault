@@ -8,7 +8,7 @@
     gibt die Komponente unveraendert ein einziges Feld "services" ab und der
     Controller merkt von der Umstellung nichts.
 --}}
-@props(['default' => ''])
+@props(['default' => '', 'wireModel' => null])
 
 @php
     $gewaehlt = collect(explode(',', (string) (old('services') ?? $default)))
@@ -40,14 +40,27 @@
                 this.gewaehlt.push(name);
             }
             this.neu = '';
+            this.melden();
         },
         weg(name) {
             this.gewaehlt = this.gewaehlt.filter(d => d !== name);
+            this.melden();
+        },
+        melden() {
+            @if ($wireModel)
+                $wire.set(@js($wireModel), this.gewaehlt.join(','));
+            @endif
         },
     }">
 
-    {{-- Das einzige Feld, das abgeschickt wird. --}}
-    <input type="hidden" name="services" x-bind:value="gewaehlt.join(',')" />
+    @if ($wireModel)
+        {{-- Im Modal gibt es kein Formular, das abgeschickt wird: Jede Aenderung
+             geht direkt an die Livewire-Komponente. --}}
+        <input type="hidden" x-ref="wert" />
+    @else
+        {{-- Das einzige Feld, das abgeschickt wird. --}}
+        <input type="hidden" name="services" x-bind:value="gewaehlt.join(',')" />
+    @endif
 
     <x-input.label :value="__('Dienste')" />
 

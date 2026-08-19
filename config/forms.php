@@ -26,6 +26,7 @@ use App\Http\Requests\PrinterRequest;
 use App\Http\Requests\RecorderRequest;
 use App\Http\Requests\RouterRequest;
 use App\Http\Requests\UpsRequest;
+use App\Http\Requests\VMRequest;
 use App\Http\Requests\WifiRequest;
 use App\Models\Accesspoint;
 use App\Models\ADDomain;
@@ -55,7 +56,9 @@ use App\Models\PhoneSystem;
 use App\Models\Printer;
 use App\Models\Recorder;
 use App\Models\Router;
+use App\Models\Server;
 use App\Models\Ups;
+use App\Models\VM;
 use App\Models\Wifi;
 
 /*
@@ -200,6 +203,23 @@ return [
             // Das Netz gehoert dem Kunden - die Auswahl wird darauf eingeschraenkt.
             ['name' => 'network_id', 'label' => 'Netzwerk', 'type' => 'auswahl',
                 'quelle' => Network::class, 'anzeige' => 'VLAN {vlanId} · {description}'],
+        ],
+    ],
+    'vm' => [
+        'model' => VM::class, 'request' => VMRequest::class,
+        'relation' => 'vms', 'einzahl' => 'VM', 'suchfelder' => ['name'],
+        'bloecke' => true,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            // Der Host, auf dem die VM laeuft.
+            ['name' => 'server_id', 'label' => 'Host', 'type' => 'auswahl',
+                'quelle' => Server::class, 'anzeige' => 'name'],
+            ['name' => 'services', 'label' => 'Dienste', 'type' => 'dienste'],
+            ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'auswahl',
+                'quelle' => OperatingSystem::class, 'anzeige' => 'name'],
+            ['name' => 'remoteID', 'label' => 'Fernwartungs-ID', 'type' => 'text'],
+            ['name' => 'remotePassword', 'label' => 'Fernwartungs-Kennwort', 'type' => 'text'],
         ],
     ],
     'mailbox' => [

@@ -10,7 +10,9 @@ use App\Models\Domain;
 use App\Models\Machine;
 use App\Models\Network;
 use App\Models\OperatingSystem;
+use App\Models\Service;
 use App\Models\Site;
+use App\Models\VM;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
 
@@ -445,12 +447,10 @@ test('Typen mit eigener Bearbeitungs-Oberflaeche bleiben bei ihrer Seite', funct
         preg_match_all('/<livewire:([\w-]+)/', $inhalt, $treffer);
         $bloecke = array_diff(array_unique($treffer[1]), $uebernommen);
 
-        // Auch Blade-Komponenten koennen eine eigene Oberflaeche sein: Die
-        // Dienste-Auswahl bringt Katalog, Kacheln und ein Freitextfeld mit -
-        // im Modal blieb davon ein Textfeld uebrig.
-        if (str_contains($inhalt, 'x-create.dienste')) {
-            $bloecke[] = 'x-create.dienste';
-        }
+        // Die Dienste-Auswahl stand hier eine Zeit lang mit drin: Sie bringt
+        // Katalog, Kacheln und ein Freitextfeld mit, und im Modal blieb davon
+        // nur ein Textfeld. Inzwischen bindet das Modal dieselbe Komponente ein
+        // (Feldart "dienste"), deshalb ist sie kein Ausschlussgrund mehr.
 
         foreach ($bloecke as $block) {
             $falsch[] = "$typ ($block)";
@@ -458,4 +458,30 @@ test('Typen mit eigener Bearbeitungs-Oberflaeche bleiben bei ihrer Seite', funct
     }
 
     expect($falsch)->toBe([], 'Diese Typen bringen eine eigene Oberfläche mit und gehören nicht ins Modal: '.implode(', ', $falsch));
+});
+
+test('die Dienste-Auswahl steht im Modal, nicht nur ein Textfeld', function () {
+    // Der Fall, der mir zweimal durchgerutscht ist: Die Felder waren
+    // vollstaendig, die Oberflaeche nicht. Ein Textfeld statt Katalog und
+    // Kacheln faellt in keinem Feld-Test auf.
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $os = OperatingSystem::factory()->create(['name' => 'Debian 13']);
+    // Keine ServiceFactory im Projekt - der Katalogeintrag wird direkt angelegt.
+    Service::create(['name' => 'Docker', 'description' => 'Container']);
+
+    $this->actingAs(userWithPermissions(['vm_viewAny', 'vm_update']));
+
+    $vm = VM::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'operating_system_id' => $os->id,
+    ]);
+
+    $html = Livewire::test(ObjektFormular::class, ['typ' => 'vm', 'customer' => $customer])
+        ->call('bearbeiten', 'vm', $vm->id)
+        ->html();
+
+    expect($html)->toContain('Aus dem Katalog')
+        ->and($html)->toContain('Noch keine Dienste')
+        ->and($html)->toContain('Nicht im Katalog');
 });
