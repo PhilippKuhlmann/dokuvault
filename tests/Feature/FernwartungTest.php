@@ -123,16 +123,41 @@ test('die Einstellung kostet keine Abfrage je Geraet', function () {
         'operating_system_id' => $os->id, 'remoteID' => '1', 'remotePassword' => '2',
     ]);
 
+    // Den Zuhoerer nur einmal registrieren: DB::listen haengt bei jedem Aufruf
+    // einen weiteren an, der zweite Durchlauf zaehlte sonst doppelt und der
+    // Test meldete ein Wachstum, das es nicht gibt.
     $abfragen = 0;
     DB::listen(function () use (&$abfragen) {
         $abfragen++;
     });
 
-    $this->get(route('server.index', $customer));
+    $messen = function () use ($customer, &$abfragen) {
+        $abfragen = 0;
+        $this->get(route('server.index', $customer));
 
-    // Cache::rememberForever behandelt null als "nicht im Cache" - je Zeile eine
-    // Abfrage waere die Folge gewesen. Gemessen hatte die Liste 114 statt 8.
-    expect($abfragen)->toBeLessThan(20, "Liste braucht {$abfragen} Abfragen");
+        return $abfragen;
+    };
+
+    // Erst aufwaermen: Der erste Aufruf laedt Rechte und Einstellungen, die
+    // danach aus dem Cache kommen - ohne das misst man die Aufwaermkosten mit
+    // und bekommt beim zweiten Lauf weniger Abfragen statt gleich vieler.
+    $messen();
+
+    $mitZehn = $messen();
+
+    Server::factory()->count(10)->create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'operating_system_id' => $os->id, 'remoteID' => '1', 'remotePassword' => '2',
+    ]);
+
+    // Der Punkt ist nicht die absolute Zahl, sondern dass sie mit der Zahl der
+    // Geraete nicht waechst. Cache::rememberForever behandelt null als "nicht im
+    // Cache" - je Zeile eine Abfrage waere die Folge gewesen, gemessen 114 statt
+    // acht. Seit die Liste eine Livewire-Komponente ist, rendert der volle
+    // Seitenaufruf sie zweimal; die absolute Zahl ist deshalb hoeher als frueher.
+    $mitZwanzig = $messen();
+
+    expect($mitZwanzig)->toBe($mitZehn, "Mit 10 Geräten {$mitZehn}, mit 20 Geräten {$mitZwanzig} Abfragen");
 });
 
 test('die Einstellungen stehen im Admin-Menue', function () {

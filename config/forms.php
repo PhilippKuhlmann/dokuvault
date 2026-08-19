@@ -25,6 +25,7 @@ use App\Http\Requests\PhoneSystemRequest;
 use App\Http\Requests\PrinterRequest;
 use App\Http\Requests\RecorderRequest;
 use App\Http\Requests\RouterRequest;
+use App\Http\Requests\ServerRequest;
 use App\Http\Requests\UpsRequest;
 use App\Http\Requests\VMRequest;
 use App\Http\Requests\WifiRequest;
@@ -203,6 +204,42 @@ return [
             // Das Netz gehoert dem Kunden - die Auswahl wird darauf eingeschraenkt.
             ['name' => 'network_id', 'label' => 'Netzwerk', 'type' => 'auswahl',
                 'quelle' => Network::class, 'anzeige' => 'VLAN {vlanId} · {description}'],
+        ],
+    ],
+    'server' => [
+        'model' => Server::class, 'request' => ServerRequest::class,
+        'relation' => 'servers', 'einzahl' => 'Server', 'suchfelder' => ['name', 'serialNumber'],
+        'bloecke' => true,
+        // Zwanzig Felder untereinander waeren eine Scrollstrecke.
+        'spalten' => 2,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'type', 'label' => 'Typ', 'type' => 'text'],
+            ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
+            ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
+            ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
+            ['name' => 'form_factor', 'label' => 'Bauform', 'type' => 'optionen',
+                'quelle' => 'custom.server_form_factors'],
+            // Nur beim Rackeinbau: Ein Standserver hat keine Einbautiefe.
+            ['name' => 'full_depth', 'label' => 'Einbautiefe', 'type' => 'optionen',
+                'quelle' => 'custom.server_depths', 'sichtbar_wenn' => ['form_factor' => 'rack']],
+            ['name' => 'height_units', 'label' => 'Höheneinheiten (HE)', 'type' => 'number',
+                'sichtbar_wenn' => ['form_factor' => 'rack']],
+            ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'auswahl',
+                'quelle' => OperatingSystem::class, 'anzeige' => 'name'],
+            ['name' => 'bmcIp', 'label' => 'BMC IP', 'type' => 'text'],
+            ['name' => 'bmcUser', 'label' => 'BMC Benutzer', 'type' => 'text'],
+            ['name' => 'bmcPassword', 'label' => 'BMC Passwort', 'type' => 'text'],
+            ['name' => 'remoteID', 'label' => 'Fernwartungs-ID', 'type' => 'text'],
+            ['name' => 'remotePassword', 'label' => 'Fernwartungs-Kennwort', 'type' => 'text'],
+            ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
+            ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
+            ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
+            ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+            // Die Dienste brauchen die volle Breite - Katalog und Kacheln
+            // passen nicht in eine halbe Spalte.
+            ['name' => 'services', 'label' => 'Dienste', 'type' => 'dienste', 'breit' => true],
         ],
     ],
     'vm' => [

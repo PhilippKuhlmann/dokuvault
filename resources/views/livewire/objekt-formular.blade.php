@@ -17,16 +17,33 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
             x-on:keydown.escape.window="$wire.abbrechen()">
 
-            <div class="max-h-[90vh] w-full {{ $mitBloecken && $bearbeiteId ? 'max-w-2xl' : 'max-w-md' }} overflow-y-auto rounded-xl border border-gray-200 bg-white px-5 pt-5 text-left shadow-lg dark:border-gray-700 dark:bg-gray-800">
+            <div class="max-h-[90vh] w-full {{ $spalten > 1 ? 'max-w-3xl' : ($mitBloecken && $bearbeiteId ? 'max-w-2xl' : 'max-w-md') }} overflow-y-auto rounded-xl border border-gray-200 bg-white px-5 pt-5 text-left shadow-lg dark:border-gray-700 dark:bg-gray-800">
 
                 @unless ($loeschenGefragt)
                     <div class="mb-4 text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100">
                         {{ $bearbeiteId ? __($einzahl).' '.__('bearbeiten') : __('Neu').': '.__($einzahl) }}
                     </div>
 
-                    <div class="flex flex-col gap-3">
+                    {{-- Zwei Spalten, wo es viele Felder sind: Zwanzig Eingaben untereinander
+                         ergeben eine Scrollstrecke, bei der man den Anfang aus den
+                         Augen verliert. Felder mit 'breit' spannen ueber beide. --}}
+                    <div @class([
+                        'gap-x-4 gap-y-3',
+                        'flex flex-col' => $spalten === 1,
+                        'grid grid-cols-1 sm:grid-cols-2' => $spalten > 1,
+                    ])>
                         @foreach ($felder as $feld)
-                            <div class="flex flex-col" wire:key="feld-{{ $feld['name'] }}">
+                            <div wire:key="feld-{{ $feld['name'] }}"
+                                @class([
+                                    'flex flex-col',
+                                    'sm:col-span-2' => $spalten > 1 && ($feld['breit'] ?? false),
+                                ])
+                                {{-- Felder, die nur zu einer Bauform gehoeren: Ein
+                                     Standserver hat keine Einbautiefe. --}}
+                                @if (! empty($feld['sichtbar_wenn']))
+                                    x-show="$wire.form.{{ array_key_first($feld['sichtbar_wenn']) }} === '{{ reset($feld['sichtbar_wenn']) }}'"
+                                    x-cloak
+                                @endif>
                                 @unless ($feld['type'] === 'dienste')
                                     <x-input.label :value="__($feld['label'])" />
                                 @endunless
@@ -45,6 +62,14 @@
                                          ein verstecktes Formularfeld zu fuellen. --}}
                                     <x-create.dienste :default="$form[$feld['name']] ?? ''"
                                         wire-model="form.{{ $feld['name'] }}" />
+                                @elseif ($feld['type'] === 'optionen')
+                                    {{-- Feste Liste aus config/custom.php, etwa die
+                                         Bauform eines Servers. --}}
+                                    <x-input.select :name="$feld['name']" wire:model.live="form.{{ $feld['name'] }}" class="mt-1">
+                                        @foreach (config($feld['quelle']) as $wert => $beschriftung)
+                                            <option value="{{ $wert }}">{{ __($beschriftung) }}</option>
+                                        @endforeach
+                                    </x-input.select>
                                 @elseif ($feld['type'] === 'schalter')
                                     <label class="mt-1 inline-flex items-center gap-2">
                                         <input type="checkbox" wire:model="form.{{ $feld['name'] }}"

@@ -10,6 +10,7 @@ use App\Models\Domain;
 use App\Models\Machine;
 use App\Models\Network;
 use App\Models\OperatingSystem;
+use App\Models\Server;
 use App\Models\Service;
 use App\Models\Site;
 use App\Models\VM;
@@ -484,4 +485,46 @@ test('die Dienste-Auswahl steht im Modal, nicht nur ein Textfeld', function () {
     expect($html)->toContain('Aus dem Katalog')
         ->and($html)->toContain('Noch keine Dienste')
         ->and($html)->toContain('Nicht im Katalog');
+});
+
+test('das Server-Modal ist zweispaltig und zeigt alle Sonderfelder', function () {
+    // Zwanzig Felder untereinander waeren eine Scrollstrecke, bei der man den
+    // Anfang aus den Augen verliert.
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $os = OperatingSystem::factory()->create(['name' => 'Debian 13']);
+    Service::create(['name' => 'Docker', 'description' => 'Container']);
+
+    $this->actingAs(userWithPermissions(['server_viewAny', 'server_update']));
+
+    $server = Server::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'operating_system_id' => $os->id,
+    ]);
+
+    $html = Livewire::test(ObjektFormular::class, ['typ' => 'server', 'customer' => $customer])
+        ->call('bearbeiten', 'server', $server->id)
+        ->html();
+
+    expect($html)->toContain('sm:grid-cols-2')
+        // Die Dienste spannen ueber beide Spalten - Katalog und Kacheln passen
+        // nicht in eine halbe.
+        ->and($html)->toContain('sm:col-span-2')
+        ->and($html)->toContain('Aus dem Katalog')
+        // Einbautiefe und Hoeheneinheiten nur beim Rackeinbau.
+        ->and($html)->toContain("form.form_factor === 'rack'")
+        ->and($html)->toContain('Weitere IP-Adressen');
+});
+
+test('einspaltige Typen bleiben einspaltig', function () {
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['domain_create']));
+
+    // Sechs Felder brauchen keine zweite Spalte - sonst steht das Modal
+    // unnoetig breit im Bild.
+    $html = Livewire::test(ObjektFormular::class, ['typ' => 'domain', 'customer' => $customer])
+        ->call('neu')
+        ->html();
+
+    expect($html)->not->toContain('sm:grid-cols-2');
 });

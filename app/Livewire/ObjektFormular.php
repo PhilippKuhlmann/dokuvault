@@ -241,6 +241,7 @@ class ObjektFormular extends Component
             'mitBloecken' => (bool) ($einstellung['bloecke'] ?? false),
             'felder' => $felder,
             'einzahl' => $einstellung['einzahl'],
+            'spalten' => $einstellung['spalten'] ?? 1,
             // Nur laden, wenn ein Standortfeld vorkommt.
             'sites' => collect($einstellung['felder'])->contains('type', 'standort')
                 ? Site::where('customer_id', $this->customerId)->orderBy('name')->get()
