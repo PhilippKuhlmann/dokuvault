@@ -3,6 +3,7 @@
 use App\Http\Requests\AccesspointRequest;
 use App\Http\Requests\ADDomainRequest;
 use App\Http\Requests\ADGroupRequest;
+use App\Http\Requests\ADUserRequest;
 use App\Http\Requests\BackupRequest;
 use App\Http\Requests\CameraRequest;
 use App\Http\Requests\CertificateRequest;
@@ -33,6 +34,7 @@ use App\Http\Requests\WifiRequest;
 use App\Models\Accesspoint;
 use App\Models\ADDomain;
 use App\Models\ADGroup;
+use App\Models\ADUser;
 use App\Models\Backup;
 use App\Models\Camera;
 use App\Models\Certificate;
@@ -108,6 +110,24 @@ return [
             ['name' => 'issued_date', 'label' => 'Ausgestellt am', 'type' => 'date'],
             ['name' => 'expiry_date', 'label' => 'Gültig bis', 'type' => 'date'],
             ['name' => 'notes', 'label' => 'Notizen', 'type' => 'text'],
+        ],
+    ],
+    'aduser' => [
+        'model' => ADUser::class, 'request' => ADUserRequest::class,
+        'relation' => 'adusers', 'einzahl' => 'AD-Benutzer',
+        'suchfelder' => ['username', 'firstName', 'lastName', 'email'],
+        'felder' => [
+            ['name' => 'firstName', 'label' => 'Vorname', 'type' => 'text'],
+            ['name' => 'lastName', 'label' => 'Nachname', 'type' => 'text'],
+            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
+            ['name' => 'email', 'label' => 'E-Mail', 'type' => 'text'],
+            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+            // Zwei Werte brauchen keinen eigenen Konfigurationseintrag.
+            ['name' => 'enabled', 'label' => 'Status', 'type' => 'optionen',
+                'werte' => [1 => 'Aktiv', 0 => 'Deaktiviert']],
+            // Technisch, nicht fuer die Anzeige: Der Wert wird unveraendert
+            // durchgereicht, wie im bisherigen Formular.
+            ['name' => 'hidden', 'label' => 'Verborgen', 'type' => 'versteckt'],
         ],
     ],
     'adgroup' => [

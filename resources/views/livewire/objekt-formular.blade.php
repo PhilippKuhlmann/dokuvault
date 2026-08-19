@@ -33,6 +33,11 @@
                         'grid grid-cols-1 sm:grid-cols-2' => $spalten > 1,
                     ])>
                         @foreach ($felder as $feld)
+                            {{-- Technische Felder wie "hidden" gehoeren ins
+                                 Formular, aber nicht vor die Augen: Sie werden
+                                 beim Bearbeiten geladen und beim Speichern
+                                 unveraendert zurueckgeschrieben. --}}
+                            @continue($feld['type'] === 'versteckt')
                             <div wire:key="feld-{{ $feld['name'] }}"
                                 @class([
                                     'flex flex-col',
@@ -81,7 +86,7 @@
                                     {{-- Feste Liste aus config/custom.php, etwa die
                                          Bauform eines Servers. --}}
                                     <x-input.select :name="$feld['name']" wire:model.live="form.{{ $feld['name'] }}" class="mt-1">
-                                        @foreach (config($feld['quelle']) as $wert => $beschriftung)
+                                        @foreach (($feld['werte'] ?? config($feld['quelle'])) as $wert => $beschriftung)
                                             <option value="{{ $wert }}">{{ __($beschriftung) }}</option>
                                         @endforeach
                                     </x-input.select>

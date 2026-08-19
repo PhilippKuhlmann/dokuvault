@@ -69,7 +69,7 @@ class ObjektFormular extends Component
             // denselben Wert im Formular sieht man eine Auswahl und bekommt
             // trotzdem "ist erforderlich".
             $this->form[$feld['name']] = $feld['type'] === 'optionen'
-                ? (string) array_key_first(config($feld['quelle']))
+                ? (string) array_key_first($feld['werte'] ?? config($feld['quelle']))
                 : '';
         }
 

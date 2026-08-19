@@ -3,6 +3,7 @@
 use App\Livewire\DeviceIpAddresses;
 use App\Livewire\ObjektFormular;
 use App\Livewire\ObjektListe;
+use App\Models\ADUser;
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
@@ -628,4 +629,42 @@ test('die Securepoint-Felder erscheinen nur beim passenden Hersteller', function
         // Und der Ausdruck darf nicht escaped im Attribut landen, sonst
         // vergleicht der Browser gegen &#039;.
         ->and($html)->not->toContain('&#039;securepoint&#039;');
+});
+
+test('ein AD-Benutzer laesst sich im Modal anlegen', function () {
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['aduser_create', 'aduser_viewAny']));
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'aduser', 'customer' => $customer])
+        ->call('neu')
+        // Ein neuer Benutzer ist aktiv, nicht "nichts ausgewaehlt".
+        ->assertSet('form.enabled', '1')
+        ->set('form.username', 'm.mustermann')
+        ->set('form.firstName', 'Max')
+        ->call('speichern')
+        ->assertHasNoErrors()
+        ->assertSet('offen', false);
+
+    expect(ADUser::where('username', 'm.mustermann')->sole()->enabled)->toBeTruthy();
+});
+
+test('ein technisches Feld wird nicht gezeichnet, bleibt aber erhalten', function () {
+    // "hidden" steuert, ob der Benutzer in Listen auftaucht - es gehoert ins
+    // Formular, aber nicht vor die Augen. Wuerde es beim Speichern verloren
+    // gehen, taeuchten verborgene Benutzer nach jeder Bearbeitung wieder auf.
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['aduser_update', 'aduser_viewAny']));
+
+    $benutzer = ADUser::factory()->create([
+        'customer_id' => $customer->id, 'username' => 'verborgen', 'hidden' => 1,
+    ]);
+
+    $modal = Livewire::test(ObjektFormular::class, ['typ' => 'aduser', 'customer' => $customer])
+        ->call('bearbeiten', 'aduser', $benutzer->id);
+
+    expect($modal->html())->not->toContain('form.hidden');
+
+    $modal->set('form.firstName', 'Geändert')->call('speichern');
+
+    expect($benutzer->fresh()->hidden)->toEqual(1);
 });
