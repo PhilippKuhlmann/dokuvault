@@ -47,6 +47,9 @@
 
 ### Fixed
 
+- **Das Anlegen im Modal scheiterte an Pflichtfeldern mit Standardwert.** Drei Fehler auf einmal, alle beim Server sichtbar: Die Bauform *zeigte* „19-Zoll", der Wert im Formular war aber leer — dadurch blieben Einbautiefe und Höheneinheiten unsichtbar und das Speichern verlangte etwas, das ausgefüllt aussah. Die Meldung nannte dabei den internen Namen (`form.form factor`) statt der Beschriftung. Und schließlich brach das Anlegen still ab: `Column 'height_units' cannot be null` — leere Felder werden als `null` gespeichert, was bei einer `NOT NULL`-Spalte mit Standardwert nicht geht.
+  - Feste Optionslisten sind jetzt beim Anlegen mit ihrem ersten Eintrag belegt, Beschriftungen kommen notfalls aus der Felddefinition, und bei `NOT NULL`-Spalten wird der leere Wert weggelassen, damit die Datenbank ihren Standard setzt.
+
 - **Die ausgewählte Fernwartungslösung war im Dunkelmodus nicht lesbar.** Die Karte trug `dark:bg-cerulean-900/20` — diese Klasse fehlte im ausgelieferten CSS, weil der Build älter war als die Seite. Damit blieb der *helle* Hintergrund `bg-cerulean-50` stehen, mit hellem Text darauf: **Kontrast 1,02:1**, praktisch dieselbe Farbe. Jetzt `dark:bg-cerulean-950` ohne Deckkraft-Angabe (13,5:1), und das CSS ist neu gebaut.
   - Ein Test prüft jetzt, dass jede in einer View verwendete Farbklasse **mit Deckkraft** auch im gebauten CSS steht. Genau diese Klassen sind der Fallstrick: Jede Stufe (`/10`, `/20`, `/30`) braucht eine eigene Regel, und wer eine View ändert ohne neu zu bauen, bekommt kein Fehlerbild — die Darstellung fällt still auf etwas anderes zurück.
 

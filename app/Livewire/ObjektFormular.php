@@ -65,7 +65,12 @@ class ObjektFormular extends Component
         $this->form = [];
 
         foreach ($this->einstellung()['felder'] as $feld) {
-            $this->form[$feld['name']] = '';
+            // Eine feste Optionsliste zeigt immer ihren ersten Eintrag an. Ohne
+            // denselben Wert im Formular sieht man eine Auswahl und bekommt
+            // trotzdem "ist erforderlich".
+            $this->form[$feld['name']] = $feld['type'] === 'optionen'
+                ? (string) array_key_first(config($feld['quelle']))
+                : '';
         }
 
         $this->bearbeiteId = null;
@@ -135,6 +140,7 @@ class ObjektFormular extends Component
 
         $regeln = $this->einstellung()['request'];
         $request = new $regeln;
+        $klasse = $this->einstellung()['model'];
 
         // Die Mandantenregel holt den Kunden sonst aus der Route - die heisst
         // hier livewire.update und kennt ihn nicht.
@@ -154,14 +160,39 @@ class ObjektFormular extends Component
         $daten = $this->validate(
             collect($regelnMitKunde)->mapWithKeys(fn ($regel, $feld) => ['form.'.$feld => $regel])->all(),
             [],
-            collect($request->attributes())->mapWithKeys(fn ($name, $feld) => ['form.'.$feld => $name])->all()
+            // Beschriftungen aus der eigenen Felddefinition: Nicht jeder Request
+            // nennt jedes Feld in attributes(), und dann steht der interne Name
+            // in der Meldung ("Das Feld form.form factor ist erforderlich").
+            collect($this->einstellung()['felder'])
+                ->mapWithKeys(fn ($feld) => ['form.'.$feld['name'] => __($feld['label'])])
+                ->merge(collect($request->attributes())->mapWithKeys(fn ($name, $feld) => ['form.'.$feld => $name]))
+                ->all()
         )['form'];
 
         // Leere Felder als null, nicht als Leerstring: MySQL lehnt '' fuer eine
         // date-Spalte ab ("Incorrect date value"), waehrend SQLite es
         // durchlaesst - in den Tests bleibt das deshalb unsichtbar. Fachlich ist
         // null ohnehin richtig: kein Wert ist kein leerer Wert.
-        $daten = array_map(fn ($wert) => $wert === '' ? null : $wert, $daten);
+        //
+        // Ausser die Spalte laesst kein null zu: height_units etwa ist NOT NULL
+        // mit Standardwert. Dort wird der Schluessel weggelassen, damit die
+        // Datenbank ihren Standard setzt, statt an null zu scheitern.
+        $tabelle = (new $klasse)->getTable();
+        $spalten = collect(Schema::getColumns($tabelle))->keyBy('name');
+
+        foreach ($daten as $feld => $wert) {
+            if ($wert !== '') {
+                continue;
+            }
+
+            $spalte = $spalten[$feld] ?? null;
+
+            if ($spalte && ! $spalte['nullable']) {
+                unset($daten[$feld]);
+            } else {
+                $daten[$feld] = null;
+            }
+        }
 
         if ($this->bearbeiteId) {
             $this->objektHolen($this->bearbeiteId)->update($daten);

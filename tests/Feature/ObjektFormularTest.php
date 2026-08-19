@@ -528,3 +528,62 @@ test('einspaltige Typen bleiben einspaltig', function () {
 
     expect($html)->not->toContain('sm:grid-cols-2');
 });
+
+test('eine feste Optionsliste ist beim Anlegen vorbelegt', function () {
+    // Gemeldet als "Server geht nicht": Das Auswahlfeld zeigte "19-Zoll", der
+    // Wert im Formular war aber leer. Folge: Die Felder, die an der Bauform
+    // haengen, blieben unsichtbar, und beim Speichern kam "ist erforderlich"
+    // fuer etwas, das sichtbar ausgefuellt aussah.
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['server_create']));
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'server', 'customer' => $customer])
+        ->call('neu')
+        ->assertSet('form.form_factor', 'rack')
+        ->assertSet('form.full_depth', '1');
+});
+
+test('Fehlermeldungen nennen die Beschriftung, nicht den Feldnamen', function () {
+    // "Das Feld form.form factor ist erforderlich" - der Request kennt fuer
+    // dieses Feld keine Bezeichnung, also muss die Felddefinition einspringen.
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['server_create']));
+
+    $modal = Livewire::test(ObjektFormular::class, ['typ' => 'server', 'customer' => $customer])
+        ->call('neu')
+        ->set('form.form_factor', '')
+        ->call('speichern');
+
+    $fehler = $modal->errors()->get('form.form_factor');
+
+    expect($fehler[0] ?? '')->toContain('Bauform')
+        ->and($fehler[0] ?? '')->not->toContain('form factor');
+});
+
+test('ein leeres Pflichtfeld mit Standardwert scheitert nicht an null', function () {
+    // Gemeldet als "Server geht nicht": Das Anlegen brach still ab. Im Log stand
+    // "Column 'height_units' cannot be null" - mein Fix, leere Felder als null
+    // zu speichern, traf hier auf eine Spalte, die kein null zulaesst. Jetzt
+    // wird der Schluessel weggelassen und die Datenbank setzt ihren Standard.
+    //
+    // SQLite ist an dieser Stelle strenger als sonst und lehnt null ebenfalls
+    // ab, der Test greift also auch hier.
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $os = OperatingSystem::factory()->create(['name' => 'Debian 13']);
+    $this->actingAs(userWithPermissions(['server_create', 'server_viewAny']));
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'server', 'customer' => $customer])
+        ->call('neu')
+        ->set('form.site_id', $site->id)
+        ->set('form.name', 'SRV-OhneHE')
+        ->set('form.operating_system_id', $os->id)
+        ->set('form.height_units', '')
+        ->call('speichern')
+        ->assertHasNoErrors()
+        ->assertSet('offen', false);
+
+    $server = Server::where('name', 'SRV-OhneHE')->sole();
+
+    expect($server->height_units)->not->toBeNull();
+});
