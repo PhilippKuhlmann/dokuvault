@@ -16,6 +16,7 @@ use App\Http\Requests\FirewallRequest;
 use App\Http\Requests\FTPServerRequest;
 use App\Http\Requests\InternetConnectionRequest;
 use App\Http\Requests\IoTDeviceRequest;
+use App\Http\Requests\LicenseAccessRequest;
 use App\Http\Requests\LicenseWindowsRequest;
 use App\Http\Requests\LoginGeneralRequest;
 use App\Http\Requests\LoginWebsiteRequest;
@@ -51,6 +52,7 @@ use App\Models\Firewall;
 use App\Models\FTPServer;
 use App\Models\InternetConnection;
 use App\Models\IoTDevice;
+use App\Models\LicenseAccess;
 use App\Models\LicenseWindows;
 use App\Models\LoginGeneral;
 use App\Models\LoginWebsite;
@@ -209,6 +211,19 @@ return [
             ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
             ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
             ['name' => 'description', 'label' => 'Beschreibung', 'type' => 'text'],
+        ],
+    ],
+    'licenseaccess' => [
+        'model' => LicenseAccess::class, 'request' => LicenseAccessRequest::class,
+        'relation' => 'licenseaccesses', 'einzahl' => 'CAL-Lizenz',
+        'suchfelder' => ['name', 'key'],
+        'felder' => [
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'key', 'label' => 'Key', 'type' => 'text'],
+            ['name' => 'file_name', 'label' => 'Bezeichnung der Datei', 'type' => 'text'],
+            ['name' => 'file_path', 'label' => 'Dateipfad', 'type' => 'versteckt'],
+            ['name' => 'datei', 'label' => 'Datei', 'type' => 'datei',
+                'pfad_feld' => 'file_path', 'name_feld' => 'file_name', 'ordner' => 'licenseaccess'],
         ],
     ],
     'licensewindows' => [

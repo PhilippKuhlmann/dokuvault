@@ -10,6 +10,7 @@ use App\Models\Customer;
 use App\Models\Domain;
 use App\Models\Firewall;
 use App\Models\InternetConnection;
+use App\Models\LicenseAccess;
 use App\Models\LicenseWindows;
 use App\Models\Machine;
 use App\Models\Network;
@@ -894,4 +895,26 @@ test('eine eingetragene Bezeichnung bleibt beim Hochladen stehen', function () {
         ->set('form.file_name', 'Von Hand benannt')
         ->set('datei', UploadedFile::fake()->create('egal.pdf', 12))
         ->assertSet('form.file_name', 'Von Hand benannt');
+});
+
+test('eine CAL-Lizenz laesst sich mit Datei anlegen', function () {
+    Storage::fake('local');
+
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['licenseaccess_create', 'licenseaccess_viewAny']));
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'licenseaccess', 'customer' => $customer])
+        ->call('neu')
+        ->set('form.name', 'RDS CAL 2022')
+        ->set('form.key', 'AAAAA-BBBBB')
+        ->set('datei', UploadedFile::fake()->create('CAL Nachweis.pdf', 12))
+        // Der Vorschlag gilt fuer jeden Typ mit Dateifeld, nicht nur fuer Windows.
+        ->assertSet('form.file_name', 'CAL Nachweis')
+        ->call('speichern')
+        ->assertHasNoErrors();
+
+    $lizenz = LicenseAccess::where('name', 'RDS CAL 2022')->sole();
+
+    expect($lizenz->file_path)->toStartWith($customer->fresh()->slug.'/licenseaccess/');
+    Storage::disk('local')->assertExists($lizenz->file_path);
 });
