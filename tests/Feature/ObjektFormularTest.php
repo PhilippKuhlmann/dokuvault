@@ -13,6 +13,7 @@ use App\Models\InternetConnection;
 use App\Models\Machine;
 use App\Models\Network;
 use App\Models\OperatingSystem;
+use App\Models\SecurepointUMA;
 use App\Models\Server;
 use App\Models\Service;
 use App\Models\Site;
@@ -231,7 +232,13 @@ test('Typen mit IP-Adressen und Zugangsdaten zeigen beide Bloecke beim Bearbeite
         $this->actingAs(userWithPermissions([$typ.'_viewAny', $typ.'_update']));
 
         $klasse = $einstellung['model'];
-        $werte = ['customer_id' => $customer->id, 'site_id' => $site->id];
+        // Nicht jeder Typ hat einen Standortbezug - die E-Mail-Archivierung
+        // etwa gehoert zum Kunden, nicht zu einem Standort.
+        $werte = ['customer_id' => $customer->id];
+
+        if (Schema::hasColumn((new $klasse)->getTable(), 'site_id')) {
+            $werte['site_id'] = $site->id;
+        }
 
         if (Schema::hasColumn((new $klasse)->getTable(), 'operating_system_id')) {
             $werte['operating_system_id'] = OperatingSystem::factory()->create(['name' => 'Debian 13'])->id;
@@ -703,4 +710,46 @@ test('die Bandbreitenfelder tragen ihre Einheit', function () {
 
     expect(substr_count($html, 'Mbit/s'))->toBe(2)
         ->and($html)->toContain('wire:model="form.bandwidth_down"');
+});
+
+test('eine E-Mail-Archivierung laesst sich im Modal anlegen', function () {
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['securepointuma_create', 'securepointuma_viewAny']));
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'securepointuma', 'customer' => $customer])
+        ->call('neu')
+        ->set('form.name', 'UMA-Modal')
+        ->set('form.manufacturer', 'Reddoxx')
+        ->set('form.urlAdmin', 'https://10.0.0.9:11115')
+        ->set('form.username', 'admin')
+        ->set('form.password', 'Geheim!2026')
+        ->set('form.encryptionkey', 'AAAA-BBBB-CCCC-DDDD')
+        ->call('speichern')
+        ->assertHasNoErrors()
+        ->assertSet('offen', false);
+
+    $uma = SecurepointUMA::where('name', 'UMA-Modal')->sole();
+
+    expect($uma->encryptionkey)->toBe('AAAA-BBBB-CCCC-DDDD');
+
+    // Der Schluessel gehoert verschluesselt in die Tabelle - wer die Datenbank
+    // sieht, soll ihn nicht lesen koennen.
+    $roh = DB::table('securepoint_umas')->where('id', $uma->id)->value('encryptionkey');
+    expect($roh)->not->toBe('AAAA-BBBB-CCCC-DDDD');
+});
+
+test('das Modal kommt ohne customer-Relation am Model aus', function () {
+    // Die E-Mail-Archivierung hat keine customer()-Relation. Die eingebetteten
+    // Bloecke bekommen den Kunden deshalb von der Komponente, nicht ueber das
+    // Objekt - sonst bricht das Bearbeiten mit "property id on null".
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['securepointuma_update', 'securepointuma_viewAny']));
+
+    $uma = SecurepointUMA::factory()->create(['customer_id' => $customer->id]);
+
+    $html = Livewire::test(ObjektFormular::class, ['typ' => 'securepointuma', 'customer' => $customer])
+        ->call('bearbeiten', 'securepointuma', $uma->id)
+        ->html();
+
+    expect($html)->toContain('Weitere IP-Adressen');
 });

@@ -28,6 +28,7 @@ use App\Http\Requests\PhoneSystemRequest;
 use App\Http\Requests\PrinterRequest;
 use App\Http\Requests\RecorderRequest;
 use App\Http\Requests\RouterRequest;
+use App\Http\Requests\SecurepointUMARequest;
 use App\Http\Requests\ServerRequest;
 use App\Http\Requests\UpsRequest;
 use App\Http\Requests\VMRequest;
@@ -63,6 +64,7 @@ use App\Models\PhoneSystem;
 use App\Models\Printer;
 use App\Models\Recorder;
 use App\Models\Router;
+use App\Models\SecurepointUMA;
 use App\Models\Server;
 use App\Models\Ups;
 use App\Models\VM;
@@ -291,6 +293,24 @@ return [
             // Das Netz gehoert dem Kunden - die Auswahl wird darauf eingeschraenkt.
             ['name' => 'network_id', 'label' => 'Netzwerk', 'type' => 'auswahl',
                 'quelle' => Network::class, 'anzeige' => 'VLAN {vlanId} · {description}'],
+        ],
+    ],
+    'securepointuma' => [
+        'model' => SecurepointUMA::class, 'request' => SecurepointUMARequest::class,
+        'relation' => 'securepointumas', 'einzahl' => 'E-Mail-Archivierung',
+        'suchfelder' => ['name', 'manufacturer'],
+        'bloecke' => true,
+        'felder' => [
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'manufacturer', 'label' => 'Hersteller / Produkt', 'type' => 'text'],
+            ['name' => 'type', 'label' => 'Typ', 'type' => 'text'],
+            ['name' => 'urlAdmin', 'label' => 'Admin URL', 'type' => 'text'],
+            ['name' => 'urlUser', 'label' => 'User URL', 'type' => 'text'],
+            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
+            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+            // Ein Verschluesselungscode ist lang und wird am Stueck kopiert -
+            // er braucht die volle Breite.
+            ['name' => 'encryptionkey', 'label' => 'Verschlüsselungscode', 'type' => 'text', 'breit' => true],
         ],
     ],
     'server' => [

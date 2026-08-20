@@ -273,6 +273,7 @@ class ObjektFormular extends Component
             'felder' => $felder,
             'einzahl' => $einstellung['einzahl'],
             'spalten' => $einstellung['spalten'] ?? 1,
+            'kunde' => $this->kunde(),
             // Nur laden, wenn ein Standortfeld vorkommt.
             'sites' => collect($einstellung['felder'])->contains('type', 'standort')
                 ? Site::where('customer_id', $this->customerId)->orderBy('name')->get()

@@ -128,9 +128,9 @@
                                  eingebetteten Zustand selbst eine mit, zwei
                                  uebereinander sahen aus wie ein Fehler. --}}
                             <div class="mt-1">
-                                <livewire:device-ip-addresses :model="$objekt" :customer="$objekt->customer" eingebettet randlos
+                                <livewire:device-ip-addresses :model="$objekt" :customer="$kunde" eingebettet randlos
                                     :key="'ip-'.$typ.'-'.$objekt->id" />
-                                <livewire:device-credentials :model="$objekt" :customer="$objekt->customer" eingebettet randlos
+                                <livewire:device-credentials :model="$objekt" :customer="$kunde" eingebettet randlos
                                     :key="'zug-'.$typ.'-'.$objekt->id" />
                             </div>
                         @else
