@@ -13,9 +13,20 @@ class TrashController extends Controller
 
         $items = collect();
 
+        // Je Typ hoechstens hundert Eintraege. Wird gekuerzt, sagt die Seite es
+        // - eine stille Kuerzung liest sich wie "mehr ist nicht da".
+        $gekuerzt = [];
+
         foreach (config('custom.trashables') as $slug => [$class, $label]) {
+            $vorhanden = $class::onlyTrashed()->where('customer_id', $customer->id)->count();
+
+            if ($vorhanden > 100) {
+                $gekuerzt[$label] = $vorhanden;
+            }
+
             $trashed = $class::onlyTrashed()
                 ->where('customer_id', $customer->id)
+                ->orderByDesc('deleted_at')
                 ->limit(100)
                 ->get();
 
@@ -32,7 +43,7 @@ class TrashController extends Controller
 
         $items = $items->sortByDesc('deleted_at')->values();
 
-        return view('trash.index', compact('customer', 'items'));
+        return view('trash.index', compact('customer', 'items', 'gekuerzt'));
     }
 
     public function restore(Customer $customer, string $type, int $id)

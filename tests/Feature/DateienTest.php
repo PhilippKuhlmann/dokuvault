@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Customer;
+use App\Models\Domain;
 use App\Models\File;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -63,4 +64,35 @@ test('die Liste zeigt Titel, Groesse und Anzahl', function () {
         ->assertSee('1 Datei')
         ->assertSee('1,4 MB')
         ->assertSee('Handbuch.pdf');
+});
+
+test('der Papierkorb zeigt Anzahl und Art der Eintraege', function () {
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['see_hidden']));
+
+    $domain = Domain::factory()->create([
+        'customer_id' => $customer->id, 'name' => 'geloescht.de',
+    ]);
+    $domain->delete();
+
+    $this->get(route('trash.index', $customer))
+        ->assertSee('Papierkorb')
+        ->assertSee('1 Eintrag')
+        // Die Art steht als Etikett davor - in einer gemischten Liste sucht man
+        // zuerst danach.
+        ->assertSee('Domain')
+        ->assertSee('geloescht.de');
+});
+
+test('der Papierkorb sagt es, wenn er die Liste kuerzt', function () {
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['see_hidden']));
+
+    // Eine stille Kuerzung liest sich wie "mehr ist nicht da".
+    Domain::factory()->count(101)->create(['customer_id' => $customer->id])
+        ->each(fn ($d) => $d->delete());
+
+    $this->get(route('trash.index', $customer))
+        ->assertSee('höchstens 100')
+        ->assertSee('101');
 });
