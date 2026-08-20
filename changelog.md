@@ -18,7 +18,7 @@
 
   Nach der Dateiwahl schlägt das Modal den Dateinamen als Bezeichnung vor — ohne Endung und nur, solange das Feld leer ist. Wer schon etwas eingetragen hat, behält es.
 
-  Umgestellt sind **36 Typen** — neben den einfachen jetzt auch die Geräte: Accesspoint, Kamera, Computer, DECT, IoT-Gerät, NAS, Switch, Sonstiger Client, Telefon, TK-Anlage, Drucker, Recorder, Router, USV und VM.
+  Umgestellt sind **37 Typen** — alle bis auf Serverschrank und Patchfeld, die ihre eigene Oberfläche behalten — neben den einfachen jetzt auch die Geräte: Accesspoint, Kamera, Computer, DECT, IoT-Gerät, NAS, Switch, Sonstiger Client, Telefon, TK-Anlage, Drucker, Recorder, Router, USV und VM.
   - Die Felddefinitionen der Geräte sind nicht abgeschrieben, sondern **aus den Validierungsregeln und Beschriftungen der Requests erzeugt**. Damit ist der Abgleich zwischen Modal und Request per Konstruktion erfüllt statt nur geprüft.
   - Die Liste lädt dieselben Nebendaten vor wie die Controller (Zugangsdaten, Adressen, Einbauort, Betriebssystem, Standort). Ohne das kostete eine Seite mit 25 Geräten 88 Abfragen statt acht.
   - Validiert wird mit demselben Request, den auch der Controller benutzt — eine zweite Regelmenge wäre die Stelle, an der die beiden Wege auseinanderlaufen.
@@ -50,6 +50,8 @@
   - Das Kennwort liegt verschlüsselt in der Tabelle, der Standort wird gegen den Mandanten geprüft. Beides hält je ein Test fest.
 
 ### Fixed
+
+- **Das Anlegen eines Ansprechpartners im Modal wäre abgestürzt.** In der Felddefinition stand `contactpeople` als Relation, am Kunden heißt sie `contactpersons` — `BadMethodCallException` beim ersten Klick auf Speichern. Aufgefallen ist es erst, als ein neuer Test prüfte, ob jede genannte Relation überhaupt existiert; die Listen rendern ja, und die Feldprüfung sieht Relationsnamen nicht an.
 
 - **Das Anlegen im Modal scheiterte an Pflichtfeldern mit Standardwert.** Drei Fehler auf einmal, alle beim Server sichtbar: Die Bauform *zeigte* „19-Zoll", der Wert im Formular war aber leer — dadurch blieben Einbautiefe und Höheneinheiten unsichtbar und das Speichern verlangte etwas, das ausgefüllt aussah. Die Meldung nannte dabei den internen Namen (`form.form factor`) statt der Beschriftung. Und schließlich brach das Anlegen still ab: `Column 'height_units' cannot be null` — leere Felder werden als `null` gespeichert, was bei einer `NOT NULL`-Spalte mit Standardwert nicht geht.
   - Feste Optionslisten sind jetzt beim Anlegen mit ihrem ersten Eintrag belegt, Beschriftungen kommen notfalls aus der Felddefinition, und bei `NOT NULL`-Spalten wird der leere Wert weggelassen, damit die Datenbank ihren Standard setzt.

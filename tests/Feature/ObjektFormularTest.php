@@ -11,6 +11,7 @@ use App\Models\Domain;
 use App\Models\Firewall;
 use App\Models\InternetConnection;
 use App\Models\LicenseAccess;
+use App\Models\LicenseSoftware;
 use App\Models\LicenseWindows;
 use App\Models\Machine;
 use App\Models\Network;
@@ -917,4 +918,59 @@ test('eine CAL-Lizenz laesst sich mit Datei anlegen', function () {
 
     expect($lizenz->file_path)->toStartWith($customer->fresh()->slug.'/licenseaccess/');
     Storage::disk('local')->assertExists($lizenz->file_path);
+});
+
+test('jeder Typ nennt eine Relation, die es am Kunden gibt', function () {
+    // Ein Tippfehler im Relationsnamen faellt sonst erst beim Anlegen auf -
+    // und dann mit "Call to undefined method", nicht mit einer Meldung, die
+    // jemandem weiterhilft.
+    $kunde = new Customer;
+    $fehlend = [];
+
+    foreach (config('forms') as $typ => $einstellung) {
+        if (! method_exists($kunde, $einstellung['relation'])) {
+            $fehlend[] = "$typ → ".$einstellung['relation'];
+        }
+    }
+
+    expect($fehlend)->toBe([], 'Diese Relationen gibt es am Kunden nicht: '.implode(', ', $fehlend));
+});
+
+test('eine Software-Lizenz laesst sich mit Laufzeit und Abo anlegen', function () {
+    Storage::fake('local');
+
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['licensesoftware_create', 'licensesoftware_viewAny']));
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'licensesoftware', 'customer' => $customer])
+        ->call('neu')
+        // "Kein Abo" ist der Standard, nicht "nichts ausgewaehlt".
+        ->assertSet('form.abo', '')
+        ->set('form.name', 'Adobe Creative Cloud')
+        ->set('form.key', 'AAAA-BBBB')
+        ->set('form.start_date', '2026-01-01')
+        ->set('form.end_date', '2026-12-31')
+        ->set('form.abo', 'Jährlich')
+        ->call('speichern')
+        ->assertHasNoErrors();
+
+    $lizenz = LicenseSoftware::where('name', 'Adobe Creative Cloud')->sole();
+
+    expect($lizenz->abo)->toBe('Jährlich')
+        ->and($lizenz->end_date)->not->toBeNull();
+});
+
+test('ohne Abo wird der leere Wert zu null', function () {
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['licensesoftware_create']));
+
+    // "Kein Abo" ist ein leerer Wert - in der Tabelle gehoert dort null hin,
+    // kein Leerstring.
+    Livewire::test(ObjektFormular::class, ['typ' => 'licensesoftware', 'customer' => $customer])
+        ->call('neu')
+        ->set('form.name', 'Einmallizenz')
+        ->call('speichern')
+        ->assertHasNoErrors();
+
+    expect(LicenseSoftware::where('name', 'Einmallizenz')->sole()->abo)->toBeNull();
 });

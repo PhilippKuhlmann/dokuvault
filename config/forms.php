@@ -17,6 +17,7 @@ use App\Http\Requests\FTPServerRequest;
 use App\Http\Requests\InternetConnectionRequest;
 use App\Http\Requests\IoTDeviceRequest;
 use App\Http\Requests\LicenseAccessRequest;
+use App\Http\Requests\LicenseSoftwareRequest;
 use App\Http\Requests\LicenseWindowsRequest;
 use App\Http\Requests\LoginGeneralRequest;
 use App\Http\Requests\LoginWebsiteRequest;
@@ -53,6 +54,7 @@ use App\Models\FTPServer;
 use App\Models\InternetConnection;
 use App\Models\IoTDevice;
 use App\Models\LicenseAccess;
+use App\Models\LicenseSoftware;
 use App\Models\LicenseWindows;
 use App\Models\LoginGeneral;
 use App\Models\LoginWebsite;
@@ -226,6 +228,28 @@ return [
                 'pfad_feld' => 'file_path', 'name_feld' => 'file_name', 'ordner' => 'licenseaccess'],
         ],
     ],
+    'licensesoftware' => [
+        'model' => LicenseSoftware::class, 'request' => LicenseSoftwareRequest::class,
+        'relation' => 'licensesoftware', 'einzahl' => 'Software-Lizenz',
+        'suchfelder' => ['name', 'key', 'username'],
+        'spalten' => 2,
+        'felder' => [
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text', 'breit' => true],
+            ['name' => 'key', 'label' => 'Key', 'type' => 'text', 'breit' => true],
+            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
+            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+            ['name' => 'start_date', 'label' => 'Start Datum', 'type' => 'date'],
+            ['name' => 'end_date', 'label' => 'End Datum', 'type' => 'date'],
+            // "Kein Abo" ist der leere Wert - er wird beim Speichern zu null,
+            // wie im bisherigen Formular.
+            ['name' => 'abo', 'label' => 'Abonnement', 'type' => 'optionen',
+                'werte' => ['' => 'Kein Abo', 'Jährlich' => 'Jährlich', 'Monatlich' => 'Monatlich']],
+            ['name' => 'file_name', 'label' => 'Bezeichnung der Datei', 'type' => 'text'],
+            ['name' => 'file_path', 'label' => 'Dateipfad', 'type' => 'versteckt'],
+            ['name' => 'datei', 'label' => 'Datei', 'type' => 'datei', 'breit' => true,
+                'pfad_feld' => 'file_path', 'name_feld' => 'file_name', 'ordner' => 'licensesoftware'],
+        ],
+    ],
     'licensewindows' => [
         'model' => LicenseWindows::class, 'request' => LicenseWindowsRequest::class,
         'relation' => 'licensewindows', 'einzahl' => 'Windows-Lizenz',
@@ -298,7 +322,7 @@ return [
     ],
     'contactperson' => [
         'model' => ContactPerson::class, 'request' => ContactPersonRequest::class,
-        'relation' => 'contactpeople', 'einzahl' => 'Ansprechpartner', 'suchfelder' => ['first_name', 'last_name', 'mail'],
+        'relation' => 'contactpersons', 'einzahl' => 'Ansprechpartner', 'suchfelder' => ['first_name', 'last_name', 'mail'],
         'felder' => [
             ['name' => 'first_name', 'label' => 'Vorname', 'type' => 'text'],
             ['name' => 'last_name', 'label' => 'Nachname', 'type' => 'text'],
