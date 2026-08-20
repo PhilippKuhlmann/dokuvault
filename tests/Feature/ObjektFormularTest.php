@@ -9,6 +9,7 @@ use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
 use App\Models\Domain;
 use App\Models\Firewall;
+use App\Models\InternetConnection;
 use App\Models\Machine;
 use App\Models\Network;
 use App\Models\OperatingSystem;
@@ -667,4 +668,39 @@ test('ein technisches Feld wird nicht gezeichnet, bleibt aber erhalten', functio
     $modal->set('form.firstName', 'Geändert')->call('speichern');
 
     expect($benutzer->fresh()->hidden)->toEqual(1);
+});
+
+test('ein Internetanschluss laesst sich im Modal anlegen', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $this->actingAs(userWithPermissions(['internetconnection_create', 'internetconnection_viewAny']));
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'internetconnection', 'customer' => $customer])
+        ->call('neu')
+        ->set('form.site_id', $site->id)
+        ->set('form.provider', 'Telekom')
+        ->set('form.bandwidth_down', '250')
+        ->set('form.bandwidth_up', '40')
+        ->call('speichern')
+        ->assertHasNoErrors()
+        ->assertSet('offen', false);
+
+    $anschluss = InternetConnection::where('provider', 'Telekom')->sole();
+
+    // Die Einheit ist Beschriftung, kein Eingabewert - sie darf nicht mit in
+    // die Datenbank wandern.
+    expect($anschluss->bandwidth_down)->toBe('250')
+        ->and($anschluss->bandwidth_up)->toBe('40');
+});
+
+test('die Bandbreitenfelder tragen ihre Einheit', function () {
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['internetconnection_create']));
+
+    $html = Livewire::test(ObjektFormular::class, ['typ' => 'internetconnection', 'customer' => $customer])
+        ->call('neu')
+        ->html();
+
+    expect(substr_count($html, 'Mbit/s'))->toBe(2)
+        ->and($html)->toContain('wire:model="form.bandwidth_down"');
 });

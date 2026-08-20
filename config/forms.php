@@ -14,6 +14,7 @@ use App\Http\Requests\DomainRequest;
 use App\Http\Requests\DynDNSRequest;
 use App\Http\Requests\FirewallRequest;
 use App\Http\Requests\FTPServerRequest;
+use App\Http\Requests\InternetConnectionRequest;
 use App\Http\Requests\IoTDeviceRequest;
 use App\Http\Requests\LoginGeneralRequest;
 use App\Http\Requests\LoginWebsiteRequest;
@@ -45,6 +46,7 @@ use App\Models\Domain;
 use App\Models\DynDNS;
 use App\Models\Firewall;
 use App\Models\FTPServer;
+use App\Models\InternetConnection;
 use App\Models\IoTDevice;
 use App\Models\LoginGeneral;
 use App\Models\LoginWebsite;
@@ -211,6 +213,29 @@ return [
             ['name' => 'url', 'label' => 'URL', 'type' => 'text'],
             ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
             ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+        ],
+    ],
+    'internetconnection' => [
+        'model' => InternetConnection::class, 'request' => InternetConnectionRequest::class,
+        'relation' => 'internetconnections', 'einzahl' => 'Internetanschluss',
+        'suchfelder' => ['provider', 'product', 'contract_number'],
+        'spalten' => 2,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'provider', 'label' => 'Anbieter', 'type' => 'text'],
+            ['name' => 'product', 'label' => 'Produkt', 'type' => 'text'],
+            ['name' => 'contract_number', 'label' => 'Vertragsnummer', 'type' => 'text'],
+            ['name' => 'connection_type', 'label' => 'Anschlussart', 'type' => 'text'],
+            ['name' => 'hotline', 'label' => 'Hotline', 'type' => 'text'],
+            // Zahl mit fester Einheit: Man tippt 250, im Feld steht "250 | Mbit/s".
+            ['name' => 'bandwidth_down', 'label' => 'Download', 'type' => 'einheit', 'einheit' => 'Mbit/s'],
+            ['name' => 'bandwidth_up', 'label' => 'Upload', 'type' => 'einheit', 'einheit' => 'Mbit/s'],
+            ['name' => 'wan_ip', 'label' => 'WAN-IP', 'type' => 'text'],
+            ['name' => 'pppoe_user', 'label' => 'Einwahl-Benutzer', 'type' => 'text'],
+            ['name' => 'pppoe_password', 'label' => 'Einwahl-Passwort', 'type' => 'text'],
+            ['name' => 'subnet', 'label' => 'Geroutetes Netz', 'type' => 'text'],
+            ['name' => 'subnet_gateway', 'label' => 'Gateway des Netzes', 'type' => 'text'],
+            ['name' => 'notes', 'label' => 'Notizen', 'type' => 'text', 'breit' => true],
         ],
     ],
     'logingeneral' => [

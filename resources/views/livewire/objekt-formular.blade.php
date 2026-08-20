@@ -64,7 +64,7 @@
                     x-show="{!! $ausdruck !!}"
                                     x-cloak
                                 @endif>
-                                @unless ($feld['type'] === 'dienste')
+                                @unless (in_array($feld['type'], ['dienste', 'einheit']))
                                     <x-input.label :value="__($feld['label'])" />
                                 @endunless
 
@@ -90,6 +90,12 @@
                                             <option value="{{ $wert }}">{{ __($beschriftung) }}</option>
                                         @endforeach
                                     </x-input.select>
+                                @elseif ($feld['type'] === 'einheit')
+                                    {{-- Zahl mit fester Einheit dahinter, etwa
+                                         "250 | Mbit/s". Die Einheit ist
+                                         Beschriftung, kein Eingabewert. --}}
+                                    <x-create.einheit :label="__($feld['label'])" :name="$feld['name']"
+                                        :einheit="$feld['einheit']" wire-model="form.{{ $feld['name'] }}" />
                                 @elseif ($feld['type'] === 'schalter')
                                     <label class="mt-1 inline-flex items-center gap-2">
                                         <input type="checkbox" wire:model="form.{{ $feld['name'] }}"
