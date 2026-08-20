@@ -44,8 +44,13 @@
             <form method="POST" action="/{{ $customer->slug }}/file" enctype="multipart/form-data">
                 @csrf
 
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
-                    <div class="flex min-w-0 flex-1 flex-col">
+                {{-- Erst ab lg nebeneinander: Der Browser gibt dem Dateifeld eine
+                     Mindestbreite von rund 270 Pixeln (der eingebaute Knopf plus
+                     "Keine ausgewaehlt"). Bei 560 Pixeln Karte blieben fuer zwei
+                     Felder je 200 - beide abgeschnitten. Darunter steht jedes
+                     Element auf eigener Zeile und hat Platz. --}}
+                <div class="flex flex-col gap-3 lg:flex-row lg:items-end">
+                    <div class="flex min-w-0 flex-col lg:flex-1">
                         <x-input.label for="file" :value="__('Datei')" />
                         <x-input.file id="file" name="file" class="mt-1" x-on:change="uebernehmen($el)" />
 
@@ -60,7 +65,7 @@
                         </span>
                     </div>
 
-                    <div class="flex min-w-0 flex-1 flex-col">
+                    <div class="flex min-w-0 flex-col lg:flex-1">
                         <x-input.label for="name" :value="__('Bezeichnung')" />
                         <x-input.field id="name" name="name" x-model="dateiname" class="mt-1"
                             :placeholder="__('z. B. Wartungsvertrag 2026')" required />
@@ -68,7 +73,9 @@
 
                     {{-- size="feld" trifft die Hoehe der Eingabefelder daneben -
                          sonst steht der Knopf 6 Pixel niedriger. --}}
-                    <x-input.button size="feld" :label="__('Hochladen')" class="shrink-0" />
+                    {{-- Untereinander ueber die volle Breite, nebeneinander so
+                         breit wie noetig. --}}
+                    <x-input.button size="feld" :label="__('Hochladen')" class="w-full shrink-0 lg:w-auto" />
                 </div>
             </form>
         </div>
