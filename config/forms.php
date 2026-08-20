@@ -16,6 +16,7 @@ use App\Http\Requests\FirewallRequest;
 use App\Http\Requests\FTPServerRequest;
 use App\Http\Requests\InternetConnectionRequest;
 use App\Http\Requests\IoTDeviceRequest;
+use App\Http\Requests\LicenseWindowsRequest;
 use App\Http\Requests\LoginGeneralRequest;
 use App\Http\Requests\LoginWebsiteRequest;
 use App\Http\Requests\MachineRequest;
@@ -50,6 +51,7 @@ use App\Models\Firewall;
 use App\Models\FTPServer;
 use App\Models\InternetConnection;
 use App\Models\IoTDevice;
+use App\Models\LicenseWindows;
 use App\Models\LoginGeneral;
 use App\Models\LoginWebsite;
 use App\Models\Machine;
@@ -207,6 +209,21 @@ return [
             ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
             ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
             ['name' => 'description', 'label' => 'Beschreibung', 'type' => 'text'],
+        ],
+    ],
+    'licensewindows' => [
+        'model' => LicenseWindows::class, 'request' => LicenseWindowsRequest::class,
+        'relation' => 'licensewindows', 'einzahl' => 'Windows-Lizenz',
+        'suchfelder' => ['key'],
+        'felder' => [
+            ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'auswahl',
+                'quelle' => OperatingSystem::class, 'anzeige' => 'name'],
+            ['name' => 'key', 'label' => 'Key', 'type' => 'text'],
+            ['name' => 'file_name', 'label' => 'Bezeichnung der Datei', 'type' => 'text'],
+            // Der Pfad entsteht beim Hochladen und wird nicht eingetippt.
+            ['name' => 'file_path', 'label' => 'Dateipfad', 'type' => 'versteckt'],
+            ['name' => 'datei', 'label' => 'Datei', 'type' => 'datei',
+                'pfad_feld' => 'file_path', 'name_feld' => 'file_name', 'ordner' => 'licensewindows'],
         ],
     ],
     'loginwebsite' => [

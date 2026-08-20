@@ -10,6 +10,7 @@ use App\Models\Customer;
 use App\Models\Domain;
 use App\Models\Firewall;
 use App\Models\InternetConnection;
+use App\Models\LicenseWindows;
 use App\Models\Machine;
 use App\Models\Network;
 use App\Models\OperatingSystem;
@@ -19,6 +20,7 @@ use App\Models\Service;
 use App\Models\Site;
 use App\Models\VM;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\UploadedFile;
 use Livewire\Livewire;
 
 test('die Feldliste deckt ab, was der Request erlaubt', function () {
@@ -790,4 +792,77 @@ test('der Standort laedt die Seite neu, andere Typen nicht', function () {
 
     // Bei einer Domain waere das Neuladen unnoetig - sie steht nirgends sonst.
     expect(config('forms.domain.seite_neu_laden') ?? false)->toBeFalse();
+});
+
+test('eine Datei laesst sich im Modal hochladen', function () {
+    Storage::fake('local');
+
+    $customer = Customer::factory()->create(['slug' => 'testkunde']);
+    $os = OperatingSystem::factory()->create(['name' => 'Windows Server 2022']);
+    $this->actingAs(userWithPermissions(['licensewindows_create', 'licensewindows_viewAny']));
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'licensewindows', 'customer' => $customer])
+        ->call('neu')
+        ->set('form.operating_system_id', $os->id)
+        ->set('form.key', 'XXXXX-YYYYY-ZZZZZ')
+        ->set('form.file_name', 'Lizenzurkunde')
+        ->set('datei', UploadedFile::fake()->create('urkunde.pdf', 12))
+        ->call('speichern')
+        ->assertHasNoErrors();
+
+    $lizenz = LicenseWindows::where('key', 'XXXXX-YYYYY-ZZZZZ')->sole();
+
+    expect($lizenz->file_path)->not->toBeNull();
+    // Der Ablageort folgt dem bisherigen Controller: {kunde}/{typ}/ - der Slug
+    // kommt vom Model, nicht aus der Vorgabe der Factory.
+    expect($lizenz->file_path)->toStartWith($customer->fresh()->slug.'/licensewindows/');
+    Storage::disk('local')->assertExists($lizenz->file_path);
+});
+
+test('eine neue Datei ersetzt die alte und laesst keine Leiche zurueck', function () {
+    Storage::fake('local');
+
+    $customer = Customer::factory()->create(['slug' => 'testkunde']);
+    $os = OperatingSystem::factory()->create(['name' => 'Windows Server 2022']);
+    $this->actingAs(userWithPermissions(['licensewindows_update', 'licensewindows_viewAny']));
+
+    $lizenz = LicenseWindows::create([
+        'customer_id' => $customer->id, 'operating_system_id' => $os->id,
+        'key' => 'ALT', 'file_name' => 'Alt', 'file_path' => $customer->slug.'/licensewindows/alt.pdf',
+    ]);
+    Storage::disk('local')->put($customer->slug.'/licensewindows/alt.pdf', 'Inhalt');
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'licensewindows', 'customer' => $customer])
+        ->call('bearbeiten', 'licensewindows', $lizenz->id)
+        ->set('datei', UploadedFile::fake()->create('neu.pdf', 12))
+        ->call('speichern')
+        ->assertHasNoErrors();
+
+    $neu = $lizenz->fresh();
+
+    expect($neu->file_path)->not->toBe($customer->slug.'/licensewindows/alt.pdf');
+    Storage::disk('local')->assertExists($neu->file_path);
+    // Ohne das Loeschen sammeln sich Dateien, die niemand mehr zuordnen kann.
+    Storage::disk('local')->assertMissing($customer->slug.'/licensewindows/alt.pdf');
+});
+
+test('ohne neue Datei bleibt die hinterlegte erhalten', function () {
+    Storage::fake('local');
+
+    $customer = Customer::factory()->create(['slug' => 'testkunde']);
+    $os = OperatingSystem::factory()->create(['name' => 'Windows Server 2022']);
+    $this->actingAs(userWithPermissions(['licensewindows_update', 'licensewindows_viewAny']));
+
+    $lizenz = LicenseWindows::create([
+        'customer_id' => $customer->id, 'operating_system_id' => $os->id,
+        'key' => 'ALT', 'file_path' => $customer->slug.'/licensewindows/bleibt.pdf',
+    ]);
+
+    // Wer nur den Key korrigiert, darf die Datei nicht verlieren.
+    Livewire::test(ObjektFormular::class, ['typ' => 'licensewindows', 'customer' => $customer])
+        ->call('bearbeiten', 'licensewindows', $lizenz->id)
+        ->set('form.key', 'NEU')
+        ->call('speichern');
+
+    expect($lizenz->fresh()->file_path)->toBe($customer->slug.'/licensewindows/bleibt.pdf');
 });

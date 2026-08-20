@@ -8,9 +8,11 @@ use App\Models\Site;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 /**
  * Anlegen und Bearbeiten im Modal - fuer jeden Typ aus config/forms.php.
@@ -25,6 +27,8 @@ use Livewire\Component;
  */
 class ObjektFormular extends Component
 {
+    use WithFileUploads;
+
     #[Locked]
     public string $typ;
 
@@ -40,6 +44,13 @@ class ObjektFormular extends Component
 
     /** Die Formularwerte, nach Feldnamen. */
     public array $form = [];
+
+    /**
+     * Die hochgeladene Datei - getrennt vom Formular, weil sie eine temporaere
+     * Datei ist und kein Wert, der validiert oder in die Tabelle geschrieben
+     * wird. Erst beim Speichern wird daraus ein Pfad.
+     */
+    public $datei;
 
     public function mount(string $typ, Customer $customer): void
     {
@@ -73,6 +84,7 @@ class ObjektFormular extends Component
                 : '';
         }
 
+        $this->datei = null;
         $this->bearbeiteId = null;
         $this->loeschenGefragt = false;
         $this->resetValidation();
@@ -194,6 +206,8 @@ class ObjektFormular extends Component
             }
         }
 
+        $daten = $this->dateiAblegen($daten);
+
         if ($this->bearbeiteId) {
             $this->objektHolen($this->bearbeiteId)->update($daten);
             $meldung = $this->einstellung()['einzahl'].' gespeichert.';
@@ -219,6 +233,41 @@ class ObjektFormular extends Component
      * alten Stand - ein neuer Standort waere erst nach einem Neuladen zu
      * gebrauchen.
      */
+    /**
+     * Eine hochgeladene Datei ablegen und ihren Pfad in die Daten schreiben.
+     *
+     * Der Ablageort folgt dem bisherigen Controller: {kunde}/{ordner}/ mit
+     * Zeitstempel im Dateinamen, damit zwei gleichnamige Dateien sich nicht
+     * ueberschreiben. Beim Ersetzen wird die alte geloescht - sonst sammeln
+     * sich Karteileichen auf der Platte, die niemand mehr zuordnen kann.
+     */
+    protected function dateiAblegen(array $daten): array
+    {
+        $feld = collect($this->einstellung()['felder'])->firstWhere('type', 'datei');
+
+        if (! $feld || ! $this->datei) {
+            return $daten;
+        }
+
+        $kunde = $this->kunde();
+        $bezeichnung = $daten[$feld['name_feld']] ?? $this->datei->getClientOriginalName();
+
+        $dateiname = time().'_'.$bezeichnung.'.'.$this->datei->getClientOriginalExtension();
+        $pfad = $this->datei->storeAs($kunde->slug.'/'.$feld['ordner'], $dateiname, 'local');
+
+        if ($this->bearbeiteId) {
+            $alt = $this->objektHolen($this->bearbeiteId)->{$feld['pfad_feld']};
+
+            if ($alt) {
+                Storage::disk('local')->delete($alt);
+            }
+        }
+
+        $daten[$feld['pfad_feld']] = $pfad;
+
+        return $daten;
+    }
+
     protected function seiteNeuLadenWennNoetig(): void
     {
         if ($this->einstellung()['seite_neu_laden'] ?? false) {

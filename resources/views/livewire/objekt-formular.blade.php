@@ -96,6 +96,28 @@
                                          Beschriftung, kein Eingabewert. --}}
                                     <x-create.einheit :label="__($feld['label'])" :name="$feld['name']"
                                         :einheit="$feld['einheit']" wire-model="form.{{ $feld['name'] }}" />
+                                @elseif ($feld['type'] === 'datei')
+                                    <x-input.file wire:model="datei" />
+
+                                    {{-- Was schon hinterlegt ist: Ohne diesen
+                                         Hinweis weiss man beim Bearbeiten nicht,
+                                         ob ueberhaupt eine Datei da ist - und
+                                         ueberschreibt sie womoeglich blind. --}}
+                                    @if ($objekt?->{$feld['pfad_feld']})
+                                        <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                            {{ __('Hinterlegt:') }}
+                                            {{ $objekt->{$feld['name_feld']} ?: basename($objekt->{$feld['pfad_feld']}) }}
+                                            — {{ __('eine neue Datei ersetzt sie') }}
+                                        </span>
+                                    @endif
+
+                                    <div wire:loading wire:target="datei" class="mt-1 text-xs text-cerulean-600 dark:text-cerulean-400">
+                                        {{ __('Datei wird übertragen …') }}
+                                    </div>
+
+                                    @error('datei')
+                                        <span class="mt-1 text-xs text-red-600">{{ $message }}</span>
+                                    @enderror
                                 @elseif ($feld['type'] === 'schalter')
                                     <label class="mt-1 inline-flex items-center gap-2">
                                         <input type="checkbox" wire:model="form.{{ $feld['name'] }}"
