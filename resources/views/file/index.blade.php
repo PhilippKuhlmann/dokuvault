@@ -66,7 +66,9 @@
                             :placeholder="__('z. B. Wartungsvertrag 2026')" required />
                     </div>
 
-                    <x-input.button :label="__('Hochladen')" class="shrink-0" />
+                    {{-- size="feld" trifft die Hoehe der Eingabefelder daneben -
+                         sonst steht der Knopf 6 Pixel niedriger. --}}
+                    <x-input.button size="feld" :label="__('Hochladen')" class="shrink-0" />
                 </div>
             </form>
         </div>
