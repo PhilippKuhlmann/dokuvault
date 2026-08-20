@@ -4,6 +4,9 @@
 
 ### Added
 
+- **Der Papierkorb zeigt jetzt, was er verschweigt.** Er kürzt die Liste je Art auf 100 Einträge — bisher stillschweigend, was sich liest wie „mehr ist nicht da". Ein Hinweis nennt jetzt die tatsächliche Zahl. Dazu Kopfzeile mit Anzahl, die Art als Etikett, „vor 3 Tagen" statt eines nackten Zeitstempels (der genaue steht im Hover), und ein Leerzustand, der erklärt, wozu die Seite da ist.
+  - Am Handy war der Wiederherstellen-Knopf abgeschnitten: Die Tabelle stand in einem Rahmen mit `overflow-hidden`. Jetzt scrollt sie darin, ohne dass die Seite selbst überläuft.
+
 - **Die Dateiverwaltung unter „Sonstiges" hat eine Oberfläche bekommen.** Sie hatte bisher nicht einmal einen Titel: Das Upload-Formular klebte oben am Rand, die Tabelle trug zwei leere Spaltenüberschriften, und ob eine Datei 12 KB oder 18 MB groß ist, erfuhr man erst nach dem Herunterladen.
   - Kopfzeile mit Titel und Anzahl, der Upload als eigene Karte, die Liste mit **farbiger Typ-Kachel** (PDF rot, Bild lila, Tabelle grün …), Größe, Alter und getrennten Knöpfen für Herunterladen und Löschen.
   - Die **Größe wird beim Hochladen mitgeschrieben** statt bei jeder Anzeige von der Platte gelesen — das wäre ein Dateizugriff je Zeile und würde bei einer fehlenden Datei zusätzlich abbrechen. Bestandsdateien tragen ihre Größe per Migration nach.
