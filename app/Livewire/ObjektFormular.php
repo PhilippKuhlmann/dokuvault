@@ -208,6 +208,22 @@ class ObjektFormular extends Component
 
         $this->dispatch('hinweis', text: __($meldung));
         $this->dispatch('objekt-gespeichert', typ: $this->typ);
+
+        $this->seiteNeuLadenWennNoetig();
+    }
+
+    /**
+     * Manche Typen stehen auch ausserhalb ihrer Liste: Der Standort erscheint im
+     * Umschalter der Seitenleiste und in der Auswahl jedes Geraeteformulars.
+     * Beides liegt ausserhalb dieser Komponente und zeigte sonst weiter den
+     * alten Stand - ein neuer Standort waere erst nach einem Neuladen zu
+     * gebrauchen.
+     */
+    protected function seiteNeuLadenWennNoetig(): void
+    {
+        if ($this->einstellung()['seite_neu_laden'] ?? false) {
+            $this->js('window.location.reload()');
+        }
     }
 
     public function loeschen(): void
@@ -221,6 +237,8 @@ class ObjektFormular extends Component
 
         $this->dispatch('hinweis', text: __($this->einstellung()['einzahl'].' gelöscht.'));
         $this->dispatch('objekt-gespeichert', typ: $this->typ);
+
+        $this->seiteNeuLadenWennNoetig();
     }
 
     /**

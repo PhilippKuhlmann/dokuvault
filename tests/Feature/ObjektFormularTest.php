@@ -753,3 +753,41 @@ test('das Modal kommt ohne customer-Relation am Model aus', function () {
 
     expect($html)->toContain('Weitere IP-Adressen');
 });
+
+test('ein Standort laesst sich im Modal anlegen', function () {
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['site_create', 'site_viewAny']));
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'site', 'customer' => $customer])
+        ->call('neu')
+        ->set('form.name', 'Lager Süd')
+        ->set('form.street', 'Industrieweg')
+        ->set('form.house_number', '7')
+        ->set('form.zip', '21079')
+        ->set('form.city', 'Hamburg')
+        ->call('speichern')
+        ->assertHasNoErrors();
+
+    $standort = Site::where('name', 'Lager Süd')->sole();
+
+    expect($standort->city)->toBe('Hamburg')
+        ->and($standort->customer_id)->toBe($customer->id);
+});
+
+test('der Standort laedt die Seite neu, andere Typen nicht', function () {
+    // Der Standort steht im Umschalter der Seitenleiste und in der Auswahl
+    // jedes Geraeteformulars. Beides liegt ausserhalb der Komponente und zeigte
+    // sonst weiter den alten Stand - ein neuer Standort waere erst nach einem
+    // Neuladen zu gebrauchen.
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['site_create', 'domain_create']));
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'site', 'customer' => $customer])
+        ->call('neu')
+        ->set('form.name', 'Neuer Standort')
+        ->call('speichern')
+        ->assertJs('window.location.reload()');
+
+    // Bei einer Domain waere das Neuladen unnoetig - sie steht nirgends sonst.
+    expect(config('forms.domain.seite_neu_laden') ?? false)->toBeFalse();
+});

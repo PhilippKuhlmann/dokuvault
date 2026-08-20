@@ -30,6 +30,7 @@ use App\Http\Requests\RecorderRequest;
 use App\Http\Requests\RouterRequest;
 use App\Http\Requests\SecurepointUMARequest;
 use App\Http\Requests\ServerRequest;
+use App\Http\Requests\SiteRequest;
 use App\Http\Requests\UpsRequest;
 use App\Http\Requests\VMRequest;
 use App\Http\Requests\WifiRequest;
@@ -66,6 +67,7 @@ use App\Models\Recorder;
 use App\Models\Router;
 use App\Models\SecurepointUMA;
 use App\Models\Server;
+use App\Models\Site;
 use App\Models\Ups;
 use App\Models\VM;
 use App\Models\Wifi;
@@ -311,6 +313,22 @@ return [
             // Ein Verschluesselungscode ist lang und wird am Stueck kopiert -
             // er braucht die volle Breite.
             ['name' => 'encryptionkey', 'label' => 'Verschlüsselungscode', 'type' => 'text', 'breit' => true],
+        ],
+    ],
+    'site' => [
+        'model' => Site::class, 'request' => SiteRequest::class,
+        'relation' => 'sites', 'einzahl' => 'Standort',
+        'suchfelder' => ['name', 'city', 'street'],
+        'spalten' => 2,
+        // Der Standort steht auch im Umschalter der Seitenleiste und in der
+        // Auswahl jedes Geraeteformulars - nach dem Speichern neu laden.
+        'seite_neu_laden' => true,
+        'felder' => [
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text', 'breit' => true],
+            ['name' => 'street', 'label' => 'Straße', 'type' => 'text'],
+            ['name' => 'house_number', 'label' => 'Hausnummer', 'type' => 'text'],
+            ['name' => 'zip', 'label' => 'PLZ', 'type' => 'text'],
+            ['name' => 'city', 'label' => 'Stadt', 'type' => 'text'],
         ],
     ],
     'server' => [
