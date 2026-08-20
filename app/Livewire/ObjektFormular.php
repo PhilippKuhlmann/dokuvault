@@ -234,6 +234,29 @@ class ObjektFormular extends Component
      * gebrauchen.
      */
     /**
+     * Nach der Dateiwahl die Bezeichnung vorschlagen - aber nur, solange das
+     * Feld leer ist. Wer schon etwas eingetragen hat, hat sich dabei etwas
+     * gedacht; ein Vorschlag, der die eigene Eingabe ueberschreibt, ist
+     * schlimmer als keiner.
+     *
+     * Ohne Endung: Die steckt schon im Dateinamen, der beim Ablegen entsteht,
+     * und "Urkunde.pdf.pdf" will niemand.
+     */
+    public function updatedDatei(): void
+    {
+        $feld = collect($this->einstellung()['felder'])->firstWhere('type', 'datei');
+
+        if (! $feld || ! $this->datei || filled($this->form[$feld['name_feld']] ?? null)) {
+            return;
+        }
+
+        $this->form[$feld['name_feld']] = pathinfo(
+            $this->datei->getClientOriginalName(),
+            PATHINFO_FILENAME
+        );
+    }
+
+    /**
      * Eine hochgeladene Datei ablegen und ihren Pfad in die Daten schreiben.
      *
      * Der Ablageort folgt dem bisherigen Controller: {kunde}/{ordner}/ mit

@@ -866,3 +866,32 @@ test('ohne neue Datei bleibt die hinterlegte erhalten', function () {
 
     expect($lizenz->fresh()->file_path)->toBe($customer->slug.'/licensewindows/bleibt.pdf');
 });
+
+test('die Dateiwahl schlaegt eine Bezeichnung vor', function () {
+    Storage::fake('local');
+
+    $customer = Customer::factory()->create();
+    $os = OperatingSystem::factory()->create(['name' => 'Windows Server 2022']);
+    $this->actingAs(userWithPermissions(['licensewindows_create']));
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'licensewindows', 'customer' => $customer])
+        ->call('neu')
+        ->set('datei', UploadedFile::fake()->create('Lizenzurkunde 2026.pdf', 12))
+        // Ohne Endung: Die kommt beim Ablegen von selbst dazu.
+        ->assertSet('form.file_name', 'Lizenzurkunde 2026');
+});
+
+test('eine eingetragene Bezeichnung bleibt beim Hochladen stehen', function () {
+    Storage::fake('local');
+
+    $customer = Customer::factory()->create();
+    $os = OperatingSystem::factory()->create(['name' => 'Windows Server 2022']);
+    $this->actingAs(userWithPermissions(['licensewindows_create']));
+
+    // Wer schon etwas eingetragen hat, hat sich dabei etwas gedacht.
+    Livewire::test(ObjektFormular::class, ['typ' => 'licensewindows', 'customer' => $customer])
+        ->call('neu')
+        ->set('form.file_name', 'Von Hand benannt')
+        ->set('datei', UploadedFile::fake()->create('egal.pdf', 12))
+        ->assertSet('form.file_name', 'Von Hand benannt');
+});
