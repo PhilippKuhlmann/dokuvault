@@ -43,6 +43,9 @@ class FileController extends Controller
             'file_path' => $filePath,
             'name' => $validated['name'],
             'extension' => $file->getClientOriginalExtension(),
+            // Beim Hochladen mitschreiben: Sie spaeter von der Platte zu lesen
+            // waere ein Dateizugriff je Zeile der Liste.
+            'size' => $file->getSize(),
         ]);
 
         return redirect('/'.$customer->slug.'/file');

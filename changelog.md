@@ -4,6 +4,11 @@
 
 ### Added
 
+- **Die Dateiverwaltung unter „Sonstiges" hat eine Oberfläche bekommen.** Sie hatte bisher nicht einmal einen Titel: Das Upload-Formular klebte oben am Rand, die Tabelle trug zwei leere Spaltenüberschriften, und ob eine Datei 12 KB oder 18 MB groß ist, erfuhr man erst nach dem Herunterladen.
+  - Kopfzeile mit Titel und Anzahl, der Upload als eigene Karte, die Liste mit **farbiger Typ-Kachel** (PDF rot, Bild lila, Tabelle grün …), Größe, Alter und getrennten Knöpfen für Herunterladen und Löschen.
+  - Die **Größe wird beim Hochladen mitgeschrieben** statt bei jeder Anzeige von der Platte gelesen — das wäre ein Dateizugriff je Zeile und würde bei einer fehlenden Datei zusätzlich abbrechen. Bestandsdateien tragen ihre Größe per Migration nach.
+  - Schon **vor** dem Hochladen steht da, wie groß die gewählte Datei ist — samt Hinweis, wenn sie über dem Limit von 20 MB liegt. Das erfuhr man vorher erst hinterher. Und die Bezeichnung füllt sich aus dem Dateinamen, solange das Feld leer ist.
+
 - **Beschaffung und Garantie für jedes Gerät.** Bisher liess sich zu einem Server die Seriennummer erfassen — aber nicht, wann er gekauft wurde, wie lange er Garantie hat und bei wem er bestellt wurde. Damit blieben genau die zwei Fragen offen, für die man die Seriennummer überhaupt notiert: „Ist die Kiste noch in Garantie?" und „Wo haben wir die her?". Neu sind **Kaufdatum, Garantie bis, Support-Ende (EOL) und Lieferant** — auf allen 17 Gerätearten, von der Firewall bis zur USV.
   - Welche Tabellen das betrifft, ist nicht handverlesen, sondern folgt einem Merkmal: Wo eine Seriennummer erfasst wird, ist beschaffte Hardware dokumentiert. VMs, Netze und Konten haben keine und bleiben aussen vor — eine VM hat keine Garantie.
   - In der Geräteliste steht bei der Garantie die Restlaufzeit dabei, sobald es knapp wird („in 10 Tagen", „abgelaufen"). Ein Datum allein liesse jeden selbst rechnen, und genau in dem Moment — Kunde am Telefon, Gerät defekt — will man nicht rechnen.
