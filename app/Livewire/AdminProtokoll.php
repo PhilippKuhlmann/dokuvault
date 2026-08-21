@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\User;
+use Carbon\Carbon;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -62,7 +63,7 @@ class AdminProtokoll extends Component
             ->when($this->ereignis !== '', fn ($a) => $a->where('event', $this->ereignis))
             ->when($this->art !== '', fn ($a) => $a->where('subject_type', $this->art))
             ->when($this->benutzer !== '', fn ($a) => $a->where('causer_id', (int) $this->benutzer))
-            ->when($this->tage > 0, fn ($a) => $a->where('created_at', '>=', now()->subDays($this->tage)))
+            ->when($this->tage > 0, fn ($a) => $a->where('created_at', '>=', $this->grenze()))
             // Volltext über die Eigenschaften: In einem Protokoll sucht man
             // nicht nach einem Feld, sondern nach dem, woran man sich erinnert -
             // einem Namen, einer IP, einer Seriennummer.
@@ -84,6 +85,20 @@ class AdminProtokoll extends Component
             'gefiltert' => $this->suche !== '' || $this->ereignis !== '' || $this->art !== ''
                 || $this->benutzer !== '' || $this->tage > 0,
         ])->layout('layouts.admin.app');
+    }
+
+    /**
+     * Ab wann Einträge gezeigt werden.
+     *
+     * "heute" heißt heute, nicht "die letzten 24 Stunden": Um 18:46 zeigte der
+     * Knopf sonst auch Einträge von gestern 18:20. Ab einer Woche ist der
+     * Unterschied belanglos, dort bleibt es rollierend.
+     */
+    protected function grenze(): Carbon
+    {
+        return $this->tage === 1
+            ? now()->startOfDay()
+            : now()->subDays($this->tage);
     }
 
     /**

@@ -131,3 +131,23 @@ test('die Auswahllisten enthalten nur, was vorkommt', function () {
     expect($test->viewData('arten'))->toHaveKey(Domain::class);
     expect($test->viewData('arten'))->not->toHaveKey(Firewall::class);
 });
+
+test('heute heisst heute, nicht die letzten 24 Stunden', function () {
+    $this->actingAs(userWithPermissions([]));
+    $customer = Customer::factory()->create();
+
+    $heute = Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'von-heute.de']);
+    $gestern = Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'gestern-abend.de']);
+
+    // Gestern Abend, aber weniger als 24 Stunden her - der Knopf hiess "heute"
+    // und zeigte es trotzdem.
+    Activity::where('subject_id', $gestern->id)->where('subject_type', Domain::class)
+        ->update(['created_at' => now()->subDay()->setTime(23, 30)]);
+    Activity::where('subject_id', $heute->id)->where('subject_type', Domain::class)
+        ->update(['created_at' => now()->startOfDay()->addHour()]);
+
+    Livewire::test(AdminProtokoll::class)
+        ->set('tage', 1)
+        ->assertSee('von-heute.de')
+        ->assertDontSee('gestern-abend.de');
+});
