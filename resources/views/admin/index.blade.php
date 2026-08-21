@@ -83,7 +83,9 @@
             <div class="p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
                 <div class="flex items-center justify-between mb-3">
                     <div class="text-lg font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Letzte Aktivitäten') }}</div>
-                    <a href="{{ route('admin.activity.index') }}" class="text-sm text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400">alle →</a>
+                    @can('admin_activity')
+                        <a href="{{ route('admin.activity.index') }}" class="text-sm text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400">alle →</a>
+                    @endcan
                 </div>
                 <div class="divide-y divide-gray-100 dark:divide-gray-700">
                     @forelse ($activities as $a)

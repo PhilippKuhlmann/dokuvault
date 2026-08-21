@@ -12,6 +12,9 @@
   - Bestehende Rollen behalten ihren Umfang. Admin und Techniker bekommen die neuen Rechte per Migration, alle anderen nichts — sonst bekäme eine Kundenrolle über Nacht Rechte, die ihr niemand gegeben hat.
   - **Der Weg dorthin steht im Benutzermenü**: „Administration" erscheint für jeden, der mindestens einen Admin-Bereich öffnen darf. Vorher landete nur die Rolle „Admin" beim Anmelden dort — alle anderen hätten `/admin` von Hand tippen müssen. Aus dem Admin-Bereich führt umgekehrt „Zur Kundenauswahl" zurück.
   - Das Admin-Dashboard zeigt nur Kacheln, die auch zu öffnen sind. Eine Kachel, die beim Klick 403 liefert, ist schlechter als keine — und die Zahl darauf verrät etwas über einen Bereich, den der Benutzer nicht sehen soll.
+  - **Drei Links führten trotzdem ins Verbotene**: Die Betriebssystem-Liste steht im Menü unter „Auswahlmenüs", hing aber an einem anderen Recht; auf dem Dashboard zeigten „alle →" und die EOL-Zeilen der Ablaufliste auf Seiten, die nicht jeder öffnen darf. Ein Test geht jetzt für **jedes** Recht das Dashboard durch, sammelt alle sichtbaren Admin-Links ein und ruft sie auf — keiner darf 403 liefern.
+  - Das Recht heißt jetzt „Support-Ende (EOL) sehen" statt „Betriebssysteme verwalten": Die Liste der Betriebssysteme gehört zu den Auswahlmenüs, das eigene Recht trägt die EOL-Auswertung.
+  - Der **Speichern-Knopf im Rollenformular steht ganz unten**, hinter der Rechte-Matrix. Über einer Tabelle mit fünfzig Zeilen sah er aus, als gehörte er nicht dazu.
 
 - **Die Benutzerliste kann jetzt anlegen und löschen.** Der „Neu"-Knopf fehlte, und der rote „Löschen!"-Textknopf unter dem Stift zeigte auf gar keine Adresse — sein Formular ging an die aktuelle Seite. Jetzt ein roter Papierkorb-Symbolknopf neben dem Stift, wie überall sonst, mit der richtigen Route. Das eigene Konto lässt sich nicht löschen: Sonst stünde man vor einer Anmeldemaske ohne Zugang.
 

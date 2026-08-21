@@ -139,8 +139,11 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             Route::delete('/role/{role}', [RoleController::class, 'destroy'])->name('admin.role.destroy');
         });
 
-        // Operating Systems
-        Route::middleware('can:admin_operatingsystem')->group(function () {
+        // Operating Systems. Die Liste steht im Menue unter "Auswahlmenues",
+        // neben Diensten und Mail-Anbietern - deshalb dasselbe Recht. Das
+        // eigene Recht traegt die EOL-Auswertung, die einen eigenen Menuepunkt
+        // hat.
+        Route::middleware('can:admin_catalog')->group(function () {
             Route::get('/operatingsystem', [OperatingSystemController::class, 'index'])->name('admin.operatingsystem.index');
             Route::post('/operatingsystem/create', [OperatingSystemController::class, 'store'])->name('admin.operatingsystem.store');
             Route::get('/operatingsystem/create', [OperatingSystemController::class, 'create'])->name('admin.operatingsystem.create');

@@ -111,7 +111,9 @@ class AdminController extends Controller
                 'name' => $os->name.' ('.$betroffen.' Systeme)',
                 'date' => $os->eol_date,
                 'customer' => null,
-                'route' => route('admin.eol.index'),
+                // Nur verlinken, wenn die Seite offen steht - sonst fuehrt
+                // die Zeile in ein 403.
+                'route' => Gate::allows('admin_operatingsystem') ? route('admin.eol.index') : null,
             ]);
         }
 

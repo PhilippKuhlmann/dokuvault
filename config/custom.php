@@ -727,7 +727,7 @@ return [
         'admin_user' => 'Benutzer verwalten',
         'admin_role' => 'Rollen und Rechte verwalten',
         'admin_catalog' => 'Auswahlmenüs verwalten',
-        'admin_operatingsystem' => 'Betriebssysteme verwalten',
+        'admin_operatingsystem' => 'Support-Ende (EOL) sehen',
         'admin_setting' => 'Einstellungen der Installation',
         'admin_trash' => 'Papierkorb über alle Kunden',
         'admin_activity' => 'Protokoll sehen',

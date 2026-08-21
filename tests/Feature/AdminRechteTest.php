@@ -66,23 +66,27 @@ test('mehrere Rechte lassen sich frei zusammenstellen', function () {
 
     $this->get(route('admin.papierkorb'))->assertOk();
     $this->get(route('admin.activity.index'))->assertOk();
-    $this->get(route('admin.operatingsystem.index'))->assertOk();
-    // Support-Ende gehoert zu den Betriebssystemen.
+    // Das Recht traegt die EOL-Auswertung, nicht die Betriebssystem-Liste:
+    // Die steht im Menue unter "Auswahlmenues" und gehoert dorthin.
     $this->get(route('admin.eol.index'))->assertOk();
 
+    $this->get(route('admin.operatingsystem.index'))->assertForbidden();
     $this->get(route('admin.user.index'))->assertForbidden();
     $this->get(route('admin.service.index'))->assertForbidden();
 });
 
-test('die Kataloge teilen sich ein Recht', function () {
+test('die Auswahlmenues teilen sich ein Recht', function () {
     $this->actingAs(nutzerMitRechten(['admin_catalog']));
 
+    // Alle vier Zeilen des Menuepunkts "Auswahlmenues" - die
+    // Betriebssystem-Liste steht dort neben Diensten und Mail-Anbietern.
+    $this->get(route('admin.operatingsystem.index'))->assertOk();
     $this->get(route('admin.service.index'))->assertOk();
     $this->get(route('admin.mailboxprovider.index'))->assertOk();
     $this->get(route('admin.rackcatalogitem.index'))->assertOk();
 
-    // Betriebssysteme sind ein eigener Menuepunkt und ein eigenes Recht.
-    $this->get(route('admin.operatingsystem.index'))->assertForbidden();
+    // Die EOL-Auswertung hat ihren eigenen Menuepunkt und ihr eigenes Recht.
+    $this->get(route('admin.eol.index'))->assertForbidden();
 });
 
 test('die Fernwartungs-Suche haengt am Recht, nicht an der Rolle', function () {
@@ -186,4 +190,24 @@ test('das Admin-Dashboard zeigt nur erreichbare Kacheln', function () {
     $antwort->assertDontSee(route('admin.user.index'));
     $antwort->assertDontSee(route('admin.role.index'));
     $antwort->assertDontSee(route('admin.customer.index'));
+});
+
+test('kein sichtbarer Link fuehrt in ein Verboten', function () {
+    // Die Probe, die den Fehler gefunden hat: Die Betriebssystem-Liste stand im
+    // Menue unter "Auswahlmenues", haengt aber an einem anderen Recht - wer nur
+    // admin_catalog hatte, sah den Link und bekam 403. Dasselbe bei zwei Links
+    // auf dem Dashboard.
+    //
+    // Deshalb keine Liste von Paaren, sondern die Frage selbst: Was der
+    // Benutzer sieht, muss er auch oeffnen koennen.
+    foreach (array_keys(config('custom.admin_permissions')) as $recht) {
+        $nutzer = nutzerMitRechten([$recht]);
+
+        $html = $this->actingAs($nutzer)->get(route('admin.dashboard'))->getContent();
+        preg_match_all('#href="[^"]*(/admin/[a-z\-]+)"#', $html, $treffer);
+
+        foreach (array_unique($treffer[1]) as $ziel) {
+            $this->actingAs($nutzer)->get($ziel)->assertStatus(200, "Recht {$recht}: {$ziel} ist sichtbar, aber gesperrt");
+        }
+    }
 });
