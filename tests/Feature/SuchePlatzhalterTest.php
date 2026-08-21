@@ -3,12 +3,17 @@
 use App\Livewire\GlobalSearch;
 use App\Livewire\NetworkList;
 use App\Livewire\ObjektListe;
+use App\Livewire\RemoteSearch;
 use App\Livewire\SearchCustomer;
 use App\Models\Camera;
 use App\Models\Customer;
 use App\Models\Domain;
 use App\Models\Network;
+use App\Models\OperatingSystem;
+use App\Models\Role;
+use App\Models\Server;
 use App\Models\Site;
+use App\Models\User;
 use Livewire\Livewire;
 
 /**
@@ -113,4 +118,44 @@ test('die globale Suche behaelt ihre Praefix-Form fuer Massentabellen', function
         ->set('search', 'kamera-eingang')
         ->assertSee('kamera-eingang')
         ->assertDontSee('alte-kamera-eingang');
+});
+
+test('die Fernwartungs-Suche findet ueber den Kundennamen', function () {
+    $rolle = Role::find(Role::IS_TECHNIKER)
+        ?? Role::factory()->create(['id' => Role::IS_TECHNIKER]);
+    $this->actingAs(User::factory()->create(['role_id' => $rolle->id]));
+
+    $kunde = Customer::factory()->create(['name' => 'Firma_Eins GmbH']);
+    $anderer = Customer::factory()->create(['name' => 'FirmaXEins GmbH']);
+    $os = OperatingSystem::factory()->create(['name' => 'Debian 13']);
+
+    foreach ([$kunde, $anderer] as $c) {
+        Server::factory()->create([
+            'customer_id' => $c->id,
+            'site_id' => Site::factory()->create(['customer_id' => $c->id])->id,
+            'operating_system_id' => $os->id,
+            'remoteID' => '123456789',
+            'remotePassword' => 'geheim',
+        ]);
+    }
+
+    // Die Abfrage sucht ueber einen Join in customers.name - der Spaltenname
+    // muss mit Tabellenpraefix durch die Maskierung kommen.
+    Livewire::test(RemoteSearch::class)
+        ->set('search', 'Firma_Eins')
+        ->assertSee('Firma_Eins GmbH')
+        ->assertDontSee('FirmaXEins GmbH');
+});
+
+test('die Kundensuche im Controller liest den Unterstrich als Zeichen', function () {
+    $this->actingAs(userWithPermissions([]));
+
+    Customer::factory()->create(['name' => 'Sucht_Eins']);
+    Customer::factory()->create(['name' => 'SuchtXEins']);
+
+    $antwort = $this->get(route('customer.search', ['search' => 'Sucht_Eins']));
+
+    $antwort->assertOk();
+    $antwort->assertSee('Sucht_Eins');
+    $antwort->assertDontSee('SuchtXEins');
 });
