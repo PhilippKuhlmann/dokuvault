@@ -37,7 +37,7 @@ class CustomerController extends Controller
         $customers = null;
 
         if (request('search')) {
-            $customers = Customer::where('name', 'like', '%'.request('search').'%')->get();
+            $customers = Customer::whereEnthaelt('name', request('search'))->get();
             if ($customers->isempty()) {
                 $customers = null;
             }

@@ -12,6 +12,10 @@
   - „heute“ heißt heute, nicht „die letzten 24 Stunden“: Um 18:46 zeigte der Knopf sonst auch Einträge von gestern 18:20 — 46 statt 21. Ab einer Woche ist der Unterschied belanglos, dort bleibt es rollierend.
   - Ein Unterstrich oder ein Prozentzeichen im Suchbegriff wird jetzt als Zeichen gelesen, nicht als Platzhalter. Vorher fand „SRV_01“ auch „SRV101“, und die Suche nach „%“ lieferte alle 863 Einträge. Die Maskierung steckt in einem Query-Macro `whereEnthaelt()`, das auch die übrigen Suchen im Projekt übernehmen können.
 
+- **Dieselbe Maskierung jetzt in allen Suchen.** Globale Suche, Gerätelisten, VLAN-Liste, Kundensuche, Fernwartungs-Suche und die Kunden-API lesen `_` und `%` als Zeichen, nicht als Platzhalter.
+  - Drei dieser Stellen maskierten bereits — aber ohne `ESCAPE`-Klausel. Das ging auf MySQL gut und legte auf SQLite die Suche still: Ein Begriff mit Unterstrich fand dort gar nichts mehr. Da die Tests auf SQLite laufen und die Produktion auf MySQL, war der Fehler von beiden Seiten unsichtbar.
+  - Die globale Suche behält ihre Präfix-Form für die Massentabellen. Der Unterschied ist gemessen: `%begriff%` kostete bei Millionen Datensätzen 2788 ms, die Präfix-Form auf indizierter Spalte 3 ms.
+
 - **Kennwortänderungen stehen jetzt im Protokoll.** Bisher war eine Kennwortänderung dort unsichtbar: Kennwortfelder sind vom Protokoll ausgeschlossen (ihr Wert darf nie hinein), und wenn nur das Kennwort geändert wurde, entstand deshalb gar kein Eintrag. Neu ist ein eigenes Ereignis **„Kennwort geändert"** mit Zeitpunkt, Benutzer, Objekt und dem betroffenen **Feldnamen** — „Kennwort", „BMC-Kennwort", „USC-PIN" — aber **nie dem Wert**.
   - Gilt für alle protokollierten Objekte, vom Gerätekennwort bis zum **Anmeldekennwort eines DokuVault-Benutzers**.
   - Ein erneutes Speichern desselben Kennworts ist keine Änderung. Die Verschlüsselung erzeugt bei jedem Speichern einen anderen Chiffretext — ohne Klartext-Vergleich hätte jedes Absenden des Formulars eine Kennwortänderung gemeldet, auch wenn niemand das Feld angefasst hat.

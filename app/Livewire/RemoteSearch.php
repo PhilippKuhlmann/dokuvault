@@ -21,7 +21,7 @@ class RemoteSearch extends Component
                 ->with('customer')
                 ->join('customers', 'servers.customer_id', '=', 'customers.id')
                 ->select('servers.*', 'customers.name as customerName')
-                ->where('customers.name', 'like', "%$search%")
+                ->whereEnthaelt('customers.name', $search)
                 ->orderBy('customers.name')
                 ->get();
 
@@ -29,7 +29,7 @@ class RemoteSearch extends Component
                 ->with('customer')
                 ->join('customers', 'vms.customer_id', '=', 'customers.id')
                 ->select('vms.*', 'customers.name as customerName')
-                ->where('customers.name', 'like', "%$search%")
+                ->whereEnthaelt('customers.name', $search)
                 ->orderBy('customers.name')
                 ->get();
 

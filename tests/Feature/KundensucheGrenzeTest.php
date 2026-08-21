@@ -30,7 +30,10 @@ test('die Kundensuche zeigt hoechstens fuenfzig Treffer und sagt es', function (
         // Ohne den Hinweis sieht es aus, als gaebe es keine weiteren Kunden.
         ->assertSee('Weitere Treffer vorhanden');
 
-    $kundenAbfrage = collect($abfragen)->first(fn ($sql) => str_contains($sql, 'customers') && str_contains($sql, 'like'));
+    // Gross- oder kleingeschrieben ist gleichgueltig: Die Suche laeuft ueber
+    // whereEnthaelt und erzeugt LIKE in Grossbuchstaben.
+    $kundenAbfrage = collect($abfragen)->first(fn ($sql) => str_contains($sql, 'customers')
+        && str_contains(strtolower($sql), 'like'));
 
     expect($kundenAbfrage)->toContain('limit 51');
 });

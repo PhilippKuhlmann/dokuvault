@@ -14,7 +14,7 @@ class CustomerController extends Controller
 
         $name = $request->query('name');
 
-        $query = Customer::where('name', 'like', '%'.$name.'%');
+        $query = Customer::whereEnthaelt('name', $name);
 
         // Ein auf einen Kunden beschraenkter Token (customer_id gesetzt) darf
         // hierueber nicht alle Kunden auflisten koennen - nur den eigenen.

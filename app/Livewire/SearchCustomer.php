@@ -31,7 +31,7 @@ class SearchCustomer extends Component
         if ($this->search) {
             // Einen mehr holen als angezeigt wird: Damit steht fest, ob es
             // weitere gibt, ohne dafuer ein zweites Mal zu zaehlen.
-            $treffer = Customer::where('name', 'like', '%'.$this->search.'%')
+            $treffer = Customer::whereEnthaelt('name', $this->search)
                 ->orderBy('name')
                 ->limit(self::HOECHSTENS + 1)
                 ->get();

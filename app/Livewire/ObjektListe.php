@@ -100,13 +100,10 @@ class ObjektListe extends Component
         }
 
         if ($this->search !== '') {
-            $begriff = '%'.addcslashes($this->search, '%_').'%';
-
-            $abfrage->where(function ($q) use ($einstellung, $begriff) {
-                foreach ($einstellung['suchfelder'] as $feld) {
-                    $q->orWhere($feld, 'like', $begriff);
-                }
-            });
+            // Die Maskierung stand hier schon, aber ohne ESCAPE-Klausel: Auf
+            // MySQL ging das gut, auf SQLite fand ein Begriff mit Unterstrich
+            // gar nichts mehr. whereEnthaelt bringt beides mit.
+            $abfrage->whereEnthaelt($einstellung['suchfelder'], $this->search);
         }
 
         return view('livewire.objekt-liste', [

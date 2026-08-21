@@ -88,14 +88,7 @@ class NetworkList extends Component
         // Trefferliste aufblaehen. Der Klammerausdruck ist noetig, damit das
         // ODER den Kunden- und Standortfilter nicht aushebelt.
         if ($this->search !== '') {
-            $begriff = '%'.str_replace(['%', '_'], ['\%', '\_'], $this->search).'%';
-
-            $query->where(function ($treffer) use ($begriff) {
-                $treffer->where('description', 'like', $begriff)
-                    ->orWhere('vlanId', 'like', $begriff)
-                    ->orWhere('network', 'like', $begriff)
-                    ->orWhere('gateway', 'like', $begriff);
-            });
+            $query->whereEnthaelt(['description', 'vlanId', 'network', 'gateway'], $this->search);
         }
 
         return view('livewire.network-list', [

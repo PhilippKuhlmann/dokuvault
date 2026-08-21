@@ -95,7 +95,10 @@ class GlobalSearch extends Component
         $groups = collect();
 
         if (strlen((string) $this->search) >= 2) {
-            $roh = addcslashes($this->search, '%_');
+            // Roh: Die Maskierung der LIKE-Platzhalter macht whereEnthaelt.
+            // Zweimal maskiert wuerde aus "srv_01" ein Suchbegriff, der den
+            // Backslash selbst sucht - und nichts mehr findet.
+            $roh = (string) $this->search;
             $user = auth()->user();
 
             foreach (self::TYPES as $slug => $entry) {
@@ -130,15 +133,21 @@ class GlobalSearch extends Component
                 // genau das verloren, wofuer die Suche da ist: Die Dose steht
                 // als "EG 2.14" drin und wird als "2.14" gesucht, das Rack
                 // heisst "Rack HH-01" und wird als "HH-01" gesucht.
-                $term = in_array($slug, self::MASSENHAFT, true) ? $roh.'%' : '%'.$roh.'%';
+                $nurAnfang = in_array($slug, self::MASSENHAFT, true);
 
-                $query->where(function ($q) use ($columns, $term, $hatIpBlock) {
-                    foreach ($columns as $column) {
-                        $q->orWhere($column, 'like', $term);
-                    }
+                // whereBeginntMit / whereEnthaelt statt like: Ohne Maskierung
+                // stand ein Unterstrich im Suchbegriff fuer ein beliebiges
+                // Zeichen - "SRV_01" fand auch "SRV101" - und ein
+                // Prozentzeichen fuer den ganzen Bestand.
+                $query->where(function ($q) use ($columns, $roh, $nurAnfang, $hatIpBlock) {
+                    $nurAnfang
+                        ? $q->whereBeginntMit($columns, $roh)
+                        : $q->whereEnthaelt($columns, $roh);
 
                     if ($hatIpBlock) {
-                        $q->orWhereHas('ipAddresses', fn ($ip) => $ip->where('address', 'like', $term));
+                        $q->orWhereHas('ipAddresses', fn ($ip) => $nurAnfang
+                            ? $ip->whereBeginntMit('address', $roh)
+                            : $ip->whereEnthaelt('address', $roh));
                     }
                 });
 
