@@ -16,9 +16,9 @@ use Spatie\Activitylog\Models\Activity;
  * Einträgen war die Frage "wer hat gestern an der Firewall etwas geändert?"
  * damit eine Blätterübung.
  *
- * Der Zugang haengt wie bisher an der isAdmin-Middleware, nicht an einer
- * Berechtigung. Nur das Aufdecken eines bisherigen Kennworts verlangt
- * see_hidden - das prueft die eingebettete Komponente selbst.
+ * Der Zugang haengt am Recht admin_activity, gesetzt an der Route. Das
+ * Aufdecken eines bisherigen Kennworts prueft dasselbe Recht noch einmal - der
+ * Aufruf kommt aus dem Browser und darf sich nicht auf die Route verlassen.
  */
 class AdminProtokoll extends Component
 {

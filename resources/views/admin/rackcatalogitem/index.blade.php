@@ -31,7 +31,7 @@
                             $rackCatalogItem->sort_order,
                         ]"
                         editUrl="{{ route('admin.rackcatalogitem.edit', $rackCatalogItem) }}"
-                        can="isAdmin"
+                        can="admin_catalog"
                     />
                 @endforeach
             </x-table.body>

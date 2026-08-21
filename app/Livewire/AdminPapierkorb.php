@@ -49,7 +49,7 @@ class AdminPapierkorb extends Component
 
     public function mount(): void
     {
-        Gate::authorize('see_hidden');
+        Gate::authorize('admin_trash');
     }
 
     /**
@@ -137,7 +137,7 @@ class AdminPapierkorb extends Component
      */
     public function loeschen(string $slug, int $id): void
     {
-        Gate::authorize('see_hidden');
+        Gate::authorize('admin_trash');
 
         // Die Klasse kommt aus der Whitelist, nie aus der Anfrage.
         $eintrag = config("custom.trashables.$slug");
@@ -156,7 +156,7 @@ class AdminPapierkorb extends Component
      */
     public function alleLoeschen(): void
     {
-        Gate::authorize('see_hidden');
+        Gate::authorize('admin_trash');
 
         $anzahl = 0;
 

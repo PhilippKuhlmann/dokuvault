@@ -20,28 +20,37 @@ class RoleController extends Controller
 
     public function create()
     {
-        [$matrix, $others, $actions] = $this->groupPermissions();
+        [$matrix, $others, $actions, $adminRechte] = $this->groupPermissions();
 
-        return view('admin.role.create', compact('matrix', 'others', 'actions'));
+        return view('admin.role.create', compact('matrix', 'others', 'actions', 'adminRechte'));
     }
 
     /**
      * Gruppiert die Berechtigungen nach Ressource zu einer Matrix
      * (Zeile = Bereich, Spalten = Sehen/Erstellen/Bearbeiten/Löschen).
-     * Rechte, die nicht in dieses Schema passen, kommen nach $others.
+     * Rechte, die nicht in dieses Schema passen, kommen nach $others; die des
+     * Admin-Bereichs stehen als eigener Block in $adminRechte.
      */
     private function groupPermissions(): array
     {
         $actions = ['viewAny' => 'Sehen', 'create' => 'Erstellen', 'update' => 'Bearbeiten', 'delete' => 'Löschen'];
         $matrix = [];
         $others = [];
+        $adminRechte = [];
+
+        // Die Rechte des Admin-Bereichs stehen fuer sich. Sie greifen nicht auf
+        // die Daten eines Kunden, sondern auf die Installation - wer sie
+        // vergibt, sollte das nicht zwischen zwei Geraetezeilen tun.
+        $adminNamen = array_keys(config('custom.admin_permissions'));
 
         foreach (Permission::orderBy('description')->get() as $p) {
             $pos = strrpos($p->name, '_');
             $resource = $pos !== false ? substr($p->name, 0, $pos) : $p->name;
             $action = $pos !== false ? substr($p->name, $pos + 1) : '';
 
-            if (array_key_exists($action, $actions)) {
+            if (in_array($p->name, $adminNamen, true)) {
+                $adminRechte[] = $p;
+            } elseif (array_key_exists($action, $actions)) {
                 if (! isset($matrix[$resource])) {
                     $label = trim(preg_replace('/\s+(sehen|erstellen|bearbeiten|löschen)$/ui', '', $p->description));
                     $matrix[$resource] = ['label' => $label !== '' ? $label : ucfirst($resource), 'perms' => []];
@@ -54,7 +63,7 @@ class RoleController extends Controller
 
         uasort($matrix, fn ($a, $b) => strcasecmp($a['label'], $b['label']));
 
-        return [$matrix, $others, $actions];
+        return [$matrix, $others, $actions, $adminRechte];
     }
 
     public function store(Request $request)
@@ -73,10 +82,10 @@ class RoleController extends Controller
 
     public function edit(Role $role)
     {
-        [$matrix, $others, $actions] = $this->groupPermissions();
+        [$matrix, $others, $actions, $adminRechte] = $this->groupPermissions();
         $selected = $role->permissions->pluck('id')->all();
 
-        return view('admin.role.edit', compact('role', 'matrix', 'others', 'actions', 'selected'));
+        return view('admin.role.edit', compact('role', 'matrix', 'others', 'actions', 'selected', 'adminRechte'));
     }
 
     public function update(Role $role, Request $request)

@@ -66,6 +66,12 @@ class PermissionRoleSeeder extends Seeder
             'description' => 'PDF erstellen',
         ]);
 
+        // Ein Recht je Admin-Menuepunkt, dazu die Fernwartungs-Suche. Vorher
+        // hingen beide Bereiche an einer festen Rollen-Id.
+        foreach (array_merge(config('custom.admin_permissions'), config('custom.extra_permissions')) as $name => $beschreibung) {
+            Permission::forceCreate(['name' => $name, 'description' => $beschreibung]);
+        }
+
         // PermissionRole
 
         // admin

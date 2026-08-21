@@ -117,7 +117,8 @@ test('nur echte Kennwortspalten lassen sich abfragen', function () {
 });
 
 test('endgueltiges Loeschen nimmt die alten Kennwoerter mit', function () {
-    $this->actingAs(userWithPermissions(['firewall_update', 'see_hidden']));
+    // Der Papierkorb haengt an admin_trash, nicht am Protokollrecht.
+    $this->actingAs(userWithPermissions(['firewall_update', 'admin_trash']));
 
     $firewall = firewallMitKennwort('Alt!2026');
     $firewall->update(['password' => 'Neu!2026']);
@@ -179,7 +180,7 @@ test('ohne Frist bleibt das Protokoll unangetastet', function () {
 });
 
 test('die Frist laesst sich einstellen', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['admin_activity']));
 
     Livewire::test(AdminProtokollHistorie::class)
         ->assertSet('tage', 0)
@@ -190,7 +191,7 @@ test('die Frist laesst sich einstellen', function () {
 });
 
 test('eine unsinnige Frist wird abgelehnt', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['admin_activity']));
     Setting::setzen(Setting::PROTOKOLL_TAGE, 90);
 
     Livewire::test(AdminProtokollHistorie::class)
@@ -202,7 +203,7 @@ test('eine unsinnige Frist wird abgelehnt', function () {
 });
 
 test('die Einstellseite zeigt keine Kennwoerter', function () {
-    $this->actingAs(userWithPermissions(['see_hidden', 'firewall_update']));
+    $this->actingAs(userWithPermissions(['admin_activity', 'firewall_update']));
 
     $firewall = firewallMitKennwort('Streng-Geheim-2026');
     $firewall->update(['password' => 'Neu!2026']);
@@ -214,7 +215,7 @@ test('die Einstellseite zeigt keine Kennwoerter', function () {
         ->assertSee('1');
 });
 
-test('ohne see_hidden kein Zugriff auf die Einstellung', function () {
+test('ohne admin_activity kein Zugriff auf die Einstellung', function () {
     $this->actingAs(userWithPermissions(['firewall_viewAny']));
 
     Livewire::test(AdminProtokollHistorie::class)->assertForbidden();

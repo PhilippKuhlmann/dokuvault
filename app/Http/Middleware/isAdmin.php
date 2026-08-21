@@ -2,11 +2,11 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Role;
 use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Gate;
 
 class isAdmin
 {
@@ -19,9 +19,15 @@ class isAdmin
     public function handle(Request $request, Closure $next)
     {
 
-        if (auth()->user()?->role->id !== Role::IS_ADMIN) {
-            abort(403);
-        }
+        $user = auth()->user();
+
+        // Nicht mehr "ist Rolle 1", sondern "darf ueberhaupt einen der
+        // Admin-Bereiche". Welchen genau, entscheidet die can-Middleware an der
+        // jeweiligen Route - hier faellt nur ab, wer gar nichts darf.
+        $darf = $user && collect(array_keys(config('custom.admin_permissions')))
+            ->contains(fn ($recht) => Gate::forUser($user)->allows($recht));
+
+        abort_unless($darf, 403);
 
         return $next($request);
     }

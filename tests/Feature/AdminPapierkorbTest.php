@@ -20,7 +20,7 @@ function imPapierkorbSeit($objekt, int $tage): void
 
 test('der Filter zeigt nur Eintraege ueber der Altersgrenze', function () {
     $customer = Customer::factory()->create();
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['admin_trash']));
 
     imPapierkorbSeit(Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'uralt.de']), 400);
     imPapierkorbSeit(Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'neulich.de']), 10);
@@ -36,7 +36,7 @@ test('der Filter zeigt nur Eintraege ueber der Altersgrenze', function () {
 
 test('ein einzelner Eintrag laesst sich endgueltig loeschen', function () {
     $customer = Customer::factory()->create();
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['admin_trash']));
 
     $domain = Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'weg.de']);
     imPapierkorbSeit($domain, 400);
@@ -50,7 +50,7 @@ test('ein einzelner Eintrag laesst sich endgueltig loeschen', function () {
 
 test('das Sammelloeschen trifft nur, was der Filter zeigt', function () {
     $customer = Customer::factory()->create();
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['admin_trash']));
 
     $alt = Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'alt.de']);
     $jung = Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'jung.de']);
@@ -71,7 +71,7 @@ test('haengende IP-Adressen verschwinden mit', function () {
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     $os = OperatingSystem::factory()->create(['name' => 'Debian 13']);
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['admin_trash']));
 
     $server = Server::factory()->create([
         'customer_id' => $customer->id, 'site_id' => $site->id, 'operating_system_id' => $os->id,
@@ -85,7 +85,7 @@ test('haengende IP-Adressen verschwinden mit', function () {
         ->where('ipable_type', Server::class)->count())->toBe(0);
 });
 
-test('ohne das Recht kommt niemand an die Seite', function () {
+test('ohne admin_trash kommt niemand an die Seite', function () {
     $this->actingAs(userWithPermissions(['server_viewAny']));
 
     Livewire::test(AdminPapierkorb::class)->assertForbidden();
@@ -93,7 +93,7 @@ test('ohne das Recht kommt niemand an die Seite', function () {
 
 test('die Rueckfrage bleibt stehen, bis man sie beantwortet', function () {
     $customer = Customer::factory()->create();
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['admin_trash']));
 
     imPapierkorbSeit(Domain::factory()->create(['customer_id' => $customer->id]), 400);
 
@@ -112,7 +112,7 @@ class PapierkorbMitEngerGrenze extends AdminPapierkorb
 
 test('die Seite sagt es, wenn sie nicht alles zeigt', function () {
     $customer = Customer::factory()->create();
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['admin_trash']));
 
     imPapierkorbSeit(Domain::factory()->create(['customer_id' => $customer->id]), 5);
     imPapierkorbSeit(Domain::factory()->create(['customer_id' => $customer->id]), 6);

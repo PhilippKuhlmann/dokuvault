@@ -700,6 +700,52 @@ return [
     | die Tatsache der Aenderung sehr wohl.
     |
     */
+    /*
+    |--------------------------------------------------------------------------
+    | Rechte fuer den Admin-Bereich
+    |--------------------------------------------------------------------------
+    |
+    | Bis hierhin hing alles unter /admin an einer harten Pruefung auf die
+    | Rolle 1: entweder ganz oder gar nicht. Eine zweite Technikergruppe, die
+    | zum Beispiel den Papierkorb und das Protokoll sehen soll, aber keine
+    | Benutzer anlegen darf, war damit nicht baubar.
+    |
+    | Ein Recht je Menuepunkt. Sie tauchen in der Rollenverwaltung von selbst
+    | auf - dort landet alles, was nicht ins Sehen/Erstellen/Bearbeiten/Loeschen-
+    | Schema passt, im Abschnitt "Weitere Rechte".
+    |
+    | Die Rolle 1 darf unabhaengig davon alles (Gate::before im
+    | AppServiceProvider). Das schuetzt davor, sich selbst auszusperren: Wer
+    | versehentlich "Rollen verwalten" abwaehlt, kaeme sonst nie wieder an die
+    | Rollenverwaltung.
+    |
+    */
+    'admin_permissions' => [
+        'admin_customer' => 'Kunden verwalten',
+        'admin_user' => 'Benutzer verwalten',
+        'admin_role' => 'Rollen und Rechte verwalten',
+        'admin_catalog' => 'Auswahlmenues verwalten',
+        'admin_operatingsystem' => 'Betriebssysteme verwalten',
+        'admin_setting' => 'Einstellungen der Installation',
+        'admin_trash' => 'Papierkorb ueber alle Kunden',
+        'admin_activity' => 'Protokoll sehen',
+        'admin_apitoken' => 'API-Token verwalten',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Rechte ausserhalb des Admin-Bereichs
+    |--------------------------------------------------------------------------
+    |
+    | Die Fernwartungs-Suche hing an einer harten Pruefung auf die Rolle 10.
+    | Eine zweite Technikergruppe haette sie damit nicht oeffnen koennen -
+    | genau das, was hier moeglich werden soll.
+    |
+    */
+    'extra_permissions' => [
+        'remote_search' => 'Fernwartungs-Suche benutzen',
+    ],
+
     'activity_events' => [
         'created' => ['Erstellt', 'text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-900/30'],
         'updated' => ['Geändert', 'text-cerulean-700 bg-cerulean-50 dark:text-cerulean-400 dark:bg-gray-700'],

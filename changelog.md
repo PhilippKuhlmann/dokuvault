@@ -4,6 +4,13 @@
 
 ### Added
 
+- **Der Admin-Bereich lässt sich jetzt aufteilen.** Bisher hing alles unter `/admin` an einer harten Prüfung auf die Rolle „Admin": entweder ganz oder gar nicht. Eine zweite Technikergruppe, die etwa den Papierkorb und das Protokoll sehen soll, aber keine Benutzer anlegt, war damit nicht baubar. Jetzt gibt es **ein Recht je Menüpunkt** — Kunden, Benutzer, Rollen, Auswahlmenüs, Betriebssysteme, Einstellungen, Papierkorb, Protokoll, API-Token — frei kombinierbar in der Rollenverwaltung.
+  - Die **Rolle „Admin" darf weiterhin alles**, unabhängig davon, was angehakt ist. Das ist die Absicherung gegen das Aussperren: Wer versehentlich „Rollen und Rechte verwalten" abwählt, käme sonst nie wieder an die Rollenverwaltung.
+  - Das Menü zeigt nur, was der Benutzer auch öffnen darf. Ein Menüpunkt, der beim Klick 403 liefert, ist schlechter als keiner.
+  - Auch die **Fernwartungs-Suche** hängt an einem Recht statt an der Rolle „Techniker" — eine zweite Technikergruppe hätte sie sonst nicht öffnen können.
+  - In der Rollenverwaltung stehen die Admin-Rechte in einem **eigenen, abgesetzten Block**: Sie gelten für die ganze Installation, nicht für einen einzelnen Kunden.
+  - Bestehende Rollen behalten ihren Umfang. Admin und Techniker bekommen die neuen Rechte per Migration, alle anderen nichts — sonst bekäme eine Kundenrolle über Nacht Rechte, die ihr niemand gegeben hat.
+
 - **Das Aktivitätsprotokoll hat Suche und Filter bekommen.** Es war eine feste Liste, 50 Einträge je Seite, absteigend nach Zeit. Bei 863 Einträgen war die Frage „wer hat gestern an der Firewall etwas geändert?" damit eine Blätterübung. Jetzt filterbar nach **Ereignis, Objektart, Benutzer und Zeitraum**, dazu eine **Volltextsuche**.
   - Die Suche geht über die Eigenschaften eines Eintrags, nicht nur über den Namen: In einem Protokoll sucht man nach dem, woran man sich erinnert — einem Gerätenamen, einer IP, einem Registrar.
   - Die Auswahllisten enthalten nur, was vorkommt. Die Tabelle kennt 114 verschiedene Verursacher-Ids, die meisten aus Beispieldaten längst gelöschter Konten; eine Auswahl mit 114 Zeilen, von denen 110 leer sind, hilft niemandem.

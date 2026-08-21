@@ -32,7 +32,7 @@
                     ]"
 
                     editUrl="/{{ Request::path() }}/{{ $operatingSystem->id }}/edit"
-                    can="isAdmin"
+                    can="admin_operatingsystem"
                 />
 
             @endforeach

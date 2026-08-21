@@ -61,7 +61,12 @@ function userWithPermissions(array $names): User
     ]);
 
     foreach ($names as $name) {
-        $permission = Permission::factory()->create(['name' => $name]);
+        // Vorhandene wiederverwenden: Seit die Rechte des Admin-Bereichs per
+        // Migration entstehen, gibt es sie schon - ein zweites Anlegen bricht
+        // am UNIQUE-Index auf permissions.name.
+        $permission = Permission::where('name', $name)->first()
+            ?? Permission::factory()->create(['name' => $name]);
+
         $role->permissions()->attach($permission->id);
     }
 

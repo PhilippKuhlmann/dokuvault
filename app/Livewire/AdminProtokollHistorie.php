@@ -22,14 +22,14 @@ class AdminProtokollHistorie extends Component
 
     public function mount(): void
     {
-        Gate::authorize('see_hidden');
+        Gate::authorize('admin_activity');
 
         $this->tage = Setting::protokollTage();
     }
 
     public function speichern(): void
     {
-        Gate::authorize('see_hidden');
+        Gate::authorize('admin_activity');
 
         $this->validate(
             ['tage' => ['required', 'integer', 'min:0', 'max:3650']],

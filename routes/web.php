@@ -88,79 +88,99 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
         // Papierkorb ueber alle Kunden - sehen, was sich angesammelt hat, und
         // es endgueltig loswerden.
-        Route::get('/papierkorb', AdminPapierkorb::class)->name('admin.papierkorb');
+        Route::get('/papierkorb', AdminPapierkorb::class)
+            ->middleware('can:admin_trash')->name('admin.papierkorb');
 
         // Wie lange das Protokoll - und damit die bisherigen Kennwoerter -
         // aufbewahrt wird.
-        Route::get('/protokoll-historie', AdminProtokollHistorie::class)->name('admin.protokollhistorie');
+        Route::get('/protokoll-historie', AdminProtokollHistorie::class)
+            ->middleware('can:admin_activity')->name('admin.protokollhistorie');
 
         // Einstellungen der Installation
-        Route::get('/setting', [SettingController::class, 'index'])->name('admin.setting.index');
-        Route::patch('/setting', [SettingController::class, 'update'])->name('admin.setting.update');
+        Route::middleware('can:admin_setting')->group(function () {
+            Route::get('/setting', [SettingController::class, 'index'])->name('admin.setting.index');
+            Route::patch('/setting', [SettingController::class, 'update'])->name('admin.setting.update');
+        });
 
         // Aktivitätsprotokoll - mit Suche und Filtern, deshalb Livewire.
-        Route::get('/activity', AdminProtokoll::class)->name('admin.activity.index');
+        Route::get('/activity', AdminProtokoll::class)
+            ->middleware('can:admin_activity')->name('admin.activity.index');
 
-        Route::get('/apitoken', [AdminController::class, 'apitoken']);
+        Route::get('/apitoken', [AdminController::class, 'apitoken'])->middleware('can:admin_apitoken');
 
         Route::get('/', [AdminController::class, 'index'])->name('admin.dashboard');
 
         // Kunden
-        Route::get('/customer', [CustomerController::class, 'index'])->name('admin.customer.index');
-        Route::post('/customer', [CustomerController::class, 'store'])->name('admin.customer.store');
-        Route::get('/customer/create', [CustomerController::class, 'create'])->name('admin.customer.create');
-        Route::get('/customer/{customer}/edit', [CustomerController::class, 'edit'])->name('admin.customer.edit');
-        Route::patch('/customer/{customer}', [CustomerController::class, 'update'])->name('admin.customer.update');
+        Route::middleware('can:admin_customer')->group(function () {
+            Route::get('/customer', [CustomerController::class, 'index'])->name('admin.customer.index');
+            Route::post('/customer', [CustomerController::class, 'store'])->name('admin.customer.store');
+            Route::get('/customer/create', [CustomerController::class, 'create'])->name('admin.customer.create');
+            Route::get('/customer/{customer}/edit', [CustomerController::class, 'edit'])->name('admin.customer.edit');
+            Route::patch('/customer/{customer}', [CustomerController::class, 'update'])->name('admin.customer.update');
+        });
 
         // Users
-        Route::get('/user', [UserController::class, 'index'])->name('admin.user.index');
-        Route::post('/user', [UserController::class, 'store'])->name('admin.user.store');
-        Route::get('/user/create', [UserController::class, 'create'])->name('admin.user.create');
-        Route::get('/user/{user}/edit', [UserController::class, 'edit'])->name('admin.user.edit');
-        Route::patch('/user/{user}', [UserController::class, 'update'])->name('admin.user.update');
-        Route::delete('/user/{user}', [UserController::class, 'destroy'])->name('admin.user.destroy');
+        Route::middleware('can:admin_user')->group(function () {
+            Route::get('/user', [UserController::class, 'index'])->name('admin.user.index');
+            Route::post('/user', [UserController::class, 'store'])->name('admin.user.store');
+            Route::get('/user/create', [UserController::class, 'create'])->name('admin.user.create');
+            Route::get('/user/{user}/edit', [UserController::class, 'edit'])->name('admin.user.edit');
+            Route::patch('/user/{user}', [UserController::class, 'update'])->name('admin.user.update');
+            Route::delete('/user/{user}', [UserController::class, 'destroy'])->name('admin.user.destroy');
+        });
 
         // Rolen
-        Route::get('/role', [RoleController::class, 'index'])->name('admin.role.index');
-        Route::post('/role', [RoleController::class, 'store'])->name('admin.role.store');
-        Route::get('/role/create', [RoleController::class, 'create'])->name('admin.role.create');
-        Route::get('/role/{role}/edit', [RoleController::class, 'edit'])->name('admin.role.edit');
-        Route::patch('/role/{role}', [RoleController::class, 'update'])->name('admin.role.update');
-        Route::delete('/role/{role}', [RoleController::class, 'destroy'])->name('admin.role.destroy');
+        Route::middleware('can:admin_role')->group(function () {
+            Route::get('/role', [RoleController::class, 'index'])->name('admin.role.index');
+            Route::post('/role', [RoleController::class, 'store'])->name('admin.role.store');
+            Route::get('/role/create', [RoleController::class, 'create'])->name('admin.role.create');
+            Route::get('/role/{role}/edit', [RoleController::class, 'edit'])->name('admin.role.edit');
+            Route::patch('/role/{role}', [RoleController::class, 'update'])->name('admin.role.update');
+            Route::delete('/role/{role}', [RoleController::class, 'destroy'])->name('admin.role.destroy');
+        });
 
         // Operating Systems
-        Route::get('/operatingsystem', [OperatingSystemController::class, 'index'])->name('admin.operatingsystem.index');
-        Route::post('/operatingsystem/create', [OperatingSystemController::class, 'store'])->name('admin.operatingsystem.store');
-        Route::get('/operatingsystem/create', [OperatingSystemController::class, 'create'])->name('admin.operatingsystem.create');
-        Route::get('/operatingsystem/{operatingSystem}/edit', [OperatingSystemController::class, 'edit'])->name('admin.operatingsystem.edit');
-        Route::patch('/operatingsystem/{operatingSystem}', [OperatingSystemController::class, 'update'])->name('admin.operatingsystem.update');
+        Route::middleware('can:admin_operatingsystem')->group(function () {
+            Route::get('/operatingsystem', [OperatingSystemController::class, 'index'])->name('admin.operatingsystem.index');
+            Route::post('/operatingsystem/create', [OperatingSystemController::class, 'store'])->name('admin.operatingsystem.store');
+            Route::get('/operatingsystem/create', [OperatingSystemController::class, 'create'])->name('admin.operatingsystem.create');
+            Route::get('/operatingsystem/{operatingSystem}/edit', [OperatingSystemController::class, 'edit'])->name('admin.operatingsystem.edit');
+            Route::patch('/operatingsystem/{operatingSystem}', [OperatingSystemController::class, 'update'])->name('admin.operatingsystem.update');
+        });
 
         // Betroffene Geraete nach Kunde: Welcher Kunde hat wie viele Maschinen
-        // auf einem System, dessen Support endet?
-        Route::get('/eol', [EolController::class, 'index'])->name('admin.eol.index');
+        // auf einem System, dessen Support endet? Gehoert zu den
+        // Betriebssystemen - dort steht das Support-Ende.
+        Route::get('/eol', [EolController::class, 'index'])
+            ->middleware('can:admin_operatingsystem')->name('admin.eol.index');
 
-        // Dienste-Katalog (Name und Farbe der Kacheln in den Geraetelisten)
-        Route::get('/service', [ServiceController::class, 'index'])->name('admin.service.index');
-        Route::post('/service/create', [ServiceController::class, 'store'])->name('admin.service.store');
-        Route::get('/service/create', [ServiceController::class, 'create'])->name('admin.service.create');
-        Route::get('/service/{service}/edit', [ServiceController::class, 'edit'])->name('admin.service.edit');
-        Route::patch('/service/{service}', [ServiceController::class, 'update'])->name('admin.service.update');
-        Route::delete('/service/{service}', [ServiceController::class, 'destroy'])->name('admin.service.destroy');
+        // Die drei Kataloge teilen sich ein Recht: Wer Dienste pflegen darf,
+        // pflegt auch Mailbox-Anbieter und Rack-Einbauten - es ist dieselbe
+        // Art von Arbeit an denselben Auswahllisten.
+        Route::middleware('can:admin_catalog')->group(function () {
+            // Dienste-Katalog (Name und Farbe der Kacheln in den Geraetelisten)
+            Route::get('/service', [ServiceController::class, 'index'])->name('admin.service.index');
+            Route::post('/service/create', [ServiceController::class, 'store'])->name('admin.service.store');
+            Route::get('/service/create', [ServiceController::class, 'create'])->name('admin.service.create');
+            Route::get('/service/{service}/edit', [ServiceController::class, 'edit'])->name('admin.service.edit');
+            Route::patch('/service/{service}', [ServiceController::class, 'update'])->name('admin.service.update');
+            Route::delete('/service/{service}', [ServiceController::class, 'destroy'])->name('admin.service.destroy');
 
-        // Mailbox Providor
-        Route::get('/mailboxprovider', [MailboxProviderController::class, 'index'])->name('admin.mailboxprovider.index');
-        Route::post('/mailboxprovider/create', [MailboxProviderController::class, 'store'])->name('admin.mailboxprovider.store');
-        Route::get('/mailboxprovider/create', [MailboxProviderController::class, 'create'])->name('admin.mailboxprovider.create');
-        Route::get('/mailboxprovider/{mailboxprovider}/edit', [MailboxProviderController::class, 'edit'])->name('admin.mailboxprovider.edit');
-        Route::patch('/mailboxprovider/{mailboxprovider}', [MailboxProviderController::class, 'update'])->name('admin.mailboxprovider.update');
+            // Mailbox Providor
+            Route::get('/mailboxprovider', [MailboxProviderController::class, 'index'])->name('admin.mailboxprovider.index');
+            Route::post('/mailboxprovider/create', [MailboxProviderController::class, 'store'])->name('admin.mailboxprovider.store');
+            Route::get('/mailboxprovider/create', [MailboxProviderController::class, 'create'])->name('admin.mailboxprovider.create');
+            Route::get('/mailboxprovider/{mailboxprovider}/edit', [MailboxProviderController::class, 'edit'])->name('admin.mailboxprovider.edit');
+            Route::patch('/mailboxprovider/{mailboxprovider}', [MailboxProviderController::class, 'update'])->name('admin.mailboxprovider.update');
 
-        // Rack-Katalog (passive Einbauten wie Patchfelder und Blindplatten)
-        Route::get('/rackcatalogitem', [RackCatalogItemController::class, 'index'])->name('admin.rackcatalogitem.index');
-        Route::post('/rackcatalogitem/create', [RackCatalogItemController::class, 'store'])->name('admin.rackcatalogitem.store');
-        Route::get('/rackcatalogitem/create', [RackCatalogItemController::class, 'create'])->name('admin.rackcatalogitem.create');
-        Route::get('/rackcatalogitem/{rackcatalogitem}/edit', [RackCatalogItemController::class, 'edit'])->name('admin.rackcatalogitem.edit');
-        Route::patch('/rackcatalogitem/{rackcatalogitem}', [RackCatalogItemController::class, 'update'])->name('admin.rackcatalogitem.update');
-        Route::delete('/rackcatalogitem/{rackcatalogitem}', [RackCatalogItemController::class, 'destroy'])->name('admin.rackcatalogitem.destroy');
+            // Rack-Katalog (passive Einbauten wie Patchfelder und Blindplatten)
+            Route::get('/rackcatalogitem', [RackCatalogItemController::class, 'index'])->name('admin.rackcatalogitem.index');
+            Route::post('/rackcatalogitem/create', [RackCatalogItemController::class, 'store'])->name('admin.rackcatalogitem.store');
+            Route::get('/rackcatalogitem/create', [RackCatalogItemController::class, 'create'])->name('admin.rackcatalogitem.create');
+            Route::get('/rackcatalogitem/{rackcatalogitem}/edit', [RackCatalogItemController::class, 'edit'])->name('admin.rackcatalogitem.edit');
+            Route::patch('/rackcatalogitem/{rackcatalogitem}', [RackCatalogItemController::class, 'update'])->name('admin.rackcatalogitem.update');
+            Route::delete('/rackcatalogitem/{rackcatalogitem}', [RackCatalogItemController::class, 'destroy'])->name('admin.rackcatalogitem.destroy');
+        });
 
     });
 });

@@ -32,7 +32,10 @@ class ProtokollKennwort extends Component
 
     public function zeigen(): void
     {
-        Gate::authorize('see_hidden');
+        // Dasselbe Recht wie die Seite, auf der die Komponente steht: Wer das
+        // Protokoll sehen darf, sieht auch, was vorher im Feld stand. Geprueft
+        // wird trotzdem hier - der Aufruf kommt aus dem Browser.
+        Gate::authorize('admin_activity');
 
         $this->werte = PasswordHistory::whereIn('id', $this->ids)
             ->get()

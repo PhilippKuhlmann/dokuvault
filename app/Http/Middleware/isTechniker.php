@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Role;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 class isTechniker
@@ -16,9 +16,9 @@ class isTechniker
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->user()?->role->id !== Role::IS_TECHNIKER) {
-            abort(403);
-        }
+        // Vorher "ist Rolle 10". Eine zweite Technikergruppe haette die
+        // Fernwartungs-Suche damit nie oeffnen koennen.
+        abort_unless(auth()->user() && Gate::allows('remote_search'), 403);
 
         return $next($request);
     }

@@ -35,7 +35,7 @@
                     ]"
 
                     editUrl="/{{ Request::path() }}/{{ $mailboxprovider->id }}/edit"
-                    can="isAdmin"
+                    can="admin_catalog"
                 />
 
             @endforeach

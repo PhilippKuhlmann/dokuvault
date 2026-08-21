@@ -147,7 +147,7 @@ test('die Protokollseite zeigt die Kennwortaenderung', function () {
 });
 
 test('das Protokoll zeigt das bisherige Kennwort auf Klick', function () {
-    $this->actingAs(userWithPermissions(['see_hidden', 'firewall_update']));
+    $this->actingAs(userWithPermissions(['admin_activity', 'firewall_update']));
 
     $firewall = eineFirewall(['password' => 'Das-Alte-2026']);
     $firewall->update(['password' => 'Das-Neue-2026']);
@@ -166,7 +166,7 @@ test('das Protokoll zeigt das bisherige Kennwort auf Klick', function () {
     $test->call('verbergen')->assertDontSee('Das-Alte-2026');
 });
 
-test('ohne see_hidden bleibt das Kennwort im Protokoll verborgen', function () {
+test('ohne admin_activity bleibt das Kennwort im Protokoll verborgen', function () {
     $this->actingAs(userWithPermissions(['firewall_update']));
 
     $firewall = eineFirewall(['password' => 'Geheim-2026']);
@@ -180,7 +180,7 @@ test('ohne see_hidden bleibt das Kennwort im Protokoll verborgen', function () {
 });
 
 test('nach Ablauf der Frist sagt das Protokoll es ehrlich', function () {
-    $this->actingAs(userWithPermissions(['see_hidden', 'firewall_update']));
+    $this->actingAs(userWithPermissions(['admin_activity', 'firewall_update']));
 
     $firewall = eineFirewall(['password' => 'Weg-2026']);
     $firewall->update(['password' => 'Neu-2026']);

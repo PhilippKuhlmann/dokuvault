@@ -2,6 +2,7 @@
     'matrix' => [],
     'others' => [],
     'actions' => [],
+    'adminRechte' => [],
     'selected' => [],
 ])
 
@@ -57,6 +58,42 @@
             </tbody>
         </table>
     </div>
+
+    {{-- Der Admin-Bereich steht fuer sich, mit Rahmen und eigener Farbe.
+         Diese Rechte greifen nicht auf die Daten eines Kunden, sondern auf die
+         Installation: Wer sie vergibt, soll das nicht zwischen zwei
+         Geraetezeilen tun. --}}
+    @if (count($adminRechte))
+        <div class="mt-5 rounded-xl border border-amber-300 bg-amber-50/60 p-4 dark:border-amber-800/70 dark:bg-amber-900/10">
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <div class="flex items-center gap-2 text-sm font-semibold text-amber-900 dark:text-amber-300">
+                        <x-svg.settings class="h-4 w-4" />
+                        {{ __('Admin-Bereich') }}
+                    </div>
+                    <p class="mt-0.5 text-xs text-amber-800/80 dark:text-amber-400/80">
+                        {{ __('Gilt für die ganze Installation, nicht für einen einzelnen Kunden.') }}
+                    </p>
+                </div>
+                <label class="flex shrink-0 cursor-pointer select-none items-center gap-2 text-xs text-amber-800 dark:text-amber-400">
+                    <input type="checkbox"
+                        onchange="this.closest('[data-admin-block]').querySelectorAll('.perm-cb').forEach(function(c){ c.checked = this.checked; }, this)"
+                        class="h-4 w-4 rounded border-amber-300 dark:border-amber-700 dark:bg-gray-700">
+                    {{ __('Alle auswählen') }}
+                </label>
+            </div>
+
+            <div data-admin-block class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach ($adminRechte as $perm)
+                    <label class="flex cursor-pointer items-center gap-2 text-sm text-gray-800 dark:text-gray-200">
+                        <input type="checkbox" name="permissions[]" value="{{ $perm->id }}"
+                            {{ in_array($perm->id, $selected) ? 'checked' : '' }} class="{{ $cb }}">
+                        {{ __($perm->description) }}
+                    </label>
+                @endforeach
+            </div>
+        </div>
+    @endif
 
     @if (count($others))
         <div class="mt-4">

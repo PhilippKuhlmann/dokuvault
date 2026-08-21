@@ -44,7 +44,7 @@
                     ]"
 
                     editUrl="{{ route('admin.role.edit', $role) }}"
-                    can="isAdmin"
+                    can="admin_role"
                 />
 
             @endforeach

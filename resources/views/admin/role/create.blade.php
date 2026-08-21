@@ -6,7 +6,7 @@
         <x-create.singlerow :label="__('Beschreibung')" name="description" />
 
         <x-slot:right>
-            <x-role.permissions :matrix="$matrix" :others="$others" :actions="$actions" />
+            <x-role.permissions :matrix="$matrix" :others="$others" :actions="$actions" :admin-rechte="$adminRechte" />
         </x-slot>
 
     </x-create.main>

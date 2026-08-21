@@ -48,7 +48,8 @@ foreach ($models as $model) {
 
     test('user with permission '.$model.'_viewAny can acceess the page', function () use ($model) {
         $permission = Permission::factory()->create(['name' => $model.'_viewAny']);
-        $role = Role::factory()->create()->assignPermission($permission);
+        $role = Role::factory()->create();
+        $role->assignPermission($permission);
 
         $user = User::factory()->create(['role_id' => $role->id]);
         $customer = Customer::factory()->create();

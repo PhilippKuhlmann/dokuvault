@@ -23,8 +23,19 @@ class Role extends Model
         return $this->belongsToMany(Permission::class);
     }
 
-    public function assignPermission($permission)
+    /**
+     * Ein Recht zuweisen - und die Rolle zurueckgeben, nicht das Recht.
+     *
+     * Vorher kam das Permission-Model zurueck. Ein
+     * "Role::factory()->create()->assignPermission($p)" lieferte damit ein
+     * Recht, und wer das Ergebnis fuer die Rolle hielt, setzte eine
+     * Rechte-Id als role_id. In den Tests fiel das jahrelang nicht auf, weil
+     * beide Tabellen bei 1 anfingen und die Ids sich deckten.
+     */
+    public function assignPermission($permission): static
     {
-        return $this->permissions()->save($permission);
+        $this->permissions()->save($permission);
+
+        return $this;
     }
 }
