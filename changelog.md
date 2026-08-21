@@ -10,7 +10,7 @@
   - Der Objektname wird in den Eintrag geschrieben statt beim Anzeigen nachgeladen: Ein Protokolleintrag überlebt sein Objekt, und ein Verweis auf eine entfernte Klasse bricht beim Auflösen die ganze Seite.
 
 - **Vorherige Kennwörter bleiben nachschlagbar — im Protokoll und am Gerät.** Der Fall, um den es geht: Ein Kunde oder Techniker ändert ein Kennwort falsch, und man braucht das alte zurück.
-  - **Unter `admin/activity`** steht beim Eintrag „Kennwort geändert" jetzt „bisheriges Kennwort anzeigen" — derselbe Handgriff wie bei jeder anderen Änderung, mit Auge und Kopierknopf. Bei mehreren Feldern einzeln benannt („Kennwort vorher", „USC-PIN vorher").
+  - **Unter `admin/activity`** verhält sich der Eintrag „Kennwort geändert" wie jeder andere: derselbe „anzeigen"-Link in der Details-Spalte, aufgeklappt dasselbe `Feld: Wert`-Muster — nur dass der Wert maskiert ist und Auge und Kopierknopf dabeistehen. Bei mehreren Feldern eine Zeile je Feld.
   - **Im Bearbeiten-Formular** direkt unter dem Kennwortfeld: „Zuletzt geändert vor 3 Tagen — vorheriges Kennwort anzeigen".
   - Der Wert steht **nicht im Protokolleintrag**, sondern wird beim Anzeigen aus einer eigenen, verschlüsselten Tabelle geholt. Im Eintrag stehen nur Verweise.
   - Geladen wird **erst auf Klick**. Sonst stünden auf einer Protokollseite fünfzig alte Kennwörter im Quelltext, auch wenn niemand danach gefragt hat.

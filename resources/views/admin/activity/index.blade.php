@@ -52,19 +52,18 @@
                                 {{ class_basename($activity->subject_type) }} <span class="text-gray-400">{{ is_scalar($objectName) ? $objectName : '' }}</span>
                             </td>
                             <td class="py-2.5 px-4">
-                                @if (count($felder))
-                                    {{-- Aufgeklappt braucht das nichts: Es ist eine
-                                         Zeile, und der Wert steht ohnehin nie dabei. --}}
-                                    <span class="text-xs text-gray-900 dark:text-gray-100">
-                                        {{ collect($felder)->map(fn ($f) => __($feldNamen[$f] ?? $f))->join(', ') }}
-                                    </span>
+                                @if (count($verlaufIds))
                                     {{-- Das bisherige Kennwort steht nicht im
                                          Protokolleintrag, sondern kommt auf Klick aus
                                          der Historie - und laeuft mit deren Frist ab. --}}
-                                    @if (count($verlaufIds))
-                                        <livewire:protokoll-kennwort :ids="$verlaufIds" :felder="$felder"
-                                            :key="'pw-'.$activity->id" />
-                                    @endif
+                                    <livewire:protokoll-kennwort :ids="$verlaufIds" :felder="$felder"
+                                        :key="'pw-'.$activity->id" />
+                                @elseif (count($felder))
+                                    {{-- Kein alter Wert vorhanden - dann wenigstens
+                                         sagen, welches Kennwort gemeint war. --}}
+                                    <span class="text-xs text-gray-500">
+                                        {{ collect($felder)->map(fn ($f) => __($feldNamen[$f] ?? $f))->join(', ') }}
+                                    </span>
                                 @elseif (count($attrs) || count($old))
                                     <button type="button" @click="open = !open" class="text-cerulean-600 hover:text-cerulean-700 text-sm">
                                         <span x-show="!open">anzeigen</span>
