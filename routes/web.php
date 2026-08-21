@@ -59,6 +59,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VMController;
 use App\Http\Controllers\WifiController;
 use App\Http\Controllers\WizardController;
+use App\Livewire\AdminPapierkorb;
 use App\Livewire\GlobalSearch;
 use App\Livewire\RemoteSearch;
 use Illuminate\Support\Facades\Route;
@@ -83,6 +84,10 @@ Route::middleware(['auth', 'isTechniker'])->group(function () {
 // Admin Bereich
 Route::middleware(['auth', 'isAdmin'])->group(function () {
     Route::prefix('admin')->group(function () {
+
+        // Papierkorb ueber alle Kunden - sehen, was sich angesammelt hat, und
+        // es endgueltig loswerden.
+        Route::get('/papierkorb', AdminPapierkorb::class)->name('admin.papierkorb');
 
         // Einstellungen der Installation
         Route::get('/setting', [SettingController::class, 'index'])->name('admin.setting.index');

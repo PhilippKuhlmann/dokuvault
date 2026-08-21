@@ -40,6 +40,12 @@
                 </x-slot:links>
             </x-aside.dropdown>
 
+            <x-aside.dropdown :label="__('Papierkorb')" svg="svg.trash" >
+                <x-slot:links>
+                    <x-aside.dropdownlink :label="__('Alle Kunden')" href="{{ route('admin.papierkorb') }}" />
+                </x-slot:links>
+            </x-aside.dropdown>
+
             <x-aside.dropdown :label="__('Protokoll')" svg="svg.document" >
                 <x-slot:links>
                     <x-aside.dropdownlink :label="__('Aktivitäten')" href="{{ route('admin.activity.index') }}" />

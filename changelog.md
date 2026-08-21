@@ -1,5 +1,21 @@
 # Changelog
 
+## 26.08.21
+
+### Added
+
+- **Papierkorb über alle Kunden — als eigener Menüpunkt im Admin-Bereich.** Der Papierkorb beim Kunden zeigt dessen eigene Einträge und kann sie zurückholen. Hier geht es um das Gegenteil: sehen, was sich über die Jahre angesammelt hat, und es loswerden. Gelöscht wird von Hand — ein Zeitplan, der im Hintergrund unbemerkt Daten endgültig entfernt, wäre dafür das falsche Werkzeug.
+  - **Filter nach Alter, Art und Kunde.** Die Tage sind frei eingebbar; 21, 90 und 365 stehen als Knöpfe daneben, weil sie das Übliche abdecken — aber nicht jede Aufbewahrungsregel hält sich daran.
+  - **Einzeln oder alles Angezeigte.** Das Sammellöschen trifft ausschließlich, was der Filter gerade zeigt, und fragt vorher mit der **Anzahl** nach: „Wirklich löschen?" ohne Angabe, wie viel, ist keine Grundlage für ein Ja. Der Warnhinweis nennt, was mitgeht — gespeicherte Kennwörter, hinterlegte Dateien und die daran hängenden IP-Adressen.
+  - Endgültig heißt endgültig: Die Datei wird von der Platte gelöscht, IP-Adressen und Zugangsdaten-Verknüpfungen gehen mit. Blieben sie liegen, zeigten sie auf eine Id, die es nicht mehr gibt — und genau daran ist die Zugangsdaten-Seite schon einmal zerbrochen.
+  - Die Seite lädt **je Art höchstens 500 Einträge** und sagt es, wenn sie an diese Grenze stößt. Ohne den Hinweis hielte man die Zahl in der Kopfzeile für den ganzen Bestand und wunderte sich, warum nach dem Löschen noch etwas da ist.
+  - Zugang nur mit `see_hidden` — geprüft beim Aufruf **und** bei jeder Löschaktion. Die Klasse zum Slug kommt aus der Whitelist in `config/custom.php`, nie aus der Anfrage.
+
+### Fixed
+
+- **Der Löschen-Knopf im Admin-Papierkorb tat nichts.** Livewires `updated()`-Hook feuert bei *jeder* Eigenschaft, wenn man den Namen nicht prüft — also auch bei der Rückfrage selbst, die sich damit sofort wieder schloss. Jetzt reagiert der Hook nur noch auf die drei Filter.
+- Bei 839 Pixeln Fensterbreite lag der Löschen-Knopf außerhalb des Sichtbaren: Die Tabelle hatte eine Mindestbreite von 40 rem. Ausgerechnet dieser Knopf ist der Sinn der Seite — jetzt sind es 30 rem, der Kundenname darf dafür umbrechen.
+
 ## 26.08.17
 
 ### Added
