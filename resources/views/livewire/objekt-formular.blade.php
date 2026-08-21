@@ -139,6 +139,39 @@
                                 @error('form.'.$feld['name'])
                                     <span class="mt-1 text-xs text-red-600">{{ $message }}</span>
                                 @enderror
+
+                                {{-- Vorherige Kennwoerter. Der Fall dahinter: Jemand
+                                     hat falsch geaendert, und man braucht das alte
+                                     zurueck. Der Wert wird erst auf Klick geholt. --}}
+                                @if (! empty($verlauf[$feld['name']]))
+                                    <div class="mt-1.5">
+                                        @if (isset($gezeigterVerlauf[$feld['name']]))
+                                            <div class="rounded-lg border border-gray-200 bg-gray-50 p-2.5 dark:border-gray-600 dark:bg-gray-900/40">
+                                                <div class="flex items-center justify-between gap-2">
+                                                    <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ __('Bisherige Kennwörter') }}</span>
+                                                    <button type="button" wire:click="verlaufVerbergen('{{ $feld['name'] }}')"
+                                                        class="text-xs text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400">{{ __('verbergen') }}</button>
+                                                </div>
+                                                <div class="mt-1.5 space-y-1.5">
+                                                    @foreach ($gezeigterVerlauf[$feld['name']] as $eintrag)
+                                                        <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                                                            <x-password :value="$eintrag['wert']" width="w-40" />
+                                                            <span class="text-xs text-gray-400 dark:text-gray-500" title="{{ $eintrag['wann'] }}">
+                                                                {{ $eintrag['seit'] }}@if ($eintrag['wer']) · {{ $eintrag['wer'] }}@endif
+                                                            </span>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @else
+                                            <button type="button" wire:click="verlaufZeigen('{{ $feld['name'] }}')"
+                                                class="text-xs text-gray-500 hover:text-cerulean-600 dark:text-gray-400 dark:hover:text-cerulean-400">
+                                                {{ __('Zuletzt geändert') }} {{ $verlauf[$feld['name']]['zuletzt'] }} —
+                                                <span class="underline">{{ trans_choice('{1}vorheriges Kennwort anzeigen|[2,*]:anzahl vorherige anzeigen', $verlauf[$feld['name']]['anzahl'], ['anzahl' => $verlauf[$feld['name']]['anzahl']]) }}</span>
+                                            </button>
+                                        @endif
+                                    </div>
+                                @endif
                             </div>
                         @endforeach
                     </div>

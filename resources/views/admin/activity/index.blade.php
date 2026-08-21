@@ -11,16 +11,7 @@
 
         // Welches Kennwort - ein Gerät kann mehrere haben. Der Wert steht nie
         // dabei, nur das Feld.
-        $feldNamen = [
-            'password' => 'Kennwort',
-            'remotePassword' => 'Fernwartungs-Kennwort',
-            'bmcPassword' => 'BMC-Kennwort',
-            'dsrmpassword' => 'DSRM-Kennwort',
-            'cloud_backup_password' => 'Cloud-Backup-Kennwort',
-            'pppoe_password' => 'PPPoE-Kennwort',
-            'encryptionkey' => 'Verschlüsselungsschlüssel',
-            'usc_pin' => 'USC-PIN',
-        ];
+        $feldNamen = config('custom.secret_field_labels');
     @endphp
 
     <div class="m-3">
@@ -48,6 +39,7 @@
                             $attrs = $activity->properties['attributes'] ?? [];
                             $old = $activity->properties['old'] ?? [];
                             $felder = $activity->properties['felder'] ?? [];
+                            $verlaufIds = $activity->properties['verlauf_ids'] ?? [];
                             $objectName = $attrs['name'] ?? $old['name'] ?? $activity->properties['objekt'] ?? ('#' . $activity->subject_id);
                         @endphp
                         <tr x-data="{ open: false }" class="bg-white border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700/50">
@@ -66,6 +58,13 @@
                                     <span class="text-xs text-gray-900 dark:text-gray-100">
                                         {{ collect($felder)->map(fn ($f) => __($feldNamen[$f] ?? $f))->join(', ') }}
                                     </span>
+                                    {{-- Das bisherige Kennwort steht nicht im
+                                         Protokolleintrag, sondern kommt auf Klick aus
+                                         der Historie - und laeuft mit deren Frist ab. --}}
+                                    @if (count($verlaufIds))
+                                        <livewire:protokoll-kennwort :ids="$verlaufIds" :felder="$felder"
+                                            :key="'pw-'.$activity->id" />
+                                    @endif
                                 @elseif (count($attrs) || count($old))
                                     <button type="button" @click="open = !open" class="text-cerulean-600 hover:text-cerulean-700 text-sm">
                                         <span x-show="!open">anzeigen</span>

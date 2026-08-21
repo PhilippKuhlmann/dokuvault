@@ -24,6 +24,21 @@ class Setting extends Model
     public const REMOTE_PATTERN = 'remote_pattern';
 
     /**
+     * Wie viele Tage ein vorheriges Kennwort aufbewahrt wird. 0 heisst: gar
+     * nicht - dann wird auch keines geschrieben.
+     */
+    public const PASSWORT_HISTORIE_TAGE = 'passwort_historie_tage';
+
+    /** Vorgabe, wenn nichts eingestellt ist. */
+    public const PASSWORT_HISTORIE_STANDARD = 90;
+
+    /** Aufbewahrungsfrist in Tagen, 0 wenn abgeschaltet. */
+    public static function passwortHistorieTage(): int
+    {
+        return (int) self::wert(self::PASSWORT_HISTORIE_TAGE, self::PASSWORT_HISTORIE_STANDARD);
+    }
+
+    /**
      * Alle Einstellungen auf einmal - nicht je Schluessel einzeln.
      *
      * Der Grund ist ein feiner: Cache::rememberForever behandelt null als

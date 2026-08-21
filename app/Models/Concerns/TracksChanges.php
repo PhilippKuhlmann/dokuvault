@@ -2,7 +2,10 @@
 
 namespace App\Models\Concerns;
 
+use App\Models\PasswordHistory;
+use App\Models\Setting;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Throwable;
@@ -25,6 +28,14 @@ trait TracksChanges
     public static function bootTracksChanges(): void
     {
         static::updated(fn (Model $model) => $model->protokolliereKennwortaenderung());
+    }
+
+    /**
+     * Die bisherigen Kennwoerter dieses Objekts, neueste zuerst.
+     */
+    public function kennwortVerlauf(): MorphMany
+    {
+        return $this->morphMany(PasswordHistory::class, 'subject')->latest('id');
     }
 
     public function getActivitylogOptions(): LogOptions
@@ -51,6 +62,7 @@ trait TracksChanges
     protected function protokolliereKennwortaenderung(): void
     {
         $geaendert = [];
+        $verlaufIds = [];
 
         foreach (config('custom.secret_columns') as $spalte) {
             if (in_array($spalte, config('custom.non_password_secrets'), true)) {
@@ -66,6 +78,10 @@ trait TracksChanges
             }
 
             $geaendert[] = $spalte;
+
+            if ($id = $this->altesKennwortSichern($spalte)) {
+                $verlaufIds[] = $id;
+            }
         }
 
         if ($geaendert === []) {
@@ -81,9 +97,57 @@ trait TracksChanges
             ->withProperties([
                 'felder' => $geaendert,
                 'objekt' => $this->name ?? $this->username ?? null,
+                // Verweise, keine Werte: Das Protokoll zeigt das bisherige
+                // Kennwort, holt es aber beim Anzeigen aus der Historie. Damit
+                // steht es nicht im Protokolleintrag, der ewig bleibt, und
+                // verschwindet mit der eingestellten Frist.
+                'verlauf_ids' => $verlaufIds,
             ])
             ->event('password_changed')
             ->log('Kennwort geändert');
+    }
+
+    /**
+     * Das bisherige Kennwort aufheben, damit es sich nachschlagen laesst.
+     *
+     * Der Fall, um den es geht: Jemand aendert ein Kennwort falsch, und man
+     * braucht das alte zurueck. Es steht verschluesselt in einer eigenen
+     * Tabelle - nicht im Protokoll, das ewig bleibt und alle Kunden auf einer
+     * Seite listet.
+     *
+     * @return int|null Id des Eintrags, damit der Protokolleintrag darauf
+     *                  verweisen kann
+     */
+    protected function altesKennwortSichern(string $spalte): ?int
+    {
+        $tage = Setting::passwortHistorieTage();
+
+        // Abgeschaltet heisst abgeschaltet: Dann entsteht gar kein Eintrag,
+        // nicht einer, der spaeter geloescht wird.
+        if ($tage < 1) {
+            return null;
+        }
+
+        try {
+            $alt = $this->getOriginal($spalte);
+        } catch (Throwable) {
+            return null;
+        }
+
+        // Beim ersten Setzen gibt es nichts aufzuheben.
+        if (blank($alt)) {
+            return null;
+        }
+
+        return PasswordHistory::create([
+            'customer_id' => $this->customer_id ?? null,
+            'subject_type' => $this::class,
+            'subject_id' => $this->getKey(),
+            'subject_name' => $this->name ?? $this->username ?? null,
+            'field' => $spalte,
+            'value' => $alt,
+            'user_id' => auth()->id(),
+        ])->id;
     }
 
     /**

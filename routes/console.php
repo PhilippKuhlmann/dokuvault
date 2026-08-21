@@ -43,3 +43,8 @@ Schedule::command('queue:work --stop-when-empty --max-time=55 --tries=1')
 // Fertige PDF wieder loeschen: Sie enthalten alle Zugangsdaten des Kunden und
 // haben nach dem Abholen keinen Grund, liegen zu bleiben.
 Schedule::command('pdf:aufraeumen')->dailyAt('03:30');
+
+// Vorherige Kennwoerter nach der eingestellten Frist entfernen. Laeuft taeglich,
+// nicht stuendlich: Die Frist wird in Tagen angegeben, eine Stunde Genauigkeit
+// waere geheuchelte Praezision.
+Schedule::command('kennwoerter:aufraeumen')->dailyAt('03:40');

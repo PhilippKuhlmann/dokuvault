@@ -683,6 +683,26 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Wie ein Kennwortfeld heisst, wenn man es benennen muss
+    |--------------------------------------------------------------------------
+    |
+    | Ein Geraet hat oft mehrere Kennwoerter. "Kennwort geaendert" allein waere
+    | die halbe Auskunft - welches denn?
+    |
+    */
+    'secret_field_labels' => [
+        'password' => 'Kennwort',
+        'remotePassword' => 'Fernwartungs-Kennwort',
+        'bmcPassword' => 'BMC-Kennwort',
+        'dsrmpassword' => 'DSRM-Kennwort',
+        'cloud_backup_password' => 'Cloud-Backup-Kennwort',
+        'pppoe_password' => 'PPPoE-Kennwort',
+        'encryptionkey' => 'Verschlüsselungsschlüssel',
+        'usc_pin' => 'USC-PIN',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Aufzeichnung der Herkunft auf der Demo
     |--------------------------------------------------------------------------
     |

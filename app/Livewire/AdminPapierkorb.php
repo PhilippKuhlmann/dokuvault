@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
+use App\Models\Concerns\TracksChanges;
 use App\Models\Customer;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -198,6 +199,13 @@ class AdminPapierkorb extends Component
 
         if (in_array(HasCredentials::class, $traits, true)) {
             $objekt->credentialLinks()->delete();
+        }
+
+        // Sonst blieben die alten Kennwoerter eines endgueltig geloeschten
+        // Geraets liegen - verschluesselt, aber ohne Objekt, zu dem sie
+        // gehoeren, und ohne Frist, die sie je erreichen wuerde.
+        if (in_array(TracksChanges::class, $traits, true)) {
+            $objekt->kennwortVerlauf()->delete();
         }
 
         $objekt->forceDelete();

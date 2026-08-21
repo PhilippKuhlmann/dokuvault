@@ -1,7 +1,9 @@
 <?php
 
+use App\Livewire\ProtokollKennwort;
 use App\Models\Customer;
 use App\Models\Firewall;
+use App\Models\PasswordHistory;
 use App\Models\Role;
 use App\Models\Site;
 use App\Models\User;
@@ -141,4 +143,54 @@ test('die Protokollseite zeigt die Kennwortaenderung', function () {
     // Der Name kommt aus dem Eintrag selbst, nicht aus einer Nachfrage beim
     // Objekt - ein Eintrag ueberlebt sein Objekt.
     $antwort->assertSee('FW-Protokolltest');
+});
+
+test('das Protokoll zeigt das bisherige Kennwort auf Klick', function () {
+    $this->actingAs(userWithPermissions(['see_hidden', 'firewall_update']));
+
+    $firewall = eineFirewall(['password' => 'Das-Alte-2026']);
+    $firewall->update(['password' => 'Das-Neue-2026']);
+
+    $eintrag = letzterEintrag($firewall, 'password_changed');
+    $ids = $eintrag->properties['verlauf_ids'];
+
+    expect($ids)->toHaveCount(1);
+    // Im Eintrag stehen Verweise, keine Werte.
+    expect(json_encode($eintrag->properties->toArray()))->not->toContain('Das-Alte-2026');
+
+    $test = Livewire::test(ProtokollKennwort::class, ['ids' => $ids, 'felder' => ['password']]);
+
+    $test->assertDontSee('Das-Alte-2026');
+    $test->call('zeigen')->assertSee('Das-Alte-2026');
+    $test->call('verbergen')->assertDontSee('Das-Alte-2026');
+});
+
+test('ohne see_hidden bleibt das Kennwort im Protokoll verborgen', function () {
+    $this->actingAs(userWithPermissions(['firewall_update']));
+
+    $firewall = eineFirewall(['password' => 'Geheim-2026']);
+    $firewall->update(['password' => 'Neu-2026']);
+
+    $ids = letzterEintrag($firewall, 'password_changed')->properties['verlauf_ids'];
+
+    Livewire::test(ProtokollKennwort::class, ['ids' => $ids, 'felder' => ['password']])
+        ->call('zeigen')
+        ->assertForbidden();
+});
+
+test('nach Ablauf der Frist sagt das Protokoll es ehrlich', function () {
+    $this->actingAs(userWithPermissions(['see_hidden', 'firewall_update']));
+
+    $firewall = eineFirewall(['password' => 'Weg-2026']);
+    $firewall->update(['password' => 'Neu-2026']);
+
+    $ids = letzterEintrag($firewall, 'password_changed')->properties['verlauf_ids'];
+    PasswordHistory::whereIn('id', $ids)->delete();
+
+    // Dass die Aenderung stattfand, bleibt im Protokoll - nur der Wert ist weg.
+    // Geprueft wird der Zustand, nicht der Wortlaut: Der Hinweis ist uebersetzt.
+    Livewire::test(ProtokollKennwort::class, ['ids' => $ids, 'felder' => ['password']])
+        ->call('zeigen')
+        ->assertSet('offen', true)
+        ->assertSet('werte', []);
 });

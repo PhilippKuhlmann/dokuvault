@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\Setting;
 use App\Models\Site;
 use App\Rules\BelongsToCustomer;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -41,6 +42,15 @@ class ObjektFormular extends Component
     public ?int $bearbeiteId = null;
 
     public bool $loeschenGefragt = false;
+
+    /**
+     * Vorherige Kennwoerter, die der Nutzer aufgeklappt hat - nach Feldname.
+     *
+     * Sie werden erst auf Klick geladen und nicht beim Oeffnen mitgeschickt:
+     * Sonst stuende in jedem Bearbeiten-Formular die halbe Kennwortgeschichte
+     * des Geraets im Quelltext, auch wenn niemand danach gefragt hat.
+     */
+    public array $gezeigterVerlauf = [];
 
     /** Die Formularwerte, nach Feldnamen. */
     public array $form = [];
@@ -125,6 +135,7 @@ class ObjektFormular extends Component
 
         $this->bearbeiteId = $objekt->id;
         $this->loeschenGefragt = false;
+        $this->gezeigterVerlauf = [];
         $this->resetValidation();
         $this->offen = true;
     }
@@ -337,6 +348,64 @@ class ObjektFormular extends Component
         return trim(preg_replace('/\s*·\s*·\s*/', ' · ', trim($text)), " ·\t");
     }
 
+    /**
+     * Zu welchen Feldern gibt es einen Verlauf, und wie alt ist der neueste?
+     *
+     * Eine Abfrage fuer alle Felder statt einer je Feld, und ohne den Wert -
+     * der wird erst geholt, wenn jemand darauf klickt.
+     */
+    protected function verlaufsUebersicht($objekt): array
+    {
+        if (! $objekt || ! method_exists($objekt, 'kennwortVerlauf')) {
+            return [];
+        }
+
+        return $objekt->kennwortVerlauf()
+            ->selectRaw('field, count(*) as anzahl, max(created_at) as zuletzt')
+            ->groupBy('field')
+            ->get()
+            ->mapWithKeys(fn ($zeile) => [$zeile->field => [
+                'anzahl' => (int) $zeile->anzahl,
+                'zuletzt' => Carbon::parse($zeile->zuletzt)->diffForHumans(),
+            ]])
+            ->all();
+    }
+
+    /**
+     * Die bisherigen Kennwoerter eines Feldes aufklappen.
+     *
+     * Wer das Geraet bearbeiten darf, darf sie sehen - er sieht das aktuelle
+     * Kennwort ohnehin im Formular. Geprueft wird trotzdem serverseitig: Der
+     * Aufruf kommt aus dem Browser.
+     */
+    public function verlaufZeigen(string $feld): void
+    {
+        Gate::authorize($this->typ.'_update');
+
+        if (! $this->bearbeiteId || ! in_array($feld, config('custom.secret_columns'), true)) {
+            return;
+        }
+
+        $this->gezeigterVerlauf[$feld] = $this->objektHolen($this->bearbeiteId)
+            ->kennwortVerlauf()
+            ->where('field', $feld)
+            ->with('user:id,name')
+            ->limit(10)
+            ->get()
+            ->map(fn ($eintrag) => [
+                'wert' => $eintrag->value,
+                'wann' => $eintrag->created_at->format('d.m.Y H:i'),
+                'seit' => $eintrag->created_at->diffForHumans(),
+                'wer' => $eintrag->user?->name,
+            ])
+            ->all();
+    }
+
+    public function verlaufVerbergen(string $feld): void
+    {
+        unset($this->gezeigterVerlauf[$feld]);
+    }
+
     public function render()
     {
         $einstellung = $this->einstellung();
@@ -359,6 +428,8 @@ class ObjektFormular extends Component
 
         return view('livewire.objekt-formular', [
             'objekt' => $objekt,
+            // Nur Anzahl und Zeitpunkt - der Wert kommt erst auf Klick.
+            'verlauf' => $this->verlaufsUebersicht($objekt),
             'mitBloecken' => (bool) ($einstellung['bloecke'] ?? false),
             'felder' => $felder,
             'einzahl' => $einstellung['einzahl'],

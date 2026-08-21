@@ -171,6 +171,7 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
         ->merge(collect(config('custom.remote_tools', []))->flatMap(fn ($t) => [
             $t['label'] ?? null, $t['id_label'] ?? null, $t['password_label'] ?? null,
         ]))
+        ->merge(array_values(config('custom.secret_field_labels', [])))
         ->merge(array_values(config('custom.server_depths', [])))
         ->merge(collect(config('custom.trashables', []))->map(fn ($t) => $t[1] ?? null))
         ->merge(collect(config('custom.rack_device_types', []))->map(fn ($t) => $t[1] ?? null))

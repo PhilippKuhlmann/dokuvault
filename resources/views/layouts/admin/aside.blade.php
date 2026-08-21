@@ -37,6 +37,7 @@
             <x-aside.dropdown :label="__('Einstellungen')" svg="svg.settings" >
                 <x-slot:links>
                     <x-aside.dropdownlink :label="__('Fernwartung')" href="{{ route('admin.setting.index') }}" />
+                    <x-aside.dropdownlink :label="__('Protokoll-Historie')" href="{{ route('admin.kennworthistorie') }}" />
                 </x-slot:links>
             </x-aside.dropdown>
 

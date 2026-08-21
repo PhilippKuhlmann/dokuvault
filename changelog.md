@@ -9,6 +9,16 @@
   - Ein erneutes Speichern desselben Kennworts ist keine Änderung. Die Verschlüsselung erzeugt bei jedem Speichern einen anderen Chiffretext — ohne Klartext-Vergleich hätte jedes Absenden des Formulars eine Kennwortänderung gemeldet, auch wenn niemand das Feld angefasst hat.
   - Der Objektname wird in den Eintrag geschrieben statt beim Anzeigen nachgeladen: Ein Protokolleintrag überlebt sein Objekt, und ein Verweis auf eine entfernte Klasse bricht beim Auflösen die ganze Seite.
 
+- **Vorherige Kennwörter bleiben nachschlagbar — im Protokoll und am Gerät.** Der Fall, um den es geht: Ein Kunde oder Techniker ändert ein Kennwort falsch, und man braucht das alte zurück.
+  - **Unter `admin/activity`** steht beim Eintrag „Kennwort geändert" jetzt „bisheriges Kennwort anzeigen" — derselbe Handgriff wie bei jeder anderen Änderung, mit Auge und Kopierknopf.
+  - **Im Bearbeiten-Formular** direkt unter dem Kennwortfeld: „Zuletzt geändert vor 3 Tagen — vorheriges Kennwort anzeigen".
+  - **Neuer Menüpunkt „Einstellungen → Protokoll-Historie"** mit allen bisherigen Kennwörtern über alle Kunden, Suche über Gerät und Feld, Filter nach Kunde, Einzellöschung — und der Aufbewahrungsfrist gleich daneben.
+  - Die **Aufbewahrung ist in Tagen einstellbar** (Vorgabe 90), ein nächtlicher Lauf räumt Abgelaufenes ab. **0 heißt: gar nicht aufbewahren** — dann wird auch nichts geschrieben, und der Lauf entfernt, was noch da ist. Ist die Frist abgelaufen, sagt das Protokoll „Nicht mehr aufbewahrt"; dass die Änderung stattfand, bleibt stehen.
+  - Der Wert steht **nicht im Protokolleintrag**, sondern wird beim Anzeigen aus der Historie geholt. Der Protokolleintrag bleibt ewig — die alten Kennwörter sollen das nicht. Im Eintrag stehen nur Verweise.
+  - Geladen wird **erst auf Klick**. Sonst stünden auf einer Protokollseite fünfzig alte Kennwörter im Quelltext, auch wenn niemand danach gefragt hat.
+  - Sichtbar am Gerät für jeden, der es bearbeiten darf — das aktuelle Kennwort sieht er dort ohnehin. Die Übersicht im Admin-Bereich verlangt zusätzlich `see_hidden`.
+  - Ein erneutes Speichern desselben Kennworts legt keinen Eintrag an, und beim ersten Setzen gibt es nichts aufzuheben.
+
 ### Security
 
 - **USC-PIN, Cloud-Backup-Kennwort und PPPoE-Kennwort standen im Klartext im Protokoll.** Die Ausschlussliste nannte die Namen der Accessor-Methoden (`uscpin`, `cloudBackupPassword`), die Spalten heißen aber `usc_pin` und `cloud_backup_password`; `pppoe_password` fehlte ganz. Damit hat das Protokoll diese drei Felder mitgeschrieben — alten **und** neuen Wert. In der Entwicklungsdatenbank waren 16 Einträge betroffen.

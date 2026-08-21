@@ -7,8 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 /**
- * Einstellungen der Installation. Bisher genau eine: welche Fernwartung
- * benutzt wird.
+ * Einstellungen der Fernwartung. Die Kennwort-Historie hat eine eigene Seite -
+ * dort steht die Frist neben dem, was sie betrifft.
  */
 class SettingController extends Controller
 {
