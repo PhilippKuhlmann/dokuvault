@@ -10,6 +10,7 @@
   - Die Filter stehen in der Adresse — ein gefilterter Stand lässt sich verlinken. Leere Filter bleiben draußen.
   - Die Kopfzeile nennt beide Zahlen („1 von 863 Einträgen"). Ohne die Gesamtzahl hält man das gefilterte Ergebnis für den Bestand.
   - „heute“ heißt heute, nicht „die letzten 24 Stunden“: Um 18:46 zeigte der Knopf sonst auch Einträge von gestern 18:20 — 46 statt 21. Ab einer Woche ist der Unterschied belanglos, dort bleibt es rollierend.
+  - Ein Unterstrich oder ein Prozentzeichen im Suchbegriff wird jetzt als Zeichen gelesen, nicht als Platzhalter. Vorher fand „SRV_01“ auch „SRV101“, und die Suche nach „%“ lieferte alle 863 Einträge. Die Maskierung steckt in einem Query-Macro `whereEnthaelt()`, das auch die übrigen Suchen im Projekt übernehmen können.
 
 - **Kennwortänderungen stehen jetzt im Protokoll.** Bisher war eine Kennwortänderung dort unsichtbar: Kennwortfelder sind vom Protokoll ausgeschlossen (ihr Wert darf nie hinein), und wenn nur das Kennwort geändert wurde, entstand deshalb gar kein Eintrag. Neu ist ein eigenes Ereignis **„Kennwort geändert"** mit Zeitpunkt, Benutzer, Objekt und dem betroffenen **Feldnamen** — „Kennwort", „BMC-Kennwort", „USC-PIN" — aber **nie dem Wert**.
   - Gilt für alle protokollierten Objekte, vom Gerätekennwort bis zum **Anmeldekennwort eines DokuVault-Benutzers**.

@@ -67,10 +67,12 @@ class AdminProtokoll extends Component
             // Volltext über die Eigenschaften: In einem Protokoll sucht man
             // nicht nach einem Feld, sondern nach dem, woran man sich erinnert -
             // einem Namen, einer IP, einer Seriennummer.
+            //
+            // whereEnthaelt statt like: Ein Suchbegriff wie "SRV_01" fand sonst
+            // auch "SRV101", und die Suche nach "%" lieferte alle 863 Einträge.
             ->when($this->suche !== '', fn ($a) => $a->where(
-                fn ($teil) => $teil->where('properties', 'like', '%'.$this->suche.'%')
-                    ->orWhere('subject_type', 'like', '%'.$this->suche.'%')
-                    ->orWhereHas('causer', fn ($c) => $c->where('name', 'like', '%'.$this->suche.'%'))
+                fn ($teil) => $teil->whereEnthaelt(['properties', 'subject_type'], $this->suche)
+                    ->orWhereHas('causer', fn ($c) => $c->whereEnthaelt('name', $this->suche))
             ))
             ->latest('id');
 

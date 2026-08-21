@@ -151,3 +151,32 @@ test('heute heisst heute, nicht die letzten 24 Stunden', function () {
         ->assertSee('von-heute.de')
         ->assertDontSee('gestern-abend.de');
 });
+
+test('Platzhalter im Suchbegriff werden nicht als solche gelesen', function () {
+    $this->actingAs(userWithPermissions([]));
+    $customer = Customer::factory()->create();
+
+    Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'srv_01.example']);
+    Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'srv101.example']);
+
+    // Der Unterstrich steht in LIKE fuer ein beliebiges Zeichen. Ohne
+    // Maskierung fand "srv_01" auch "srv101".
+    Livewire::test(AdminProtokoll::class)
+        ->set('suche', 'srv_01')
+        ->assertSee('srv_01.example')
+        ->assertDontSee('srv101.example');
+});
+
+test('das Prozentzeichen liefert nicht den ganzen Bestand', function () {
+    $this->actingAs(userWithPermissions([]));
+    $customer = Customer::factory()->create();
+
+    Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'ohne-sonderzeichen.de']);
+    Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'mit-100%-anteil.de']);
+
+    // Gemessen im Browser: Die Suche nach "%" gab 863 von 863 Eintraegen aus.
+    Livewire::test(AdminProtokoll::class)
+        ->set('suche', '%')
+        ->assertSee('mit-100%-anteil.de')
+        ->assertDontSee('ohne-sonderzeichen.de');
+});
