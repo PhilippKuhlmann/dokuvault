@@ -644,6 +644,45 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Spalten, deren Inhalt nie ins Protokoll darf
+    |--------------------------------------------------------------------------
+    |
+    | spatie/activitylog liest die Werte ueber die Eloquent-Accessoren - ein
+    | verschluesseltes Feld stuende sonst im Klartext im Protokoll, alter und
+    | neuer Wert.
+    |
+    | Geschrieben wie die SPALTE heisst, nicht wie die Accessor-Methode: Die
+    | Liste nannte einmal "uscpin" und "cloudBackupPassword", die Spalten heissen
+    | "usc_pin" und "cloud_backup_password" - und damit standen USC-PIN und
+    | Cloud-Backup-Kennwort im Protokoll. Ein Test in VerschluesselteSpaltenTest
+    | gleicht diese Liste gegen die tatsaechlich verschluesselten Spalten ab.
+    |
+    */
+    'secret_columns' => [
+        'password',
+        'remotePassword',
+        'bmcPassword',
+        'dsrmpassword',
+        'cloud_backup_password',
+        'pppoe_password',
+        'encryptionkey',
+        'usc_pin',
+        'remember_token',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Davon sind keine Kennwoerter
+    |--------------------------------------------------------------------------
+    |
+    | Das remember_token ist ein Sitzungsmerkmal: Es aendert sich bei jeder
+    | Anmeldung und waere als "Kennwort geaendert" schlicht falsch.
+    |
+    */
+    'non_password_secrets' => ['remember_token'],
+
+    /*
+    |--------------------------------------------------------------------------
     | Aufzeichnung der Herkunft auf der Demo
     |--------------------------------------------------------------------------
     |

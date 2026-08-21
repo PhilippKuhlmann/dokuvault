@@ -4,6 +4,24 @@
 
 ### Added
 
+- **Kennwortänderungen stehen jetzt im Protokoll.** Bisher war eine Kennwortänderung dort unsichtbar: Kennwortfelder sind vom Protokoll ausgeschlossen (ihr Wert darf nie hinein), und wenn nur das Kennwort geändert wurde, entstand deshalb gar kein Eintrag. Neu ist ein eigenes Ereignis **„Kennwort geändert"** mit Zeitpunkt, Benutzer, Objekt und dem betroffenen **Feldnamen** — „Kennwort", „BMC-Kennwort", „USC-PIN" — aber **nie dem Wert**.
+  - Gilt für alle protokollierten Objekte, vom Gerätekennwort bis zum **Anmeldekennwort eines DokuVault-Benutzers**.
+  - Ein erneutes Speichern desselben Kennworts ist keine Änderung. Die Verschlüsselung erzeugt bei jedem Speichern einen anderen Chiffretext — ohne Klartext-Vergleich hätte jedes Absenden des Formulars eine Kennwortänderung gemeldet, auch wenn niemand das Feld angefasst hat.
+  - Der Objektname wird in den Eintrag geschrieben statt beim Anzeigen nachgeladen: Ein Protokolleintrag überlebt sein Objekt, und ein Verweis auf eine entfernte Klasse bricht beim Auflösen die ganze Seite.
+
+### Security
+
+- **USC-PIN, Cloud-Backup-Kennwort und PPPoE-Kennwort standen im Klartext im Protokoll.** Die Ausschlussliste nannte die Namen der Accessor-Methoden (`uscpin`, `cloudBackupPassword`), die Spalten heißen aber `usc_pin` und `cloud_backup_password`; `pppoe_password` fehlte ganz. Damit hat das Protokoll diese drei Felder mitgeschrieben — alten **und** neuen Wert. In der Entwicklungsdatenbank waren 16 Einträge betroffen.
+  - Die Liste steht jetzt in `config/custom.php` und wird von einem Test gegen die tatsächlich verschlüsselten Spalten abgeglichen. Eine neue Kennwortspalte, die dort fehlt, macht den Test rot.
+  - Eine Migration entfernt die Werte aus bestehenden Einträgen. Der Eintrag selbst bleibt stehen — dass jemand etwas geändert hat, ist die Information, um die es geht.
+
+### Fixed
+
+- **Die Protokollseite schnitt die Details-Spalte ab und lief seitlich über.** Gemessen bei 839 Pixeln: 25 Pixel der Spalte lagen außerhalb des Rahmens, weil er `overflow-hidden` trug. Solange dort nur „anzeigen" stand, fiel es nicht auf. Die Tabelle scrollt jetzt in ihrem Rahmen.
+  - Auch die Seitenzahl-Leiste lief über: 18 Seiten nebeneinander sind 633 Pixel. Sie bekommt einen eigenen Scrollbereich.
+
+### Added
+
 - **Papierkorb über alle Kunden — als eigener Menüpunkt im Admin-Bereich.** Der Papierkorb beim Kunden zeigt dessen eigene Einträge und kann sie zurückholen. Hier geht es um das Gegenteil: sehen, was sich über die Jahre angesammelt hat, und es loswerden. Gelöscht wird von Hand — ein Zeitplan, der im Hintergrund unbemerkt Daten endgültig entfernt, wäre dafür das falsche Werkzeug.
   - **Filter nach Alter, Art und Kunde.** Die Tage sind frei eingebbar; 21, 90 und 365 stehen als Knöpfe daneben, weil sie das Übliche abdecken — aber nicht jede Aufbewahrungsregel hält sich daran.
   - **Einzeln oder alles Angezeigte.** Das Sammellöschen trifft ausschließlich, was der Filter gerade zeigt, und fragt vorher mit der **Anzahl** nach: „Wirklich löschen?" ohne Angabe, wie viel, ist keine Grundlage für ein Ja. Der Warnhinweis nennt, was mitgeht — gespeicherte Kennwörter, hinterlegte Dateien und die daran hängenden IP-Adressen.

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
@@ -86,4 +87,25 @@ test('keine verschluesselte Spalte ist auf 255 Zeichen begrenzt', function () {
     }
 
     expect($zuKlein)->toBe([], 'Zu kurze Spalten: '.implode(', ', $zuKlein));
+});
+
+test('keine verschluesselte Spalte kann ins Protokoll gelangen', function () {
+    $offen = [];
+
+    foreach (verschluesselteSpalten() as [$klasse, $tabelle, $spalte]) {
+        if (! in_array(TracksChanges::class, class_uses_recursive($klasse), true)) {
+            continue;
+        }
+
+        // spatie/activitylog liest die Werte ueber die Accessoren. Steht die
+        // Spalte nicht in der Ausschlussliste, landet das entschluesselte
+        // Kennwort im Protokoll - alter und neuer Wert. Genau so standen
+        // USC-PIN, Cloud-Backup-Kennwort und PPPoE-Kennwort dort: Die Liste
+        // nannte die Methodennamen, die Spalten heissen anders.
+        if (! in_array($spalte, config('custom.secret_columns'), true)) {
+            $offen[] = "{$tabelle}.{$spalte}";
+        }
+    }
+
+    expect($offen)->toBe([], 'Nicht vom Protokoll ausgeschlossen: '.implode(', ', $offen));
 });

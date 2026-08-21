@@ -6,14 +6,32 @@
             'updated' => ['Geändert', 'text-cerulean-700 bg-cerulean-50 dark:text-cerulean-400 dark:bg-gray-700'],
             'deleted' => ['Gelöscht', 'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-900/30'],
             'restored' => ['Wiederhergestellt', 'text-amber-700 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/30'],
+            'password_changed' => ['Kennwort geändert', 'text-purple-700 bg-purple-50 dark:text-purple-300 dark:bg-purple-900/30'],
+        ];
+
+        // Welches Kennwort - ein Gerät kann mehrere haben. Der Wert steht nie
+        // dabei, nur das Feld.
+        $feldNamen = [
+            'password' => 'Kennwort',
+            'remotePassword' => 'Fernwartungs-Kennwort',
+            'bmcPassword' => 'BMC-Kennwort',
+            'dsrmpassword' => 'DSRM-Kennwort',
+            'cloud_backup_password' => 'Cloud-Backup-Kennwort',
+            'pppoe_password' => 'PPPoE-Kennwort',
+            'encryptionkey' => 'Verschlüsselungsschlüssel',
+            'usc_pin' => 'USC-PIN',
         ];
     @endphp
 
     <div class="m-3">
         <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Aktivitäten') }}</div>
 
-        <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+        {{-- Scrollen statt abschneiden: Mit overflow-hidden lagen bei 839 Pixeln
+             25 Pixel der Details-Spalte ausserhalb des Rahmens, und die Seite
+             selbst lief seitlich ueber. Seit dort mehr steht als "anzeigen"
+             faellt das auf. --}}
+        <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <table class="w-full min-w-[38rem] text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs uppercase tracking-wide text-gray-500 bg-gray-50 border-b border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600">
                     <tr>
                         <th class="py-2.5 px-4 font-semibold">{{ __('Zeitpunkt') }}</th>
@@ -29,7 +47,8 @@
                             [$label, $badge] = $eventLabels[$activity->event] ?? [ucfirst($activity->event ?? '—'), 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-700'];
                             $attrs = $activity->properties['attributes'] ?? [];
                             $old = $activity->properties['old'] ?? [];
-                            $objectName = $attrs['name'] ?? $old['name'] ?? ('#' . $activity->subject_id);
+                            $felder = $activity->properties['felder'] ?? [];
+                            $objectName = $attrs['name'] ?? $old['name'] ?? $activity->properties['objekt'] ?? ('#' . $activity->subject_id);
                         @endphp
                         <tr x-data="{ open: false }" class="bg-white border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700/50">
                             <td class="py-2.5 px-4 whitespace-nowrap">{{ $activity->created_at->format('d.m.Y H:i') }}</td>
@@ -41,7 +60,13 @@
                                 {{ class_basename($activity->subject_type) }} <span class="text-gray-400">{{ is_scalar($objectName) ? $objectName : '' }}</span>
                             </td>
                             <td class="py-2.5 px-4">
-                                @if (count($attrs) || count($old))
+                                @if (count($felder))
+                                    {{-- Aufgeklappt braucht das nichts: Es ist eine
+                                         Zeile, und der Wert steht ohnehin nie dabei. --}}
+                                    <span class="text-xs text-gray-900 dark:text-gray-100">
+                                        {{ collect($felder)->map(fn ($f) => __($feldNamen[$f] ?? $f))->join(', ') }}
+                                    </span>
+                                @elseif (count($attrs) || count($old))
                                     <button type="button" @click="open = !open" class="text-cerulean-600 hover:text-cerulean-700 text-sm">
                                         <span x-show="!open">anzeigen</span>
                                         <span x-show="open" x-cloak>verbergen</span>
@@ -73,7 +98,10 @@
             </table>
         </div>
 
-        <div class="mt-4 mb-10">
+        {{-- Die Seitenzahlen stehen in einer Zeile nebeneinander: Bei 856
+             Einträgen sind das 18 Knöpfe und 633 Pixel, mehr als das Fenster
+             breit ist - ohne eigenen Scrollbereich lief die ganze Seite über. --}}
+        <div class="mt-4 mb-10 overflow-x-auto">
             {{ $activities->links() }}
         </div>
     </div>
