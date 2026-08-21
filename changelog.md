@@ -4,6 +4,12 @@
 
 ### Added
 
+- **Das Aktivitätsprotokoll hat Suche und Filter bekommen.** Es war eine feste Liste, 50 Einträge je Seite, absteigend nach Zeit. Bei 863 Einträgen war die Frage „wer hat gestern an der Firewall etwas geändert?" damit eine Blätterübung. Jetzt filterbar nach **Ereignis, Objektart, Benutzer und Zeitraum**, dazu eine **Volltextsuche**.
+  - Die Suche geht über die Eigenschaften eines Eintrags, nicht nur über den Namen: In einem Protokoll sucht man nach dem, woran man sich erinnert — einem Gerätenamen, einer IP, einem Registrar.
+  - Die Auswahllisten enthalten nur, was vorkommt. Die Tabelle kennt 114 verschiedene Verursacher-Ids, die meisten aus Beispieldaten längst gelöschter Konten; eine Auswahl mit 114 Zeilen, von denen 110 leer sind, hilft niemandem.
+  - Die Filter stehen in der Adresse — ein gefilterter Stand lässt sich verlinken. Leere Filter bleiben draußen.
+  - Die Kopfzeile nennt beide Zahlen („1 von 863 Einträgen"). Ohne die Gesamtzahl hält man das gefilterte Ergebnis für den Bestand.
+
 - **Kennwortänderungen stehen jetzt im Protokoll.** Bisher war eine Kennwortänderung dort unsichtbar: Kennwortfelder sind vom Protokoll ausgeschlossen (ihr Wert darf nie hinein), und wenn nur das Kennwort geändert wurde, entstand deshalb gar kein Eintrag. Neu ist ein eigenes Ereignis **„Kennwort geändert"** mit Zeitpunkt, Benutzer, Objekt und dem betroffenen **Feldnamen** — „Kennwort", „BMC-Kennwort", „USC-PIN" — aber **nie dem Wert**.
   - Gilt für alle protokollierten Objekte, vom Gerätekennwort bis zum **Anmeldekennwort eines DokuVault-Benutzers**.
   - Ein erneutes Speichern desselben Kennworts ist keine Änderung. Die Verschlüsselung erzeugt bei jedem Speichern einen anderen Chiffretext — ohne Klartext-Vergleich hätte jedes Absenden des Formulars eine Kennwortänderung gemeldet, auch wenn niemand das Feld angefasst hat.

@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\AccesspointController;
-use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\ADDomainController;
 use App\Http\Controllers\ADGroupController;
 use App\Http\Controllers\AdminController;
@@ -60,6 +59,7 @@ use App\Http\Controllers\VMController;
 use App\Http\Controllers\WifiController;
 use App\Http\Controllers\WizardController;
 use App\Livewire\AdminPapierkorb;
+use App\Livewire\AdminProtokoll;
 use App\Livewire\AdminProtokollHistorie;
 use App\Livewire\GlobalSearch;
 use App\Livewire\RemoteSearch;
@@ -98,8 +98,8 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
         Route::get('/setting', [SettingController::class, 'index'])->name('admin.setting.index');
         Route::patch('/setting', [SettingController::class, 'update'])->name('admin.setting.update');
 
-        // Aktivitätsprotokoll
-        Route::get('/activity', [ActivityController::class, 'index'])->name('admin.activity.index');
+        // Aktivitätsprotokoll - mit Suche und Filtern, deshalb Livewire.
+        Route::get('/activity', AdminProtokoll::class)->name('admin.activity.index');
 
         Route::get('/apitoken', [AdminController::class, 'apitoken']);
 

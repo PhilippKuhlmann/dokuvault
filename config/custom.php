@@ -690,6 +690,24 @@ return [
     | die halbe Auskunft - welches denn?
     |
     */
+    /*
+    |--------------------------------------------------------------------------
+    | Ereignisse im Aktivitaetsprotokoll
+    |--------------------------------------------------------------------------
+    |
+    | Beschriftung und Farbe je Ereignis. "password_changed" ist keines von
+    | spatie, sondern unseres: Der Wert eines Kennworts darf nie ins Protokoll,
+    | die Tatsache der Aenderung sehr wohl.
+    |
+    */
+    'activity_events' => [
+        'created' => ['Erstellt', 'text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-900/30'],
+        'updated' => ['Geändert', 'text-cerulean-700 bg-cerulean-50 dark:text-cerulean-400 dark:bg-gray-700'],
+        'deleted' => ['Gelöscht', 'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-900/30'],
+        'restored' => ['Wiederhergestellt', 'text-amber-700 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/30'],
+        'password_changed' => ['Kennwort geändert', 'text-purple-700 bg-purple-50 dark:text-purple-300 dark:bg-purple-900/30'],
+    ],
+
     'secret_field_labels' => [
         'password' => 'Kennwort',
         'remotePassword' => 'Fernwartungs-Kennwort',
