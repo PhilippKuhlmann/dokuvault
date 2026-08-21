@@ -114,7 +114,7 @@ test('die Rollenverwaltung zeigt die Admin-Rechte als eigenen Block', function (
 
     $antwort->assertSee('Admin-Bereich');
     $antwort->assertSee('Gilt für die ganze Installation, nicht für einen einzelnen Kunden.');
-    $antwort->assertSee('Papierkorb ueber alle Kunden');
+    $antwort->assertSee('Papierkorb über alle Kunden');
 });
 
 test('jedes Admin-Recht hat einen Eintrag in der Rechtetabelle', function () {
@@ -157,4 +157,33 @@ test('die Benutzerliste bietet Anlegen und Loeschen an', function () {
     // Sich selbst kann niemand entfernen - sonst stuende man vor einer
     // Anmeldemaske ohne Konto.
     $antwort->assertDontSee('action="'.route('admin.user.destroy', $admin).'"', false);
+});
+
+test('wer Admin-Rechte hat, findet den Weg dorthin', function () {
+    $this->actingAs(nutzerMitRechten(['admin_trash']));
+
+    // Ohne diesen Eintrag muesste man /admin von Hand tippen: Der Admin landet
+    // beim Anmelden dort, ein Techniker mit Admin-Rechten nicht.
+    $this->get(route('customer.search'))->assertSee(route('admin.dashboard'));
+});
+
+test('ohne Admin-Rechte gibt es den Weg nicht', function () {
+    $this->actingAs(nutzerMitRechten(['server_viewAny']));
+
+    $this->get(route('customer.search'))->assertDontSee(route('admin.dashboard'));
+});
+
+test('das Admin-Dashboard zeigt nur erreichbare Kacheln', function () {
+    $this->actingAs(nutzerMitRechten(['admin_trash', 'admin_activity']));
+
+    $antwort = $this->get(route('admin.dashboard'));
+
+    $antwort->assertOk();
+    // Eine Kachel, die beim Klick 403 liefert, ist schlechter als keine - und
+    // die Zahl darauf verraet etwas ueber einen Bereich, den der Benutzer
+    // nicht sehen soll.
+    $antwort->assertSee(route('admin.activity.index'));
+    $antwort->assertDontSee(route('admin.user.index'));
+    $antwort->assertDontSee(route('admin.role.index'));
+    $antwort->assertDontSee(route('admin.customer.index'));
 });

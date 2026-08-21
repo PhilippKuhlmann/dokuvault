@@ -19,15 +19,10 @@ class isAdmin
     public function handle(Request $request, Closure $next)
     {
 
-        $user = auth()->user();
-
         // Nicht mehr "ist Rolle 1", sondern "darf ueberhaupt einen der
         // Admin-Bereiche". Welchen genau, entscheidet die can-Middleware an der
         // jeweiligen Route - hier faellt nur ab, wer gar nichts darf.
-        $darf = $user && collect(array_keys(config('custom.admin_permissions')))
-            ->contains(fn ($recht) => Gate::forUser($user)->allows($recht));
-
-        abort_unless($darf, 403);
+        abort_unless(auth()->user() && Gate::allows('admin_bereich'), 403);
 
         return $next($request);
     }

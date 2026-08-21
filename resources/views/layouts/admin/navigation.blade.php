@@ -45,6 +45,11 @@
                             </p>
                         </div>
                         <ul class="py-1" role="none">
+                            {{-- Der Weg zurueck. Wer beides darf, soll nicht die
+                                 Adresszeile bemuehen muessen. --}}
+                            <li>
+                                <x-dropdown-link :href="route('customer.search')">{{ __('Zur Kundenauswahl') }}</x-dropdown-link>
+                            </li>
                             <li>
                                 <x-dropdown-link :href="route('profile.edit')">{{ __('Profil bearbeiten') }}</x-dropdown-link>
                             </li>

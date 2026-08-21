@@ -721,13 +721,15 @@ return [
     |
     */
     'admin_permissions' => [
+        // Die Beschreibung steht so in der Rollenverwaltung - deshalb mit
+        // Umlauten, anders als die Kommentare in dieser Datei.
         'admin_customer' => 'Kunden verwalten',
         'admin_user' => 'Benutzer verwalten',
         'admin_role' => 'Rollen und Rechte verwalten',
-        'admin_catalog' => 'Auswahlmenues verwalten',
+        'admin_catalog' => 'Auswahlmenüs verwalten',
         'admin_operatingsystem' => 'Betriebssysteme verwalten',
         'admin_setting' => 'Einstellungen der Installation',
-        'admin_trash' => 'Papierkorb ueber alle Kunden',
+        'admin_trash' => 'Papierkorb über alle Kunden',
         'admin_activity' => 'Protokoll sehen',
         'admin_apitoken' => 'API-Token verwalten',
     ],

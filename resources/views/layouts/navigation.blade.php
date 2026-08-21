@@ -63,6 +63,15 @@
                             </p>
                         </div>
                         <ul class="py-1" role="none">
+                            {{-- Der Weg in den Admin-Bereich. Ohne ihn muesste
+                                 jeder, der die Rechte hat, /admin von Hand
+                                 tippen - der Admin kommt beim Anmelden dorthin,
+                                 ein Techniker mit Admin-Rechten nicht. --}}
+                            @can('admin_bereich')
+                                <li>
+                                    <x-dropdown-link :href="route('admin.dashboard')">{{ __('Administration') }}</x-dropdown-link>
+                                </li>
+                            @endcan
                             <li>
                                 <x-dropdown-link :href="route('profile.edit')">{{ __('Profil bearbeiten') }}</x-dropdown-link>
                             </li>

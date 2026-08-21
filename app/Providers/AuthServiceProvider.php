@@ -63,6 +63,12 @@ class AuthServiceProvider extends ServiceProvider
             Gate::define($recht, fn (User $user) => $user->hasPermission($recht));
         }
 
+        // "Darf ueberhaupt hinein" - fuer die Middleware und den Link im
+        // Benutzermenue. Welchen Bereich genau, entscheidet das Recht an der
+        // jeweiligen Route.
+        Gate::define('admin_bereich', fn (User $user) => collect(array_keys(config('custom.admin_permissions')))
+            ->contains(fn ($recht) => Gate::forUser($user)->allows($recht)));
+
         $resources = config('custom.permissions');
 
         foreach ($resources as $resource) {

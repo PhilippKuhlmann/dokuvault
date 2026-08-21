@@ -25,6 +25,7 @@ use App\Models\User;
 use App\Models\VM;
 use App\Models\Wifi;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 use Spatie\Activitylog\Models\Activity;
 
 class AdminController extends Controller
@@ -75,12 +76,15 @@ class AdminController extends Controller
         // fuer Zahlen, die niemand sekundengenau braucht.
         $zahlen = $this->zahlen();
 
-        $tiles = [
-            ['label' => 'Benutzer', 'icon' => 'svg.user',     'count' => $zahlen['users'],      'route' => route('admin.user.index')],
-            ['label' => 'Kunden',   'icon' => 'svg.office',   'count' => $zahlen['customers'],  'route' => route('admin.customer.index')],
-            ['label' => 'Rollen',   'icon' => 'svg.group',    'count' => $zahlen['roles'],      'route' => route('admin.role.index')],
-            ['label' => 'Aktivitäten', 'icon' => 'svg.document', 'count' => $zahlen['activities'], 'route' => route('admin.activity.index')],
-        ];
+        // Nur Kacheln, die auch zu oeffnen sind. Eine Kachel, die beim Klick
+        // 403 liefert, ist schlechter als keine - und die Zahl darauf verraet
+        // ohnehin etwas ueber einen Bereich, den der Benutzer nicht sehen soll.
+        $tiles = collect([
+            ['label' => 'Benutzer', 'icon' => 'svg.user',     'count' => $zahlen['users'],      'route' => route('admin.user.index'),     'can' => 'admin_user'],
+            ['label' => 'Kunden',   'icon' => 'svg.office',   'count' => $zahlen['customers'],  'route' => route('admin.customer.index'), 'can' => 'admin_customer'],
+            ['label' => 'Rollen',   'icon' => 'svg.group',    'count' => $zahlen['roles'],      'route' => route('admin.role.index'),     'can' => 'admin_role'],
+            ['label' => 'Aktivitäten', 'icon' => 'svg.document', 'count' => $zahlen['activities'], 'route' => route('admin.activity.index'), 'can' => 'admin_activity'],
+        ])->filter(fn ($tile) => Gate::allows($tile['can']))->values()->all();
 
         // Globale Ablauf-Übersicht (<= 60 Tage, inkl. bereits abgelaufen) über alle Kunden
         $limit = now()->addDays(60);

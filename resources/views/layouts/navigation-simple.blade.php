@@ -55,6 +55,11 @@
                             </p>
                         </div>
                         <ul class="py-1" role="none">
+                            @can('admin_bereich')
+                                <li>
+                                    <x-dropdown-link :href="route('admin.dashboard')">{{ __('Administration') }}</x-dropdown-link>
+                                </li>
+                            @endcan
                             <li>
                                 <x-dropdown-link :href="route('profile.edit')">{{ __('Profil bearbeiten') }}</x-dropdown-link>
                             </li>

@@ -10,6 +10,8 @@
   - Auch die **Fernwartungs-Suche** hängt an einem Recht statt an der Rolle „Techniker" — eine zweite Technikergruppe hätte sie sonst nicht öffnen können.
   - In der Rollenverwaltung stehen die Admin-Rechte in einem **eigenen, abgesetzten Block**: Sie gelten für die ganze Installation, nicht für einen einzelnen Kunden.
   - Bestehende Rollen behalten ihren Umfang. Admin und Techniker bekommen die neuen Rechte per Migration, alle anderen nichts — sonst bekäme eine Kundenrolle über Nacht Rechte, die ihr niemand gegeben hat.
+  - **Der Weg dorthin steht im Benutzermenü**: „Administration" erscheint für jeden, der mindestens einen Admin-Bereich öffnen darf. Vorher landete nur die Rolle „Admin" beim Anmelden dort — alle anderen hätten `/admin` von Hand tippen müssen. Aus dem Admin-Bereich führt umgekehrt „Zur Kundenauswahl" zurück.
+  - Das Admin-Dashboard zeigt nur Kacheln, die auch zu öffnen sind. Eine Kachel, die beim Klick 403 liefert, ist schlechter als keine — und die Zahl darauf verrät etwas über einen Bereich, den der Benutzer nicht sehen soll.
 
 - **Die Benutzerliste kann jetzt anlegen und löschen.** Der „Neu"-Knopf fehlte, und der rote „Löschen!"-Textknopf unter dem Stift zeigte auf gar keine Adresse — sein Formular ging an die aktuelle Seite. Jetzt ein roter Papierkorb-Symbolknopf neben dem Stift, wie überall sonst, mit der richtigen Route. Das eigene Konto lässt sich nicht löschen: Sonst stünde man vor einer Anmeldemaske ohne Zugang.
 
