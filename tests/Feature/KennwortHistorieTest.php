@@ -1,7 +1,7 @@
 <?php
 
-use App\Livewire\AdminKennwortHistorie;
 use App\Livewire\AdminPapierkorb;
+use App\Livewire\AdminProtokollHistorie;
 use App\Livewire\ObjektFormular;
 use App\Models\Customer;
 use App\Models\Firewall;
@@ -11,6 +11,7 @@ use App\Models\Site;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
+use Spatie\Activitylog\Models\Activity;
 
 function firewallMitKennwort(string $kennwort = 'Alt!2026'): Firewall
 {
@@ -50,18 +51,6 @@ test('der alte Wert liegt verschluesselt in der Tabelle', function () {
     expect(Crypt::decryptString($roh))->toBe('Klartext!2026');
 });
 
-test('bei null Tagen wird nichts aufbewahrt', function () {
-    $this->actingAs(userWithPermissions(['firewall_update']));
-    Setting::setzen(Setting::PASSWORT_HISTORIE_TAGE, 0);
-
-    $firewall = firewallMitKennwort('Geheim!2026');
-    $firewall->update(['password' => 'Neu!2026']);
-
-    // Abgeschaltet heisst: es entsteht gar kein Eintrag, nicht einer, der
-    // spaeter geloescht wird.
-    expect(PasswordHistory::count())->toBe(0);
-});
-
 test('beim ersten Setzen gibt es nichts aufzuheben', function () {
     $this->actingAs(userWithPermissions(['firewall_create', 'firewall_update']));
 
@@ -76,39 +65,6 @@ test('das gleiche Kennwort noch einmal legt keinen Eintrag an', function () {
 
     $firewall = firewallMitKennwort('Gleich!2026');
     $firewall->update(['password' => 'Gleich!2026', 'name' => 'FW-Umbenannt']);
-
-    expect(PasswordHistory::count())->toBe(0);
-});
-
-test('der Aufraeum-Befehl haelt sich an die Frist', function () {
-    $this->actingAs(userWithPermissions(['firewall_update']));
-    Setting::setzen(Setting::PASSWORT_HISTORIE_TAGE, 90);
-
-    $firewall = firewallMitKennwort('Alt!2026');
-    $firewall->update(['password' => 'Mittel!2026']);
-    $firewall->update(['password' => 'Neu!2026']);
-
-    // Einen der beiden alt machen.
-    $aeltester = PasswordHistory::orderBy('id')->first();
-    DB::table('password_histories')->where('id', $aeltester->id)
-        ->update(['created_at' => now()->subDays(100)]);
-
-    $this->artisan('kennwoerter:aufraeumen')->assertSuccessful();
-
-    expect(PasswordHistory::count())->toBe(1);
-    expect(PasswordHistory::find($aeltester->id))->toBeNull();
-});
-
-test('bei abgeschalteter Historie raeumt der Befehl alles ab', function () {
-    $this->actingAs(userWithPermissions(['firewall_update']));
-
-    $firewall = firewallMitKennwort('Alt!2026');
-    $firewall->update(['password' => 'Neu!2026']);
-    expect(PasswordHistory::count())->toBe(1);
-
-    // Wer die Historie abschaltet, will auch das los sein, was schon da ist.
-    Setting::setzen(Setting::PASSWORT_HISTORIE_TAGE, 0);
-    $this->artisan('kennwoerter:aufraeumen')->assertSuccessful();
 
     expect(PasswordHistory::count())->toBe(0);
 });
@@ -176,81 +132,6 @@ test('endgueltiges Loeschen nimmt die alten Kennwoerter mit', function () {
     expect(PasswordHistory::count())->toBe(0);
 });
 
-test('die Frist laesst sich auf der eigenen Seite einstellen', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
-
-    Livewire::test(AdminKennwortHistorie::class)
-        ->assertSet('tage', 90)
-        ->set('tage', 21)
-        ->call('fristSpeichern');
-
-    expect(Setting::passwortHistorieTage())->toBe(21);
-});
-
-test('eine unsinnige Frist wird abgelehnt', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
-    Setting::setzen(Setting::PASSWORT_HISTORIE_TAGE, 90);
-
-    Livewire::test(AdminKennwortHistorie::class)
-        ->set('tage', -5)
-        ->call('fristSpeichern')
-        ->assertHasErrors('tage');
-
-    expect(Setting::passwortHistorieTage())->toBe(90);
-});
-
-test('die Uebersicht zeigt das alte Kennwort erst auf Klick', function () {
-    $this->actingAs(userWithPermissions(['see_hidden', 'firewall_update']));
-
-    $firewall = firewallMitKennwort('Das-Alte-2026');
-    $firewall->update(['password' => 'Das-Neue-2026']);
-    $eintrag = PasswordHistory::sole();
-
-    $test = Livewire::test(AdminKennwortHistorie::class);
-
-    // Zugeklappt steht der Wert nirgends im Quelltext - sonst laege auf einer
-    // Seite die halbe Kennwortgeschichte aller Kunden offen.
-    $test->assertDontSee('Das-Alte-2026')
-        ->assertSee($firewall->name);
-
-    $test->call('aufdecken', $eintrag->id)->assertSee('Das-Alte-2026');
-    $test->call('verbergen', $eintrag->id)->assertDontSee('Das-Alte-2026');
-});
-
-test('die Suche findet ueber den Geraetenamen', function () {
-    $this->actingAs(userWithPermissions(['see_hidden', 'firewall_update']));
-
-    $gesucht = firewallMitKennwort('A!2026');
-    $gesucht->update(['name' => 'FW-Gesucht', 'password' => 'B!2026']);
-
-    $anderer = firewallMitKennwort('C!2026');
-    $anderer->update(['name' => 'FW-Anderer', 'password' => 'D!2026']);
-
-    Livewire::test(AdminKennwortHistorie::class)
-        ->set('suche', 'Gesucht')
-        ->assertSee('FW-Gesucht')
-        ->assertDontSee('FW-Anderer');
-});
-
-test('ein Eintrag laesst sich einzeln loeschen', function () {
-    $this->actingAs(userWithPermissions(['see_hidden', 'firewall_update']));
-
-    $firewall = firewallMitKennwort('Weg!2026');
-    $firewall->update(['password' => 'Neu!2026']);
-    $eintrag = PasswordHistory::sole();
-
-    Livewire::test(AdminKennwortHistorie::class)
-        ->call('loeschen', $eintrag->id);
-
-    expect(PasswordHistory::count())->toBe(0);
-});
-
-test('ohne see_hidden kein Zugriff auf die Uebersicht', function () {
-    $this->actingAs(userWithPermissions(['firewall_viewAny']));
-
-    Livewire::test(AdminKennwortHistorie::class)->assertForbidden();
-});
-
 test('der Geraetename steht im Eintrag, nicht in einer Nachfrage', function () {
     $this->actingAs(userWithPermissions(['firewall_update']));
 
@@ -260,4 +141,81 @@ test('der Geraetename steht im Eintrag, nicht in einer Nachfrage', function () {
     // Ein Eintrag soll lesbar bleiben, wenn das Geraet laengst weg ist - und
     // ein Verweis auf eine entfernte Klasse braeche beim Aufloesen die Seite.
     expect(PasswordHistory::sole()->subject_name)->toBe($firewall->name);
+});
+
+test('die Frist gilt fuer Protokoll und Kennwoerter zusammen', function () {
+    $this->actingAs(userWithPermissions(['firewall_update']));
+    Setting::setzen(Setting::PROTOKOLL_TAGE, 90);
+
+    $firewall = firewallMitKennwort('Alt!2026');
+    $firewall->update(['password' => 'Neu!2026']);
+
+    $alt = PasswordHistory::sole();
+    DB::table('password_histories')->where('id', $alt->id)->update(['created_at' => now()->subDays(100)]);
+    DB::table('activity_log')->update(['created_at' => now()->subDays(100)]);
+
+    $this->artisan('protokoll:aufraeumen')->assertSuccessful();
+
+    // Bliebe die Historie stehen, waeren die alten Werte laenger da als der
+    // Eintrag, der auf sie verweist.
+    expect(PasswordHistory::count())->toBe(0);
+    expect(Activity::count())->toBe(0);
+});
+
+test('ohne Frist bleibt das Protokoll unangetastet', function () {
+    $this->actingAs(userWithPermissions(['firewall_update']));
+    Setting::setzen(Setting::PROTOKOLL_TAGE, 0);
+
+    $firewall = firewallMitKennwort('Alt!2026');
+    $firewall->update(['password' => 'Neu!2026']);
+    DB::table('activity_log')->update(['created_at' => now()->subYears(5)]);
+    DB::table('password_histories')->update(['created_at' => now()->subYears(5)]);
+
+    // Ein Protokoll, das sich ungefragt selbst leert, waere keines mehr.
+    $this->artisan('protokoll:aufraeumen')->assertSuccessful();
+
+    expect(PasswordHistory::count())->toBe(1);
+    expect(Activity::count())->toBeGreaterThan(0);
+});
+
+test('die Frist laesst sich einstellen', function () {
+    $this->actingAs(userWithPermissions(['see_hidden']));
+
+    Livewire::test(AdminProtokollHistorie::class)
+        ->assertSet('tage', 0)
+        ->set('tage', 365)
+        ->call('speichern');
+
+    expect(Setting::protokollTage())->toBe(365);
+});
+
+test('eine unsinnige Frist wird abgelehnt', function () {
+    $this->actingAs(userWithPermissions(['see_hidden']));
+    Setting::setzen(Setting::PROTOKOLL_TAGE, 90);
+
+    Livewire::test(AdminProtokollHistorie::class)
+        ->set('tage', -5)
+        ->call('speichern')
+        ->assertHasErrors('tage');
+
+    expect(Setting::protokollTage())->toBe(90);
+});
+
+test('die Einstellseite zeigt keine Kennwoerter', function () {
+    $this->actingAs(userWithPermissions(['see_hidden', 'firewall_update']));
+
+    $firewall = firewallMitKennwort('Streng-Geheim-2026');
+    $firewall->update(['password' => 'Neu!2026']);
+
+    // Hier wird eine Frist eingestellt, nicht nachgeschlagen - die Werte stehen
+    // im Protokoll, wo sie hingehoeren.
+    Livewire::test(AdminProtokollHistorie::class)
+        ->assertDontSee('Streng-Geheim-2026')
+        ->assertSee('1');
+});
+
+test('ohne see_hidden kein Zugriff auf die Einstellung', function () {
+    $this->actingAs(userWithPermissions(['firewall_viewAny']));
+
+    Livewire::test(AdminProtokollHistorie::class)->assertForbidden();
 });

@@ -24,18 +24,18 @@ class Setting extends Model
     public const REMOTE_PATTERN = 'remote_pattern';
 
     /**
-     * Wie viele Tage ein vorheriges Kennwort aufbewahrt wird. 0 heisst: gar
-     * nicht - dann wird auch keines geschrieben.
+     * Wie viele Tage ein Protokolleintrag bleibt. 0 heisst: unbegrenzt.
+     *
+     * Die bisherigen Kennwoerter haengen daran und gehen mit: Sie sind das,
+     * was ein Protokolleintrag ueber eine Kennwortaenderung zu zeigen hat,
+     * eine zweite Frist waere eine Zahl zu viel.
      */
-    public const PASSWORT_HISTORIE_TAGE = 'passwort_historie_tage';
+    public const PROTOKOLL_TAGE = 'protokoll_tage';
 
-    /** Vorgabe, wenn nichts eingestellt ist. */
-    public const PASSWORT_HISTORIE_STANDARD = 90;
-
-    /** Aufbewahrungsfrist in Tagen, 0 wenn abgeschaltet. */
-    public static function passwortHistorieTage(): int
+    /** Aufbewahrungsfrist des Protokolls in Tagen, 0 wenn unbegrenzt. */
+    public static function protokollTage(): int
     {
-        return (int) self::wert(self::PASSWORT_HISTORIE_TAGE, self::PASSWORT_HISTORIE_STANDARD);
+        return (int) self::wert(self::PROTOKOLL_TAGE, 0);
     }
 
     /**

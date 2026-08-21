@@ -7,6 +7,7 @@ use App\Models\PasswordHistory;
 use App\Models\Role;
 use App\Models\Site;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Activitylog\Models\Activity;
 
@@ -193,4 +194,26 @@ test('nach Ablauf der Frist sagt das Protokoll es ehrlich', function () {
         ->call('zeigen')
         ->assertSet('offen', true)
         ->assertSet('werte', []);
+});
+
+test('bestehende Eintraege werden nachtraeglich verbunden', function () {
+    $this->actingAs(userWithPermissions(['firewall_update']));
+
+    $firewall = eineFirewall(['password' => 'Alt-2026']);
+    $firewall->update(['password' => 'Neu-2026']);
+
+    $eintrag = letzterEintrag($firewall, 'password_changed');
+    $ids = $eintrag->properties['verlauf_ids'];
+
+    // Zustand herstellen, wie er vor dem Verweis aussah.
+    $ohneVerweis = $eintrag->properties->toArray();
+    unset($ohneVerweis['verlauf_ids']);
+    DB::table('activity_log')->where('id', $eintrag->id)
+        ->update(['properties' => json_encode($ohneVerweis)]);
+
+    $migration = require database_path('migrations/2026_08_21_140000_link_existing_password_changes.php');
+    $migration->up();
+
+    // Ohne die Verknuepfung fehlte im Protokoll der Knopf, obwohl der Wert dalag.
+    expect(Activity::find($eintrag->id)->properties['verlauf_ids'])->toBe($ids);
 });

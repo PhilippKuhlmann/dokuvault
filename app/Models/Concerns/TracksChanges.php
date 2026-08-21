@@ -3,7 +3,6 @@
 namespace App\Models\Concerns;
 
 use App\Models\PasswordHistory;
-use App\Models\Setting;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\Activitylog\LogOptions;
@@ -120,14 +119,6 @@ trait TracksChanges
      */
     protected function altesKennwortSichern(string $spalte): ?int
     {
-        $tage = Setting::passwortHistorieTage();
-
-        // Abgeschaltet heisst abgeschaltet: Dann entsteht gar kein Eintrag,
-        // nicht einer, der spaeter geloescht wird.
-        if ($tage < 1) {
-            return null;
-        }
-
         try {
             $alt = $this->getOriginal($spalte);
         } catch (Throwable) {

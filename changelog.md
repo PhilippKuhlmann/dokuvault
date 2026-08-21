@@ -10,14 +10,17 @@
   - Der Objektname wird in den Eintrag geschrieben statt beim Anzeigen nachgeladen: Ein Protokolleintrag überlebt sein Objekt, und ein Verweis auf eine entfernte Klasse bricht beim Auflösen die ganze Seite.
 
 - **Vorherige Kennwörter bleiben nachschlagbar — im Protokoll und am Gerät.** Der Fall, um den es geht: Ein Kunde oder Techniker ändert ein Kennwort falsch, und man braucht das alte zurück.
-  - **Unter `admin/activity`** steht beim Eintrag „Kennwort geändert" jetzt „bisheriges Kennwort anzeigen" — derselbe Handgriff wie bei jeder anderen Änderung, mit Auge und Kopierknopf.
+  - **Unter `admin/activity`** steht beim Eintrag „Kennwort geändert" jetzt „bisheriges Kennwort anzeigen" — derselbe Handgriff wie bei jeder anderen Änderung, mit Auge und Kopierknopf. Bei mehreren Feldern einzeln benannt („Kennwort vorher", „USC-PIN vorher").
   - **Im Bearbeiten-Formular** direkt unter dem Kennwortfeld: „Zuletzt geändert vor 3 Tagen — vorheriges Kennwort anzeigen".
-  - **Neuer Menüpunkt „Einstellungen → Protokoll-Historie"** mit allen bisherigen Kennwörtern über alle Kunden, Suche über Gerät und Feld, Filter nach Kunde, Einzellöschung — und der Aufbewahrungsfrist gleich daneben.
-  - Die **Aufbewahrung ist in Tagen einstellbar** (Vorgabe 90), ein nächtlicher Lauf räumt Abgelaufenes ab. **0 heißt: gar nicht aufbewahren** — dann wird auch nichts geschrieben, und der Lauf entfernt, was noch da ist. Ist die Frist abgelaufen, sagt das Protokoll „Nicht mehr aufbewahrt"; dass die Änderung stattfand, bleibt stehen.
-  - Der Wert steht **nicht im Protokolleintrag**, sondern wird beim Anzeigen aus der Historie geholt. Der Protokolleintrag bleibt ewig — die alten Kennwörter sollen das nicht. Im Eintrag stehen nur Verweise.
+  - Der Wert steht **nicht im Protokolleintrag**, sondern wird beim Anzeigen aus einer eigenen, verschlüsselten Tabelle geholt. Im Eintrag stehen nur Verweise.
   - Geladen wird **erst auf Klick**. Sonst stünden auf einer Protokollseite fünfzig alte Kennwörter im Quelltext, auch wenn niemand danach gefragt hat.
-  - Sichtbar am Gerät für jeden, der es bearbeiten darf — das aktuelle Kennwort sieht er dort ohnehin. Die Übersicht im Admin-Bereich verlangt zusätzlich `see_hidden`.
+  - Sichtbar am Gerät für jeden, der es bearbeiten darf — das aktuelle Kennwort sieht er dort ohnehin. Im Protokoll zusätzlich mit `see_hidden`.
   - Ein erneutes Speichern desselben Kennworts legt keinen Eintrag an, und beim ersten Setzen gibt es nichts aufzuheben.
+
+- **Neuer Menüpunkt „Einstellungen → Protokoll-Historie": wie lange das Protokoll bleibt.** Bisher wuchs es unbegrenzt. Die Frist gilt für Protokolleinträge **und** die daran hängenden Kennwörter — eine Zahl, nicht zwei: Die alten Werte sind das, was ein Eintrag über eine Kennwortänderung zu zeigen hat.
+  - **0 heißt: unbegrenzt** und ist die Vorgabe. Ein Protokoll, das sich ungefragt selbst leert, wäre keines mehr.
+  - Die Seite nennt die Folgen, bevor man speichert: Anzahl der Einträge, ältester Eintrag, und wie viele die eingestellte Frist heute treffen würde. „365" sagt einem sonst nicht, ob damit drei Einträge verschwinden oder dreitausend.
+  - Ein nächtlicher Lauf um 3:40 Uhr räumt ab. Nach Ablauf zeigt das Protokoll die Änderung weiter an, den alten Wert aber nicht mehr — dort steht dann „Nicht mehr aufbewahrt".
 
 ### Security
 

@@ -59,8 +59,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VMController;
 use App\Http\Controllers\WifiController;
 use App\Http\Controllers\WizardController;
-use App\Livewire\AdminKennwortHistorie;
 use App\Livewire\AdminPapierkorb;
+use App\Livewire\AdminProtokollHistorie;
 use App\Livewire\GlobalSearch;
 use App\Livewire\RemoteSearch;
 use Illuminate\Support\Facades\Route;
@@ -90,8 +90,9 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
         // es endgueltig loswerden.
         Route::get('/papierkorb', AdminPapierkorb::class)->name('admin.papierkorb');
 
-        // Vorherige Kennwoerter ueber alle Kunden, samt Aufbewahrungsfrist.
-        Route::get('/kennwort-historie', AdminKennwortHistorie::class)->name('admin.kennworthistorie');
+        // Wie lange das Protokoll - und damit die bisherigen Kennwoerter -
+        // aufbewahrt wird.
+        Route::get('/protokoll-historie', AdminProtokollHistorie::class)->name('admin.protokollhistorie');
 
         // Einstellungen der Installation
         Route::get('/setting', [SettingController::class, 'index'])->name('admin.setting.index');

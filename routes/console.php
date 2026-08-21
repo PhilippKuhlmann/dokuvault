@@ -44,7 +44,7 @@ Schedule::command('queue:work --stop-when-empty --max-time=55 --tries=1')
 // haben nach dem Abholen keinen Grund, liegen zu bleiben.
 Schedule::command('pdf:aufraeumen')->dailyAt('03:30');
 
-// Vorherige Kennwoerter nach der eingestellten Frist entfernen. Laeuft taeglich,
-// nicht stuendlich: Die Frist wird in Tagen angegeben, eine Stunde Genauigkeit
-// waere geheuchelte Praezision.
-Schedule::command('kennwoerter:aufraeumen')->dailyAt('03:40');
+// Das Protokoll nach der eingestellten Frist kuerzen, samt der daran
+// haengenden Kennwoerter. Taeglich, nicht stuendlich: Die Frist wird in Tagen
+// angegeben, eine Stunde Genauigkeit waere geheuchelte Praezision.
+Schedule::command('protokoll:aufraeumen')->dailyAt('03:40');
