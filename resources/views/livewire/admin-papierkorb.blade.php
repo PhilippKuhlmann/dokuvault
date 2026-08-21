@@ -15,11 +15,14 @@
     {{-- Filter. Die Tage sind frei eingebbar: 21, 90 und 365 decken das
          Uebliche ab, aber nicht jede Aufbewahrungsregel haelt sich daran. --}}
     <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        {{-- Erst ab lg drei Spalten: Bei 839 Pixeln blieben fuer die
+             Altersspalte 159 Pixel, gebraucht wurden 238 - die Knoepfe "90"
+             und "365" lagen unter der Art-Auswahl. --}}
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div class="flex flex-col">
                 <x-input.label :value="__('Älter als (Tage)')" />
-                <div class="mt-1 flex items-center gap-2">
-                    <x-input.field type="number" min="0" max="3650" wire:model.live.debounce.500ms="aelterAls" class="w-24" />
+                <div class="mt-1 flex flex-wrap items-center gap-2">
+                    <x-input.field type="number" min="0" max="3650" wire:model.live.debounce.500ms="aelterAls" class="w-20" />
                     <div class="flex gap-1">
                         @foreach ([0 => __('alle'), 21, 90, 365] as $wert)
                             <button type="button" wire:click="$set('aelterAls', {{ is_int($wert) ? $wert : 0 }})"

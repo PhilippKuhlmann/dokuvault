@@ -14,6 +14,7 @@
 ### Fixed
 
 - **Der Löschen-Knopf im Admin-Papierkorb tat nichts.** Livewires `updated()`-Hook feuert bei *jeder* Eigenschaft, wenn man den Namen nicht prüft — also auch bei der Rückfrage selbst, die sich damit sofort wieder schloss. Jetzt reagiert der Hook nur noch auf die drei Filter.
+- **Zwei Filterknöpfe lagen unter der Nachbarspalte.** Bei 839 Pixeln blieben für die Altersspalte 159 Pixel, gebraucht wurden 238 — „90" und „365" verschwanden hinter der Art-Auswahl. Drei Spalten gibt es jetzt erst ab 1024 Pixeln, und die Knopfreihe darf notfalls umbrechen.
 - Bei 839 Pixeln Fensterbreite lag der Löschen-Knopf außerhalb des Sichtbaren: Die Tabelle hatte eine Mindestbreite von 40 rem. Ausgerechnet dieser Knopf ist der Sinn der Seite — jetzt sind es 30 rem, der Kundenname darf dafür umbrechen.
 
 ## 26.08.17
