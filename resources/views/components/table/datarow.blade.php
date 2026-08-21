@@ -84,15 +84,20 @@
     @endforeach
 
 
+    {{-- Bearbeiten und Löschen nebeneinander, beide als quadratischer
+         Symbolknopf - so wie im Papierkorb und in den Geraetelisten. Vorher
+         stand unter dem Stift ein roter Textknopf "Löschen!", der die Zeile
+         hoeher machte und aus der Reihe fiel. --}}
     <td class="py-2.5 px-4">
+        @php
+            $knopfKlassen = 'inline-flex items-center justify-center w-9 h-9 rounded-lg border shadow-sm transition-colors';
+            $stiftKlassen = $knopfKlassen.' border-gray-200 bg-white text-cerulean-600 hover:bg-cerulean-50 hover:border-cerulean-300 dark:bg-gray-800 dark:border-gray-600 dark:text-cerulean-400 dark:hover:bg-gray-700';
+            $muellKlassen = $knopfKlassen.' border-gray-200 bg-white text-red-600 hover:bg-red-50 hover:border-red-300 dark:bg-gray-800 dark:border-gray-600 dark:text-red-400 dark:hover:bg-gray-700';
+        @endphp
 
-        @if ($editUrl || $editAction)
-            @can($can)
-                @php
-                    $stiftKlassen = 'inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-cerulean-600 shadow-sm hover:bg-cerulean-50 hover:border-cerulean-300 transition-colors dark:bg-gray-800 dark:border-gray-600 dark:text-cerulean-400 dark:hover:bg-gray-700';
-                @endphp
-
-                <div class="flex flex-row space-x-2">
+        <div class="flex items-center justify-end gap-2">
+            @if ($editUrl || $editAction)
+                @can($can)
                     @if ($editAction)
                         <button type="button" wire:click="{{ $editAction }}" title="{{ __('Bearbeiten') }}" class="{{ $stiftKlassen }}">
                             <x-svg.edit class="h-5 w-5" />
@@ -102,24 +107,25 @@
                             <x-svg.edit class="h-5 w-5" />
                         </a>
                     @endif
-                </div>
-            @endcan
-        @endif
+                @endcan
+            @endif
 
-
-
-        @isset($delUrl)
-            @can($canDel)
-                <div class="flex flex-row space-x-2">
-                    <form method="POST" action="{{ $delUrl }}" onsubmit="return confirm('Objekt wirklich unwiderruflich löschen?')">
+            {{-- Beides muss da sein. Vorher stand hier @isset($delUrl) - und
+                 weil die Prop mit '' vorbelegt ist, war das immer wahr: Der
+                 Knopf erschien in jeder Zeile und sein Formular zeigte auf die
+                 aktuelle Adresse statt auf eine Loeschen-Route. --}}
+            @if ($delUrl && $canDel)
+                @can($canDel)
+                    <form method="POST" action="{{ $delUrl }}"
+                        onsubmit="return confirm('{{ __('Objekt wirklich unwiderruflich löschen?') }}')">
                         @csrf
                         @method('delete')
-                        <x-input.button color="red" size="sm" :label="__('Löschen!')" />
+                        <button type="submit" title="{{ __('Löschen') }}" class="{{ $muellKlassen }}">
+                            <x-svg.trash class="h-5 w-5" />
+                        </button>
                     </form>
-                </div>
-            @endcan
-        @endisset
-
-
+                @endcan
+            @endif
+        </div>
     </td>
 </tr>

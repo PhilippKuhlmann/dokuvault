@@ -43,7 +43,18 @@ class AuthServiceProvider extends ServiceProvider
         //
         // before() liefert null fuer alle anderen Rollen - dann entscheiden
         // die Gates weiter unten.
-        Gate::before(fn (User $user) => $user->role_id === Role::IS_ADMIN ? true : null);
+        Gate::before(function (User $user, string $ability) {
+            // Die Rollen-Gates sind Fragen nach der Rolle, keine Rechte. Ein
+            // pauschales "darf alles" verfaelscht sie ins Gegenteil: Der Admin
+            // galt damit als isCustomerR - "Kunde, nur lesen" - und der
+            // Neu-Knopf verschwand aus jeder Liste, weil er hinter
+            // @cannot('isCustomerR') steht.
+            if (in_array($ability, ['isCustomer', 'isCustomerR', 'isCustomerRW'], true)) {
+                return null;
+            }
+
+            return $user->role_id === Role::IS_ADMIN ? true : null;
+        });
 
         // Ein Recht je Admin-Menuepunkt, dazu die Fernwartungs-Suche. Vorher
         // hingen beide Bereiche an einer festen Rollen-Id: entweder ganz oder

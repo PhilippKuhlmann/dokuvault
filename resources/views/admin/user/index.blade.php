@@ -45,8 +45,13 @@
                         $user->customer ? $user->customer->name : ''
                     ]"
 
-                    editUrl="/{{ Request::path() }}/{{ $user->id }}/edit"
+                    editUrl="{{ route('admin.user.edit', $user) }}"
                     can="admin_user"
+                    {{-- Loeschen ohne Umweg ueber das Bearbeiten-Formular. Sich
+                         selbst kann niemand entfernen - sonst stuende man vor
+                         einer Anmeldemaske ohne Konto. --}}
+                    :delUrl="$user->id === auth()->id() ? '' : route('admin.user.destroy', $user)"
+                    canDel="admin_user"
                 />
 
             @endforeach

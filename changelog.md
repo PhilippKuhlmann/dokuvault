@@ -11,6 +11,8 @@
   - In der Rollenverwaltung stehen die Admin-Rechte in einem **eigenen, abgesetzten Block**: Sie gelten für die ganze Installation, nicht für einen einzelnen Kunden.
   - Bestehende Rollen behalten ihren Umfang. Admin und Techniker bekommen die neuen Rechte per Migration, alle anderen nichts — sonst bekäme eine Kundenrolle über Nacht Rechte, die ihr niemand gegeben hat.
 
+- **Die Benutzerliste kann jetzt anlegen und löschen.** Der „Neu"-Knopf fehlte, und der rote „Löschen!"-Textknopf unter dem Stift zeigte auf gar keine Adresse — sein Formular ging an die aktuelle Seite. Jetzt ein roter Papierkorb-Symbolknopf neben dem Stift, wie überall sonst, mit der richtigen Route. Das eigene Konto lässt sich nicht löschen: Sonst stünde man vor einer Anmeldemaske ohne Zugang.
+
 - **Das Aktivitätsprotokoll hat Suche und Filter bekommen.** Es war eine feste Liste, 50 Einträge je Seite, absteigend nach Zeit. Bei 863 Einträgen war die Frage „wer hat gestern an der Firewall etwas geändert?" damit eine Blätterübung. Jetzt filterbar nach **Ereignis, Objektart, Benutzer und Zeitraum**, dazu eine **Volltextsuche**.
   - Die Suche geht über die Eigenschaften eines Eintrags, nicht nur über den Namen: In einem Protokoll sucht man nach dem, woran man sich erinnert — einem Gerätenamen, einer IP, einem Registrar.
   - Die Auswahllisten enthalten nur, was vorkommt. Die Tabelle kennt 114 verschiedene Verursacher-Ids, die meisten aus Beispieldaten längst gelöschter Konten; eine Auswahl mit 114 Zeilen, von denen 110 leer sind, hilft niemandem.

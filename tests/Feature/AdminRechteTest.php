@@ -3,6 +3,7 @@
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * Ein Benutzer mit genau diesen Rechten - und sonst keinen.
@@ -123,4 +124,37 @@ test('jedes Admin-Recht hat einen Eintrag in der Rechtetabelle', function () {
         expect(Permission::where('name', $name)->exists())
             ->toBeTrue("Recht {$name} fehlt in der Tabelle");
     }
+});
+
+test('der Admin gilt nicht als Kunde', function () {
+    $rolle = Role::find(Role::IS_ADMIN) ?? Role::factory()->create(['id' => Role::IS_ADMIN]);
+    $admin = User::factory()->create(['role_id' => $rolle->id]);
+
+    // Die Rollen-Gates fragen nach der Rolle, nicht nach einem Recht. Als
+    // Gate::before pauschal true lieferte, galt der Admin als "Kunde nur
+    // lesen" - und der Neu-Knopf verschwand aus jeder Liste, weil er hinter
+    // @cannot('isCustomerR') steht.
+    expect(Gate::forUser($admin)->allows('isCustomerR'))->toBeFalse();
+    expect(Gate::forUser($admin)->allows('isCustomer'))->toBeFalse();
+    expect(Gate::forUser($admin)->allows('isCustomerRW'))->toBeFalse();
+
+    expect(Gate::forUser($admin)->allows('isAdmin'))->toBeTrue();
+    expect(Gate::forUser($admin)->allows('admin_user'))->toBeTrue();
+});
+
+test('die Benutzerliste bietet Anlegen und Loeschen an', function () {
+    $rolle = Role::find(Role::IS_ADMIN) ?? Role::factory()->create(['id' => Role::IS_ADMIN]);
+    $admin = User::factory()->create(['role_id' => $rolle->id]);
+    $anderer = User::factory()->create(['role_id' => $rolle->id, 'name' => 'Zweiter Zugang']);
+
+    $antwort = $this->actingAs($admin)->get(route('admin.user.index'));
+
+    $antwort->assertOk();
+    // Auf das Formularziel geprueft, nicht auf die blosse Adresse: Die
+    // Bearbeiten-URL enthaelt dieselbe Zeichenfolge und endet nur auf /edit.
+    $antwort->assertSee('action="'.route('admin.user.destroy', $anderer).'"', false);
+
+    // Sich selbst kann niemand entfernen - sonst stuende man vor einer
+    // Anmeldemaske ohne Konto.
+    $antwort->assertDontSee('action="'.route('admin.user.destroy', $admin).'"', false);
 });
