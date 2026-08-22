@@ -94,4 +94,77 @@ class Network extends Model
 
         return long2ip(-1 << (32 - $cidr));
     }
+
+    /**
+     * Sucht unter den Netzen eines Standorts dasjenige, in dessen Adressbereich
+     * die gegebene IPv4-Adresse fällt - für die Auto-Dokumentation-Agenten, die
+     * eine IP melden, aber kein VLAN kennen. Erstes Netz mit Treffer gewinnt;
+     * bei sich überlappenden Netzen (in der Praxis selten) ist das Ergebnis
+     * nicht eindeutig, aber immer noch besser als gar keine Zuordnung.
+     */
+    public static function fuerAdresse(int $customerId, ?int $siteId, string $adresse): ?self
+    {
+        if (filter_var($adresse, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false) {
+            return null;
+        }
+
+        return static::where('customer_id', $customerId)
+            ->when($siteId, fn ($query) => $query->where('site_id', $siteId))
+            ->get()
+            ->first(fn (self $netz) => $netz->enthaeltAdresse($adresse));
+    }
+
+    /**
+     * Prüft, ob eine IPv4-Adresse in den Adressbereich dieses Netzes fällt.
+     */
+    public function enthaeltAdresse(string $adresse): bool
+    {
+        $bereich = $this->bereich();
+
+        if (! $bereich || filter_var($adresse, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false) {
+            return false;
+        }
+
+        $lang = ip2long($adresse) & 0xFFFFFFFF;
+
+        return $lang >= $bereich[0] && $lang <= $bereich[1];
+    }
+
+    /**
+     * Ganzer Adressbereich als [Netzadresse, Broadcast] in long-Schreibweise -
+     * inklusive Netz- und Broadcast-Adresse, damit sich jede gemeldete IP
+     * prüfen lässt. Anders als der Nutzbereich im IP-Plan (der Netz- und
+     * Broadcast-Adresse für die Belegungs-Anzeige ausschließt), zaehlt hier
+     * der volle Bereich - eine gemeldete Gateway-IP z. B. ist bewusst mit drin.
+     */
+    public function bereich(): ?array
+    {
+        $base = $this->network ? ip2long($this->network) : false;
+
+        if ($base === false) {
+            return null;
+        }
+
+        $base &= 0xFFFFFFFF;
+
+        $cidr = null;
+        if (is_numeric($this->cidr)) {
+            $cidr = (int) $this->cidr;
+        } elseif ($this->subnetmask && ($mask = ip2long($this->subnetmask)) !== false) {
+            $cidr = substr_count(str_pad(decbin($mask & 0xFFFFFFFF), 32, '0', STR_PAD_LEFT), '1');
+        }
+
+        if ($cidr === null || $cidr < 0 || $cidr > 32) {
+            return null;
+        }
+
+        if ($cidr === 0) {
+            return [0, 0xFFFFFFFF];
+        }
+
+        $hostCount = 2 ** (32 - $cidr);
+        $networkLong = $base & ((0xFFFFFFFF << (32 - $cidr)) & 0xFFFFFFFF);
+
+        return [$networkLong, $networkLong + $hostCount - 1];
+    }
 }

@@ -2,6 +2,7 @@
 
 use App\Models\AgentToken;
 use App\Models\Customer;
+use App\Models\Network;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\VM;
@@ -90,6 +91,40 @@ test('ohne gültigen Agent-Token: 401', function () {
     $this->withToken('doc_falsch')
         ->postJson('/api/agent/proxmox', ['host' => ['identifier' => 'x', 'hostname' => 'y']])
         ->assertUnauthorized();
+});
+
+test('ordnet die gemeldete IP automatisch dem passenden VLAN zu', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [$token, $plain] = AgentToken::generateFor($customer, $site);
+    $vlan = Network::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'network' => '10.0.0.0', 'cidr' => '24',
+    ]);
+
+    $this->withToken($plain)->postJson('/api/agent/proxmox', proxmoxPayload())->assertOk();
+
+    $server = Server::where('agent_identifier', 'machine-abc')->first();
+    expect($server->ipAddresses()->first()->network_id)->toBe($vlan->id);
+});
+
+test('eine von Hand korrigierte VLAN-Zuordnung übersteht einen erneuten Lauf', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [$token, $plain] = AgentToken::generateFor($customer, $site);
+    $falschesVlan = Network::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id]);
+    Network::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'network' => '10.0.0.0', 'cidr' => '24',
+    ]);
+
+    $this->withToken($plain)->postJson('/api/agent/proxmox', proxmoxPayload())->assertOk();
+    $server = Server::where('agent_identifier', 'machine-abc')->first();
+    $server->ipAddresses()->first()->update(['network_id' => $falschesVlan->id]);
+
+    $this->withToken($plain)->postJson('/api/agent/proxmox', proxmoxPayload())->assertOk();
+
+    expect($server->ipAddresses()->first()->fresh()->network_id)->toBe($falschesVlan->id);
 });
 
 test('Token aktualisiert last_used_at', function () {

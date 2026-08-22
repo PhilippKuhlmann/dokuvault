@@ -4,6 +4,7 @@ use App\Models\AgentToken;
 use App\Models\Computer;
 use App\Models\Customer;
 use App\Models\IpAddress;
+use App\Models\Network;
 use App\Models\OperatingSystem;
 use App\Models\Site;
 
@@ -57,6 +58,26 @@ test('trifft ein bereits vorhandenes Betriebssystem ohne "Microsoft"-Präfix sta
     expect(OperatingSystem::where('name', 'Windows 11 Pro')->count())->toBe(1);
     $computer = Computer::where('agent_identifier', 'guid-machine-01')->first();
     expect($computer->operating_system_id)->toBe($vorhanden->id);
+});
+
+test('ordnet die gemeldete IP automatisch dem passenden VLAN zu', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [$token, $plain] = AgentToken::generateFor($customer, $site);
+    $vlan = Network::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'network' => '10.0.0.0', 'cidr' => '24',
+    ]);
+    // Ein Netz an einem anderen Standort desselben Kunden darf nicht treffen.
+    Network::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => Site::factory()->create(['customer_id' => $customer->id])->id,
+        'network' => '10.0.1.0', 'cidr' => '24',
+    ]);
+
+    $this->withToken($plain)->postJson('/api/agent/windows-client', windowsClientPayload())->assertOk();
+
+    $computer = Computer::where('agent_identifier', 'guid-machine-01')->first();
+    expect($computer->ipAddresses()->first()->network_id)->toBe($vlan->id);
 });
 
 test('erneuter Lauf erzeugt keine Duplikate und ueberschreibt manuelle Angaben nicht sinnwidrig', function () {

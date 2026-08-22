@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ADGroup;
 use App\Models\ADUser;
 use App\Models\Computer;
+use App\Models\Network;
 use App\Models\OperatingSystem;
 use App\Models\Server;
 use App\Models\VM;
@@ -74,7 +75,7 @@ class AgentController extends Controller
 
         // Die IP ist keine Spalte am Geraet mehr, sondern ein Eintrag im Block
         // "Weitere IP-Adressen".
-        $this->meldeAdresse($server, $customer->id, $host['ip'] ?? null);
+        $this->meldeAdresse($server, $customer->id, $site->id, $host['ip'] ?? null);
 
         $guestCount = 0;
         foreach ($data['guests'] ?? [] as $guest) {
@@ -91,7 +92,7 @@ class AgentController extends Controller
                 ]
             );
 
-            $this->meldeAdresse($vm, $customer->id, $guest['ip'] ?? null);
+            $this->meldeAdresse($vm, $customer->id, $site->id, $guest['ip'] ?? null);
             $guestCount++;
         }
 
@@ -212,7 +213,7 @@ class AgentController extends Controller
             ]
         );
 
-        $this->meldeAdresse($computer, $customer->id, $client['ip'] ?? null);
+        $this->meldeAdresse($computer, $customer->id, $site->id, $client['ip'] ?? null);
 
         return response()->json([
             'status' => 'ok',
@@ -226,11 +227,13 @@ class AgentController extends Controller
     /**
      * Traegt die gemeldete Adresse im Block "Weitere IP-Adressen" ein.
      *
-     * updateOrCreate statt create: Der Agent meldet denselben Host wieder und
-     * wieder - sonst stuenden dort nach einer Woche sieben gleiche Zeilen.
-     * Gepflegte Angaben (Netz, Bezeichnung) bleiben dabei unangetastet.
+     * Kein updateOrCreate: Der Agent meldet denselben Host wieder und wieder -
+     * bei einer schon vorhandenen Adresse bleibt die Netz-Zuordnung deshalb
+     * unangetastet, sonst wuerfe ein zweiter Lauf eine von Hand korrigierte
+     * Zuordnung wieder um (Ueberlappende Netze sind selten, aber moeglich).
+     * Nur bei der Neuanlage wird ein passendes Netz gesucht und gesetzt.
      */
-    protected function meldeAdresse($geraet, int $customerId, ?string $adresse): void
+    protected function meldeAdresse($geraet, int $customerId, ?int $siteId, ?string $adresse): void
     {
         $adresse = trim((string) $adresse);
 
@@ -238,10 +241,19 @@ class AgentController extends Controller
             return;
         }
 
-        $geraet->ipAddresses()->updateOrCreate(
-            ['address' => $adresse],
-            ['customer_id' => $customerId]
-        );
+        $vorhanden = $geraet->ipAddresses()->where('address', $adresse)->first();
+
+        if ($vorhanden) {
+            $vorhanden->update(['customer_id' => $customerId]);
+
+            return;
+        }
+
+        $geraet->ipAddresses()->create([
+            'address' => $adresse,
+            'customer_id' => $customerId,
+            'network_id' => Network::fuerAdresse($customerId, $siteId, $adresse)?->id,
+        ]);
     }
 
     protected function mapOstype(?string $ostype): string

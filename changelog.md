@@ -23,6 +23,9 @@
   - Erneute Läufe aktualisieren denselben Eintrag (Upsert über `agent_identifier`), statt Duplikate anzulegen — wie bei den beiden bestehenden Agenten.
   - Meldet Hersteller, Modell, Seriennummer, Betriebssystem und IP-Adresse; die IP landet im Block „Weitere IP-Adressen".
   - **Das gemeldete Betriebssystem trifft jetzt einen vorhandenen Katalogeintrag.** `Win32_OperatingSystem.Caption` liefert unter Windows immer das Präfix „Microsoft" (z. B. „Microsoft Windows 11 Pro"), der Katalog führt seine Windows-Einträge aber ohne — jeder Lauf hätte eine zweite, nie zusammengeführte Zeile neben der händisch angelegten „Windows 11 Pro" erzeugt. Das Präfix wird jetzt vor dem Abgleich gekappt.
+  - **Eine gemeldete IP-Adresse ordnet sich jetzt automatisch dem passenden VLAN zu**, sofern eines zum Adressbereich am Standort passt — das gilt für alle drei Agenten (Proxmox, Windows-Client), nicht nur den neuen. Vorher blieb „Weitere IP-Adressen" ohne Netz stehen, obwohl das VLAN oft längst angelegt war.
+    - Nur bei der **Neuanlage** einer Adresse wird gesucht; eine bereits vorhandene Zeile bleibt unangetastet, damit ein zweiter Lauf eine von Hand korrigierte Zuordnung nicht wieder umwirft.
+    - Netz- und Broadcast-Adresse zählen bewusst mit dazu — eine gemeldete Gateway-IP soll treffen.
 
 ### Fixed
 
