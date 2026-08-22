@@ -160,12 +160,4 @@ class AdminController extends Controller
 
         return view('admin.index', compact('tiles', 'expiring', 'inventory', 'activities', 'topCustomers', 'chart'));
     }
-
-    public function apitoken()
-    {
-        $user = auth()->user();
-        $token = $user->createToken('optin');
-
-        return ['token' => $token->plainTextToken];
-    }
 }

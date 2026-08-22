@@ -5,25 +5,8 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 
-/**
- * Ein Benutzer mit genau diesen Rechten - und sonst keinen.
- */
-function nutzerMitRechten(array $namen): User
-{
-    $rolle = Role::factory()->create();
-
-    foreach ($namen as $name) {
-        $recht = Permission::where('name', $name)->first()
-            ?? tap(new Permission)->forceFill(['name' => $name, 'description' => $name])->save();
-
-        $rolle->assignPermission(Permission::where('name', $name)->first());
-    }
-
-    return User::factory()->create(['role_id' => $rolle->id]);
-}
-
 test('eine Rolle mit nur einem Admin-Recht kommt nur an diesen Bereich', function () {
-    $this->actingAs(nutzerMitRechten(['admin_activity']));
+    $this->actingAs(userWithPermissions(['admin_activity']));
 
     // Das ist der Fall, um den es geht: eine zweite Technikergruppe, die das
     // Protokoll sehen darf, aber keine Benutzer anlegt.
@@ -37,7 +20,7 @@ test('eine Rolle mit nur einem Admin-Recht kommt nur an diesen Bereich', functio
 });
 
 test('ohne jedes Admin-Recht bleibt der ganze Bereich zu', function () {
-    $this->actingAs(nutzerMitRechten(['server_viewAny']));
+    $this->actingAs(userWithPermissions(['server_viewAny']));
 
     foreach ([
         'admin.dashboard', 'admin.activity.index', 'admin.user.index',
@@ -62,7 +45,7 @@ test('der Admin darf alles, auch ohne angehakte Rechte', function () {
 });
 
 test('mehrere Rechte lassen sich frei zusammenstellen', function () {
-    $this->actingAs(nutzerMitRechten(['admin_trash', 'admin_activity', 'admin_operatingsystem']));
+    $this->actingAs(userWithPermissions(['admin_trash', 'admin_activity', 'admin_operatingsystem']));
 
     $this->get(route('admin.papierkorb'))->assertOk();
     $this->get(route('admin.activity.index'))->assertOk();
@@ -76,7 +59,7 @@ test('mehrere Rechte lassen sich frei zusammenstellen', function () {
 });
 
 test('die Auswahlmenues teilen sich ein Recht', function () {
-    $this->actingAs(nutzerMitRechten(['admin_catalog']));
+    $this->actingAs(userWithPermissions(['admin_catalog']));
 
     // Alle vier Zeilen des Menuepunkts "Auswahlmenues" - die
     // Betriebssystem-Liste steht dort neben Diensten und Mail-Anbietern.
@@ -91,15 +74,15 @@ test('die Auswahlmenues teilen sich ein Recht', function () {
 
 test('die Fernwartungs-Suche haengt am Recht, nicht an der Rolle', function () {
     // Vorher: nur Rolle 10. Eine zweite Technikergruppe kam nicht hinein.
-    $this->actingAs(nutzerMitRechten(['remote_search']));
+    $this->actingAs(userWithPermissions(['remote_search']));
     $this->get(route('search.remote'))->assertOk();
 
-    $this->actingAs(nutzerMitRechten(['admin_activity']));
+    $this->actingAs(userWithPermissions(['admin_activity']));
     $this->get(route('search.remote'))->assertForbidden();
 });
 
 test('das Menue zeigt nur die erlaubten Eintraege', function () {
-    $this->actingAs(nutzerMitRechten(['admin_trash']));
+    $this->actingAs(userWithPermissions(['admin_trash']));
 
     $antwort = $this->get(route('admin.papierkorb'));
 
@@ -164,7 +147,7 @@ test('die Benutzerliste bietet Anlegen und Loeschen an', function () {
 });
 
 test('wer Admin-Rechte hat, findet den Weg dorthin', function () {
-    $this->actingAs(nutzerMitRechten(['admin_trash']));
+    $this->actingAs(userWithPermissions(['admin_trash']));
 
     // Ohne diesen Eintrag muesste man /admin von Hand tippen: Der Admin landet
     // beim Anmelden dort, ein Techniker mit Admin-Rechten nicht.
@@ -172,13 +155,13 @@ test('wer Admin-Rechte hat, findet den Weg dorthin', function () {
 });
 
 test('ohne Admin-Rechte gibt es den Weg nicht', function () {
-    $this->actingAs(nutzerMitRechten(['server_viewAny']));
+    $this->actingAs(userWithPermissions(['server_viewAny']));
 
     $this->get(route('customer.search'))->assertDontSee(route('admin.dashboard'));
 });
 
 test('das Admin-Dashboard zeigt nur erreichbare Kacheln', function () {
-    $this->actingAs(nutzerMitRechten(['admin_trash', 'admin_activity']));
+    $this->actingAs(userWithPermissions(['admin_trash', 'admin_activity']));
 
     $antwort = $this->get(route('admin.dashboard'));
 
@@ -201,7 +184,7 @@ test('kein sichtbarer Link fuehrt in ein Verboten', function () {
     // Deshalb keine Liste von Paaren, sondern die Frage selbst: Was der
     // Benutzer sieht, muss er auch oeffnen koennen.
     foreach (array_keys(config('custom.admin_permissions')) as $recht) {
-        $nutzer = nutzerMitRechten([$recht]);
+        $nutzer = userWithPermissions([$recht]);
 
         $html = $this->actingAs($nutzer)->get(route('admin.dashboard'))->getContent();
         preg_match_all('#href="[^"]*(/admin/[a-z\-]+)"#', $html, $treffer);

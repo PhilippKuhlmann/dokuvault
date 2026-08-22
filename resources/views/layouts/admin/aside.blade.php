@@ -48,7 +48,7 @@
                 </x-aside.dropdown>
             @endcan
 
-            @canany(['admin_setting', 'admin_activity'])
+            @canany(['admin_setting', 'admin_activity', 'admin_apitoken'])
                 <x-aside.dropdown :label="__('Einstellungen')" svg="svg.settings" >
                     <x-slot:links>
                         @can('admin_setting')
@@ -58,6 +58,9 @@
                              den uebrigen Einstellungen. --}}
                         @can('admin_activity')
                             <x-aside.dropdownlink :label="__('Protokoll-Historie')" href="{{ route('admin.protokollhistorie') }}" />
+                        @endcan
+                        @can('admin_apitoken')
+                            <x-aside.dropdownlink :label="__('API-Token')" href="{{ route('admin.apitoken') }}" />
                         @endcan
                     </x-slot:links>
                 </x-aside.dropdown>

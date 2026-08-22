@@ -58,6 +58,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VMController;
 use App\Http\Controllers\WifiController;
 use App\Http\Controllers\WizardController;
+use App\Livewire\AdminApiToken;
 use App\Livewire\AdminPapierkorb;
 use App\Livewire\AdminProtokoll;
 use App\Livewire\AdminProtokollHistorie;
@@ -106,7 +107,11 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
         Route::get('/activity', AdminProtokoll::class)
             ->middleware('can:admin_activity')->name('admin.activity.index');
 
-        Route::get('/apitoken', [AdminController::class, 'apitoken'])->middleware('can:admin_apitoken');
+        // Token anlegen und widerrufen. Vorher gab diese Adresse rohes JSON
+        // zurueck und legte bei jedem Aufruf einen weiteren Token an - ein
+        // Menuepunkt darauf haette beim Klicken Token erzeugt.
+        Route::get('/apitoken', AdminApiToken::class)
+            ->middleware('can:admin_apitoken')->name('admin.apitoken');
 
         Route::get('/', [AdminController::class, 'index'])->name('admin.dashboard');
 
