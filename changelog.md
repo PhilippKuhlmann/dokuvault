@@ -1,11 +1,6 @@
 # Changelog
 
-## 26.08.21
-
-### Fixed
-
-- **Der Deploy brach beim Befüllen der Demo ab.** Die neuen Admin-Rechte werden an zwei Stellen angelegt: per Migration für bestehende Installationen und im Seeder für frische. Der Deploy führt `migrate:fresh --seed` aus — erst die Migration, dann den Seeder — und dessen zweites `forceCreate` lief in den UNIQUE-Index auf `permissions.name`. Der Seeder verwendet vorhandene Rechte jetzt wieder, statt sie erneut anzulegen.
-  - Ein Test führt den Seeder auf einer frisch migrierten Datenbank aus — genau den Ablauf des Deploys. Die Testsuite selbst hatte den Fehler nicht gefunden, weil sie den Seeder nie aufruft.
+## 26.08.22
 
 ### Added
 
@@ -22,6 +17,15 @@
   - Der Klartext steht **genau einmal** da, groß und mit Kopierknopf — gespeichert wird nur der Hash. Wer ihn nicht mitnimmt, legt einen neuen an.
   - Die Liste zeigt Bezeichnung, Alter und wann der Token zuletzt benutzt wurde. Ein Token, der „nie" benutzt wurde, ist ein Kandidat zum Widerrufen.
   - Widerrufen läuft über die eigene Beziehung, nicht über die Id allein: Sonst ließe sich mit einer fremden Id der Zugang eines anderen abschneiden.
+
+### Fixed
+
+- **Der Deploy brach beim Befüllen der Demo ab.** Die neuen Admin-Rechte werden an zwei Stellen angelegt: per Migration für bestehende Installationen und im Seeder für frische. Der Deploy führt `migrate:fresh --seed` aus — erst die Migration, dann den Seeder — und dessen zweites `forceCreate` lief in den UNIQUE-Index auf `permissions.name`. Der Seeder verwendet vorhandene Rechte jetzt wieder, statt sie erneut anzulegen.
+  - Ein Test führt den Seeder auf einer frisch migrierten Datenbank aus — genau den Ablauf des Deploys. Die Testsuite selbst hatte den Fehler nicht gefunden, weil sie den Seeder nie aufruft.
+
+## 26.08.21
+
+### Added
 
 - **Der Admin-Bereich lässt sich jetzt aufteilen.** Bisher hing alles unter `/admin` an einer harten Prüfung auf die Rolle „Admin": entweder ganz oder gar nicht. Eine zweite Technikergruppe, die etwa den Papierkorb und das Protokoll sehen soll, aber keine Benutzer anlegt, war damit nicht baubar. Jetzt gibt es **ein Recht je Menüpunkt** — Kunden, Benutzer, Rollen, Auswahlmenüs, Betriebssysteme, Einstellungen, Papierkorb, Protokoll, API-Token — frei kombinierbar in der Rollenverwaltung.
   - Die **Rolle „Admin" darf weiterhin alles**, unabhängig davon, was angehakt ist. Das ist die Absicherung gegen das Aussperren: Wer versehentlich „Rollen und Rechte verwalten" abwählt, käme sonst nie wieder an die Rollenverwaltung.
@@ -67,6 +71,13 @@
   - Die Seite nennt die Folgen, bevor man speichert: Anzahl der Einträge, ältester Eintrag, und wie viele die eingestellte Frist heute treffen würde. „365" sagt einem sonst nicht, ob damit drei Einträge verschwinden oder dreitausend.
   - Ein nächtlicher Lauf um 3:40 Uhr räumt ab. Nach Ablauf zeigt das Protokoll die Änderung weiter an, den alten Wert aber nicht mehr — dort steht dann „Nicht mehr aufbewahrt".
 
+- **Papierkorb über alle Kunden — als eigener Menüpunkt im Admin-Bereich.** Der Papierkorb beim Kunden zeigt dessen eigene Einträge und kann sie zurückholen. Hier geht es um das Gegenteil: sehen, was sich über die Jahre angesammelt hat, und es loswerden. Gelöscht wird von Hand — ein Zeitplan, der im Hintergrund unbemerkt Daten endgültig entfernt, wäre dafür das falsche Werkzeug.
+  - **Filter nach Alter, Art und Kunde.** Die Tage sind frei eingebbar; 21, 90 und 365 stehen als Knöpfe daneben, weil sie das Übliche abdecken — aber nicht jede Aufbewahrungsregel hält sich daran.
+  - **Einzeln oder alles Angezeigte.** Das Sammellöschen trifft ausschließlich, was der Filter gerade zeigt, und fragt vorher mit der **Anzahl** nach: „Wirklich löschen?" ohne Angabe, wie viel, ist keine Grundlage für ein Ja. Der Warnhinweis nennt, was mitgeht — gespeicherte Kennwörter, hinterlegte Dateien und die daran hängenden IP-Adressen.
+  - Endgültig heißt endgültig: Die Datei wird von der Platte gelöscht, IP-Adressen und Zugangsdaten-Verknüpfungen gehen mit. Blieben sie liegen, zeigten sie auf eine Id, die es nicht mehr gibt — und genau daran ist die Zugangsdaten-Seite schon einmal zerbrochen.
+  - Die Seite lädt **je Art höchstens 500 Einträge** und sagt es, wenn sie an diese Grenze stößt. Ohne den Hinweis hielte man die Zahl in der Kopfzeile für den ganzen Bestand und wunderte sich, warum nach dem Löschen noch etwas da ist.
+  - Zugang nur mit `see_hidden` — geprüft beim Aufruf **und** bei jeder Löschaktion. Die Klasse zum Slug kommt aus der Whitelist in `config/custom.php`, nie aus der Anfrage.
+
 ### Security
 
 - **USC-PIN, Cloud-Backup-Kennwort und PPPoE-Kennwort standen im Klartext im Protokoll.** Die Ausschlussliste nannte die Namen der Accessor-Methoden (`uscpin`, `cloudBackupPassword`), die Spalten heißen aber `usc_pin` und `cloud_backup_password`; `pppoe_password` fehlte ganz. Damit hat das Protokoll diese drei Felder mitgeschrieben — alten **und** neuen Wert. In der Entwicklungsdatenbank waren 16 Einträge betroffen.
@@ -77,17 +88,6 @@
 
 - **Die Protokollseite schnitt die Details-Spalte ab und lief seitlich über.** Gemessen bei 839 Pixeln: 25 Pixel der Spalte lagen außerhalb des Rahmens, weil er `overflow-hidden` trug. Solange dort nur „anzeigen" stand, fiel es nicht auf. Die Tabelle scrollt jetzt in ihrem Rahmen.
   - Auch die Seitenzahl-Leiste lief über: 18 Seiten nebeneinander sind 633 Pixel. Sie bekommt einen eigenen Scrollbereich.
-
-### Added
-
-- **Papierkorb über alle Kunden — als eigener Menüpunkt im Admin-Bereich.** Der Papierkorb beim Kunden zeigt dessen eigene Einträge und kann sie zurückholen. Hier geht es um das Gegenteil: sehen, was sich über die Jahre angesammelt hat, und es loswerden. Gelöscht wird von Hand — ein Zeitplan, der im Hintergrund unbemerkt Daten endgültig entfernt, wäre dafür das falsche Werkzeug.
-  - **Filter nach Alter, Art und Kunde.** Die Tage sind frei eingebbar; 21, 90 und 365 stehen als Knöpfe daneben, weil sie das Übliche abdecken — aber nicht jede Aufbewahrungsregel hält sich daran.
-  - **Einzeln oder alles Angezeigte.** Das Sammellöschen trifft ausschließlich, was der Filter gerade zeigt, und fragt vorher mit der **Anzahl** nach: „Wirklich löschen?" ohne Angabe, wie viel, ist keine Grundlage für ein Ja. Der Warnhinweis nennt, was mitgeht — gespeicherte Kennwörter, hinterlegte Dateien und die daran hängenden IP-Adressen.
-  - Endgültig heißt endgültig: Die Datei wird von der Platte gelöscht, IP-Adressen und Zugangsdaten-Verknüpfungen gehen mit. Blieben sie liegen, zeigten sie auf eine Id, die es nicht mehr gibt — und genau daran ist die Zugangsdaten-Seite schon einmal zerbrochen.
-  - Die Seite lädt **je Art höchstens 500 Einträge** und sagt es, wenn sie an diese Grenze stößt. Ohne den Hinweis hielte man die Zahl in der Kopfzeile für den ganzen Bestand und wunderte sich, warum nach dem Löschen noch etwas da ist.
-  - Zugang nur mit `see_hidden` — geprüft beim Aufruf **und** bei jeder Löschaktion. Die Klasse zum Slug kommt aus der Whitelist in `config/custom.php`, nie aus der Anfrage.
-
-### Fixed
 
 - **Der Löschen-Knopf im Admin-Papierkorb tat nichts.** Livewires `updated()`-Hook feuert bei *jeder* Eigenschaft, wenn man den Namen nicht prüft — also auch bei der Rückfrage selbst, die sich damit sofort wieder schloss. Jetzt reagiert der Hook nur noch auf die drei Filter.
 - **Zwei Filterknöpfe lagen unter der Nachbarspalte.** Bei 839 Pixeln blieben für die Altersspalte 159 Pixel, gebraucht wurden 238 — „90" und „365" verschwanden hinter der Art-Auswahl. Drei Spalten gibt es jetzt erst ab 1024 Pixeln, und die Knopfreihe darf notfalls umbrechen.
