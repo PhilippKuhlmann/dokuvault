@@ -1,9 +1,12 @@
 <?php
 
 use App\Livewire\AdminProtokoll;
+use App\Models\CredentialLink;
 use App\Models\Customer;
 use App\Models\Domain;
 use App\Models\Firewall;
+use App\Models\IpAddress;
+use App\Models\LoginGeneral;
 use App\Models\Site;
 use Livewire\Livewire;
 use Spatie\Activitylog\Models\Activity;
@@ -254,4 +257,40 @@ test('jeder Eintrag nennt den Namen des Objekts', function () {
     expect($eintrag->properties['objekt'])->toBe('beispiel.de');
 
     Livewire::test(AdminProtokoll::class)->assertSee('beispiel.de');
+});
+
+test('auch Objekte ohne name-Spalte werden benannt', function () {
+    $this->actingAs(userWithPermissions([]));
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+
+    $firewall = Firewall::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'FW-01',
+    ]);
+    $firewall->ipAddresses()->create(['customer_id' => $customer->id, 'address' => '10.0.0.5']);
+
+    // Vorher stand hier "IpAddress #1" - bei mehr als der Haelfte aller Zeilen
+    // war das so, weil diese Modelle keine name-Spalte haben.
+    $eintrag = Activity::where('subject_type', IpAddress::class)->latest('id')->first();
+
+    expect($eintrag->properties['objekt'])->toBe('10.0.0.5');
+});
+
+test('eine Verknuepfung traegt den Namen dessen, was sie verbindet', function () {
+    $this->actingAs(userWithPermissions([]));
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+
+    $firewall = Firewall::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'FW-Verknuepft',
+    ]);
+    $login = LoginGeneral::factory()->create(['customer_id' => $customer->id]);
+    $firewall->credentialLinks()->create([
+        'customer_id' => $customer->id, 'login_general_id' => $login->id,
+    ]);
+
+    $eintrag = Activity::where('subject_type', CredentialLink::class)->latest('id')->first();
+
+    // Die Verknuepfung selbst hat keinen Namen - sie traegt den des Geraets.
+    expect($eintrag->properties['objekt'])->toContain('FW-Verknuepft');
 });

@@ -74,4 +74,12 @@ class RackItem extends Model
 
         return $this->appearance ?: 'blank';
     }
+
+    /**
+     * Ein Einbau heisst wie das Geraet, das eingebaut ist.
+     */
+    public function protokollName(): ?string
+    {
+        return $this->label() ?: null;
+    }
 }

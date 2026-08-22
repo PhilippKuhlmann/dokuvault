@@ -13,6 +13,9 @@
   - Die Auswahlliste „Benutzer" ist nach Herkunft gruppiert: **Mitarbeiter** oben, darunter je Kunde dessen Zugänge.
   - In der Zeile steht der Kundenname klein unter dem Benutzernamen.
   - **Jeder Eintrag nennt jetzt den Namen des Objekts.** Bisher speicherte das Protokoll nur die geänderten Felder — wer an einer Domain bloß den Registrar änderte, hinterließ einen Eintrag „Domain #1". Der Name wird mitgeschrieben, nicht beim Anzeigen nachgeladen: Ein Eintrag überlebt sein Objekt. Ältere Einträge behalten ihre Nummer.
+  - **Auch Objekte ohne `name`-Spalte** werden benannt: eine IP-Adresse mit ihrer Adresse, ein Rack-Einbau mit dem Gerät, eine Zugangsdaten-Verknüpfung mit dem Gerät, an dem sie hängt. Das betraf **27 von 50** sichtbaren Zeilen.
+  - Eine Migration trägt den Namen in bestehende Einträge nach, soweit Klasse und Objekt noch da sind (in der Entwicklungsdatenbank: 180 ergänzt, 122 ohne Fundstelle — dort bleibt die Nummer stehen, das ist ehrlicher als ein erfundener Name).
+  - Die Feldliste steht jetzt zentral in `config/custom.php`; Protokoll und Papierkorb stellen dieselbe Frage und beantworten sie aus derselben Quelle.
 
 - **API-Token haben jetzt eine Seite** unter „Einstellungen → API-Token". Vorher gab `/admin/apitoken` rohes JSON zurück — und legte bei **jedem Aufruf** einen weiteren Token namens „optin" an, den man nirgends wieder loswurde. Ein Menüpunkt darauf hätte beim Klicken Token erzeugt.
   - Anlegen mit einer Bezeichnung, die sagt, wofür er da ist: Beim Widerrufen ist sie das Einzige, woran sich ein Token erkennen lässt.

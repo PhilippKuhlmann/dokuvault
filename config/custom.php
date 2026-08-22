@@ -720,6 +720,32 @@ return [
     | Rollenverwaltung.
     |
     */
+    /*
+    |--------------------------------------------------------------------------
+    | Woran man ein Objekt erkennt
+    |--------------------------------------------------------------------------
+    |
+    | Nicht jedes Model hat eine name-Spalte: Ein WLAN heisst ssid, eine
+    | IP-Adresse address, ein Postfach mailAdress. Protokoll und Papierkorb
+    | stellen dieselbe Frage - welcher Eintrag ist das eigentlich - und
+    | beantworten sie jetzt aus derselben Liste. Die Reihenfolge entscheidet.
+    |
+    | Ein Model, das etwas Besseres weiss, ueberschreibt protokollName().
+    |
+    */
+    'name_fields' => [
+        'name',
+        'ssid',
+        'address',
+        'username',
+        'mailAdress',
+        'domain',
+        'provider',
+        'description',
+        'host',
+        'key',
+    ],
+
     'admin_permissions' => [
         // Die Beschreibung steht so in der Rollenverwaltung - deshalb mit
         // Umlauten, anders als die Kommentare in dieser Datei.

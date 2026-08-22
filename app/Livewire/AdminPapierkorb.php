@@ -121,15 +121,16 @@ class AdminPapierkorb extends Component
         return $eintraege->sortByDesc('geloescht')->values();
     }
 
+    /**
+     * Woran man den Eintrag erkennt.
+     *
+     * Dieselbe Frage wie im Protokoll und dieselbe Antwort: Die Feldliste
+     * steht in config/custom.php, und ein Model, das es besser weiss,
+     * ueberschreibt protokollName().
+     */
     protected function anzeigename($eintrag): string
     {
-        foreach (['name', 'ssid', 'username', 'mailAdress', 'domain', 'provider', 'description', 'host', 'key'] as $feld) {
-            if (! empty($eintrag->{$feld})) {
-                return (string) $eintrag->{$feld};
-            }
-        }
-
-        return '#'.$eintrag->id;
+        return $eintrag->protokollName() ?? '#'.$eintrag->id;
     }
 
     /**

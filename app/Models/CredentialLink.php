@@ -63,4 +63,13 @@ class CredentialLink extends Model
 
         return $name.' ('.__($typ).')';
     }
+
+    /**
+     * Die Verknuepfung selbst hat keinen Namen - sie traegt den des Geraets,
+     * an dem die Zugangsdaten haengen.
+     */
+    public function protokollName(): ?string
+    {
+        return $this->zielBezeichnung() ?: null;
+    }
 }

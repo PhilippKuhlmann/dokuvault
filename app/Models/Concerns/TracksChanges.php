@@ -65,13 +65,32 @@ trait TracksChanges
      */
     public function tapActivity(Activity $aktivitaet, string $ereignis): void
     {
-        $name = $this->name ?? $this->username ?? $this->ssid ?? null;
+        $name = $this->protokollName();
 
         if (blank($name)) {
             return;
         }
 
         $aktivitaet->properties = $aktivitaet->properties->put('objekt', $name);
+    }
+
+    /**
+     * Woran man dieses Objekt im Protokoll erkennt.
+     *
+     * Ueberschreibbar: Verknuepfungen wie CredentialLink oder RackItem haben
+     * kein eigenes Feld, das etwas aussagt - sie tragen den Namen dessen, was
+     * sie verbinden. Ohne das stand in mehr als der Haelfte aller Zeilen nur
+     * eine Nummer.
+     */
+    public function protokollName(): ?string
+    {
+        foreach (config('custom.name_fields') as $feld) {
+            if (filled($this->{$feld} ?? null)) {
+                return (string) $this->{$feld};
+            }
+        }
+
+        return null;
     }
 
     /**
