@@ -9,6 +9,11 @@
 
 ### Added
 
+- **Das Protokoll sagt jetzt, wer aus welchem Haus gehandelt hat.** Ein Kundenzugang mit Schreibrecht ändert Daten wie jeder Techniker — genau dann will man nachsehen, was er getan hat. In einer Liste aus lauter Namen ließ sich aber nicht erkennen, wer zu wem gehört.
+  - Die Auswahlliste „Benutzer" ist nach Herkunft gruppiert: **Mitarbeiter** oben, darunter je Kunde dessen Zugänge.
+  - In der Zeile steht der Kundenname klein unter dem Benutzernamen.
+  - **Jeder Eintrag nennt jetzt den Namen des Objekts.** Bisher speicherte das Protokoll nur die geänderten Felder — wer an einer Domain bloß den Registrar änderte, hinterließ einen Eintrag „Domain #1". Der Name wird mitgeschrieben, nicht beim Anzeigen nachgeladen: Ein Eintrag überlebt sein Objekt. Ältere Einträge behalten ihre Nummer.
+
 - **API-Token haben jetzt eine Seite** unter „Einstellungen → API-Token". Vorher gab `/admin/apitoken` rohes JSON zurück — und legte bei **jedem Aufruf** einen weiteren Token namens „optin" an, den man nirgends wieder loswurde. Ein Menüpunkt darauf hätte beim Klicken Token erzeugt.
   - Anlegen mit einer Bezeichnung, die sagt, wofür er da ist: Beim Widerrufen ist sie das Einzige, woran sich ein Token erkennen lässt.
   - Der Klartext steht **genau einmal** da, groß und mit Kopierknopf — gespeichert wird nur der Hash. Wer ihn nicht mitnimmt, legt einen neuen an.

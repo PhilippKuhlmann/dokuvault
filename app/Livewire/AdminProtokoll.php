@@ -59,7 +59,7 @@ class AdminProtokoll extends Component
 
     public function render()
     {
-        $abfrage = Activity::with('causer')
+        $abfrage = Activity::with('causer.customer')
             ->when($this->ereignis !== '', fn ($a) => $a->where('event', $this->ereignis))
             ->when($this->art !== '', fn ($a) => $a->where('subject_type', $this->art))
             ->when($this->benutzer !== '', fn ($a) => $a->where('causer_id', (int) $this->benutzer))
@@ -131,6 +131,18 @@ class AdminProtokoll extends Component
     {
         $ids = Activity::whereNotNull('causer_id')->distinct()->pluck('causer_id');
 
-        return User::whereIn('id', $ids)->orderBy('name')->pluck('name', 'id')->all();
+        // Nach Herkunft getrennt: Ein Kundenzugang mit Schreibrecht aendert
+        // Daten wie jeder Techniker, und genau dann will man nachsehen, was er
+        // getan hat. In einer Liste aus lauter Namen liesse sich aber nicht
+        // erkennen, wer zu wem gehoert - bei mehreren Kunden heissen die
+        // Zugaenge schnell aehnlich.
+        return User::whereIn('id', $ids)
+            ->with('customer:id,name')
+            ->orderBy('name')
+            ->get(['id', 'name', 'customer_id'])
+            ->groupBy(fn ($nutzer) => $nutzer->customer?->name ?? __('Mitarbeiter'))
+            ->sortKeys()
+            ->map(fn ($gruppe) => $gruppe->pluck('name', 'id'))
+            ->all();
     }
 }

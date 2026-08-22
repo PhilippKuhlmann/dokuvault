@@ -6,6 +6,7 @@ use App\Models\PasswordHistory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Throwable;
 
@@ -48,6 +49,29 @@ trait TracksChanges
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+
+    /**
+     * Den Namen des Objekts in jeden Eintrag schreiben.
+     *
+     * logOnlyDirty speichert nur die geänderten Felder. Wer an einer Domain
+     * bloß den Registrar ändert, hinterlässt damit einen Eintrag, in dem kein
+     * Name steht - im Protokoll stand dann "Domain #1". Zum Nachvollziehen,
+     * wer was angestellt hat, taugt das nicht.
+     *
+     * Mitgeschrieben statt beim Anzeigen nachgeladen: Ein Protokolleintrag
+     * überlebt sein Objekt, und ein Verweis auf eine entfernte Klasse bricht
+     * beim Auflösen die ganze Seite.
+     */
+    public function tapActivity(Activity $aktivitaet, string $ereignis): void
+    {
+        $name = $this->name ?? $this->username ?? $this->ssid ?? null;
+
+        if (blank($name)) {
+            return;
+        }
+
+        $aktivitaet->properties = $aktivitaet->properties->put('objekt', $name);
     }
 
     /**

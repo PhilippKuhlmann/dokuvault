@@ -180,3 +180,78 @@ test('das Prozentzeichen liefert nicht den ganzen Bestand', function () {
         ->assertSee('mit-100%-anteil.de')
         ->assertDontSee('ohne-sonderzeichen.de');
 });
+
+test('die Benutzerliste trennt Mitarbeiter von Kundenzugaengen', function () {
+    $kunde = Customer::factory()->create(['name' => 'Mustermann GmbH']);
+
+    $techniker = userWithPermissions([]);
+    $this->actingAs($techniker);
+    Domain::factory()->create(['customer_id' => $kunde->id, 'name' => 'vom-techniker.de']);
+
+    $kundenzugang = userWithPermissions([]);
+    $kundenzugang->forceFill(['customer_id' => $kunde->id])->save();
+    $this->actingAs($kundenzugang);
+    Domain::factory()->create(['customer_id' => $kunde->id, 'name' => 'vom-kunden.de']);
+
+    $liste = Livewire::test(AdminProtokoll::class)->viewData('benutzerListe');
+
+    // Ein Kundenzugang mit Schreibrecht aendert Daten wie jeder Techniker -
+    // in einer Liste aus lauter Namen liesse sich nicht erkennen, wer zu wem
+    // gehoert.
+    expect($liste)->toHaveKey('Mitarbeiter');
+    expect($liste)->toHaveKey('Mustermann GmbH');
+    expect($liste['Mitarbeiter']->keys()->all())->toContain($techniker->id);
+    expect($liste['Mustermann GmbH']->keys()->all())->toContain($kundenzugang->id);
+});
+
+test('die Zeile nennt den Kunden eines Kundenzugangs', function () {
+    $kunde = Customer::factory()->create(['name' => 'Mustermann GmbH']);
+
+    $kundenzugang = userWithPermissions([]);
+    $kundenzugang->forceFill(['customer_id' => $kunde->id])->save();
+
+    $this->actingAs($kundenzugang);
+    Domain::factory()->create(['customer_id' => $kunde->id, 'name' => 'geaendert.de']);
+
+    Livewire::test(AdminProtokoll::class)
+        ->assertSee($kundenzugang->name)
+        ->assertSee('Mustermann GmbH');
+});
+
+test('der Benutzerfilter trifft auch einen Kundenzugang', function () {
+    $kunde = Customer::factory()->create();
+
+    $einer = userWithPermissions([]);
+    $einer->forceFill(['customer_id' => $kunde->id])->save();
+    $this->actingAs($einer);
+    Domain::factory()->create(['customer_id' => $kunde->id, 'name' => 'vom-kunden.de']);
+
+    $anderer = userWithPermissions([]);
+    $this->actingAs($anderer);
+    Domain::factory()->create(['customer_id' => $kunde->id, 'name' => 'vom-techniker.de']);
+
+    // Genau der Fall, um den es geht: nachsehen, was ein bestimmter Zugang
+    // getan hat.
+    Livewire::test(AdminProtokoll::class)
+        ->set('benutzer', (string) $einer->id)
+        ->assertSee('vom-kunden.de')
+        ->assertDontSee('vom-techniker.de');
+});
+
+test('jeder Eintrag nennt den Namen des Objekts', function () {
+    $this->actingAs(userWithPermissions([]));
+    $customer = Customer::factory()->create();
+
+    $domain = Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'beispiel.de']);
+    // Nur ein Nebenfeld aendern: logOnlyDirty schreibt dann nur dieses Feld,
+    // und im Protokoll stand "Domain #1" statt des Namens.
+    $domain->update(['registrar' => 'Hetzner']);
+
+    $eintrag = Activity::where('subject_id', $domain->id)
+        ->where('subject_type', Domain::class)
+        ->where('event', 'updated')->latest('id')->first();
+
+    expect($eintrag->properties['objekt'])->toBe('beispiel.de');
+
+    Livewire::test(AdminProtokoll::class)->assertSee('beispiel.de');
+});

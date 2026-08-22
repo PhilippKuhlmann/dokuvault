@@ -49,8 +49,15 @@
                 <x-input.label :value="__('Benutzer')" />
                 <x-input.select name="benutzer" wire:model.live="benutzer" class="mt-1">
                     <option value="">{{ __('Alle Benutzer') }}</option>
-                    @foreach ($benutzerListe as $id => $name)
-                        <option value="{{ $id }}">{{ $name }}</option>
+                    {{-- Nach Herkunft gruppiert: Mitarbeiter oben, darunter je
+                         Kunde dessen Zugaenge. Ein Kundenzugang mit
+                         Schreibrecht aendert Daten wie jeder Techniker. --}}
+                    @foreach ($benutzerListe as $gruppe => $namen)
+                        <optgroup label="{{ $gruppe }}">
+                            @foreach ($namen as $id => $name)
+                                <option value="{{ $id }}">{{ $name }}</option>
+                            @endforeach
+                        </optgroup>
                     @endforeach
                 </x-input.select>
             </div>
@@ -116,7 +123,15 @@
                             <td class="whitespace-nowrap px-4 py-2.5" title="{{ $activity->created_at->format('d.m.Y H:i:s') }}">
                                 {{ $activity->created_at->format('d.m.Y H:i') }}
                             </td>
-                            <td class="px-4 py-2.5 text-gray-900 dark:text-gray-100">{{ $activity->causer?->name ?? __('System') }}</td>
+                            <td class="px-4 py-2.5 text-gray-900 dark:text-gray-100">
+                                {{ $activity->causer?->name ?? __('System') }}
+                                {{-- Der Kunde dahinter, wenn es ein Kundenzugang
+                                     war: Sonst steht dort nur ein Name, und wer
+                                     das war, muesste man anderswo nachschlagen. --}}
+                                @if ($activity->causer?->customer)
+                                    <span class="block text-xs text-gray-400 dark:text-gray-500">{{ $activity->causer->customer->name }}</span>
+                                @endif
+                            </td>
                             <td class="px-4 py-2.5">
                                 <span class="rounded px-2 py-0.5 text-xs font-medium {{ $badge }}">{{ __($label) }}</span>
                             </td>
