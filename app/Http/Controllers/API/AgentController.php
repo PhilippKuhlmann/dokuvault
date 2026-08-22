@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\ADGroup;
 use App\Models\ADUser;
+use App\Models\Computer;
 use App\Models\OperatingSystem;
 use App\Models\Server;
 use App\Models\VM;
@@ -165,6 +166,54 @@ class AgentController extends Controller
             'domain' => $data['domain'] ?? null,
             'users_documented' => $userCount,
             'groups_documented' => $groupCount,
+        ]);
+    }
+
+    /**
+     * Nimmt die von einem Windows-Arbeitsplatzrechner gemeldeten Daten
+     * entgegen und legt ihn als Computer an bzw. aktualisiert ihn (Upsert
+     * über agent_identifier = MachineGuid). Laeuft auf jedem Windows-PC,
+     * anders als windowsAd() ohne RSAT/AD-Modul.
+     */
+    public function windowsClient(Request $request)
+    {
+        $customer = $request->attributes->get('agentCustomer');
+        $site = $request->attributes->get('agentSite');
+
+        $data = $request->validate([
+            'client.identifier' => ['required', 'string', 'max:255'],
+            'client.hostname' => ['required', 'string', 'max:255'],
+            'client.manufacturer' => ['nullable', 'string', 'max:255'],
+            'client.model' => ['nullable', 'string', 'max:255'],
+            'client.serial' => ['nullable', 'string', 'max:255'],
+            'client.os' => ['nullable', 'string', 'max:255'],
+            'client.ip' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $client = $data['client'];
+
+        $os = OperatingSystem::firstOrCreate(['name' => $client['os'] ?? 'Windows']);
+
+        $computer = Computer::updateOrCreate(
+            ['customer_id' => $customer->id, 'agent_identifier' => $client['identifier']],
+            [
+                'site_id' => $site->id,
+                'operating_system_id' => $os->id,
+                'name' => $client['hostname'],
+                'manufacturer' => $client['manufacturer'] ?? null,
+                'model' => $client['model'] ?? null,
+                'serialNumber' => $client['serial'] ?? null,
+            ]
+        );
+
+        $this->meldeAdresse($computer, $customer->id, $client['ip'] ?? null);
+
+        return response()->json([
+            'status' => 'ok',
+            'customer' => $customer->name,
+            'site' => $site->name,
+            'client' => $computer->name,
+            'client_id' => $computer->id,
         ]);
     }
 

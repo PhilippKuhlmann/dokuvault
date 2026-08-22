@@ -28,6 +28,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::middleware('agent')->prefix('agent')->group(function () {
     Route::post('/proxmox', [AgentController::class, 'proxmox']);
     Route::post('/windows-ad', [AgentController::class, 'windowsAd']);
+    Route::post('/windows-client', [AgentController::class, 'windowsClient']);
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {

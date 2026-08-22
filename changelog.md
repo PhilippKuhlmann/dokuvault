@@ -18,6 +18,11 @@
   - Die Liste zeigt Bezeichnung, Alter und wann der Token zuletzt benutzt wurde. Ein Token, der „nie" benutzt wurde, ist ein Kandidat zum Widerrufen.
   - Widerrufen läuft über die eigene Beziehung, nicht über die Id allein: Sonst ließe sich mit einer fremden Id der Zugang eines anderen abschneiden.
 
+- **Ein dritter Auto-Dokumentation-Agent: Windows-Arbeitsplatzrechner.** Bisher gab es Scripts für Proxmox-Hosts und Windows-Domaincontroller — ein normaler Client blieb außen vor. Das neue PowerShell-Script läuft auf jedem Windows-PC, ohne RSAT-Modul oder Domaincontroller-Voraussetzung, und meldet sich als „Computer" beim gewählten Standort an.
+  - Identifiziert wird über die `MachineGuid` aus der Registry — stabil pro Windows-Installation, übersteht auch einen Hostname-Wechsel (anders als der Hostname selbst).
+  - Erneute Läufe aktualisieren denselben Eintrag (Upsert über `agent_identifier`), statt Duplikate anzulegen — wie bei den beiden bestehenden Agenten.
+  - Meldet Hersteller, Modell, Seriennummer, Betriebssystem und IP-Adresse; die IP landet im Block „Weitere IP-Adressen".
+
 ### Fixed
 
 - **Der Deploy brach beim Befüllen der Demo ab.** Die neuen Admin-Rechte werden an zwei Stellen angelegt: per Migration für bestehende Installationen und im Seeder für frische. Der Deploy führt `migrate:fresh --seed` aus — erst die Migration, dann den Seeder — und dessen zweites `forceCreate` lief in den UNIQUE-Index auf `permissions.name`. Der Seeder verwendet vorhandene Rechte jetzt wieder, statt sie erneut anzulegen.
