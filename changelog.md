@@ -2,6 +2,11 @@
 
 ## 26.08.21
 
+### Fixed
+
+- **Der Deploy brach beim Befüllen der Demo ab.** Die neuen Admin-Rechte werden an zwei Stellen angelegt: per Migration für bestehende Installationen und im Seeder für frische. Der Deploy führt `migrate:fresh --seed` aus — erst die Migration, dann den Seeder — und dessen zweites `forceCreate` lief in den UNIQUE-Index auf `permissions.name`. Der Seeder verwendet vorhandene Rechte jetzt wieder, statt sie erneut anzulegen.
+  - Ein Test führt den Seeder auf einer frisch migrierten Datenbank aus — genau den Ablauf des Deploys. Die Testsuite selbst hatte den Fehler nicht gefunden, weil sie den Seeder nie aufruft.
+
 ### Added
 
 - **API-Token haben jetzt eine Seite** unter „Einstellungen → API-Token". Vorher gab `/admin/apitoken` rohes JSON zurück — und legte bei **jedem Aufruf** einen weiteren Token namens „optin" an, den man nirgends wieder loswurde. Ein Menüpunkt darauf hätte beim Klicken Token erzeugt.

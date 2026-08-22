@@ -68,8 +68,16 @@ class PermissionRoleSeeder extends Seeder
 
         // Ein Recht je Admin-Menuepunkt, dazu die Fernwartungs-Suche. Vorher
         // hingen beide Bereiche an einer festen Rollen-Id.
+        //
+        // Vorhandene wiederverwenden statt anlegen: Dieselben Rechte legt auch
+        // die Migration an, damit bestehende Installationen sie bekommen. Der
+        // Deploy laeuft "migrate:fresh --seed" - erst die Migration, dann
+        // dieser Seeder - und ein zweites forceCreate brach am UNIQUE-Index
+        // auf permissions.name ab. Beide Wege muessen fuer sich stimmen und
+        // sich gegenseitig vertragen.
         foreach (array_merge(config('custom.admin_permissions'), config('custom.extra_permissions')) as $name => $beschreibung) {
-            Permission::forceCreate(['name' => $name, 'description' => $beschreibung]);
+            $recht = Permission::where('name', $name)->first() ?? new Permission;
+            $recht->forceFill(['name' => $name, 'description' => $beschreibung])->save();
         }
 
         // PermissionRole
