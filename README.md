@@ -15,7 +15,7 @@ PDF export, global search across every customer, and devices that
 ![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php&logoColor=white)
 ![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)
 ![Livewire](https://img.shields.io/badge/Livewire-4-FB70A9)
-![Tests](https://img.shields.io/badge/Tests-267%20passing-3fb950)
+![Tests](https://img.shields.io/badge/Tests-609%20passing-3fb950)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
 **[▶ Try the live demo](https://doku.dokuvault.de)**
@@ -162,9 +162,16 @@ Every token may **only document** — a leaked one grants no further access. Mor
 - **Devices** — cameras, recorders, printers
 - **Services** — FTP, DynDNS, domains, backups
 - **Licences** — software, Windows and access licences including expiry dates & file upload
-- **Credentials** — encrypted logins, show and copy passwords
-- **Data capture** — initial survey wizard (16 guided steps), auto-documentation via agent
-- **Operations** — global search, audit log, recycle bin (restore), PDF export, file storage
+- **Credentials** — encrypted logins, show and copy passwords, previous password stays available
+  for a configurable retention period — for when someone changed it by mistake
+- **Data capture** — initial survey wizard (16 guided steps), auto-documentation via agent, agent
+  tokens managed on their own page (create, one-time reveal, revoke)
+- **Operations** — global search, searchable & filterable activity log (event, object type, user,
+  time range), recycle bin (restore, plus an admin-wide view across every customer), PDF export,
+  file storage
+- **Admin area** — permission-based, not role-hardcoded: customers, users & roles, dropdowns,
+  settings, recycle bin, activity log and API tokens are separate permissions, freely combinable
+  per role
 - **Site filter** — narrows device lists, IPAM and auto-documentation to a single site
 - **Language** — German and English, per user or following the browser
 
@@ -174,7 +181,9 @@ Every token may **only document** — a leaked one grants no further access. Mor
 
 - Passwords and sensitive fields **encrypted at rest** (`Crypt`)
 - **Role-based** access (admin / technician / customer) with granular permissions
-- **Audit log** of every change (without plain-text passwords)
+- **Audit log** of every change; a changed password never appears in the log itself — the previous
+  value lives encrypted in its own table, revealed only on click and only to those who can already
+  see the device
 - Protection against **IDOR** (foreign customer/site assignment), XSS hardening, encrypted sessions
 - Responsible disclosure via [SECURITY.md](SECURITY.md)
 
@@ -211,7 +220,7 @@ text reaches neither the database nor the audit log.
 | **Packages** | spatie/laravel-activitylog 4.12 *(audit log)* · barryvdh/laravel-dompdf 3.0 *(PDF export)* · spatie/laravel-backup 9.3 |
 | **Frontend** | Tailwind CSS 3.4 · Alpine.js 3 · Flowbite 1.8 · Vite 3 |
 | **Database** | MySQL / MariaDB |
-| **Quality** | Pest 3 *(267 tests)* · Laravel Pint · GitHub Actions CI |
+| **Quality** | Pest 3 *(609 tests)* · Laravel Pint · GitHub Actions CI |
 
 ---
 
@@ -292,8 +301,8 @@ hourly reset of a public demo are described in **[DEPLOYMENT.md](DEPLOYMENT.md)*
 
 | Role             | Permissions                                    |
 | ---------------- | ---------------------------------------------- |
-| **Admin**        | Change system settings, access to all customers |
-| **Technician**   | Access to all customers                         |
+| **Admin**        | Everything, always — a built-in override that can't be locked out by an unchecked box |
+| **Technician**   | Access to all customers; the admin area is available role by role — see below |
 | **Customer**     | Sees only their own data                        |
 
 The seeder creates four accounts — the same ones apply in the
@@ -302,10 +311,18 @@ sidebar, the “New” buttons and the admin area change with the role.
 
 | Username     | Password   | Role       | What it shows |
 | ------------ | ---------- | ---------- | ------------- |
-| `admin`      | `password` | Admin      | Everything: all customers, admin area (users, roles, rack catalogue), activity log |
-| `techniker`  | `password` | Technician | Create and edit all customers, but no admin area |
+| `admin`      | `password` | Admin      | Everything: all customers, the full admin area, activity log |
+| `techniker`  | `password` | Technician | All customers, plus the full admin area in the demo — see below |
 | `kunde-rw`   | `password` | Customer   | Only the customer “Mustermann”, read **and** write |
 | `kunde-r`    | `password` | Customer   | Only the customer “Mustermann”, read-only — no “New” or “Edit” buttons |
+
+The admin area is **permission-based, not role-hardcoded**: each of its sections — customers,
+users & roles, dropdowns, settings, recycle bin, activity log, API tokens — has its own permission,
+freely combinable per role in the role editor. A second technician group that may see the recycle
+bin and the activity log but not manage users is a checkbox away, not a code change. Only the
+built-in **Admin** role is special: it passes every permission check unconditionally, so removing
+“manage roles” from it by accident can never lock out the last administrator. In the demo, both
+`admin` and `techniker` have every permission checked, which is why they look identical there.
 
 > ⚠️ **These accounts do not belong on a real server.** They come from the demo seeder and all share
 > the same password. For production, create your own users and delete the demo accounts.
@@ -314,7 +331,7 @@ sidebar, the “New” buttons and the admin area change with the role.
 
 ## 🧪 Tests
 
-267 feature tests (Pest 3) run against an in-memory SQLite — no setup needed, no traces in your
+609 feature tests (Pest 3) run against an in-memory SQLite — no setup needed, no traces in your
 development database. GitHub Actions runs the same suite on every push, against PHP 8.2 and 8.3 with
 SQLite and MariaDB.
 

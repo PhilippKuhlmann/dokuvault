@@ -15,7 +15,7 @@ PDF-Export, globaler Suche über alle Kunden und Geräten, die sich per Agent
 ![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php&logoColor=white)
 ![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)
 ![Livewire](https://img.shields.io/badge/Livewire-4-FB70A9)
-![Tests](https://img.shields.io/badge/Tests-267%20grün-3fb950)
+![Tests](https://img.shields.io/badge/Tests-609%20grün-3fb950)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
 **[▶ Live-Demo ausprobieren](https://doku.dokuvault.de)**
@@ -167,9 +167,16 @@ Agenten folgen.
 - **Geräte** – Kameras, Recorder, Drucker
 - **Dienste** – FTP, DynDNS, Domains, Backups
 - **Lizenzen** – Software-, Windows- und Zugriffslizenzen inkl. Ablaufdaten & Datei-Upload
-- **Zugangsdaten** – verschlüsselte Logins, Passwort anzeigen & kopieren
-- **Erfassung** – Erstaufnahme-Assistent (16 geführte Schritte), Auto-Dokumentation per Agent
-- **Betrieb** – globale Suche, Audit-Log, Papierkorb (Wiederherstellen), PDF-Export, Dateiablage
+- **Zugangsdaten** – verschlüsselte Logins, Passwort anzeigen & kopieren, vorheriges Passwort
+  bleibt für eine einstellbare Frist nachschlagbar – für den Fall, dass jemand falsch geändert hat
+- **Erfassung** – Erstaufnahme-Assistent (16 geführte Schritte), Auto-Dokumentation per Agent,
+  Agent-Token auf eigener Seite verwaltet (anlegen, einmalig anzeigen, widerrufen)
+- **Betrieb** – globale Suche, durchsuch- und filterbares Aktivitätsprotokoll (Ereignis, Objektart,
+  Benutzer, Zeitraum), Papierkorb (Wiederherstellen, dazu eine Adminansicht über alle Kunden),
+  PDF-Export, Dateiablage
+- **Adminbereich** – rechtebasiert statt an eine Rolle verdrahtet: Kunden, Benutzer & Rollen,
+  Auswahlmenüs, Einstellungen, Papierkorb, Aktivitätsprotokoll und API-Token sind eigene Rechte,
+  frei kombinierbar je Rolle
 - **Standortfilter** – schränkt Gerätelisten, IPAM und Auto-Dokumentation auf einen Standort ein
 - **Sprache** – Deutsch und Englisch, je Benutzer oder der Browsersprache folgend
 
@@ -179,7 +186,9 @@ Agenten folgen.
 
 - Passwörter & sensible Felder **verschlüsselt at rest** (`Crypt`)
 - **Rollenbasierte** Zugriffe (Admin / Techniker / Kunde) mit granularen Berechtigungen
-- **Audit-Log** aller Änderungen (ohne Klartext-Passwörter)
+- **Audit-Log** aller Änderungen; ein geändertes Passwort steht nie im Eintrag selbst – der alte
+  Wert liegt verschlüsselt in einer eigenen Tabelle, sichtbar erst auf Klick und nur für den, der
+  das Gerät ohnehin sehen darf
 - Schutz gegen **IDOR** (fremde Kunden-/Standortzuweisung), XSS-Härtung, verschlüsselte Sessions
 - Verantwortungsvolle Meldung von Lücken über [SECURITY.de.md](SECURITY.de.md)
 
@@ -216,7 +225,7 @@ Klartext weder in der Datenbank noch im Audit-Log landet.
 | **Pakete** | spatie/laravel-activitylog 4.12 *(Audit-Log)* · barryvdh/laravel-dompdf 3.0 *(PDF-Export)* · spatie/laravel-backup 9.3 |
 | **Frontend** | Tailwind CSS 3.4 · Alpine.js 3 · Flowbite 1.8 · Vite 3 |
 | **Datenbank** | MySQL / MariaDB |
-| **Qualität** | Pest 3 *(267 Tests)* · Laravel Pint · GitHub Actions CI |
+| **Qualität** | Pest 3 *(609 Tests)* · Laravel Pint · GitHub Actions CI |
 
 ---
 
@@ -300,8 +309,8 @@ Caches neu. Einrichtung, Secrets und der stündliche Reset einer öffentlichen D
 
 | Rolle         | Rechte                                              |
 | ------------- | --------------------------------------------------- |
-| **Admin**     | Systemeinstellungen ändern, Zugriff auf alle Kunden |
-| **Techniker** | Zugriff auf alle Kunden                             |
+| **Admin**     | Alles, immer – eine eingebaute Ausnahme, die sich durch kein abgewähltes Häkchen aussperren lässt |
+| **Techniker** | Zugriff auf alle Kunden; der Adminbereich ist je Rolle einzeln freigebbar – siehe unten |
 | **Kunde**     | Sieht nur die eigenen Daten                         |
 
 Der Seeder legt vier Zugänge an – dieselben gelten in der
@@ -310,10 +319,20 @@ ausprobiert: Die Seitenleiste, die „Neu"-Schaltflächen und der Adminbereich �
 
 | Benutzername | Passwort   | Rolle     | Was man damit sieht |
 | ------------ | ---------- | --------- | ------------------- |
-| `admin`      | `password` | Admin     | Alles: alle Kunden, Adminbereich (Benutzer, Rollen, Rack-Katalog), Aktivitätsprotokoll |
-| `techniker`  | `password` | Techniker | Alle Kunden anlegen und bearbeiten, aber kein Adminbereich |
+| `admin`      | `password` | Admin     | Alles: alle Kunden, der vollständige Adminbereich, Aktivitätsprotokoll |
+| `techniker`  | `password` | Techniker | Alle Kunden, in der Demo zusätzlich der vollständige Adminbereich – siehe unten |
 | `kunde-rw`   | `password` | Kunde     | Nur den Kunden „Mustermann", lesen **und** schreiben |
 | `kunde-r`    | `password` | Kunde     | Nur den Kunden „Mustermann", ausschließlich lesen – keine „Neu"- und „Bearbeiten"-Schaltflächen |
+
+Der Adminbereich ist **rechtebasiert, nicht an eine Rolle fest verdrahtet**: Jeder seiner
+Bereiche – Kunden, Benutzer & Rollen, Auswahlmenüs, Einstellungen, Papierkorb,
+Aktivitätsprotokoll, API-Token – hat ein eigenes Recht, in der Rollenverwaltung frei
+kombinierbar. Eine zweite Technikergruppe, die den Papierkorb und das Protokoll sehen darf,
+aber keine Benutzer verwaltet, ist ein Häkchen entfernt, kein Codeeingriff. Nur die
+eingebaute Rolle **Admin** ist eine Ausnahme: Sie besteht jede Rechteprüfung bedingungslos,
+damit ein versehentlich abgewähltes „Rollen verwalten" nie den letzten Zugang zur
+Rollenverwaltung kostet. In der Demo haben `admin` und `techniker` alle Rechte angehakt,
+deshalb sehen sie dort gleich aus.
 
 > ⚠️ **Diese Zugänge gehören nicht auf einen echten Server.** Sie stammen aus dem Demo-Seeder
 > und haben überall dasselbe Passwort. Für den Produktivbetrieb eigene Benutzer anlegen und die
@@ -323,7 +342,7 @@ ausprobiert: Die Seitenleiste, die „Neu"-Schaltflächen und der Adminbereich �
 
 ## 🧪 Tests
 
-267 Feature-Tests (Pest 3) laufen gegen eine In-Memory-SQLite – keine Einrichtung nötig, keine
+609 Feature-Tests (Pest 3) laufen gegen eine In-Memory-SQLite – keine Einrichtung nötig, keine
 Spuren in der Entwicklungsdatenbank. Bei jedem Push führt GitHub Actions dieselbe Suite aus –
 gegen PHP 8.2 und 8.3, jeweils mit SQLite und MariaDB.
 
