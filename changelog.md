@@ -22,6 +22,7 @@
   - Identifiziert wird über die `MachineGuid` aus der Registry — stabil pro Windows-Installation, übersteht auch einen Hostname-Wechsel (anders als der Hostname selbst).
   - Erneute Läufe aktualisieren denselben Eintrag (Upsert über `agent_identifier`), statt Duplikate anzulegen — wie bei den beiden bestehenden Agenten.
   - Meldet Hersteller, Modell, Seriennummer, Betriebssystem und IP-Adresse; die IP landet im Block „Weitere IP-Adressen".
+  - **Das gemeldete Betriebssystem trifft jetzt einen vorhandenen Katalogeintrag.** `Win32_OperatingSystem.Caption` liefert unter Windows immer das Präfix „Microsoft" (z. B. „Microsoft Windows 11 Pro"), der Katalog führt seine Windows-Einträge aber ohne — jeder Lauf hätte eine zweite, nie zusammengeführte Zeile neben der händisch angelegten „Windows 11 Pro" erzeugt. Das Präfix wird jetzt vor dem Abgleich gekappt.
 
 ### Fixed
 

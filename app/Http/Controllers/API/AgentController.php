@@ -192,7 +192,13 @@ class AgentController extends Controller
 
         $client = $data['client'];
 
-        $os = OperatingSystem::firstOrCreate(['name' => $client['os'] ?? 'Windows']);
+        // Win32_OperatingSystem.Caption liefert immer "Microsoft Windows ...";
+        // der Katalog fuehrt Windows-Systeme ohne dieses Praefix (siehe Seeder,
+        // z. B. "Windows Server 2012 R2 Standard"). Ohne das Kappen legte
+        // firstOrCreate bei jedem Kunden eine zweite, nie zusammengefuehrte
+        // Katalogzeile an statt die vorhandene "Windows 11 Pro" zu treffen.
+        $osName = trim(preg_replace('/^Microsoft\s+/i', '', $client['os'] ?? 'Windows'));
+        $os = OperatingSystem::firstOrCreate(['name' => $osName !== '' ? $osName : 'Windows']);
 
         $computer = Computer::updateOrCreate(
             ['customer_id' => $customer->id, 'agent_identifier' => $client['identifier']],

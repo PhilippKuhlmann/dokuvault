@@ -4,6 +4,7 @@ use App\Models\AgentToken;
 use App\Models\Computer;
 use App\Models\Customer;
 use App\Models\IpAddress;
+use App\Models\OperatingSystem;
 use App\Models\Site;
 
 function windowsClientPayload(): array
@@ -37,10 +38,25 @@ test('Windows-Client-Agent legt den Rechner beim Kunden des Tokens an', function
     expect($computer->manufacturer)->toBe('Lenovo');
     expect($computer->model)->toBe('ThinkPad T14');
     expect($computer->serialNumber)->toBe('PF12345');
-    expect($computer->operatingSystem->name)->toBe('Microsoft Windows 11 Pro');
+    // Win32_OperatingSystem.Caption liefert immer das "Microsoft "-Praefix,
+    // der Katalog fuehrt Windows-Systeme ohne - das Praefix wird gekappt.
+    expect($computer->operatingSystem->name)->toBe('Windows 11 Pro');
 
     $adresse = IpAddress::where('ipable_id', $computer->id)->where('ipable_type', Computer::class)->first();
     expect($adresse->address)->toBe('10.0.0.55');
+});
+
+test('trifft ein bereits vorhandenes Betriebssystem ohne "Microsoft"-Präfix statt einen Karteileiche anzulegen', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [$token, $plain] = AgentToken::generateFor($customer, $site);
+    $vorhanden = OperatingSystem::factory()->create(['name' => 'Windows 11 Pro']);
+
+    $this->withToken($plain)->postJson('/api/agent/windows-client', windowsClientPayload())->assertOk();
+
+    expect(OperatingSystem::where('name', 'Windows 11 Pro')->count())->toBe(1);
+    $computer = Computer::where('agent_identifier', 'guid-machine-01')->first();
+    expect($computer->operating_system_id)->toBe($vorhanden->id);
 });
 
 test('erneuter Lauf erzeugt keine Duplikate und ueberschreibt manuelle Angaben nicht sinnwidrig', function () {
