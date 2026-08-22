@@ -13,19 +13,13 @@
     $isAdmin = ($segments[0] ?? null) === 'admin';
     $titleKey = $isAdmin ? implode('.', array_slice($segments, 0, 2)) : ($segments[0] ?? null);
 
-    $adminTitles = [
-        'admin.customer' => 'Kunden',
-        'admin.role' => 'Rollen',
-        'admin.user' => 'Benutzer',
-        'admin.mailboxprovider' => 'Postfach-Anbieter',
-        'admin.operatingsystem' => 'Betriebssysteme',
-        'admin.rackcatalogitem' => 'Rack-Katalog',
-        'admin.service' => 'Dienste',
-        'admin.eol' => 'Support-Ende (EOL)',
-    ];
-
+    // admin_list_titles steht in config/custom.php, nicht mehr hier: Damit ist
+    // es dieselbe Art Quelle wie list_titles unten, und der Uebersetzungs-Test
+    // (LocaleTest) findet die Zeichenketten automatisch. Vorher gab dieser
+    // Zweig seinen Wert roh zurueck, ohne __() - im Menue stand schon
+    // "Rack catalogue", in der Ueberschrift daneben "Rack-Katalog".
     $title = $titel ?? ($isAdmin
-        ? ($adminTitles[$titleKey] ?? null)
+        ? __(config('custom.admin_list_titles')[$titleKey] ?? '')
         : (__(config('custom.list_titles')[$titleKey] ?? config('custom.trashables')[$titleKey][1] ?? '')));
 @endphp
 

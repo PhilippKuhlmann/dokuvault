@@ -23,6 +23,10 @@
 - **Der Deploy brach beim Befüllen der Demo ab.** Die neuen Admin-Rechte werden an zwei Stellen angelegt: per Migration für bestehende Installationen und im Seeder für frische. Der Deploy führt `migrate:fresh --seed` aus — erst die Migration, dann den Seeder — und dessen zweites `forceCreate` lief in den UNIQUE-Index auf `permissions.name`. Der Seeder verwendet vorhandene Rechte jetzt wieder, statt sie erneut anzulegen.
   - Ein Test führt den Seeder auf einer frisch migrierten Datenbank aus — genau den Ablauf des Deploys. Die Testsuite selbst hatte den Fehler nicht gefunden, weil sie den Seeder nie aufruft.
 
+- **Drei Stellen blieben auf Englisch stur Deutsch.** Das „Erstaufnahme fortsetzen"-Banner auf dem Kunden-Dashboard reichte seine Texte als rohe PHP-Ternary durch statt durch `__()` — die Sprache hätte dort nie etwas geändert, egal welche eingestellt war. Die Tabellenkopfzeilen von 21 Listenseiten (`x-table.head`) und die Seitentitel der 8 Admin-Listen (`x-sitetopmenu`) reichten ihre Beschriftungen ebenso roh durch; im Rack-Katalog stand deshalb im Menü „Rack catalogue", direkt daneben in der Überschrift „Rack-Katalog".
+  - Beide Tabellenkopf- und Titel-Fälle jetzt an einer Stelle behoben statt an 29 Aufrufstellen einzeln: `x-table.head` schickt jedes Label durch `__()`, und die Admin-Seitentitel sind aus dem Blade-Template in `config/custom.php` (`admin_list_titles`) gewandert — dieselbe Art Quelle wie das bestehende `list_titles` für den Rest der App.
+  - Drei neue Tests, dazu eine Erweiterung des bestehenden Übersetzungs-Scans (`LocaleTest`) um `x-table.head`-Aufrufe, sonst hätte er die neu übersetzten Tabellenkopf-Strings als unbenutzt gemeldet.
+
 ## 26.08.21
 
 ### Added

@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\Customer;
 use App\Models\Rack;
+use App\Models\Role;
 use App\Models\User;
 
 test('ohne Einstellung entscheidet die Browsersprache', function () {
@@ -143,6 +145,16 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
                 $treffer[1] = array_merge($treffer[1], $mehrzahl[1]);
                 $verwendet = array_merge($verwendet, $treffer[1]);
 
+                // x-table.head :labels="['Bezeichnung', 'Höheneinheiten', ...]"
+                // sind Spaltenueberschriften; die Komponente selbst schickt
+                // jedes Element durch __(), der Aufruf steht also nicht woertlich
+                // an der Stelle, an der die Beschriftung erscheint.
+                preg_match_all('/:labels="\[(.*?)\]"/s', $inhalt, $labelBloecke);
+                foreach ($labelBloecke[1] as $block) {
+                    preg_match_all("/'([^']{1,60})'/", $block, $eintraege);
+                    $verwendet = array_merge($verwendet, $eintraege[1]);
+                }
+
                 // Schluessel von :array="['Hersteller' => …]" und :groups sind
                 // die Beschriftungen; sie laufen erst zur Laufzeit durch __()
                 // (siehe x-minitablecard und x-pdf.section).
@@ -164,6 +176,7 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
             ))->all()
         ))
         ->merge(array_values(config('custom.list_titles', [])))
+        ->merge(array_values(config('custom.admin_list_titles', [])))
         ->merge(array_values(config('custom.rack_appearances', [])))
         ->merge(array_values(config('custom.server_form_factors', [])))
         ->merge(array_values(config('custom.firewall_form_factors', [])))
@@ -186,4 +199,43 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
     // Verwaiste Eintraege sind kein Fehler zur Laufzeit, aber toter Ballast -
     // und meist der Rest einer umbenannten Beschriftung.
     expect($verwaist)->toBe([], 'Übersetzt, aber nirgends verwendet: '.implode(' | ', $verwaist));
+});
+
+test('das Erstaufnahme-Banner erscheint auf Englisch', function () {
+    $customer = Customer::factory()->create();
+    $nutzer = userWithPermissions(['site_create']);
+    $nutzer->update(['locale' => 'en', 'customer_id' => null]);
+
+    // Ohne offenen Durchlauf und mit wenig Bestand zeigt das Dashboard die
+    // "Starten"-Variante des Banners - vorher stand dort deutscher Text, egal
+    // welche Sprache eingestellt war, weil die Ternary-Strings nie durch
+    // __() liefen.
+    $this->actingAs($nutzer)->get(route('customer.dashboard', $customer))
+        ->assertSee('Start initial survey')
+        ->assertSee('The wizard asks for site, network, servers and more, one step at a time.')
+        ->assertDontSee('Erstaufnahme starten');
+});
+
+test('Tabellenkopfzeilen erscheinen auf Englisch', function () {
+    $rolle = Role::find(Role::IS_ADMIN) ?? Role::factory()->create(['id' => Role::IS_ADMIN]);
+    $nutzer = User::factory()->create(['role_id' => $rolle->id]);
+    $nutzer->update(['locale' => 'en']);
+
+    // x-table.head reichte die Beschriftungen bisher roh durch - im
+    // Englischen stand "BEZEICHNUNG" statt "DESIGNATION" da.
+    $this->actingAs($nutzer)->get(route('admin.rackcatalogitem.index'))
+        ->assertSee('Order')
+        ->assertDontSee('Reihenfolge');
+});
+
+test('Admin-Seitentitel erscheinen auf Englisch', function () {
+    $rolle = Role::find(Role::IS_ADMIN) ?? Role::factory()->create(['id' => Role::IS_ADMIN]);
+    $nutzer = User::factory()->create(['role_id' => $rolle->id]);
+    $nutzer->update(['locale' => 'en']);
+
+    // $adminTitles gab seinen Wert bisher roh zurueck: Im Menue stand schon
+    // "Rack catalogue", die Ueberschrift daneben blieb "Rack-Katalog".
+    $this->actingAs($nutzer)->get(route('admin.rackcatalogitem.index'))
+        ->assertSee('Rack catalogue')
+        ->assertDontSee('Rack-Katalog');
 });

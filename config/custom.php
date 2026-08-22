@@ -214,6 +214,26 @@ return [
     ],
 
     /**
+     * Überschrift der Admin-Listenseiten, Gegenstück zu list_titles oben.
+     *
+     * Stand vorher als $adminTitles roh in resources/views/components/sitetopmenu.blade.php -
+     * ohne __(), waehrend der Nicht-Admin-Zweig direkt daneben schon uebersetzt wurde. Im
+     * Menue stand deshalb "Rack catalogue", in der Ueberschrift "Rack-Katalog". Hier statt
+     * dort, damit es dieselbe Quelle wie list_titles ist und der Uebersetzungs-Test
+     * (LocaleTest) es findet.
+     */
+    'admin_list_titles' => [
+        'admin.customer' => 'Kunden',
+        'admin.role' => 'Rollen',
+        'admin.user' => 'Benutzer',
+        'admin.mailboxprovider' => 'Postfach-Anbieter',
+        'admin.operatingsystem' => 'Betriebssysteme',
+        'admin.rackcatalogitem' => 'Rack-Katalog',
+        'admin.service' => 'Dienste',
+        'admin.eol' => 'Support-Ende (EOL)',
+    ],
+
+    /**
      * Schritte des Dokumentations-Assistenten (App\Livewire\DocumentationWizard).
      * Jeder Schritt fragt eine Teilmenge der Felder des zugehörigen FormRequest ab -
      * Pflichtfelder plus das fachlich Wichtigste, nicht das komplette Formular.

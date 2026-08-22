@@ -20,14 +20,14 @@
                     class="flex items-center justify-between gap-3 p-4 mb-5 rounded-xl border border-cerulean-200 bg-cerulean-50 shadow-sm transition hover:border-cerulean-400 dark:bg-cerulean-900/10 dark:border-cerulean-800 dark:hover:border-cerulean-600">
                     <div>
                         <div class="font-DINPro-bold text-cerulean-900 dark:text-cerulean-200">
-                            {{ $openWizardRun ? 'Erstaufnahme fortsetzen' : 'Erstaufnahme starten' }}
+                            {{ $openWizardRun ? __('Erstaufnahme fortsetzen') : __('Erstaufnahme starten') }}
                         </div>
                         <div class="text-sm text-cerulean-700 dark:text-cerulean-400">
-                            {{ $openWizardRun ? 'Ein Durchlauf ist noch offen — weiter geht es dort, wo du aufgehört hast.' : 'Der Assistent fragt Standort, Netzwerk, Server und mehr Schritt für Schritt ab.' }}
+                            {{ $openWizardRun ? __('Ein Durchlauf ist noch offen — weiter geht es dort, wo du aufgehört hast.') : __('Der Assistent fragt Standort, Netzwerk, Server und mehr Schritt für Schritt ab.') }}
                         </div>
                     </div>
                     <span class="shrink-0 px-4 py-2 rounded-lg bg-cerulean-600 text-white text-sm font-DINPro-bold">
-                        {{ $openWizardRun ? 'Fortsetzen' : 'Starten' }}
+                        {{ $openWizardRun ? __('Fortsetzen') : __('Starten') }}
                     </span>
                 </a>
             @endif
