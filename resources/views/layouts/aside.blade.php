@@ -81,11 +81,14 @@
                 </x-aside.dropdown>
             @endcanany
 
-            @canany(['server_viewAny', 'vm_viewAny', 'nas_viewAny'])
+            @canany(['server_viewAny', 'vm_viewAny', 'nas_viewAny', 'cluster_viewAny'])
                 <x-aside.dropdown :label="__('Server')" svg="svg.servers">
                     <x-slot:links>
                         @can('server_viewAny')
                             <x-aside.dropdownlink :label="__('Server')" href="{{ route('server.index', $customer) }}" />
+                        @endcan
+                        @can('cluster_viewAny')
+                            <x-aside.dropdownlink :label="__('Cluster')" href="{{ route('cluster.index', $customer) }}" />
                         @endcan
                         @can('vm_viewAny')
                             <x-aside.dropdownlink :label="__('VMs')" href="{{ route('vm.index', $customer) }}" />

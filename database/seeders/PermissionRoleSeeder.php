@@ -47,12 +47,19 @@ class PermissionRoleSeeder extends Seeder
             'delete' => 'löschen',
         ];
 
+        // Vorhandene wiederverwenden statt anlegen - aus demselben Grund wie
+        // bei den Admin-Rechten weiter unten: Fuer ein neues Model legt eine
+        // Migration die vier Rechte an (damit bestehende Installationen sie
+        // bekommen), und beim "migrate:fresh --seed" des Deploys laeuft
+        // anschliessend dieser Seeder ueber dieselben Namen. Der bisherige
+        // count()-Schutz in jenen Migrationen trug nur, solange sie vor der
+        // ersten Migration lagen, die selbst Rechte einfuegt.
         foreach ($models as $model) {
             foreach ($permissions as $p => $pn) {
-                ${strtolower($model).'_'.$p} = Permission::forceCreate([
-                    'name' => strtolower($model).'_'.$p,
-                    'description' => $model.' '.$pn,
-                ]);
+                $name = strtolower($model).'_'.$p;
+                $recht = Permission::where('name', $name)->first() ?? new Permission;
+                $recht->forceFill(['name' => $name, 'description' => $model.' '.$pn])->save();
+                ${$name} = $recht;
             }
         }
 

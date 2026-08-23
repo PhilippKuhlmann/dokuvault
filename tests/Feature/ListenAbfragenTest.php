@@ -44,7 +44,14 @@ test('eine Geraeteliste braucht nur eine Handvoll Abfragen', function () {
     // Ohne Vorladen waren es ueber hundert. Die Grenze ist bewusst weit
     // gesetzt: Sie soll eine Rueckkehr zum Nachladen je Zeile bemerken, nicht
     // jede einzelne zusaetzliche Abfrage verbieten.
-    expect($abfragen)->toBeLessThan(30, "Liste braucht {$abfragen} Abfragen - lädt sie ihre Nebendaten noch vor?");
+    //
+    // Von 30 auf 40 angehoben, als das Cluster-Auswahlfeld ins Modal kam: Jedes
+    // Feld vom Typ 'auswahl' kostet den Formularteil der Seite ein paar feste
+    // Abfragen (Auswahlliste und Spaltenpruefung). Gemessen: mit dem Feld 30
+    // statt 27 Abfragen, und die Zahl steigt nicht mit der Zeilenzahl (5 Zeilen
+    // 30, 25 Zeilen 25) - also keine Rueckkehr zum Nachladen je Zeile, die
+    // diese Grenze abfangen soll.
+    expect($abfragen)->toBeLessThan(40, "Liste braucht {$abfragen} Abfragen - lädt sie ihre Nebendaten noch vor?");
 });
 
 test('auch die Switch-Liste laedt vor', function () {

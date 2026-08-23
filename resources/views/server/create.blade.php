@@ -7,6 +7,18 @@
             <x-create.select name="site_id" :value="__('Standort')" :array="$sites" />
 
             <x-create.select.operatingsystem :$operatingSystems/>
+
+            {{-- Leerer erster Eintrag: Die allermeisten Server stehen allein,
+                 und ein vorbelegter Cluster waere eine falsche Angabe. --}}
+            <div class="flex flex-col mt-2">
+                <x-input.label for="cluster_id" :value="__('Cluster')" />
+                <x-input.select id="cluster_id" name="cluster_id">
+                    <option value="">{{ __('— kein Cluster —') }}</option>
+                    @foreach ($clusters as $cluster)
+                        <option value="{{ $cluster->id }}" @selected(old('cluster_id') == $cluster->id)>{{ $cluster->name }}</option>
+                    @endforeach
+                </x-input.select>
+            </div>
         </x-create.abschnitt>
 
         {{-- Ein Standserver hat keine Einbautiefe: Das Feld erscheint erst,

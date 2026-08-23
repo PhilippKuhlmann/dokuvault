@@ -26,8 +26,9 @@ class ServerController extends Controller
 
         $sites = $this->getSitesForCustomer($customer);
         $operatingSystems = OperatingSystem::all();
+        $clusters = $customer->clusters()->orderBy('name')->get();
 
-        return view('server.create', compact('customer', 'sites', 'operatingSystems'));
+        return view('server.create', compact('customer', 'sites', 'operatingSystems', 'clusters'));
     }
 
     public function store(Customer $customer, ServerRequest $request)
@@ -45,8 +46,9 @@ class ServerController extends Controller
 
         $sites = $this->getSitesForCustomer($customer);
         $operatingSystems = OperatingSystem::all();
+        $clusters = $customer->clusters()->orderBy('name')->get();
 
-        return view('server.edit', compact('customer', 'sites', 'operatingSystems', 'server'));
+        return view('server.edit', compact('customer', 'sites', 'operatingSystems', 'server', 'clusters'));
     }
 
     public function update(Customer $customer, Server $server, ServerRequest $request)

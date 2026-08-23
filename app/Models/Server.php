@@ -67,6 +67,11 @@ class Server extends Model
         return $this->belongsTo(OperatingSystem::class);
     }
 
+    public function cluster()
+    {
+        return $this->belongsTo(Cluster::class);
+    }
+
     public function customer()
     {
         return $this->belongsTo(Customer::class);

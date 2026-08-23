@@ -10,6 +10,7 @@ use App\Http\Controllers\BackupController;
 use App\Http\Controllers\CameraController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\ChangelogController;
+use App\Http\Controllers\ClusterController;
 use App\Http\Controllers\ComputerController;
 use App\Http\Controllers\ContactPersonController;
 use App\Http\Controllers\CustomerController;
@@ -240,6 +241,7 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::resource('network', NetworkController::class)->except(['show']);
             Route::resource('accesspoint', AccesspointController::class)->except(['show']);
             Route::resource('server', ServerController::class)->except(['show']);
+            Route::resource('cluster', ClusterController::class)->except(['show']);
             Route::resource('vm', VMController::class)->except(['show']);
             Route::resource('networkswitch', NetworkSwitchController::class, ['parameters' => ['networkswitch' => 'networkswitch']])->except(['show']);
             Route::resource('rack', RackController::class)->except(['show']);

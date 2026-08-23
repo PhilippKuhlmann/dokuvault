@@ -24,6 +24,7 @@ use App\Models\ADUser;
 use App\Models\Backup;
 use App\Models\Camera;
 use App\Models\Certificate;
+use App\Models\Cluster;
 use App\Models\Computer;
 use App\Models\ContactPerson;
 use App\Models\DECT;
@@ -123,6 +124,7 @@ return [
         'Backup',
         'Rack',
         'PatchPanel',
+        'Cluster',
     ],
 
     /*
@@ -133,6 +135,7 @@ return [
         'site' => [Site::class, 'Standort'],
         'contactperson' => [ContactPerson::class, 'Ansprechpartner'],
         'server' => [Server::class, 'Server'],
+        'cluster' => [Cluster::class, 'Cluster'],
         'vm' => [VM::class, 'VM'],
         'nas' => [NAS::class, 'NAS'],
         'securepointuma' => [SecurepointUMA::class, 'E-Mail-Archivierung'],
@@ -209,6 +212,7 @@ return [
         'networkswitch' => 'Switches',
         'rack' => 'Serverschränke',
         'patchpanel' => 'Patchfelder',
+        'cluster' => 'Cluster',
         'accesspoint' => 'Accesspoints',
         'contactperson' => 'Ansprechpartner',
     ],
@@ -564,6 +568,25 @@ return [
     |
     */
     'server_form_factors' => $serverBauformen,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Art eines Server-Clusters
+    |--------------------------------------------------------------------------
+    |
+    | Womit die Knoten ihre Daten zusammenhalten. Bewusst als Konfiguration
+    | statt als Datenbank-Enum: Eine neue Technik ist damit eine Zeile hier,
+    | keine Migration. "Sonstiges" faengt ab, was die Liste nicht kennt - dann
+    | steht die Erklaerung in der Notiz.
+    |
+    */
+    'cluster_types' => [
+        'ceph' => 'Ceph (verteilter Speicher)',
+        'replication' => 'Replikation (ZFS/Storage-Replikation)',
+        'shared_storage' => 'Gemeinsamer Speicher (SAN/NFS/iSCSI)',
+        'local' => 'Nur lokaler Speicher (ohne Replikation)',
+        'other' => 'Sonstiges',
+    ],
 
     /*
     |--------------------------------------------------------------------------

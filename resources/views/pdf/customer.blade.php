@@ -193,8 +193,12 @@
     @endforeach
 
     {{-- Server & Storage --}}
+    <x-pdf.section :title="__('Cluster')" :items="$customer->clusters()->with('servers')->get()" :groups="[
+        'Cluster' => ['Art' => fn($c) => $c->typBezeichnung(), 'Knoten' => fn($c) => $c->servers->pluck('name')->implode(', '), 'Notiz' => 'note'],
+    ]" />
+
     <x-pdf.section :title="__('Server')" :items="$customer->servers" :groups="[
-        'Hardware' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Bauform' => fn($s) => __(config('custom.server_form_factors')[$s->form_factor] ?? ''), 'Einbautiefe' => fn($s) => $s->form_factor === 'rack' ? __(config('custom.server_depths')[(int) $s->full_depth] ?? '') : null, 'Höheneinheiten' => fn($s) => $s->form_factor === 'rack' ? $s->height_units.' HE' : null, 'Betriebssystem' => fn($s) => $s->operatingSystem?->name, 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
+        'Hardware' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Bauform' => fn($s) => __(config('custom.server_form_factors')[$s->form_factor] ?? ''), 'Einbautiefe' => fn($s) => $s->form_factor === 'rack' ? __(config('custom.server_depths')[(int) $s->full_depth] ?? '') : null, 'Höheneinheiten' => fn($s) => $s->form_factor === 'rack' ? $s->height_units.' HE' : null, 'Betriebssystem' => fn($s) => $s->operatingSystem?->name, 'Cluster' => fn($s) => $s->cluster?->name, 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
         'BMC' => ['IP' => 'bmcIp', 'Benutzer' => 'bmcUser', 'Passwort' => 'bmcPassword'],
     ]" />
 

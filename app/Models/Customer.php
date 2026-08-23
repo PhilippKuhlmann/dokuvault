@@ -54,6 +54,11 @@ class Customer extends Model
         return $this->hasMany(PatchPanel::class);
     }
 
+    public function clusters()
+    {
+        return $this->hasMany(Cluster::class);
+    }
+
     public function routers()
     {
         return $this->hasMany(Router::class);

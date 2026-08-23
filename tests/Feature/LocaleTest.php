@@ -179,6 +179,7 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
         ->merge(array_values(config('custom.admin_list_titles', [])))
         ->merge(array_values(config('custom.rack_appearances', [])))
         ->merge(array_values(config('custom.server_form_factors', [])))
+        ->merge(array_values(config('custom.cluster_types', [])))
         ->merge(array_values(config('custom.firewall_form_factors', [])))
         // Fernwartung: Beschriftungen der Werkzeuge und ihrer Felder.
         ->merge(collect(config('custom.remote_tools', []))->flatMap(fn ($t) => [

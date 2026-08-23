@@ -4,9 +4,21 @@
 
 ### Added
 
+- **Server-Cluster lassen sich jetzt dokumentieren.** Welche Server zusammengehören und mit welcher Technik sie ihre Daten zusammenhalten — Ceph, Replikation, gemeinsamer Speicher, nur lokal oder Sonstiges. Bisher stand davon nirgends etwas, obwohl es beim Proxmox-Host die erste Rückfrage ist.
+  - **Eigenes Objekt statt eines Felds am Server:** Die Technik gilt für den Cluster als Ganzes. An jedem Knoten gepflegt stünde sie mehrfach da und könnte auseinanderlaufen.
+  - **Nicht auf Proxmox beschränkt** — der Typ sagt, worum es geht, damit auch ein Hyper-V- oder Datenbank-Cluster hineinpasst. Die Typenliste steht in `config/custom.php`: eine neue Technik ist eine Zeile, keine Migration.
+  - Die Liste läuft über dieselbe Livewire-Mechanik wie die Server (`config/forms.php`): Suche während des Tippens, Anlegen und Bearbeiten im Modal, ohne Seitenwechsel.
+  - **Zugeordnet wird am Server**, über ein neues Feld „Cluster" — ein Weg für eine Angabe, statt derselben Zuordnung an zwei Stellen. Die Cluster-Karte zeigt die Knoten mit Betriebssystem und EOL-Abzeichen: So fällt auf, wenn ein Knoten nicht auf demselben Stand ist wie die anderen.
+  - Ein gelöschter Cluster nimmt seine Server **nicht** mit — sie verlieren nur die Zugehörigkeit.
+  - Ein Cluster hängt an einem Standort, wie ein Serverschrank. Papierkorb, Protokoll und PDF-Export sind dabei.
+
 - **Der Betriebssystem-Katalog lässt sich jetzt durchsuchen.** Bei 55 Einträgen über drei Seiten half nur noch Blättern, um ein bestimmtes System zu finden — jetzt filtert ein Suchfeld während des Tippens.
   - Die Liste läuft jetzt über Livewire statt eine statische Blade-Seite zu sein (dasselbe Muster wie Protokoll und Papierkorb); Anlegen und Bearbeiten bleiben eigene Seiten, dafür gibt es hier keinen Grund für ein Livewire-Formular.
   - Rechte und Sortierung unverändert: dieselbe Route, dasselbe `admin_catalog`-Recht, weiterhin alphabetisch.
+
+### Fixed
+
+- **Ein neues dokumentiertes Objekt hätte den nächsten Deploy erneut abbrechen lassen.** Die vier Rechte eines Objekts legen zwei Stellen an: eine Migration für bestehende Installationen und der Seeder für frische. Beim `migrate:fresh --seed` des Deploys laufen beide nacheinander über dieselben Namen. Der bisherige Schutz in den Migrationen (nur einfügen, solange die Rechte-Tabelle leer ist) trug nur, solange sie **vor** der ersten Migration lagen, die selbst Rechte einfügt — beim Cluster war das nicht mehr der Fall. Der Seeder verwendet vorhandene Rechte jetzt auch bei den Objekt-Rechten wieder, statt sie erneut anzulegen (bei den Admin-Rechten tat er das schon).
 
 ## 26.08.22
 

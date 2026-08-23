@@ -39,6 +39,8 @@ class ServerRequest extends FormRequest
     {
         return [
             'site_id' => ['required', new BelongsToCustomer('sites')],
+            // Nullable: Die allermeisten Server stehen allein.
+            'cluster_id' => ['nullable', new BelongsToCustomer('clusters')],
             'name' => 'required|max:255',
             'type' => 'max:255',
             'manufacturer' => 'max:255',
@@ -62,6 +64,7 @@ class ServerRequest extends FormRequest
     {
         return [
             'site_id' => 'Standort',
+            'cluster_id' => 'Cluster',
             'name' => 'Name',
             'type' => 'Typ',
             'manufacturer' => 'Hersteller',

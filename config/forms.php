@@ -7,6 +7,7 @@ use App\Http\Requests\ADUserRequest;
 use App\Http\Requests\BackupRequest;
 use App\Http\Requests\CameraRequest;
 use App\Http\Requests\CertificateRequest;
+use App\Http\Requests\ClusterRequest;
 use App\Http\Requests\ComputerRequest;
 use App\Http\Requests\ContactPersonRequest;
 use App\Http\Requests\DECTRequest;
@@ -44,6 +45,7 @@ use App\Models\ADUser;
 use App\Models\Backup;
 use App\Models\Camera;
 use App\Models\Certificate;
+use App\Models\Cluster;
 use App\Models\Computer;
 use App\Models\ContactPerson;
 use App\Models\DECT;
@@ -387,6 +389,19 @@ return [
             ['name' => 'city', 'label' => 'Stadt', 'type' => 'text'],
         ],
     ],
+    'cluster' => [
+        'model' => Cluster::class, 'request' => ClusterRequest::class,
+        'relation' => 'clusters', 'einzahl' => 'Cluster', 'suchfelder' => ['name', 'note'],
+        // Die Knoten fuer die Karte vorladen, sonst eine Abfrage je Zeile.
+        'mitladen' => ['servers.operatingSystem'],
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'type', 'label' => 'Art', 'type' => 'optionen',
+                'quelle' => 'custom.cluster_types'],
+            ['name' => 'note', 'label' => 'Notiz', 'type' => 'text'],
+        ],
+    ],
     'server' => [
         'model' => Server::class, 'request' => ServerRequest::class,
         'relation' => 'servers', 'einzahl' => 'Server', 'suchfelder' => ['name', 'serialNumber'],
@@ -409,6 +424,10 @@ return [
                 'sichtbar_wenn' => ['form_factor' => 'rack']],
             ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'auswahl',
                 'quelle' => OperatingSystem::class, 'anzeige' => 'name'],
+            // 'auswahl' filtert selbst nach customer_id - ein fremder Cluster
+            // steht damit gar nicht erst zur Wahl.
+            ['name' => 'cluster_id', 'label' => 'Cluster', 'type' => 'auswahl',
+                'quelle' => Cluster::class, 'anzeige' => 'name'],
             ['name' => 'bmcIp', 'label' => 'BMC IP', 'type' => 'text'],
             ['name' => 'bmcUser', 'label' => 'BMC Benutzer', 'type' => 'text'],
             ['name' => 'bmcPassword', 'label' => 'BMC Passwort', 'type' => 'text'],
