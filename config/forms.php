@@ -449,16 +449,24 @@ return [
         'relation' => 'vms', 'einzahl' => 'VM', 'suchfelder' => ['name'],
         'bloecke' => true,
         'felder' => [
-            // Der Host steht zuerst: Er beantwortet den Standort gleich mit,
-            // und was er beantwortet, soll man nicht davor schon tippen.
+            // Host und Cluster zuerst: Beide beantworten den Standort gleich
+            // mit, und was sie beantworten, soll man nicht davor schon tippen.
+            //
+            // Entweder oder: In einem HA-Cluster wandert die VM zwischen den
+            // Knoten - ein fester Host waere dort falsch. Jedes Feld
+            // verschwindet deshalb, sobald das andere steht.
             ['name' => 'server_id', 'label' => 'Host', 'type' => 'auswahl',
-                'quelle' => Server::class, 'anzeige' => 'name'],
-            // Nur ohne Host: Sonst kommt der Standort vom Host (siehe
-            // VMRequest::prepareForValidation) - zweimal gepflegt koennten
-            // beide auseinanderlaufen. Gebraucht wird er trotzdem, etwa fuer
-            // einen vServer beim Anbieter, dessen Host nie dokumentiert wird.
-            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort',
+                'quelle' => Server::class, 'anzeige' => 'name',
+                'sichtbar_wenn' => ['cluster_id' => ['leer' => true]]],
+            ['name' => 'cluster_id', 'label' => 'Cluster', 'type' => 'auswahl',
+                'quelle' => Cluster::class, 'anzeige' => 'name',
                 'sichtbar_wenn' => ['server_id' => ['leer' => true]]],
+            // Nur ohne beides: Sonst kommt der Standort von dort (VM::booted) -
+            // zweimal gepflegt koennten sie auseinanderlaufen. Gebraucht wird
+            // er trotzdem, etwa fuer einen vServer beim Anbieter, dessen Host
+            // nie dokumentiert wird.
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort',
+                'sichtbar_wenn' => ['server_id' => ['leer' => true], 'cluster_id' => ['leer' => true]]],
             ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
             ['name' => 'services', 'label' => 'Dienste', 'type' => 'dienste'],
             ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'auswahl',

@@ -3,8 +3,11 @@
         {{-- Der Host zuerst: Er beantwortet den Standort gleich mit. Steht
              einer, verschwindet das Standortfeld - der Wert kommt dann in
              VMRequest::prepareForValidation vom Host. --}}
-        <x-create.abschnitt :titel="__('Identität')" erste x-data="{ host: '{{ old('server_id') }}' }">
-            <div class="flex flex-col mt-2">
+        <x-create.abschnitt :titel="__('Identität')" erste
+            x-data="{ host: '{{ old('server_id') }}', cluster: '{{ old('cluster_id') }}' }">
+            {{-- Entweder oder: In einem HA-Cluster wandert die VM zwischen den
+                 Knoten, ein fester Host waere dort falsch. --}}
+            <div x-show="! cluster" x-cloak class="flex flex-col mt-2">
                 <x-input.label for="server_id" :value="__('Host (Server)')" />
                 <x-input.select id="server_id" name="server_id" x-model="host">
                     <option value="">{{ __('— kein Host —') }}</option>
@@ -14,7 +17,17 @@
                 </x-input.select>
             </div>
 
-            <div x-show="! host" x-cloak>
+            <div x-show="! host" x-cloak class="flex flex-col mt-2">
+                <x-input.label for="cluster_id" :value="__('Cluster')" />
+                <x-input.select id="cluster_id" name="cluster_id" x-model="cluster">
+                    <option value="">{{ __('— kein Cluster —') }}</option>
+                    @foreach ($clusters as $cluster)
+                        <option value="{{ $cluster->id }}" {{ $cluster->id == old('cluster_id') ? 'selected' : '' }}>{{ $cluster->name }}</option>
+                    @endforeach
+                </x-input.select>
+            </div>
+
+            <div x-show="! host && ! cluster" x-cloak>
                 <x-create.select name="site_id" :value="__('Standort')" :array="$sites" />
             </div>
 

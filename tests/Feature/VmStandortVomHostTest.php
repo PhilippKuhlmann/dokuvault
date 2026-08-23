@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\ObjektFormular;
+use App\Models\Cluster;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
 use App\Models\Server;
@@ -104,6 +105,65 @@ test('auch im Modal genuegt der Host allein', function () {
         ->assertHasNoErrors();
 
     expect(VM::where('name', 'VM-Modal')->first()->site_id)->toBe($hamburg->id);
+});
+
+test('eine VM laesst sich statt einem Host einem Cluster zuweisen', function () {
+    [$customer, $hamburg, $muenchen, $os] = vmUmgebung();
+    $this->actingAs(userWithPermissions(['vm_create']));
+
+    // Im HA-Cluster wandert die VM zwischen den Knoten - der Cluster ist die
+    // stabile Antwort, nicht der Knoten von heute.
+    $cluster = Cluster::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $muenchen->id, 'name' => 'PVE-Cluster',
+    ]);
+
+    $this->post(route('vm.store', $customer), [
+        'cluster_id' => $cluster->id, 'name' => 'VM-HA', 'operating_system_id' => $os->id,
+    ])->assertSessionHasNoErrors();
+
+    $vm = VM::where('name', 'VM-HA')->first();
+    expect($vm->cluster_id)->toBe($cluster->id);
+    expect($vm->server_id)->toBeNull();
+    // Der Standort kommt vom Cluster, genau wie sonst vom Host.
+    expect($vm->site_id)->toBe($muenchen->id);
+});
+
+test('Host und Cluster zugleich werden abgelehnt', function () {
+    [$customer, $hamburg, $muenchen, $os] = vmUmgebung();
+    $this->actingAs(userWithPermissions(['vm_create']));
+
+    $host = Server::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $hamburg->id,
+        'operating_system_id' => $os->id, 'name' => 'pve01',
+    ]);
+    $cluster = Cluster::factory()->create(['customer_id' => $customer->id, 'site_id' => $muenchen->id]);
+
+    // Sonst stuenden zwei Antworten auf dieselbe Frage in der Doku.
+    $this->post(route('vm.store', $customer), [
+        'server_id' => $host->id, 'cluster_id' => $cluster->id,
+        'name' => 'VM-Beides', 'operating_system_id' => $os->id,
+    ])->assertSessionHasErrors('server_id');
+
+    expect(VM::where('name', 'VM-Beides')->exists())->toBeFalse();
+});
+
+test('auch im Modal genuegt der Cluster allein', function () {
+    [$customer, $hamburg, $muenchen, $os] = vmUmgebung();
+    $this->actingAs(userWithPermissions(['vm_create']));
+
+    $cluster = Cluster::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $muenchen->id, 'name' => 'PVE-Cluster',
+    ]);
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'vm', 'customer' => $customer])
+        ->call('neu')
+        ->set('form.cluster_id', $cluster->id)
+        ->set('form.name', 'VM-Modal-Cluster')
+        ->set('form.operating_system_id', $os->id)
+        ->call('speichern')
+        ->assertHasNoErrors();
+
+    expect(VM::where('name', 'VM-Modal-Cluster')->first()->site_id)->toBe($muenchen->id);
 });
 
 test('der Host eines fremden Kunden steuert keinen Standort bei (IDOR)', function () {

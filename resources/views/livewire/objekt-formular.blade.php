@@ -47,9 +47,10 @@
                                      Standserver hat keine Einbautiefe. --}}
                                 @if (! empty($feld['sichtbar_wenn']))
                                     @php
-                                        $bedingung = $feld['sichtbar_wenn'];
-                                        $anderesFeld = array_key_first($bedingung);
-                                        $erwartet = reset($bedingung);
+                                        // Mehrere Bedingungen werden mit UND verknuepft: Der
+                                        // Standort einer VM erscheint erst, wenn weder Host
+                                        // noch Cluster gesetzt sind.
+                                        //
                                         // Ein Freitextfeld wie der Hersteller wird verglichen,
                                         // nicht auf Gleichheit geprueft: "Securepoint GmbH" ist
                                         // dasselbe wie "Securepoint".
@@ -58,11 +59,13 @@
                                         // enthaelt - der Standort einer VM eruebrigt sich,
                                         // sobald ein Host gewaehlt ist, der seinen eigenen
                                         // mitbringt.
-                                        $ausdruck = match (true) {
-                                            is_array($erwartet) && isset($erwartet['enthaelt']) => "(\$wire.form.{$anderesFeld} || '').toLowerCase().includes('".strtolower($erwartet['enthaelt'])."')",
-                                            is_array($erwartet) && isset($erwartet['leer']) => "! \$wire.form.{$anderesFeld}",
-                                            default => "\$wire.form.{$anderesFeld} === '{$erwartet}'",
-                                        };
+                                        $ausdruck = collect($feld['sichtbar_wenn'])
+                                            ->map(fn ($erwartet, $anderesFeld) => match (true) {
+                                                is_array($erwartet) && isset($erwartet['enthaelt']) => "(\$wire.form.{$anderesFeld} || '').toLowerCase().includes('".strtolower($erwartet['enthaelt'])."')",
+                                                is_array($erwartet) && isset($erwartet['leer']) => "! \$wire.form.{$anderesFeld}",
+                                                default => "\$wire.form.{$anderesFeld} === '{$erwartet}'",
+                                            })
+                                            ->implode(' && ');
                                     @endphp
                                     {{-- Unescaped, weil der Ausdruck JavaScript ist und aus
                          config/forms.php stammt, nicht aus einer Eingabe. Mit

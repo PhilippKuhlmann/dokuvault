@@ -178,7 +178,7 @@ class ObjektFormular extends Component
     protected function feldverweiseUmschreiben(mixed $regel): mixed
     {
         $nurErstesFeld = ['required_if', 'required_unless'];
-        $alleFelder = ['required_with', 'required_with_all', 'required_without', 'required_without_all', 'same', 'different'];
+        $alleFelder = ['required_with', 'required_with_all', 'required_without', 'required_without_all', 'same', 'different', 'prohibits'];
 
         $einzelne = function ($teil) use ($nurErstesFeld, $alleFelder) {
             if (! is_string($teil) || ! str_contains($teil, ':')) {

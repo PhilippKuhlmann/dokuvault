@@ -28,8 +28,9 @@ class VMController extends Controller
         $sites = $this->getSitesForCustomer($customer);
         $operatingSystems = OperatingSystem::all();
         $servers = Server::where('customer_id', $customer->id)->get();
+        $clusters = $customer->clusters()->orderBy('name')->get();
 
-        return view('vm.create', compact('customer', 'sites', 'operatingSystems', 'servers'));
+        return view('vm.create', compact('customer', 'sites', 'operatingSystems', 'servers', 'clusters'));
     }
 
     public function store(Customer $customer, VMRequest $request)
@@ -48,8 +49,9 @@ class VMController extends Controller
         $sites = $this->getSitesForCustomer($customer);
         $operatingSystems = OperatingSystem::all();
         $servers = Server::where('customer_id', $customer->id)->get();
+        $clusters = $customer->clusters()->orderBy('name')->get();
 
-        return view('vm.edit', compact('customer', 'sites', 'operatingSystems', 'servers', 'vm'));
+        return view('vm.edit', compact('customer', 'sites', 'operatingSystems', 'servers', 'clusters', 'vm'));
     }
 
     public function update(Customer $customer, VM $vm, VMRequest $request)

@@ -16,8 +16,11 @@
   - Die Liste läuft jetzt über Livewire statt eine statische Blade-Seite zu sein (dasselbe Muster wie Protokoll und Papierkorb); Anlegen und Bearbeiten bleiben eigene Seiten, dafür gibt es hier keinen Grund für ein Livewire-Formular.
   - Rechte und Sortierung unverändert: dieselbe Route, dasselbe `admin_catalog`-Recht, weiterhin alphabetisch.
 
-- **Der Standort einer VM kommt jetzt vom Host.** Wer den Host auswählt, hat den Standort schon beantwortet — beides getrennt zu pflegen hieß, dass sie sich widersprechen können. Der Host steht deshalb an erster Stelle im Formular, und sobald einer gewählt ist, verschwindet das Standortfeld.
-  - **Ohne Host bleibt der Standort Pflicht.** Ein vServer beim Anbieter hat keinen dokumentierten Host — dort ist die Angabe die einzige Ortsangabe, und der Standortfilter in der Seitenleiste hängt daran.
+- **Eine VM läuft auf einem Host oder in einem Cluster.** In einem HA-Cluster wandert sie zwischen den Knoten — ein fest eingetragener Host wäre dort nach der ersten Migration falsch dokumentiert. Beides zugleich lässt sich nicht eintragen: Das wären zwei Antworten auf dieselbe Frage.
+  - Jedes der beiden Felder verschwindet, sobald das andere steht.
+
+- **Der Standort einer VM kommt jetzt vom Host bzw. Cluster.** Wer den Host auswählt, hat den Standort schon beantwortet — beides getrennt zu pflegen hieß, dass sie sich widersprechen können. Host und Cluster stehen deshalb an erster Stelle im Formular, und sobald eines gewählt ist, verschwindet das Standortfeld.
+  - **Ohne beides bleibt der Standort Pflicht.** Ein vServer beim Anbieter hat keinen dokumentierten Host — dort ist die Angabe die einzige Ortsangabe, und der Standortfilter in der Seitenleiste hängt daran.
   - Wechselt eine VM auf einen Host an einem anderen Standort, zieht sie mit.
   - Die Ableitung sitzt im Model, nicht im Formular-Request: Das Livewire-Modal erzeugt den Request nur, um seine Regeln zu lesen — dessen `prepareForValidation` läuft dort nie. Im Model kommen beide Wege durch, auch der Proxmox-Agent.
 
