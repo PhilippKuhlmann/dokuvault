@@ -59,6 +59,7 @@ use App\Http\Controllers\VMController;
 use App\Http\Controllers\WifiController;
 use App\Http\Controllers\WizardController;
 use App\Livewire\AdminApiToken;
+use App\Livewire\AdminOperatingSystem;
 use App\Livewire\AdminPapierkorb;
 use App\Livewire\AdminProtokoll;
 use App\Livewire\AdminProtokollHistorie;
@@ -149,7 +150,9 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
         // eigene Recht traegt die EOL-Auswertung, die einen eigenen Menuepunkt
         // hat.
         Route::middleware('can:admin_catalog')->group(function () {
-            Route::get('/operatingsystem', [OperatingSystemController::class, 'index'])->name('admin.operatingsystem.index');
+            // Livewire statt Controller: einzige Aenderung ist die Suche,
+            // Anlegen/Bearbeiten bleiben eigene Seiten.
+            Route::get('/operatingsystem', AdminOperatingSystem::class)->name('admin.operatingsystem.index');
             Route::post('/operatingsystem/create', [OperatingSystemController::class, 'store'])->name('admin.operatingsystem.store');
             Route::get('/operatingsystem/create', [OperatingSystemController::class, 'create'])->name('admin.operatingsystem.create');
             Route::get('/operatingsystem/{operatingSystem}/edit', [OperatingSystemController::class, 'edit'])->name('admin.operatingsystem.edit');

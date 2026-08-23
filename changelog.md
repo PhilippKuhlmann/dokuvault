@@ -1,5 +1,13 @@
 # Changelog
 
+## 26.08.23
+
+### Added
+
+- **Der Betriebssystem-Katalog lässt sich jetzt durchsuchen.** Bei 55 Einträgen über drei Seiten half nur noch Blättern, um ein bestimmtes System zu finden — jetzt filtert ein Suchfeld während des Tippens.
+  - Die Liste läuft jetzt über Livewire statt eine statische Blade-Seite zu sein (dasselbe Muster wie Protokoll und Papierkorb); Anlegen und Bearbeiten bleiben eigene Seiten, dafür gibt es hier keinen Grund für ein Livewire-Formular.
+  - Rechte und Sortierung unverändert: dieselbe Route, dasselbe `admin_catalog`-Recht, weiterhin alphabetisch.
+
 ## 26.08.22
 
 ### Added

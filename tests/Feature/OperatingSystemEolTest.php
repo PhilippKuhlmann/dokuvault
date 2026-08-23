@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\AdminOperatingSystem;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
 use App\Models\Role;
@@ -8,6 +9,7 @@ use App\Models\Site;
 use App\Models\User;
 use App\Models\VM;
 use Database\Seeders\OperatingSystemsSeeder;
+use Livewire\Livewire;
 
 function eolUmgebung(?string $eol): array
 {
@@ -162,12 +164,24 @@ test('die Betriebssystem-Liste steht alphabetisch, nicht in Anlage-Reihenfolge',
     OperatingSystem::factory()->create(['name' => 'AlmaLinux 9']);
     OperatingSystem::factory()->create(['name' => 'Debian 12']);
 
-    $antwort = $this->actingAs($admin)->get('/admin/operatingsystem');
+    $this->actingAs($admin);
 
-    $reihenfolge = $antwort->viewData('operatingSystems')->pluck('name')->all();
-    $sortiert = collect($reihenfolge)->sort(SORT_STRING)->values()->all();
+    Livewire::test(AdminOperatingSystem::class)
+        ->assertSeeInOrder(['AlmaLinux 9', 'Debian 12', 'Zorin OS']);
+});
 
-    expect($reihenfolge)->toBe($sortiert);
+test('die Betriebssystem-Liste lässt sich nach Namen durchsuchen', function () {
+    $adminRolle = Role::factory()->create(['id' => Role::IS_ADMIN]);
+    $admin = User::factory()->create(['role_id' => $adminRolle->id]);
+    OperatingSystem::factory()->create(['name' => 'AlmaLinux 9']);
+    OperatingSystem::factory()->create(['name' => 'Zorin OS']);
+
+    $this->actingAs($admin);
+
+    Livewire::test(AdminOperatingSystem::class)
+        ->set('suche', 'alma')
+        ->assertSee('AlmaLinux 9')
+        ->assertDontSee('Zorin OS');
 });
 
 test('die Backfill-Migration ergänzt fehlende Support-Enden, lässt Gepflegtes aber stehen', function () {

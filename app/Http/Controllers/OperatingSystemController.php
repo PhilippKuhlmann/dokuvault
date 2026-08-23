@@ -7,14 +7,6 @@ use App\Models\OperatingSystem;
 
 class OperatingSystemController extends Controller
 {
-    public function index()
-    {
-        $operatingSystems = OperatingSystem::orderBy('name')->paginate(20);
-        $operatingSystemsCount = OperatingSystem::all()->count();
-
-        return view('admin.operatingsystem.index', compact('operatingSystems', 'operatingSystemsCount'));
-    }
-
     public function create()
     {
         return view('admin.operatingsystem.create');
