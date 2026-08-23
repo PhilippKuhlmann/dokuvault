@@ -1,16 +1,21 @@
 <x-app-layout :$customer>
     <x-create.main :header="__('Neue VM')" action="{{ route('vm.store', $customer) }}" breit>
-        <x-create.abschnitt :titel="__('Identität')" erste>
-            <x-create.select name="site_id" :value="__('Standort')" :array="$sites" />
-
+        {{-- Der Host zuerst: Er beantwortet den Standort gleich mit. Steht
+             einer, verschwindet das Standortfeld - der Wert kommt dann in
+             VMRequest::prepareForValidation vom Host. --}}
+        <x-create.abschnitt :titel="__('Identität')" erste x-data="{ host: '{{ old('server_id') }}' }">
             <div class="flex flex-col mt-2">
                 <x-input.label for="server_id" :value="__('Host (Server)')" />
-                <x-input.select id="server_id" name="server_id">
-                    <option value="">— kein Host —</option>
+                <x-input.select id="server_id" name="server_id" x-model="host">
+                    <option value="">{{ __('— kein Host —') }}</option>
                     @foreach ($servers as $server)
                         <option value="{{ $server->id }}" {{ $server->id == old('server_id') ? 'selected' : '' }}>{{ $server->name }}</option>
                     @endforeach
                 </x-input.select>
+            </div>
+
+            <div x-show="! host" x-cloak>
+                <x-create.select name="site_id" :value="__('Standort')" :array="$sites" />
             </div>
 
             <x-create.singlerow :label="__('Name')" name="name" />

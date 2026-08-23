@@ -26,7 +26,11 @@ class VMRequest extends FormRequest
     public function rules()
     {
         return [
-            'site_id' => ['required', new BelongsToCustomer('sites')],
+            // Nur ohne Host Pflicht: Steht ein Host, uebernimmt das Model den
+            // Standort von ihm (VM::booted) - das Formular blendet das Feld
+            // dann aus und schickt gar nichts mit. Ohne Host (vServer beim
+            // Anbieter) bleibt es die einzige Ortsangabe.
+            'site_id' => ['required_without:server_id', 'nullable', new BelongsToCustomer('sites')],
             'server_id' => ['nullable', new BelongsToCustomer('servers')],
             'name' => 'required|max:255',
             'services' => 'max:255',

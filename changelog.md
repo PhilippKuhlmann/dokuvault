@@ -16,7 +16,15 @@
   - Die Liste läuft jetzt über Livewire statt eine statische Blade-Seite zu sein (dasselbe Muster wie Protokoll und Papierkorb); Anlegen und Bearbeiten bleiben eigene Seiten, dafür gibt es hier keinen Grund für ein Livewire-Formular.
   - Rechte und Sortierung unverändert: dieselbe Route, dasselbe `admin_catalog`-Recht, weiterhin alphabetisch.
 
+- **Der Standort einer VM kommt jetzt vom Host.** Wer den Host auswählt, hat den Standort schon beantwortet — beides getrennt zu pflegen hieß, dass sie sich widersprechen können. Der Host steht deshalb an erster Stelle im Formular, und sobald einer gewählt ist, verschwindet das Standortfeld.
+  - **Ohne Host bleibt der Standort Pflicht.** Ein vServer beim Anbieter hat keinen dokumentierten Host — dort ist die Angabe die einzige Ortsangabe, und der Standortfilter in der Seitenleiste hängt daran.
+  - Wechselt eine VM auf einen Host an einem anderen Standort, zieht sie mit.
+  - Die Ableitung sitzt im Model, nicht im Formular-Request: Das Livewire-Modal erzeugt den Request nur, um seine Regeln zu lesen — dessen `prepareForValidation` läuft dort nie. Im Model kommen beide Wege durch, auch der Proxmox-Agent.
+
 ### Fixed
+
+- **Feldübergreifende Prüfregeln griffen im Modal nie.** Im Modal heißen die Felder `form.name`, in den Requests aber `name` — eine Regel wie `required_if:form_factor,rack` suchte deshalb ein Feld, das es dort nicht gibt, und war wirkungslos. Beim Server hieß das: Höheneinheiten und Einbautiefe waren beim Rackeinbau nie Pflicht, ohne dass es auffiel. Aufgefallen ist es erst, weil dieselbe Mechanik für den VM-Standort gebraucht wurde.
+  - Damit daraus keine Verschlechterung wird, belegt das Modal Zahlenfelder jetzt vor (Höheneinheiten mit 1, wie das Seitenformular es längst tat) — sonst müsste man die 1 bei jedem Rackserver tippen.
 
 - **Ein neues dokumentiertes Objekt hätte den nächsten Deploy erneut abbrechen lassen.** Die vier Rechte eines Objekts legen zwei Stellen an: eine Migration für bestehende Installationen und der Seeder für frische. Beim `migrate:fresh --seed` des Deploys laufen beide nacheinander über dieselben Namen. Der bisherige Schutz in den Migrationen (nur einfügen, solange die Rechte-Tabelle leer ist) trug nur, solange sie **vor** der ersten Migration lagen, die selbst Rechte einfügt — beim Cluster war das nicht mehr der Fall. Der Seeder verwendet vorhandene Rechte jetzt auch bei den Objekt-Rechten wieder, statt sie erneut anzulegen (bei den Admin-Rechten tat er das schon).
 

@@ -22,6 +22,38 @@ class VM extends Model
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
+    /**
+     * Der Standort kommt vom Host, sobald einer gesetzt ist.
+     *
+     * Eine VM laeuft dort, wo ihr Host steht - beides getrennt zu pflegen
+     * hiess, dass sie sich widersprechen koennen. Die Formulare blenden das
+     * Standortfeld deshalb aus, sobald ein Host gewaehlt ist.
+     *
+     * Bewusst im Model und nicht im FormRequest: Das Livewire-Modal
+     * (ObjektFormular) erzeugt den Request nur, um seine rules() zu lesen -
+     * prepareForValidation laeuft dort nie. Hier kommen beide Wege durch,
+     * ebenso der Proxmox-Agent.
+     *
+     * Der Host wird gegen den Kunden der VM geprueft: Ein fremder Host soll
+     * seinen Standort nicht beisteuern koennen.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (self $vm) {
+            if (blank($vm->server_id)) {
+                return;
+            }
+
+            $standort = Server::where('id', $vm->server_id)
+                ->where('customer_id', $vm->customer_id)
+                ->value('site_id');
+
+            if ($standort) {
+                $vm->site_id = $standort;
+            }
+        });
+    }
+
     protected function services(): Attribute
     {
         return new Attribute(

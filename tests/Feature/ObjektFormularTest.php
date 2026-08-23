@@ -582,6 +582,13 @@ test('ein leeres Pflichtfeld mit Standardwert scheitert nicht an null', function
     //
     // SQLite ist an dieser Stelle strenger als sonst und lehnt null ebenfalls
     // ab, der Test greift also auch hier.
+    //
+    // Standserver statt Rackeinbau: Beim Rackeinbau verlangt
+    // required_if:form_factor,rack die Hoeheneinheiten inzwischen wirklich.
+    // Vorher griff die Regel im Modal nie - dort heissen die Felder
+    // "form.height_units", die Regel suchte aber "form_factor" ohne Praefix.
+    // Der Fall, um den es hier geht (leerer Wert auf einer NOT-NULL-Spalte mit
+    // Standardwert), bleibt beim Standserver derselbe.
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     $os = OperatingSystem::factory()->create(['name' => 'Debian 13']);
@@ -592,6 +599,7 @@ test('ein leeres Pflichtfeld mit Standardwert scheitert nicht an null', function
         ->set('form.site_id', $site->id)
         ->set('form.name', 'SRV-OhneHE')
         ->set('form.operating_system_id', $os->id)
+        ->set('form.form_factor', 'tower')
         ->set('form.height_units', '')
         ->call('speichern')
         ->assertHasNoErrors()

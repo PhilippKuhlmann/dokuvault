@@ -420,8 +420,10 @@ return [
             // Nur beim Rackeinbau: Ein Standserver hat keine Einbautiefe.
             ['name' => 'full_depth', 'label' => 'Einbautiefe', 'type' => 'optionen',
                 'quelle' => 'custom.server_depths', 'sichtbar_wenn' => ['form_factor' => 'rack']],
+            // Vorbelegt wie im Seitenformular: Die meisten Server sind 1 HE
+            // hoch, und required_if verlangt den Wert beim Rackeinbau.
             ['name' => 'height_units', 'label' => 'Höheneinheiten (HE)', 'type' => 'number',
-                'sichtbar_wenn' => ['form_factor' => 'rack']],
+                'default' => 1, 'sichtbar_wenn' => ['form_factor' => 'rack']],
             ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'auswahl',
                 'quelle' => OperatingSystem::class, 'anzeige' => 'name'],
             // 'auswahl' filtert selbst nach customer_id - ein fremder Cluster
@@ -447,11 +449,17 @@ return [
         'relation' => 'vms', 'einzahl' => 'VM', 'suchfelder' => ['name'],
         'bloecke' => true,
         'felder' => [
-            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
-            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
-            // Der Host, auf dem die VM laeuft.
+            // Der Host steht zuerst: Er beantwortet den Standort gleich mit,
+            // und was er beantwortet, soll man nicht davor schon tippen.
             ['name' => 'server_id', 'label' => 'Host', 'type' => 'auswahl',
                 'quelle' => Server::class, 'anzeige' => 'name'],
+            // Nur ohne Host: Sonst kommt der Standort vom Host (siehe
+            // VMRequest::prepareForValidation) - zweimal gepflegt koennten
+            // beide auseinanderlaufen. Gebraucht wird er trotzdem, etwa fuer
+            // einen vServer beim Anbieter, dessen Host nie dokumentiert wird.
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort',
+                'sichtbar_wenn' => ['server_id' => ['leer' => true]]],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
             ['name' => 'services', 'label' => 'Dienste', 'type' => 'dienste'],
             ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'auswahl',
                 'quelle' => OperatingSystem::class, 'anzeige' => 'name'],

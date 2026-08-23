@@ -89,9 +89,15 @@ class ObjektFormular extends Component
             // Eine feste Optionsliste zeigt immer ihren ersten Eintrag an. Ohne
             // denselben Wert im Formular sieht man eine Auswahl und bekommt
             // trotzdem "ist erforderlich".
-            $this->form[$feld['name']] = $feld['type'] === 'optionen'
-                ? (string) array_key_first($feld['werte'] ?? config($feld['quelle']))
-                : '';
+            // 'default' wie im Assistenten (config/custom.php): Ein Feld, das
+            // fast immer denselben Wert hat, soll ihn schon anbieten. Ohne das
+            // muesste man bei jedem Rackserver die 1 fuer die Hoeheneinheit
+            // tippen - das Seitenformular belegt sie laengst vor.
+            $this->form[$feld['name']] = match (true) {
+                $feld['type'] === 'optionen' => (string) array_key_first($feld['werte'] ?? config($feld['quelle'])),
+                isset($feld['default']) => (string) $feld['default'],
+                default => '',
+            };
         }
 
         $this->datei = null;
@@ -157,6 +163,54 @@ class ObjektFormular extends Component
         $this->formularLeeren();
     }
 
+    /**
+     * Verweise auf andere Felder in den Praefix des Formulars heben.
+     *
+     * Hier heissen die Felder "form.server_id", in den Requests aber
+     * "server_id" - eine Regel wie required_without:server_id suchte deshalb
+     * ein Feld, das es hier nicht gibt, und griff nie. Betraf schon vorher
+     * required_if:form_factor,rack am Server: Hoeheneinheiten und Einbautiefe
+     * waren im Modal nie Pflicht, ohne dass es auffiel.
+     *
+     * Bei required_if/required_unless ist nur der erste Parameter ein Feld,
+     * dahinter stehen Werte. Bei required_with/without sind es alle.
+     */
+    protected function feldverweiseUmschreiben(mixed $regel): mixed
+    {
+        $nurErstesFeld = ['required_if', 'required_unless'];
+        $alleFelder = ['required_with', 'required_with_all', 'required_without', 'required_without_all', 'same', 'different'];
+
+        $einzelne = function ($teil) use ($nurErstesFeld, $alleFelder) {
+            if (! is_string($teil) || ! str_contains($teil, ':')) {
+                return $teil;
+            }
+
+            [$name, $parameter] = explode(':', $teil, 2);
+
+            if (! in_array($name, [...$nurErstesFeld, ...$alleFelder], true)) {
+                return $teil;
+            }
+
+            $werte = explode(',', $parameter);
+
+            $werte = in_array($name, $nurErstesFeld, true)
+                ? array_merge(['form.'.$werte[0]], array_slice($werte, 1))
+                : array_map(fn ($feld) => 'form.'.$feld, $werte);
+
+            return $name.':'.implode(',', $werte);
+        };
+
+        if (is_array($regel)) {
+            return array_map($einzelne, $regel);
+        }
+
+        // Die Kurzschreibweise "required_if:...|boolean" haengt mehrere Regeln
+        // mit | aneinander.
+        return is_string($regel)
+            ? implode('|', array_map($einzelne, explode('|', $regel)))
+            : $regel;
+    }
+
     public function speichern(): void
     {
         Gate::authorize($this->bearbeiteId ? $this->typ.'_update' : $this->typ.'_create');
@@ -181,7 +235,9 @@ class ObjektFormular extends Component
         })->all();
 
         $daten = $this->validate(
-            collect($regelnMitKunde)->mapWithKeys(fn ($regel, $feld) => ['form.'.$feld => $regel])->all(),
+            collect($regelnMitKunde)
+                ->map(fn ($regel) => $this->feldverweiseUmschreiben($regel))
+                ->mapWithKeys(fn ($regel, $feld) => ['form.'.$feld => $regel])->all(),
             [],
             // Beschriftungen aus der eigenen Felddefinition: Nicht jeder Request
             // nennt jedes Feld in attributes(), und dann steht der interne Name

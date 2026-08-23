@@ -53,9 +53,16 @@
                                         // Ein Freitextfeld wie der Hersteller wird verglichen,
                                         // nicht auf Gleichheit geprueft: "Securepoint GmbH" ist
                                         // dasselbe wie "Securepoint".
-                                        $ausdruck = is_array($erwartet) && isset($erwartet['enthaelt'])
-                                            ? "(\$wire.form.{$anderesFeld} || '').toLowerCase().includes('".strtolower($erwartet['enthaelt'])."')"
-                                            : "\$wire.form.{$anderesFeld} === '{$erwartet}'";
+                                        //
+                                        // 'leer': sichtbar, solange das andere Feld nichts
+                                        // enthaelt - der Standort einer VM eruebrigt sich,
+                                        // sobald ein Host gewaehlt ist, der seinen eigenen
+                                        // mitbringt.
+                                        $ausdruck = match (true) {
+                                            is_array($erwartet) && isset($erwartet['enthaelt']) => "(\$wire.form.{$anderesFeld} || '').toLowerCase().includes('".strtolower($erwartet['enthaelt'])."')",
+                                            is_array($erwartet) && isset($erwartet['leer']) => "! \$wire.form.{$anderesFeld}",
+                                            default => "\$wire.form.{$anderesFeld} === '{$erwartet}'",
+                                        };
                                     @endphp
                                     {{-- Unescaped, weil der Ausdruck JavaScript ist und aus
                          config/forms.php stammt, nicht aus einer Eingabe. Mit

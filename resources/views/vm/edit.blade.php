@@ -2,17 +2,22 @@
     <x-create.main :header="__('VM bearbeiten')" :labelsubmit="__('Stammdaten speichern')" action="{{ route('vm.update', [$customer, $vm]) }}" breit>
         @method('PATCH')
 
-        <x-create.abschnitt :titel="__('Identität')" erste>
-            <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $vm->site_id }}" :array="$sites" />
-
+        {{-- Der Host zuerst: Er beantwortet den Standort gleich mit. Steht
+             einer, verschwindet das Standortfeld - der Wert kommt dann in
+             VMRequest::prepareForValidation vom Host. --}}
+        <x-create.abschnitt :titel="__('Identität')" erste x-data="{ host: '{{ old('server_id', $vm->server_id) }}' }">
             <div class="flex flex-col mt-2">
                 <x-input.label for="server_id" :value="__('Host (Server)')" />
-                <x-input.select id="server_id" name="server_id">
-                    <option value="">— kein Host —</option>
+                <x-input.select id="server_id" name="server_id" x-model="host">
+                    <option value="">{{ __('— kein Host —') }}</option>
                     @foreach ($servers as $server)
                         <option value="{{ $server->id }}" {{ $server->id == $vm->server_id ? 'selected' : '' }}>{{ $server->name }}</option>
                     @endforeach
                 </x-input.select>
+            </div>
+
+            <div x-show="! host" x-cloak>
+                <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $vm->site_id }}" :array="$sites" />
             </div>
 
             <x-create.singlerow :label="__('Name')" name="name" :default="$vm->name" />
