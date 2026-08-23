@@ -7,6 +7,7 @@ use App\Models\Server;
 use App\Models\Site;
 use App\Models\User;
 use App\Models\VM;
+use Database\Seeders\OperatingSystemsSeeder;
 
 function eolUmgebung(?string $eol): array
 {
@@ -150,4 +151,93 @@ test('ohne betroffene Geräte bleibt die EOL-Übersicht leer', function () {
 
 test('ohne Admin-Rolle ist die EOL-Übersicht gesperrt', function () {
     $this->actingAs(userWithPermissions([]))->get('/admin/eol')->assertForbidden();
+});
+
+test('die Betriebssystem-Liste steht alphabetisch, nicht in Anlage-Reihenfolge', function () {
+    $adminRolle = Role::factory()->create(['id' => Role::IS_ADMIN]);
+    $admin = User::factory()->create(['role_id' => $adminRolle->id]);
+
+    // Absichtlich in "falscher" Reihenfolge angelegt.
+    OperatingSystem::factory()->create(['name' => 'Zorin OS']);
+    OperatingSystem::factory()->create(['name' => 'AlmaLinux 9']);
+    OperatingSystem::factory()->create(['name' => 'Debian 12']);
+
+    $antwort = $this->actingAs($admin)->get('/admin/operatingsystem');
+
+    $reihenfolge = $antwort->viewData('operatingSystems')->pluck('name')->all();
+    $sortiert = collect($reihenfolge)->sort(SORT_STRING)->values()->all();
+
+    expect($reihenfolge)->toBe($sortiert);
+});
+
+test('die Backfill-Migration ergänzt fehlende Support-Enden, lässt Gepflegtes aber stehen', function () {
+    $windows7 = OperatingSystem::factory()->create(['name' => 'Windows 7 Pro', 'eol_date' => null]);
+    $esxi8 = OperatingSystem::factory()->create(['name' => 'VMware ESXi 8', 'eol_date' => null]);
+    $esxi6 = OperatingSystem::factory()->create(['name' => 'VMware ESXi 6', 'eol_date' => null]);
+    // Von Hand eingetragen, bevor die Migration lief - darf nicht überschrieben werden.
+    $manuell = OperatingSystem::factory()->create(['name' => 'Debian 10', 'eol_date' => '2030-01-01']);
+
+    $migration = require database_path('migrations/2026_08_22_150000_backfill_operating_system_eol_dates.php');
+    $migration->up();
+
+    expect($windows7->fresh()->eol_date->format('Y-m-d'))->toBe('2020-01-14');
+    expect($esxi8->fresh()->eol_date->format('Y-m-d'))->toBe('2027-10-11');
+    expect($esxi6->fresh()->eol_date->format('Y-m-d'))->toBe('2022-10-15');
+    expect($manuell->fresh()->eol_date->format('Y-m-d'))->toBe('2030-01-01');
+});
+
+test('die Backfill-Migration legt Proxmox VE und Backup Server einzeln je Version an und löscht die alten Sammel-Einträge weich', function () {
+    $alteVe = OperatingSystem::factory()->create(['name' => 'Proxmox Virtual Environment', 'eol_date' => null]);
+    $alterPbs = OperatingSystem::factory()->create(['name' => 'Proxmox Backup Server', 'eol_date' => null]);
+
+    $migration = require database_path('migrations/2026_08_22_150000_backfill_operating_system_eol_dates.php');
+    $migration->up();
+
+    expect(OperatingSystem::where('name', 'Proxmox VE 7')->first()->eol_date->format('Y-m-d'))->toBe('2024-07-31');
+    expect(OperatingSystem::where('name', 'Proxmox VE 8')->first()->eol_date->format('Y-m-d'))->toBe('2026-08-31');
+    // Version 9: Termin von Proxmox noch nicht angekuendigt.
+    expect(OperatingSystem::where('name', 'Proxmox VE 9')->first()->eol_date)->toBeNull();
+
+    expect(OperatingSystem::where('name', 'Proxmox Backup Server 1')->first()->eol_date->format('Y-m-d'))->toBe('2022-09-30');
+    expect(OperatingSystem::where('name', 'Proxmox Backup Server 2')->first()->eol_date->format('Y-m-d'))->toBe('2024-07-31');
+    expect(OperatingSystem::where('name', 'Proxmox Backup Server 3')->first()->eol_date->format('Y-m-d'))->toBe('2026-08-31');
+    expect(OperatingSystem::where('name', 'Proxmox Backup Server 4')->first()->eol_date)->toBeNull();
+
+    // Durch die versionierten Eintraege ersetzt - im Papierkorb, nicht mehr
+    // in der normalen Liste, aber ein Geraet, das noch darauf zeigt, verliert
+    // die Zuordnung nicht (Soft Delete statt Hard Delete).
+    expect(OperatingSystem::where('name', 'Proxmox Virtual Environment')->exists())->toBeFalse();
+    expect(OperatingSystem::withTrashed()->where('name', 'Proxmox Virtual Environment')->first()->id)->toBe($alteVe->id);
+    expect(OperatingSystem::where('name', 'Proxmox Backup Server')->exists())->toBeFalse();
+    expect(OperatingSystem::withTrashed()->where('name', 'Proxmox Backup Server')->first()->id)->toBe($alterPbs->id);
+});
+
+test('die Backfill-Migration ergänzt den fehlenden Debian-13-Katalogeintrag', function () {
+    $migration = require database_path('migrations/2026_08_22_150000_backfill_operating_system_eol_dates.php');
+    $migration->up();
+
+    expect(OperatingSystem::where('name', 'Debian 13')->first()->eol_date->format('Y-m-d'))->toBe('2030-06-30');
+});
+
+test('der Seeder befüllt den vollständigen Betriebssystem-Katalog', function () {
+    $this->seed(OperatingSystemsSeeder::class);
+
+    $nachName = OperatingSystem::pluck('eol_date', 'name');
+
+    expect($nachName['Windows 11 Pro'])->toBeNull(); // keine Version im Katalog, also kein Datum
+    expect($nachName['Ubuntu Server 22.04 LTS']->format('Y-m-d'))->toBe('2027-04-01');
+    expect($nachName['AlmaLinux 9']->format('Y-m-d'))->toBe('2032-05-31');
+    expect($nachName['macOS Sonoma']->format('Y-m-d'))->toBe('2026-09-15');
+    expect($nachName['Rangee OS'])->toBeNull(); // kein öffentlicher Support-Zeitplan
+    expect($nachName['Proxmox VE 7']->format('Y-m-d'))->toBe('2024-07-31');
+    expect($nachName['Proxmox VE 8']->format('Y-m-d'))->toBe('2026-08-31');
+    expect($nachName['Debian 13']->format('Y-m-d'))->toBe('2030-06-30');
+    expect($nachName['Proxmox VE 9'])->toBeNull(); // Termin noch nicht angekuendigt
+    expect($nachName['VMware ESXi 6']->format('Y-m-d'))->toBe('2022-10-15');
+    expect($nachName['Proxmox Backup Server 1']->format('Y-m-d'))->toBe('2022-09-30');
+    expect($nachName['Proxmox Backup Server 3']->format('Y-m-d'))->toBe('2026-08-31');
+    expect($nachName['Proxmox Backup Server 4'])->toBeNull(); // Termin noch nicht angekuendigt
+    // Alte Sammel-Eintraege werden nicht mehr frisch angelegt.
+    expect($nachName->has('Proxmox Virtual Environment'))->toBeFalse();
+    expect($nachName->has('Proxmox Backup Server'))->toBeFalse();
 });

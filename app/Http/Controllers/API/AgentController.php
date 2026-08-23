@@ -55,8 +55,10 @@ class AgentController extends Controller
 
         $host = $data['host'];
 
-        // Betriebssystem bewusst versionslos ("Proxmox VE").
-        $os = OperatingSystem::firstOrCreate(['name' => 'Proxmox VE']);
+        // Versionsspezifisch ("Proxmox VE 8" statt nur "Proxmox VE"): Version
+        // 7/8/9 haben unterschiedliche Support-Enden, ein Sammel-Eintrag
+        // haette das nicht abbilden koennen.
+        $os = OperatingSystem::firstOrCreate(['name' => $this->mapPveVersion($host['pve_version'] ?? null)]);
 
         // Hinweis: 'services' wird NICHT gesetzt – das Feld pflegt der Nutzer
         // manuell (Rollen wie AD, FS, DNS, DHCP …). updateOrCreate lässt
@@ -268,5 +270,19 @@ class AgentController extends Controller
             $ostype === 'solaris' => 'Solaris',
             default => ucfirst($ostype),
         };
+    }
+
+    /**
+     * "8.2.4" -> "Proxmox VE 8". Ohne auswertbare Hauptversion (Script zu alt,
+     * pveversion nicht verfuegbar) faellt es auf den unversionierten
+     * Sammel-Eintrag zurueck statt einen falschen Wert zu raten.
+     */
+    protected function mapPveVersion(?string $pveVersion): string
+    {
+        if ($pveVersion && preg_match('/^(\d+)/', $pveVersion, $treffer)) {
+            return 'Proxmox VE '.$treffer[1];
+        }
+
+        return 'Proxmox VE';
     }
 }

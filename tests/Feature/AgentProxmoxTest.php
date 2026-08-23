@@ -46,7 +46,9 @@ test('Proxmox-Agent legt Host als Server und Gäste als VMs an', function () {
     expect($server->site_id)->toBe($site->id);
     expect($server->name)->toBe('pve01');
     expect($server->serialNumber)->toBe('SN12345');
-    expect($server->operatingSystem->name)->toBe('Proxmox VE');
+    // Versionsspezifisch: 7/8/9 haben unterschiedliche Support-Enden, ein
+    // Sammel-Eintrag "Proxmox VE" haette das nicht abbilden koennen.
+    expect($server->operatingSystem->name)->toBe('Proxmox VE 8');
     expect(VM::where('server_id', $server->id)->count())->toBe(2);
 
     // Gast-IP landet im VM-Feld
@@ -125,6 +127,30 @@ test('eine von Hand korrigierte VLAN-Zuordnung übersteht einen erneuten Lauf', 
     $this->withToken($plain)->postJson('/api/agent/proxmox', proxmoxPayload())->assertOk();
 
     expect($server->ipAddresses()->first()->fresh()->network_id)->toBe($falschesVlan->id);
+});
+
+test('ordnet die gemeldete Version dem passenden Proxmox-VE-Katalogeintrag zu', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [$token, $plain] = AgentToken::generateFor($customer, $site);
+
+    $payload = proxmoxPayload();
+    $payload['host']['pve_version'] = '7.4-3';
+    $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)->assertOk();
+
+    expect(Server::where('agent_identifier', 'machine-abc')->first()->operatingSystem->name)->toBe('Proxmox VE 7');
+});
+
+test('ohne auswertbare Version faellt der Katalogeintrag auf den Sammel-Namen zurück', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [$token, $plain] = AgentToken::generateFor($customer, $site);
+
+    $payload = proxmoxPayload();
+    unset($payload['host']['pve_version']);
+    $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)->assertOk();
+
+    expect(Server::where('agent_identifier', 'machine-abc')->first()->operatingSystem->name)->toBe('Proxmox VE');
 });
 
 test('Token aktualisiert last_used_at', function () {

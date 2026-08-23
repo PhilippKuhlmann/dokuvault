@@ -27,7 +27,20 @@
     - Nur bei der **Neuanlage** einer Adresse wird gesucht; eine bereits vorhandene Zeile bleibt unangetastet, damit ein zweiter Lauf eine von Hand korrigierte Zuordnung nicht wieder umwirft.
     - Netz- und Broadcast-Adresse zählen bewusst mit dazu — eine gemeldete Gateway-IP soll treffen.
 
+- **Der Betriebssystem-Katalog kennt jetzt 26 zusätzliche Support-Enden.** Windows 7/8.1/XP, Debian 9/10, Rocky Linux 9, AlmaLinux 9, openSUSE Leap 15, VMware ESXi 6/7/8 und macOS Ventura/Sonoma hatten nie ein Datum — beim Anlegen fehlte schlicht der Eintrag in der Zuordnungstabelle des Seeders.
+  - **Root Cause bei Ubuntu:** Die drei Ubuntu-Server-Systeme standen zwar in der Tabelle, trafen aber nie — der Seeder verglich mit dem Präfix „Ubuntu 20.04" statt „Ubuntu Server 20.04" (der tatsächliche Katalogname), und `str_starts_with()` verlangt eine exakte Übereinstimmung ab dem ersten Zeichen.
+  - **Kein Datum für:** Windows 11 (der Katalog führt keine Versionsnummer wie „24H2" — ohne die wäre „Windows 11 endet am …" schlicht falsch, solange Microsoft laufend neue Versionen nachschiebt), Proxmox Mail Gateway/TrueNAS (kein fester, produktweiter Termin), Synology/QNAP (hängt vom NAS-Modell ab) und Rangee OS (kein öffentlicher Support-Zeitplan bekannt).
+  - Quellen: Microsoft Lifecycle, endoflife.date, Broadcom/VMware- und Distributions-Lifecycle-Seiten. Eine Migration trägt die Daten in bestehende Installationen nach — nur dort, wo noch kein Datum gepflegt war.
+
+- **Proxmox VE und Proxmox Backup Server stehen jetzt einzeln je Hauptversion im Katalog** (VE 7/8/9, Backup Server 1–4) statt je einem Sammel-Eintrag — die Versionen haben unterschiedliche, teils schon abgelaufene bzw. bald ablaufende Support-Enden (**Proxmox VE 8 und Backup Server 3 enden schon am 31.08.2026**), ein einziges Datum für alle wäre für die meisten falsch gewesen.
+  - Der Proxmox-Agent liest die gemeldete `pve_version` jetzt aus und trifft den passenden VE-Katalogeintrag statt immer denselben unversionierten anzulegen. Ohne auswertbare Version (älteres Script, `pveversion` nicht verfügbar) fällt er auf den unversionierten Namen zurück.
+  - Die alten Sammel-Einträge „Proxmox Virtual Environment" und „Proxmox Backup Server" sind jetzt im Papierkorb — durch die versionierten Einträge abgelöst, aber weich statt hart gelöscht: ein Gerät, das noch darauf zeigt, verliert dadurch nicht seine Zuordnung, zeigt aber auch keinen Systemnamen mehr an, bis es von Hand auf einen der neuen Einträge umgestellt wird.
+
+- **Debian 13 „Trixie" fehlte komplett im Katalog** (Release war August 2025). Ergänzt mit demselben Maßstab wie die bereits vorhandenen Debian-Versionen — dem Ende der Langzeitpflege (LTS), nicht nur dem regulären Support.
+
 ### Fixed
+
+- **Die Betriebssystem-Liste stand in Anlage-Reihenfolge statt alphabetisch.** Bei 55 Einträgen über drei Seiten war ein bestimmtes System kaum wiederzufinden. `OperatingSystemController::index()` sortiert jetzt nach Name.
 
 - **Der Deploy brach beim Befüllen der Demo ab.** Die neuen Admin-Rechte werden an zwei Stellen angelegt: per Migration für bestehende Installationen und im Seeder für frische. Der Deploy führt `migrate:fresh --seed` aus — erst die Migration, dann den Seeder — und dessen zweites `forceCreate` lief in den UNIQUE-Index auf `permissions.name`. Der Seeder verwendet vorhandene Rechte jetzt wieder, statt sie erneut anzulegen.
   - Ein Test führt den Seeder auf einer frisch migrierten Datenbank aus — genau den Ablauf des Deploys. Die Testsuite selbst hatte den Fehler nicht gefunden, weil sie den Seeder nie aufruft.

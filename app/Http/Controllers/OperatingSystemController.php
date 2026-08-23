@@ -9,7 +9,7 @@ class OperatingSystemController extends Controller
 {
     public function index()
     {
-        $operatingSystems = OperatingSystem::paginate(20);
+        $operatingSystems = OperatingSystem::orderBy('name')->paginate(20);
         $operatingSystemsCount = OperatingSystem::all()->count();
 
         return view('admin.operatingsystem.index', compact('operatingSystems', 'operatingSystemsCount'));
