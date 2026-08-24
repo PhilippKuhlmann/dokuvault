@@ -23,6 +23,8 @@
 - **Der Demo-Datensatz enthält jetzt ein Proxmox-Cluster.** Ohne Beispiel sah man in der Demo nur leere Cluster-Listen. „PVE-Cluster HH" mit drei Knoten (PVE-01 bis 03, Proxmox VE 9, Ceph auf NVMe) und zwei VMs darauf, die bewusst am Cluster hängen und nicht an einem Knoten — genau der Unterschied zur VM auf einem einzelnen Host. Die Knoten stehen auch im Serverschrank, mit eigenen IP- und BMC-Adressen im Management-VLAN.
   - Ein Test hält das fest: drei Knoten, mindestens zwei VMs, keine davon auf einen Knoten gepinnt.
 
+- **Die Knotenliste auf der Cluster-Karte war ausgefranst.** Die Knoten standen als einzeln umrandete Kästchen da — der Kartenkörper läuft aber in CSS-Spalten, und darin brach jedes Kästchen auf eine eigene Zeile um, unterschiedlich breit. Jetzt stehen sie in derselben Tabellenform wie jeder andere Block der Karte: Name links, System rechts, EOL-Abzeichen dahinter. Untereinander ausgerichtet wird der dreimal gleiche Systemname außerdem zur Aussage („alle auf demselben Stand") statt zu Rauschen — ein abweichender Knoten fällt sofort auf.
+
 - **Der Standort einer VM kommt jetzt vom Host bzw. Cluster.** Wer den Host auswählt, hat den Standort schon beantwortet — beides getrennt zu pflegen hieß, dass sie sich widersprechen können. Host und Cluster stehen deshalb an erster Stelle im Formular, und sobald eines gewählt ist, verschwindet das Standortfeld.
   - **Ohne beides bleibt der Standort Pflicht.** Ein vServer beim Anbieter hat keinen dokumentierten Host — dort ist die Angabe die einzige Ortsangabe, und der Standortfilter in der Seitenleiste hängt daran.
   - Wechselt eine VM auf einen Host an einem anderen Standort, zieht sie mit.
