@@ -42,6 +42,11 @@
 
 ### Fixed
 
+- **Alle Adressen sind jetzt englisch.** `/admin/allgemein` fiel zwischen lauter englischen Pfaden auf und ließ sich in einer Anleitung schlecht zitieren. Deutsch gehört in die Beschriftung, nicht in die Adresse — die Oberfläche bleibt selbstverständlich deutsch.
+  - `/admin/allgemein` → `/admin/general`, `/admin/papierkorb` → `/admin/trash`, `/admin/protokoll-historie` → `/admin/log-retention`, `/<kunde>/assistent` → `/<kunde>/wizard`, `/logo/{stelle}` → `/logo/{placement}`.
+  - Die drei Adressen, die es vor heute schon gab, bleiben als Weiterleitung stehen — ein Lesezeichen auf `/admin/papierkorb` läuft nicht ins Leere.
+  - Ein Test hält fest, dass keine deutsche Adresse zurückkommt.
+
 - **„Bitte melde dich an" ist von der Anmeldeseite verschwunden.** Auf einer Seite mit Benutzername, Kennwort und einem Knopf „Anmelden" sagt der Satz nichts, was nicht ohnehin dasteht.
 
 - **Karteninhalte überschnitten sich bei mittleren Fensterbreiten.** In der Serverliste stand „10.10.30.7**Hersteller**" — die IP-Tabelle lag über der Hardware-Tabelle in der Nachbarspalte, und das Kopiersymbol der Seriennummer ragte aus der Karte heraus. Sichtbar wurde es erst mit echten Daten: langer FQDN als Name, ausgeschriebener Hersteller, lange Seriennummer.

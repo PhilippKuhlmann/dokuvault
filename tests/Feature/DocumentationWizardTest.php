@@ -41,14 +41,14 @@ test('Seite lädt für Nutzer mit mindestens einem Anlege-Recht', function () {
     $this->actingAs(userWithPermissions(['site_create']));
     $customer = Customer::factory()->create();
 
-    $this->get("/{$customer->slug}/assistent")->assertStatus(200);
+    $this->get(route('wizard.index', $customer))->assertStatus(200);
 });
 
 test('ohne jedes Anlege-Recht gibt es 403', function () {
     $this->actingAs(userWithPermissions(['site_viewAny'])); // nur lesen, nichts anlegen
     $customer = Customer::factory()->create();
 
-    $this->get("/{$customer->slug}/assistent")->assertStatus(403);
+    $this->get(route('wizard.index', $customer))->assertStatus(403);
 });
 
 test('Schritte ohne Berechtigung werden nicht angezeigt', function () {

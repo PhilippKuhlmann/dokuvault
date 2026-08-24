@@ -121,7 +121,7 @@ class AdminAllgemein extends Component
      */
     private function seiteNeu(): void
     {
-        $this->redirect(route('admin.allgemein.index'));
+        $this->redirect(route('admin.general.index'));
     }
 
     private function altesLoeschen(string $stelle): void

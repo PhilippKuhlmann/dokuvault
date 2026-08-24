@@ -76,10 +76,17 @@ Route::redirect('/', '/login');
 
 Route::get('/changelog', [ChangelogController::class, 'index'])->name('changelog');
 
+// Die frueheren deutschen Adressen. Sie bleiben als Weiterleitung stehen -
+// ein Lesezeichen auf /admin/papierkorb soll nicht ins Leere laufen. Neue
+// Adressen sind durchgaengig englisch.
+Route::permanentRedirect('/admin/papierkorb', '/admin/trash');
+Route::permanentRedirect('/admin/protokoll-historie', '/admin/log-retention');
+Route::permanentRedirect('/{customer}/assistent', '/{customer}/wizard');
+
 // Das eigene Logo - bewusst ohne auth: Es steht auch auf der Anmeldeseite.
 // Ein Logo ist nicht vertraulich, die Datei liegt aber trotzdem privat und
 // geht durch den Controller, wie alle Dateien dieser App.
-Route::get('/logo/{stelle}', [BrandingController::class, 'logo'])->name('branding.logo');
+Route::get('/logo/{placement}', [BrandingController::class, 'logo'])->name('branding.logo');
 
 // Techniker
 // Bewusst ohne auth: Auch auf der Anmeldeseite soll man die Sprache wechseln
@@ -98,19 +105,19 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
         // Papierkorb ueber alle Kunden - sehen, was sich angesammelt hat, und
         // es endgueltig loswerden.
-        Route::get('/papierkorb', AdminPapierkorb::class)
-            ->middleware('can:admin_trash')->name('admin.papierkorb');
+        Route::get('/trash', AdminPapierkorb::class)
+            ->middleware('can:admin_trash')->name('admin.trash');
 
         // Wie lange das Protokoll - und damit die bisherigen Kennwoerter -
         // aufbewahrt wird.
-        Route::get('/protokoll-historie', AdminProtokollHistorie::class)
-            ->middleware('can:admin_activity')->name('admin.protokollhistorie');
+        Route::get('/log-retention', AdminProtokollHistorie::class)
+            ->middleware('can:admin_activity')->name('admin.logretention');
 
         // Einstellungen der Installation
         Route::middleware('can:admin_setting')->group(function () {
             // Eigener Name und eigene Logos - Livewire, damit jede Aenderung
             // sofort gilt statt erst nach einem Speichern-Knopf.
-            Route::get('/allgemein', AdminAllgemein::class)->name('admin.allgemein.index');
+            Route::get('/general', AdminAllgemein::class)->name('admin.general.index');
 
             Route::get('/setting', [SettingController::class, 'index'])->name('admin.setting.index');
             Route::patch('/setting', [SettingController::class, 'update'])->name('admin.setting.update');
@@ -241,7 +248,7 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::delete('agent/{agentToken}', [AgentTokenController::class, 'destroy'])->name('agent.destroy');
 
             // Dokumentations-Assistent (geführte Erstaufnahme)
-            Route::get('assistent', [WizardController::class, 'index'])->name('wizard.index');
+            Route::get('wizard', [WizardController::class, 'index'])->name('wizard.index');
 
             Route::resource('site', SiteController::class)->except(['show']);
             Route::resource('contactperson', ContactPersonController::class)->except(['show']);

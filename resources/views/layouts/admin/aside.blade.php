@@ -52,13 +52,13 @@
                 <x-aside.dropdown :label="__('Einstellungen')" svg="svg.settings" >
                     <x-slot:links>
                         @can('admin_setting')
-                            <x-aside.dropdownlink :label="__('Allgemein')" href="{{ route('admin.allgemein.index') }}" />
+                            <x-aside.dropdownlink :label="__('Allgemein')" href="{{ route('admin.general.index') }}" />
                             <x-aside.dropdownlink :label="__('Fernwartung')" href="{{ route('admin.setting.index') }}" />
                         @endcan
                         {{-- Die Aufbewahrungsfrist gehoert zum Protokoll, nicht zu
                              den uebrigen Einstellungen. --}}
                         @can('admin_activity')
-                            <x-aside.dropdownlink :label="__('Protokoll-Historie')" href="{{ route('admin.protokollhistorie') }}" />
+                            <x-aside.dropdownlink :label="__('Protokoll-Historie')" href="{{ route('admin.logretention') }}" />
                         @endcan
                         @can('admin_apitoken')
                             <x-aside.dropdownlink :label="__('API-Token')" href="{{ route('admin.apitoken') }}" />
@@ -70,7 +70,7 @@
             @can('admin_trash')
                 <x-aside.dropdown :label="__('Papierkorb')" svg="svg.trash" >
                     <x-slot:links>
-                        <x-aside.dropdownlink :label="__('Alle Kunden')" href="{{ route('admin.papierkorb') }}" />
+                        <x-aside.dropdownlink :label="__('Alle Kunden')" href="{{ route('admin.trash') }}" />
                     </x-slot:links>
                 </x-aside.dropdown>
             @endcan

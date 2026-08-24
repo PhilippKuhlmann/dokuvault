@@ -176,5 +176,5 @@ test('ohne eigene Logos bleibt ueberall das eingebaute Motiv stehen', function (
 test('ohne das Recht admin_setting bleibt die Seite zu', function () {
     $this->actingAs(userWithPermissions(['server_viewAny']));
 
-    $this->get(route('admin.allgemein.index'))->assertForbidden();
+    $this->get(route('admin.general.index'))->assertForbidden();
 });

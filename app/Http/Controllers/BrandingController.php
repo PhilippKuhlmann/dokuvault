@@ -23,16 +23,18 @@ class BrandingController extends Controller
      * Ein Logo ausliefern - ohne Anmeldung, es steht auch auf der Anmeldeseite.
      *
      * Die Stelle kommt aus der Whitelist, nie roh aus der Adresse: Sonst waere
-     * der Einstellungs-Schluessel von aussen bestimmbar.
+     * der Einstellungs-Schluessel von aussen bestimmbar. Der Parameter heisst
+     * englisch wie die Adresse - die Werte selbst (login, header, favicon)
+     * waren es schon.
      *
      * nosniff und eine feste Content-Type-Angabe: Der Browser soll die Datei
      * als Bild behandeln und nicht selbst raten, was sie sein koennte.
      */
-    public function logo(string $stelle)
+    public function logo(string $placement)
     {
-        abort_unless(in_array($stelle, Setting::LOGO_STELLEN, true), 404);
+        abort_unless(in_array($placement, Setting::LOGO_STELLEN, true), 404);
 
-        $pfad = Setting::logoPfad($stelle);
+        $pfad = Setting::logoPfad($placement);
 
         abort_if($pfad === null || ! Storage::disk('local')->exists($pfad), 404);
 

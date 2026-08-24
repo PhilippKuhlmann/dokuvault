@@ -4,6 +4,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 
 test('eine Rolle mit nur einem Admin-Recht kommt nur an diesen Bereich', function () {
     $this->actingAs(userWithPermissions(['admin_activity']));
@@ -16,7 +17,7 @@ test('eine Rolle mit nur einem Admin-Recht kommt nur an diesen Bereich', functio
     $this->get(route('admin.role.index'))->assertForbidden();
     $this->get(route('admin.customer.index'))->assertForbidden();
     $this->get(route('admin.setting.index'))->assertForbidden();
-    $this->get(route('admin.papierkorb'))->assertForbidden();
+    $this->get(route('admin.trash'))->assertForbidden();
 });
 
 test('ohne jedes Admin-Recht bleibt der ganze Bereich zu', function () {
@@ -25,7 +26,7 @@ test('ohne jedes Admin-Recht bleibt der ganze Bereich zu', function () {
     foreach ([
         'admin.dashboard', 'admin.activity.index', 'admin.user.index',
         'admin.role.index', 'admin.customer.index', 'admin.setting.index',
-        'admin.papierkorb', 'admin.operatingsystem.index', 'admin.service.index',
+        'admin.trash', 'admin.operatingsystem.index', 'admin.service.index',
     ] as $route) {
         $this->get(route($route))->assertForbidden();
     }
@@ -47,7 +48,7 @@ test('der Admin darf alles, auch ohne angehakte Rechte', function () {
 test('mehrere Rechte lassen sich frei zusammenstellen', function () {
     $this->actingAs(userWithPermissions(['admin_trash', 'admin_activity', 'admin_operatingsystem']));
 
-    $this->get(route('admin.papierkorb'))->assertOk();
+    $this->get(route('admin.trash'))->assertOk();
     $this->get(route('admin.activity.index'))->assertOk();
     // Das Recht traegt die EOL-Auswertung, nicht die Betriebssystem-Liste:
     // Die steht im Menue unter "Auswahlmenues" und gehoert dorthin.
@@ -84,7 +85,7 @@ test('die Fernwartungs-Suche haengt am Recht, nicht an der Rolle', function () {
 test('das Menue zeigt nur die erlaubten Eintraege', function () {
     $this->actingAs(userWithPermissions(['admin_trash']));
 
-    $antwort = $this->get(route('admin.papierkorb'));
+    $antwort = $this->get(route('admin.trash'));
 
     $antwort->assertSee('Papierkorb');
     // Ein Menuepunkt, der beim Klick 403 liefert, ist schlechter als keiner.
@@ -193,4 +194,35 @@ test('kein sichtbarer Link fuehrt in ein Verboten', function () {
             $this->actingAs($nutzer)->get($ziel)->assertStatus(200, "Recht {$recht}: {$ziel} ist sichtbar, aber gesperrt");
         }
     }
+});
+
+/**
+ * Adressen sind englisch, auch wenn die Oberflaeche deutsch ist.
+ *
+ * Eine Adresse wie /admin/allgemein faellt zwischen lauter englischen Pfaden
+ * auf und laesst sich in einer Anleitung schlecht zitieren. Deutsch gehoert
+ * in die Beschriftung, nicht in die Adresse.
+ */
+test('keine Route hat eine deutsche Adresse', function () {
+    $deutsch = ['allgemein', 'papierkorb', 'protokoll', 'assistent', 'einstellung', 'benutzer', 'suche', 'stelle', 'schrank'];
+
+    $treffer = collect(Route::getRoutes()->getRoutes())
+        ->map(fn ($r) => $r->uri())
+        // Die frueheren Adressen bleiben als Weiterleitung stehen, damit ein
+        // Lesezeichen nicht ins Leere laeuft.
+        ->reject(fn ($uri) => in_array($uri, [
+            'admin/papierkorb', 'admin/protokoll-historie', '{customer}/assistent',
+        ], true))
+        ->filter(fn ($uri) => collect($deutsch)->contains(fn ($w) => str_contains(strtolower($uri), $w)))
+        ->values()
+        ->all();
+
+    expect($treffer)->toBe([], 'Deutsche Adressen: '.implode(' | ', $treffer));
+});
+
+test('die frueheren deutschen Adressen leiten auf die englischen weiter', function () {
+    $this->actingAs(userWithPermissions(['admin_trash']));
+
+    $this->get('/admin/papierkorb')->assertRedirect('/admin/trash');
+    $this->get('/admin/protokoll-historie')->assertRedirect('/admin/log-retention');
 });
