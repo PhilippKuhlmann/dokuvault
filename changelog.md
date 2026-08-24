@@ -32,6 +32,13 @@
 
 ### Fixed
 
+- **Karteninhalte überschnitten sich bei mittleren Fensterbreiten.** In der Serverliste stand „10.10.30.7**Hersteller**" — die IP-Tabelle lag über der Hardware-Tabelle in der Nachbarspalte, und das Kopiersymbol der Seriennummer ragte aus der Karte heraus. Sichtbar wurde es erst mit echten Daten: langer FQDN als Name, ausgeschriebener Hersteller, lange Seriennummer.
+  - **Ursache:** Der Kartenkörper läuft in CSS-Spalten. Die Beschriftungsspalte der Tabellen stand auf `whitespace-nowrap` — damit ist die Mindestbreite der Tabelle die volle Textbreite, und eine Tabelle schrumpft nicht darunter. Sie lief in die Nachbarspalte und aus der Karte.
+  - Beschriftungen brechen jetzt um, wenn es sonst nicht passt; lange Werte brechen mit. Betraf `x-minitablecard`, `x-ipcard`, `x-credentialscard` und die Cluster-Karte gleichermaßen.
+  - **Zwei Spalten erst ab 1024 px statt ab 768 px:** Bei 768 px blieben neben der Seitenleiste rund 486 px — zwei Spalten wären je gut 200 px breit gewesen, und darin passt „Seriennummer  CZ29470H8K-…" schlicht nicht.
+  - Die Wertspalte beansprucht nicht mehr die ganze Breite; vorher drückte sie die Beschriftung auf ein Wort pro Zeile („BMC IP-/Adresse").
+  - Geprüft von 375 px bis 1440 px in Schritten, auch zwischen den Breakpoints, für Server, Cluster, VMs und NAS. Ein Test hält fest, dass in diesen Tabellen kein `whitespace-nowrap` zurückkehrt.
+
 - **Feldübergreifende Prüfregeln griffen im Modal nie.** Im Modal heißen die Felder `form.name`, in den Requests aber `name` — eine Regel wie `required_if:form_factor,rack` suchte deshalb ein Feld, das es dort nicht gibt, und war wirkungslos. Beim Server hieß das: Höheneinheiten und Einbautiefe waren beim Rackeinbau nie Pflicht, ohne dass es auffiel. Aufgefallen ist es erst, weil dieselbe Mechanik für den VM-Standort gebraucht wurde.
   - Damit daraus keine Verschlechterung wird, belegt das Modal Zahlenfelder jetzt vor (Höheneinheiten mit 1, wie das Seitenformular es längst tat) — sonst müsste man die 1 bei jedem Rackserver tippen.
 

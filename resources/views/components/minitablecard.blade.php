@@ -12,12 +12,17 @@
         {{ $title }}
     </div>
     <div class="text-sm dark:text-gray-100">
+        {{-- siehe Hinweis unten an der Beschriftungsspalte --}}
         <table class="w-full">
             @foreach ($gefuellt as $key => $value)
                 <tr class="border-b border-gray-100 last:border-0 dark:border-gray-700/50">
-                    <td class="py-1 pr-6 align-top whitespace-nowrap text-gray-500 dark:text-gray-400">{{ __($key) }}</td>
+                    {{-- Kein whitespace-nowrap: Der Kartenkoerper laeuft in CSS-Spalten, und
+                         eine Tabelle schrumpft nicht unter ihre Mindestbreite - mit unbrechbarer
+                         Beschriftung lief sie in die Nachbarspalte und aus der Karte heraus
+                         ("10.10.30.7Hersteller"). Umgebrochen wird nur, wenn es sonst nicht passt. --}}
+                    <td class="py-1 pr-6 align-top text-gray-500 dark:text-gray-400">{{ __($key) }}</td>
                     @if ($key == 'Passwort' || $key == 'BMC Passwort' || $key == 'DSRM Passwort' || $key == 'Cloud Backup Passwort' || $key == 'Verschlüsselungscode' || $key == 'USC-PIN')
-                        <td scope="row" class="w-full">
+                        <td scope="row">
                             <div class="" x-data="{ show: true, copied: false }">
 
                                 <div class="relative">
@@ -60,17 +65,17 @@
                             </div>
                         </td>
                     @elseif ($key == 'URL' || $key == 'Admin URL' || $key == 'User URL' || $key == 'Externe URL')
-                       <td class="py-1 w-full">
+                       <td class="py-1 break-all">
                             <a href="{{ $value }}" target="_blank" class="text-cerulean-600 hover:text-cerulean-700 hover:underline">
                                 {{ $value }}
                             </a>
                         </td>
                     @elseif (\Illuminate\Support\Str::contains($key, ['IP', 'MAC', 'Serien']))
-                        <td class="py-1 w-full text-gray-900 dark:text-gray-100">
+                        <td class="py-1 break-words text-gray-900 dark:text-gray-100">
                             <x-copy :value="$value" />
                         </td>
                     @else
-                        <td class="py-1 w-full text-gray-900 dark:text-gray-100">{{ $value }}</td>
+                        <td class="py-1 break-words text-gray-900 dark:text-gray-100">{{ $value }}</td>
                     @endif
 
                 </tr>

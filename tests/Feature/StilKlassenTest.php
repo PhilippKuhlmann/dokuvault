@@ -55,3 +55,38 @@ test('jede Farbklasse mit Deckkraft steht auch im gebauten CSS', function () {
     expect(array_unique($fehlend))->toBe([],
         'Im CSS fehlen: '.implode(' | ', array_unique($fehlend)).' — "npm run build" ausfuehren und public/build mit committen.');
 });
+
+/**
+ * Der Kartenkoerper laeuft in CSS-Spalten (x-card: columns-1 lg:columns-2
+ * xl:columns-3). Eine Tabelle darin schrumpft nicht unter ihre Mindestbreite -
+ * steht auf der Beschriftungsspalte "whitespace-nowrap", ist diese Mindestbreite
+ * die volle Textbreite, und die Tabelle laeuft in die Nachbarspalte und aus der
+ * Karte heraus.
+ *
+ * Genau das war zu sehen: In der Serverliste stand "10.10.30.7Hersteller" -
+ * die IP-Tabelle lag ueber der Hardware-Tabelle daneben.
+ */
+test('die Karten-Tabellen halten ihre Beschriftungsspalte umbrechbar', function () {
+    $komponenten = [
+        'components/minitablecard.blade.php',
+        'components/ipcard.blade.php',
+        'components/credentialscard.blade.php',
+        'cluster/_karte.blade.php',
+    ];
+
+    foreach ($komponenten as $datei) {
+        $inhalt = file_get_contents(resource_path('views/'.$datei));
+
+        // Nur die Tabellenzellen, nicht der erklaerende Kommentar darueber.
+        preg_match_all('/<td[^>]*>/', $inhalt, $zellen);
+
+        foreach ($zellen[0] as $zelle) {
+            // Nicht expect()->not->toContain(): Das nimmt variadische
+            // Suchbegriffe, keine Meldung - ein zusaetzlicher Text waere ein
+            // zweiter Begriff und die Erwartung damit immer erfuellt.
+            expect(str_contains($zelle, 'whitespace-nowrap'))->toBeFalse(
+                "In {$datei} steht whitespace-nowrap in einer Tabellenzelle - ".
+                'damit laeuft die Tabelle aus ihrer CSS-Spalte heraus.');
+        }
+    }
+});

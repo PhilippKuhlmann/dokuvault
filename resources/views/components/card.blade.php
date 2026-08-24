@@ -20,7 +20,12 @@
         {{-- Der mb-5 des letzten Blocks zaehlt am Spaltenende nicht mit - die
              Dienste-Kacheln klebten am Kartenrand. Der Abstand kommt deshalb aus
              dem Padding und ist unten so gross wie oben. --}}
-        'p-5 columns-1 md:columns-2 xl:columns-3 gap-x-10' => ! $plain,
+        {{-- Zwei Spalten erst ab lg, nicht ab md: Bei 768px bleiben neben der
+             Seitenleiste rund 486px - zwei Spalten waeren damit je gut 200px
+             breit, und darin passt eine Zeile wie "Seriennummer  CZ29470H8K-..."
+             nicht mehr. Die Tabelle lief dann in die Nachbarspalte und aus der
+             Karte heraus. --}}
+        'p-5 columns-1 lg:columns-2 xl:columns-3 gap-x-10' => ! $plain,
     ])>
         {{ $body }}
     </div>

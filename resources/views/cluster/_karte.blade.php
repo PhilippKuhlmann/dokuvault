@@ -47,10 +47,10 @@
                     <table class="w-full">
                         @foreach ($eintrag->servers as $server)
                             <tr class="border-b border-gray-100 last:border-0 dark:border-gray-700/50">
-                                <td class="py-1 pr-6 align-top whitespace-nowrap text-gray-900 dark:text-gray-100">
+                                <td class="py-1 pr-6 align-top break-words text-gray-900 dark:text-gray-100">
                                     {{ $server->name }}
                                 </td>
-                                <td class="py-1 w-full align-top text-gray-500 dark:text-gray-400">
+                                <td class="py-1 break-words align-top text-gray-500 dark:text-gray-400">
                                     @if ($server->operatingSystem)
                                         <span class="align-middle">{{ $server->operatingSystem->name }}</span>
                                         <x-eol :os="$server->operatingSystem" />
