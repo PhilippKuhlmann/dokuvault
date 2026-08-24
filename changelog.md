@@ -4,6 +4,13 @@
 
 ### Added
 
+- **Eigener Name und eigene Logos** unter „Administration → Einstellungen → Allgemein". Wer DokuVault beim Kunden oder im eigenen Haus einsetzt, kann die Oberfläche jetzt auf den eigenen Namen und das eigene Logo umstellen.
+  - **Drei Logos, einzeln setzbar:** Anmeldeseite, Kopfzeile und Favicon. Das sind in der Praxis verschiedene Dateien — auf der Anmeldeseite darf es groß und breit sein, in der Kopfzeile muss es neben den Namen passen, ein Favicon ist quadratisch. Jede Stelle fällt für sich auf das eingebaute Motiv zurück.
+  - Ein leeres Namensfeld heißt „wieder den Namen aus der Konfiguration nehmen", nicht „kein Name".
+  - **Kein SVG:** Eine SVG-Datei darf Skript enthalten, und von derselben Herkunft ausgeliefert wäre das ausführbarer Code auf jeder Seite — in einer Dokumentation, in der Kennwörter stehen. Erlaubt sind PNG, JPG und WEBP bis 512 KB.
+  - Die Dateien liegen privat auf der Platte und gehen durch einen Controller heraus, wie alle Dateien dieser App — kein `public/storage`-Symlink, der auf jedem Server eingerichtet werden müsste. Ein Logo ersetzt, löscht die alte Datei.
+  - Das Favicon stand bisher in vier Layouts einzeln; es ist jetzt eine Komponente.
+
 - **Server-Cluster lassen sich jetzt dokumentieren.** Welche Server zusammengehören und mit welcher Technik sie ihre Daten zusammenhalten — Ceph, Replikation, gemeinsamer Speicher, nur lokal oder Sonstiges. Bisher stand davon nirgends etwas, obwohl es beim Proxmox-Host die erste Rückfrage ist.
   - **Eigenes Objekt statt eines Felds am Server:** Die Technik gilt für den Cluster als Ganzes. An jedem Knoten gepflegt stünde sie mehrfach da und könnte auseinanderlaufen.
   - **Nicht auf Proxmox beschränkt** — der Typ sagt, worum es geht, damit auch ein Hyper-V- oder Datenbank-Cluster hineinpasst. Die Typenliste steht in `config/custom.php`: eine neue Technik ist eine Zeile, keine Migration.
@@ -31,6 +38,8 @@
   - Die Ableitung sitzt im Model, nicht im Formular-Request: Das Livewire-Modal erzeugt den Request nur, um seine Regeln zu lesen — dessen `prepareForValidation` läuft dort nie. Im Model kommen beide Wege durch, auch der Proxmox-Agent.
 
 ### Fixed
+
+- **„Bitte melde dich an" ist von der Anmeldeseite verschwunden.** Auf einer Seite mit Benutzername, Kennwort und einem Knopf „Anmelden" sagt der Satz nichts, was nicht ohnehin dasteht.
 
 - **Karteninhalte überschnitten sich bei mittleren Fensterbreiten.** In der Serverliste stand „10.10.30.7**Hersteller**" — die IP-Tabelle lag über der Hardware-Tabelle in der Nachbarspalte, und das Kopiersymbol der Seriennummer ragte aus der Karte heraus. Sichtbar wurde es erst mit echten Daten: langer FQDN als Name, ausgeschriebener Hersteller, lange Seriennummer.
   - **Ursache:** Der Kartenkörper läuft in CSS-Spalten. Die Beschriftungsspalte der Tabellen stand auf `whitespace-nowrap` — damit ist die Mindestbreite der Tabelle die volle Textbreite, und eine Tabelle schrumpft nicht darunter. Sie lief in die Nachbarspalte und aus der Karte.

@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ADUserController;
 use App\Http\Controllers\AgentTokenController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\BrandingController;
 use App\Http\Controllers\CameraController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\ChangelogController;
@@ -74,6 +75,11 @@ Route::redirect('/', '/login');
 
 Route::get('/changelog', [ChangelogController::class, 'index'])->name('changelog');
 
+// Das eigene Logo - bewusst ohne auth: Es steht auch auf der Anmeldeseite.
+// Ein Logo ist nicht vertraulich, die Datei liegt aber trotzdem privat und
+// geht durch den Controller, wie alle Dateien dieser App.
+Route::get('/logo/{stelle}', [BrandingController::class, 'logo'])->name('branding.logo');
+
 // Techniker
 // Bewusst ohne auth: Auch auf der Anmeldeseite soll man die Sprache wechseln
 // koennen, und auf der Demo ist der geteilte Zugang gesperrt.
@@ -101,6 +107,10 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
         // Einstellungen der Installation
         Route::middleware('can:admin_setting')->group(function () {
+            // Eigener Name und eigenes Logo.
+            Route::get('/allgemein', [BrandingController::class, 'index'])->name('admin.allgemein.index');
+            Route::post('/allgemein', [BrandingController::class, 'update'])->name('admin.allgemein.update');
+
             Route::get('/setting', [SettingController::class, 'index'])->name('admin.setting.index');
             Route::patch('/setting', [SettingController::class, 'update'])->name('admin.setting.update');
         });

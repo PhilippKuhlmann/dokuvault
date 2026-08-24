@@ -10,8 +10,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $title ? $title : config('app.name') }}</title>
-    <link rel="icon" href="{{ asset('logo.svg') }}" type="image/svg+xml">
+    <title>{{ $title ? $title : \App\Models\Setting::appName() }}</title>
+    <x-favicon />
 
     <script>
         // On page load or when changing themes, best to add inline in `head` to avoid FOUC

@@ -580,6 +580,23 @@ return [
     | steht die Erklaerung in der Notiz.
     |
     */
+    /*
+    |--------------------------------------------------------------------------
+    | Stellen, an denen ein eigenes Logo stehen kann
+    |--------------------------------------------------------------------------
+    |
+    | Drei statt einer: Das Logo auf der Anmeldeseite darf gross und breit
+    | sein, das in der Kopfzeile muss neben den Namen passen, ein Favicon ist
+    | quadratisch. Hier statt im Controller, damit der Uebersetzungs-Test die
+    | Beschriftungen findet - sie laufen erst zur Laufzeit durch __().
+    |
+    */
+    'branding_logos' => [
+        'login' => ['Anmeldeseite', 'Steht gross über dem Anmeldeformular.'],
+        'header' => ['Kopfzeile', 'Steht oben links neben dem Namen — ein schmales, breites Logo passt hier am besten.'],
+        'favicon' => ['Favicon', 'Das Symbol im Browser-Tab. Quadratisch, mindestens 32 × 32 Pixel.'],
+    ],
+
     'cluster_types' => [
         'ceph' => 'Ceph (verteilter Speicher)',
         'replication' => 'Replikation (ZFS/Storage-Replikation)',

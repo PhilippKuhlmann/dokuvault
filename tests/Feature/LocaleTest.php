@@ -177,6 +177,8 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
         ))
         ->merge(array_values(config('custom.list_titles', [])))
         ->merge(array_values(config('custom.admin_list_titles', [])))
+        // Beschriftung und Hinweis je Logo-Stelle.
+        ->merge(collect(config('custom.branding_logos', []))->flatten())
         ->merge(array_values(config('custom.rack_appearances', [])))
         ->merge(array_values(config('custom.server_form_factors', [])))
         ->merge(array_values(config('custom.cluster_types', [])))

@@ -52,6 +52,7 @@
                 <x-aside.dropdown :label="__('Einstellungen')" svg="svg.settings" >
                     <x-slot:links>
                         @can('admin_setting')
+                            <x-aside.dropdownlink :label="__('Allgemein')" href="{{ route('admin.allgemein.index') }}" />
                             <x-aside.dropdownlink :label="__('Fernwartung')" href="{{ route('admin.setting.index') }}" />
                         @endcan
                         {{-- Die Aufbewahrungsfrist gehoert zum Protokoll, nicht zu

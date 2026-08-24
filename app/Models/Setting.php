@@ -23,6 +23,45 @@ class Setting extends Model
     /** Eigenes URL-Muster, wenn als Loesung "custom" gewaehlt ist. */
     public const REMOTE_PATTERN = 'remote_pattern';
 
+    /** Eigener Name der Installation, statt des Namens aus der .env. */
+    public const APP_NAME = 'app_name';
+
+    /**
+     * Pfade der eigenen Logos auf der local-Disk, je Stelle einer.
+     *
+     * Drei statt eines: Das Logo auf der Anmeldeseite darf gross und breit
+     * sein, das in der Kopfzeile muss neben den Namen passen, und ein Favicon
+     * ist quadratisch und winzig. In der Praxis sind das verschiedene Dateien.
+     */
+    public const LOGO_STELLEN = ['login', 'header', 'favicon'];
+
+    /**
+     * Der Name, der in Kopfzeile, Titelleiste und PDF steht.
+     *
+     * Faellt auf config('app.name') zurueck: Wer nichts eintraegt, behaelt den
+     * Namen aus der .env - so wie vor dieser Einstellung.
+     */
+    public static function appName(): string
+    {
+        $eigener = trim((string) self::wert(self::APP_NAME));
+
+        return $eigener !== '' ? $eigener : (string) config('app.name');
+    }
+
+    /** Der Einstellungs-Schluessel einer Logo-Stelle. */
+    public static function logoSchluessel(string $stelle): string
+    {
+        return 'app_logo_'.$stelle;
+    }
+
+    /** Pfad des Logos einer Stelle, oder null wenn dort keines hinterlegt ist. */
+    public static function logoPfad(string $stelle): ?string
+    {
+        $pfad = trim((string) self::wert(self::logoSchluessel($stelle)));
+
+        return $pfad !== '' ? $pfad : null;
+    }
+
     /**
      * Wie viele Tage ein Protokolleintrag bleibt. 0 heisst: unbegrenzt.
      *

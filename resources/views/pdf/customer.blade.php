@@ -73,7 +73,7 @@
 
     {{-- Deckblatt --}}
     <div class="cover">
-        <div class="cover-app">{{ config('app.name') }}</div>
+        <div class="cover-app">{{ \App\Models\Setting::appName() }}</div>
         <div class="cover-bar"></div>
         <div class="cover-title">{{ __('Dokumentation') }}</div>
         <div class="cover-customer">{{ $customer->name }}</div>
