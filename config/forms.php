@@ -448,6 +448,9 @@ return [
         'model' => VM::class, 'request' => VMRequest::class,
         'relation' => 'vms', 'einzahl' => 'VM', 'suchfelder' => ['name'],
         'bloecke' => true,
+        // Host und Cluster stehen auf der Karte - ohne Vorladen fragt die
+        // Liste sie je Zeile einzeln nach.
+        'mitladen' => ['host', 'cluster'],
         'felder' => [
             // Host und Cluster zuerst: Beide beantworten den Standort gleich
             // mit, und was sie beantworten, soll man nicht davor schon tippen.

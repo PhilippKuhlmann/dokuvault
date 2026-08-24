@@ -9,6 +9,7 @@ use App\Models\ADUser;
 use App\Models\Backup;
 use App\Models\Camera;
 use App\Models\Certificate;
+use App\Models\Cluster;
 use App\Models\Computer;
 use App\Models\ContactPerson;
 use App\Models\Customer;
@@ -29,6 +30,7 @@ use App\Models\Mailbox;
 use App\Models\NAS;
 use App\Models\Network;
 use App\Models\NetworkSwitch;
+use App\Models\OperatingSystem;
 use App\Models\OtherClient;
 use App\Models\PatchPanel;
 use App\Models\Phone;
@@ -209,6 +211,57 @@ class LocalDatabaseSeeder extends Seeder
         $srvDc01->ipAddresses()->create(['customer_id' => $customer->id, 'network_id' => $clientsVlan->id, 'address' => '10.10.20.10', 'label' => 'Clients']);
         Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-FS01', 'bmcIp' => '10.10.30.211']);
         Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-HV01', 'bmcIp' => '10.10.30.212']);
+
+        // Proxmox-Cluster mit drei Knoten: der Fall, fuer den es die
+        // Cluster-Doku ueberhaupt gibt. Ceph als Technik, weil das den
+        // Unterschied zum Einzelserver ausmacht - der Speicher liegt verteilt
+        // auf den Knoten, nicht auf einem SAN daneben.
+        $pveOs = OperatingSystem::firstOrCreate(['name' => 'Proxmox VE 9']);
+        $pveCluster = Cluster::create([
+            'customer_id' => $customer->id,
+            'site_id' => $site1->id,
+            'name' => 'PVE-Cluster HH',
+            'type' => 'ceph',
+            'note' => 'Drei Knoten, Ceph auf NVMe, Quorum über alle drei',
+        ]);
+
+        // Die Adressen ohne network_id wie bei den uebrigen Geraeten: Der
+        // IP-Plan ordnet sie ueber den Adressbereich zu.
+        foreach ([
+            ['PVE-01', '10.10.30.13', '10.10.30.213'],
+            ['PVE-02', '10.10.30.14', '10.10.30.214'],
+            ['PVE-03', '10.10.30.15', '10.10.30.215'],
+        ] as [$knoten, $ip, $bmc]) {
+            Server::factory()->create([
+                'customer_id' => $customer->id,
+                'site_id' => $site1->id,
+                'cluster_id' => $pveCluster->id,
+                'operating_system_id' => $pveOs->id,
+                'name' => $knoten,
+                'bmcIp' => $bmc,
+                'form_factor' => 'rack',
+                'height_units' => 1,
+                'full_depth' => true,
+                'services' => 'Virtualisierung,Ceph',
+            ])->ipAddresses()->create([
+                'customer_id' => $customer->id,
+                'address' => $ip,
+                'label' => 'Primaer',
+            ]);
+        }
+
+        // Zwei VMs am Cluster, ohne festen Knoten - genau das unterscheidet sie
+        // von einer VM auf einem einzelnen Host: Im HA-Cluster wandern sie.
+        $debian = OperatingSystem::firstOrCreate(['name' => 'Debian 13']);
+        foreach (['VM-Ticketsystem', 'VM-Monitoring'] as $vmName) {
+            VM::factory()->create([
+                'customer_id' => $customer->id,
+                'site_id' => $site1->id,
+                'cluster_id' => $pveCluster->id,
+                'operating_system_id' => $debian->id,
+                'name' => $vmName,
+            ]);
+        }
         NAS::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'NAS-Backup']);
         Accesspoint::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'AP-Serverraum']);
 
@@ -293,6 +346,11 @@ class LocalDatabaseSeeder extends Seeder
             ['position' => 8, 'height_units' => 2, 'device_type' => Server::class, 'device_id' => $byName(Server::class, 'SRV-HV01')?->id],
             ['position' => 11, 'height_units' => 2, 'device_type' => NAS::class, 'device_id' => $byName(NAS::class, 'NAS-Backup')?->id],
             $ausKatalog(14, 'Fachboden 1 HE'),
+            // Die drei Clusterknoten uebereinander, wie sie auch im Schrank
+            // stehen wuerden.
+            ['position' => 22, 'height_units' => 1, 'device_type' => Server::class, 'device_id' => $byName(Server::class, 'PVE-01')?->id],
+            ['position' => 24, 'height_units' => 1, 'device_type' => Server::class, 'device_id' => $byName(Server::class, 'PVE-02')?->id],
+            ['position' => 26, 'height_units' => 1, 'device_type' => Server::class, 'device_id' => $byName(Server::class, 'PVE-03')?->id],
             $ausKatalog(20, 'Blindplatte 2 HE'),
             ['position' => 36, 'height_units' => 1, 'device_type' => Router::class, 'device_id' => $byName(Router::class, 'RTR-Core')?->id],
             ['position' => 38, 'height_units' => 1, 'device_type' => NetworkSwitch::class, 'device_id' => $byName(NetworkSwitch::class, 'SW-Core')?->id],

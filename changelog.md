@@ -18,6 +18,10 @@
 
 - **Eine VM läuft auf einem Host oder in einem Cluster.** In einem HA-Cluster wandert sie zwischen den Knoten — ein fest eingetragener Host wäre dort nach der ersten Migration falsch dokumentiert. Beides zugleich lässt sich nicht eintragen: Das wären zwei Antworten auf dieselbe Frage.
   - Jedes der beiden Felder verschwindet, sobald das andere steht.
+  - **Die VM-Karte nennt jetzt auch den Cluster.** Vorher stand dort nur der Host — eine Cluster-VM sah damit aus, als liefe sie nirgends, obwohl die Zuordnung dokumentiert war. Host und Cluster werden mit vorgeladen, sonst fragt die Liste sie je Zeile einzeln nach.
+
+- **Der Demo-Datensatz enthält jetzt ein Proxmox-Cluster.** Ohne Beispiel sah man in der Demo nur leere Cluster-Listen. „PVE-Cluster HH" mit drei Knoten (PVE-01 bis 03, Proxmox VE 9, Ceph auf NVMe) und zwei VMs darauf, die bewusst am Cluster hängen und nicht an einem Knoten — genau der Unterschied zur VM auf einem einzelnen Host. Die Knoten stehen auch im Serverschrank, mit eigenen IP- und BMC-Adressen im Management-VLAN.
+  - Ein Test hält das fest: drei Knoten, mindestens zwei VMs, keine davon auf einen Knoten gepinnt.
 
 - **Der Standort einer VM kommt jetzt vom Host bzw. Cluster.** Wer den Host auswählt, hat den Standort schon beantwortet — beides getrennt zu pflegen hieß, dass sie sich widersprechen können. Host und Cluster stehen deshalb an erster Stelle im Formular, und sobald eines gewählt ist, verschwindet das Standortfeld.
   - **Ohne beides bleibt der Standort Pflicht.** Ein vServer beim Anbieter hat keinen dokumentierten Host — dort ist die Angabe die einzige Ortsangabe, und der Standortfilter in der Seitenleiste hängt daran.

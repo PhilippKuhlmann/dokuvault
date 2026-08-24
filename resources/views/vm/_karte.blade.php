@@ -29,8 +29,13 @@
                             </x-kernwert>
                         @endif
 
+                        {{-- Host oder Cluster - eines von beiden, nie beides.
+                             Ohne den Cluster stuende bei einer Cluster-VM
+                             nichts, obwohl dokumentiert ist, wo sie laeuft. --}}
                         @if ($eintrag->host)
                             <x-kernwert :label="__('Host')">{{ $eintrag->host->name }}</x-kernwert>
+                        @elseif ($eintrag->cluster)
+                            <x-kernwert :label="__('Cluster')">{{ $eintrag->cluster->name }}</x-kernwert>
                         @endif
                     </x-slot>
                 </x-show.header>
