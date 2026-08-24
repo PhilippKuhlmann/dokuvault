@@ -17,7 +17,11 @@
                     <span class="flex items-center justify-center w-11 h-11 rounded-lg bg-cerulean-50 text-cerulean-600 transition-colors group-hover:bg-cerulean-100 dark:bg-gray-700 dark:text-cerulean-400 shrink-0">
                         <x-dynamic-component :component="$tile['icon']" class="w-6 h-6" />
                     </span>
-                    <span class="flex flex-col">
+                    {{-- min-w-0: Ohne das kann ein Flex-Kind nicht schmaler
+                         werden als sein Inhalt - eine lange Beschriftung wie
+                         "Betriebssysteme" schob die Kachel dann aus ihrer
+                         Rasterzelle und die ganze Seite scrollte waagerecht. --}}
+                    <span class="flex min-w-0 flex-col">
                         <span class="text-2xl font-bold leading-none text-chathams-blue-800 dark:text-gray-100">{{ $tile['count'] }}</span>
                         <span class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ $tile['label'] }}</span>
                     </span>
@@ -28,13 +32,13 @@
         {{-- Inventar-Statistik --}}
         <div>
             <div class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">{{ __('Dokumentiertes Inventar (alle Kunden)') }}</div>
-            <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 @foreach ($inventory as $item)
                     <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
                         <span class="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-50 text-cerulean-600 dark:bg-gray-700 dark:text-cerulean-400 shrink-0">
                             <x-dynamic-component :component="$item['icon']" class="w-5 h-5" />
                         </span>
-                        <span class="flex flex-col">
+                        <span class="flex min-w-0 flex-col">
                             <span class="text-xl font-bold leading-none text-chathams-blue-800 dark:text-gray-100">{{ $item['count'] }}</span>
                             <span class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ $item['label'] }}</span>
                         </span>

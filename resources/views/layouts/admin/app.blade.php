@@ -32,7 +32,7 @@
     @include('layouts.admin.navigation')
     @include('layouts.admin.aside')
 
-    <main class="mt-16 sm:ml-64">
+    <main class="mt-16 lg:ml-64">
         {{ $slot }}
     </main>
 

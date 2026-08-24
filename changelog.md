@@ -39,6 +39,14 @@
   - Die Wertspalte beansprucht nicht mehr die ganze Breite; vorher drückte sie die Beschriftung auf ein Wort pro Zeile („BMC IP-/Adresse").
   - Geprüft von 375 px bis 1440 px in Schritten, auch zwischen den Breakpoints, für Server, Cluster, VMs und NAS. Ein Test hält fest, dass in diesen Tabellen kein `whitespace-nowrap` zurückkehrt.
 
+- **Die Seitenleiste klappt jetzt erst ab 1024 px auf statt ab 640 px.** Bei 640 px blieben neben ihr rund 360 px Inhalt — auf einem Tablet quer stand mehr Menü als Dokumentation auf dem Schirm. Unterhalb von 1024 px gibt es sie als ausklappbare Schublade, der Inhalt bekommt die volle Breite.
+  - Dabei fiel eine alte Unstimmigkeit auf: Der Hamburger-Knopf verschwand ab 768 px, die Seitenleiste erschien aber schon ab 640 px — dazwischen waren beide zu sehen. Jetzt hängen beide am selben Breakpoint.
+  - Weil unter 1024 px keine Seitenleiste mehr Platz wegnimmt, stehen die Kartenspalten wieder ab 768 px nebeneinander: Eine Spalte ist dort rund 340 px breit — genauso viel wie bei 1024 px mit Seitenleiste.
+
+- **Die Kacheln im Admin-Dashboard waren abgeschnitten.** „Benutzer" stand als „Benutz…", „Zertifikate" als „Zertifi…", und bei 640 px scrollte die ganze Seite waagerecht. Der Textteil der Kachel war ein Flex-Kind ohne `min-w-0` — damit kann es nicht schmaler werden als sein Inhalt und schiebt die Kachel aus ihrer Rasterzelle. Dieselbe Falle wie bei den Tabellen, nur in Flex statt in Spalten.
+  - Das Inventar-Raster beginnt außerdem mit zwei statt drei Kacheln pro Zeile — bei 375 px blieben für die Beschriftung sonst rund 60 px.
+  - Nachgemessen über **alle 45 Kundenbereiche und 14 Admin-Seiten** bei 375, 640, 768, 900, 1023, 1024, 1280 und 1440 px, zusätzlich mit künstlich verlängerten Namen, Modellen und Seriennummern: kein Überlauf mehr, keine Seite scrollt waagerecht.
+
 - **Feldübergreifende Prüfregeln griffen im Modal nie.** Im Modal heißen die Felder `form.name`, in den Requests aber `name` — eine Regel wie `required_if:form_factor,rack` suchte deshalb ein Feld, das es dort nicht gibt, und war wirkungslos. Beim Server hieß das: Höheneinheiten und Einbautiefe waren beim Rackeinbau nie Pflicht, ohne dass es auffiel. Aufgefallen ist es erst, weil dieselbe Mechanik für den VM-Standort gebraucht wurde.
   - Damit daraus keine Verschlechterung wird, belegt das Modal Zahlenfelder jetzt vor (Höheneinheiten mit 1, wie das Seitenformular es längst tat) — sonst müsste man die 1 bei jedem Rackserver tippen.
 
