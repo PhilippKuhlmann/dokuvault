@@ -60,6 +60,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VMController;
 use App\Http\Controllers\WifiController;
 use App\Http\Controllers\WizardController;
+use App\Livewire\AdminAllgemein;
 use App\Livewire\AdminApiToken;
 use App\Livewire\AdminOperatingSystem;
 use App\Livewire\AdminPapierkorb;
@@ -107,9 +108,9 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
         // Einstellungen der Installation
         Route::middleware('can:admin_setting')->group(function () {
-            // Eigener Name und eigenes Logo.
-            Route::get('/allgemein', [BrandingController::class, 'index'])->name('admin.allgemein.index');
-            Route::post('/allgemein', [BrandingController::class, 'update'])->name('admin.allgemein.update');
+            // Eigener Name und eigene Logos - Livewire, damit jede Aenderung
+            // sofort gilt statt erst nach einem Speichern-Knopf.
+            Route::get('/allgemein', AdminAllgemein::class)->name('admin.allgemein.index');
 
             Route::get('/setting', [SettingController::class, 'index'])->name('admin.setting.index');
             Route::patch('/setting', [SettingController::class, 'update'])->name('admin.setting.update');

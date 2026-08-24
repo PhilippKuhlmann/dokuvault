@@ -10,6 +10,9 @@
   - **Kein SVG:** Eine SVG-Datei darf Skript enthalten, und von derselben Herkunft ausgeliefert wäre das ausführbarer Code auf jeder Seite — in einer Dokumentation, in der Kennwörter stehen. Erlaubt sind PNG, JPG und WEBP bis 512 KB.
   - Die Dateien liegen privat auf der Platte und gehen durch einen Controller heraus, wie alle Dateien dieser App — kein `public/storage`-Symlink, der auf jedem Server eingerichtet werden müsste. Ein Logo ersetzt, löscht die alte Datei.
   - Das Favicon stand bisher in vier Layouts einzeln; es ist jetzt eine Komponente.
+  - **Kein Speichern-Knopf:** Die Seite läuft über Livewire, jede Änderung gilt sofort. Wer ein Logo auswählt, hat es damit gesetzt; der Name wird beim Tippen übernommen. Ein Formular mit Speichern-Knopf lässt offen, ob die letzte Änderung noch drin war — diesen Zwischenzustand gibt es hier nicht.
+  - Entfernt wird mit einem **Knopf**, nicht mit einem Häkchen plus Speichern danach. Auch ohne Rückfrage: Ein Logo ist in zehn Sekunden wieder hochgeladen, und eine Rückfrage wäre derselbe Zweischritt.
+  - Nach einem Logo-Wechsel lädt die Seite neu — Kopfzeile und Favicon stehen im Layout, nicht in der Komponente, und zeigten sonst noch das alte Bild neben der neuen Vorschau. Beim Tippen des Namens bleibt das Neuladen aus, das wäre störend.
 
 - **Server-Cluster lassen sich jetzt dokumentieren.** Welche Server zusammengehören und mit welcher Technik sie ihre Daten zusammenhalten — Ceph, Replikation, gemeinsamer Speicher, nur lokal oder Sonstiges. Bisher stand davon nirgends etwas, obwohl es beim Proxmox-Host die erste Rückfrage ist.
   - **Eigenes Objekt statt eines Felds am Server:** Die Technik gilt für den Cluster als Ganzes. An jedem Knoten gepflegt stünde sie mehrfach da und könnte auseinanderlaufen.
