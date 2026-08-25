@@ -18,7 +18,6 @@ use App\Models\Domain;
 use App\Models\DynDNS;
 use App\Models\Firewall;
 use App\Models\FTPServer;
-use App\Models\FTPUser;
 use App\Models\InternetConnection;
 use App\Models\IoTDevice;
 use App\Models\LicenseAccess;
@@ -665,16 +664,42 @@ class LocalDatabaseSeeder extends Seeder
         ]);
 
         // Dienste
-        // Zwei Server, der eine mit mehreren Zugaengen - genau der Fall, fuer
-        // den die Trennung da ist.
-        FTPServer::factory(2)->create([
+        // Zwei Server: der erste mit drei Zugaengen, der zweite mit einem. Ein
+        // Konto ("Backup extern") haengt an beiden - genau der Fall, fuer den
+        // die Zugangsdaten am Login stehen und nicht am Geraet.
+        $ftpServers = FTPServer::factory(2)->create([
             'customer_id' => $customer->id,
-        ])->each(function ($server, $i) use ($customer) {
-            FTPUser::factory($i === 0 ? 3 : 1)->create([
+        ]);
+
+        $ftpLogins = collect(['ftp-steuerberater', 'ftp-webdeploy'])
+            ->map(fn ($benutzer) => LoginGeneral::create([
                 'customer_id' => $customer->id,
-                'ftp_server_id' => $server->id,
+                'name' => 'FTP '.$benutzer,
+                'username' => $benutzer,
+                'password' => fake()->password(12, 16),
+            ]));
+
+        $ftpBackup = LoginGeneral::create([
+            'customer_id' => $customer->id,
+            'name' => 'FTP Backup extern',
+            'description' => 'Sammelkonto der naechtlichen Auslagerung',
+            'username' => 'backup',
+            'password' => fake()->password(12, 16),
+        ]);
+
+        foreach ($ftpLogins as $login) {
+            $ftpServers->first()->credentialLinks()->create([
+                'customer_id' => $customer->id,
+                'login_general_id' => $login->id,
             ]);
-        });
+        }
+
+        foreach ($ftpServers as $server) {
+            $server->credentialLinks()->create([
+                'customer_id' => $customer->id,
+                'login_general_id' => $ftpBackup->id,
+            ]);
+        }
 
         DynDNS::factory(1)->create([
             'customer_id' => $customer->id,

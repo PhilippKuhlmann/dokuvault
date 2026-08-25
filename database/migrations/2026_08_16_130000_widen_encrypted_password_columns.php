@@ -37,7 +37,6 @@ return new class extends Migration
         'computers' => ['remotePassword'],
         'dect' => ['password'],
         'dyndns' => ['password'],
-        'ftp_servers' => ['password'],
         'iot_devices' => ['password'],
         'license_software' => ['password'],
         'login_generals' => ['password'],

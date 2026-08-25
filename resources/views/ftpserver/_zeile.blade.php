@@ -4,17 +4,18 @@
     <td class="py-2.5 px-4 break-words font-medium text-gray-900 dark:text-gray-100">{{ $eintrag->host }}</td>
     <td class="py-2.5 px-4 break-words text-gray-600 dark:text-gray-300">{{ $eintrag->description ?: '—' }}</td>
 
-    {{-- Die Zugaenge als Namensliste: Wer den Server sucht, sucht meist einen
-         bestimmten Zugang darauf. Die Kennwoerter stehen im Bearbeiten-Modal,
-         nicht offen in der Liste. --}}
+    {{-- Die verknuepften Zugangsdaten als Namensliste: Wer den Server sucht,
+         sucht meist einen bestimmten Zugang darauf. Die Kennwoerter stehen im
+         Bearbeiten-Modal und unter "Logins Allgemein", nicht offen in der Liste. --}}
     <td class="py-2.5 px-4 text-gray-600 dark:text-gray-300">
-        @if ($eintrag->users->isEmpty())
+        @php ($zugaenge = $eintrag->zugangsdaten())
+        @if ($zugaenge->isEmpty())
             <span class="text-gray-400 dark:text-gray-500">{{ __('kein Zugang') }}</span>
         @else
             <div class="flex flex-wrap gap-1">
-                @foreach ($eintrag->users as $benutzer)
+                @foreach ($zugaenge as $zugang)
                     <span class="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700 dark:bg-gray-700 dark:text-gray-200">
-                        {{ $benutzer->username }}
+                        {{ $zugang->login->username ?: $zugang->login->name }}
                     </span>
                 @endforeach
             </div>

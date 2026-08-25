@@ -210,11 +210,11 @@ return [
     'ftpserver' => [
         'model' => FTPServer::class, 'request' => FTPServerRequest::class,
         'relation' => 'ftpservers', 'einzahl' => 'FTP-Server', 'suchfelder' => ['host', 'description'],
-        // Die Zugaenge haengen am Server und stehen im Bearbeiten-Modal als
-        // eigener Block darunter - ein Server hat in der Praxis mehrere.
-        'unterliste' => 'ftp-benutzer',
-        // Die Zugaenge stehen in der Liste - ohne Vorladen fragt sie je Zeile nach.
-        'mitladen' => ['users'],
+        // Die Zugaenge stehen im Bearbeiten-Modal als eigener Block darunter:
+        // derselbe Mechanismus wie bei Server, VM oder NAS, damit ein Konto,
+        // das auf zwei Servern gilt, nur einmal dokumentiert wird. IP-Adressen
+        // fuehrt ein FTP-Server nicht - der Block bleibt deshalb weg.
+        'bloecke' => true,
         'felder' => [
             ['name' => 'host', 'label' => 'Host', 'type' => 'text'],
             ['name' => 'description', 'label' => 'Beschreibung', 'type' => 'text'],

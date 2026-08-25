@@ -2,6 +2,8 @@
 
 namespace App\Livewire;
 
+use App\Models\Concerns\HasCredentials;
+use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
 use App\Models\Setting;
 use App\Models\Site;
@@ -487,10 +489,11 @@ class ObjektFormular extends Component
             // Nur Anzahl und Zeitpunkt - der Wert kommt erst auf Klick.
             'verlauf' => $this->verlaufsUebersicht($objekt),
             'mitBloecken' => (bool) ($einstellung['bloecke'] ?? false),
-            // Ein eigener Block unter den Feldern, z. B. die Zugaenge eines
-            // FTP-Servers. Nur beim Bearbeiten - vor dem Speichern gibt es
-            // noch kein Objekt, an dem etwas haengen koennte.
-            'unterliste' => $einstellung['unterliste'] ?? null,
+            // Je Block einzeln: Ein FTP-Server fuehrt Zugangsdaten, aber keine
+            // IP-Adressen. Wuerde der IP-Block trotzdem gerendert, riefe er
+            // ipAddresses() auf einem Model auf, das die Relation nicht hat.
+            'mitIpAdressen' => in_array(HasIpAddresses::class, class_uses_recursive($einstellung['model']), true),
+            'mitZugangsdaten' => in_array(HasCredentials::class, class_uses_recursive($einstellung['model']), true),
             'felder' => $felder,
             'einzahl' => $einstellung['einzahl'],
             'spalten' => $einstellung['spalten'] ?? 1,

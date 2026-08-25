@@ -5,11 +5,16 @@
 ### Changed
 
 - **Ein FTP-Server hat jetzt beliebig viele Zugänge.** Bisher hing genau ein Benutzername samt Passwort am Server selbst — in der Praxis hat derselbe Server aber einen Zugang für den Steuerberater, einen fürs Backup und einen für den Lieferanten. Wer den zweiten dokumentieren wollte, musste den Server ein zweites Mal anlegen.
-  - Zugänge stehen in einer eigenen Tabelle (`ftp_users`), nicht bei den allgemeinen Zugangsdaten. Je Zugang: Benutzername, Passwort und eine Notiz, wofür er da ist.
-  - Die Migration nimmt den vorhandenen Benutzer jedes Servers als ersten Zugang mit. Doppelt angelegte Server — gleicher Kunde, gleicher Host — werden dabei zu einem zusammengeführt; ihre abweichende Beschreibung wird zur Notiz des jeweiligen Zugangs, damit sie nicht verlorengeht.
-  - Passwörter bleiben verschlüsselt. Beim Umzug werden sie einmal entschlüsselt und im neuen Model wieder verschlüsselt — das lässt sich leicht übersehen und ergäbe doppelt verschlüsselte, dauerhaft unlesbare Passwörter; ein Test prüft deshalb, dass nach der Migration wieder Klartext herauskommt.
-  - Die Zugänge werden im Bearbeiten-Fenster gepflegt und **sofort gespeichert**, ohne Umweg über Speichern. Das Fenster ist dafür breiter geworden, sonst stand die Tabelle zu eng.
-  - In der Liste zeigt eine Serverzeile ihre Zugänge als Kürzel — man sieht auf einen Blick, ob ein Server einen, drei oder gar keinen hat.
+  - Die Zugänge stehen **nicht** in einer eigenen FTP-Tabelle, sondern im selben Mechanismus wie bei Server, VM oder NAS: Einträge aus *Logins Allgemein*, per Verknüpfung an den Server gehängt. Ein erster Anlauf mit eigener Tabelle wäre genau das Muster gewesen, das im August für NAS- und Recorder-Logins abgeschafft wurde — ein zweiter verschlüsselter Speicherort mit eigener Pflege daneben.
+  - Der praktische Gewinn: Dasselbe Dienstkonto auf drei Servern steht einmal da statt dreimal. Beim Kennwortwechsel gibt es eine Stelle zu ändern, nicht drei — und unter *Logins Allgemein* zeigt „Verwendet bei", auf welchen Servern es gilt.
+  - Die Liste zeigt je Server seine Benutzernamen als Kürzel; die Kennwörter stehen im Bearbeiten-Fenster, nicht offen in der Liste.
+  - Das Bearbeiten-Fenster ist breiter geworden — für alle Gerätetypen, nicht nur FTP. Die Tabelle der Zugangsdaten hat vier Spalten und stand vorher ineinandergequetscht.
+
+### Fixed
+
+- **Die Blöcke im Bearbeiten-Fenster richten sich jetzt danach, was ein Gerät wirklich führt.** Vorher zog `bloecke` immer beide Blöcke nach sich, IP-Adressen und Zugangsdaten. Für einen FTP-Server wäre das nicht nur überflüssig gewesen: Der IP-Block hätte eine Beziehung aufgerufen, die es am Model nicht gibt. Ein Test prüft jetzt beide Richtungen — fehlender Block und Block, der nicht hingehört.
+
+- **Ein FTP-Server erscheint unter „Verwendet bei" mit seinem Host.** Die Bezeichnung fiel über Name, IP und ID — der FTP-Server hat nichts davon, dort stand „#1 (FTP-Server)".
 
 ## 26.08.23
 

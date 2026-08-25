@@ -20,13 +20,12 @@
             @php
                 // Die Breite richtet sich nach dem, was drinsteht: Ein
                 // Formular mit zwei Feldern braucht keine halbe Bildschirm-
-                // breite, eine Unterliste schon - die Zugaenge eines
-                // FTP-Servers sind eine Tabelle mit vier Spalten und standen
-                // in max-w-md ineinandergequetscht.
+                // breite, die Bloecke schon: Zugangsdaten und IP-Adressen sind
+                // Tabellen mit vier Spalten und standen in max-w-md
+                // ineinandergequetscht.
                 $breite = match (true) {
                     $spalten > 1 => 'max-w-3xl',
-                    (bool) $unterliste && $bearbeiteId => 'max-w-3xl',
-                    $mitBloecken && $bearbeiteId => 'max-w-2xl',
+                    $mitBloecken && $bearbeiteId => 'max-w-3xl',
                     default => 'max-w-md',
                 };
             @endphp
@@ -198,15 +197,6 @@
                             </div>
                         @endforeach
                     </div>
-                    {{-- Ein typeigener Block, z. B. die Zugaenge eines
-                         FTP-Servers. Erst beim Bearbeiten: Vor dem Speichern
-                         gibt es kein Objekt, an dem etwas haengen koennte. --}}
-                    @if ($unterliste && $bearbeiteId)
-                        <div class="mt-1">
-                            <livewire:dynamic-component :is="$unterliste" :model="$objekt" :customer="$kunde" randlos
-                                :key="'unterliste-'.$typ.'-'.$objekt->id" />
-                        </div>
-                    @endif
 
                     @if ($mitBloecken)
                         @if ($bearbeiteId)
@@ -216,17 +206,27 @@
                                  eingebetteten Zustand selbst eine mit, zwei
                                  uebereinander sahen aus wie ein Fehler. --}}
                             <div class="mt-1">
-                                <livewire:device-ip-addresses :model="$objekt" :customer="$kunde" eingebettet randlos
-                                    :key="'ip-'.$typ.'-'.$objekt->id" />
-                                <livewire:device-credentials :model="$objekt" :customer="$kunde" eingebettet randlos
-                                    :key="'zug-'.$typ.'-'.$objekt->id" />
+                                @if ($mitIpAdressen)
+                                    <livewire:device-ip-addresses :model="$objekt" :customer="$kunde" eingebettet randlos
+                                        :key="'ip-'.$typ.'-'.$objekt->id" />
+                                @endif
+                                @if ($mitZugangsdaten)
+                                    <livewire:device-credentials :model="$objekt" :customer="$kunde" eingebettet randlos
+                                        :key="'zug-'.$typ.'-'.$objekt->id" />
+                                @endif
                             </div>
                         @else
                             {{-- Beim Anlegen haengt noch nichts am Objekt. Der Hinweis
                                  stand auch im alten Formular, damit das Fehlen nicht
                                  wie ein Mangel aussieht. --}}
                             <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                                {{ __('IP-Adressen und Zugangsdaten lassen sich eintragen, sobald der Eintrag angelegt ist.') }}
+                                @if ($mitIpAdressen && $mitZugangsdaten)
+                                    {{ __('IP-Adressen und Zugangsdaten lassen sich eintragen, sobald der Eintrag angelegt ist.') }}
+                                @elseif ($mitIpAdressen)
+                                    {{ __('IP-Adressen lassen sich eintragen, sobald der Eintrag angelegt ist.') }}
+                                @else
+                                    {{ __('Zugangsdaten lassen sich eintragen, sobald der Eintrag angelegt ist.') }}
+                                @endif
                             </p>
                         @endif
                     @endif

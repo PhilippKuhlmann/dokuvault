@@ -48,7 +48,8 @@ class CredentialLink extends Model
      * Wie das Ziel in einer Liste heißt: "SRV-01 (Server)".
      *
      * Telefone und DECT-Geräte haben keine Namensspalte - dort tritt die IP an
-     * die Stelle des Namens, sonst stünde da nur die Typbezeichnung.
+     * die Stelle des Namens, sonst stünde da nur die Typbezeichnung. Beim
+     * FTP-Server ist es der Host: Er ist das, wonach man ihn sucht.
      */
     public function zielBezeichnung(): string
     {
@@ -59,7 +60,7 @@ class CredentialLink extends Model
         }
 
         $typ = config('custom.trashables')[$this->zielSlug()][1] ?? class_basename($ziel);
-        $name = $ziel->name ?? $ziel->ip ?? $ziel->ip1 ?? '#'.$ziel->id;
+        $name = $ziel->name ?? $ziel->host ?? $ziel->ip ?? $ziel->ip1 ?? '#'.$ziel->id;
 
         return $name.' ('.__($typ).')';
     }

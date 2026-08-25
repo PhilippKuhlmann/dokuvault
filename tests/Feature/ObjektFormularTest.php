@@ -254,9 +254,24 @@ test('Typen mit IP-Adressen und Zugangsdaten zeigen beide Bloecke beim Bearbeite
             ->call('bearbeiten', $typ, $objekt->id)
             ->html();
 
-        foreach (['IP-Adressen' => 'IP', 'Zugangsdaten' => 'Zugangsdaten'] as $block => $wort) {
-            if (! str_contains($html, $wort)) {
-                $fehlend[] = "$typ: $block";
+        // Je Block das passende Merkmal: Ein FTP-Server fuehrt Zugangsdaten,
+        // aber keine IP-Adressen - dort waere der IP-Block nicht nur ueberfluessig,
+        // er riefe eine Relation auf, die es am Model nicht gibt.
+        $traits = class_uses_recursive($klasse);
+        $erwartet = [
+            'IP-Adressen' => [in_array(HasIpAddresses::class, $traits, true), 'Weitere IP-Adressen'],
+            'Zugangsdaten' => [in_array(HasCredentials::class, $traits, true), 'Zugangsdaten'],
+        ];
+
+        foreach ($erwartet as $block => [$sollDaSein, $wort]) {
+            $istDa = str_contains($html, $wort);
+
+            if ($sollDaSein && ! $istDa) {
+                $fehlend[] = "$typ: $block fehlt";
+            }
+
+            if (! $sollDaSein && $istDa) {
+                $fehlend[] = "$typ: $block steht da, obwohl das Model ihn nicht fuehrt";
             }
         }
     }
