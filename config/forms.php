@@ -286,7 +286,7 @@ return [
             // Zeile, die immer nichts findet.
             ['name' => 'os', 'label' => 'Betriebssystem', 'typ' => 'beziehung',
                 'feld' => 'operating_system_id', 'quelle' => OperatingSystem::class,
-                'anzeige' => 'name', 'alle' => 'Alle Betriebssysteme', 'optionen' => []],
+                'anzeige' => 'name', 'alle' => 'Alle', 'optionen' => []],
         ],
         'sortierungen' => [
             'neueste' => ['Neueste zuerst', 'created_at', 'desc'],

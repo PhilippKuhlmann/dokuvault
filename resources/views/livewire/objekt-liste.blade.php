@@ -2,17 +2,22 @@
      Suchfeld wie in der VLAN-Liste: Lupe im Feld, sucht waehrend des Tippens. --}}
 <div>
     <x-sitetopmenu :neu="false" :titel="__(config('custom.trashables')[$typ][1] ?? $einzahl)">
-        <label class="relative">
-            <span class="sr-only">{{ __('Liste durchsuchen') }}</span>
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
-            </svg>
-            {{-- Kein eigenes rounded: x-input.field merged Klassen statt sie zu
-                 ersetzen, zwei Radius-Klassen wuerden sich streiten. --}}
-            <x-input.field wire:model.live.debounce.300ms="search" type="search"
-                :placeholder="__('Suche')" class="w-56 pl-9 pr-3 py-2 text-sm" />
-        </label>
+        {{-- Ohne Filterleiste steht die Suche hier oben. Gibt es eine, zieht
+             sie dort hinein: Suche und Filter engen dasselbe ein und gehoeren
+             nebeneinander - getrennt sah es aus wie zwei Bedienfelder. --}}
+        @unless ($filterDefinition || $sortierungen)
+            <label class="relative">
+                <span class="sr-only">{{ __('Liste durchsuchen') }}</span>
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+                </svg>
+                {{-- Kein eigenes rounded: x-input.field merged Klassen statt sie zu
+                     ersetzen, zwei Radius-Klassen wuerden sich streiten. --}}
+                <x-input.field wire:model.live.debounce.300ms="search" type="search"
+                    :placeholder="__('Suche')" class="w-56 pl-9 pr-3 py-2 text-sm" />
+            </label>
+        @endunless
 
         <livewire:objekt-formular :typ="$typ" :customer="$customer" :key="'formular-'.$typ" />
     </x-sitetopmenu>
@@ -23,10 +28,21 @@
     @if ($filterDefinition || $sortierungen)
         <div class="m-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div class="min-w-0">
+                    <x-input.label :value="__('Suche')" />
+                    <x-input.field wire:model.live.debounce.300ms="search" type="search"
+                        :placeholder="__('Suche')" class="mt-1 w-full" />
+                </div>
+
+                {{-- w-full und min-w-0: Ein select richtet sich nach seiner
+                     laengsten Option. "Windows Server 2025 Datacenter" machte
+                     das Feld 113 Pixel breiter als seine Rasterzelle - der
+                     Pfeil sitzt am rechten Rand und lag damit ausserhalb der
+                     Karte, das Feld sah aus wie ein Textfeld. --}}
                 @foreach ($filterDefinition as $def)
-                    <div wire:key="filter-{{ $def['name'] }}">
+                    <div class="min-w-0" wire:key="filter-{{ $def['name'] }}">
                         <x-input.label :value="__($def['label'])" />
-                        <x-input.select :name="'filter.'.$def['name']" wire:model.live="filter.{{ $def['name'] }}" class="mt-1">
+                        <x-input.select :name="'filter.'.$def['name']" wire:model.live="filter.{{ $def['name'] }}" class="mt-1 w-full">
                             <option value="">{{ __($def['alle'] ?? 'Alle') }}</option>
                             @foreach ($def['optionen'] as $wert => $beschriftung)
                                 <option value="{{ $wert }}">{{ __($beschriftung) }}</option>
@@ -36,9 +52,9 @@
                 @endforeach
 
                 @if ($sortierungen)
-                    <div>
+                    <div class="min-w-0">
                         <x-input.label :value="__('Sortierung')" />
-                        <x-input.select name="sortierung" wire:model.live="sortierung" class="mt-1">
+                        <x-input.select name="sortierung" wire:model.live="sortierung" class="mt-1 w-full">
                             @foreach ($sortierungen as $schluessel => $eine)
                                 <option value="{{ $schluessel }}">{{ __($eine[0]) }}</option>
                             @endforeach

@@ -79,9 +79,9 @@
                     :placeholder="__('Bezeichnung oder Endung …')" />
             </div>
 
-            <div>
+            <div class="min-w-0">
                 <x-input.label :value="__('Art')" />
-                <x-input.select name="art" wire:model.live="art" class="mt-1">
+                <x-input.select name="art" wire:model.live="art" class="mt-1 w-full">
                     <option value="">{{ __('Alle Arten') }}</option>
                     @foreach ($arten as $schluessel => $beschriftung)
                         <option value="{{ $schluessel }}">{{ __($beschriftung) }}</option>
@@ -90,9 +90,9 @@
                 </x-input.select>
             </div>
 
-            <div>
+            <div class="min-w-0">
                 <x-input.label :value="__('Sortierung')" />
-                <x-input.select name="sortierung" wire:model.live="sortierung" class="mt-1">
+                <x-input.select name="sortierung" wire:model.live="sortierung" class="mt-1 w-full">
                     <option value="neueste">{{ __('Neueste zuerst') }}</option>
                     <option value="aelteste">{{ __('Älteste zuerst') }}</option>
                     <option value="name">{{ __('Bezeichnung') }}</option>

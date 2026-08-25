@@ -56,6 +56,10 @@
 
 ### Fixed
 
+- **Der Betriebssystem-Filter sah aus wie ein Textfeld.** Ein Auswahlfeld richtet sich nach seiner längsten Option — „Windows Server 2025 Datacenter" machte es 113 Pixel breiter als seine Rasterzelle. Der Pfeil sitzt am rechten Rand und lag damit außerhalb der Karte. Die Filterfelder füllen ihre Zelle jetzt aus, der Browser kürzt zu lange Beschriftungen.
+
+- **Suche und Filter standen getrennt.** Die Suche saß oben rechts in der Kopfzeile, die Filter in einer Karte darunter links — zwei Bedienfelder für dieselbe Aufgabe. Wo es eine Filterleiste gibt, steht die Suche jetzt als erstes Feld darin. Listen ohne Filter behalten ihre Suche in der Kopfzeile.
+
 - **Windows-Lizenzen boten Debian und Proxmox zur Auswahl.** Eine Windows-Lizenz für Debian gibt es nicht — das Formular führte aber den ganzen Betriebssystem-Katalog. Jetzt stehen dort nur Windows-Systeme.
   - Im **Demo-Datensatz** war es schon passiert: Dort standen Windows-Lizenzen für „Debian 13" und „Proxmox VE 7". Die Factory würfelte eine Betriebssystem-Nummer zwischen 1 und 14 — welches System dahinter steckt, hing an der Reihenfolge im Katalog. Sie zieht jetzt ein echtes Windows-System.
 
