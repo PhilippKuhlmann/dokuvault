@@ -13,9 +13,9 @@ class FTPServerFactory extends Factory
     {
         return [
             'host' => 'ftp.'.fake()->domainName(),
+            // Benutzername und Kennwort haengen jetzt am Zugang, nicht am
+            // Server - der Seeder legt sie ueber die Beziehung an.
             'description' => fake()->randomElement(['Datenaustausch Steuerberater', 'Backup extern', 'Lieferanten-Upload', 'Webseiten-Deploy']),
-            'username' => fake()->userName(),
-            'password' => fake()->password(8, 14),
         ];
     }
 }

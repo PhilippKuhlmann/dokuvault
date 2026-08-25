@@ -1,5 +1,16 @@
 # Changelog
 
+## 26.08.25
+
+### Changed
+
+- **Ein FTP-Server hat jetzt beliebig viele Zugänge.** Bisher hing genau ein Benutzername samt Passwort am Server selbst — in der Praxis hat derselbe Server aber einen Zugang für den Steuerberater, einen fürs Backup und einen für den Lieferanten. Wer den zweiten dokumentieren wollte, musste den Server ein zweites Mal anlegen.
+  - Zugänge stehen in einer eigenen Tabelle (`ftp_users`), nicht bei den allgemeinen Zugangsdaten. Je Zugang: Benutzername, Passwort und eine Notiz, wofür er da ist.
+  - Die Migration nimmt den vorhandenen Benutzer jedes Servers als ersten Zugang mit. Doppelt angelegte Server — gleicher Kunde, gleicher Host — werden dabei zu einem zusammengeführt; ihre abweichende Beschreibung wird zur Notiz des jeweiligen Zugangs, damit sie nicht verlorengeht.
+  - Passwörter bleiben verschlüsselt. Beim Umzug werden sie einmal entschlüsselt und im neuen Model wieder verschlüsselt — das lässt sich leicht übersehen und ergäbe doppelt verschlüsselte, dauerhaft unlesbare Passwörter; ein Test prüft deshalb, dass nach der Migration wieder Klartext herauskommt.
+  - Die Zugänge werden im Bearbeiten-Fenster gepflegt und **sofort gespeichert**, ohne Umweg über Speichern. Das Fenster ist dafür breiter geworden, sonst stand die Tabelle zu eng.
+  - In der Liste zeigt eine Serverzeile ihre Zugänge als Kürzel — man sieht auf einen Blick, ob ein Server einen, drei oder gar keinen hat.
+
 ## 26.08.23
 
 ### Added

@@ -209,11 +209,14 @@ return [
     ],
     'ftpserver' => [
         'model' => FTPServer::class, 'request' => FTPServerRequest::class,
-        'relation' => 'ftpservers', 'einzahl' => 'FTP-Server', 'suchfelder' => ['host', 'username'],
+        'relation' => 'ftpservers', 'einzahl' => 'FTP-Server', 'suchfelder' => ['host', 'description'],
+        // Die Zugaenge haengen am Server und stehen im Bearbeiten-Modal als
+        // eigener Block darunter - ein Server hat in der Praxis mehrere.
+        'unterliste' => 'ftp-benutzer',
+        // Die Zugaenge stehen in der Liste - ohne Vorladen fragt sie je Zeile nach.
+        'mitladen' => ['users'],
         'felder' => [
             ['name' => 'host', 'label' => 'Host', 'type' => 'text'],
-            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
-            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
             ['name' => 'description', 'label' => 'Beschreibung', 'type' => 'text'],
         ],
     ],

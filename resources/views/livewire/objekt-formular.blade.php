@@ -17,7 +17,20 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
             x-on:keydown.escape.window="$wire.abbrechen()">
 
-            <div class="max-h-[90vh] w-full {{ $spalten > 1 ? 'max-w-3xl' : ($mitBloecken && $bearbeiteId ? 'max-w-2xl' : 'max-w-md') }} overflow-y-auto rounded-xl border border-gray-200 bg-white px-5 pt-5 text-left shadow-lg dark:border-gray-700 dark:bg-gray-800">
+            @php
+                // Die Breite richtet sich nach dem, was drinsteht: Ein
+                // Formular mit zwei Feldern braucht keine halbe Bildschirm-
+                // breite, eine Unterliste schon - die Zugaenge eines
+                // FTP-Servers sind eine Tabelle mit vier Spalten und standen
+                // in max-w-md ineinandergequetscht.
+                $breite = match (true) {
+                    $spalten > 1 => 'max-w-3xl',
+                    (bool) $unterliste && $bearbeiteId => 'max-w-3xl',
+                    $mitBloecken && $bearbeiteId => 'max-w-2xl',
+                    default => 'max-w-md',
+                };
+            @endphp
+            <div class="max-h-[90vh] w-full {{ $breite }} overflow-y-auto rounded-xl border border-gray-200 bg-white px-5 pt-5 text-left shadow-lg dark:border-gray-700 dark:bg-gray-800">
 
                 @unless ($loeschenGefragt)
                     <div class="mb-4 text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100">
@@ -185,6 +198,16 @@
                             </div>
                         @endforeach
                     </div>
+                    {{-- Ein typeigener Block, z. B. die Zugaenge eines
+                         FTP-Servers. Erst beim Bearbeiten: Vor dem Speichern
+                         gibt es kein Objekt, an dem etwas haengen koennte. --}}
+                    @if ($unterliste && $bearbeiteId)
+                        <div class="mt-1">
+                            <livewire:dynamic-component :is="$unterliste" :model="$objekt" :customer="$kunde" randlos
+                                :key="'unterliste-'.$typ.'-'.$objekt->id" />
+                        </div>
+                    @endif
+
                     @if ($mitBloecken)
                         @if ($bearbeiteId)
                             {{-- Eigene Livewire-Bloecke mit eigenem Speichern -

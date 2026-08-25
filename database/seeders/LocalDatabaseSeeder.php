@@ -18,6 +18,7 @@ use App\Models\Domain;
 use App\Models\DynDNS;
 use App\Models\Firewall;
 use App\Models\FTPServer;
+use App\Models\FTPUser;
 use App\Models\InternetConnection;
 use App\Models\IoTDevice;
 use App\Models\LicenseAccess;
@@ -664,9 +665,16 @@ class LocalDatabaseSeeder extends Seeder
         ]);
 
         // Dienste
+        // Zwei Server, der eine mit mehreren Zugaengen - genau der Fall, fuer
+        // den die Trennung da ist.
         FTPServer::factory(2)->create([
             'customer_id' => $customer->id,
-        ]);
+        ])->each(function ($server, $i) use ($customer) {
+            FTPUser::factory($i === 0 ? 3 : 1)->create([
+                'customer_id' => $customer->id,
+                'ftp_server_id' => $server->id,
+            ]);
+        });
 
         DynDNS::factory(1)->create([
             'customer_id' => $customer->id,

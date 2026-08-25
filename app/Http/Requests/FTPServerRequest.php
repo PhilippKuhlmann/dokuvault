@@ -23,10 +23,11 @@ class FTPServerRequest extends FormRequest
     public function rules()
     {
         return [
-            'host' => 'max:255',
+            // Benutzername und Kennwort haengen nicht mehr am Server: Ein
+            // Server hat mehrere Zugaenge, die als eigene Zeilen darunter
+            // stehen (App\Livewire\FtpBenutzer).
+            'host' => 'required|max:255',
             'description' => 'max:255',
-            'username' => 'required|max:255',
-            'password' => 'required|max:255',
         ];
     }
 
@@ -35,8 +36,6 @@ class FTPServerRequest extends FormRequest
         return [
             'host' => 'Host',
             'description' => 'Beschreibung',
-            'username' => 'Benutzername',
-            'password' => 'Passwort',
         ];
     }
 }

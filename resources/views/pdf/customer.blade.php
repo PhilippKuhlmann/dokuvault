@@ -325,9 +325,11 @@
     ]" />
 
     {{-- Dienste --}}
+    {{-- Ein Server hat mehrere Zugaenge - sie stehen als eigene Zeilen unter
+         ihm, statt den Host je Zugang zu wiederholen. --}}
     <x-pdf.section :title="__('FTP-Server')" :items="$customer->ftpservers" :titleField="$deviceTitle" :groups="[
-        'Login' => ['Host' => 'host', 'Benutzer' => 'username', 'Passwort' => 'password'],
-    ]" />
+        'Server' => ['Host' => 'host', 'Beschreibung' => 'description'],
+    ]" :unterliste="['relation' => 'users', 'titel' => 'Zugänge', 'spalten' => ['Benutzer' => 'username', 'Passwort' => 'password', 'Notiz' => 'note']]" />
 
     <x-pdf.section :title="__('DynDNS')" :items="$customer->dyndns" :groups="[
         'Login' => ['Anbieter' => 'provider', 'Benutzer' => 'username', 'Passwort' => 'password'],

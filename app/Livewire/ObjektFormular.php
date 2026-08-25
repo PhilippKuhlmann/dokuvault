@@ -487,6 +487,10 @@ class ObjektFormular extends Component
             // Nur Anzahl und Zeitpunkt - der Wert kommt erst auf Klick.
             'verlauf' => $this->verlaufsUebersicht($objekt),
             'mitBloecken' => (bool) ($einstellung['bloecke'] ?? false),
+            // Ein eigener Block unter den Feldern, z. B. die Zugaenge eines
+            // FTP-Servers. Nur beim Bearbeiten - vor dem Speichern gibt es
+            // noch kein Objekt, an dem etwas haengen koennte.
+            'unterliste' => $einstellung['unterliste'] ?? null,
             'felder' => $felder,
             'einzahl' => $einstellung['einzahl'],
             'spalten' => $einstellung['spalten'] ?? 1,

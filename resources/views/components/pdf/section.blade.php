@@ -3,6 +3,9 @@
     'items',
     'titleField' => 'name',
     'groups' => [],
+    // Eine Liste, die an jedem Eintrag haengt - etwa die Zugaenge eines
+    // FTP-Servers. Ohne sie steht der Server im PDF ohne seine Benutzer da.
+    'unterliste' => null,
 ])
 
 @php
@@ -34,6 +37,30 @@
                     </div>
                 @endforeach
                 <div class="clear"></div>
+
+                @if ($unterliste)
+                    @php ($zeilen = data_get($item, $unterliste['relation']) ?? collect())
+                    @if (count($zeilen))
+                        <div class="card-table" style="width: 97%;">
+                            <div class="card-table-title">{{ __($unterliste['titel']) }}</div>
+                            <table>
+                                <tr>
+                                    @foreach (array_keys($unterliste['spalten']) as $ueberschrift)
+                                        <td class="key">{{ __($ueberschrift) }}</td>
+                                    @endforeach
+                                </tr>
+                                @foreach ($zeilen as $zeile)
+                                    <tr>
+                                        @foreach ($unterliste['spalten'] as $feld)
+                                            <td class="val">{{ data_get($zeile, $feld) }}</td>
+                                        @endforeach
+                                    </tr>
+                                @endforeach
+                            </table>
+                        </div>
+                        <div class="clear"></div>
+                    @endif
+                @endif
             </div>
         </div>
     @empty
