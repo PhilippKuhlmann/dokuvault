@@ -591,6 +591,28 @@ return [
     | Beschriftungen findet - sie laufen erst zur Laufzeit durch __().
     |
     */
+    /*
+    |--------------------------------------------------------------------------
+    | Dateiarten
+    |--------------------------------------------------------------------------
+    |
+    | Beschriftung und zugehoerige Endungen. Bestimmt Symbolfarbe in der Liste
+    | und den Art-Filter. Hier statt im Model, damit Beschriftung und Endungen
+    | zusammenbleiben - und damit der Uebersetzungs-Test die Beschriftungen
+    | findet, die erst zur Laufzeit durch __() laufen.
+    |
+    | Was in keiner Liste steht, ist "Sonstige" - das laesst sich nicht
+    | aufzaehlen, nur als Gegenteil formulieren.
+    |
+    */
+    'file_arten' => [
+        'pdf' => ['PDF', ['pdf']],
+        'bild' => ['Bild', ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'heic']],
+        'text' => ['Text', ['doc', 'docx', 'odt', 'rtf', 'txt', 'md']],
+        'tabelle' => ['Tabelle', ['xls', 'xlsx', 'ods', 'csv']],
+        'archiv' => ['Archiv', ['zip', 'rar', '7z', 'tar', 'gz']],
+    ],
+
     'branding_logos' => [
         'login' => ['Anmeldeseite', 'Steht gross über dem Anmeldeformular.'],
         'header' => ['Kopfzeile', 'Steht oben links neben dem Namen — ein schmales, breites Logo passt hier am besten.'],

@@ -298,7 +298,11 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::resource('licenseaccess', LicenseAccessController::class, ['parameters' => ['licenseaccess' => 'licenseaccess']])->except(['show']);
 
             // File
-            Route::resource('file', FileController::class)->only(['index', 'store', 'destroy']);
+            // Die Liste als Livewire - Suche, Filter und Sortierung. Hochladen
+            // und Herunterladen bleiben beim Controller.
+            Route::get('file', [FileController::class, 'index'])->name('file.index');
+            Route::post('file', [FileController::class, 'store'])->name('file.store');
+            Route::delete('file/{file}', [FileController::class, 'destroy'])->name('file.destroy');
             Route::get('/file/{file}', [FileController::class, 'download']);
 
         });

@@ -7,19 +7,23 @@ use App\Models\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * Hochladen, Herunterladen und Loeschen von Dateien.
+ *
+ * Die Liste selbst ist Livewire (App\Livewire\DateiListe) - sie hat Suche,
+ * Filter und Sortierung, und das laesst sich ohne Rerender nicht bauen.
+ */
 class FileController extends Controller
 {
+    /**
+     * Die Seite - die Liste darin ist Livewire (App\Livewire\DateiListe).
+     * Der Controller liefert nur das Layout, das den Kunden braucht.
+     */
     public function index(Customer $customer)
     {
         $this->authorize('viewAny', File::class);
 
-        // Dateien haben keinen Standortbezug (keine site_id-Spalte), daher bewusst
-        // ohne getFilteredQuery: der Standortfilter der Seitenleiste gilt hier nicht.
-        $files = File::where('customer_id', $customer->id)
-            ->orderBy('created_at')
-            ->paginate(25);
-
-        return view('file.index', compact('customer', 'files'));
+        return view('file.index', compact('customer'));
     }
 
     public function store(Customer $customer, Request $request)

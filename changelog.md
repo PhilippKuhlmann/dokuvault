@@ -4,6 +4,14 @@
 
 ### Added
 
+- **Die Dateiliste lässt sich durchsuchen, filtern und sortieren.** Bei einem Kunden mit vielen Dateien war „wo ist der Wartungsvertrag von 2024?" bisher eine Blätterübung — und die zuletzt hochgeladene Datei stand ganz hinten.
+  - **Suche** über Bezeichnung und Endung: „alle xlsx" ist eine echte Frage, deshalb zählt die Endung als Suchbegriff.
+  - **Art**: PDF, Bild, Text, Tabelle, Archiv oder Sonstige. Die Endung wird gespeichert, wie sie hochgeladen wurde — „Netzplan.PNG" ist ein Bild und fehlt im Filter nicht.
+  - **Hochgeladen**: heute, 7, 30 oder 90 Tage, wie im Protokoll.
+  - **Sortierung** nach Datum, Bezeichnung oder Größe. **Neueste zuerst ist jetzt die Vorgabe** — vorher stand die älteste Datei oben, was bei einer wachsenden Liste selten das ist, was man sucht. Dateien ohne gespeicherte Größe stehen beim Sortieren nach Größe hinten: Eine fehlende Angabe ist keine kleine Datei.
+  - Löschen läuft jetzt über die Liste selbst, ohne Seitenwechsel. Die Datei-Id wird dabei gegen den Kunden geprüft — sonst ließe sich mit einer fremden Id die Datei eines anderen Kunden löschen.
+  - Beschriftung und Endungen der Arten stehen jetzt zusammen in `config/custom.php` statt im Model; vorher hätte eine Filterliste daneben entstehen müssen, die auseinanderlaufen kann.
+
 - **Eigener Name und eigene Logos** unter „Administration → Einstellungen → Allgemein". Wer DokuVault beim Kunden oder im eigenen Haus einsetzt, kann die Oberfläche jetzt auf den eigenen Namen und das eigene Logo umstellen.
   - **Drei Logos, einzeln setzbar:** Anmeldeseite, Kopfzeile und Favicon. Das sind in der Praxis verschiedene Dateien — auf der Anmeldeseite darf es groß und breit sein, in der Kopfzeile muss es neben den Namen passen, ein Favicon ist quadratisch. Jede Stelle fällt für sich auf das eingebaute Motiv zurück.
   - Ein leeres Namensfeld heißt „wieder den Namen aus der Konfiguration nehmen", nicht „kein Name".

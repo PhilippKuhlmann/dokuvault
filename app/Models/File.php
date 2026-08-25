@@ -13,15 +13,6 @@ class File extends Model
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
-    /** Endungen je Art - bestimmt Symbol und Farbe in der Liste. */
-    private const ARTEN = [
-        'pdf' => ['pdf'],
-        'bild' => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'heic'],
-        'text' => ['doc', 'docx', 'odt', 'rtf', 'txt', 'md'],
-        'tabelle' => ['xls', 'xlsx', 'ods', 'csv'],
-        'archiv' => ['zip', 'rar', '7z', 'tar', 'gz'],
-    ];
-
     /**
      * Die Groesse in einer Form, die man im Vorbeigehen liest: "1,4 MB" statt
      * 1468006. Ohne gespeicherte Groesse (Bestandsdatei, deren Datei fehlt)
@@ -54,13 +45,31 @@ class File extends Model
     {
         $endung = strtolower((string) $this->extension);
 
-        foreach (self::ARTEN as $art => $endungen) {
+        foreach (config('custom.file_arten') as $art => [$beschriftung, $endungen]) {
             if (in_array($endung, $endungen, true)) {
                 return $art;
             }
         }
 
         return 'datei';
+    }
+
+    /**
+     * Die Endungen einer Art - fuer den Filter der Liste.
+     *
+     * "datei" ist der Rest: alles, was in keiner der Listen steht. Dafuer
+     * gibt es keine Endungsliste, das muss die Abfrage als "nicht in allen
+     * anderen" formulieren.
+     */
+    public static function endungenFuerArt(string $art): array
+    {
+        return config('custom.file_arten.'.$art.'.1', []);
+    }
+
+    /** Alle Endungen, die einer benannten Art zugeordnet sind. */
+    public static function bekannteEndungen(): array
+    {
+        return collect(config('custom.file_arten'))->flatMap(fn ($a) => $a[1])->all();
     }
 
     public function customer()
