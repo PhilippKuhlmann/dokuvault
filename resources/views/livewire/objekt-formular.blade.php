@@ -20,12 +20,18 @@
             @php
                 // Die Breite richtet sich nach dem, was drinsteht: Ein
                 // Formular mit zwei Feldern braucht keine halbe Bildschirm-
-                // breite, die Bloecke schon: Zugangsdaten und IP-Adressen sind
+                // breite, die Bloecke schon - Zugangsdaten und IP-Adressen sind
                 // Tabellen mit vier Spalten und standen in max-w-md
                 // ineinandergequetscht.
+                //
+                // 'breit' geht darueber hinaus und ist die Ausnahme: Wo das
+                // Formular selbst fast nichts enthaelt, ist der Block der
+                // eigentliche Inhalt und bekommt den Platz (FTP-Server: zwei
+                // Felder, darunter die Zugangsdaten).
                 $breite = match (true) {
                     $spalten > 1 => 'max-w-3xl',
-                    $mitBloecken && $bearbeiteId => 'max-w-3xl',
+                    $breitesModal && $bearbeiteId => 'max-w-3xl',
+                    $mitBloecken && $bearbeiteId => 'max-w-2xl',
                     default => 'max-w-md',
                 };
             @endphp

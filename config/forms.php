@@ -215,6 +215,9 @@ return [
         // das auf zwei Servern gilt, nur einmal dokumentiert wird. IP-Adressen
         // fuehrt ein FTP-Server nicht - der Block bleibt deshalb weg.
         'bloecke' => true,
+        // Zwei Felder, darunter die Zugangsdaten - hier ist der Block der
+        // Inhalt des Fensters und nicht ein Anhang darunter.
+        'breit' => true,
         'felder' => [
             ['name' => 'host', 'label' => 'Host', 'type' => 'text'],
             ['name' => 'description', 'label' => 'Beschreibung', 'type' => 'text'],

@@ -8,7 +8,7 @@
   - Die Zugänge stehen **nicht** in einer eigenen FTP-Tabelle, sondern im selben Mechanismus wie bei Server, VM oder NAS: Einträge aus *Logins Allgemein*, per Verknüpfung an den Server gehängt. Ein erster Anlauf mit eigener Tabelle wäre genau das Muster gewesen, das im August für NAS- und Recorder-Logins abgeschafft wurde — ein zweiter verschlüsselter Speicherort mit eigener Pflege daneben.
   - Der praktische Gewinn: Dasselbe Dienstkonto auf drei Servern steht einmal da statt dreimal. Beim Kennwortwechsel gibt es eine Stelle zu ändern, nicht drei — und unter *Logins Allgemein* zeigt „Verwendet bei", auf welchen Servern es gilt.
   - Die Liste zeigt je Server seine Benutzernamen als Kürzel; die Kennwörter stehen im Bearbeiten-Fenster, nicht offen in der Liste.
-  - Das Bearbeiten-Fenster ist breiter geworden — für alle Gerätetypen, nicht nur FTP. Die Tabelle der Zugangsdaten hat vier Spalten und stand vorher ineinandergequetscht.
+  - Das Bearbeiten-Fenster des FTP-Servers ist breiter: Zwei Felder, darunter die Zugangsdaten — hier ist der Block der Inhalt und nicht ein Anhang. Die übrigen Gerätetypen behalten ihre Breite, dort tragen die Felder das Fenster.
 
 ### Fixed
 

@@ -489,6 +489,9 @@ class ObjektFormular extends Component
             // Nur Anzahl und Zeitpunkt - der Wert kommt erst auf Klick.
             'verlauf' => $this->verlaufsUebersicht($objekt),
             'mitBloecken' => (bool) ($einstellung['bloecke'] ?? false),
+            // Breiter als die Bloecke sonst bekommen: nur wo das Formular selbst
+            // kaum Felder hat und der Block den Inhalt ausmacht.
+            'breitesModal' => (bool) ($einstellung['breit'] ?? false),
             // Je Block einzeln: Ein FTP-Server fuehrt Zugangsdaten, aber keine
             // IP-Adressen. Wuerde der IP-Block trotzdem gerendert, riefe er
             // ipAddresses() auf einem Model auf, das die Relation nicht hat.
