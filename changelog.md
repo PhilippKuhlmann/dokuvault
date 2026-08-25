@@ -4,6 +4,12 @@
 
 ### Added
 
+- **Die Lizenzlisten lassen sich filtern und sortieren.** Suchen ging schon; was fehlte, war die Frage „welche Lizenz läuft demnächst aus?".
+  - **Software-Lizenzen:** Laufzeit (abgelaufen, läuft in 30 oder 90 Tagen ab, läuft noch) und Abonnement (jährlich, monatlich), sortierbar nach Ablauf, Name oder Anlagedatum. „Läuft noch" schließt Dauerlizenzen ohne Enddatum ein — die laufen nicht ab und fielen sonst durch jedes Raster.
+  - **Windows-Lizenzen:** nach Betriebssystem. Die Auswahl kommt aus dem Bestand, nicht aus dem ganzen Katalog — ein System ohne Lizenz wäre eine Zeile, die immer nichts findet.
+  - **CAL-Lizenzen:** nur Sortierung, dort gibt es weder Laufzeit noch Auswahlfeld.
+  - Die Filter sind in `config/forms.php` je Typ beschrieben, nicht fest verdrahtet: Jede der gut zwanzig anderen Listen kann welche bekommen, ohne dass Code dazukommt. Wo nichts beschrieben ist, erscheint auch keine Leiste.
+
 - **Die Dateiliste lässt sich durchsuchen, filtern und sortieren.** Bei einem Kunden mit vielen Dateien war „wo ist der Wartungsvertrag von 2024?" bisher eine Blätterübung — und die zuletzt hochgeladene Datei stand ganz hinten.
   - **Suche** über Bezeichnung und Endung: „alle xlsx" ist eine echte Frage, deshalb zählt die Endung als Suchbegriff.
   - **Art**: PDF, Bild, Text, Tabelle, Archiv oder Sonstige. Die Endung wird gespeichert, wie sie hochgeladen wurde — „Netzplan.PNG" ist ein Bild und fehlt im Filter nicht.
@@ -49,6 +55,9 @@
   - Die Ableitung sitzt im Model, nicht im Formular-Request: Das Livewire-Modal erzeugt den Request nur, um seine Regeln zu lesen — dessen `prepareForValidation` läuft dort nie. Im Model kommen beide Wege durch, auch der Proxmox-Agent.
 
 ### Fixed
+
+- **Windows-Lizenzen boten Debian und Proxmox zur Auswahl.** Eine Windows-Lizenz für Debian gibt es nicht — das Formular führte aber den ganzen Betriebssystem-Katalog. Jetzt stehen dort nur Windows-Systeme.
+  - Im **Demo-Datensatz** war es schon passiert: Dort standen Windows-Lizenzen für „Debian 13" und „Proxmox VE 7". Die Factory würfelte eine Betriebssystem-Nummer zwischen 1 und 14 — welches System dahinter steckt, hing an der Reihenfolge im Katalog. Sie zieht jetzt ein echtes Windows-System.
 
 - **Alle Adressen sind jetzt englisch.** `/admin/allgemein` fiel zwischen lauter englischen Pfaden auf und ließ sich in einer Anleitung schlecht zitieren. Deutsch gehört in die Beschriftung, nicht in die Adresse — die Oberfläche bleibt selbstverständlich deutsch.
   - `/admin/allgemein` → `/admin/general`, `/admin/papierkorb` → `/admin/trash`, `/admin/protokoll-historie` → `/admin/log-retention`, `/<kunde>/assistent` → `/<kunde>/wizard`, `/logo/{stelle}` → `/logo/{placement}`.

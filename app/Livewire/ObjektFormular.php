@@ -508,6 +508,13 @@ class ObjektFormular extends Component
                         $abfrage->where('customer_id', $this->customerId);
                     }
 
+                    // Einschraenkung des Typs, z. B. "nur Windows" beim
+                    // Betriebssystem einer Windows-Lizenz: Debian oder Proxmox
+                    // gehoeren dort nicht zur Auswahl.
+                    foreach ($feld['einschraenkung'] ?? [] as [$spalte, $verhaeltnis, $wert]) {
+                        $abfrage->where($spalte, $verhaeltnis, $wert);
+                    }
+
                     // Sortiert wird nach dem ersten genannten Feld - bei einem
                     // Muster also nach dem, was vorne steht.
                     $sortierung = preg_match('/\{(\w+)\}/', $feld['anzeige'], $t)

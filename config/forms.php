@@ -221,6 +221,12 @@ return [
         'model' => LicenseAccess::class, 'request' => LicenseAccessRequest::class,
         'relation' => 'licenseaccesses', 'einzahl' => 'CAL-Lizenz',
         'suchfelder' => ['name', 'key'],
+        // Kein Filter: Eine CAL-Lizenz hat weder Laufzeit noch Auswahlfeld -
+        // da bliebe nur eine leere Leiste.
+        'sortierungen' => [
+            'neueste' => ['Neueste zuerst', 'created_at', 'desc'],
+            'name' => ['Name', 'name', 'asc'],
+        ],
         'felder' => [
             ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
             ['name' => 'key', 'label' => 'Key', 'type' => 'text'],
@@ -235,6 +241,24 @@ return [
         'relation' => 'licensesoftware', 'einzahl' => 'Software-Lizenz',
         'suchfelder' => ['name', 'key', 'username'],
         'spalten' => 2,
+        'filter' => [
+            // "offen" schliesst Lizenzen ohne Enddatum ein: Eine Dauerlizenz
+            // laeuft nicht ab und gehoert zu den unproblematischen.
+            ['name' => 'ablauf', 'label' => 'Laufzeit', 'typ' => 'ablauf', 'feld' => 'end_date',
+                'alle' => 'Alle', 'optionen' => [
+                    'abgelaufen' => 'Abgelaufen',
+                    '30' => 'Läuft in 30 Tagen ab',
+                    '90' => 'Läuft in 90 Tagen ab',
+                    'offen' => 'Läuft noch',
+                ]],
+            ['name' => 'abo', 'label' => 'Abonnement', 'typ' => 'werte', 'feld' => 'abo',
+                'alle' => 'Alle', 'optionen' => ['Jährlich' => 'Jährlich', 'Monatlich' => 'Monatlich']],
+        ],
+        'sortierungen' => [
+            'neueste' => ['Neueste zuerst', 'created_at', 'desc'],
+            'ablauf' => ['Ablauf zuerst', 'end_date', 'asc'],
+            'name' => ['Name', 'name', 'asc'],
+        ],
         'felder' => [
             ['name' => 'name', 'label' => 'Name', 'type' => 'text', 'breit' => true],
             ['name' => 'key', 'label' => 'Key', 'type' => 'text', 'breit' => true],
@@ -256,9 +280,25 @@ return [
         'model' => LicenseWindows::class, 'request' => LicenseWindowsRequest::class,
         'relation' => 'licensewindows', 'einzahl' => 'Windows-Lizenz',
         'suchfelder' => ['key'],
+        'filter' => [
+            // Die Auswahl kommt aus dem Bestand, nicht aus dem ganzen Katalog:
+            // Ein Betriebssystem, zu dem es keine Lizenz gibt, waere eine
+            // Zeile, die immer nichts findet.
+            ['name' => 'os', 'label' => 'Betriebssystem', 'typ' => 'beziehung',
+                'feld' => 'operating_system_id', 'quelle' => OperatingSystem::class,
+                'anzeige' => 'name', 'alle' => 'Alle Betriebssysteme', 'optionen' => []],
+        ],
+        'sortierungen' => [
+            'neueste' => ['Neueste zuerst', 'created_at', 'desc'],
+        ],
         'felder' => [
+            // Nur Windows-Systeme zur Auswahl: Eine Windows-Lizenz fuer
+            // Debian oder Proxmox gibt es nicht, und der Katalog fuehrt
+            // beides. Der Praefix reicht - alle Windows-Eintraege beginnen
+            // damit (siehe OperatingSystemsSeeder).
             ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'auswahl',
-                'quelle' => OperatingSystem::class, 'anzeige' => 'name'],
+                'quelle' => OperatingSystem::class, 'anzeige' => 'name',
+                'einschraenkung' => [['name', 'like', 'Windows%']]],
             ['name' => 'key', 'label' => 'Key', 'type' => 'text'],
             ['name' => 'file_name', 'label' => 'Bezeichnung der Datei', 'type' => 'text'],
             // Der Pfad entsteht beim Hochladen und wird nicht eingetippt.

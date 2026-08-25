@@ -181,6 +181,11 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
         ->merge(collect(config('custom.branding_logos', []))->flatten())
         // Beschriftung je Dateiart.
         ->merge(collect(config('custom.file_arten', []))->map(fn ($a) => $a[0]))
+        // Filter und Sortierungen der Listen (config/forms.php): Beschriftung,
+        // Optionen und die Zeile "Alle" laufen erst zur Laufzeit durch __().
+        ->merge(collect(config('forms'))->flatMap(fn ($typ) => collect($typ['filter'] ?? [])
+            ->flatMap(fn ($f) => array_merge([$f['label'], $f['alle'] ?? null], array_values($f['optionen'] ?? [])))))
+        ->merge(collect(config('forms'))->flatMap(fn ($typ) => collect($typ['sortierungen'] ?? [])->map(fn ($s) => $s[0])))
         ->merge(array_values(config('custom.rack_appearances', [])))
         ->merge(array_values(config('custom.server_form_factors', [])))
         ->merge(array_values(config('custom.cluster_types', [])))

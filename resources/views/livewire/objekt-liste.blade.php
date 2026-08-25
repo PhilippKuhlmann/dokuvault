@@ -17,6 +17,47 @@
         <livewire:objekt-formular :typ="$typ" :customer="$customer" :key="'formular-'.$typ" />
     </x-sitetopmenu>
 
+    {{-- Filterleiste nur, wo der Typ etwas anzubieten hat: Eine Lizenz hat
+         eine Laufzeit, ein Drucker nicht - eine leere Leiste ueber jeder Liste
+         waere nur Rauschen. --}}
+    @if ($filterDefinition || $sortierungen)
+        <div class="m-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach ($filterDefinition as $def)
+                    <div wire:key="filter-{{ $def['name'] }}">
+                        <x-input.label :value="__($def['label'])" />
+                        <x-input.select :name="'filter.'.$def['name']" wire:model.live="filter.{{ $def['name'] }}" class="mt-1">
+                            <option value="">{{ __($def['alle'] ?? 'Alle') }}</option>
+                            @foreach ($def['optionen'] as $wert => $beschriftung)
+                                <option value="{{ $wert }}">{{ __($beschriftung) }}</option>
+                            @endforeach
+                        </x-input.select>
+                    </div>
+                @endforeach
+
+                @if ($sortierungen)
+                    <div>
+                        <x-input.label :value="__('Sortierung')" />
+                        <x-input.select name="sortierung" wire:model.live="sortierung" class="mt-1">
+                            @foreach ($sortierungen as $schluessel => $eine)
+                                <option value="{{ $schluessel }}">{{ __($eine[0]) }}</option>
+                            @endforeach
+                        </x-input.select>
+                    </div>
+                @endif
+            </div>
+
+            @if ($gefiltert)
+                <div class="mt-4 flex border-t border-gray-100 pt-4 dark:border-gray-700">
+                    <button type="button" wire:click="zuruecksetzen"
+                        class="ml-auto text-sm text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400">
+                        {{ __('Filter zurücksetzen') }}
+                    </button>
+                </div>
+            @endif
+        </div>
+    @endif
+
     {{-- Zwei Darstellungen im Bestand: Die meisten Listen zeigen Karten, einige
          eine Tabelle. Welche es ist, entscheidet die Datei beim Typ - eine
          erzwungene Vereinheitlichung waere ein zweiter Umbau in einem. --}}
@@ -49,6 +90,10 @@
                  "noch nichts angelegt". --}}
             <div class="px-3 py-8 text-center text-gray-500 dark:text-gray-400">
                 {{ __('Kein Eintrag passt zu ":begriff".', ['begriff' => $search]) }}
+            </div>
+        @elseif ($gefiltert)
+            <div class="px-3 py-8 text-center text-gray-500 dark:text-gray-400">
+                {{ __('Kein Eintrag passt zu den Filtern.') }}
             </div>
         @else
             <x-emptystate />
