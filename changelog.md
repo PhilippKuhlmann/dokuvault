@@ -13,7 +13,15 @@
   - Die Auswahl ist jetzt nach *Kennwörter* und *SSH-Schlüssel* gruppiert.
   - Verknüpfte Schlüssel tragen ein Kürzel **SSH** — in der Tabelle und auf der Gerätekarte. Ohne das stand unter „Passwort" eine Passphrase, ohne dass man es sehen konnte. Ein Schlüssel ohne Passphrase steht als „ohne Passphrase" da statt als Strich: Das ist eine Aussage, kein fehlender Wert.
 
+- **Ein Schlüsselpaar lässt sich im Fenster erzeugen.** Knopf *Schlüsselpaar erzeugen* im SSH-Schlüssel-Fenster: füllt öffentlichen und privaten Teil, mit optionaler Passphrase. Der Kommentar am öffentlichen Schlüssel wird aus Benutzer und Name gebildet (`deploy@deploy-ci`) — daran erkennt man ihn später in einer `authorized_keys` wieder.
+  - Erzeugt wird mit `ssh-keygen`, nicht in PHP nachgebaut. Das OpenSSH-Format des privaten Teils ist eine gepackte Binärstruktur, mit Passphrase kommen bcrypt-KDF und aes256-ctr dazu; ein hier nachgebauter Schlüssel wäre im Zweifel subtil falsch — und das fällt erst auf, wenn ihn nachts ein Server ablehnt. Die Tests lassen `ssh-keygen` das Ergebnis deshalb selbst wieder ableiten.
+  - Erzeugen speichert nicht: Erst der Speichern-Knopf legt an. Beim Bearbeiten wird nachgefragt, sonst ist ein dokumentierter Schlüssel mit einem Klick weg.
+  - Der Mechanismus ist allgemein (`erzeuger` in `config/forms.php`) — das Fenster kennt nur „dieser Typ hat einen Erzeuger", nicht dessen Innenleben.
+  - Mehrzeilige Felder machen das Fenster jetzt auch beim **Anlegen** breit, nicht erst beim Bearbeiten.
+
 ### Fixed
+
+- **Ein Blade-Komponenten-Tag mit `@if` in den Attributen wird nicht übersetzt.** Der Erzeugen-Knopf stand dadurch wörtlich als `<x-input.button …>` im HTML und war unsichtbar. Der Test dazu rief die Methode direkt auf und lief grün — er prüft jetzt das gerenderte Fenster.
 
 - **Ein Schlüssel am Gerät verwies auf die Login-Bearbeitung, die ihn nicht findet.** Die Seite bindet über die Login-Klasse, und die sieht keine Schlüssel — der Verweis lief auf 404. Er zeigt jetzt in die Schlüsselliste.
 

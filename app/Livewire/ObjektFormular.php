@@ -213,6 +213,29 @@ class ObjektFormular extends Component
             : $regel;
     }
 
+    /**
+     * Werte fuer das Formular erzeugen lassen, wo der Typ einen Erzeuger nennt.
+     *
+     * Das Modal bleibt dabei generisch: Es weiss nur, dass es einen gibt
+     * (config/forms.php), und schreibt zurueck, was er liefert. Gespeichert
+     * wird nichts - erst der Speichern-Knopf legt an.
+     */
+    public function erzeugen(): void
+    {
+        Gate::authorize($this->bearbeiteId ? $this->typ.'_update' : $this->typ.'_create');
+
+        $klasse = $this->einstellung()['erzeuger'] ?? null;
+        abort_if($klasse === null, 404);
+
+        try {
+            $this->form = array_merge($this->form, app($klasse)->erzeugen($this->form));
+        } catch (\RuntimeException $fehler) {
+            // Als Feldfehler und nicht als Ausnahme: Ein fehlendes Verfahren
+            // ist eine Eingabe, die man korrigieren kann, kein Serverfehler.
+            $this->addError('form.key_type', $fehler->getMessage());
+        }
+    }
+
     public function speichern(): void
     {
         Gate::authorize($this->bearbeiteId ? $this->typ.'_update' : $this->typ.'_create');
@@ -492,6 +515,12 @@ class ObjektFormular extends Component
             // Breiter als die Bloecke sonst bekommen: nur wo das Formular selbst
             // kaum Felder hat und der Block den Inhalt ausmacht.
             'breitesModal' => (bool) ($einstellung['breit'] ?? false),
+            // Mehrzeilige Felder brauchen die Breite immer, nicht erst beim
+            // Bearbeiten: Ein Schluessel steht sonst schon beim Anlegen in
+            // einem Feld, in dem man ihn nicht lesen kann.
+            'mehrzeiligeFelder' => collect($einstellung['felder'])->contains('type', 'mehrzeilig'),
+            // Beschriftung des Erzeuger-Knopfs, wo der Typ einen nennt.
+            'erzeugerLabel' => isset($einstellung['erzeuger']) ? $einstellung['erzeuger_label'] : null,
             // Je Block einzeln: Ein FTP-Server fuehrt Zugangsdaten, aber keine
             // IP-Adressen. Wuerde der IP-Block trotzdem gerendert, riefe er
             // ipAddresses() auf einem Model auf, das die Relation nicht hat.

@@ -81,6 +81,7 @@ use App\Models\SshKey;
 use App\Models\Ups;
 use App\Models\VM;
 use App\Models\Wifi;
+use App\Support\SshKeyGenerator;
 
 /*
 |--------------------------------------------------------------------------
@@ -364,9 +365,11 @@ return [
         'relation' => 'sshkeys', 'einzahl' => 'SSH-Schlüssel',
         'suchfelder' => ['name', 'username', 'description', 'public_key'],
         'mitladen' => ['links.credentialable'],
-        // Zwei Spalten waeren hier falsch: Die beiden Schluesselfelder sind
-        // mehrzeilig und brauchen die ganze Breite.
-        'breit' => true,
+        // Die Breite kommt hier von den mehrzeiligen Feldern selbst, dafuer
+        // braucht es kein 'breit'.
+        // Fuellt die beiden Schluesselfelder per ssh-keygen.
+        'erzeuger' => SshKeyGenerator::class,
+        'erzeuger_label' => 'Schlüsselpaar erzeugen',
         'felder' => [
             ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
             ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],

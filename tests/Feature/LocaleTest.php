@@ -186,6 +186,10 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
         ->merge(collect(config('forms'))->flatMap(fn ($typ) => collect($typ['filter'] ?? [])
             ->flatMap(fn ($f) => array_merge([$f['label'], $f['alle'] ?? null], array_values($f['optionen'] ?? [])))))
         ->merge(collect(config('forms'))->flatMap(fn ($typ) => collect($typ['sortierungen'] ?? [])->map(fn ($s) => $s[0])))
+        // Beschriftung des Erzeuger-Knopfs je Typ. values(), weil merge()
+        // nach Schluessel zusammenfuehrt: 'sshkey' kommt weiter unten in
+        // trashables noch einmal vor und haette den Eintrag ueberschrieben.
+        ->merge(collect(config('forms'))->map(fn ($typ) => $typ['erzeuger_label'] ?? null)->filter()->values())
         // Feldbeschriftungen und Platzhalter der Modale (config/forms.php):
         // Sie stehen nirgends als __('...') im Code, sondern laufen im
         // generischen Formular zur Laufzeit hindurch.

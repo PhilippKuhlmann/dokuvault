@@ -30,6 +30,7 @@
                 // Felder, darunter die Zugangsdaten).
                 $breite = match (true) {
                     $spalten > 1 => 'max-w-3xl',
+                    $mehrzeiligeFelder => 'max-w-3xl',
                     $breitesModal && $bearbeiteId => 'max-w-3xl',
                     $mitBloecken && $bearbeiteId => 'max-w-2xl',
                     default => 'max-w-md',
@@ -209,6 +210,32 @@
                             </div>
                         @endforeach
                     </div>
+
+                    @if ($erzeugerLabel)
+                        {{-- Fuellt Felder, speichert aber nicht: Erst der
+                             Speichern-Knopf legt an. Beim Bearbeiten wird
+                             nachgefragt, sonst ist ein dokumentierter
+                             Schluessel mit einem Klick weg. --}}
+                        <div class="mt-3 flex items-center gap-3">
+                            {{-- Zwei Varianten statt einer mit @if in den
+                                 Attributen: Ein @if innerhalb eines
+                                 Komponenten-Tags uebersetzt Blade nicht - der
+                                 Tag stand woertlich im HTML. Und ein leeres
+                                 wire:confirm gilt trotzdem als Nachfrage, haelt
+                                 beim Anlegen also mit einem leeren Dialog an. --}}
+                            @if ($bearbeiteId)
+                                <x-input.button type="button" size="feld" color="gray" wire:click="erzeugen"
+                                    wire:confirm="{{ __('Vorhandene Werte werden überschrieben. Fortfahren?') }}"
+                                    :label="__($erzeugerLabel)" />
+                            @else
+                                <x-input.button type="button" size="feld" color="gray" wire:click="erzeugen"
+                                    :label="__($erzeugerLabel)" />
+                            @endif
+                            <span wire:loading wire:target="erzeugen" class="text-xs text-cerulean-600 dark:text-cerulean-400">
+                                {{ __('wird erzeugt …') }}
+                            </span>
+                        </div>
+                    @endif
 
                     @if ($mitBloecken)
                         @if ($bearbeiteId)
