@@ -9,7 +9,15 @@
   - Getrennt sind die beiden nur in der Anzeige: Ein Schlüssel taucht nicht in *Logins Allgemein* auf und ein Kennwort nicht in der Schlüsselliste — „welcher Key gilt auf SRV-01?" ist eine andere Frage als „wie lautet das Kennwort?".
   - Der private Schlüssel wird verschlüsselt abgelegt, der öffentliche nicht: Der ist zum Verteilen da und muss durchsuchbar bleiben, damit man ihn in einer `authorized_keys` wiederfindet. Im PDF steht er deshalb auch — der private nicht, den bekäme man aus einem weitergereichten Dokument nicht mehr zurück.
 
+- **Am Gerät sind Schlüssel als solche erkennbar.** Gemeldet: In der Auswahl „Vorhandenes Login" sah man einem Namen nicht an, ob dahinter ein Kennwort oder ein Schlüssel steckt.
+  - Die Auswahl ist jetzt nach *Kennwörter* und *SSH-Schlüssel* gruppiert.
+  - Verknüpfte Schlüssel tragen ein Kürzel **SSH** — in der Tabelle und auf der Gerätekarte. Ohne das stand unter „Passwort" eine Passphrase, ohne dass man es sehen konnte. Ein Schlüssel ohne Passphrase steht als „ohne Passphrase" da statt als Strich: Das ist eine Aussage, kein fehlender Wert.
+
 ### Fixed
+
+- **Ein Schlüssel am Gerät verwies auf die Login-Bearbeitung, die ihn nicht findet.** Die Seite bindet über die Login-Klasse, und die sieht keine Schlüssel — der Verweis lief auf 404. Er zeigt jetzt in die Schlüsselliste.
+
+- **Schlüssel und Kennwörter haben getrennte Rechte, auch am Gerät.** Beide liegen in derselben Tabelle; über den Zugangsdaten-Block hätte bisher jeder mit Login-Recht auch die Schlüssel gesehen und verknüpfen können. Jetzt zeigt und akzeptiert der Block nur, was das eigene Recht abdeckt — die Prüfung sitzt in der Validierung, nicht nur in der Auswahlliste.
 
 - **Feldbeschriftungen der Modale gingen am Übersetzungsabgleich vorbei.** Der Test findet Zeichenketten über `__('…')` im Code; Beschriftungen aus `config/forms.php` laufen aber erst zur Laufzeit hindurch und galten deshalb als unbenutzt. Jetzt werden sie mitgelesen — samt Platzhaltern und festen Auswahlwerten.
 

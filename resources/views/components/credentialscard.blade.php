@@ -7,8 +7,15 @@
      Beschriftung ist die Notiz, falls eine gepflegt ist ("Serielle Konsole"),
      sonst der Name des Logins. Beides nebeneinander wäre auf 20 rem doppelt. --}}
 
-@can('logingeneral_viewAny')
-    @php ($eintraege = $device->zugangsdaten())
+@canany(['logingeneral_viewAny', 'sshkey_viewAny'])
+    {{-- Kennwoerter und Schluessel liegen in derselben Tabelle, haben aber
+         getrennte Rechte: Wer nur eines darf, sieht auch nur eines. --}}
+    @php ($arten = collect([
+        \App\Models\LoginGeneral::KIND => 'logingeneral_viewAny',
+        \App\Models\SshKey::KIND => 'sshkey_viewAny',
+    ])->filter(fn ($recht) => auth()->user()->can($recht))->keys()->all())
+
+    @php ($eintraege = $device->zugangsdaten()->filter(fn ($e) => in_array($e->login->kind, $arten, true)))
 
     @if ($eintraege->isNotEmpty())
         <div class="w-full mb-5 break-inside-avoid">
@@ -25,6 +32,11 @@
                                  ("10.10.30.7Hersteller"). Umgebrochen wird nur, wenn es sonst nicht passt. --}}
                             <td class="py-1 pr-6 align-top break-words text-gray-500 dark:text-gray-400">
                                 {{ $eintrag->note ?: $eintrag->login->name }}
+                                {{-- Ohne das Merkmal sieht man der Zeile nicht an,
+                                     dass darunter eine Passphrase steht. --}}
+                                @if ($eintrag->login->istSchluessel())
+                                    <span class="ml-1 rounded bg-gray-100 px-1 py-0.5 align-middle text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:bg-gray-700 dark:text-gray-300">{{ __('SSH') }}</span>
+                                @endif
                             </td>
                             <td class="py-1 w-full align-top text-gray-900 dark:text-gray-100">
                                 @if ($eintrag->login->username)
@@ -40,4 +52,4 @@
             </div>
         </div>
     @endif
-@endcan
+@endcanany

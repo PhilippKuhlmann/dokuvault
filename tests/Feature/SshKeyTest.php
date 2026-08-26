@@ -71,7 +71,7 @@ test('der private Schluessel steht verschluesselt in der Datenbank, der oeffentl
 });
 
 test('ein Schluessel laesst sich an mehrere Server haengen', function () {
-    $this->actingAs(userWithPermissions(['server_update', 'logingeneral_viewAny']));
+    $this->actingAs(userWithPermissions(['server_update', 'sshkey_viewAny']));
     [$customer, $schluessel] = sshUmgebung();
 
     $site = Site::factory()->create(['customer_id' => $customer->id]);
@@ -162,4 +162,115 @@ test('ohne Recht bleibt die Liste verschlossen', function () {
     $customer = Customer::factory()->create();
 
     $this->get(route('sshkey.index', $customer))->assertForbidden();
+});
+
+test('am Geraet ist ein Schluessel als solcher erkennbar', function () {
+    $this->actingAs(userWithPermissions(['server_update', 'logingeneral_viewAny', 'sshkey_viewAny']));
+    [$customer, $schluessel] = sshUmgebung();
+
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $server = Server::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'SRV-01',
+        'operating_system_id' => OperatingSystem::factory()->create(['name' => 'Debian 13'])->id,
+    ]);
+    $server->credentialLinks()->create([
+        'customer_id' => $customer->id, 'login_general_id' => $schluessel->id,
+    ]);
+
+    // Gemeldet: In der Liste sieht man nicht, welche Eintraege Schluessel sind.
+    Livewire::test(DeviceCredentials::class, ['model' => $server, 'customer' => $customer])
+        ->assertSee('Admin ed25519')
+        ->assertSee('SSH');
+});
+
+test('der Name eines Schluessels fuehrt nicht in die Login-Bearbeitung', function () {
+    $this->actingAs(userWithPermissions([
+        'server_update', 'logingeneral_viewAny', 'logingeneral_update', 'sshkey_viewAny',
+    ]));
+    [$customer, $schluessel] = sshUmgebung();
+
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $server = Server::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'SRV-01',
+        'operating_system_id' => OperatingSystem::factory()->create(['name' => 'Debian 13'])->id,
+    ]);
+    $server->credentialLinks()->create([
+        'customer_id' => $customer->id, 'login_general_id' => $schluessel->id,
+    ]);
+
+    $html = Livewire::test(DeviceCredentials::class, ['model' => $server, 'customer' => $customer])->html();
+
+    // Die Login-Bearbeitung bindet ueber LoginGeneral und sieht keine
+    // Schluessel - der Verweis liefe auf 404.
+    expect(str_contains($html, route('logingeneral.edit', [$customer, $schluessel->id])))
+        ->toBeFalse('Ein Schluessel darf nicht auf die Login-Bearbeitung verweisen.');
+    expect($html)->toContain(route('sshkey.index', $customer));
+
+    $this->get(route('logingeneral.edit', [$customer, $schluessel->id]))->assertNotFound();
+});
+
+test('die Auswahl trennt Kennwoerter von Schluesseln', function () {
+    $this->actingAs(userWithPermissions(['server_update', 'logingeneral_viewAny', 'sshkey_viewAny']));
+    [$customer, $schluessel] = sshUmgebung();
+
+    LoginGeneral::create([
+        'customer_id' => $customer->id, 'name' => 'Linux root',
+        'username' => 'root', 'password' => 'geheim123',
+    ]);
+
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $server = Server::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'SRV-01',
+        'operating_system_id' => OperatingSystem::factory()->create(['name' => 'Debian 13'])->id,
+    ]);
+
+    Livewire::test(DeviceCredentials::class, ['model' => $server, 'customer' => $customer])
+        ->assertSeeHtml('<optgroup label="Kennwörter">')
+        ->assertSeeHtml('<optgroup label="SSH-Schlüssel">');
+});
+
+test('ohne Schluessel-Recht bleiben Schluessel auch am Geraet verborgen', function () {
+    $this->actingAs(userWithPermissions(['server_update', 'logingeneral_viewAny']));
+    [$customer, $schluessel] = sshUmgebung();
+
+    $kennwort = LoginGeneral::create([
+        'customer_id' => $customer->id, 'name' => 'Linux root',
+        'username' => 'root', 'password' => 'geheim123',
+    ]);
+
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $server = Server::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'SRV-01',
+        'operating_system_id' => OperatingSystem::factory()->create(['name' => 'Debian 13'])->id,
+    ]);
+
+    foreach ([$schluessel, $kennwort] as $eintrag) {
+        $server->credentialLinks()->create([
+            'customer_id' => $customer->id, 'login_general_id' => $eintrag->id,
+        ]);
+    }
+
+    // Beide haengen am Server, aber nur eines gehoert vor diese Augen.
+    Livewire::test(DeviceCredentials::class, ['model' => $server, 'customer' => $customer])
+        ->assertSee('Linux root')
+        ->assertDontSee('Admin ed25519');
+});
+
+test('ohne Schluessel-Recht laesst sich auch keiner anhaengen', function () {
+    $this->actingAs(userWithPermissions(['server_update', 'logingeneral_viewAny']));
+    [$customer, $schluessel] = sshUmgebung();
+
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $server = Server::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'SRV-01',
+        'operating_system_id' => OperatingSystem::factory()->create(['name' => 'Debian 13'])->id,
+    ]);
+
+    // Die Auswahl bietet ihn nicht an - die geratene Id darf es auch nicht.
+    Livewire::test(DeviceCredentials::class, ['model' => $server, 'customer' => $customer])
+        ->set('login_id', $schluessel->id)
+        ->call('attach')
+        ->assertHasErrors('login_id');
+
+    expect($server->fresh()->credentialLinks()->count())->toBe(0);
 });

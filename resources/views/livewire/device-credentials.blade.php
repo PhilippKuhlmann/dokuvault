@@ -17,7 +17,7 @@
         <span class="rounded bg-cerulean-50 px-2 py-0.5 text-xs text-cerulean-700 dark:bg-cerulean-950 dark:text-cerulean-300">{{ __('speichert sofort') }}</span>
     </div>
     <div class="text-xs text-gray-400 dark:text-gray-500 mb-4">
-        {{ __('Verknüpft mit „Logins Allgemein" – dasselbe Passwort kann an mehreren Systemen hängen.') }}
+        {{ __('Kennwörter und SSH-Schlüssel – derselbe Eintrag kann an mehreren Systemen hängen.') }}
     </div>
 
     @if ($entries->isNotEmpty())
@@ -45,12 +45,24 @@
                 @foreach ($entries as $entry)
                     <tr wire:key="link-{{ $entry->id }}" class="border-b border-gray-50 last:border-0 dark:border-gray-700/50">
                         <td class="py-2 pr-4 text-gray-900 dark:text-gray-100">
-                            @can('logingeneral_update')
+                            @php ($istSchluessel = $entry->login->istSchluessel())
+                            {{-- Zwei Ziele: Ein Schluessel liegt in seiner eigenen
+                                 Liste, die Login-Bearbeitung findet ihn nicht. --}}
+                            @if ($istSchluessel && auth()->user()->can('sshkey_viewAny'))
+                                <a href="{{ route('sshkey.index', $kunde) }}"
+                                    class="text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400">{{ $entry->login->name }}</a>
+                            @elseif (! $istSchluessel && auth()->user()->can('logingeneral_update'))
                                 <a href="{{ route('logingeneral.edit', [$kunde, $entry->login_general_id]) }}"
                                     class="text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400">{{ $entry->login->name }}</a>
                             @else
                                 {{ $entry->login->name }}
-                            @endcan
+                            @endif
+
+                            {{-- Ohne das Merkmal sieht man der Zeile nicht an, dass
+                                 unter "Passwort" eine Passphrase steht. --}}
+                            @if ($istSchluessel)
+                                <span class="ml-1 rounded bg-gray-100 px-1.5 py-0.5 align-middle text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:bg-gray-700 dark:text-gray-300">{{ __('SSH') }}</span>
+                            @endif
                         </td>
                         <td class="py-2 pr-4 font-mono text-gray-600 dark:text-gray-300">{{ $entry->login->username ?: '—' }}</td>
                         <td class="py-2 pr-4">
@@ -60,7 +72,7 @@
                                         value="{{ $entry->login->password }}"
                                         class="w-28 p-0 text-sm font-mono bg-transparent border-0 text-gray-900 dark:text-gray-100">
                                     <button type="button" tabindex="-1" x-on:click="show = !show"
-                                        title="{{ __('Passwort anzeigen') }}"
+                                        title="{{ $entry->login->istSchluessel() ? __('Passphrase anzeigen') : __('Passwort anzeigen') }}"
                                         class="text-gray-400 hover:text-cerulean-600 dark:text-gray-500 dark:hover:text-gray-300">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
@@ -78,6 +90,10 @@
                                         </svg>
                                     </button>
                                 </div>
+                            @elseif ($entry->login->istSchluessel())
+                                {{-- Ein Schluessel ohne Passphrase ist eine Aussage,
+                                     kein fehlender Wert. --}}
+                                <span class="text-gray-400 dark:text-gray-500">{{ __('ohne Passphrase') }}</span>
                             @else
                                 <span class="text-gray-400 dark:text-gray-500">—</span>
                             @endif
@@ -110,8 +126,14 @@
                 <option value="">{{ __('— bitte wählen —') }}</option>
                 {{-- Benutzername nur anhaengen, wenn der Name ihn nicht schon nennt:
                      umgezogene Geraete-Logins heissen bereits "NAS-01 (admin)". --}}
-                @foreach ($logins as $login)
-                    <option value="{{ $login->id }}">{{ $login->name }}{{ $login->username && ! str_contains($login->name, $login->username) ? ' ('.$login->username.')' : '' }}</option>
+                @foreach (['password' => __('Kennwörter'), 'sshkey' => __('SSH-Schlüssel')] as $art => $ueberschrift)
+                    @if (($logins[$art] ?? collect())->isNotEmpty())
+                        <optgroup label="{{ $ueberschrift }}">
+                            @foreach ($logins[$art] as $login)
+                                <option value="{{ $login->id }}">{{ $login->name }}{{ $login->username && ! str_contains($login->name, $login->username) ? ' ('.$login->username.')' : '' }}</option>
+                            @endforeach
+                        </optgroup>
+                    @endif
                 @endforeach
             </x-input.select>
             @error('login_id') <span class="text-xs text-red-600 mt-1">{{ $message }}</span> @enderror

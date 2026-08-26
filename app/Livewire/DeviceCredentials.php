@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Customer;
 use App\Models\LoginGeneral;
+use App\Models\SshKey;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
@@ -63,12 +64,31 @@ class DeviceCredentials extends Component
      * Autorisierung: Recht zum Bearbeiten des Gerätetyps UND Kundenzugehörigkeit.
      * (Public Properties sind client-seitig manipulierbar → bei jeder Aktion prüfen.)
      */
+    /**
+     * Welche Arten von Zugangsdaten dieser Benutzer sehen darf.
+     *
+     * Kennwoerter und SSH-Schluessel liegen in derselben Tabelle, haben aber
+     * getrennte Rechte. Ohne diese Unterscheidung saehe jeder mit Login-Recht
+     * ueber den Geraeteblock auch die Schluessel.
+     *
+     * @return array<int, string>
+     */
+    protected function sichtbareArten(): array
+    {
+        return collect([
+            LoginGeneral::KIND => 'logingeneral_viewAny',
+            SshKey::KIND => 'sshkey_viewAny',
+        ])->filter(fn ($recht) => Gate::allows($recht))->keys()->all();
+    }
+
     protected function device()
     {
         $device = $this->modelClass::findOrFail($this->modelId);
 
         Gate::authorize(strtolower(class_basename($this->modelClass)).'_update');
-        Gate::authorize('logingeneral_viewAny');
+
+        // Eine der beiden Arten genuegt - welche, entscheidet sichtbareArten().
+        abort_if($this->sichtbareArten() === [], 403);
 
         $user = auth()->user();
         abort_if($user->customer_id && $user->customer_id !== $device->customer_id, 403);
@@ -85,7 +105,12 @@ class DeviceCredentials extends Component
             // Kundengebunden geprüft: sonst hängt man sich mit einer geratenen ID
             // fremde Zugangsdaten an das eigene Gerät.
             'login_id' => ['required', Rule::exists('login_generals', 'id')
-                ->where('customer_id', $this->customerId)->whereNull('deleted_at')],
+                ->where('customer_id', $this->customerId)
+                // Nur die Arten, die dieser Benutzer sehen darf: sonst haengt
+                // er mit einer geratenen Id einen Schluessel an, den er in
+                // seiner eigenen Liste gar nicht zu sehen bekaeme.
+                ->whereIn('kind', $this->sichtbareArten())
+                ->whereNull('deleted_at')],
             'note' => ['nullable', 'max:255'],
         ]);
 
@@ -146,7 +171,10 @@ class DeviceCredentials extends Component
     public function render()
     {
         $device = $this->modelClass::find($this->modelId);
-        $entries = $device ? $device->zugangsdaten() : collect();
+        $arten = $this->sichtbareArten();
+        $entries = ($device ? $device->zugangsdaten() : collect())
+            ->filter(fn ($link) => in_array($link->login->kind, $arten, true))
+            ->values();
 
         return view('livewire.device-credentials', [
             'entries' => $entries,
@@ -157,10 +185,14 @@ class DeviceCredentials extends Component
             // Auch die Schluessel: An ein Geraet gehoert genauso gut ein
             // SSH-Schluessel wie ein Kennwort - sonst liesse er sich nirgends
             // anhaengen. Nur dieser Filter faellt weg, der Papierkorb bleibt.
+            // Nach Art gruppiert: In einer gemischten Liste sieht man einem
+            // Namen nicht an, ob dahinter ein Kennwort oder ein Schluessel steht.
             'logins' => LoginGeneral::withoutGlobalScope(LoginGeneral::SCOPE)
                 ->where('customer_id', $this->customerId)
+                ->whereIn('kind', $arten)
                 ->whereNotIn('id', $entries->pluck('login_general_id'))
-                ->orderBy('name')->get(),
+                ->orderBy('name')->get()
+                ->groupBy(fn ($login) => $login->istSchluessel() ? 'sshkey' : 'password'),
         ]);
     }
 }

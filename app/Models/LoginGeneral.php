@@ -46,6 +46,18 @@ class LoginGeneral extends Model
      * Fremdschluessel ausdruecklich: SshKey erbt diese Relation, und Eloquent
      * wuerde den Namen sonst aus der Klasse ableiten - "ssh_key_id" gibt es nicht.
      */
+    /**
+     * Ob dieser Eintrag ein SSH-Schluessel ist.
+     *
+     * Steht hier und nicht an SshKey: Ueber eine Verknuepfung kommt immer ein
+     * LoginGeneral zurueck, auch wenn dahinter ein Schluessel steckt (siehe
+     * CredentialLink::login). Die Anzeige am Geraet muss beides unterscheiden.
+     */
+    public function istSchluessel(): bool
+    {
+        return $this->kind === SshKey::KIND;
+    }
+
     public function links()
     {
         return $this->hasMany(CredentialLink::class, 'login_general_id');
