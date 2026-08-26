@@ -54,6 +54,7 @@ use App\Http\Controllers\ServerController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SiteController;
+use App\Http\Controllers\SshKeyController;
 use App\Http\Controllers\TrashController;
 use App\Http\Controllers\UpsController;
 use App\Http\Controllers\UserController;
@@ -270,6 +271,8 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::resource('adgroup', ADGroupController::class)->except(['show']);
             Route::resource('loginwebsite', LoginWebsiteController::class)->except(['show']);
             Route::resource('logingeneral', LoginGeneralController::class)->except(['show']);
+            // Nur die Liste: Anlegen, Bearbeiten und Loeschen laufen ueber das Modal.
+            Route::get('sshkey', [SshKeyController::class, 'index'])->name('sshkey.index');
             Route::resource('phonesystem', PhoneSystemController::class)->except(['show']);
             Route::resource('phone', PhoneController::class)->except(['show']);
             Route::resource('dect', DECTController::class)->except(['show']);

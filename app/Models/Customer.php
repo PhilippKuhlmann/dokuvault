@@ -129,6 +129,15 @@ class Customer extends Model
         return $this->hasMany(LoginGeneral::class);
     }
 
+    /**
+     * Die SSH-Schluessel des Kunden - dieselbe Tabelle wie die Logins,
+     * getrennt ueber 'kind' (siehe App\Models\SshKey).
+     */
+    public function sshkeys()
+    {
+        return $this->hasMany(SshKey::class);
+    }
+
     public function loginwebsites()
     {
         return $this->hasMany(LoginWebsite::class);

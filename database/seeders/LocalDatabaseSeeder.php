@@ -45,11 +45,13 @@ use App\Models\SecurepointUMA;
 use App\Models\Server;
 use App\Models\Service;
 use App\Models\Site;
+use App\Models\SshKey;
 use App\Models\Ups;
 use App\Models\User;
 use App\Models\VM;
 use App\Models\Wifi;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class LocalDatabaseSeeder extends Seeder
 {
@@ -573,6 +575,30 @@ class LocalDatabaseSeeder extends Seeder
             ]);
         }
 
+        // Zwei SSH-Schluessel: einer fuer die Verwaltung aller Linux-Systeme,
+        // einer nur fuer die naechtliche Auslagerung. Der erste haengt an
+        // mehreren Servern - dafuer stehen die Schluessel bei den Logins.
+        $adminKey = SshKey::create([
+            'customer_id' => $customer->id,
+            'name' => 'Admin ed25519',
+            'description' => 'Wartungszugang der Linux-Systeme',
+            'username' => 'root',
+            'key_type' => 'ed25519',
+            'public_key' => 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH'.Str::random(32).' admin@'.Str::slug($customer->name),
+            'private_key' => "-----BEGIN OPENSSH PRIVATE KEY-----\n".Str::random(64)."\n-----END OPENSSH PRIVATE KEY-----",
+            'password' => fake()->password(12, 16),
+        ]);
+
+        SshKey::create([
+            'customer_id' => $customer->id,
+            'name' => 'Backup rsa',
+            'description' => 'Nur fuer die naechtliche Auslagerung, ohne Passphrase',
+            'username' => 'backup',
+            'key_type' => 'rsa',
+            'public_key' => 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQ'.Str::random(48).' backup@'.Str::slug($customer->name),
+            'private_key' => "-----BEGIN RSA PRIVATE KEY-----\n".Str::random(96)."\n-----END RSA PRIVATE KEY-----",
+        ]);
+
         // Ein Passwort, viele Systeme - der Fall, für den es die Verknüpfung gibt.
         $rootLogin = LoginGeneral::create([
             'customer_id' => $customer->id,
@@ -604,6 +630,16 @@ class LocalDatabaseSeeder extends Seeder
             $server->credentialLinks()->create([
                 'customer_id' => $customer->id,
                 'login_general_id' => $konsolenLogin->id,
+            ]);
+        }
+
+        // Derselbe Schluessel an mehreren Servern - genau der Grund, warum er
+        // einmal dokumentiert und verknuepft wird statt je Server kopiert.
+        foreach (Server::where('customer_id', $customer->id)->take(3)->get() as $server) {
+            $server->credentialLinks()->create([
+                'customer_id' => $customer->id,
+                'login_general_id' => $adminKey->id,
+                'note' => 'SSH',
             ]);
         }
 

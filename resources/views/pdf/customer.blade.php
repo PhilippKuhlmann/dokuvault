@@ -305,6 +305,13 @@
         'Verwendung' => ['Verwendet bei' => fn ($l) => $l->verwendetBei() ?: '—'],
     ]" />
 
+    {{-- Der private Schluessel steht bewusst nicht im PDF: Er waere in einem
+         weitergereichten Dokument nicht mehr einzufangen. --}}
+    <x-pdf.section :title="__('SSH-Schlüssel')" :items="$customer->sshkeys" :groups="[
+        'Schlüssel' => ['Benutzer' => 'username', 'Verfahren' => fn ($k) => $k->verfahrenName(), 'Beschreibung' => 'description'],
+        'Verwendung' => ['Verwendet bei' => fn ($k) => $k->verwendetBei() ?: '—'],
+    ]" />
+
     <x-pdf.section :title="__('Logins – Webseiten')" :items="$customer->loginwebsites" :groups="[
         'Login' => ['URL' => 'url', 'Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />

@@ -154,7 +154,11 @@ class DeviceCredentials extends Component
             'kunde' => Customer::find($this->customerId),
             // Schon verknüpfte Logins fliegen aus der Auswahl - sie ein zweites
             // Mal anzubieten wäre eine Sackgasse.
-            'logins' => LoginGeneral::where('customer_id', $this->customerId)
+            // Auch die Schluessel: An ein Geraet gehoert genauso gut ein
+            // SSH-Schluessel wie ein Kennwort - sonst liesse er sich nirgends
+            // anhaengen. Nur dieser Filter faellt weg, der Papierkorb bleibt.
+            'logins' => LoginGeneral::withoutGlobalScope(LoginGeneral::SCOPE)
+                ->where('customer_id', $this->customerId)
                 ->whereNotIn('id', $entries->pluck('login_general_id'))
                 ->orderBy('name')->get(),
         ]);

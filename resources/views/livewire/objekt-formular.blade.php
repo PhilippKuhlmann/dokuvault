@@ -159,6 +159,12 @@
                                             <option value="{{ $id }}">{{ $beschriftung }}</option>
                                         @endforeach
                                     </x-input.select>
+                                @elseif ($feld['type'] === 'mehrzeilig')
+                                    {{-- Werte, die keine Zeile sind, etwa ein
+                                         SSH-Schluessel. --}}
+                                    <x-input.textarea wire:model="form.{{ $feld['name'] }}"
+                                        :rows="$feld['zeilen'] ?? 3"
+                                        :placeholder="$feld['platzhalter'] ?? ''" class="mt-1" />
                                 @else
                                     <x-input.text wire:model="form.{{ $feld['name'] }}"
                                         type="{{ $feld['type'] }}" class="mt-1" />

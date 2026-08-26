@@ -55,6 +55,7 @@ use App\Models\Router;
 use App\Models\SecurepointUMA;
 use App\Models\Server;
 use App\Models\Site;
+use App\Models\SshKey;
 use App\Models\Ups;
 use App\Models\VM;
 use App\Models\Wifi;
@@ -107,6 +108,7 @@ return [
         'DECT',
         'LoginGeneral',
         'LoginWebsite',
+        'SshKey',
         'SecurepointUMA',
         'Mailbox',
         'Recorder',
@@ -159,6 +161,7 @@ return [
         'phone' => [Phone::class, 'Telefon'],
         'dect' => [DECT::class, 'DECT'],
         'logingeneral' => [LoginGeneral::class, 'Login Allgemein'],
+        'sshkey' => [SshKey::class, 'SSH-Schlüssel'],
         'loginwebsite' => [LoginWebsite::class, 'Login Webseite'],
         'mailbox' => [Mailbox::class, 'Postfach'],
         'recorder' => [Recorder::class, 'Recorder'],
@@ -196,6 +199,7 @@ return [
         'phonesystem' => 'TK-Anlagen',
         'phone' => 'Telefone',
         'logingeneral' => 'Logins Allgemein',
+        'sshkey' => 'SSH-Schlüssel',
         'loginwebsite' => 'Logins Webseiten',
         'mailbox' => 'E-Mail-Postfächer',
         'recorder' => 'Recorder',
@@ -740,8 +744,26 @@ return [
     | gleicht diese Liste gegen die tatsaechlich verschluesselten Spalten ab.
     |
     */
+    /*
+    |--------------------------------------------------------------------------
+    | Verfahren eines SSH-Schluessels
+    |--------------------------------------------------------------------------
+    |
+    | Feste Liste statt Freitext: "ed25519", "ED25519" und "Ed25519" waeren
+    | sonst drei Verfahren. Die Beschriftungen sind Eigennamen und werden
+    | nicht uebersetzt.
+    |
+    */
+
+    'ssh_key_types' => [
+        'ed25519' => 'Ed25519',
+        'ecdsa' => 'ECDSA',
+        'rsa' => 'RSA',
+    ],
+
     'secret_columns' => [
         'password',
+        'private_key',
         'remotePassword',
         'bmcPassword',
         'dsrmpassword',

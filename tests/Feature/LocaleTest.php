@@ -186,6 +186,14 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
         ->merge(collect(config('forms'))->flatMap(fn ($typ) => collect($typ['filter'] ?? [])
             ->flatMap(fn ($f) => array_merge([$f['label'], $f['alle'] ?? null], array_values($f['optionen'] ?? [])))))
         ->merge(collect(config('forms'))->flatMap(fn ($typ) => collect($typ['sortierungen'] ?? [])->map(fn ($s) => $s[0])))
+        // Feldbeschriftungen und Platzhalter der Modale (config/forms.php):
+        // Sie stehen nirgends als __('...') im Code, sondern laufen im
+        // generischen Formular zur Laufzeit hindurch.
+        ->merge(collect(config('forms'))->flatMap(fn ($typ) => collect($typ['felder'] ?? [])
+            ->flatMap(fn ($f) => array_merge(
+                [$f['label'] ?? null, $f['platzhalter'] ?? null],
+                array_values($f['werte'] ?? [])
+            ))))
         ->merge(array_values(config('custom.rack_appearances', [])))
         ->merge(array_values(config('custom.server_form_factors', [])))
         ->merge(array_values(config('custom.cluster_types', [])))

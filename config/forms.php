@@ -35,6 +35,7 @@ use App\Http\Requests\RouterRequest;
 use App\Http\Requests\SecurepointUMARequest;
 use App\Http\Requests\ServerRequest;
 use App\Http\Requests\SiteRequest;
+use App\Http\Requests\SshKeyRequest;
 use App\Http\Requests\UpsRequest;
 use App\Http\Requests\VMRequest;
 use App\Http\Requests\WifiRequest;
@@ -76,6 +77,7 @@ use App\Models\Router;
 use App\Models\SecurepointUMA;
 use App\Models\Server;
 use App\Models\Site;
+use App\Models\SshKey;
 use App\Models\Ups;
 use App\Models\VM;
 use App\Models\Wifi;
@@ -355,6 +357,27 @@ return [
             ['name' => 'description', 'label' => 'Beschreibung', 'type' => 'text'],
             ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
             ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+        ],
+    ],
+    'sshkey' => [
+        'model' => SshKey::class, 'request' => SshKeyRequest::class,
+        'relation' => 'sshkeys', 'einzahl' => 'SSH-Schlüssel',
+        'suchfelder' => ['name', 'username', 'description', 'public_key'],
+        'mitladen' => ['links.credentialable'],
+        // Zwei Spalten waeren hier falsch: Die beiden Schluesselfelder sind
+        // mehrzeilig und brauchen die ganze Breite.
+        'breit' => true,
+        'felder' => [
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
+            ['name' => 'key_type', 'label' => 'Verfahren', 'type' => 'optionen',
+                'quelle' => 'custom.ssh_key_types'],
+            ['name' => 'description', 'label' => 'Beschreibung', 'type' => 'text'],
+            ['name' => 'public_key', 'label' => 'Öffentlicher Schlüssel', 'type' => 'mehrzeilig',
+                'zeilen' => 3, 'platzhalter' => 'ssh-ed25519 AAAA… benutzer@rechner'],
+            ['name' => 'private_key', 'label' => 'Privater Schlüssel', 'type' => 'mehrzeilig',
+                'zeilen' => 6, 'platzhalter' => '-----BEGIN OPENSSH PRIVATE KEY-----'],
+            ['name' => 'password', 'label' => 'Passphrase', 'type' => 'text'],
         ],
     ],
     'dyndns' => [

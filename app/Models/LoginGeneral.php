@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\TracksChanges;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +15,24 @@ class LoginGeneral extends Model
     use HasFactory, SoftDeletes;
     use TracksChanges;
 
+    public const KIND = 'password';
+
+    /** Name des Filters - wer ihn aufhebt, soll nicht raten muessen. */
+    public const SCOPE = 'kennwort';
+
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
+
+    /**
+     * In der eigenen Liste stehen nur Kennwoerter, keine SSH-Schluessel.
+     *
+     * SshKey erbt von dieser Klasse und ueberschreibt booted() ohne
+     * parent::booted() - dadurch gilt dort der eigene Filter statt diesem.
+     * Wer hier etwas ergaenzt, muss es deshalb auch dort tun.
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope(self::SCOPE, fn (Builder $abfrage) => $abfrage->where('kind', self::KIND));
+    }
 
     protected function password(): Attribute
     {
@@ -24,9 +42,13 @@ class LoginGeneral extends Model
         );
     }
 
+    /**
+     * Fremdschluessel ausdruecklich: SshKey erbt diese Relation, und Eloquent
+     * wuerde den Namen sonst aus der Klasse ableiten - "ssh_key_id" gibt es nicht.
+     */
     public function links()
     {
-        return $this->hasMany(CredentialLink::class);
+        return $this->hasMany(CredentialLink::class, 'login_general_id');
     }
 
     /**

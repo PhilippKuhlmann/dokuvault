@@ -1,5 +1,18 @@
 # Changelog
 
+## 26.08.26
+
+### Added
+
+- **SSH-Schlüssel lassen sich dokumentieren.** Neue Liste unter *Logins → SSH-Schlüssel*, mit Name, Benutzer, Verfahren (Ed25519, ECDSA, RSA), öffentlichem und privatem Schlüssel, Passphrase und Beschreibung. Beide Schlüsselfelder sind mehrzeilig und in Festbreitenschrift — in einem einzeiligen Feld ist ein Schlüssel ein Strich, den man nicht prüfen kann.
+  - Ein Schlüssel liegt technisch in derselben Tabelle wie die Logins und **hängt über dieselbe Verknüpfung an Geräten**. Damit gilt für ihn, was für ein Kennwort gilt: einmal dokumentiert, an drei Servern verknüpft, unter „Verwendet bei" sichtbar, wo er gilt. Ein eigener Speicher daneben hätte das Muster ein zweites Mal gebaut.
+  - Getrennt sind die beiden nur in der Anzeige: Ein Schlüssel taucht nicht in *Logins Allgemein* auf und ein Kennwort nicht in der Schlüsselliste — „welcher Key gilt auf SRV-01?" ist eine andere Frage als „wie lautet das Kennwort?".
+  - Der private Schlüssel wird verschlüsselt abgelegt, der öffentliche nicht: Der ist zum Verteilen da und muss durchsuchbar bleiben, damit man ihn in einer `authorized_keys` wiederfindet. Im PDF steht er deshalb auch — der private nicht, den bekäme man aus einem weitergereichten Dokument nicht mehr zurück.
+
+### Fixed
+
+- **Feldbeschriftungen der Modale gingen am Übersetzungsabgleich vorbei.** Der Test findet Zeichenketten über `__('…')` im Code; Beschriftungen aus `config/forms.php` laufen aber erst zur Laufzeit hindurch und galten deshalb als unbenutzt. Jetzt werden sie mitgelesen — samt Platzhaltern und festen Auswahlwerten.
+
 ## 26.08.25
 
 ### Changed

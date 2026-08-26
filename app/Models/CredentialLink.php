@@ -23,9 +23,19 @@ class CredentialLink extends Model
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
+    /**
+     * Ungefiltert: An einem Geraet kann ein Kennwort haengen oder ein
+     * SSH-Schluessel. Beide stehen in login_generals, aber LoginGeneral sieht
+     * fuer seine eigene Liste nur die Kennwoerter - ohne dieses Aufheben
+     * haette ein Server, an dem ein Schluessel haengt, keine Zugangsdaten mehr.
+     *
+     * Gezielt nur dieser eine Filter: withoutGlobalScopes() nimmt auch den
+     * Papierkorb mit, und dann steht ein geloeschtes Login weiter am Geraet.
+     */
     public function login()
     {
-        return $this->belongsTo(LoginGeneral::class, 'login_general_id');
+        return $this->belongsTo(LoginGeneral::class, 'login_general_id')
+            ->withoutGlobalScope(LoginGeneral::SCOPE);
     }
 
     public function credentialable()
