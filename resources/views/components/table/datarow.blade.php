@@ -75,6 +75,14 @@
         </td>
 
 
+        @elseif ($key == 'mono')
+            {{-- Werte, die man zeichenweise vergleicht - ein Fingerprint etwa.
+                 In Fliesstext verwechselt man dabei 0 und O. break-all, weil
+                 ein Fingerprint keine Trennstellen hat und die Spalte sonst
+                 breiter wird als der Bildschirm. --}}
+            <td scope="row" class="py-2.5 px-4 font-mono text-xs break-all text-gray-600 dark:text-gray-300">
+                {{ $value }}
+            </td>
         @else
             <td scope="row" class="py-2.5 px-4 text-gray-900 dark:text-gray-100">
                 {{ $value }}

@@ -363,7 +363,7 @@ return [
     'sshkey' => [
         'model' => SshKey::class, 'request' => SshKeyRequest::class,
         'relation' => 'sshkeys', 'einzahl' => 'SSH-Schlüssel',
-        'suchfelder' => ['name', 'username', 'description', 'public_key'],
+        'suchfelder' => ['name', 'username', 'description', 'public_key', 'fingerprint'],
         'mitladen' => ['links.credentialable'],
         // Die Breite kommt hier von den mehrzeiligen Feldern selbst, dafuer
         // braucht es kein 'breit'.

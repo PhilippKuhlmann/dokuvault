@@ -177,3 +177,21 @@ test('ein Typ ohne Erzeuger hat auch keinen Knopf', function () {
         ->call('erzeugen')
         ->assertStatus(404);
 });
+
+test('der berechnete Fingerprint ist der, den ssh-keygen nennt', function (string $verfahren) {
+    $werte = (new SshKeyGenerator)->erzeugen([
+        'key_type' => $verfahren, 'username' => 'root', 'name' => 'Test',
+    ]);
+
+    $pfad = tempnam(sys_get_temp_dir(), 'fp').'.pub';
+    file_put_contents($pfad, $werte['public_key']);
+
+    $prozess = new Process(['ssh-keygen', '-lf', $pfad]);
+    $prozess->run();
+    unlink($pfad);
+
+    // Ausgabe: "256 SHA256:... kommentar (ED25519)" - der zweite Teil zaehlt.
+    $erwartet = preg_split('/\s+/', trim($prozess->getOutput()))[1];
+
+    expect(SshKey::fingerprintVon($werte['public_key']))->toBe($erwartet);
+})->with(['ed25519', 'rsa', 'ecdsa'])->group('langsam');

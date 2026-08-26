@@ -4,7 +4,7 @@
                             $eintrag->name,
                             $eintrag->username,
                             $eintrag->verfahrenName(),
-                            $eintrag->description,
+                            'mono' => $eintrag->fingerprint ?: '—',
                             $eintrag->verwendetBei() ?: '—',
 
                         ]"

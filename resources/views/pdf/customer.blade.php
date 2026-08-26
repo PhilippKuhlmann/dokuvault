@@ -308,7 +308,7 @@
     {{-- Der private Schluessel steht bewusst nicht im PDF: Er waere in einem
          weitergereichten Dokument nicht mehr einzufangen. --}}
     <x-pdf.section :title="__('SSH-Schlüssel')" :items="$customer->sshkeys" :groups="[
-        'Schlüssel' => ['Benutzer' => 'username', 'Verfahren' => fn ($k) => $k->verfahrenName(), 'Beschreibung' => 'description'],
+        'Schlüssel' => ['Benutzer' => 'username', 'Verfahren' => fn ($k) => $k->verfahrenName(), 'Fingerprint' => 'fingerprint', 'Beschreibung' => 'description'],
         'Verwendung' => ['Verwendet bei' => fn ($k) => $k->verwendetBei() ?: '—'],
     ]" />
 

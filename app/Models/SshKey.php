@@ -35,6 +35,39 @@ class SshKey extends LoginGeneral
         static::creating(function (self $schluessel) {
             $schluessel->kind = self::KIND;
         });
+
+        // Bei jedem Speichern neu: Der Fingerprint ergibt sich vollstaendig aus
+        // dem oeffentlichen Schluessel. Als abgeleiteter Wert kann er so nicht
+        // von ihm abweichen - ein Eingabefeld koennte das.
+        static::saving(function (self $schluessel) {
+            $schluessel->fingerprint = self::fingerprintVon($schluessel->public_key);
+        });
+    }
+
+    /**
+     * Der SHA256-Fingerprint, wie ihn "ssh-keygen -lf" ausgibt.
+     *
+     * In PHP gerechnet und nicht ueber ssh-keygen: Es ist der Base64-Hash des
+     * Schluesselblocks, mehr nicht - ein Unterprozess je Listenzeile waere
+     * dafuer unverhaeltnismaessig. Geprueft gegen ssh-keygen im Test.
+     */
+    public static function fingerprintVon(?string $oeffentlich): ?string
+    {
+        $teile = preg_split('/\s+/', trim((string) $oeffentlich), -1, PREG_SPLIT_NO_EMPTY);
+
+        // Ohne Verfahren und Block ist es kein Schluessel, sondern Text - dann
+        // gaebe es zwar einen Hash, aber keinen Fingerprint.
+        if (count($teile) < 2) {
+            return null;
+        }
+
+        $block = base64_decode($teile[1], true);
+
+        if ($block === false || $block === '') {
+            return null;
+        }
+
+        return 'SHA256:'.rtrim(base64_encode(hash('sha256', $block, true)), '=');
     }
 
     /** Das Verfahren, wie es in der Liste steht - "ed25519" statt eines leeren Felds. */

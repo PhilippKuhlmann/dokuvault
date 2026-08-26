@@ -274,3 +274,42 @@ test('ohne Schluessel-Recht laesst sich auch keiner anhaengen', function () {
 
     expect($server->fresh()->credentialLinks()->count())->toBe(0);
 });
+
+test('der Fingerprint wird beim Speichern abgeleitet und bleibt am Schluessel haengen', function () {
+    [$customer, $schluessel] = sshUmgebung();
+
+    $vorher = $schluessel->fresh()->fingerprint;
+    expect($vorher)->toStartWith('SHA256:');
+
+    // Ein anderer oeffentlicher Schluessel muss auch einen anderen Fingerprint
+    // ergeben - sonst zeigt die Liste dauerhaft den alten.
+    $schluessel->update([
+        'public_key' => 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAnderesBeispiel root@zwei',
+    ]);
+
+    expect($schluessel->fresh()->fingerprint)->not->toBe($vorher);
+});
+
+test('ohne brauchbaren oeffentlichen Schluessel gibt es keinen Fingerprint', function () {
+    expect(SshKey::fingerprintVon(null))->toBeNull();
+    expect(SshKey::fingerprintVon(''))->toBeNull();
+    // Text ohne Block ist kein Schluessel - ein Hash davon waere eine Zahl,
+    // die aussieht wie ein Fingerprint und keiner ist.
+    expect(SshKey::fingerprintVon('irgendwas'))->toBeNull();
+    expect(SshKey::fingerprintVon('ssh-ed25519 !!!kein-base64!!!'))->toBeNull();
+});
+
+test('die Suche findet einen Schluessel ueber seinen Fingerprint', function () {
+    $this->actingAs(userWithPermissions(['sshkey_viewAny', 'sshkey_update']));
+    [$customer, $schluessel] = sshUmgebung();
+    SshKey::create([
+        'customer_id' => $customer->id, 'name' => 'Anderer',
+        'public_key' => 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAnderes anderer@ort',
+    ]);
+
+    // Der Weg vom "SHA256:..." aus einer authorized_keys zurueck zum Eintrag.
+    Livewire::test(ObjektListe::class, ['typ' => 'sshkey', 'customer' => $customer])
+        ->set('search', $schluessel->fresh()->fingerprint)
+        ->assertSee('Admin ed25519')
+        ->assertDontSee('Anderer');
+});
