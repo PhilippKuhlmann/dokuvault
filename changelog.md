@@ -28,6 +28,8 @@
 
 ### Fixed
 
+- **Der Testlauf brach gelegentlich grundlos ab und blockierte damit den Deploy.** Die Benutzer-Factory zog `fake()->name()` für `username` — eine Spalte mit UNIQUE-Index. Ein Test, der in einer Schleife neunzehn Benutzer anlegt, traf damit rund einmal je 14 000 Läufe denselben Namen zweimal; bei mehreren Matrix-Jobs je Push passiert das irgendwann. Der Deploy hängt am grünen Testlauf und wurde dann übersprungen. Die Factory zieht jetzt eindeutig.
+
 - **Ein Blade-Komponenten-Tag mit `@if` in den Attributen wird nicht übersetzt.** Der Erzeugen-Knopf stand dadurch wörtlich als `<x-input.button …>` im HTML und war unsichtbar. Der Test dazu rief die Methode direkt auf und lief grün — er prüft jetzt das gerenderte Fenster.
 
 - **Ein Schlüssel am Gerät verwies auf die Login-Bearbeitung, die ihn nicht findet.** Die Seite bindet über die Login-Klasse, und die sieht keine Schlüssel — der Verweis lief auf 404. Er zeigt jetzt in die Schlüsselliste.
