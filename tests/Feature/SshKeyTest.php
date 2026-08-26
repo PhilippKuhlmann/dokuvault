@@ -9,6 +9,7 @@ use App\Models\OperatingSystem;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\SshKey;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 
 /**
@@ -312,4 +313,19 @@ test('die Suche findet einen Schluessel ueber seinen Fingerprint', function () {
         ->set('search', $schluessel->fresh()->fingerprint)
         ->assertSee('Admin ed25519')
         ->assertDontSee('Anderer');
+});
+
+test('die Liste kuerzt den Fingerprint, haelt ihn aber vollstaendig bereit', function () {
+    $this->actingAs(userWithPermissions(['sshkey_viewAny', 'sshkey_update']));
+    [$customer, $schluessel] = sshUmgebung();
+
+    $voll = $schluessel->fresh()->fingerprint;
+    $html = Livewire::test(ObjektListe::class, ['typ' => 'sshkey', 'customer' => $customer])->html();
+
+    // Gemeldet: vollstaendig nimmt er zu viel Platz. Sichtbar ist der Anfang,
+    // vollstaendig steht er im Titel und im Wert des Kopier-Knopfs.
+    expect(substr_count($html, $voll))->toBe(2, 'Der volle Wert gehört in Titel und Kopierfeld, sonst nirgends.');
+    expect($html)->toContain(Str::limit(substr($voll, 7), 10, '…'));
+    // Das "SHA256:" ist bei jedem gleich und traegt in der Spalte nichts bei.
+    expect(substr_count($html, '>'.PHP_EOL.'            SHA256:'))->toBe(0);
 });

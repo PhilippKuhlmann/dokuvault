@@ -14,7 +14,8 @@
   - Verknüpfte Schlüssel tragen ein Kürzel **SSH** — in der Tabelle und auf der Gerätekarte. Ohne das stand unter „Passwort" eine Passphrase, ohne dass man es sehen konnte. Ein Schlüssel ohne Passphrase steht als „ohne Passphrase" da statt als Strich: Das ist eine Aussage, kein fehlender Wert.
 
 - **SSH-Schlüssel führen ihren Fingerprint.** Der SHA256-Fingerprint steht in der Liste und ist **durchsuchbar** — das ist der Weg vom `SHA256:…` aus einer `authorized_keys` auf einem Server zurück zum dokumentierten Schlüssel.
-  - Abgeleitet, nicht eingegeben: Er wird bei jedem Speichern aus dem öffentlichen Schlüssel neu berechnet und kann so nicht von ihm abweichen. In der Liste steht er statt der Beschreibung — die bleibt im Fenster und im PDF.
+  - Abgeleitet, nicht eingegeben: Er wird bei jedem Speichern aus dem öffentlichen Schlüssel neu berechnet und kann so nicht von ihm abweichen.
+  - In der Liste steht er **gekürzt mit Kopier-Knopf**, vollständig im Tooltip. Ganz ausgeschrieben sind es 50 Zeichen ohne Trennstellen — die Spalte brach auf fünf Zeilen um und bestimmte die Zeilenhöhe, obwohl man den Wert nur beim Vergleichen liest. Das `SHA256:` davor ist bei jedem gleich und entfällt in der Anzeige.
   - Gerechnet wird in PHP, nicht über `ssh-keygen`: Es ist der Base64-Hash des Schlüsselblocks, ein Unterprozess je Listenzeile wäre unverhältnismäßig. Ein Test vergleicht das Ergebnis für Ed25519, RSA und ECDSA mit dem, was `ssh-keygen -lf` ausgibt.
 
 - **Ein Schlüsselpaar lässt sich im Fenster erzeugen.** Knopf *Schlüsselpaar erzeugen* im SSH-Schlüssel-Fenster: füllt öffentlichen und privaten Teil, mit optionaler Passphrase. Der Kommentar am öffentlichen Schlüssel wird aus Benutzer und Name gebildet (`deploy@deploy-ci`) — daran erkennt man ihn später in einer `authorized_keys` wieder.
