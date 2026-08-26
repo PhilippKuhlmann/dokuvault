@@ -26,6 +26,12 @@
              Verschiedenes bedeutet. Sonst wiederholt sie nur den Namen. --}}
         @php ($zeigeVerwendung = $entries->contains(fn ($e) => filled($e->note)))
 
+        {{-- Nur wo ein Schluessel haengt: Bei reinen Kennwoertern waere die
+             Spalte durchgehend leer. Sie ist das, was man mit
+             "ssh-keygen -lf ~/.ssh/authorized_keys" auf dem Server vergleicht -
+             erst damit laesst sich pruefen, ob das Dokumentierte noch stimmt. --}}
+        @php ($zeigeFingerprint = $entries->contains(fn ($e) => $e->login->istSchluessel()))
+
         {{-- Eigener Scrollbereich: die Spalten passen auf 375 px nicht nebeneinander,
              und die ganze Seite soll deswegen nicht seitlich wandern. --}}
         <div class="overflow-x-auto mb-4">
@@ -35,6 +41,9 @@
                     <th class="py-2 pr-4 text-left font-semibold">{{ __('Name') }}</th>
                     <th class="py-2 pr-4 text-left font-semibold">{{ __('Benutzername') }}</th>
                     <th class="py-2 pr-4 text-left font-semibold">{{ __('Passwort') }}</th>
+                    @if ($zeigeFingerprint)
+                        <th class="py-2 pr-4 text-left font-semibold">{{ __('Fingerprint') }}</th>
+                    @endif
                     @if ($zeigeVerwendung)
                         <th class="py-2 pr-4 text-left font-semibold">{{ __('Verwendung') }}</th>
                     @endif
@@ -98,6 +107,15 @@
                                 <span class="text-gray-400 dark:text-gray-500">—</span>
                             @endif
                         </td>
+                        @if ($zeigeFingerprint)
+                            <td class="py-2 pr-4">
+                                @if ($entry->login->istSchluessel())
+                                    <x-fingerprint :value="$entry->login->fingerprint" />
+                                @else
+                                    <span class="text-gray-400 dark:text-gray-500">—</span>
+                                @endif
+                            </td>
+                        @endif
                         @if ($zeigeVerwendung)
                             <td class="py-2 pr-4 text-gray-600 dark:text-gray-300">{{ $entry->note ?: '—' }}</td>
                         @endif

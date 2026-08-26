@@ -45,6 +45,12 @@
                                 @if ($eintrag->login->password)
                                     <x-password :value="$eintrag->login->password" width="w-24" />
                                 @endif
+                                {{-- Der Fingerprint ist das, was man auf dem Server
+                                     vergleicht - ohne ihn steht hier nur, dass ein
+                                     Schluessel gilt, nicht welcher. --}}
+                                @if ($eintrag->login->istSchluessel())
+                                    <x-fingerprint :value="$eintrag->login->fingerprint" />
+                                @endif
                             </td>
                         </tr>
                     @endforeach

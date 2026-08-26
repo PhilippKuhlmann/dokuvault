@@ -329,3 +329,47 @@ test('die Liste kuerzt den Fingerprint, haelt ihn aber vollstaendig bereit', fun
     // Das "SHA256:" ist bei jedem gleich und traegt in der Spalte nichts bei.
     expect(substr_count($html, '>'.PHP_EOL.'            SHA256:'))->toBe(0);
 });
+
+test('am Geraet steht der Fingerprint des Schluessels', function () {
+    $this->actingAs(userWithPermissions(['server_update', 'logingeneral_viewAny', 'sshkey_viewAny']));
+    [$customer, $schluessel] = sshUmgebung();
+
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $server = Server::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'SRV-01',
+        'operating_system_id' => OperatingSystem::factory()->create(['name' => 'Debian 13'])->id,
+    ]);
+    $server->credentialLinks()->create([
+        'customer_id' => $customer->id, 'login_general_id' => $schluessel->id,
+    ]);
+
+    // Damit sich das Dokumentierte gegen "ssh-keygen -lf ~/.ssh/authorized_keys"
+    // auf dem Server pruefen laesst.
+    Livewire::test(DeviceCredentials::class, ['model' => $server, 'customer' => $customer])
+        ->assertSee('Fingerprint')
+        ->assertSeeHtml($schluessel->fresh()->fingerprint);
+});
+
+test('haengen nur Kennwoerter am Geraet, gibt es die Spalte nicht', function () {
+    $this->actingAs(userWithPermissions(['server_update', 'logingeneral_viewAny', 'sshkey_viewAny']));
+    [$customer, $schluessel] = sshUmgebung();
+
+    $kennwort = LoginGeneral::create([
+        'customer_id' => $customer->id, 'name' => 'Linux root',
+        'username' => 'root', 'password' => 'geheim123',
+    ]);
+
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $server = Server::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'SRV-01',
+        'operating_system_id' => OperatingSystem::factory()->create(['name' => 'Debian 13'])->id,
+    ]);
+    $server->credentialLinks()->create([
+        'customer_id' => $customer->id, 'login_general_id' => $kennwort->id,
+    ]);
+
+    // Eine durchgehend leere Spalte ist schlechter als keine.
+    Livewire::test(DeviceCredentials::class, ['model' => $server, 'customer' => $customer])
+        ->assertSee('Linux root')
+        ->assertDontSee('Fingerprint');
+});
