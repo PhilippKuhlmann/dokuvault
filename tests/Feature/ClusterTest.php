@@ -34,12 +34,12 @@ test('ein Cluster laesst sich anlegen und landet beim Kunden', function () {
     [$customer, $site] = clusterUmgebung();
     $this->actingAs(userWithPermissions(['cluster_create']));
 
-    $this->post(route('cluster.store', $customer), [
+    imModal('cluster', $customer, [
         'site_id' => $site->id,
         'name' => 'PVE-Cluster',
         'type' => 'ceph',
         'note' => 'Drei Knoten',
-    ])->assertRedirect();
+    ])->assertHasNoErrors();
 
     $cluster = Cluster::where('name', 'PVE-Cluster')->first();
     expect($cluster->customer_id)->toBe($customer->id);
@@ -54,9 +54,9 @@ test('eine unbekannte Art wird abgelehnt', function () {
 
     // Sonst liesse sich ueber ein gefaelschtes Formular ein beliebiger Wert
     // hineinschreiben, den keine Anzeige mehr aufloest.
-    $this->post(route('cluster.store', $customer), [
+    imModal('cluster', $customer, [
         'site_id' => $site->id, 'name' => 'Krumm', 'type' => 'erfunden',
-    ])->assertSessionHasErrors('type');
+    ])->assertHasErrors('form.type');
 });
 
 test('ein Cluster eines fremden Kunden laesst sich am Server nicht auswaehlen (IDOR)', function () {
@@ -69,21 +69,21 @@ test('ein Cluster eines fremden Kunden laesst sich am Server nicht auswaehlen (I
     ]);
     $server = serverFuer($customer, $site, 'pve01');
 
-    $this->patch(route('server.update', [$customer, $server]), [
+    imModalBearbeiten('server', $customer, $server, [
         'site_id' => $site->id, 'name' => 'pve01', 'cluster_id' => $fremderCluster->id,
         'form_factor' => 'tower', 'operating_system_id' => $server->operating_system_id,
-    ])->assertSessionHasErrors('cluster_id');
+    ])->assertHasErrors('form.cluster_id');
 
     expect($server->fresh()->cluster_id)->toBeNull();
 });
 
 test('ein geloeschter Cluster nimmt seine Server nicht mit', function () {
     [$customer, $site] = clusterUmgebung();
-    $this->actingAs(userWithPermissions(['cluster_delete']));
+    $this->actingAs(userWithPermissions(['cluster_update', 'cluster_delete']));
     $cluster = Cluster::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id]);
     $server = serverFuer($customer, $site, 'pve01', $cluster);
 
-    $this->delete(route('cluster.destroy', [$customer, $cluster]))->assertRedirect();
+    imModalLoeschen('cluster', $customer, $cluster);
 
     // Der Server ist ein eigenes Geraet - er verliert nur die Zugehoerigkeit.
     expect($server->fresh())->not->toBeNull();
@@ -132,10 +132,10 @@ test('am Server selbst laesst sich der Cluster ebenfalls setzen', function () {
     $cluster = Cluster::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id]);
     $server = serverFuer($customer, $site, 'pve01');
 
-    $this->patch(route('server.update', [$customer, $server]), [
+    imModalBearbeiten('server', $customer, $server, [
         'site_id' => $site->id, 'name' => 'pve01', 'cluster_id' => $cluster->id,
         'form_factor' => 'tower', 'operating_system_id' => $server->operating_system_id,
-    ])->assertSessionHasNoErrors();
+    ])->assertHasNoErrors();
 
     expect($server->fresh()->cluster_id)->toBe($cluster->id);
 });

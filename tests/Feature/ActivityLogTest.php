@@ -18,7 +18,7 @@ test('Anlegen eines Objekts wird mit Verursacher protokolliert', function () {
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     $os = OperatingSystem::factory()->create(['name' => 'Windows 11']);
 
-    $this->post("/{$customer->slug}/computer", [
+    imModal('computer', $customer, [
         'site_id' => $site->id,
         'name' => 'PC-Audit',
         'operating_system_id' => $os->id,
@@ -34,7 +34,7 @@ test('Anlegen eines Objekts wird mit Verursacher protokolliert', function () {
 });
 
 test('Löschen wird protokolliert', function () {
-    $this->actingAs(userWithPermissions(['computer_delete']));
+    $this->actingAs(userWithPermissions(['computer_update', 'computer_delete']));
 
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
@@ -46,7 +46,7 @@ test('Löschen wird protokolliert', function () {
         'operating_system_id' => $os->id,
     ]);
 
-    $this->delete("/{$customer->slug}/computer/{$computer->id}");
+    imModalLoeschen('computer', $customer, $computer);
 
     expect(Activity::where('event', 'deleted')
         ->where('subject_type', Computer::class)

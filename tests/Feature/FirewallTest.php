@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\GlobalSearch;
+use App\Livewire\ObjektFormular;
 use App\Models\Customer;
 use App\Models\Firewall;
 use App\Models\LoginGeneral;
@@ -25,7 +26,7 @@ test('eine Firewall laesst sich anlegen, bearbeiten und loeschen', function () {
         'firewall_viewAny', 'firewall_create', 'firewall_update', 'firewall_delete',
     ]));
 
-    $this->post(route('firewall.store', $customer), [
+    imModal('firewall', $customer, [
         'site_id' => $site->id,
         'name' => 'FW-HH-01',
         'manufacturer' => 'Sophos',
@@ -34,7 +35,7 @@ test('eine Firewall laesst sich anlegen, bearbeiten und loeschen', function () {
         'username' => 'admin',
         'password' => 'Geheim!2026',
         'subscription_until' => '2027-03-31',
-    ])->assertRedirect(route('firewall.index', $customer));
+    ])->assertHasNoErrors();
 
     $firewall = Firewall::where('name', 'FW-HH-01')->firstOrFail();
     expect($firewall->manufacturer)->toBe('Sophos');
@@ -43,15 +44,15 @@ test('eine Firewall laesst sich anlegen, bearbeiten und loeschen', function () {
 
     $this->get(route('firewall.index', $customer))->assertSee('FW-HH-01');
 
-    $this->patch(route('firewall.update', [$customer, $firewall]), [
+    imModalBearbeiten('firewall', $customer, $firewall, [
         'site_id' => $site->id,
         'name' => 'FW-HH-01',
         'firmware' => 'SFOS 21.0.0',
-    ])->assertRedirect(route('firewall.index', $customer));
+    ])->assertHasNoErrors();
 
     expect($firewall->fresh()->firmware)->toBe('SFOS 21.0.0');
 
-    $this->delete(route('firewall.destroy', [$customer, $firewall]));
+    imModalLoeschen('firewall', $customer, $firewall);
     expect(Firewall::find($firewall->id))->toBeNull();
     expect(Firewall::withTrashed()->find($firewall->id))->not->toBeNull();
 });
@@ -77,9 +78,11 @@ test('ohne Berechtigung ist die Firewall nicht erreichbar', function () {
     $this->actingAs(userWithPermissions(['server_viewAny']));
 
     $this->get(route('firewall.index', $customer))->assertForbidden();
-    $this->post(route('firewall.store', $customer), [
-        'site_id' => $site->id, 'name' => 'FW-Fremd',
-    ])->assertForbidden();
+
+    // Schon das Oeffnen des Modals ist versperrt - nicht erst das Speichern.
+    Livewire::test(ObjektFormular::class, ['typ' => 'firewall', 'customer' => $customer])
+        ->call('neu')
+        ->assertForbidden();
 
     expect(Firewall::where('name', 'FW-Fremd')->exists())->toBeFalse();
 });
@@ -108,10 +111,10 @@ test('der Standort eines fremden Kunden wird abgelehnt', function () {
 
     // Ohne diese Pruefung liesse sich ein Geraet an einen Standort haengen, der
     // einem anderen Mandanten gehoert.
-    $this->post(route('firewall.store', $customer), [
+    imModal('firewall', $customer, [
         'site_id' => $fremderStandort->id,
         'name' => 'FW-IDOR',
-    ])->assertSessionHasErrors('site_id');
+    ])->assertHasErrors('form.site_id');
 
     expect(Firewall::where('name', 'FW-IDOR')->exists())->toBeFalse();
 });
@@ -137,7 +140,7 @@ test('die Securepoint-Felder gehoeren zur Firewall', function () {
 
     // Eine UTM ist eine Firewall - sie unterscheidet sich im Hersteller, nicht
     // im Geraetetyp.
-    $this->post(route('firewall.store', $customer), [
+    imModal('firewall', $customer, [
         'site_id' => $site->id,
         'name' => 'UTM-01',
         'manufacturer' => 'Securepoint',
@@ -147,7 +150,7 @@ test('die Securepoint-Felder gehoeren zur Firewall', function () {
         'url_external' => 'https://utm.example.de:11115',
         'usc_pin' => '448213',
         'cloud_backup_password' => 'Wolke!2026',
-    ])->assertRedirect();
+    ])->assertHasNoErrors();
 
     $utm = Firewall::where('name', 'UTM-01')->sole();
 

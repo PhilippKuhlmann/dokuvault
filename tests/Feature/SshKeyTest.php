@@ -184,7 +184,7 @@ test('am Geraet ist ein Schluessel als solcher erkennbar', function () {
         ->assertSee('SSH');
 });
 
-test('der Name eines Schluessels fuehrt nicht in die Login-Bearbeitung', function () {
+test('der Name eines Schluessels fuehrt in die Schluesselliste, nicht in die Login-Liste', function () {
     $this->actingAs(userWithPermissions([
         'server_update', 'logingeneral_viewAny', 'logingeneral_update', 'sshkey_viewAny',
     ]));
@@ -201,13 +201,11 @@ test('der Name eines Schluessels fuehrt nicht in die Login-Bearbeitung', functio
 
     $html = Livewire::test(DeviceCredentials::class, ['model' => $server, 'customer' => $customer])->html();
 
-    // Die Login-Bearbeitung bindet ueber LoginGeneral und sieht keine
-    // Schluessel - der Verweis liefe auf 404.
-    expect(str_contains($html, route('logingeneral.edit', [$customer, $schluessel->id])))
-        ->toBeFalse('Ein Schluessel darf nicht auf die Login-Bearbeitung verweisen.');
+    // Beide werden im Modal bearbeitet; der Name fuehrt deshalb in die Liste,
+    // in der das Modal sitzt - und ein Schluessel steht nicht in der Login-Liste.
     expect($html)->toContain(route('sshkey.index', $customer));
-
-    $this->get(route('logingeneral.edit', [$customer, $schluessel->id]))->assertNotFound();
+    expect(str_contains($html, route('logingeneral.index', $customer)))
+        ->toBeFalse('Ein Schluessel gehört nicht in die Login-Liste.');
 });
 
 test('die Auswahl trennt Kennwoerter von Schluesseln', function () {

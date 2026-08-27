@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\ObjektFormular;
 use App\Models\Accesspoint;
 use App\Models\Camera;
 use App\Models\Computer;
@@ -23,6 +24,7 @@ use App\Models\Site;
 use App\Models\Ups;
 use App\Models\VM;
 use Illuminate\Support\Facades\Schema;
+use Livewire\Livewire;
 
 /**
  * Alle Geraeteformulare tragen dieselbe Gliederung wie das Server-Formular:
@@ -75,48 +77,38 @@ function geraetUmgebung(string $klasse): array
     return [$customer, $klasse::factory()->create($attribute)];
 }
 
-test('jedes Geraeteformular ist in Abschnitte gegliedert und fuehrt keine IP-Felder mehr', function () {
+test('kein Geraeteformular fuehrt noch eigene IP-Felder', function () {
+    // Die Adressen haengen am eigenen Block, nicht mehr an Feldern im Formular.
+    // Frueher stand das hier fuer die /create- und /edit-Seiten; die gibt es
+    // nicht mehr, die Zusicherung gilt aber unveraendert fuers Modal.
     foreach (GERAETE as $slug => $klasse) {
         $this->actingAs(userWithPermissions(["{$slug}_create", "{$slug}_update"]));
         [$customer, $geraet] = geraetUmgebung($klasse);
 
-        foreach (["/{$customer->slug}/{$slug}/create", "/{$customer->slug}/{$slug}/{$geraet->id}/edit"] as $url) {
-            $inhalt = $this->get($url)->assertOk()->getContent();
-
-            expect($inhalt)->toContain('uppercase tracking-wide text-cerulean');
-            expect($inhalt)->toContain('max-w-5xl');
+        foreach ([null, $geraet->id] as $id) {
+            $formular = Livewire::test(ObjektFormular::class, ['typ' => $slug, 'customer' => $customer]);
+            $id === null ? $formular->call('neu') : $formular->call('bearbeiten', $slug, $id);
+            $inhalt = $formular->html();
 
             foreach (['ip', 'ip1', 'ip2'] as $feld) {
-                expect($inhalt)->not->toContain('name="'.$feld.'"');
+                expect(str_contains($inhalt, 'wire:model="form.'.$feld.'"'))
+                    ->toBeFalse("$slug: Feld $feld gehört in den IP-Block, nicht ins Formular.");
             }
         }
     }
 });
 
-test('jedes Bearbeiten-Formular traegt IP-Adressen und Zugangsdaten in derselben Karte', function () {
-    foreach (GERAETE as $slug => $klasse) {
-        $this->actingAs(userWithPermissions(["{$slug}_update"]));
-        [$customer, $geraet] = geraetUmgebung($klasse);
-
-        $inhalt = $this->get("/{$customer->slug}/{$slug}/{$geraet->id}/edit")->assertOk()->getContent();
-
-        expect(substr_count($inhalt, 'speichert sofort'))->toBe(2, "$slug: Bloecke fehlen oder doppelt");
-        expect($inhalt)->toContain('Weitere IP-Adressen');
-        expect($inhalt)->toContain('Stammdaten speichern');
-    }
-});
-
-test('jedes Anlegen-Formular sagt, dass IP-Adressen und Zugangsdaten spaeter kommen', function () {
+test('beim Anlegen sagt das Modal, dass Adressen und Zugangsdaten spaeter kommen', function () {
     // Beide Bloecke haengen am gespeicherten Objekt und koennen beim Anlegen
     // noch nicht dastehen. Ohne Hinweis sieht das aus wie ein Mangel.
     foreach (GERAETE as $slug => $klasse) {
         $this->actingAs(userWithPermissions(["{$slug}_create"]));
         [$customer] = geraetUmgebung($klasse);
 
-        $inhalt = $this->get("/{$customer->slug}/{$slug}/create")->assertOk()->getContent();
+        $inhalt = Livewire::test(ObjektFormular::class, ['typ' => $slug, 'customer' => $customer])
+            ->call('neu')->html();
 
-        expect($inhalt)->toContain('IP-Adressen und Zugangsdaten');
-        expect($inhalt)->toContain('Lassen sich eintragen, sobald das Gerät angelegt ist.');
+        expect($inhalt)->toContain('sobald der Eintrag angelegt ist');
     }
 });
 
@@ -126,7 +118,7 @@ test('Speichern der Stammdaten laesst die Adressen im Block stehen', function ()
     [$customer, $router] = geraetUmgebung(Router::class);
     $router->ipAddresses()->create(['customer_id' => $customer->id, 'address' => '10.10.30.1']);
 
-    $this->patch("/{$customer->slug}/router/{$router->id}", [
+    imModalBearbeiten('router', $customer, $router, [
         'site_id' => $router->site_id, 'name' => 'RTR-NEU',
         'username' => 'admin', 'password' => 'x', 'port' => '443',
     ])->assertSessionHasNoErrors();

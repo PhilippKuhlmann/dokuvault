@@ -7,13 +7,13 @@ test('Zertifikat lässt sich anlegen', function () {
     $this->actingAs(userWithPermissions(['certificate_create']));
     $customer = Customer::factory()->create();
 
-    $this->post("/{$customer->slug}/certificate", [
+    imModal('certificate', $customer, [
         'name' => 'Wildcard *.kunde.de',
         'common_name' => '*.kunde.de',
         'issuer' => "Let's Encrypt",
         'type' => 'Wildcard',
         'expiry_date' => now()->addWeeks(2)->toDateString(),
-    ])->assertRedirect(route('certificate.index', $customer));
+    ])->assertHasNoErrors();
 
     expect(Certificate::where('customer_id', $customer->id)->count())->toBe(1);
 });
@@ -22,8 +22,8 @@ test('ungültige Anlage ohne Bezeichnung wird abgelehnt', function () {
     $this->actingAs(userWithPermissions(['certificate_create']));
     $customer = Customer::factory()->create();
 
-    $this->post("/{$customer->slug}/certificate", ['name' => ''])
-        ->assertSessionHasErrors('name');
+    imModal('certificate', $customer, ['name' => ''])
+        ->assertHasErrors('form.name');
 
     expect(Certificate::where('customer_id', $customer->id)->count())->toBe(0);
 });

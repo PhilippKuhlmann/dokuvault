@@ -247,6 +247,13 @@ class ObjektFormular extends Component
 
         $regeln = $this->einstellung()['request'];
         $request = new $regeln;
+
+        // Die Formularwerte in den Request: Manche Regel wird aus einem anderen
+        // Feld gebaut - "das Gateway muss im Netz liegen" etwa liest dafuer
+        // $this->input('subnet'). Ohne die Werte bekaeme sie null und pruefte
+        // gegen nichts, ohne dass ein Fehler sichtbar wuerde.
+        $request->merge($this->form);
+
         $klasse = $this->einstellung()['model'];
 
         // Die Mandantenregel holt den Kunden sonst aus der Route - die heisst

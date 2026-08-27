@@ -1,9 +1,12 @@
 <?php
 
+use App\Livewire\ObjektFormular;
+use App\Models\Customer;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Features\SupportTesting\Testable;
 use Tests\TestCase;
 
 /*
@@ -71,4 +74,68 @@ function userWithPermissions(array $names): User
     }
 
     return User::factory()->create(['role_id' => $role->id]);
+}
+
+/**
+ * Einen Eintrag ueber das Modal anlegen oder bearbeiten.
+ *
+ * Seit Listen und Formulare als Livewire laufen, gibt es keine /create- und
+ * /edit-Seiten mehr. Die Regeln kommen weiterhin aus demselben FormRequest -
+ * geprueft wird also dieselbe Fachlichkeit, nur ueber den Weg, den es noch gibt.
+ *
+ * @param  array<string, mixed>  $werte
+ */
+function imModal(string $typ, Customer $customer, array $werte, ?int $id = null): Testable
+{
+    $formular = Livewire\Livewire::test(ObjektFormular::class, ['typ' => $typ, 'customer' => $customer]);
+
+    $id === null
+        ? $formular->call('neu')
+        : $formular->call('bearbeiten', $typ, $id);
+
+    foreach ($werte as $feld => $wert) {
+        $formular->set("form.$feld", $wert);
+    }
+
+    return $formular->call('speichern');
+}
+
+/**
+ * Einen vorhandenen Eintrag ueber das Modal bearbeiten.
+ *
+ * Anders als beim frueheren PATCH sind die uebrigen Felder dabei schon
+ * gefuellt - das Modal laedt den Eintrag. Uebergeben wird also nur, was sich
+ * aendert, so wie es auch ein Mensch taete.
+ *
+ * @param  array<string, mixed>  $werte
+ */
+function imModalBearbeiten(string $typ, Customer $customer, $objekt, array $werte): Testable
+{
+    return imModal($typ, $customer, $werte, $objekt->id);
+}
+
+/**
+ * Das gerenderte Modal als HTML - fuer Zusicherungen, die frueher an der
+ * /create- oder /edit-Seite hingen.
+ */
+function modalHtml(string $typ, Customer $customer, ?int $id = null): string
+{
+    $formular = Livewire\Livewire::test(ObjektFormular::class, ['typ' => $typ, 'customer' => $customer]);
+
+    $id === null
+        ? $formular->call('neu')
+        : $formular->call('bearbeiten', $typ, $id);
+
+    return $formular->html();
+}
+
+/**
+ * Einen Eintrag ueber das Modal loeschen - der Weg, den es seit der
+ * Umstellung auf Livewire noch gibt.
+ */
+function imModalLoeschen(string $typ, Customer $customer, $objekt): Testable
+{
+    return Livewire\Livewire::test(ObjektFormular::class, ['typ' => $typ, 'customer' => $customer])
+        ->call('bearbeiten', $typ, $objekt->id)
+        ->call('loeschen');
 }

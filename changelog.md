@@ -1,5 +1,21 @@
 # Changelog
 
+## 26.08.27b
+
+### Removed
+
+- **Die alten /create- und /edit-Seiten sind weg.** Seit Listen und Formulare als Modal laufen, verlinkte sie niemand mehr — erreichbar waren sie nur noch, wer die Adresse von Hand eintippte. Entfernt: 78 Ansichten, 195 Controller-Methoden und die zugehörigen Routen für 39 Typen. Was bleibt: **Rack und Patchfeld** haben kein Modal und behalten ihre Seiten, ebenso der gesamte Admin-Bereich.
+  - Die Ressourcen-Routen dieser Typen stehen jetzt auf `only(['index'])` statt `except(['show'])` — die Adressen liefern 404 statt einer Seite, die niemand mehr pflegt.
+  - Die `index()`-Methoden luden zum Teil noch Daten, die die Livewire-Liste gar nicht verwendet — bis zu einer `paginate(25)`-Abfrage bei **jedem** Seitenaufruf. Sie holen jetzt nur noch den Kunden.
+  - 93 Übersetzungen entfielen mit den Seiten („Neuer Server", „Stammdaten speichern" …). Gefunden hat sie der Übersetzungstest selbst.
+  - Der Dokumentations-Assistent verlinkte erfasste Einträge auf ihre Bearbeiten-Seite; er führt jetzt in die Liste, in der das Modal sitzt.
+
+### Fixed
+
+- **Regeln, die ein anderes Feld heranziehen, griffen im Modal nicht.** „Das Gateway muss im Netz liegen" baut seine Prüfung aus `$this->input('subnet')` des Requests — im Modal hatte der aber keine Eingabe, die Regel prüfte gegen `null` und ließ alles durch. Ein Gateway außerhalb des Netzes wurde damit stillschweigend gespeichert. Das Formular reicht die Werte jetzt an den Request weiter.
+
+- **Ein gelöschter Cluster ließ seine Server mit ungültiger Zugehörigkeit zurück.** Das Auflösen steckte im `destroy` des Controllers, nicht im Model — beim Löschen über das Modal lief es deshalb nie. Es steht jetzt am Cluster selbst und gilt damit auf jedem Weg.
+
 ## 26.08.27
 
 ### Fixed

@@ -1,11 +1,13 @@
 <?php
 
+use App\Livewire\ObjektFormular;
 use App\Models\Customer;
 use App\Models\LicenseSoftware;
 use App\Models\OperatingSystem;
 use App\Models\Router;
 use App\Models\Server;
 use App\Models\Site;
+use Livewire\Livewire;
 
 test('Passwort mit Sonderzeichen übersteht den Edit-Roundtrip unverändert', function () {
     $this->actingAs(userWithPermissions(['router_update', 'router_viewAny']));
@@ -25,21 +27,23 @@ test('Passwort mit Sonderzeichen übersteht den Edit-Roundtrip unverändert', fu
         'port' => '443',
     ]);
 
-    // Edit-Seite: genau 1x escaped im value-Attribut, kein Doppel-Escaping
-    $response = $this->get("/{$customer->slug}/router/{$router->id}/edit");
-    $response->assertStatus(200);
-    $response->assertSee('value="'.e($password).'"', false);
-    $response->assertDontSee('&amp;amp;', false);
+    // Das Modal bindet ueber wire:model, der Wert steht also im Zustand der
+    // Komponente und nicht in einem value-Attribut. Genau dort muss er
+    // unveraendert ankommen - eine zusaetzliche Maskierung faellt hier auf.
+    $formular = Livewire::test(ObjektFormular::class, ['typ' => 'router', 'customer' => $customer])
+        ->call('bearbeiten', 'router', $router->id);
+
+    expect($formular->get('form')['password'])->toBe($password);
 
     // Speichern ohne Änderung -> Wert bleibt exakt gleich
-    $this->patch("/{$customer->slug}/router/{$router->id}", [
+    imModalBearbeiten('router', $customer, $router, [
         'site_id' => $site->id,
         'name' => 'RTR-Test',
         'username' => 'admin',
         'password' => $password,
         'ip' => '10.0.0.1',
         'port' => '443',
-    ])->assertSessionHasNoErrors();
+    ])->assertHasNoErrors();
 
     expect($router->fresh()->password)->toBe($password);
 });
@@ -63,9 +67,8 @@ test('Script-Payload im Passwort bricht nicht aus dem Attribut aus (XSS)', funct
         'remotePassword' => $payload,
     ]);
 
-    $this->get("/{$customer->slug}/server/{$server->id}/edit")
-        ->assertStatus(200)
-        ->assertDontSee('<script>alert(1)</script>', false);
+    expect(str_contains(modalHtml('server', $customer, $server->id), '<script>alert(1)</script>'))
+        ->toBeFalse('Der Payload bricht aus dem Attribut aus.');
 });
 
 test('Dateiname in Software-Lizenz-Liste wird escaped (Stored XSS)', function () {

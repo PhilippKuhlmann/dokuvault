@@ -21,8 +21,8 @@ test('ein Anschluss ohne Netz lässt sich weiterhin anlegen', function () {
     $this->actingAs(userWithPermissions(['internetconnection_create']));
     [$customer, $site] = anschlussUmgebung();
 
-    $this->post("/{$customer->slug}/internetconnection", anschlussDaten($site))
-        ->assertSessionHasNoErrors();
+    imModal('internetconnection', $customer, anschlussDaten($site))
+        ->assertHasNoErrors();
 
     expect(InternetConnection::first()->subnet)->toBeNull();
 });
@@ -31,9 +31,9 @@ test('Netz und Gateway werden gespeichert', function () {
     $this->actingAs(userWithPermissions(['internetconnection_create']));
     [$customer, $site] = anschlussUmgebung();
 
-    $this->post("/{$customer->slug}/internetconnection", anschlussDaten($site, [
+    imModal('internetconnection', $customer, anschlussDaten($site, [
         'subnet' => '203.0.113.16/28', 'subnet_gateway' => '203.0.113.17',
-    ]))->assertSessionHasNoErrors();
+    ]))->assertHasNoErrors();
 
     $ic = InternetConnection::first();
     expect($ic->subnet)->toBe('203.0.113.16/28');
@@ -44,8 +44,8 @@ test('ein Netz ohne Präfix wird abgelehnt', function () {
     $this->actingAs(userWithPermissions(['internetconnection_create']));
     [$customer, $site] = anschlussUmgebung();
 
-    $this->post("/{$customer->slug}/internetconnection", anschlussDaten($site, ['subnet' => '203.0.113.16']))
-        ->assertSessionHasErrors('subnet');
+    imModal('internetconnection', $customer, anschlussDaten($site, ['subnet' => '203.0.113.16']))
+        ->assertHasErrors('form.subnet');
 
     expect(InternetConnection::count())->toBe(0);
 });
@@ -54,29 +54,32 @@ test('eine Hostadresse statt der Netzadresse wird abgelehnt und die richtige gen
     $this->actingAs(userWithPermissions(['internetconnection_create']));
     [$customer, $site] = anschlussUmgebung();
 
-    $antwort = $this->post("/{$customer->slug}/internetconnection", anschlussDaten($site, [
+    $antwort = imModal('internetconnection', $customer, anschlussDaten($site, [
         'subnet' => '203.0.113.17/28',
     ]));
 
-    $antwort->assertSessionHasErrors('subnet');
-    expect(session('errors')->first('subnet'))->toContain('203.0.113.16/28');
+    // Die Meldung nennt das richtige Netz - ohne sie muesste man selbst
+    // rechnen. Im Modal stehen die Fehler an der Komponente, nicht in der
+    // Sitzung.
+    $antwort->assertHasErrors('form.subnet');
+    expect($antwort->errors()->first('form.subnet'))->toContain('203.0.113.16/28');
 });
 
 test('eine zu große Präfixlänge wird abgelehnt', function () {
     $this->actingAs(userWithPermissions(['internetconnection_create']));
     [$customer, $site] = anschlussUmgebung();
 
-    $this->post("/{$customer->slug}/internetconnection", anschlussDaten($site, ['subnet' => '203.0.113.16/33']))
-        ->assertSessionHasErrors('subnet');
+    imModal('internetconnection', $customer, anschlussDaten($site, ['subnet' => '203.0.113.16/33']))
+        ->assertHasErrors('form.subnet');
 });
 
 test('ein Gateway außerhalb des Netzes wird abgelehnt', function () {
     $this->actingAs(userWithPermissions(['internetconnection_create']));
     [$customer, $site] = anschlussUmgebung();
 
-    $this->post("/{$customer->slug}/internetconnection", anschlussDaten($site, [
+    imModal('internetconnection', $customer, anschlussDaten($site, [
         'subnet' => '203.0.113.16/28', 'subnet_gateway' => '203.0.113.99',
-    ]))->assertSessionHasErrors('subnet_gateway');
+    ]))->assertHasErrors('form.subnet_gateway');
 
     expect(InternetConnection::count())->toBe(0);
 });
@@ -85,8 +88,8 @@ test('ein Netz ohne Gateway ist erlaubt', function () {
     $this->actingAs(userWithPermissions(['internetconnection_create']));
     [$customer, $site] = anschlussUmgebung();
 
-    $this->post("/{$customer->slug}/internetconnection", anschlussDaten($site, ['subnet' => '203.0.113.16/28']))
-        ->assertSessionHasNoErrors();
+    imModal('internetconnection', $customer, anschlussDaten($site, ['subnet' => '203.0.113.16/28']))
+        ->assertHasNoErrors();
 
     expect(InternetConnection::first()->subnet_gateway)->toBeNull();
 });
@@ -95,9 +98,9 @@ test('ein IPv6-Netz wird angenommen', function () {
     $this->actingAs(userWithPermissions(['internetconnection_create']));
     [$customer, $site] = anschlussUmgebung();
 
-    $this->post("/{$customer->slug}/internetconnection", anschlussDaten($site, [
+    imModal('internetconnection', $customer, anschlussDaten($site, [
         'subnet' => '2001:db8:abcd::/48', 'subnet_gateway' => '2001:db8:abcd::1',
-    ]))->assertSessionHasNoErrors();
+    ]))->assertHasNoErrors();
 
     expect(InternetConnection::first()->subnet)->toBe('2001:db8:abcd::/48');
 });

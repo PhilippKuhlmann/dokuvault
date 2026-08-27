@@ -271,15 +271,18 @@ test('die Login-Liste nennt die verknüpften Systeme', function () {
         ->assertSee('VM-WEB01 (VM)');
 });
 
-test('das Login-Formular zeigt die Verwendung mit Notiz', function () {
-    $nutzer = userWithPermissions(['logingeneral_update']);
+test('am Geraet steht die abweichende Verwendung', function () {
+    $nutzer = userWithPermissions(['vm_update', 'logingeneral_viewAny']);
     [$customer, $site, $vm, $login] = zugangsUmgebung();
     $vm->credentialLinks()->create([
         'customer_id' => $customer->id, 'login_general_id' => $login->id, 'note' => 'SSH root',
     ]);
 
-    $this->actingAs($nutzer)->get("/{$customer->slug}/logingeneral/{$login->id}/edit")
-        ->assertSee('VM-WEB01 (VM)')
+    // Die Notiz sagt, wofuer das Login an genau diesem Geraet gilt - sie
+    // steht deshalb im Zugangsdaten-Block, nicht in der Login-Liste. Dass die
+    // Liste das Geraet nennt, prueft der Test darueber.
+    $this->actingAs($nutzer);
+    Livewire::test(DeviceCredentials::class, ['model' => $vm, 'customer' => $customer])
         ->assertSee('SSH root');
 });
 
@@ -287,8 +290,8 @@ test('die VM-Seite zeigt den Zugangsdaten-Abschnitt', function () {
     $nutzer = userWithPermissions(['vm_update', 'logingeneral_viewAny']);
     [$customer, $site, $vm, $login] = zugangsUmgebung();
 
-    $this->actingAs($nutzer)->get("/{$customer->slug}/vm/{$vm->id}/edit")
-        ->assertSee('Zugangsdaten');
+    $this->actingAs($nutzer);
+    expect(modalHtml('vm', $customer, $vm->id))->toContain('Zugangsdaten');
 });
 
 test('die Spalte Verwendung erscheint nur, wenn eine Notiz gepflegt ist', function () {
@@ -331,7 +334,7 @@ test('die alten Adressen liefern 404', function () {
 });
 
 test('ein NAS im Papierkorb nimmt seine Zugangsdaten nicht mit', function () {
-    $nutzer = userWithPermissions(['nas_delete']);
+    $nutzer = userWithPermissions(['nas_update', 'nas_delete']);
     [$customer, $site, $vm, $login] = zugangsUmgebung();
     $nas = NAS::create([
         'customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'NAS-01',
@@ -339,7 +342,8 @@ test('ein NAS im Papierkorb nimmt seine Zugangsdaten nicht mit', function () {
     ]);
     $nas->credentialLinks()->create(['customer_id' => $customer->id, 'login_general_id' => $login->id]);
 
-    $this->actingAs($nutzer)->delete("/{$customer->slug}/nas/{$nas->id}");
+    $this->actingAs($nutzer);
+    imModalLoeschen('nas', $customer, $nas);
 
     // Frueher loeschte der Controller die Geraete-Logins mit - jetzt kann
     // dasselbe Login an weiteren Systemen haengen und bleibt bestehen.
@@ -374,19 +378,6 @@ function abbrechenZiel($antwort): ?string
 
     return $treffer[1] ?? null;
 }
-
-test('Abbrechen führt aus dem Formular zurück in die Liste', function () {
-    $nutzer = userWithPermissions(['vm_update', 'vm_create', 'logingeneral_viewAny']);
-    [$customer, $site, $vm, $login] = zugangsUmgebung();
-
-    // Vorher stand hier redirect()->back(), das beim Rendern auf die Seite selbst
-    // zeigte - der Knopf lud die Seite nur neu.
-    expect(abbrechenZiel($this->actingAs($nutzer)->get("/{$customer->slug}/vm/{$vm->id}/edit")))
-        ->toBe(route('vm.index', $customer));
-
-    expect(abbrechenZiel($this->actingAs($nutzer)->get("/{$customer->slug}/vm/create")))
-        ->toBe(route('vm.index', $customer));
-});
 
 test('Abbrechen führt auch in der Administration in die Liste', function () {
     $adminRolle = Role::factory()->create(['id' => Role::IS_ADMIN]);

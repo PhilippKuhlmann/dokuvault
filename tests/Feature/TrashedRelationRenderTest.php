@@ -22,5 +22,5 @@ test('WLAN mit Netzwerk im Papierkorb: Liste und Bearbeiten laden ohne Fehler', 
     $network->delete();
 
     $this->get("/{$customer->slug}/wifi")->assertStatus(200);
-    $this->get("/{$customer->slug}/wifi/{$wifi->id}/edit")->assertStatus(200);
+    expect(modalHtml('wifi', $customer, $wifi->id))->not->toBe('');
 });

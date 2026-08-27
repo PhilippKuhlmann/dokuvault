@@ -17,20 +17,20 @@ test('site_id eines fremden Kunden wird beim Anlegen abgelehnt (IDOR)', function
     $os = OperatingSystem::factory()->create(['name' => 'Windows 11']);
 
     // Fremder Standort -> Validierungsfehler, nichts angelegt
-    $this->post("/{$customerA->slug}/computer", [
+    imModal('computer', $customerA, [
         'site_id' => $siteB->id,
         'name' => 'Hack',
         'operating_system_id' => $os->id,
-    ])->assertSessionHasErrors('site_id');
+    ])->assertHasErrors('form.site_id');
 
     expect(Computer::count())->toBe(0);
 
     // Eigener Standort -> erfolgreich
-    $this->post("/{$customerA->slug}/computer", [
+    imModal('computer', $customerA, [
         'site_id' => $siteA->id,
         'name' => 'OK',
         'operating_system_id' => $os->id,
-    ])->assertSessionHasNoErrors();
+    ])->assertHasNoErrors();
 
     expect(Computer::count())->toBe(1);
 });

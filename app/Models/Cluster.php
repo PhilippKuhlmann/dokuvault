@@ -19,6 +19,24 @@ class Cluster extends Model
     use HasFactory, SoftDeletes;
     use TracksChanges;
 
+    /**
+     * Beim Loeschen verlieren die Server nur ihre Zugehoerigkeit.
+     *
+     * Sie sind eigene Geraete und bleiben stehen. Die Fremdschluessel-Regel
+     * (nullOnDelete) greift erst beim endgueltigen Loeschen - der Cluster
+     * wandert aber zunaechst in den Papierkorb.
+     *
+     * Steht am Model und nicht am Controller: Geloescht wird im Modal, und ein
+     * Cluster ohne diese Regel liesse Server mit einer Zugehoerigkeit zurueck,
+     * die es nicht mehr gibt.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (self $cluster) {
+            $cluster->servers()->update(['cluster_id' => null]);
+        });
+    }
+
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     public function customer()

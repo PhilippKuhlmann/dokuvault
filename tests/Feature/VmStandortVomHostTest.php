@@ -32,12 +32,12 @@ test('mit Host kommt der Standort vom Host, nicht aus dem Formular', function ()
 
     // Der Standort wird mitgeschickt, als kaeme er aus einem alten Formular -
     // und zwar der falsche. Der Host gewinnt.
-    $this->post(route('vm.store', $customer), [
+    imModal('vm', $customer, [
         'server_id' => $host->id,
         'site_id' => $muenchen->id,
         'name' => 'VM-DC02',
         'operating_system_id' => $os->id,
-    ])->assertSessionHasNoErrors();
+    ])->assertHasNoErrors();
 
     expect(VM::where('name', 'VM-DC02')->first()->site_id)->toBe($hamburg->id);
 });
@@ -48,13 +48,13 @@ test('ohne Host bleibt der Standort Pflicht', function () {
 
     // Ein vServer beim Anbieter hat keinen dokumentierten Host - dort ist der
     // Standort die einzige Ortsangabe.
-    $this->post(route('vm.store', $customer), [
+    imModal('vm', $customer, [
         'name' => 'VM-Cloud', 'operating_system_id' => $os->id,
-    ])->assertSessionHasErrors('site_id');
+    ])->assertHasErrors('form.site_id');
 
-    $this->post(route('vm.store', $customer), [
+    imModal('vm', $customer, [
         'site_id' => $muenchen->id, 'name' => 'VM-Cloud', 'operating_system_id' => $os->id,
-    ])->assertSessionHasNoErrors();
+    ])->assertHasNoErrors();
 
     expect(VM::where('name', 'VM-Cloud')->first()->site_id)->toBe($muenchen->id);
 });
@@ -76,9 +76,9 @@ test('ein Hostwechsel zieht den Standort der VM mit', function () {
         'server_id' => $alterHost->id, 'operating_system_id' => $os->id, 'name' => 'VM-Umzug',
     ]);
 
-    $this->patch(route('vm.update', [$customer, $vm]), [
+    imModalBearbeiten('vm', $customer, $vm, [
         'server_id' => $neuerHost->id, 'name' => 'VM-Umzug', 'operating_system_id' => $os->id,
-    ])->assertSessionHasNoErrors();
+    ])->assertHasNoErrors();
 
     expect($vm->fresh()->site_id)->toBe($muenchen->id);
 });
@@ -117,9 +117,9 @@ test('eine VM laesst sich statt einem Host einem Cluster zuweisen', function () 
         'customer_id' => $customer->id, 'site_id' => $muenchen->id, 'name' => 'PVE-Cluster',
     ]);
 
-    $this->post(route('vm.store', $customer), [
+    imModal('vm', $customer, [
         'cluster_id' => $cluster->id, 'name' => 'VM-HA', 'operating_system_id' => $os->id,
-    ])->assertSessionHasNoErrors();
+    ])->assertHasNoErrors();
 
     $vm = VM::where('name', 'VM-HA')->first();
     expect($vm->cluster_id)->toBe($cluster->id);
@@ -139,10 +139,10 @@ test('Host und Cluster zugleich werden abgelehnt', function () {
     $cluster = Cluster::factory()->create(['customer_id' => $customer->id, 'site_id' => $muenchen->id]);
 
     // Sonst stuenden zwei Antworten auf dieselbe Frage in der Doku.
-    $this->post(route('vm.store', $customer), [
+    imModal('vm', $customer, [
         'server_id' => $host->id, 'cluster_id' => $cluster->id,
         'name' => 'VM-Beides', 'operating_system_id' => $os->id,
-    ])->assertSessionHasErrors('server_id');
+    ])->assertHasErrors('form.server_id');
 
     expect(VM::where('name', 'VM-Beides')->exists())->toBeFalse();
 });
@@ -176,10 +176,10 @@ test('der Host eines fremden Kunden steuert keinen Standort bei (IDOR)', functio
         'operating_system_id' => $os->id, 'name' => 'fremd01',
     ]);
 
-    $this->post(route('vm.store', $customer), [
+    imModal('vm', $customer, [
         'server_id' => $fremderHost->id, 'site_id' => $hamburg->id,
         'name' => 'VM-Fremd', 'operating_system_id' => $os->id,
-    ])->assertSessionHasErrors('server_id');
+    ])->assertHasErrors('form.server_id');
 
     expect(VM::where('name', 'VM-Fremd')->exists())->toBeFalse();
 });

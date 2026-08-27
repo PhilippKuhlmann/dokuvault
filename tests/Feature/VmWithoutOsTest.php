@@ -22,5 +22,5 @@ test('VM mit im Papierkorb liegendem Betriebssystem: Liste und Bearbeiten laden 
     $os->delete();
 
     $this->get("/{$customer->slug}/vm")->assertStatus(200)->assertSee($vm->name);
-    $this->get("/{$customer->slug}/vm/{$vm->id}/edit")->assertStatus(200);
+    expect(modalHtml('vm', $customer, $vm->id))->not->toBe('');
 });

@@ -1,9 +1,11 @@
 <?php
 
+use App\Livewire\ObjektFormular;
 use App\Models\Computer;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
 use App\Models\Site;
+use Livewire\Livewire;
 
 function customerWithSiteAndOs(): array
 {
@@ -14,18 +16,20 @@ function customerWithSiteAndOs(): array
     return [$customer, $site, $os];
 }
 
-test('Computer anlegen (store) speichert und leitet zur Liste', function () {
+test('Computer im Modal anlegen speichert den Datensatz', function () {
     $this->actingAs(userWithPermissions(['computer_create']));
     [$customer, $site, $os] = customerWithSiteAndOs();
 
-    $response = $this->post("/{$customer->slug}/computer", [
+    $response = imModal('computer', $customer, [
         'site_id' => $site->id,
         'name' => 'PC-Test',
         'manufacturer' => 'Dell',
         'operating_system_id' => $os->id,
     ]);
 
-    $response->assertRedirect("/{$customer->slug}/computer");
+    // Das Modal leitet nicht um, es schliesst sich - die Liste aktualisiert
+    // sich ueber ein Ereignis.
+    $response->assertHasNoErrors();
     $this->assertDatabaseHas('computers', [
         'customer_id' => $customer->id,
         'site_id' => $site->id,
@@ -38,11 +42,11 @@ test('Computer anlegen scheitert ohne Pflichtfelder', function () {
     $this->actingAs(userWithPermissions(['computer_create']));
     [$customer, $site, $os] = customerWithSiteAndOs();
 
-    $this->post("/{$customer->slug}/computer", [
+    imModal('computer', $customer, [
         'site_id' => $site->id,
         // name fehlt (required)
         'operating_system_id' => $os->id,
-    ])->assertSessionHasErrors('name');
+    ])->assertHasErrors('form.name');
 
     expect(Computer::count())->toBe(0);
 });
@@ -58,17 +62,17 @@ test('Computer bearbeiten (update) ändert die Daten', function () {
         'operating_system_id' => $os->id,
     ]);
 
-    $this->patch("/{$customer->slug}/computer/{$computer->id}", [
+    imModalBearbeiten('computer', $customer, $computer, [
         'site_id' => $site->id,
         'name' => 'Neu',
         'operating_system_id' => $os->id,
-    ])->assertRedirect("/{$customer->slug}/computer");
+    ])->assertHasNoErrors();
 
     expect($computer->fresh()->name)->toBe('Neu');
 });
 
-test('Computer löschen (destroy) entfernt den Datensatz', function () {
-    $this->actingAs(userWithPermissions(['computer_delete']));
+test('Computer im Modal loeschen entfernt den Datensatz', function () {
+    $this->actingAs(userWithPermissions(['computer_update', 'computer_delete']));
     [$customer, $site, $os] = customerWithSiteAndOs();
 
     $computer = Computer::create([
@@ -78,8 +82,7 @@ test('Computer löschen (destroy) entfernt den Datensatz', function () {
         'operating_system_id' => $os->id,
     ]);
 
-    $this->delete("/{$customer->slug}/computer/{$computer->id}")
-        ->assertRedirect("/{$customer->slug}/computer");
+    imModalLoeschen('computer', $customer, $computer);
 
     $this->assertSoftDeleted('computers', ['id' => $computer->id]);
 });
@@ -101,14 +104,16 @@ test('Computer-Liste zeigt vorhandene Geräte', function () {
 });
 
 test('ohne Berechtigung kein Anlegen möglich', function () {
-    $this->actingAs(userWithPermissions([])); // keine Rechte
+    // Sehen darf er, anlegen nicht - ohne jedes Recht liesse sich die
+    // Komponente gar nicht erst aufbauen, und der Test wuerde nur zeigen,
+    // dass nichts geht.
+    $this->actingAs(userWithPermissions(['computer_viewAny']));
     [$customer, $site, $os] = customerWithSiteAndOs();
 
-    $this->post("/{$customer->slug}/computer", [
-        'site_id' => $site->id,
-        'name' => 'Verboten',
-        'operating_system_id' => $os->id,
-    ])->assertStatus(403);
+    // Das Modal prueft das Recht beim Oeffnen: schon "neu" bricht ab.
+    Livewire::test(ObjektFormular::class, ['typ' => 'computer', 'customer' => $customer])
+        ->call('neu')
+        ->assertForbidden();
 
     expect(Computer::count())->toBe(0);
 });

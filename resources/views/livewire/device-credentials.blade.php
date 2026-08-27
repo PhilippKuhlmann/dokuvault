@@ -55,13 +55,13 @@
                     <tr wire:key="link-{{ $entry->id }}" class="border-b border-gray-50 last:border-0 dark:border-gray-700/50">
                         <td class="py-2 pr-4 text-gray-900 dark:text-gray-100">
                             @php ($istSchluessel = $entry->login->istSchluessel())
-                            {{-- Zwei Ziele: Ein Schluessel liegt in seiner eigenen
-                                 Liste, die Login-Bearbeitung findet ihn nicht. --}}
+            {{-- Je Art in die eigene Liste: Beide werden im Modal bearbeitet,
+                 eigene Bearbeiten-Seiten gibt es nicht mehr. --}}
                             @if ($istSchluessel && auth()->user()->can('sshkey_viewAny'))
                                 <a href="{{ route('sshkey.index', $kunde) }}"
                                     class="text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400">{{ $entry->login->name }}</a>
-                            @elseif (! $istSchluessel && auth()->user()->can('logingeneral_update'))
-                                <a href="{{ route('logingeneral.edit', [$kunde, $entry->login_general_id]) }}"
+                            @elseif (! $istSchluessel && auth()->user()->can('logingeneral_viewAny'))
+                                <a href="{{ route('logingeneral.index', $kunde) }}"
                                     class="text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400">{{ $entry->login->name }}</a>
                             @else
                                 {{ $entry->login->name }}

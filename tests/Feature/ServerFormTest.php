@@ -36,23 +36,6 @@ function serverMitAdresse(Customer $customer, Site $site, OperatingSystem $os, s
     return $server;
 }
 
-test('das Formular bietet kein IP-1- und IP-2-Feld mehr', function () {
-    $this->actingAs(userWithPermissions(['server_create', 'server_update']));
-    [$customer, $site, $os] = serverFormUmgebung();
-
-    $server = Server::create([
-        'customer_id' => $customer->id, 'site_id' => $site->id,
-        'name' => 'SRV-01', 'operating_system_id' => $os->id,
-    ]);
-
-    foreach (["/{$customer->slug}/server/create", "/{$customer->slug}/server/{$server->id}/edit"] as $url) {
-        $inhalt = $this->get($url)->assertOk()->getContent();
-
-        expect($inhalt)->not->toContain('name="ip1"');
-        expect($inhalt)->not->toContain('name="ip2"');
-    }
-});
-
 test('die Liste zeigt die dokumentierte Adresse aus dem IP-Block', function () {
     $this->actingAs(userWithPermissions(['server_viewAny']));
     [$customer, $site, $os] = serverFormUmgebung();
@@ -71,29 +54,4 @@ test('die globale Suche findet einen Server ueber eine Adresse aus dem IP-Block'
     Livewire::test(GlobalSearch::class)
         ->set('search', '172.16.5.99')
         ->assertSee('SRV-GESUCHT');
-});
-
-test('das Formular hat oben einen Zurueck-Link auf die Liste', function () {
-    $this->actingAs(userWithPermissions(['server_create', 'server_update']));
-    [$customer, $site, $os] = serverFormUmgebung();
-
-    $server = Server::create([
-        'customer_id' => $customer->id, 'site_id' => $site->id,
-        'name' => 'SRV-01', 'operating_system_id' => $os->id,
-    ]);
-
-    foreach (["/{$customer->slug}/server/create", "/{$customer->slug}/server/{$server->id}/edit"] as $url) {
-        $inhalt = $this->get($url)->assertOk()->getContent();
-
-        // Das href aus genau diesem Anker ziehen: assertSee wuerde die Listen-URL
-        // auch in der Seitenleiste finden und den Link selbst nie pruefen. Der
-        // Text muss mit rein, sonst trifft das Muster den ersten beliebigen
-        // Anker mit Symbol - davon hat die Seitenleiste ein Dutzend. Und der
-        // Mittelteil darf kein </a> enthalten, sonst spannt er vom ersten
-        // Anker der Seite bis zum "Zurueck" weiter unten und liefert dessen
-        // Adresse.
-        preg_match('#<a href="([^"]+)"[^>]*>(?:(?!</a>).)*?Zurück\s*</a>#s', $inhalt, $treffer);
-
-        expect($treffer[1] ?? null)->toEndWith("/{$customer->slug}/server");
-    }
 });

@@ -32,9 +32,11 @@ function dienstUmgebung(): array
 }
 
 /**
- * Die Seitenleiste bringt eigene Hover-Fenster mit (x-nav.link). Wer die
- * Fenster der Dienste zaehlen will, muss die abziehen - sonst prueft der Test
- * die Navigation mit.
+ * Wie viele Hover-Fenster eine Seite ohne Zutun mitbringt.
+ *
+ * Die Seitenleiste bringt eigene mit - wer auf einer ganzen Seite zaehlt,
+ * muss sie abziehen. Im Modal entfaellt das: Dort wird nur das Formular
+ * gerendert.
  */
 function tooltipGrundrauschen($test): int
 {
@@ -47,7 +49,7 @@ test('das Formular zeigt den Katalog samt Beschreibung zur Auswahl', function ()
     $this->actingAs(userWithPermissions(['server_update']));
     [$customer, $server] = dienstUmgebung();
 
-    $inhalt = $this->get("/{$customer->slug}/server/{$server->id}/edit")->assertOk()->getContent();
+    $inhalt = modalHtml('server', $customer, $server->id);
 
     expect($inhalt)->toContain('Aus dem Katalog');
 
@@ -59,8 +61,9 @@ test('das Formular zeigt den Katalog samt Beschreibung zur Auswahl', function ()
 
     // Ein Katalogeintrag ohne Beschreibung ("Ohnetext") bekommt gar kein
     // Fenster - sonst haette man ein leeres Kaestchen am Mauszeiger.
-    // Relativ gezaehlt: Die Seitenleiste bringt eigene tooltips mit.
-    expect(substr_count($inhalt, 'role="tooltip"') - tooltipGrundrauschen($this))->toBe(2);
+    // Absolut gezaehlt: Das Modal rendert nur das Formular, die Seitenleiste
+    // mit ihren eigenen Tooltips ist nicht dabei.
+    expect(substr_count($inhalt, 'role="tooltip"'))->toBe(2);
 
     // Freitext bleibt moeglich.
     expect($inhalt)->toContain('Nicht im Katalog?');
@@ -70,7 +73,7 @@ test('die bereits gepflegten Dienste stehen vorbelegt im Feld', function () {
     $this->actingAs(userWithPermissions(['server_update']));
     [$customer, $server] = dienstUmgebung();
 
-    $inhalt = $this->get("/{$customer->slug}/server/{$server->id}/edit")->assertOk()->getContent();
+    $inhalt = modalHtml('server', $customer, $server->id);
 
     // Alpine bekommt die Auswahl als JSON - inklusive des freien Dienstes, den
     // es im Katalog nicht gibt. @js() schreibt JSON.parse('["…"]'),
@@ -83,12 +86,12 @@ test('gespeichert wird weiterhin eine Komma-Liste, auch mit freien Diensten', fu
     $this->actingAs(userWithPermissions(['server_update']));
     [$customer, $server] = dienstUmgebung();
 
-    $this->patch("/{$customer->slug}/server/{$server->id}", [
+    imModalBearbeiten('server', $customer, $server, [
         'site_id' => $server->site_id, 'name' => $server->name,
         'operating_system_id' => $server->operating_system_id,
         'form_factor' => 'rack', 'full_depth' => '1', 'height_units' => 1,
         'services' => 'AD,DNS,Nextcloud',
-    ])->assertSessionHasNoErrors();
+    ])->assertHasNoErrors();
 
     expect($server->fresh()->services)->toBe(['AD', 'DNS', 'Nextcloud']);
 });

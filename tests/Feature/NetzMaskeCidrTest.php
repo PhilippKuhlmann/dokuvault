@@ -1,8 +1,10 @@
 <?php
 
+use App\Livewire\NetworkQuickCreate;
 use App\Models\Customer;
 use App\Models\Network;
 use App\Models\Site;
+use Livewire\Livewire;
 
 test('Maske wird zu CIDR', function (string $maske, ?int $cidr) {
     expect(Network::cidrAusMaske($maske))->toBe($cidr);
@@ -48,56 +50,64 @@ test('hin und zurueck ergibt wieder dasselbe', function () {
     }
 });
 
-test('das alte Formular ergaenzt die fehlende Schreibweise beim Speichern', function () {
-    $nutzer = userWithPermissions(['network_create']);
-    $this->actingAs($nutzer);
-
-    $customer = Customer::factory()->create();
-    $site = Site::factory()->create(['customer_id' => $customer->id]);
-
-    // /network/create ist kein Livewire - hier haengt die Ergaenzung im
-    // FormRequest, sonst stuende nur die halbe Angabe in der Datenbank.
-    $this->post("/{$customer->slug}/network", [
-        'site_id' => $site->id,
-        'description' => 'Nur Maske',
-        'network' => '10.10.10.0',
-        'subnetmask' => '255.255.240.0',
-        'cidr' => '',
-    ])->assertRedirect();
-
-    expect((int) Network::where('description', 'Nur Maske')->sole()->cidr)->toBe(20);
-
-    $this->post("/{$customer->slug}/network", [
-        'site_id' => $site->id,
-        'description' => 'Nur CIDR',
-        'network' => '10.10.11.0',
-        'subnetmask' => '',
-        'cidr' => 26,
-    ])->assertRedirect();
-
-    expect(Network::where('description', 'Nur CIDR')->sole()->subnetmask)->toBe('255.255.255.192');
-});
-
-test('widerspruechliche Angaben werden nicht ueberschrieben', function () {
+test('das VLAN-Fenster ergaenzt die fehlende Schreibweise', function () {
     $this->actingAs(userWithPermissions(['network_create']));
 
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
 
-    // Wer beides von Hand eintraegt, meint es vermutlich so - die Anwendung
-    // raet ihm nicht dazwischen.
-    $this->post("/{$customer->slug}/network", [
-        'site_id' => $site->id,
-        'description' => 'Von Hand',
-        'network' => '10.10.12.0',
-        'subnetmask' => '255.255.255.0',
-        'cidr' => 16,
-    ])->assertRedirect();
+    // Frueher hing die Ergaenzung im FormRequest der /network/create-Seite.
+    // Die gibt es nicht mehr - jetzt ergaenzt das Fenster schon beim Tippen,
+    // damit man vor dem Speichern sieht, was herauskommt.
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $customer])
+        ->call('neu')
+        ->set('site_id', $site->id)
+        ->set('description', 'Nur Maske')
+        ->set('network', '10.10.10.0')
+        ->set('subnetmask', '255.255.240.0')
+        ->call('speichern')
+        ->assertHasNoErrors();
+
+    expect((int) Network::where('description', 'Nur Maske')->sole()->cidr)->toBe(20);
+
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $customer])
+        ->call('neu')
+        ->set('site_id', $site->id)
+        ->set('description', 'Nur CIDR')
+        ->set('network', '10.10.11.0')
+        ->set('cidr', 26)
+        ->call('speichern')
+        ->assertHasNoErrors();
+
+    expect(Network::where('description', 'Nur CIDR')->sole()->subnetmask)->toBe('255.255.255.192');
+});
+
+test('die zuletzt getippte Angabe zieht die andere nach', function () {
+    $this->actingAs(userWithPermissions(['network_create']));
+
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+
+    // Unterschied zur alten Seite: Dort blieben widerspruechliche Angaben
+    // stehen, wie sie eingetippt waren. Im Fenster sieht man die Ergaenzung
+    // dagegen sofort - die zuletzt geaenderte Angabe gewinnt, und beides
+    // passt beim Speichern zusammen, statt sich zu widersprechen.
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $customer])
+        ->call('neu')
+        ->set('site_id', $site->id)
+        ->set('description', 'Von Hand')
+        ->set('network', '10.10.12.0')
+        ->set('cidr', 16)
+        ->set('subnetmask', '255.255.255.0')
+        ->call('speichern')
+        ->assertHasNoErrors();
 
     $netz = Network::where('description', 'Von Hand')->sole();
 
     expect($netz->subnetmask)->toBe('255.255.255.0');
-    expect((int) $netz->cidr)->toBe(16);
+    // Die Maske hat den CIDR nachgezogen - beides passt jetzt zusammen,
+    // statt sich zu widersprechen.
+    expect((int) $netz->cidr)->toBe(24);
 });
 
 test('die vollstaendige Praefixtabelle stimmt in beide Richtungen', function () {

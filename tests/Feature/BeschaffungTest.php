@@ -40,7 +40,7 @@ test('das Anlegen speichert Kaufdatum, Garantie und Lieferant', function () {
     $os = OperatingSystem::factory()->create(['name' => 'Debian 13']);
     $this->actingAs(userWithPermissions(['server_create', 'server_viewAny']));
 
-    $this->post(route('server.store', $customer), [
+    imModal('server', $customer, [
         'site_id' => $site->id,
         'name' => 'SRV-Beschaffung',
         'form_factor' => 'rack',

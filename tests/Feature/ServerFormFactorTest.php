@@ -32,7 +32,7 @@ test('store speichert Bauform und Einbautiefe', function () {
     $this->actingAs(userWithPermissions(['server_create']));
     [$customer, $site, $os] = serverUmgebung();
 
-    $this->post("/{$customer->slug}/server", [
+    imModal('server', $customer, [
         'site_id' => $site->id, 'name' => 'SRV-01', 'operating_system_id' => $os->id,
         'form_factor' => 'rack', 'full_depth' => '0', 'height_units' => 2,
     ]);
@@ -48,32 +48,34 @@ test('ein Standserver braucht keine Einbautiefe', function () {
     [$customer, $site, $os] = serverUmgebung();
 
     // Das Formular blendet das Feld aus, es kommt also gar nicht mit.
-    $this->post("/{$customer->slug}/server", [
+    imModal('server', $customer, [
         'site_id' => $site->id, 'name' => 'SRV-TOWER', 'operating_system_id' => $os->id,
         'form_factor' => 'tower',
-    ])->assertSessionHasNoErrors();
+    ])->assertHasNoErrors();
 
     expect(Server::first()->form_factor)->toBe('tower');
 });
 
-test('beim 19-Zoll-Server bleibt die Einbautiefe Pflicht', function () {
+test('beim 19-Zoll-Server laesst sich die Einbautiefe nicht leeren', function () {
     $this->actingAs(userWithPermissions(['server_create']));
     [$customer, $site, $os] = serverUmgebung();
 
-    $this->post("/{$customer->slug}/server", [
+    // Im Modal ist die Auswahl vorbelegt, leer bekommt man sie nur mit
+    // Absicht - und dann muss sie sich beschweren.
+    imModal('server', $customer, [
         'site_id' => $site->id, 'name' => 'SRV-01', 'operating_system_id' => $os->id,
-        'form_factor' => 'rack',
-    ])->assertSessionHasErrors(['full_depth', 'height_units']);
+        'form_factor' => 'rack', 'full_depth' => '',
+    ])->assertHasErrors(['form.full_depth']);
 });
 
 test('eine unbekannte Bauform wird abgelehnt', function () {
     $this->actingAs(userWithPermissions(['server_create']));
     [$customer, $site, $os] = serverUmgebung();
 
-    $this->post("/{$customer->slug}/server", [
+    imModal('server', $customer, [
         'site_id' => $site->id, 'name' => 'SRV-01', 'operating_system_id' => $os->id,
         'form_factor' => 'schrank', 'full_depth' => '1', 'height_units' => 1,
-    ])->assertSessionHasErrors('form_factor');
+    ])->assertHasErrors('form.form_factor');
 
     expect(Server::count())->toBe(0);
 });

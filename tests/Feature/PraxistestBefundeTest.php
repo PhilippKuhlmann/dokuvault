@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\DeviceIpAddresses;
+use App\Livewire\ObjektFormular;
 use App\Models\ContactPerson;
 use App\Models\Customer;
 use App\Models\Firewall;
@@ -22,7 +23,7 @@ test('die USC-PIN einer Securepoint-Firewall wird gespeichert', function () {
 
     // Sie fehlte in den Regeln, der Controller speichert validated() - die
     // Eingabe verschwand ohne Meldung.
-    $this->post("/{$customer->slug}/firewall", [
+    imModal('firewall', $customer, [
         'site_id' => $site->id,
         'name' => 'FW-01',
         'manufacturer' => 'Securepoint',
@@ -31,7 +32,7 @@ test('die USC-PIN einer Securepoint-Firewall wird gespeichert', function () {
         'cloud_backup_password' => 'backup',
         'usc_pin' => '448213',
         'management_url' => 'https://10.0.0.1:11115',
-    ])->assertRedirect();
+    ])->assertHasNoErrors();
 
     expect(Firewall::where('name', 'FW-01')->sole()->usc_pin)->toBe('448213');
 });
@@ -96,23 +97,28 @@ test('die Loeschkarte nennt den Papierkorb statt endgueltigem Verlust', function
     $customer = Customer::factory()->create();
     $person = ContactPerson::factory()->create(['customer_id' => $customer->id]);
 
-    $inhalt = $this->get("/{$customer->slug}/contactperson/{$person->id}/edit")->assertOk()->getContent();
+    // Die Rueckfrage ersetzt im Modal die Felder - sie steht erst da, wenn
+    // man auf Loeschen geklickt hat.
+    $inhalt = Livewire::test(ObjektFormular::class, ['typ' => 'contactperson', 'customer' => $customer])
+        ->call('bearbeiten', 'contactperson', $person->id)
+        ->set('loeschenGefragt', true)
+        ->html();
 
     expect($inhalt)->toContain('Papierkorb');
-    expect($inhalt)->not->toContain('unwiederruflich');
+    expect(str_contains($inhalt, 'unwiederruflich'))->toBeFalse('Der Eintrag ist nicht endgültig weg.');
 });
 
 test('der Ansprechpartner hat eine Funktion', function () {
     $this->actingAs(userWithPermissions(['contactperson_create', 'contactperson_viewAny']));
     $customer = Customer::factory()->create();
 
-    $this->post("/{$customer->slug}/contactperson", [
+    imModal('contactperson', $customer, [
         'first_name' => 'Timo',
         'last_name' => 'Brandt',
         'role' => 'IT-Verantwortlicher',
         'phone' => '040 123',
         'mail' => 't.brandt@example.de',
-    ])->assertRedirect();
+    ])->assertHasNoErrors();
 
     expect(ContactPerson::where('last_name', 'Brandt')->sole()->role)->toBe('IT-Verantwortlicher');
 
@@ -145,12 +151,12 @@ test('das Betriebssystem ist nicht vorausgewaehlt', function () {
 
     // Vorher stand der erste Eintrag der Liste da; wer das uebersah,
     // dokumentierte still das falsche Betriebssystem.
-    $inhalt = $this->get("/{$customer->slug}/server/create")->assertOk()->getContent();
+    $inhalt = modalHtml('server', $customer);
 
     expect($inhalt)->toContain('<option value="">');
 
     // Leere Auswahl muss eine Meldung geben statt eines Datenbankfehlers:
     // die Spalte ist NOT NULL.
-    $this->post("/{$customer->slug}/vm", ['name' => 'VM-01', 'operating_system_id' => ''])
-        ->assertSessionHasErrors('operating_system_id');
+    imModal('vm', $customer, ['name' => 'VM-01', 'operating_system_id' => ''])
+        ->assertHasErrors('form.operating_system_id');
 });

@@ -99,7 +99,11 @@
                     {{-- Kurzform ohne Leerzeichen: "@php (" liest Blade als
                          Blockanfang und schluckt alles bis zum naechsten
                          @endphp. --}}
-                    @php($bearbeitbar = Route::has($step['key'].'.edit'))
+                    {{-- Bearbeiten laeuft im Modal der Liste, eigene
+                         /edit-Seiten gibt es nicht mehr. Der Eintrag fuehrt
+                         deshalb in seine Liste - dort steht er samt Stift. --}}
+                    @php($ziel = Route::has($step['key'].'.edit') ? $step['key'].'.edit' : ($step['key'].'.index'))
+                    @php($bearbeitbar = Route::has($ziel))
 
                     <div class="mb-2 flex flex-wrap items-baseline gap-x-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         {{ __('Schon erfasst') }} ({{ $entries->count() }})
@@ -108,7 +112,7 @@
                             {{-- Der Durchlauf soll nicht verloren gehen, wenn man
                                  etwas nachtraegt - deshalb ein neuer Tab. --}}
                             <span class="font-normal normal-case tracking-normal text-gray-400 dark:text-gray-500">
-                                {{ __('zum Nachtragen anklicken, öffnet einen neuen Tab') }}
+                                {{ __('zum Nachtragen anklicken, öffnet die Liste in einem neuen Tab') }}
                             </span>
                         @endif
                     </div>
@@ -116,7 +120,7 @@
                     <div class="flex max-h-40 flex-wrap gap-1.5 overflow-y-auto">
                         @foreach ($entries as $entry)
                             @if ($bearbeitbar)
-                                <a href="{{ route($step['key'].'.edit', [$customer, $entry]) }}" target="_blank" rel="noopener"
+                                <a href="{{ $ziel === $step['key'].'.edit' ? route($ziel, [$customer, $entry]) : route($ziel, $customer) }}" target="_blank" rel="noopener"
                                     class="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 transition-colors hover:border-cerulean-400 hover:text-cerulean-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-cerulean-500 dark:hover:text-cerulean-300">
                                     {{ $entry->{$step['label_field']} ?: '—' }}
                                 </a>

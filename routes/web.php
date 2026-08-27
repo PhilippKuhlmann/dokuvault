@@ -251,54 +251,54 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             // Dokumentations-Assistent (geführte Erstaufnahme)
             Route::get('wizard', [WizardController::class, 'index'])->name('wizard.index');
 
-            Route::resource('site', SiteController::class)->except(['show']);
-            Route::resource('contactperson', ContactPersonController::class)->except(['show']);
+            Route::resource('site', SiteController::class)->only(['index']);
+            Route::resource('contactperson', ContactPersonController::class)->only(['index']);
 
-            Route::resource('router', RouterController::class)->except(['show']);
-            Route::resource('firewall', FirewallController::class)->except(['show']);
-            Route::resource('securepointuma', SecurepointUMAController::class)->except(['show']);
-            Route::resource('network', NetworkController::class)->except(['show']);
-            Route::resource('accesspoint', AccesspointController::class)->except(['show']);
-            Route::resource('server', ServerController::class)->except(['show']);
-            Route::resource('cluster', ClusterController::class)->except(['show']);
-            Route::resource('vm', VMController::class)->except(['show']);
-            Route::resource('networkswitch', NetworkSwitchController::class, ['parameters' => ['networkswitch' => 'networkswitch']])->except(['show']);
+            Route::resource('router', RouterController::class)->only(['index']);
+            Route::resource('firewall', FirewallController::class)->only(['index']);
+            Route::resource('securepointuma', SecurepointUMAController::class)->only(['index']);
+            Route::resource('network', NetworkController::class)->only(['index']);
+            Route::resource('accesspoint', AccesspointController::class)->only(['index']);
+            Route::resource('server', ServerController::class)->only(['index']);
+            Route::resource('cluster', ClusterController::class)->only(['index']);
+            Route::resource('vm', VMController::class)->only(['index']);
+            Route::resource('networkswitch', NetworkSwitchController::class, ['parameters' => ['networkswitch' => 'networkswitch']])->only(['index']);
             Route::resource('rack', RackController::class)->except(['show']);
             Route::resource('patchpanel', PatchPanelController::class, ['parameters' => ['patchpanel' => 'patchpanel']])->except(['show']);
-            Route::resource('nas', NASController::class, ['parameters' => ['nas' => 'nas']])->except(['show']);
-            Route::resource('addomain', ADDomainController::class)->except(['show']);
-            Route::resource('aduser', ADUserController::class)->except(['show']);
-            Route::resource('adgroup', ADGroupController::class)->except(['show']);
-            Route::resource('loginwebsite', LoginWebsiteController::class)->except(['show']);
-            Route::resource('logingeneral', LoginGeneralController::class)->except(['show']);
+            Route::resource('nas', NASController::class, ['parameters' => ['nas' => 'nas']])->only(['index']);
+            Route::resource('addomain', ADDomainController::class)->only(['index']);
+            Route::resource('aduser', ADUserController::class)->only(['index']);
+            Route::resource('adgroup', ADGroupController::class)->only(['index']);
+            Route::resource('loginwebsite', LoginWebsiteController::class)->only(['index']);
+            Route::resource('logingeneral', LoginGeneralController::class)->only(['index']);
             // Nur die Liste: Anlegen, Bearbeiten und Loeschen laufen ueber das Modal.
             Route::get('sshkey', [SshKeyController::class, 'index'])->name('sshkey.index');
-            Route::resource('phonesystem', PhoneSystemController::class)->except(['show']);
-            Route::resource('phone', PhoneController::class)->except(['show']);
-            Route::resource('dect', DECTController::class)->except(['show']);
-            Route::resource('mailbox', MailboxController::class)->except(['show']);
-            Route::resource('wifi', WifiController::class)->except(['show']);
-            Route::resource('computer', ComputerController::class)->except(['show']);
-            Route::resource('iotdevice', IoTDeviceController::class)->except(['show']);
-            Route::resource('machine', MachineController::class)->except(['show']);
-            Route::resource('otherclient', OtherClientController::class)->except(['show']);
-            Route::resource('printer', PrinterController::class)->except(['show']);
-            Route::resource('ftpserver', FTPServerController::class)->except(['show']);
-            Route::resource('recorder', RecorderController::class)->except(['show']);
-            Route::resource('camera', CameraController::class)->except(['show']);
-            Route::resource('ups', UpsController::class, ['parameters' => ['ups' => 'ups']])->except(['show']);
-            Route::resource('internetconnection', InternetConnectionController::class)->except(['show']);
-            Route::resource('domain', DomainController::class)->except(['show']);
-            Route::resource('certificate', CertificateController::class)->except(['show']);
-            Route::resource('backup', BackupController::class)->except(['show']);
-            Route::resource('dyndns', DynDNSController::class, ['parameters' => ['dyndns' => 'dyndns']])->except(['show']);
+            Route::resource('phonesystem', PhoneSystemController::class)->only(['index']);
+            Route::resource('phone', PhoneController::class)->only(['index']);
+            Route::resource('dect', DECTController::class)->only(['index']);
+            Route::resource('mailbox', MailboxController::class)->only(['index']);
+            Route::resource('wifi', WifiController::class)->only(['index']);
+            Route::resource('computer', ComputerController::class)->only(['index']);
+            Route::resource('iotdevice', IoTDeviceController::class)->only(['index']);
+            Route::resource('machine', MachineController::class)->only(['index']);
+            Route::resource('otherclient', OtherClientController::class)->only(['index']);
+            Route::resource('printer', PrinterController::class)->only(['index']);
+            Route::resource('ftpserver', FTPServerController::class)->only(['index']);
+            Route::resource('recorder', RecorderController::class)->only(['index']);
+            Route::resource('camera', CameraController::class)->only(['index']);
+            Route::resource('ups', UpsController::class, ['parameters' => ['ups' => 'ups']])->only(['index']);
+            Route::resource('internetconnection', InternetConnectionController::class)->only(['index']);
+            Route::resource('domain', DomainController::class)->only(['index']);
+            Route::resource('certificate', CertificateController::class)->only(['index']);
+            Route::resource('backup', BackupController::class)->only(['index']);
+            Route::resource('dyndns', DynDNSController::class, ['parameters' => ['dyndns' => 'dyndns']])->only(['index']);
 
             Route::get('/licensesoftware/{licensesoftware}/download', [LicenseSoftwareController::class, 'download'])->name('licensesoftware.download');
-            Route::resource('licensesoftware', LicenseSoftwareController::class, ['parameters' => ['licensesoftware' => 'licensesoftware']])->except(['show']);
+            Route::resource('licensesoftware', LicenseSoftwareController::class, ['parameters' => ['licensesoftware' => 'licensesoftware']])->only(['index']);
             Route::get('/licensewindows/{licensewindows}/download', [LicenseWindowsController::class, 'download'])->name('licensewindows.download');
-            Route::resource('licensewindows', LicenseWindowsController::class, ['parameters' => ['licensewindows' => 'licensewindows']])->except(['show']);
+            Route::resource('licensewindows', LicenseWindowsController::class, ['parameters' => ['licensewindows' => 'licensewindows']])->only(['index']);
             Route::get('/licenseaccess/{licenseaccess}/download', [LicenseAccessController::class, 'download'])->name('licenseaccess.download');
-            Route::resource('licenseaccess', LicenseAccessController::class, ['parameters' => ['licenseaccess' => 'licenseaccess']])->except(['show']);
+            Route::resource('licenseaccess', LicenseAccessController::class, ['parameters' => ['licenseaccess' => 'licenseaccess']])->only(['index']);
 
             // File
             // Die Liste als Livewire - Suche, Filter und Sortierung. Hochladen

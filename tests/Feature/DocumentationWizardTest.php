@@ -373,7 +373,7 @@ test('AD-Domäne und Backup werden ohne site_id angelegt (Modelle haben keine Sp
     expect(ADDomain::where('customer_id', $customer->id)->count())->toBe(1);
 });
 
-test('schon erfasste Eintraege verlinken auf ihr Bearbeiten-Formular', function () {
+test('schon erfasste Eintraege verlinken auf ihre Liste', function () {
     $this->actingAs(userWithPermissions(['site_create', 'router_create', 'router_update']));
     $customer = Customer::factory()->create();
 
@@ -392,8 +392,11 @@ test('schon erfasste Eintraege verlinken auf ihr Bearbeiten-Formular', function 
 
     $router = Router::where('customer_id', $customer->id)->firstOrFail();
 
-    // Neuer Tab, damit der angefangene Durchlauf nicht verloren geht.
-    expect($inhalt)->toContain(route('router.edit', [$customer, $router], false));
+    // Bearbeitet wird im Modal der Liste, eigene /edit-Seiten gibt es nicht
+    // mehr - der Eintrag fuehrt deshalb dorthin. Neuer Tab, damit der
+    // angefangene Durchlauf nicht verloren geht.
+    expect($router->exists)->toBeTrue();
+    expect($inhalt)->toContain(route('router.index', $customer, false));
     expect($inhalt)->toContain('target="_blank"');
 });
 

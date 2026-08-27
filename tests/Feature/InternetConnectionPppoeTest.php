@@ -25,11 +25,11 @@ test('das Formular bietet Felder fuer die Einwahldaten', function () {
         'customer_id' => $customer->id, 'site_id' => $site->id, 'provider' => 'Telekom',
     ]);
 
-    foreach (["/{$customer->slug}/internetconnection/create", "/{$customer->slug}/internetconnection/{$anschluss->id}/edit"] as $url) {
-        $inhalt = $this->get($url)->assertOk()->getContent();
+    foreach ([null, $anschluss->id] as $id) {
+        $inhalt = modalHtml('internetconnection', $customer, $id);
 
-        expect($inhalt)->toContain('name="pppoe_user"');
-        expect($inhalt)->toContain('name="pppoe_password"');
+        expect($inhalt)->toContain('wire:model="form.pppoe_user"');
+        expect($inhalt)->toContain('wire:model="form.pppoe_password"');
     }
 });
 
@@ -37,11 +37,11 @@ test('die Einwahldaten werden gespeichert, das Passwort verschluesselt', functio
     $this->actingAs(userWithPermissions(['internetconnection_create']));
     [$customer, $site] = pppoeUmgebung();
 
-    $this->post("/{$customer->slug}/internetconnection", [
+    imModal('internetconnection', $customer, [
         'site_id' => $site->id, 'provider' => 'Telekom',
         'pppoe_user' => 'anschluss12345@t-online.de',
         'pppoe_password' => 'geheim123',
-    ])->assertSessionHasNoErrors();
+    ])->assertHasNoErrors();
 
     $anschluss = InternetConnection::firstOrFail();
     expect($anschluss->pppoe_user)->toBe('anschluss12345@t-online.de');
@@ -57,9 +57,9 @@ test('ohne Einwahldaten bleibt das Passwort leer statt verschluesselt leer', fun
     $this->actingAs(userWithPermissions(['internetconnection_create']));
     [$customer, $site] = pppoeUmgebung();
 
-    $this->post("/{$customer->slug}/internetconnection", [
+    imModal('internetconnection', $customer, [
         'site_id' => $site->id, 'provider' => 'Vodafone',
-    ])->assertSessionHasNoErrors();
+    ])->assertHasNoErrors();
 
     // Ohne die filled()-Pruefung im Setter stuende hier der Chiffretext eines
     // Leerstrings - und die Liste zeigte eine Einwahl-Karte ohne Inhalt.
