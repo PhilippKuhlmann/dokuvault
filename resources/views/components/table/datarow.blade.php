@@ -1,8 +1,13 @@
 {{-- editAction statt editUrl: Dann oeffnet der Stift ein Livewire-Modal
      statt eine eigene Seite zu laden - wie bei x-show.header. --}}
-@props(['values', 'editUrl' => null, 'can', 'canDel' => '', 'delUrl' => '', 'editAction' => null])
+{{-- inaktiv: Die Zeile bleibt lesbar, tritt aber zurueck - ein gesperrtes
+     Konto ist dokumentiert und trotzdem nicht das, wonach man sucht. --}}
+@props(['values', 'editUrl' => null, 'can', 'canDel' => '', 'delUrl' => '', 'editAction' => null, 'inaktiv' => false])
 
-<tr class="bg-white border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700/50">
+<tr @class([
+    'bg-white border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700/50',
+    'opacity-60' => $inaktiv,
+])>
     @foreach ($values as $key => $value)
         @if ($key == 'url')
             <td scope="row" class="py-2.5 px-4">
@@ -75,6 +80,9 @@
         </td>
 
 
+        @elseif ($key == 'status')
+            {{-- true/false/null als Haken, Kreuz oder Strich. --}}
+            <td scope="row" class="py-2.5 px-4"><x-statusicon :value="$value" /></td>
         @elseif ($key == 'fingerprint')
             {{-- Gekuerzt mit Kopier-Knopf: vollstaendig bricht er auf fuenf
                  Zeilen um und bestimmt die Zeilenhoehe. --}}

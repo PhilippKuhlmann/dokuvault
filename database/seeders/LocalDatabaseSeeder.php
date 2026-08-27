@@ -456,9 +456,25 @@ class LocalDatabaseSeeder extends Seeder
             $ausKatalog(1, 'Steckdosenleiste (PDU)', 'rear'),
         ], fn ($item) => $item !== null));
 
-        ADUser::factory(10)->create([
-            'customer_id' => $customer->id,
-        ]);
+        // Ausdruecklich gemischt statt dem Zufall ueberlassen: Bei zehn
+        // Ziehungen mit 85 Prozent waere jeder fuenfte Datensatz durchgehend
+        // aktiv - und die Demo zeigte den gesperrten Fall dann gar nicht.
+        // Eine Domain fuer alle - so sieht ein Firmenverzeichnis aus.
+        $adDomain = Str::slug($customer->name).'.de';
+
+        ADUser::factory(7)->beiFirma($adDomain)->create(['customer_id' => $customer->id]);
+
+        // Zwei ausgeschiedene Mitarbeiter: gesperrt, Adresse bleibt stehen.
+        ADUser::factory(2)->gesperrt()->beiFirma($adDomain)->create(['customer_id' => $customer->id]);
+
+        // Zwei Dienstkonten - kein Mensch, keine Adresse.
+        foreach (['svc-backup', 'svc-scan'] as $dienst) {
+            ADUser::factory()->dienstkonto($dienst)->create(['customer_id' => $customer->id]);
+        }
+
+        // Eines, dessen Status nie dokumentiert wurde: So sieht der dritte
+        // Zustand in der Liste aus, statt nur in der Theorie zu existieren.
+        ADUser::factory()->ohneStatus()->beiFirma($adDomain)->create(['customer_id' => $customer->id]);
 
         ADGroup::factory(5)->create([
             'customer_id' => $customer->id,

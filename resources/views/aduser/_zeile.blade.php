@@ -5,10 +5,11 @@
                             $eintrag->lastName,
                             $eintrag->username,
                             $eintrag->email,
-                            $eintrag->enabled === null ? '—' : ($eintrag->enabled ? 'Aktiv' : 'Deaktiviert'),
+                            'status' => $eintrag->enabled,
                             'password' => $eintrag->password,
                         ]"
 
+                        :inaktiv="$eintrag->enabled === false"
                         editAction="$dispatch('objekt-bearbeiten', { typ: 'aduser', id: {{ $eintrag->id }} })"
                         can="aduser_update"
                     />

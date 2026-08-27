@@ -1,5 +1,23 @@
 # Changelog
 
+## 26.08.27
+
+### Fixed
+
+- **Der Status eines AD-Benutzers stand im Fenster anders als in der Liste.** Gemeldet für einen aktiven Benutzer, der als `—` erschien. Dahinter steckten zwei Fehler:
+  - **Ein deaktivierter Benutzer wurde im Fenster als „Aktiv" angezeigt** — der schwerere Fall. Beim Laden ins Formular wird jeder Wert in Text gewandelt, und `(string) false` ergibt in PHP `''` und nicht `'0'`. Das Feld kam leer an, und eine Auswahl ohne passenden Eintrag zeigt ihren ersten — also das Gegenteil des Gespeicherten. Betraf jedes Ja/Nein-Feld in einer festen Auswahlliste.
+  - **Ohne gespeicherten Status behauptete das Fenster einen.** Ist nichts hinterlegt, gibt es jetzt einen Eintrag „— unbekannt —" statt stillschweigend „Aktiv". Bloßes Speichern macht daraus auch keine Aussage.
+
+### Changed
+
+- **Der Status steht als Haken oder Kreuz in der Liste, nicht als Wort.** Ein Zeichen erfasst man beim Überfliegen schneller als „Aktiv"/„Deaktiviert", und die drei Zustände — aktiv, gesperrt, unbekannt — sind auf einen Blick unterscheidbar. **Gesperrte Zeilen treten zurück**: Das Konto ist dokumentiert, aber selten das, wonach man sucht. Ein *unbekannter* Status graut nichts aus — nicht dokumentiert heißt nicht unwichtig. Die Bedeutung hängt nicht allein an der Form: Jedes Zeichen trägt seine Beschriftung für Vorlesewerkzeuge und für alle, denen Grün und Grau gleich aussehen.
+
+- **Die AD-Demo-Daten sehen aus wie ein echtes Verzeichnis.** Vorher wurden Vorname, Nachname, Benutzername und E-Mail unabhängig voneinander gewürfelt — in einer Zeile standen damit drei verschiedene Personen, und jeder hatte eine eigene Mail-Domain.
+  - Benutzername und Adresse kommen jetzt aus dem Namen: „Anna Berger" wird `anna.berger` und `anna.berger@kunde.de`. Umlaute werden dabei aufgelöst.
+  - **Eine Domain für alle** — daran erkennt man, dass die Daten zusammengehören.
+  - Nicht jeder hat eine Adresse: Dienstkonten (`svc-backup`, `svc-scan`) tragen weder Namen noch Mail. Das ist der Fall, in dem eine leere Spalte richtig ist.
+  - **Alle drei Status-Zustände kommen vor**, ausdrücklich gemischt statt dem Zufall überlassen: sieben aktive, zwei gesperrte Ex-Mitarbeiter, einer ohne dokumentierten Status. Vorher ließ die Factory `enabled` ganz offen — deshalb stand bei allen 35 Benutzern `—`. Aus echten Importen kam der Wert ohnehin, der Agent liest `Enabled` aus dem AD mit.
+
 ## 26.08.26
 
 ### Added

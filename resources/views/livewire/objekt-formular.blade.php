@@ -114,8 +114,23 @@
                                 @elseif ($feld['type'] === 'optionen')
                                     {{-- Feste Liste aus config/custom.php, etwa die
                                          Bauform eines Servers. --}}
+                                    @php ($auswahlwerte = $feld['werte'] ?? config($feld['quelle']))
+                                    {{-- Ist nichts gespeichert, zeigt eine Auswahl ohne
+                                         passenden Eintrag ihren ersten an - beim
+                                         AD-Status stand dann "Aktiv" im Fenster,
+                                         waehrend die Liste "—" zeigte und in der
+                                         Datenbank NULL stand. Ein eigener Eintrag
+                                         sagt stattdessen, dass es niemand weiss. --}}
+                                    @php ($wertBekannt = in_array(
+                                        (string) ($form[$feld['name']] ?? ''),
+                                        array_map('strval', array_keys($auswahlwerte)),
+                                        true
+                                    ))
                                     <x-input.select :name="$feld['name']" wire:model.live="form.{{ $feld['name'] }}" class="mt-1">
-                                        @foreach (($feld['werte'] ?? config($feld['quelle'])) as $wert => $beschriftung)
+                                        @unless ($wertBekannt)
+                                            <option value="">— {{ __('unbekannt') }} —</option>
+                                        @endunless
+                                        @foreach ($auswahlwerte as $wert => $beschriftung)
                                             <option value="{{ $wert }}">{{ __($beschriftung) }}</option>
                                         @endforeach
                                     </x-input.select>

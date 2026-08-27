@@ -137,6 +137,11 @@ class ObjektFormular extends Component
             $this->form[$feld['name']] = match (true) {
                 $wert instanceof \DateTimeInterface => $wert->format('Y-m-d'),
                 is_array($wert) => implode(',', $wert),
+                // (string) false ergibt '' und nicht '0': Ein deaktivierter
+                // AD-Benutzer kam so als leeres Feld im Formular an und wurde
+                // von der Auswahl als "Aktiv" angezeigt - der gespeicherte Wert
+                // war das Gegenteil dessen, was dastand.
+                is_bool($wert) => $wert ? '1' : '0',
                 default => (string) $wert,
             };
         }
