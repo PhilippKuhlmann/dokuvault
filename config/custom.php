@@ -773,9 +773,9 @@ return [
             'Zutritt nur für Personal mit Schlüssel. Der Schlüssel ist nicht dokumentiert.',
         ],
         404 => [
-            'Laut Dokumentation gibt es diese Seite. Die Dokumentation ist von 2019.',
-            'Die Seite stand im alten Wiki. Das alte Wiki lief auf dem Server, den wir abgeschaltet haben.',
-            'Diese Seite wurde nie dokumentiert. Passiert den Besten.',
+            'Der Vorgänger wusste, wo das war.',
+            'Umbenannt, verschoben, vergessen. In dieser Reihenfolge.',
+            'Nicht gefunden. Wie das Passwort für den alten Switch.',
         ],
         419 => [
             'Deine Sitzung ist abgelaufen. Wie die Zertifikate, die du erneuern wolltest.',
