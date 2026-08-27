@@ -755,6 +755,43 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Sprueche auf den Fehlerseiten
+    |--------------------------------------------------------------------------
+    |
+    | Je Statuscode mehrere, zufaellig gezogen - beim zweiten Mal steht etwas
+    | anderes da. Trocken statt albern: Wer hier landet, hatte gerade etwas
+    | anderes vor, und ein Ausrufezeichen macht es nicht besser.
+    |
+    */
+
+    'fehler_sprueche' => [
+        403 => [
+            'Diese Seite ist dokumentiert. Für dich aber nicht.',
+            'Dafür braucht es Rechte, die seit dem Weggang des Kollegen niemand mehr vergeben kann.',
+            'Zutritt nur für Personal mit Schlüssel. Der Schlüssel ist nicht dokumentiert.',
+        ],
+        404 => [
+            'Laut Dokumentation gibt es diese Seite. Die Dokumentation ist von 2019.',
+            'Die Seite stand im alten Wiki. Das alte Wiki lief auf dem Server, den wir abgeschaltet haben.',
+            'Diese Seite wurde nie dokumentiert. Passiert den Besten.',
+        ],
+        419 => [
+            'Deine Sitzung ist abgelaufen. Wie die Zertifikate, die du erneuern wolltest.',
+            'Du warst kurz weg. Der Server hat die Gelegenheit genutzt, dich zu vergessen.',
+        ],
+        500 => [
+            'Es lag nicht am DNS. Diesmal wirklich nicht.',
+            'Wir haben es aus- und wieder eingeschaltet. Hat nicht geholfen.',
+            'Irgendwo hat jemand etwas nicht dokumentiert.',
+        ],
+        503 => [
+            'Das Update dauert fünf Minuten. Schon seit zwanzig.',
+            'Wir dokumentieren gerade uns selbst. Gleich zurück.',
+        ],
+    ],
+
     'ssh_key_types' => [
         'ed25519' => 'Ed25519',
         'ecdsa' => 'ECDSA',

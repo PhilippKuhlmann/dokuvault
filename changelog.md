@@ -1,5 +1,15 @@
 # Changelog
 
+## 26.08.27c
+
+### Added
+
+- **Eigene Fehlerseiten für 403, 404, 419, 500 und 503.** Gemeldet: Die 404 blieb hell, obwohl die Anwendung auf dunkel stand. Der Grund lag nicht am Hell/Dunkel-Schalter, sondern daran, dass es gar keine eigene Seite gab: Laravels eingebaute Seite bringt ihr eigenes CSS mit und entscheidet über `prefers-color-scheme` — also nach der Einstellung des **Betriebssystems**. Die Anwendung schaltet dagegen über die Klasse `dark` aus `localStorage`. Wer die Anwendung auf dunkel, das System aber auf hell gestellt hatte, bekam eine grelle Seite.
+  - Die neuen Seiten nutzen dasselbe Skript wie die Layouts und dasselbe CSS wie der Rest — sie folgen also der Anwendung.
+  - Bewusst ohne Navigation und ohne Livewire: Eine Fehlerseite muss auch dann noch stehen, wenn darunter etwas kaputt ist. Der eigene Anwendungsname wird über `rescue()` geholt, sonst risse ein Datenbankausfall genau die Seite mit, die ihn melden soll.
+  - Zwei Wege hinaus: zur Startseite und dahin, wo man herkam.
+  - Dazu ein trockener Satz, klein und grau unter der Erklärung, **zufällig aus einer Liste je Statuscode** — beim zweiten Mal steht etwas anderes da. Auf der 404 etwa „Laut Dokumentation gibt es diese Seite. Die Dokumentation ist von 2019.", auf der 500 „Es lag nicht am DNS. Diesmal wirklich nicht." Die Sprüche stehen in `config/custom.php`, nicht im Blade.
+
 ## 26.08.27b
 
 ### Removed

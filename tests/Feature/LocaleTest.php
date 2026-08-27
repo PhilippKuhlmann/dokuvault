@@ -198,6 +198,8 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
                 [$f['label'] ?? null, $f['platzhalter'] ?? null],
                 array_values($f['werte'] ?? [])
             ))))
+        // Sprueche der Fehlerseiten - je Statuscode eine Liste.
+        ->merge(collect(config('custom.fehler_sprueche', []))->flatten())
         ->merge(array_values(config('custom.rack_appearances', [])))
         ->merge(array_values(config('custom.server_form_factors', [])))
         ->merge(array_values(config('custom.cluster_types', [])))
