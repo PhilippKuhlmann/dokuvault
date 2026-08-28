@@ -18,9 +18,4 @@ class Site extends Model
     {
         return $this->belongsTo(Customer::class);
     }
-
-    public function rooms()
-    {
-        return $this->hasMany(Room::class);
-    }
 }

@@ -3,7 +3,6 @@
 use App\Http\Controllers\API\AccesspointController;
 use App\Http\Controllers\API\AgentController;
 use App\Http\Controllers\API\CustomerController;
-use App\Http\Controllers\API\RoomController;
 use App\Http\Controllers\API\ServerController;
 use App\Http\Controllers\API\SiteController;
 use Illuminate\Http\Request;
@@ -45,10 +44,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/sites', [SiteController::class, 'index']);
         Route::post('/sites', [SiteController::class, 'store']);
         Route::get('/sites/{site}', [SiteController::class, 'show']);
-
-        Route::get('/{site}/rooms', [RoomController::class, 'index']);
-        Route::post('/{site}/rooms', [RoomController::class, 'store']);
-        Route::get('/{site}/rooms/{room}', [RoomController::class, 'show']);
 
         Route::get('/accesspoints', [AccesspointController::class, 'index']);
         Route::get('/accesspoints/{accesspoint}', [AccesspointController::class, 'show']);

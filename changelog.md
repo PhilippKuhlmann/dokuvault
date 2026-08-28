@@ -1,5 +1,18 @@
 # Changelog
 
+## 26.08.27d
+
+### Removed
+
+- **Altlasten aufgeräumt.** Nach dem Entfernen der alten Seiten blieb Totes zurück; eine systematische Suche fand es:
+  - **37 Blade-Komponenten** ohne einen einzigen Verwender — vor allem `x-create.select.*`, `x-edit.select.*`, `x-create.hidden/radio` und acht ungenutzte SVGs. Die Prüfung berücksichtigt, dass Symbole dynamisch über `svg="svg.login"` eingebunden werden; sie lief bis zum Stillstand, weil jede Löschung die nächste Komponente verwaisen lassen kann.
+  - **Zwei leere Controller** (`PermissionController`, `RoomController`) — Klassen ohne Inhalt, ohne Route, ohne Referenz.
+  - Die veröffentlichte View von **`livewire-ui-modal`**, einem Paket, das seit langem nicht mehr installiert ist.
+  - **`alpinejs` und `@fontsource/space-grotesk`** aus `package.json`: Alpine kommt gebündelt aus Livewire, die Schrift wurde nie eingebunden. Das gebaute JavaScript ändert sich dadurch nicht — der Beweis, dass beides ungenutzt war.
+  - **`rooms`**: Model, Factory, API-Controller, drei API-Routen, die Relation am Standort und die (leere) Tabelle. Eine Oberfläche gab es nie; der Rack-Standort ist bewusst Freitext. Im API-Controller für Accesspoints entfielen damit auch die Parameter `$site` und `$room`, die keine Route je lieferte und keine Methode je benutzte.
+
+  Das gebaute CSS schrumpft von 78,6 auf 76,7 KiB.
+
 ## 26.08.27c
 
 ### Added

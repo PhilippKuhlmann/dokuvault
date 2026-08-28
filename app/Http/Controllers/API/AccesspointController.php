@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AccesspointRequest;
 use App\Models\Accesspoint;
 use App\Models\Customer;
-use App\Models\Room;
-use App\Models\Site;
 use Illuminate\Http\Request;
 
 class AccesspointController extends Controller
@@ -30,7 +28,7 @@ class AccesspointController extends Controller
         return response()->json($accesspoints, 200);
     }
 
-    public function show(Customer $customer, Site $site, Room $room, Accesspoint $accesspoint)
+    public function show(Customer $customer, Accesspoint $accesspoint)
     {
         if ($accesspoint->customer_id == $customer->id) {
             // Der Accesspoint gehört zum Kunden
@@ -41,21 +39,21 @@ class AccesspointController extends Controller
         }
     }
 
-    public function store(Customer $customer, Site $site, Room $room, AccesspointRequest $request)
+    public function store(Customer $customer, AccesspointRequest $request)
     {
         $accesspoint = $customer->accesspoints()->create($request->validated());
 
         return response()->json($accesspoint, 201);
     }
 
-    public function update(Customer $customer, Site $site, Room $room, AccesspointRequest $request, Accesspoint $accesspoint)
+    public function update(Customer $customer, AccesspointRequest $request, Accesspoint $accesspoint)
     {
         $accesspoint->update($request->validated());
 
         return response()->json($accesspoint, 200);
     }
 
-    public function delete(Customer $customer, Site $site, Room $room, Accesspoint $accesspoint)
+    public function delete(Customer $customer, Accesspoint $accesspoint)
     {
         $accesspoint->delete();
 
