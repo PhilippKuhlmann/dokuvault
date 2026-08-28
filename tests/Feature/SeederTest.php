@@ -8,18 +8,6 @@ use App\Models\VM;
 use Database\Seeders\LocalDatabaseSeeder;
 use Database\Seeders\PermissionRoleSeeder;
 
-test('der Rechte-Seeder laeuft auf einer frisch migrierten Datenbank', function () {
-    // Genau der Ablauf des Deploys: "migrate:fresh --seed". Die Migration hat
-    // die Admin-Rechte da schon angelegt - ein zweites Anlegen im Seeder brach
-    // am UNIQUE-Index ab und der Deploy blieb stehen, mitten im Befuellen.
-    expect(Permission::where('name', 'admin_customer')->exists())->toBeTrue();
-
-    $this->seed(PermissionRoleSeeder::class);
-
-    expect(Permission::where('name', 'admin_customer')->count())->toBe(1);
-    expect(Role::find(Role::IS_ADMIN))->not->toBeNull();
-});
-
 test('nach dem Seeder gibt es jedes Admin-Recht genau einmal', function () {
     $this->seed(PermissionRoleSeeder::class);
 

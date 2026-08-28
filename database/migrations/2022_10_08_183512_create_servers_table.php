@@ -28,6 +28,15 @@ return new class extends Migration
             $table->string('services')->nullable();
             $table->string('remoteID')->nullable();
             $table->string('remotePassword')->nullable();
+            $table->string('agent_identifier')->nullable()->index();
+            // Bestandsserver gelten als 19-Zoll in voller Tiefe: Das ist der
+            // haeufigere Fall, und die Angabe laesst sich je Server nachziehen.
+            $table->string('form_factor')->default('rack');
+            $table->boolean('full_depth')->default(true);
+            // Der Rack-Editor liest height_units beim Einbau. Ohne die Spalte
+            // bekam jeder Server eine Hoeheneinheit, unabhaengig von der
+            // Bauhoehe. Standard 1, weil das der haeufigste Fall ist.
+            $table->unsignedTinyInteger('height_units')->default(1);
             $table->timestamps();
             $table->softDeletes();
         });

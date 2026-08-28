@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('services')->nullable();
             $table->string('remoteID')->nullable();
             $table->string('remotePassword')->nullable();
+            $table->string('agent_identifier')->nullable()->index();
             $table->timestamps();
             $table->softDeletes();
         });

@@ -44,6 +44,16 @@ return new class extends Migration
             $table->unsignedTinyInteger('height_units')->default(1);
             $table->boolean('full_depth')->default(true);
             $table->text('notes')->nullable();
+            // Bauform: entscheidet auch, ob ein Einbau in den Schrank ueberhaupt
+            // in Frage kommt.
+            $table->string('form_factor')->default('appliance');
+            // Benutzerportal und externer Zugang - bei einer UTM drei getrennte
+            // Oberflaechen, bei anderen Herstellern meist nur eine.
+            $table->string('url_user')->nullable();
+            $table->string('url_external')->nullable();
+            // Verschluesselt, deshalb text: Ein Chiffrat sprengt varchar(255).
+            $table->text('usc_pin')->nullable();
+            $table->text('cloud_backup_password')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

@@ -21,6 +21,13 @@ return new class extends Migration
             $table->string('wan_ip')->nullable();
             $table->string('hotline')->nullable();
             $table->text('notes')->nullable();
+            // Optional: Viele Anschluesse bringen zusaetzlich zur WAN-IP ein
+            // geroutetes Netz mit, etwa ein /28 samt eigenem Gateway. Beides
+            // nullable - der Normalfall ist eine einzelne dynamische Adresse.
+            $table->string('subnet')->nullable();
+            $table->string('subnet_gateway')->nullable();
+            $table->string('pppoe_user')->nullable();
+            $table->text('pppoe_password')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

@@ -37,7 +37,6 @@ return new class extends Migration
         'printers',
         'recorders',
         'routers',
-        'securepoint_utms',
         'servers',
         'ups',
     ];

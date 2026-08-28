@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
             $table->string('name')->nullable();
             $table->string('description')->nullable();
+            $table->string('agent_identifier')->nullable()->index();
             $table->timestamps();
             $table->softDeletes();
         });

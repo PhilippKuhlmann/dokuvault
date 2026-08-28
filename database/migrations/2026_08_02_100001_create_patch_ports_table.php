@@ -23,6 +23,7 @@ return new class extends Migration
             // Bewusst String: gestapelte Switches nummerieren "1/0/12".
             $table->string('switch_port')->nullable();
             $table->string('note')->nullable();
+            $table->string('outlet')->nullable();
             $table->timestamps();
 
             $table->unique(['patch_panel_id', 'number']);

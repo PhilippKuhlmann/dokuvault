@@ -4,7 +4,6 @@ use App\Livewire\GlobalSearch;
 use App\Livewire\ObjektFormular;
 use App\Models\Customer;
 use App\Models\Firewall;
-use App\Models\LoginGeneral;
 use App\Models\Permission;
 use App\Models\Site;
 use Illuminate\Support\Facades\Crypt;
@@ -200,29 +199,4 @@ test('von der Securepoint UTM ist nichts uebrig geblieben', function () {
     // Die Rechte sind weg, damit sie nicht in der Rollenverwaltung auf eine
     // Seite zeigen, die es nicht mehr gibt.
     expect(Permission::where('name', 'like', 'securepointutm_%')->exists())->toBeFalse();
-});
-
-test('die Migration raeumt Verweise auf die entfernte Klasse ab', function () {
-    // Ein Verweis auf eine geloeschte Klasse bricht jede Seite, die ihn
-    // aufloest, mit "Class not found" - gemessen an der Zugangsdaten-Seite und
-    // am Verlauf. Deshalb entfernt die Migration ihn.
-    $customer = Customer::factory()->create();
-    $login = LoginGeneral::factory()->create(['customer_id' => $customer->id]);
-
-    DB::table('credential_links')->insert([
-        'customer_id' => $customer->id,
-        'login_general_id' => $login->id,
-        'credentialable_type' => 'App\Models\SecurepointUTM',
-        'credentialable_id' => 999,
-        'created_at' => now(), 'updated_at' => now(),
-    ]);
-
-    expect(DB::table('credential_links')->where('credentialable_type', 'App\Models\SecurepointUTM')->count())->toBe(1);
-
-    $migration = require database_path('migrations/2026_08_17_160100_drop_securepoint_utms.php');
-    $migration->up();
-
-    expect(DB::table('credential_links')->where('credentialable_type', 'App\Models\SecurepointUTM')->count())->toBe(0);
-    // Fremde Verknuepfungen bleiben unangetastet.
-    expect(DB::table('credential_links')->count())->toBe(0);
 });

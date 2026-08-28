@@ -19,6 +19,13 @@ return new class extends Migration
             $table->string('username')->nullable();
             $table->string('password')->nullable();
             $table->boolean('hidden')->default(false);
+            // Indiziert: Beide Listen filtern bei jedem Aufruf danach.
+            $table->string('kind')->default('password')->index();
+            $table->string('key_type')->nullable();
+            // Text, nicht string: Ein RSA-4096-Schluessel ist rund 750 Zeichen
+            // im oeffentlichen und ueber 3000 im privaten Teil.
+            $table->text('public_key')->nullable();
+            $table->text('private_key')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

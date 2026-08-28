@@ -3,6 +3,7 @@
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use Database\Seeders\PermissionRoleSeeder;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 
@@ -95,6 +96,10 @@ test('das Menue zeigt nur die erlaubten Eintraege', function () {
 });
 
 test('die Rollenverwaltung zeigt die Admin-Rechte als eigenen Block', function () {
+    // Die Admin-Rechte legt der Seeder an - die Migration, die sie fuer
+    // bestehende Installationen nachtrug, ist mit dem Zusammenfassen entfallen.
+    $this->seed(PermissionRoleSeeder::class);
+
     $rolle = Role::find(Role::IS_ADMIN) ?? Role::factory()->create(['id' => Role::IS_ADMIN]);
     $this->actingAs(User::factory()->create(['role_id' => $rolle->id]));
 
@@ -106,6 +111,10 @@ test('die Rollenverwaltung zeigt die Admin-Rechte als eigenen Block', function (
 });
 
 test('jedes Admin-Recht hat einen Eintrag in der Rechtetabelle', function () {
+    // Die Admin-Rechte legt der Seeder an - die Migration, die sie fuer
+    // bestehende Installationen nachtrug, ist mit dem Zusammenfassen entfallen.
+    $this->seed(PermissionRoleSeeder::class);
+
     foreach (array_keys(array_merge(config('custom.admin_permissions'), config('custom.extra_permissions'))) as $name) {
         // Ohne Zeile in der Tabelle liesse sich das Recht in der
         // Rollenverwaltung nicht vergeben - das Gate liefe dann immer ins Leere.

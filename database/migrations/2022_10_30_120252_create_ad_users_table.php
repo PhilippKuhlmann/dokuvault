@@ -21,6 +21,9 @@ return new class extends Migration
             $table->string('username')->nullable();
             $table->string('password')->nullable();
             $table->boolean('hidden')->default(false);
+            $table->string('email')->nullable();
+            $table->boolean('enabled')->nullable();
+            $table->string('agent_identifier')->nullable()->index();
             $table->timestamps();
             $table->softDeletes();
         });

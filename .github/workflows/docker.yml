@@ -4,15 +4,14 @@ name: docker
 # "tests". Ein Bruch im Docker-Bild soll die Demo nicht am Aktualisieren
 # hindern - und umgekehrt soll das Bild trotzdem bei jedem Push gebaut werden.
 on:
+  # Auf main ohne Pfadfilter: Das Bild traegt die Anwendung in sich, also macht
+  # jede Codeaenderung das veroeffentlichte "latest" veraltet. Auf allen anderen
+  # Zweigen genuegt es, bei Aenderungen am Bild selbst zu bauen.
   push:
-    paths:
-      - 'Dockerfile'
-      - 'docker-compose.yml'
-      - '.dockerignore'
-      - 'docker/**'
-      - 'composer.lock'
-      - 'package-lock.json'
-      - '.github/workflows/docker.yml'
+    branches:
+      - main
+    tags:
+      - 'v*'
   pull_request:
   workflow_dispatch:
 
@@ -77,3 +76,88 @@ jobs:
       - name: Aufraeumen
         if: always()
         run: docker compose down -v
+
+  veroeffentlichen:
+    name: Auf Docker Hub veroeffentlichen
+    needs: bauen
+    runs-on: ubuntu-latest
+
+    # Nur vom eigenen Zweig aus, nie aus einem Pull Request: Dort stehen die
+    # Zugangsdaten nicht zur Verfuegung, und ein fremder Beitrag soll ohnehin
+    # nichts veroeffentlichen koennen.
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # Ohne hinterlegte Zugangsdaten wird nicht veroeffentlicht - der Lauf
+      # bleibt gruen und sagt, was fehlt. Sonst waere der Workflow bei jedem
+      # Klon rot, ohne dass etwas kaputt waere.
+      - name: Zugangsdaten pruefen
+        id: zugang
+        env:
+          BENUTZER: ${{ secrets.DOCKERHUB_USERNAME }}
+          TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          if [ -z "$BENUTZER" ] || [ -z "$TOKEN" ]; then
+            echo 'Keine Docker-Hub-Zugangsdaten hinterlegt - es wird nur gebaut, nicht veroeffentlicht.'
+            echo 'Dafuer die Geheimnisse DOCKERHUB_USERNAME und DOCKERHUB_TOKEN setzen.'
+            echo 'vorhanden=nein' >> "$GITHUB_OUTPUT"
+          else
+            echo 'vorhanden=ja' >> "$GITHUB_OUTPUT"
+          fi
+
+      # Die Version steht im Changelog, nicht in einer eigenen Datei - dieselbe
+      # Quelle, aus der die Oberflaeche sie liest (AppServiceProvider).
+      - name: Version aus dem Changelog lesen
+        if: steps.zugang.outputs.vorhanden == 'ja'
+        id: version
+        run: |
+          version=$(grep -m1 -oE '^## [0-9]{2}\.[0-9]{2}\.[0-9]{2}' changelog.md | cut -d' ' -f2)
+          [ -n "$version" ] || { echo 'Keine Version im Changelog gefunden.'; exit 1; }
+          echo "wert=$version" >> "$GITHUB_OUTPUT"
+          echo "Version: $version"
+
+      # arm64 zusaetzlich, damit das Bild auch auf einem Mac mit Apple-Silicon
+      # und auf einem Raspberry laeuft, ohne Emulation beim Nutzer.
+      - name: QEMU fuer fremde Architekturen
+        if: steps.zugang.outputs.vorhanden == 'ja'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Buildx einrichten
+        if: steps.zugang.outputs.vorhanden == 'ja'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Bei Docker Hub anmelden
+        if: steps.zugang.outputs.vorhanden == 'ja'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Bauen und hochladen
+        if: steps.zugang.outputs.vorhanden == 'ja'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          # "latest" zeigt auf den letzten Stand von main, die Version auf einen
+          # festen. Wer reproduzierbar betreiben will, nimmt die Version.
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/dokuvault:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/dokuvault:${{ steps.version.outputs.wert }}
+          # Zwischenstufen zwischen den Laeufen behalten: Ohne das baut jeder
+          # Lauf Composer- und npm-Abhaengigkeiten neu.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Beschreibung auf Docker Hub aktualisieren
+        if: steps.zugang.outputs.vorhanden == 'ja'
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ secrets.DOCKERHUB_USERNAME }}/dokuvault
+          short-description: 'IT-Dokumentation fuer Systemhaeuser und interne IT'
+          readme-filepath: ./docker/HUB.md

@@ -23,6 +23,9 @@ return new class extends Migration
             $table->longText('encryptionkey');
             $table->string('urlAdmin');
             $table->string('urlUser')->nullable();
+            if (! Schema::hasColumn('securepoint_umas', 'manufacturer')) {
+                $table->string('manufacturer')->nullable();
+            }
             $table->timestamps();
             $table->softDeletes();
         });

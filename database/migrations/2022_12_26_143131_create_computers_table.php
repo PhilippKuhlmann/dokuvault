@@ -24,6 +24,8 @@ return new class extends Migration
             $table->foreignId('operating_system_id')->nullable();
             $table->string('remoteID')->nullable();
             $table->string('remotePassword')->nullable();
+            $table->index('operating_system_id');
+            $table->string('agent_identifier')->nullable()->index();
             $table->timestamps();
             $table->softDeletes();
         });

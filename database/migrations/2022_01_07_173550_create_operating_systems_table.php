@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('operating_systems', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->date('eol_date')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

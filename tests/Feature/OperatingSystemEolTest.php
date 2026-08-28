@@ -184,55 +184,6 @@ test('die Betriebssystem-Liste lässt sich nach Namen durchsuchen', function () 
         ->assertDontSee('Zorin OS');
 });
 
-test('die Backfill-Migration ergänzt fehlende Support-Enden, lässt Gepflegtes aber stehen', function () {
-    $windows7 = OperatingSystem::factory()->create(['name' => 'Windows 7 Pro', 'eol_date' => null]);
-    $esxi8 = OperatingSystem::factory()->create(['name' => 'VMware ESXi 8', 'eol_date' => null]);
-    $esxi6 = OperatingSystem::factory()->create(['name' => 'VMware ESXi 6', 'eol_date' => null]);
-    // Von Hand eingetragen, bevor die Migration lief - darf nicht überschrieben werden.
-    $manuell = OperatingSystem::factory()->create(['name' => 'Debian 10', 'eol_date' => '2030-01-01']);
-
-    $migration = require database_path('migrations/2026_08_22_150000_backfill_operating_system_eol_dates.php');
-    $migration->up();
-
-    expect($windows7->fresh()->eol_date->format('Y-m-d'))->toBe('2020-01-14');
-    expect($esxi8->fresh()->eol_date->format('Y-m-d'))->toBe('2027-10-11');
-    expect($esxi6->fresh()->eol_date->format('Y-m-d'))->toBe('2022-10-15');
-    expect($manuell->fresh()->eol_date->format('Y-m-d'))->toBe('2030-01-01');
-});
-
-test('die Backfill-Migration legt Proxmox VE und Backup Server einzeln je Version an und löscht die alten Sammel-Einträge weich', function () {
-    $alteVe = OperatingSystem::factory()->create(['name' => 'Proxmox Virtual Environment', 'eol_date' => null]);
-    $alterPbs = OperatingSystem::factory()->create(['name' => 'Proxmox Backup Server', 'eol_date' => null]);
-
-    $migration = require database_path('migrations/2026_08_22_150000_backfill_operating_system_eol_dates.php');
-    $migration->up();
-
-    expect(OperatingSystem::where('name', 'Proxmox VE 7')->first()->eol_date->format('Y-m-d'))->toBe('2024-07-31');
-    expect(OperatingSystem::where('name', 'Proxmox VE 8')->first()->eol_date->format('Y-m-d'))->toBe('2026-08-31');
-    // Version 9: Termin von Proxmox noch nicht angekuendigt.
-    expect(OperatingSystem::where('name', 'Proxmox VE 9')->first()->eol_date)->toBeNull();
-
-    expect(OperatingSystem::where('name', 'Proxmox Backup Server 1')->first()->eol_date->format('Y-m-d'))->toBe('2022-09-30');
-    expect(OperatingSystem::where('name', 'Proxmox Backup Server 2')->first()->eol_date->format('Y-m-d'))->toBe('2024-07-31');
-    expect(OperatingSystem::where('name', 'Proxmox Backup Server 3')->first()->eol_date->format('Y-m-d'))->toBe('2026-08-31');
-    expect(OperatingSystem::where('name', 'Proxmox Backup Server 4')->first()->eol_date)->toBeNull();
-
-    // Durch die versionierten Eintraege ersetzt - im Papierkorb, nicht mehr
-    // in der normalen Liste, aber ein Geraet, das noch darauf zeigt, verliert
-    // die Zuordnung nicht (Soft Delete statt Hard Delete).
-    expect(OperatingSystem::where('name', 'Proxmox Virtual Environment')->exists())->toBeFalse();
-    expect(OperatingSystem::withTrashed()->where('name', 'Proxmox Virtual Environment')->first()->id)->toBe($alteVe->id);
-    expect(OperatingSystem::where('name', 'Proxmox Backup Server')->exists())->toBeFalse();
-    expect(OperatingSystem::withTrashed()->where('name', 'Proxmox Backup Server')->first()->id)->toBe($alterPbs->id);
-});
-
-test('die Backfill-Migration ergänzt den fehlenden Debian-13-Katalogeintrag', function () {
-    $migration = require database_path('migrations/2026_08_22_150000_backfill_operating_system_eol_dates.php');
-    $migration->up();
-
-    expect(OperatingSystem::where('name', 'Debian 13')->first()->eol_date->format('Y-m-d'))->toBe('2030-06-30');
-});
-
 test('der Seeder befüllt den vollständigen Betriebssystem-Katalog', function () {
     $this->seed(OperatingSystemsSeeder::class);
 

@@ -49,7 +49,6 @@ return new class extends Migration
         'recorders' => ['password'],
         'routers' => ['password'],
         'securepoint_umas' => ['password'],
-        'securepoint_utms' => ['password', 'cloudBackupPassword', 'uscpin'],
         'servers' => ['bmcPassword', 'remotePassword'],
         'vms' => ['remotePassword'],
         'wifis' => ['password'],

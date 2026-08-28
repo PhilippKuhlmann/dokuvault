@@ -22,6 +22,10 @@ return new class extends Migration
             $table->foreignId('role_id');
             $table->foreignId('customer_id')->nullable();
             $table->rememberToken();
+            // Leer heisst: der Browsersprache folgen. Nur wer bewusst waehlt,
+            // bekommt hier einen Wert - sonst muesste man Bestandsnutzer
+            // erraten.
+            $table->string('locale', 5)->nullable();
             $table->timestamps();
         });
     }
