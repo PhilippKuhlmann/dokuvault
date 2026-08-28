@@ -19,7 +19,7 @@
   - Veröffentlicht wird bei jedem Push auf `main` und bei jedem `v*`-Tag, **nachdem** der bestehende Rauchtest durchgelaufen ist: Container hochfahren, anmelden, Demo-Daten prüfen. Ein kaputtes Abbild kommt so nicht in die Registry.
   - Der Push-Auslöser hat seinen Pfadfilter verloren. Das Abbild trägt die Anwendung in sich, also macht **jede** Codeänderung ein veröffentlichtes `latest` veraltet — vorher wurde nur bei Änderungen am Dockerfile gebaut.
   - Zwei Markierungen: `latest` für den letzten Stand, `YY.MM.DD` für einen festen. Die Version kommt aus dem Changelog, derselben Quelle, aus der die Oberfläche sie liest.
-  - Gebaut für `amd64` und `arm64`, damit es ohne Emulation auch auf Apple-Silicon und Raspberry läuft.
+  - Gebaut für `amd64` und `arm64`, damit es ohne Emulation auch auf Apple-Silicon und Raspberry läuft. Die beiden Bauschritte davor — Composer und Vite — laufen dabei ausdrücklich auf der Architektur des Bauknechts: Sie erzeugen PHP-Quelltext, CSS und JavaScript, alles ohne Architekturbezug. Emuliert blieb `npm ci` für arm64 praktisch stehen.
   - Ohne hinterlegte Zugangsdaten wird nur gebaut, nicht veröffentlicht — der Lauf bleibt grün und sagt, welche Geheimnisse fehlen. Sonst wäre der Workflow in jedem Klon rot, ohne dass etwas kaputt ist.
   - `docker/HUB.md` wird als Beschreibung auf die Docker-Hub-Seite gespiegelt: Compose-Beispiel, Umgebungsvariablen und der Hinweis, dass ein fester `APP_KEY` Pflicht ist, sobald echte Daten im Spiel sind.
 

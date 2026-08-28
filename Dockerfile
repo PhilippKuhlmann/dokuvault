@@ -3,7 +3,11 @@
 # viele Nutzer betreibt, faehrt mit dem Weg aus DEPLOYMENT.md besser.
 
 # ---------------------------------------------------------------- PHP-Pakete
-FROM composer:2.8 AS vendor
+# --platform=$BUILDPLATFORM: Diese Stufe laeuft immer auf der Architektur des
+# Bauknechts, nicht auf der des Ziels. Was hier entsteht, ist PHP-Quelltext und
+# damit architekturunabhaengig - fuer arm64 emuliert bauen zu lassen, kostet
+# nur Zeit. Beim Multi-Arch-Bau blieb "npm ci" unter QEMU praktisch stehen.
+FROM --platform=$BUILDPLATFORM composer:2.8 AS vendor
 WORKDIR /app
 COPY composer.json composer.lock ./
 # Ohne --no-dev: die Demo-Daten brauchen fakerphp/faker. --no-scripts, weil
@@ -11,7 +15,8 @@ COPY composer.json composer.lock ./
 RUN composer install --no-interaction --prefer-dist --no-scripts --no-autoloader
 
 # ------------------------------------------------------------------ Frontend
-FROM node:22-alpine AS frontend
+# Ebenso: Vite erzeugt CSS und JavaScript, beides ohne Architekturbezug.
+FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -25,6 +30,8 @@ COPY --from=vendor /app/vendor vendor
 RUN npm run build
 
 # ------------------------------------------------------------------- Laufzeit
+# Ohne --platform: Nur diese Stufe ist architekturabhaengig - hier werden die
+# PHP-Erweiterungen uebersetzt, und das Ergebnis muss zum Ziel passen.
 FROM php:8.3-cli-alpine
 
 RUN apk add --no-cache \
