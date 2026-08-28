@@ -2,6 +2,17 @@
 
 ## 26.08.28
 
+### Changed
+
+- **Die Migrationen sind von 117 auf 78 zusammengezogen.** Sie bleiben, was sie waren — lesbare Schritte mit `migrate:rollback` —, nur ohne die Spuren der Entstehungszeit. Drei Gruppen sind verschwunden:
+  - **Abgeschlossene Lebensläufe:** Tabellen, die angelegt und später wieder entfernt wurden (`rooms`, `rack_cabinets`, `rack_devices`, `securepoint_utms`, `radiocenters`, `login_nas`, `login_recorders`) — samt der Migrationen, die sie anlegten, umzogen und löschten. Auf einer frischen Datenbank entstanden sie nur, um kurz darauf zu verschwinden.
+  - **Nachträgliche Spalten** wanderten in die Anlege-Migration ihrer Tabelle, mitsamt ihren Kommentaren. Ausgenommen sind Spalten mit Fremdschlüssel auf eine *später* entstehende Tabelle: `vms.cluster_id` verweist auf `clusters`, das Jahre nach `vms` angelegt wird — nach vorn gezogen ließe sich die Bedingung nicht bilden.
+  - **Nachrüstungen für Bestandsdaten:** sechs Rechte-Migrationen (dieselben Rechte legt der `PermissionRoleSeeder` aus `config/custom.php` an) und vier Backfills, die auf einer leeren Datenbank nichts tun.
+  - Belegt statt behauptet: Das Schema vor dem Umbau wurde gesichert und danach neu erzeugt. **66 Tabellen, jede mit exakt denselben Spalten, Typen, Vorgaben und Schlüsseln.** Nur die physische Spaltenreihenfolge weicht ab, wo eine Spalte jetzt beim Anlegen statt später entsteht — für die Anwendung ohne Bedeutung.
+  - Sechs Tests prüften eine einmalige Datenmigration, indem sie deren Datei luden. Ihr Gegenstand ist entfallen, sie mit ihm.
+
+## 26.08.28
+
 ### Added
 
 - **Das Docker-Abbild wird auf Docker Hub veröffentlicht.** Gebaut und geprüft wurde es schon vorher — es lag nur nirgends, wo man es herunterladen kann.
