@@ -1,3 +1,7 @@
+<!-- Das Logo aus dem Quelltext, nicht von der Webseite: dieselbe Quelle wie
+     das Abbild selbst. Aendert es sich im Projekt, folgt die Seite. -->
+![DokuVault](https://raw.githubusercontent.com/PhilippKuhlmann/dokuvault/main/public/logo.svg)
+
 # DokuVault
 
 IT-Dokumentation für Systemhäuser und interne IT: Kunden, Standorte, Server,
