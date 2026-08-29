@@ -4,7 +4,12 @@ IT-Dokumentation für Systemhäuser und interne IT: Kunden, Standorte, Server,
 VMs, Netze, Zugangsdaten, Lizenzen, Racks — an einer Stelle, durchsuchbar, mit
 Änderungsprotokoll und PDF-Export.
 
+**[dokuvault.de](https://dokuvault.de)** · **[Live-Demo ohne Installation](https://doku.dokuvault.de)** · **[Quelltext auf GitHub](https://github.com/PhilippKuhlmann/dokuvault)**
+
 ## Ausprobieren
+
+Nur ansehen? Die [Live-Demo](https://doku.dokuvault.de) läuft ohne Installation.
+Für den eigenen Rechner geht es hier weiter.
 
 Am einfachsten mit einer Datenbank daneben — `docker-compose.yml`:
 
@@ -69,6 +74,12 @@ neuer Schlüssel macht sie unlesbar.
 
 Was überleben soll, gehört in ein Volume auf `/app/storage` — hochgeladene
 Dateien, Sitzungen, Protokolle.
+
+## Mehr dazu
+
+Alles Weitere — was DokuVault kann, wie es betrieben wird und woran gerade
+gearbeitet wird — steht auf **[dokuvault.de](https://dokuvault.de)** und im
+[Quelltext](https://github.com/PhilippKuhlmann/dokuvault).
 
 ## Wofür das Bild gedacht ist
 
