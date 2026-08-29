@@ -198,5 +198,5 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: ${{ secrets.DOCKERHUB_USERNAME }}/dokuvault
-          short-description: 'IT-Dokumentation fuer Systemhaeuser und interne IT'
+          short-description: 'IT-Dokumentation für Systemhäuser und interne IT'
           readme-filepath: ./docker/HUB.md
