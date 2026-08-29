@@ -27,6 +27,25 @@ class RackItem extends Model
         return $this->morphTo();
     }
 
+    /**
+     * Der Katalogeintrag, aus dem dieser Einbau stammt - nur fuer sein Bild.
+     *
+     * Alles Beschreibende (Bezeichnung, Darstellung, Hoehe) wurde beim Einbau
+     * kopiert und bleibt auch dann stehen, wenn der Eintrag verschwindet. Beim
+     * Bild geht das nicht: Die Datei haengt am Katalogeintrag. Faellt er weg,
+     * faellt das Foto weg und die gezeichnete Blende tritt an seine Stelle.
+     */
+    public function catalogItem()
+    {
+        return $this->belongsTo(RackCatalogItem::class, 'rack_catalog_item_id');
+    }
+
+    /** Adresse des hinterlegten Fotos, oder null. */
+    public function bildUrl(): ?string
+    {
+        return $this->catalogItem?->bildUrl();
+    }
+
     /** Anzeigename: Geraetename aus der Doku bzw. Katalogbezeichnung. */
     public function label(): string
     {

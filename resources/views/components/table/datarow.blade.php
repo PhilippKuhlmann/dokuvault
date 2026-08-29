@@ -83,6 +83,21 @@
         @elseif ($key == 'status')
             {{-- true/false/null als Haken, Kreuz oder Strich. --}}
             <td scope="row" class="py-2.5 px-4"><x-statusicon :value="$value" /></td>
+        @elseif ($key == 'rackface')
+            {{-- $value ist der Katalogeintrag selbst: Ob eine Zeichnung oder ein
+                 hochgeladenes Foto erscheint, entscheidet der Eintrag.
+
+                 Das Seitenverhaeltnis ist dasselbe wie im viewBox der Zeichnung:
+                 1086 zu 100 je Hoeheneinheit, die Masse einer 19"-Blende. Ein
+                 Kasten mit fester Hoehe machte aus einer 1-HE-Blende einen
+                 Kloetzchen-Server - und alle Hoehen saehen gleich aus. --}}
+            <td scope="row" class="py-2.5 px-4">
+                <div class="w-48 text-gray-500 dark:text-gray-400"
+                    style="aspect-ratio: 1086 / {{ 100 * max(1, (int) $value->height_units) }};">
+                    <x-rack.face :appearance="$value->appearance ?: 'blank'" :he="$value->height_units"
+                        :image="$value->bildUrl()" />
+                </div>
+            </td>
         @elseif ($key == 'fingerprint')
             {{-- Gekuerzt mit Kopier-Knopf: vollstaendig bricht er auf fuenf
                  Zeilen um und bestimmt die Zeilenhoehe. --}}

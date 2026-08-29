@@ -19,15 +19,18 @@
         </p>
 
         <x-table.main>
-            <x-table.head :labels="['Bezeichnung', 'Höheneinheiten', 'Darstellung', 'Reihenfolge', '']" />
+            <x-table.head :labels="['Vorschau', 'Bezeichnung', 'Höheneinheiten', 'Darstellung', 'Reihenfolge', '']" />
 
             <x-table.body>
                 @foreach ($rackCatalogItems as $rackCatalogItem)
                     <x-table.datarow
                         :values="[
+                            'rackface' => $rackCatalogItem,
                             $rackCatalogItem->name,
                             $rackCatalogItem->height_units . ' HE',
-                            __(config('custom.rack_appearances')[$rackCatalogItem->appearance] ?? $rackCatalogItem->appearance),
+                            $rackCatalogItem->image_path
+                                ? __('Eigenes Bild')
+                                : __(config('custom.rack_appearances')[$rackCatalogItem->appearance] ?? $rackCatalogItem->appearance),
                             $rackCatalogItem->sort_order,
                         ]"
                         editUrl="{{ route('admin.rackcatalogitem.edit', $rackCatalogItem) }}"

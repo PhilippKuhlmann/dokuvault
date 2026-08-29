@@ -2,7 +2,24 @@
 
 ## 26.08.29
 
+### Added
+
+- **Der Rack-Katalog nimmt eigene Bilder auf.** Wer ein Gerät hat, das keine der elf Zeichnungen trifft, lädt ein Foto der Frontblende hoch; es tritt in der Vorschau, im Rack und im PDF an die Stelle der Zeichnung.
+  - Die gewählte Darstellung bleibt daneben stehen. Wird das Bild wieder entfernt, zeichnet die Frontansicht sofort weiter — es geht nichts verloren.
+  - Kein SVG, aus demselben Grund wie bei den Logos: Eine SVG-Datei darf Skript enthalten, und von derselben Herkunft ausgeliefert wäre das ausführbarer Code in einer Dokumentation, in der Kennwörter stehen.
+  - Die Datei liegt privat und geht durch einen Controller heraus, wie jede Datei dieser App. Die Adresse steht hinter `auth`, aber außerhalb des Adminbereichs: Gepflegt wird das Bild dort, zu sehen ist es in jedem Rack — auch bei einem Kunden, der den Adminbereich nie betreten darf.
+  - Ein gelöschter Katalogeintrag nimmt sein Bild mit. Bereits verbaute Elemente bleiben stehen; sie haben Bezeichnung, Höhe und Darstellung beim Einbau kopiert und erscheinen dann wieder als Zeichnung. Der Hinweis über dem Löschen-Knopf sagt das jetzt auch — er versprach vorher einen Papierkorb, den es für Katalogelemente nie gab.
+
+- **Die Vorschau zeigt einen kleinen Schrank statt einer freistehenden Blende.** Erst darin ist zu sehen, wie viel Platz ein Element einnimmt: Eine Blende allein sieht bei einer und bei drei Höheneinheiten gleich aus.
+  - Sie zeichnet bei jeder Änderung neu, statt alles vorzuhalten. Ein Patchfeld mit 2 HE hat zwei Portreihen, keine gestreckte — alle elf Darstellungen in allen acht Höhen vorab auszuliefern wären 737 KB Auszeichnung auf einer Formularseite gewesen.
+  - Darunter steht die empfohlene Auflösung, mitlaufend zur eingestellten Höhe: **1200 × 110 Pixel je HE**. Eine 19-Zoll-Blende ist 482,6 mm breit und 44,45 mm je Höheneinheit hoch, also 10,86 : 1 — glatt aufgehen würde nur 1086 × 100. Zwei krumme Zahlen für 0,5 % Genauigkeit sind es nicht wert.
+  - Die Liste zeigt dieselbe Blende als Vorschaubild in der ersten Spalte.
+
 ### Changed
+
+- **Die gezeichnete Frontansicht hat jetzt das Seitenverhältnis einer echten Blende.** Ihre Breite richtete sich nach der Umgebung, die Zeilenhöhe stand fest bei 2 HE-Zeilen zu je 2 rem — gemessen kam eine 1-HE-Blende so auf 7,5 : 1 statt 10,9 : 1 und sah aus wie ein Klotz. Der Schrank bekommt seine Breite jetzt aus der Zeilenhöhe (das 10,857-fache, plus Skala, Schienen, Polster und Rahmen); auf der Rack-Seite stimmt das Verhältnis damit exakt. Zeile für Zeile liegt er weiter auf gleicher Höhe mit dem Schema daneben — die Zeilenhöhe blieb unangetastet.
+
+- **Ein Katalogelement darf höchstens acht Höheneinheiten hoch sein**, vorher 42. Größer gibt es 19-Zoll-Einbauten praktisch nicht, und es ist dieselbe Grenze, die der Rack-Editor beim Ändern einer Höhe schon zog.
 
 - **Das Abbild wird auf nativen Runnern gebaut, je Architektur einer.** Vorher lief arm64 emuliert auf einem amd64-Runner: Ein Lauf brauchte rund zwanzig Minuten, und `npm ci` blieb dabei zeitweise ganz stehen — der Grund, warum die Bauschritte inzwischen ohnehin auf der Architektur des Bauknechts laufen.
   - Beide Architekturen bauen **parallel** und legen ihr Ergebnis nur unter dem Digest ab, ohne Markierung. Erst ein dritter Job fasst sie zu einem Manifest zusammen und setzt `latest` und die Version. Würde jeder Lauf gleich markieren, überschriebe die zweite Architektur die erste.

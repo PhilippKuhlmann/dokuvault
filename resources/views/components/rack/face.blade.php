@@ -11,7 +11,20 @@
     'ports' => null,
     'width' => null,
     'height' => null,
+    // Eigenes Foto der Blende (Adresse). Ist eines hinterlegt, tritt es an die
+    // Stelle der Zeichnung. Im PDF nicht benutzt: Dort geht die Blende als
+    // SVG-Datei heraus, und in einer SVG-Datei laesst sich kein <img> auf eine
+    // zweite Datei verschachteln - pdf/_rack.blade.php setzt das Foto selbst.
+    'image' => null,
 ])
+
+@if ($image)
+    {{-- Auf die Zelle gestreckt wie die Zeichnung daneben (preserveAspectRatio
+         ="none"): Die Zelle ist der Platz, den das Geraet im Schrank einnimmt -
+         ein eingepasstes Bild liesse dort Luft, wo keine ist. --}}
+    <img src="{{ $image }}" alt="" role="presentation"
+        {{ $attributes->merge(['class' => 'block h-full w-full object-fill']) }}>
+@else
 
 {{--
     Gezeichnete Frontblende eines Rack-Einbaus, ohne Beschriftung.
@@ -246,3 +259,4 @@
     @endswitch
 @if ($scaled)</g>@endif
 </svg>
+@endif

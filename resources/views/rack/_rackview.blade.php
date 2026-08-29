@@ -1,6 +1,7 @@
 {{--
     Gezeichnete Ansicht derselben Rackseite - ohne Beschriftung, so wie der
-    Schrank tatsaechlich aussieht. Erwartet: $rack (mit items.device geladen)
+    Schrank tatsaechlich aussieht. Erwartet: $rack (mit items.device und
+    items.catalogItem geladen)
     und $seite ('front'|'rear').
 
     Bewusst nicht interaktiv: gearbeitet wird im beschrifteten Schema daneben,
@@ -9,7 +10,18 @@
 @php
     $seite = $seite ?? 'front';
     $he = $rack->height_units;
+    // Zeilenhoehe wie im Schema daneben - beide muessen Zeile fuer Zeile auf
+    // gleicher Hoehe liegen.
     $rowHeight = '2rem';
+
+    // Damit eine Blende ihr echtes Seitenverhaeltnis behaelt, muss die Spalte
+    // dazwischen genau das 10,857-fache der Zeilenhoehe breit sein: Eine
+    // 19"-Blende ist 482,6 mm breit und 44,45 mm je Hoeheneinheit hoch. Vorher
+    // richtete sich die Breite nach der Umgebung und die Zeilenhoehe nicht -
+    // eine 1-HE-Blende kam auf 7,5 : 1 statt 10,9 : 1 und sah aus wie ein Klotz.
+    // Dazu kommen Skala (2,5rem), zwei Schienen (2 x 0,6rem), das Polster des
+    // Gehaeuses (2 x 0,5rem) und sein Rahmen (2 x 2px).
+    $chassisBreite = "calc({$rowHeight} * 10.8571 + 4.7rem + 4px)";
 
     // Farbe je Geraetetyp - dieselbe Zuordnung wie im Schema, damit sich beide
     // Ansichten nebeneinander lesen lassen.
@@ -34,7 +46,9 @@
     }
 @endphp
 
-<x-rack.chassis>
+{{-- max-width: Bleibt weniger Platz, schrumpft der Schrank lieber, als aus
+     der Karte zu laufen - dann stimmt das Verhaeltnis dort nicht mehr genau. --}}
+<x-rack.chassis style="width: {{ $chassisBreite }}; max-width: 100%;">
     {{-- Spalte 1 ist die HE-Skala wie im Schema, damit sich beide Ansichten
          zeilenweise vergleichen lassen. Spalten 2 und 4 sind die
          Montageschienen, Spalte 3 nimmt die Blenden auf.
@@ -87,7 +101,8 @@
                 class="{{ $color }} {{ $geist ? 'opacity-50' : '' }}"
                 title="{{ $item->label() }} · {{ $item->height_units }} HE{{ $geist ? ' · '.__('Rückseite des Geräts') : '' }}">
                 <x-rack.face :appearance="$geist ? 'blank' : $item->faceAppearance()" :he="$item->height_units"
-                    :ports="$geist ? null : $item->device?->port_count" />
+                    :ports="$geist ? null : $item->device?->port_count"
+                    :image="$geist ? null : $item->bildUrl()" />
             </div>
         @endforeach
 

@@ -115,6 +115,8 @@ class RackEditor extends Component
             'full_depth' => (bool) $catalogItem->full_depth,
             'name' => $catalogItem->name,
             'appearance' => $catalogItem->appearance,
+            // Nur fuer das hinterlegte Foto - siehe RackItem::catalogItem().
+            'rack_catalog_item_id' => $catalogItem->id,
         ]);
     }
 
@@ -260,7 +262,7 @@ class RackEditor extends Component
 
     public function render()
     {
-        $rack = $this->rack()->load('items.device');
+        $rack = $this->rack()->load('items.device', 'items.catalogItem');
 
         // Palette: je Typ die noch nicht verbauten Geräte des Kunden.
         // Bewusst OHNE Standortfilter aus der Session: Racks stehen an einem

@@ -137,15 +137,17 @@
         </div>
 
         {{-- Links das beschriftete Arbeitsschema, rechts die gezeichnete Frontansicht.
-             basis-0: beide Spalten teilen den Platz gleichmaessig auf. Ohne das
-             richtet sich die Breite nach dem Inhalt, und die Frontansicht wird
-             breiter als das Schema. --}}
-        <div class="grow basis-0 min-w-0">
+             Die Zeichnung haette gern das 10,857-fache ihrer Zeilenhoehe, sonst
+             stauchen sich die Blenden (siehe rack/_rackview) - deshalb 27rem als
+             Ausgangsbreite. Nachgeben muss aber sie, nicht das Schema: min-w-64
+             haelt das Arbeitsschema auf der Breite seines Gehaeuses, sonst
+             stuende es aus seiner Spalte heraus. --}}
+        <div class="grow basis-0 min-w-64">
             <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">{{ __('Schema') }} · {{ __(\App\Models\Rack::SEITEN[$side]) }}</div>
             @include('rack._grid', ['rack' => $rack, 'interactive' => true, 'seite' => $side])
         </div>
 
-        <div class="grow basis-0 min-w-0 hidden lg:block">
+        <div class="basis-[27rem] min-w-0 hidden lg:block">
             <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">{{ $side === 'front' ? __('Frontansicht') : __('Rückansicht') }}</div>
             @include('rack._rackview', ['rack' => $rack, 'seite' => $side])
         </div>

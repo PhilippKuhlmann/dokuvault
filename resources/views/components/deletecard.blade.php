@@ -1,4 +1,6 @@
-@props(['action', 'breit' => false])
+{{-- $hinweis/$frage: Nicht jedes Model wird weich geloescht. Wo es keinen
+     Papierkorb gibt, muss hier auch nicht von einem die Rede sein. --}}
+@props(['action', 'breit' => false, 'hinweis' => null, 'frage' => null])
 
 {{-- Wrapper haelt dieselbe zentrierte Spaltenbreite wie das Formular darueber -
      breit muss zu x-create.main passen, sonst sitzt die Karte versetzt. --}}
@@ -14,11 +16,11 @@
              laesst sich von dort zurueckholen. Wer das nicht weiss, traut sich
              nicht zu loeschen oder erschrickt hinterher unnoetig. --}}
         <div class="mt-2 mb-4 text-sm">
-            {{ __('Der Eintrag wandert in den Papierkorb und lässt sich von dort wiederherstellen.') }}
+            {{ $hinweis ?? __('Der Eintrag wandert in den Papierkorb und lässt sich von dort wiederherstellen.') }}
         </div>
         <div class="flex">
             <form method="POST" action="{{ $action }}"
-                onsubmit="return confirm('{{ __('Eintrag in den Papierkorb verschieben?') }}')">
+                onsubmit="return confirm('{{ $frage ?? __('Eintrag in den Papierkorb verschieben?') }}')">
                 @csrf
                 @method('delete')
                 <x-input.button color="red" :label="__('Löschen!')" />

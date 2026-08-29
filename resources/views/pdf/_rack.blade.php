@@ -57,21 +57,29 @@
                     $tint = $item->device_type ? ($tints[$key] ?? $deviceDefault) : $passiveTint;
                     $slotHeight = $rowHeight * $item->height_units;
 
-                    $svg = view('components.rack.face', [
-                        'appearance' => $item->faceAppearance(),
-                        'he' => $item->height_units,
-                        'ports' => $item->device?->port_count,
-                        'plate' => $plate,
-                        'tint' => $tint,
-                        'width' => 330,
-                        'height' => $slotHeight,
-                    ])->render();
+                    // Ein hinterlegtes Foto tritt an die Stelle der Zeichnung -
+                    // wie am Bildschirm. Es geht direkt als Datei heraus: Die
+                    // Zeichnung braucht den Umweg ueber eine SVG-Datei, ein
+                    // Foto liegt bereits als Datei vor.
+                    $bild = $item->catalogItem?->bildPfad();
 
-                    $svgFile = $svgDir . '/item-' . $item->id . '.svg';
-                    file_put_contents($svgFile, $svg);
+                    if (! $bild) {
+                        $svg = view('components.rack.face', [
+                            'appearance' => $item->faceAppearance(),
+                            'he' => $item->height_units,
+                            'ports' => $item->device?->port_count,
+                            'plate' => $plate,
+                            'tint' => $tint,
+                            'width' => 330,
+                            'height' => $slotHeight,
+                        ])->render();
+
+                        $bild = $svgDir . '/item-' . $item->id . '.svg';
+                        file_put_contents($bild, $svg);
+                    }
                 @endphp
                 <td class="rackview-slot" rowspan="{{ $item->height_units }}">
-                    <img src="{{ $svgFile }}" width="330" height="{{ $slotHeight }}"
+                    <img src="{{ $bild }}" width="330" height="{{ $slotHeight }}"
                         alt="{{ $item->label() }}">
                 </td>
             @elseif (! isset($covered[$u]))

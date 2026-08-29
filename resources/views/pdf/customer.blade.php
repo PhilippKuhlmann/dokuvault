@@ -168,7 +168,7 @@
         @endif
     @endforeach
 
-    @php $racks = $customer->racks()->with('items.device')->get(); @endphp
+    @php $racks = $customer->racks()->with('items.device', 'items.catalogItem')->get(); @endphp
     <x-pdf.section :title="__('Serverschränke')" :items="$racks" :groups="[
         'Allgemein' => ['Ort' => 'location', 'Höheneinheiten' => fn($r) => $r->height_units . ' HE',
             'Einbauten' => fn($r) => $r->items->count(), 'Notiz' => 'note'],

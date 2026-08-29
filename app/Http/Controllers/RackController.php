@@ -13,7 +13,7 @@ class RackController extends Controller
         $this->authorize('viewAny', Rack::class);
 
         $racks = $this->getFilteredQuery(Rack::class, $customer)
-            ->with('items.device')
+            ->with('items.device', 'items.catalogItem')
             ->latest()->paginate(25);
 
         return view('rack.index', compact('customer', 'racks'));

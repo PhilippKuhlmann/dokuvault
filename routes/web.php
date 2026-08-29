@@ -89,6 +89,13 @@ Route::permanentRedirect('/{customer}/assistent', '/{customer}/wizard');
 // geht durch den Controller, wie alle Dateien dieser App.
 Route::get('/logo/{placement}', [BrandingController::class, 'logo'])->name('branding.logo');
 
+// Das Bild eines Katalogelements. Hinter auth, aber ausserhalb des
+// Adminbereichs: Gepflegt wird es dort, zu sehen ist es in jeder Rack-Ansicht -
+// auch bei einem Kunden, der den Adminbereich nie betreten darf.
+Route::middleware('auth')
+    ->get('/rack-catalog-image/{rackcatalogitem}', [RackCatalogItemController::class, 'image'])
+    ->name('rackcatalogitem.image');
+
 // Techniker
 // Bewusst ohne auth: Auch auf der Anmeldeseite soll man die Sprache wechseln
 // koennen, und auf der Demo ist der geteilte Zugang gesperrt.
