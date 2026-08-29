@@ -21,7 +21,8 @@
   - Zwei Markierungen: `latest` für den letzten Stand, `YY.MM.DD` für einen festen. Die Version kommt aus dem Changelog, derselben Quelle, aus der die Oberfläche sie liest.
   - Gebaut für `amd64` und `arm64`, damit es ohne Emulation auch auf Apple-Silicon und Raspberry läuft. Die beiden Bauschritte davor — Composer und Vite — laufen dabei ausdrücklich auf der Architektur des Bauknechts: Sie erzeugen PHP-Quelltext, CSS und JavaScript, alles ohne Architekturbezug. Emuliert blieb `npm ci` für arm64 praktisch stehen.
   - Ohne hinterlegte Zugangsdaten wird nur gebaut, nicht veröffentlicht — der Lauf bleibt grün und sagt, welche Geheimnisse fehlen. Sonst wäre der Workflow in jedem Klon rot, ohne dass etwas kaputt ist.
-  - `docker/HUB.md` wird als Beschreibung auf die Docker-Hub-Seite gespiegelt: Compose-Beispiel, Umgebungsvariablen und der Hinweis, dass ein fester `APP_KEY` Pflicht ist, sobald echte Daten im Spiel sind.
+  - `docker/HUB.md` wird als Beschreibung auf die Docker-Hub-Seite gespiegelt: Compose-Beispiel, Umgebungsvariablen und der Hinweis, dass ein fester `APP_KEY` Pflicht ist, sobald echte Daten im Spiel sind. Der Bildname im Beispiel steht nicht im Quelltext, sondern wird beim Hochladen aus demselben Geheimnis eingesetzt, aus dem auch der Bildname gebildet wird — so zeigt das Beispiel immer auf genau das Repository, auf dem es steht.
+  - Das Aktualisieren der Beschreibung ist ein **eigener Job ohne Bindung an den Bau**: Eine Textänderung an der Seite zieht sonst zwanzig Minuten Multi-Arch-Bau nach sich.
 
 ## 26.08.27d
 

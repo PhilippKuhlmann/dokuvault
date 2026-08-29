@@ -152,7 +152,46 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Beschreibung auf Docker Hub aktualisieren
+  beschreibung:
+    name: Beschreibung auf Docker Hub
+    runs-on: ubuntu-latest
+
+    # Bewusst ohne "needs: bauen": Eine Textaenderung an der Seite soll nicht
+    # zwanzig Minuten Multi-Arch-Bau nach sich ziehen. Ein Abbild wird hier
+    # weder gebaut noch angefasst.
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Zugangsdaten pruefen
+        id: zugang
+        env:
+          BENUTZER: ${{ secrets.DOCKERHUB_USERNAME }}
+          TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          if [ -z "$BENUTZER" ] || [ -z "$TOKEN" ]; then
+            echo 'Keine Docker-Hub-Zugangsdaten hinterlegt - die Beschreibung bleibt, wie sie ist.'
+            echo 'vorhanden=nein' >> "$GITHUB_OUTPUT"
+          else
+            echo 'vorhanden=ja' >> "$GITHUB_OUTPUT"
+          fi
+
+      # Der Name steht nicht im Quelltext: Er kommt aus demselben Geheimnis,
+      # aus dem auch der Bildname gebildet wird. So zeigt das Beispiel auf der
+      # Seite immer auf genau das Repository, auf dem es steht - und bliebe
+      # richtig, wenn der Name sich einmal aendert.
+      - name: Platzhalter durch den echten Namen ersetzen
+        if: steps.zugang.outputs.vorhanden == 'ja'
+        env:
+          BENUTZER: ${{ secrets.DOCKERHUB_USERNAME }}
+        run: |
+          sed -i "s|<BENUTZER>|$BENUTZER|g" docker/HUB.md
+          grep -q '<BENUTZER>' docker/HUB.md && { echo 'Es blieb ein Platzhalter stehen.'; exit 1; }
+          echo 'Beispiel in der Beschreibung:'
+          grep -n 'image:' docker/HUB.md
+
+      - name: Hochladen
         if: steps.zugang.outputs.vorhanden == 'ja'
         uses: peter-evans/dockerhub-description@v4
         with:
