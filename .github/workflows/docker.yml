@@ -116,9 +116,25 @@ jobs:
         run: docker compose down -v
 
   veroeffentlichen:
-    name: Auf Docker Hub veroeffentlichen
+    name: Bauen (${{ matrix.kuerzel }})
     needs: bauen
-    runs-on: ubuntu-latest
+
+    # Jede Architektur auf ihrer eigenen Maschine. Vorher lief arm64 emuliert
+    # auf einem amd64-Runner - ein Lauf dauerte damit rund zwanzig Minuten, und
+    # "npm ci" blieb dabei zeitweise ganz stehen. Native ARM-Runner sind fuer
+    # oeffentliche Repositories kostenfrei.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - plattform: linux/amd64
+            runner: ubuntu-latest
+            kuerzel: amd64
+          - plattform: linux/arm64
+            runner: ubuntu-24.04-arm
+            kuerzel: arm64
+
+    runs-on: ${{ matrix.runner }}
 
     # Nur vom eigenen Zweig aus, nie aus einem Pull Request: Dort stehen die
     # Zugangsdaten nicht zur Verfuegung, und ein fremder Beitrag soll ohnehin
@@ -145,6 +161,72 @@ jobs:
             echo 'vorhanden=ja' >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Buildx einrichten
+        if: steps.zugang.outputs.vorhanden == 'ja'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Bei Docker Hub anmelden
+        if: steps.zugang.outputs.vorhanden == 'ja'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Ohne Markierung, nur unter seinem Digest: Die Markierungen entstehen
+      # erst im naechsten Job, wenn beide Architekturen da sind. Wuerde hier
+      # schon "latest" gesetzt, ueberschriebe die zweite Architektur die erste.
+      - name: Bauen und unter dem Digest ablegen
+        if: steps.zugang.outputs.vorhanden == 'ja'
+        id: bau
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: ${{ matrix.plattform }}
+          outputs: type=image,name=${{ secrets.DOCKERHUB_USERNAME }}/dokuvault,push-by-digest=true,name-canonical=true,push=true
+          # Eigener Cache je Architektur: Ein gemeinsamer wuerde sich
+          # gegenseitig ueberschreiben, weil die Zwischenstufen verschieden sind.
+          cache-from: type=gha,scope=${{ matrix.kuerzel }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.kuerzel }}
+
+      - name: Digest merken
+        if: steps.zugang.outputs.vorhanden == 'ja'
+        run: |
+          mkdir -p /tmp/digests
+          digest='${{ steps.bau.outputs.digest }}'
+          touch "/tmp/digests/${digest#sha256:}"
+          echo "Gebaut: $digest"
+
+      - name: Digest weiterreichen
+        if: steps.zugang.outputs.vorhanden == 'ja'
+        uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ matrix.kuerzel }}
+          path: /tmp/digests/*
+          retention-days: 1
+          if-no-files-found: error
+
+  zusammenfuehren:
+    name: Manifest schreiben
+    needs: veroeffentlichen
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Zugangsdaten pruefen
+        id: zugang
+        env:
+          BENUTZER: ${{ secrets.DOCKERHUB_USERNAME }}
+          TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          if [ -z "$BENUTZER" ] || [ -z "$TOKEN" ]; then
+            echo 'Keine Zugangsdaten - es gibt nichts zusammenzufuehren.'
+            echo 'vorhanden=nein' >> "$GITHUB_OUTPUT"
+          else
+            echo 'vorhanden=ja' >> "$GITHUB_OUTPUT"
+          fi
+
       # Die Version steht im Changelog, nicht in einer eigenen Datei - dieselbe
       # Quelle, aus der die Oberflaeche sie liest (AppServiceProvider).
       - name: Version aus dem Changelog lesen
@@ -156,11 +238,13 @@ jobs:
           echo "wert=$version" >> "$GITHUB_OUTPUT"
           echo "Version: $version"
 
-      # arm64 zusaetzlich, damit das Bild auch auf einem Mac mit Apple-Silicon
-      # und auf einem Raspberry laeuft, ohne Emulation beim Nutzer.
-      - name: QEMU fuer fremde Architekturen
+      - name: Digests einsammeln
         if: steps.zugang.outputs.vorhanden == 'ja'
-        uses: docker/setup-qemu-action@v3
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digest-*
+          merge-multiple: true
 
       - name: Buildx einrichten
         if: steps.zugang.outputs.vorhanden == 'ja'
@@ -173,22 +257,36 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Bauen und hochladen
+      # Das Manifest verweist auf beide Architekturen. Erst dadurch bekommt
+      # "latest" ueberhaupt eine Bedeutung - vorher lagen nur zwei namenlose
+      # Abbilder in der Registry.
+      - name: Manifest aus beiden Architekturen bauen
         if: steps.zugang.outputs.vorhanden == 'ja'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64
-          push: true
-          # "latest" zeigt auf den letzten Stand von main, die Version auf einen
-          # festen. Wer reproduzierbar betreiben will, nimmt die Version.
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/dokuvault:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/dokuvault:${{ steps.version.outputs.wert }}
-          # Zwischenstufen zwischen den Laeufen behalten: Ohne das baut jeder
-          # Lauf Composer- und npm-Abhaengigkeiten neu.
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+        working-directory: /tmp/digests
+        env:
+          BILD: ${{ secrets.DOCKERHUB_USERNAME }}/dokuvault
+          VERSION: ${{ steps.version.outputs.wert }}
+        run: |
+          anzahl=$(ls -1 | wc -l)
+          [ "$anzahl" = "2" ] || { echo "Erwartet waren zwei Digests, gefunden: $anzahl"; ls -1; exit 1; }
+
+          docker buildx imagetools create \
+            --tag "$BILD:latest" \
+            --tag "$BILD:$VERSION" \
+            $(printf "$BILD@sha256:%s " *)
+
+      - name: Nachsehen, was in der Registry steht
+        if: steps.zugang.outputs.vorhanden == 'ja'
+        env:
+          BILD: ${{ secrets.DOCKERHUB_USERNAME }}/dokuvault
+        run: |
+          docker buildx imagetools inspect "$BILD:latest" > /tmp/manifest.txt
+          cat /tmp/manifest.txt
+          for arch in amd64 arm64; do
+            grep -q "linux/$arch" /tmp/manifest.txt \
+              || { echo "Im Manifest fehlt linux/$arch."; exit 1; }
+          done
+          echo 'Beide Architekturen stehen im Manifest.'
 
   beschreibung:
     name: Beschreibung auf Docker Hub

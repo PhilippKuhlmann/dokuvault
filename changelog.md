@@ -4,6 +4,12 @@
 
 ### Changed
 
+- **Das Abbild wird auf nativen Runnern gebaut, je Architektur einer.** Vorher lief arm64 emuliert auf einem amd64-Runner: Ein Lauf brauchte rund zwanzig Minuten, und `npm ci` blieb dabei zeitweise ganz stehen — der Grund, warum die Bauschritte inzwischen ohnehin auf der Architektur des Bauknechts laufen.
+  - Beide Architekturen bauen **parallel** und legen ihr Ergebnis nur unter dem Digest ab, ohne Markierung. Erst ein dritter Job fasst sie zu einem Manifest zusammen und setzt `latest` und die Version. Würde jeder Lauf gleich markieren, überschriebe die zweite Architektur die erste.
+  - Der Cache liegt getrennt je Architektur — ein gemeinsamer überschriebe sich gegenseitig, weil die Zwischenstufen verschiedene sind.
+  - Zum Schluss wird nachgesehen, was tatsächlich in der Registry steht: Fehlt eine der beiden Architekturen im Manifest, bricht der Lauf ab. Vorher hätte niemand gemerkt, wenn nur die Hälfte oben angekommen wäre.
+  - QEMU entfällt damit vollständig. Native ARM-Runner sind für öffentliche Repositories kostenfrei.
+
 - **Das Docker-Abbild liefert jetzt über nginx und php-fpm aus.** Vorher lief darin `php artisan serve` — ein Entwicklungswerkzeug: einzelthreadig, ohne Opcache, und für jede CSS-Datei sprang PHP an.
   - **nginx liefert `/build/` selbst aus**, mit dauerhaftem Cache-Header. Die Dateinamen tragen einen Inhalts-Hash, ein Neuladen kann also nichts Veraltetes bringen.
   - **Opcache ist an**, mit abgeschalteter Zeitstempelprüfung: Im Container ändert sich der Quelltext nie.
