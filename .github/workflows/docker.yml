@@ -69,6 +69,35 @@ jobs:
           echo "$nachher" | grep -q 'Mustermann' \
             || { echo 'Angemeldet, aber ohne Demo-Daten - Seeder nicht gelaufen?'; exit 1; }
 
+      # Beweist, dass nginx tut, wofuer es da ist: Ohne die /build/-Regel
+      # liefe auch eine CSS-Datei durch PHP, und der Umbau haette nichts
+      # gebracht ausser mehr Teilen.
+      - name: nginx liefert die statischen Dateien selbst aus
+        run: |
+          kopf=$(curl -s -D - -o /dev/null http://localhost:8000/login)
+          echo "$kopf" | grep -qi '^server: nginx' \
+            || { echo 'Antwort kommt nicht von nginx.'; echo "$kopf"; exit 1; }
+
+          # Den Namen der gebauten CSS-Datei aus der Seite ziehen: Er traegt
+          # einen Inhalts-Hash und ist bei jedem Build ein anderer.
+          pfad=$(curl -s http://localhost:8000/login \
+            | grep -o '/build/assets/app\.[a-z0-9]*\.css' | head -1)
+          [ -n "$pfad" ] || { echo 'Keine gebaute CSS-Datei in der Seite gefunden.'; exit 1; }
+
+          kopf=$(curl -s -D - -o /dev/null "http://localhost:8000$pfad")
+          echo "$kopf" | grep -q '^HTTP/1.1 200' \
+            || { echo "CSS nicht ausgeliefert: $pfad"; echo "$kopf"; exit 1; }
+          echo "$kopf" | grep -qi 'cache-control: public, immutable' \
+            || { echo 'Ohne Cache-Header - die /build/-Regel hat nicht gegriffen.'; echo "$kopf"; exit 1; }
+          echo "nginx liefert $pfad mit dauerhaftem Cache aus."
+
+      - name: Opcache ist aktiv
+        run: |
+          # Ohne Opcache uebersetzt PHP jede Datei bei jeder Anfrage neu.
+          docker compose exec -T app php -r 'exit(opcache_get_status(false) ? 0 : 1);' \
+            || { echo 'Opcache laeuft nicht.'; exit 1; }
+          echo 'Opcache ist an.'
+
       - name: Logs bei Fehlschlag
         if: failure()
         run: docker compose logs --no-color

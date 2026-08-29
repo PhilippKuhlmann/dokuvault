@@ -1,6 +1,12 @@
-# Bild zum Ausprobieren und fuer kleine Installationen. Ein Container, ein
-# Prozess - kein nginx, kein php-fpm, kein Supervisor. Wer DokuVault fuer
-# viele Nutzer betreibt, faehrt mit dem Weg aus DEPLOYMENT.md besser.
+# Ein Container mit nginx und php-fpm, gehalten von supervisord.
+#
+# Sauberer waeren zwei Container - einer je Prozess. Dann waere das
+# veroeffentlichte Abbild allein aber nicht lauffaehig, und genau das soll es
+# sein: "docker run" und es steht.
+#
+# nginx liefert CSS, JavaScript und Bilder selbst aus und laesst PHP nur an die
+# Anfragen, die es braucht. Der eingebaute Server aus "artisan serve", den
+# dieses Bild vorher benutzte, ist ein Entwicklungswerkzeug.
 
 # ---------------------------------------------------------------- PHP-Pakete
 # --platform=$BUILDPLATFORM: Diese Stufe laeuft immer auf der Architektur des
@@ -32,14 +38,19 @@ RUN npm run build
 # ------------------------------------------------------------------- Laufzeit
 # Ohne --platform: Nur diese Stufe ist architekturabhaengig - hier werden die
 # PHP-Erweiterungen uebersetzt, und das Ergebnis muss zum Ziel passen.
-FROM php:8.3-cli-alpine
+#
+# fpm statt cli: Ausgeliefert wird ueber nginx. Der eingebaute Server aus
+# "artisan serve" ist ein Entwicklungswerkzeug - einzelthreadig, ohne Opcache
+# und mit PHP fuer jede noch so kleine CSS-Datei.
+FROM php:8.3-fpm-alpine
 
 RUN apk add --no-cache \
         freetype libjpeg-turbo libpng libzip \
+        nginx supervisor \
     && apk add --no-cache --virtual .bau \
         freetype-dev libjpeg-turbo-dev libpng-dev libzip-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j"$(nproc)" pdo_mysql gd zip \
+    && docker-php-ext-install -j"$(nproc)" pdo_mysql gd zip opcache \
     && apk del .bau
 
 WORKDIR /app
@@ -52,12 +63,17 @@ COPY --from=composer:2.8 /usr/bin/composer /usr/bin/composer
 RUN composer dump-autoload --optimize --no-interaction --no-scripts \
     && chown -R www-data:www-data storage bootstrap/cache
 
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY docker/supervisord.conf /etc/supervisord.conf
+COPY docker/php.ini /usr/local/etc/php/conf.d/dokuvault.ini
+
+# nginx will diese Verzeichnisse vorfinden; im Alpine-Paket fehlen sie, wenn
+# der Dienst nie ueber das init-System gestartet wurde.
+RUN mkdir -p /run/nginx /var/lib/nginx/tmp \
+    && chown -R www-data:www-data /var/lib/nginx
+
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint
 RUN chmod +x /usr/local/bin/entrypoint
-
-# Der eingebaute Server ist einzelthreadig. Livewire schickt Anfragen waehrend
-# einer laufenden Anfrage nach - ohne mehrere Arbeiter blockiert die Oberflaeche.
-ENV PHP_CLI_SERVER_WORKERS=4
 
 EXPOSE 8000
 ENTRYPOINT ["entrypoint"]

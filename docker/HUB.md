@@ -87,10 +87,13 @@ gearbeitet wird — steht auf **[dokuvault.de](https://dokuvault.de)** und im
 
 ## Wofür das Bild gedacht ist
 
-Ein Container, ein Prozess, der eingebaute PHP-Server. Das reicht zum
-Ausprobieren und für kleine Installationen. Für viele gleichzeitige Nutzer
-führt der Weg über nginx und php-fpm weiter — siehe `DEPLOYMENT.md` im
-Quelltext.
+Ein Container mit **nginx und php-fpm**, gehalten von supervisord. nginx
+liefert CSS, JavaScript und Bilder selbst aus, PHP bekommt nur die Anfragen,
+die es braucht; Opcache ist an. Damit trägt das Bild auch mehrere Nutzer
+gleichzeitig.
+
+Sauberer wären zwei Container — einer je Prozess. Dann wäre das Abbild allein
+aber nicht lauffähig, und genau das soll es sein: `docker run`, und es steht.
 
 ## Markierungen
 

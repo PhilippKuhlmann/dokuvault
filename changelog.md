@@ -1,5 +1,16 @@
 # Changelog
 
+## 26.08.29
+
+### Changed
+
+- **Das Docker-Abbild liefert jetzt über nginx und php-fpm aus.** Vorher lief darin `php artisan serve` — ein Entwicklungswerkzeug: einzelthreadig, ohne Opcache, und für jede CSS-Datei sprang PHP an.
+  - **nginx liefert `/build/` selbst aus**, mit dauerhaftem Cache-Header. Die Dateinamen tragen einen Inhalts-Hash, ein Neuladen kann also nichts Veraltetes bringen.
+  - **Opcache ist an**, mit abgeschalteter Zeitstempelprüfung: Im Container ändert sich der Quelltext nie.
+  - **Upload-Grenzen passen zur Anwendung.** Sie nimmt Dateien bis 20 MB an; nginx und PHP erlauben 24 MB. Vorher hätte nginx bei 1 MB abgebrochen — mit einem Serverfehler statt einer Meldung.
+  - Ein Container bleibt es trotzdem, gehalten von supervisord. Sauberer wären zwei, einer je Prozess; dann wäre das veröffentlichte Abbild allein aber nicht lauffähig, und genau das soll es sein.
+  - Der Rauchtest beweist die Umstellung, statt sie anzunehmen: Er zieht den gehashten CSS-Namen aus der Seite, prüft Auslieferung und Cache-Header und fragt Opcache ab. Ohne diese Prüfungen wäre ein stillschweigend nicht greifender nginx-Block nicht aufgefallen.
+
 ## 26.08.28
 
 ### Changed

@@ -79,5 +79,13 @@ fi
 
 php artisan storage:link --no-interaction 2>/dev/null || true
 
+# Der Speicher gehoert www-data: Unter fpm laeuft die Anwendung als dieser
+# Benutzer, und ein gemountetes Volume kommt mit den Rechten des Wirts.
+chown -R www-data:www-data storage bootstrap/cache
+
 echo "==> DokuVault laeuft auf http://localhost:8000"
-exec php artisan serve --host=0.0.0.0 --port=8000
+
+# supervisord haelt nginx und php-fpm. exec, damit es Prozess 1 wird und die
+# Signale von "docker stop" bekommt - sonst dauert jedes Anhalten zehn Sekunden
+# bis zum Abschuss.
+exec supervisord -c /etc/supervisord.conf
