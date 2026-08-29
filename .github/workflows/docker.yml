@@ -91,12 +91,21 @@ jobs:
             || { echo 'Ohne Cache-Header - die /build/-Regel hat nicht gegriffen.'; echo "$kopf"; exit 1; }
           echo "nginx liefert $pfad mit dauerhaftem Cache aus."
 
-      - name: Opcache ist aktiv
+      - name: Opcache ist eingebaut und eingeschaltet
         run: |
-          # Ohne Opcache uebersetzt PHP jede Datei bei jeder Anfrage neu.
-          docker compose exec -T app php -r 'exit(opcache_get_status(false) ? 0 : 1);' \
-            || { echo 'Opcache laeuft nicht.'; exit 1; }
-          echo 'Opcache ist an.'
+          # Nicht opcache_get_status(): Das fragt die laufende Kommandozeile,
+          # und dort ist Opcache mit opcache.enable_cli=0 aus - auch wenn er
+          # fuer php-fpm laeuft. Gefragt wird deshalb nach der Erweiterung und
+          # nach der Einstellung, die fpm aus derselben Datei liest.
+          docker compose exec -T app php -r \
+            'exit(extension_loaded("Zend OPcache") && ini_get("opcache.enable") ? 0 : 1);' \
+            || { echo 'Opcache fehlt oder ist ausgeschaltet.'; exit 1; }
+
+          # Und die eigene Einstellungsdatei muss auch wirklich gelesen werden.
+          docker compose exec -T app php -r \
+            'exit(ini_get("upload_max_filesize") === "24M" ? 0 : 1);' \
+            || { echo 'docker/php.ini wird nicht geladen.'; exit 1; }
+          echo 'Opcache an, eigene php.ini wird gelesen.'
 
       - name: Logs bei Fehlschlag
         if: failure()
