@@ -9,6 +9,10 @@
     // Tatsaechliche Portanzahl eines dokumentierten Patchfelds; ohne Angabe
     // zeichnet die Blende die uebliche 24er-Reihe.
     'ports' => null,
+    // Schluessel einer eigenen Zeichnung fuer genau dieses Modell
+    // (config('custom.rack_model_drawings')). Sie tritt an die Stelle der
+    // Blende des Geraetetyps.
+    'drawing' => null,
     'width' => null,
     'height' => null,
     // Eigenes Foto der Blende (Adresse). Ist eines hinterlegt, tritt es an die
@@ -85,6 +89,18 @@
     <line x1="{{ $inset }}" y1="6" x2="{{ $inset }}" y2="{{ $h - 6 }}" stroke="{{ $ink }}" stroke-opacity="0.25" stroke-width="2" />
     <line x1="{{ 1086 - $inset }}" y1="6" x2="{{ 1086 - $inset }}" y2="{{ $h - 6 }}" stroke="{{ $ink }}" stroke-opacity="0.25" stroke-width="2" />
 
+    @php
+        // Eigene Zeichnung? Der Schluessel wird gegen die Liste geprueft, bevor
+        // die Ansicht geladen wird - ein Name aus der Datenbank darf nie
+        // bestimmen, welche Blade-Datei @include zieht.
+        $eigene = $drawing && array_key_exists($drawing, config('custom.rack_model_drawings'))
+            ? 'components.rack.modelle.'.$drawing
+            : null;
+    @endphp
+
+    @if ($eigene)
+        @include($eigene)
+    @else
     @switch($appearance)
 
         @case('server')
@@ -257,6 +273,7 @@
                     stroke="{{ $ink }}" stroke-opacity="0.14" stroke-width="6" />
             @endfor
     @endswitch
+    @endif
 @if ($scaled)</g>@endif
 </svg>
 @endif

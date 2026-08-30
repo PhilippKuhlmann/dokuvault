@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\DeviceModel;
 use App\Models\Rack;
 use App\Models\RackCatalogItem;
 use App\Models\RackItem;
@@ -75,10 +76,7 @@ class RackEditor extends Component
             $this->fail($device->name.__(' ist bereits in einem Rack verbaut.'));
         }
 
-        // Hoehe vom Geraet uebernehmen, wenn es eine kennt (z. B. ein
-        // 48er-Patchfeld mit 2 HE). Sonst bleibt es bei einer Hoeheneinheit,
-        // die sich im Editor per + korrigieren laesst.
-        $he = (int) ($device->height_units ?? 1) ?: 1;
+        [$he, $volleTiefe] = $this->masse($device);
 
         $this->assertFree($rack, $this->side, $position, $he);
 
@@ -88,10 +86,33 @@ class RackEditor extends Component
             'height_units' => $he,
             // Tiefe beim Einbau kopieren, wie Name und Darstellung: Eine spaetere
             // Aenderung am Geraet soll den Schrank nicht rueckwirkend umbauen.
-            'full_depth' => (bool) ($device->full_depth ?? true),
+            'full_depth' => $volleTiefe,
             'device_type' => $class,
             'device_id' => $device->id,
         ]);
+    }
+
+    /**
+     * Hoehe und Tiefe eines Geraets: [Hoeheneinheiten, volle Tiefe].
+     *
+     * Zuerst das Geraet selbst - ein Server oder ein Patchfeld fuehrt beides
+     * als eigenes Feld. Kennt sein Typ die Felder nicht (Switch, NAS, Router,
+     * USV, Recorder), zaehlt das Geraetemodell: Eine "APC Smart-UPS 1500" ist
+     * zwei Hoeheneinheiten hoch, egal bei welchem Kunden sie steht. Erst dann
+     * eine Hoeheneinheit in voller Tiefe, die sich im Editor korrigieren
+     * laesst.
+     */
+    protected function masse($device): array
+    {
+        $modell = DeviceModel::fuerGeraet($device);
+
+        $he = (int) ($device->height_units ?? 0)
+            ?: (int) ($modell->height_units ?? 0)
+            ?: 1;
+
+        $volleTiefe = $device->full_depth ?? $modell?->full_depth ?? true;
+
+        return [$he, (bool) $volleTiefe];
     }
 
     /**
@@ -243,7 +264,8 @@ class RackEditor extends Component
         $he = 1;
         if (isset($types[$typeKey])) {
             [$class] = $types[$typeKey];
-            $he = (int) ($class::find($deviceId)?->height_units ?? 1) ?: 1;
+            $device = $class::find($deviceId);
+            $he = $device ? $this->masse($device)[0] : 1;
         }
 
         $position = $this->lowestFree($rack, $this->side, $he) ?? $this->fail('Kein freier Platz im Rack.');

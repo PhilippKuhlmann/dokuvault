@@ -28,10 +28,16 @@ class RackKatalogVorschau extends Component
     /** Adresse des bereits gespeicherten Fotos; ohne eines wird gezeichnet. */
     public ?string $bild = null;
 
-    public function mount(string $appearance = 'blank', int $he = 1, ?string $bild = null): void
+    /** Schluessel einer eigenen Zeichnung; geprueft gegen die Liste. */
+    public ?string $drawing = null;
+
+    public function mount(string $appearance = 'blank', int $he = 1, ?string $bild = null,
+        ?int $ports = null, ?int $sfp = null, bool $poe = false, ?bool $display = null,
+        ?string $drawing = null): void
     {
         $this->bild = $bild;
-        $this->aendern($appearance, $he);
+        $this->display = $display;
+        $this->aendern($appearance, $he, $ports, $sfp, $poe, $display, $drawing);
     }
 
     /**
@@ -42,13 +48,17 @@ class RackKatalogVorschau extends Component
      * Komponente haengen.
      */
     #[On('rack-vorschau')]
-    public function aendern(?string $appearance = null, $he = null): void
+    public function aendern(?string $appearance = null, $he = null, $drawing = null): void
     {
         if ($appearance !== null && array_key_exists($appearance, config('custom.rack_appearances'))) {
             $this->appearance = $appearance;
         }
 
         $this->he = max(1, min((int) $he, RackCatalogItemRequest::MAX_HE));
+
+        $this->drawing = ($drawing !== null && $drawing !== '' && array_key_exists($drawing, config('custom.rack_model_drawings')))
+            ? $drawing
+            : null;
     }
 
     public function render()

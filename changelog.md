@@ -4,6 +4,25 @@
 
 ### Added
 
+- **Gerätemodelle: ein Foto, das für alle Kunden gilt.** Wer bei einem Kunden eine „APC Smart-UPS 1500" fotografiert, sieht das Bild bei jedem weiteren Kunden wieder, bei dem dieselbe USV steht — und in Racks, die längst dokumentiert sind.
+  - **Ohne neue Verknüpfung an neun Tabellen.** Hersteller und Modell stehen an jedem rack-fähigen Gerät längst als Felder; der Katalog wird darüber gefunden. Niemand muss etwas nachpflegen, und im Geräteformular ändert sich nichts.
+  - Verglichen wird über normalisierte Schlüssel — kleingeschrieben, getrimmt, Mehrfachleerzeichen zusammengezogen. „APC " und „apc" sind dasselbe. Mehr Normalisierung wäre Raten: „Hewlett Packard" und „HP" zusammenzuführen ist eine Entscheidung, die ein Mensch trifft.
+  - Der Gerätetyp gehört zum Schlüssel. Ohne ihn träfe ein Switch „RS-1000" auf einen Recorder gleichen Namens.
+  - Die Reihenfolge beim Zeichnen: Foto des Katalogelements, sonst Foto des Gerätemodells, sonst die gezeichnete Blende — in der Rack-Ansicht, im Editor und im PDF.
+  - **Die Höhe kommt mit.** Switch, NAS, Router, USV und Recorder führen keine eigene Höheneinheit; beim Einbau zählt jetzt die des Modells. Die eigene Angabe eines Geräts geht ihr weiterhin vor.
+  - Das Bild geht ohne Mandantenprüfung heraus, anders als Gerätedaten und mit Absicht: Es zeigt eine Frontblende, die im Katalog des Herstellers genauso steht, und soll gerade kundenübergreifend gelten.
+  - **Hochladen geht auch direkt im Geräteformular**, nicht nur im Adminbereich: Wer eine USV anlegt, gibt das Foto gleich mit. Es landet trotzdem im Modellkatalog, nicht am Gerät — der Hinweis darunter sagt das. Das Feld erscheint abgeleitet aus `rack_device_types` (wer im Rack sitzt, hat eine Frontblende) und nur mit dem Recht `admin_catalog`: Das Bild gilt für alle Kunden, wer nur die eigene Dokumentation pflegen darf, soll nichts hinterlegen, das anderswo erscheint. Ohne Hersteller wird es abgelehnt, statt im Nichts zu landen.
+  - **Der Treffer meldet sich beim Tippen**, nicht erst beim Speichern: Sobald Hersteller und Modell stehen, erscheint ein bereits hinterlegtes Bild samt „Hinterlegt für APC Smart-UPS 1500". Das ist die Rückmeldung, die den Abgleich über die Schreibweise erst brauchbar macht — man sieht, dass er getroffen hat, und lädt nichts doppelt hoch. Laufend übertragen werden nur diese beiden Felder und nur bei Geräten mit Frontblende; jedes andere Feld bliebe sonst eine Serveranfrage je Tastenpause schuldig.
+  - Alle Einträge werden einmal je Anfrage geladen; eine Rack-Ansicht mit zwanzig Einbauten bräuchte sonst zwanzig Abfragen. Abgelegt im Container, nicht in einer statischen Eigenschaft — die hätte den Rollback zwischen zwei Tests überlebt.
+
+- **Vier Gerätemodelle als Beispiel, jedes mit einer eigenen Zeichnung.** Zwei UniFi-Switche, eine Rack-USV und ein 1-HE-Server — sie stehen im Demo-Datensatz und sitzen im Schrank „Rack HH-01".
+  - Der Zweck ist zu zeigen, was der Katalog kann: Ein Gerät, dessen Hersteller und Modell zu einem Eintrag passen, bekommt dessen Blende — bei jedem Kunden, ohne dass jemand etwas verknüpft.
+  - Die Zeichnungen liegen als Blade-Ansichten im Projekt (`resources/views/components/rack/modelle/`) und werden über einen Schlüssel aus `config('custom.rack_model_drawings')` gewählt. Der Wert kommt aus der Datenbank und wird deshalb gegen die Liste geprüft, bevor `@include` ihn sieht — sonst wäre der Name einer Blade-Datei von außen bestimmbar.
+  - **Kein Herstellerkatalog.** Vier reichen als Beispiel; ein vollständiger wäre Pflegearbeit ohne Ende. Alles Übrige zeichnet die Blende des Gerätetyps.
+  - Ein Eintrag beschreibt nur, **wie das Gerät aussieht**: Hersteller, Modell, Höhe, Einbautiefe und dann entweder eine Zeichnung oder ein Bild. Portzahlen und Ähnliches standen zwischenzeitlich dort und sind wieder weg — an einer USV gibt es nichts zu zählen, und ein Feld, das nur bei Switchen etwas bewirkt, gehört nicht in ein Formular für alle Gerätetypen.
+
+- **Die erlaubten Bildformate stehen an einer Stelle.** `config('custom.bild_formate')` statt zweier wortgleicher Konstanten in `AdminAllgemein` und `RackCatalogItem` — ein später erlaubtes Format hätte man sonst an drei Stellen nachtragen müssen.
+
 - **Der Rack-Katalog nimmt eigene Bilder auf.** Wer ein Gerät hat, das keine der elf Zeichnungen trifft, lädt ein Foto der Frontblende hoch; es tritt in der Vorschau, im Rack und im PDF an die Stelle der Zeichnung.
   - Die gewählte Darstellung bleibt daneben stehen. Wird das Bild wieder entfernt, zeichnet die Frontansicht sofort weiter — es geht nichts verloren.
   - Kein SVG, aus demselben Grund wie bei den Logos: Eine SVG-Datei darf Skript enthalten, und von derselben Herkunft ausgeliefert wäre das ausführbarer Code in einer Dokumentation, in der Kennwörter stehen.

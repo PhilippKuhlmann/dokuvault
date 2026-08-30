@@ -56,7 +56,7 @@
 
         <div class="mt-1 flex flex-wrap items-start gap-4">
             <x-input.file id="image" name="image"
-                accept="{{ collect(\App\Models\RackCatalogItem::FORMATE)->map(fn ($e) => '.'.$e)->join(',') }}"
+                accept="{{ collect(config('custom.bild_formate'))->map(fn ($e) => '.'.$e)->join(',') }}"
                 x-on:change="neuesBild = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : null" />
 
             @if ($bild)
@@ -66,9 +66,10 @@
                      andere Aenderung in diesem Formular auch. --}}
                 <input type="hidden" name="image_remove" :value="weg ? 1 : 0">
 
-                <figure class="w-32" :class="weg && 'opacity-40'">
+                <figure class="w-48" :class="weg && 'opacity-40'">
                     <img src="{{ $bild }}" alt=""
-                        class="h-12 w-full rounded border border-gray-300 bg-gray-100 object-contain dark:border-gray-600 dark:bg-gray-900">
+                        :style="'aspect-ratio: 1086 / ' + (100 * he)"
+                        class="w-full rounded border border-gray-300 bg-gray-100 object-contain dark:border-gray-600 dark:bg-gray-900">
                     <figcaption class="mt-1 text-[11px] text-gray-400 dark:text-gray-500">
                         <span x-show="!weg">
                             {{ __('Hinterlegtes Bild') }} ·
@@ -87,9 +88,10 @@
             {{-- Die ausgewaehlte Datei sofort zeigen. Im Schrank steht sie erst
                  nach dem Speichern - hochgeladen ist sie bis dahin nicht. --}}
             <template x-if="neuesBild">
-                <figure class="w-32">
+                <figure class="w-48">
                     <img :src="neuesBild" alt=""
-                        class="h-12 w-full rounded border border-gray-300 bg-gray-100 object-contain dark:border-gray-600 dark:bg-gray-900">
+                        :style="'aspect-ratio: 1086 / ' + (100 * he)"
+                        class="w-full rounded border border-gray-300 bg-gray-100 object-contain dark:border-gray-600 dark:bg-gray-900">
                     <figcaption class="mt-1 text-[11px] text-gray-400 dark:text-gray-500">
                         {{ __('Ausgewählt – im Schrank nach dem Speichern') }}
                     </figcaption>

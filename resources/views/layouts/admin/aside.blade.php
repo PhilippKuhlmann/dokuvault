@@ -36,6 +36,7 @@
                         <x-aside.dropdownlink :label="__('Mail Anbieter')" href="{{ route('admin.mailboxprovider.index') }}" />
                         <x-aside.dropdownlink :label="__('Dienste')" href="{{ route('admin.service.index') }}" />
                         <x-aside.dropdownlink :label="__('Rack-Katalog')" href="{{ route('admin.rackcatalogitem.index') }}" />
+                        <x-aside.dropdownlink :label="__('Gerätemodelle')" href="{{ route('admin.devicemodel.index') }}" />
                     </x-slot:links>
                 </x-aside.dropdown>
             @endcan

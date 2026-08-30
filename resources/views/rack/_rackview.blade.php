@@ -102,6 +102,7 @@
                 title="{{ $item->label() }} · {{ $item->height_units }} HE{{ $geist ? ' · '.__('Rückseite des Geräts') : '' }}">
                 <x-rack.face :appearance="$geist ? 'blank' : $item->faceAppearance()" :he="$item->height_units"
                     :ports="$geist ? null : $item->device?->port_count"
+                    :drawing="$geist ? null : $item->zeichnung()"
                     :image="$geist ? null : $item->bildUrl()" />
             </div>
         @endforeach

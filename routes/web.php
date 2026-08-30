@@ -16,6 +16,7 @@ use App\Http\Controllers\ComputerController;
 use App\Http\Controllers\ContactPersonController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DECTController;
+use App\Http\Controllers\DeviceModelController;
 use App\Http\Controllers\DomainController;
 use App\Http\Controllers\DynDNSController;
 use App\Http\Controllers\EolController;
@@ -95,6 +96,14 @@ Route::get('/logo/{placement}', [BrandingController::class, 'logo'])->name('bran
 Route::middleware('auth')
     ->get('/rack-catalog-image/{rackcatalogitem}', [RackCatalogItemController::class, 'image'])
     ->name('rackcatalogitem.image');
+
+// Das Bild eines Geraetemodells. Dieselbe Ueberlegung, und bewusst ohne
+// Mandantenpruefung: Ein Modellfoto gehoert keinem Kunden - es zeigt die
+// Frontblende einer "APC Smart-UPS 1500" und soll genau deshalb bei jedem
+// Kunden erscheinen, bei dem eine steht.
+Route::middleware('auth')
+    ->get('/device-model-image/{devicemodel}', [DeviceModelController::class, 'image'])
+    ->name('devicemodel.image');
 
 // Techniker
 // Bewusst ohne auth: Auch auf der Anmeldeseite soll man die Sprache wechseln
@@ -218,6 +227,13 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             Route::get('/rackcatalogitem/{rackcatalogitem}/edit', [RackCatalogItemController::class, 'edit'])->name('admin.rackcatalogitem.edit');
             Route::patch('/rackcatalogitem/{rackcatalogitem}', [RackCatalogItemController::class, 'update'])->name('admin.rackcatalogitem.update');
             Route::delete('/rackcatalogitem/{rackcatalogitem}', [RackCatalogItemController::class, 'destroy'])->name('admin.rackcatalogitem.destroy');
+
+            Route::get('/devicemodel', [DeviceModelController::class, 'index'])->name('admin.devicemodel.index');
+            Route::post('/devicemodel/create', [DeviceModelController::class, 'store'])->name('admin.devicemodel.store');
+            Route::get('/devicemodel/create', [DeviceModelController::class, 'create'])->name('admin.devicemodel.create');
+            Route::get('/devicemodel/{devicemodel}/edit', [DeviceModelController::class, 'edit'])->name('admin.devicemodel.edit');
+            Route::patch('/devicemodel/{devicemodel}', [DeviceModelController::class, 'update'])->name('admin.devicemodel.update');
+            Route::delete('/devicemodel/{devicemodel}', [DeviceModelController::class, 'destroy'])->name('admin.devicemodel.destroy');
         });
 
     });

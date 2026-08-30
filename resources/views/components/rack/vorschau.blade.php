@@ -3,6 +3,8 @@
     'he' => 1,
     // Adresse eines hinterlegten Fotos; ohne eines wird gezeichnet.
     'image' => null,
+    // Eigene Zeichnung des Geraetemodells, falls es eine hat.
+    'drawing' => null,
     // Hoehe des gezeigten Schranks. Acht Hoeheneinheiten, weil kein
     // Katalogelement hoeher werden darf (RackCatalogItemRequest::MAX_HE) -
     // so ist am Bild ablesbar, wie viel vom Schrank das Element einnimmt.
@@ -50,7 +52,8 @@
         {{-- Das Element selbst, ganz unten und ueber $he Einheiten --}}
         <div style="grid-column: 3; grid-row: {{ $hoehe - $he + 1 }} / span {{ $he }}; min-height: {{ $zeile }};"
             class="text-gray-500 dark:text-gray-400">
-            <x-rack.face :appearance="$appearance" :he="$he" :image="$image" />
+            <x-rack.face :appearance="$appearance" :he="$he" :image="$image"
+                :drawing="$drawing" />
         </div>
 
     </div>

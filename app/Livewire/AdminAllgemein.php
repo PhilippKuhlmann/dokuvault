@@ -30,15 +30,6 @@ class AdminAllgemein extends Component
 
     public $logo_favicon;
 
-    /**
-     * Erlaubte Bildformate.
-     *
-     * Ohne SVG: Eine SVG-Datei darf Skript enthalten, und ausgeliefert von
-     * derselben Herkunft waere das ausfuehrbarer Code auf jeder Seite - in
-     * einer Dokumentation, in der Kennwoerter stehen.
-     */
-    public const FORMATE = ['png', 'jpg', 'jpeg', 'webp'];
-
     public function mount(): void
     {
         Gate::authorize('admin_setting');
@@ -81,7 +72,7 @@ class AdminAllgemein extends Component
         abort_unless(in_array($stelle, Setting::LOGO_STELLEN, true), 404);
 
         $this->validate([
-            $eigenschaft => ['required', 'image', 'mimes:'.implode(',', self::FORMATE), 'max:512'],
+            $eigenschaft => ['required', 'image', 'mimes:'.implode(',', config('custom.bild_formate')), 'max:512'],
         ], [], [$eigenschaft => __('Logo')]);
 
         // Erst das alte weg, sonst bleibt bei jedem Wechsel eine Datei liegen,
@@ -144,7 +135,7 @@ class AdminAllgemein extends Component
                     'hinweis' => $texte[1],
                     'vorhanden' => Setting::logoPfad($stelle) !== null,
                 ])->values()->all(),
-            'formate' => self::FORMATE,
+            'formate' => config('custom.bild_formate'),
         ])->layout('layouts.admin.app');
     }
 }

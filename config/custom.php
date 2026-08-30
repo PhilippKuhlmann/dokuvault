@@ -237,6 +237,7 @@ return [
         'admin.mailboxprovider' => 'Postfach-Anbieter',
         'admin.operatingsystem' => 'Betriebssysteme',
         'admin.rackcatalogitem' => 'Rack-Katalog',
+        'admin.devicemodel' => 'Gerätemodelle',
         'admin.service' => 'Dienste',
         'admin.eol' => 'Support-Ende (EOL)',
     ],
@@ -792,6 +793,22 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Erlaubte Bildformate beim Hochladen
+    |--------------------------------------------------------------------------
+    |
+    | Ohne SVG: Eine SVG-Datei darf Skript enthalten, und von derselben
+    | Herkunft ausgeliefert waere das ausfuehrbarer Code auf jeder Seite - in
+    | einer Dokumentation, in der Kennwoerter stehen.
+    |
+    | Eine Liste fuer alle drei Stellen (Logos, Rack-Katalog, Geraetemodelle):
+    | Sie stand vorher zweimal wortgleich im Code, und ein spaeter erlaubtes
+    | Format haette man an beiden Stellen nachtragen muessen.
+    |
+    */
+    'bild_formate' => ['png', 'jpg', 'jpeg', 'webp'],
+
     'ssh_key_types' => [
         'ed25519' => 'Ed25519',
         'ecdsa' => 'ECDSA',
@@ -995,4 +1012,29 @@ return [
     /*
      * Passive Rack-Elemente ohne eigene Dokumentation: Schluessel => [Label, Hoeheneinheiten].
      */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Eigene Zeichnungen einzelner Geraetemodelle
+    |--------------------------------------------------------------------------
+    |
+    | Die Blende des Geraetetyps (x-rack.face) trifft die Bauart:
+    | Ein Switch sieht aus wie ein Switch. Wo ein Geraet ein Gesicht hat, das
+    | man wiedererkennt, bekommt es stattdessen eine eigene Zeichnung.
+    |
+    | Schluessel => Beschriftung. Zu jedem Schluessel gehoert eine Ansicht
+    | resources/views/components/rack/modelle/<schluessel>.blade.php, die
+    | innerhalb des SVG von x-rack.face zeichnet und $ink, $h, $he, $mid und
+    | $inset mitbekommt.
+    |
+    | Der Schluessel wird gegen diese Liste geprueft, bevor die Ansicht geladen
+    | wird - sonst waere der Name einer Blade-Datei von aussen bestimmbar.
+    |
+    */
+    'rack_model_drawings' => [
+        'unifi-usw-pro-24-poe' => 'UniFi Switch Pro 24 PoE',
+        'unifi-usw-pro-48-poe' => 'UniFi Switch Pro 48 PoE',
+        'apc-smart-ups-rack' => 'APC Smart-UPS (Rack)',
+        'dell-poweredge-1he' => 'Dell PowerEdge (1 HE)',
+    ],
 ];

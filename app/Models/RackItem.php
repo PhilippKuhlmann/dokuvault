@@ -40,10 +40,39 @@ class RackItem extends Model
         return $this->belongsTo(RackCatalogItem::class, 'rack_catalog_item_id');
     }
 
-    /** Adresse des hinterlegten Fotos, oder null. */
+    /**
+     * Das Geraetemodell hinter einem dokumentierten Einbau, oder null.
+     *
+     * Ueber Hersteller und Modell des Geraets gefunden, nicht ueber eine
+     * Verweisspalte - siehe DeviceModel.
+     */
+    public function geraeteModell(): ?DeviceModel
+    {
+        return DeviceModel::fuerGeraet($this->device);
+    }
+
+    /**
+     * Adresse des Fotos, oder null.
+     *
+     * Die Reihenfolge ist die Reihenfolge der Genauigkeit: das Foto des
+     * Katalogelements (passiver Einbau), sonst das des Geraetemodells,
+     * sonst keines - dann zeichnet die Frontansicht.
+     */
     public function bildUrl(): ?string
     {
-        return $this->catalogItem?->bildUrl();
+        return $this->catalogItem?->bildUrl() ?? $this->geraeteModell()?->bildUrl();
+    }
+
+    /** Schluessel einer eigenen Zeichnung des Geraetemodells, oder null. */
+    public function zeichnung(): ?string
+    {
+        return $this->geraeteModell()?->drawing;
+    }
+
+    /** Dasselbe als Dateipfad - fuer den PDF-Export, der kein HTTP kann. */
+    public function bildPfad(): ?string
+    {
+        return $this->catalogItem?->bildPfad() ?? $this->geraeteModell()?->bildPfad();
     }
 
     /** Anzeigename: Geraetename aus der Doku bzw. Katalogbezeichnung. */

@@ -204,10 +204,22 @@ class LocalDatabaseSeeder extends Seeder
         // Router hängt in mehreren VLANs -> zusätzliche Gateway-IP im Clients-VLAN
         $rtrCore->ipAddresses()->create(['customer_id' => $customer->id, 'network_id' => $clientsVlan->id, 'address' => '10.10.20.1', 'label' => 'Gateway Clients']);
 
-        NetworkSwitch::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SW-Core']);
+        // Vier Geraetemodelle mit eigener Zeichnung. Die Geraete darunter tragen
+        // dieselben Werte in Hersteller und Modell - darueber findet die
+        // Rack-Ansicht die Blende, ganz ohne Verknuepfung.
+        $this->call(DeviceModelSeeder::class);
+
+        NetworkSwitch::factory()->create([
+            'customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SW-Core',
+            'manufacturer' => 'Ubiquiti', 'model' => 'USW-Pro-24-PoE',
+        ]);
+        NetworkSwitch::factory()->create([
+            'customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SW-Edge-01',
+            'manufacturer' => 'Ubiquiti', 'model' => 'USW-Pro-48-PoE',
+        ]);
         // ein Client im Clients-VLAN, damit dort auch etwas belegt ist
         Computer::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'PC-Empfang']);
-        $srvDc01 = Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-DC01', 'bmcIp' => '10.10.30.210']);
+        $srvDc01 = Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'SRV-DC01', 'bmcIp' => '10.10.30.210', 'manufacturer' => 'Dell', 'model' => 'PowerEdge R650']);
         // Ein Server mit mehreren Beinen - damit im Demo-Datensatz sichtbar ist,
         // dass die Liste alle Adressen zeigt und nicht nur die ersten beiden.
         $srvDc01->ipAddresses()->create(['customer_id' => $customer->id, 'network_id' => $clientsVlan->id, 'address' => '10.10.20.10', 'label' => 'Clients']);
@@ -323,7 +335,7 @@ class LocalDatabaseSeeder extends Seeder
             'height_units' => 42,
             'location' => 'Serverraum EG',
         ]);
-        $usv = Ups::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'USV-01']);
+        $usv = Ups::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'USV-01', 'manufacturer' => 'APC', 'model' => 'Smart-UPS 1500 RM']);
         $byName = fn (string $class, string $name) => $class::where('customer_id', $customer->id)->where('name', $name)->first();
 
         // Passive Einbauten aus dem Katalog holen, damit Hoehe *und* Darstellung
@@ -343,7 +355,8 @@ class LocalDatabaseSeeder extends Seeder
 
         $rack->items()->createMany(array_filter([
             ['position' => 1, 'height_units' => 2, 'device_type' => Ups::class, 'device_id' => $usv->id],
-            ['position' => 4, 'height_units' => 2, 'device_type' => Server::class, 'device_id' => $byName(Server::class, 'SRV-DC01')?->id],
+            // Eine HE: Ein PowerEdge R650 ist ein 1-HE-Geraet, und das Modell sagt es auch.
+            ['position' => 4, 'height_units' => 1, 'device_type' => Server::class, 'device_id' => $byName(Server::class, 'SRV-DC01')?->id],
             ['position' => 6, 'height_units' => 2, 'device_type' => Server::class, 'device_id' => $byName(Server::class, 'SRV-FS01')?->id],
             ['position' => 8, 'height_units' => 2, 'device_type' => Server::class, 'device_id' => $byName(Server::class, 'SRV-HV01')?->id],
             ['position' => 11, 'height_units' => 2, 'device_type' => NAS::class, 'device_id' => $byName(NAS::class, 'NAS-Backup')?->id],
@@ -356,6 +369,8 @@ class LocalDatabaseSeeder extends Seeder
             $ausKatalog(20, 'Blindplatte 2 HE'),
             ['position' => 36, 'height_units' => 1, 'device_type' => Router::class, 'device_id' => $byName(Router::class, 'RTR-Core')?->id],
             ['position' => 38, 'height_units' => 1, 'device_type' => NetworkSwitch::class, 'device_id' => $byName(NetworkSwitch::class, 'SW-Core')?->id],
+            // Unter seinem Patchfeld (PF-EG-02 auf 35), wie er auch haengen wuerde.
+            ['position' => 34, 'height_units' => 1, 'device_type' => NetworkSwitch::class, 'device_id' => $byName(NetworkSwitch::class, 'SW-Edge-01')?->id],
             ['position' => 41, 'height_units' => $patchpanel->height_units,
                 'device_type' => PatchPanel::class, 'device_id' => $patchpanel->id],
             $ausKatalog(39, 'Rangierfeld'),

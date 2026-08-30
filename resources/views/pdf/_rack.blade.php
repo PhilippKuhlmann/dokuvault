@@ -58,16 +58,18 @@
                     $slotHeight = $rowHeight * $item->height_units;
 
                     // Ein hinterlegtes Foto tritt an die Stelle der Zeichnung -
-                    // wie am Bildschirm. Es geht direkt als Datei heraus: Die
-                    // Zeichnung braucht den Umweg ueber eine SVG-Datei, ein
-                    // Foto liegt bereits als Datei vor.
-                    $bild = $item->catalogItem?->bildPfad();
+                    // wie am Bildschirm, mit derselben Reihenfolge
+                    // (Katalogelement, dann Geraetemodell). Es geht direkt als
+                    // Datei heraus: Die Zeichnung braucht den Umweg ueber eine
+                    // SVG-Datei, ein Foto liegt bereits als Datei vor.
+                    $bild = $item->bildPfad();
 
                     if (! $bild) {
                         $svg = view('components.rack.face', [
                             'appearance' => $item->faceAppearance(),
                             'he' => $item->height_units,
                             'ports' => $item->device?->port_count,
+                            'drawing' => $item->zeichnung(),
                             'plate' => $plate,
                             'tint' => $tint,
                             'width' => 330,

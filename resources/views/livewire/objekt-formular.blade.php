@@ -182,8 +182,22 @@
                                         :rows="$feld['zeilen'] ?? 3"
                                         :placeholder="$feld['platzhalter'] ?? ''" class="mt-1" />
                                 @else
-                                    <x-input.text wire:model="form.{{ $feld['name'] }}"
-                                        type="{{ $feld['type'] }}" class="mt-1" />
+                                    {{-- Hersteller und Modell werden bei Geraeten
+                                         mit Frontblende laufend uebertragen: Nur
+                                         so kann der Block unten melden, dass es
+                                         zu dieser Schreibweise schon ein Bild
+                                         gibt. Ohne das saehe man erst nach dem
+                                         Speichern, ob der Abgleich getroffen hat.
+                                         Alle uebrigen Felder bleiben gestundet -
+                                         eine Runde je Tastenpause fuer jedes Feld
+                                         waere Verschwendung. --}}
+                                    @if ($mitModellbild && in_array($feld['name'], ['manufacturer', 'model'], true))
+                                        <x-input.text wire:model.live.debounce.600ms="form.{{ $feld['name'] }}"
+                                            type="{{ $feld['type'] }}" class="mt-1" />
+                                    @else
+                                        <x-input.text wire:model="form.{{ $feld['name'] }}"
+                                            type="{{ $feld['type'] }}" class="mt-1" />
+                                    @endif
                                 @endif
 
                                 @error('form.'.$feld['name'])
@@ -225,6 +239,58 @@
                             </div>
                         @endforeach
                     </div>
+
+                    @if ($mitModellbild)
+                        {{-- Ein Foto der Frontblende - fuer das Modell, nicht
+                             fuer dieses eine Geraet. Deshalb der Hinweis:
+                             Wer es hier hinterlegt, hinterlegt es fuer jeden
+                             Kunden, bei dem dasselbe Geraet steht. --}}
+                        <div class="mt-4 border-t border-gray-200 pt-3 dark:border-gray-700">
+                            <x-input.label for="modellbild" :value="__('Bild der Frontblende')" />
+
+                            <div class="mt-1 flex flex-wrap items-start gap-4">
+                                <x-input.file id="modellbild" wire:model="modellbild"
+                                    accept="{{ collect(config('custom.bild_formate'))->map(fn ($e) => '.'.$e)->join(',') }}" />
+
+                                @if ($modell?->bildUrl())
+                                    {{-- Im Seitenverhaeltnis einer Blende, nicht in
+                                         einem festen Kasten: Sonst schwebt ein
+                                         1-HE-Geraet als duenner Streifen in der
+                                         Mitte einer leeren Flaeche. --}}
+                                    <figure class="w-48">
+                                        <img src="{{ $modell->bildUrl() }}" alt=""
+                                            style="aspect-ratio: 1086 / {{ 100 * max(1, (int) $modell->height_units) }};"
+                                            class="w-full rounded border border-gray-300 bg-gray-100 object-contain dark:border-gray-600 dark:bg-gray-900">
+                                        <figcaption class="mt-1 text-[11px] text-gray-400 dark:text-gray-500">
+                                            {{ __('Hinterlegt für') }} {{ $modell->bezeichnung() }} —
+                                            {{ __('ein neues Bild ersetzt es') }}
+                                        </figcaption>
+                                    </figure>
+                                @endif
+
+                                {{-- Waehrend die Runde laeuft, steht die Meldung
+                                     von der vorigen Schreibweise noch da. Ein
+                                     stiller Hinweis ist ehrlicher als eine
+                                     Auskunft, die gerade veraltet. --}}
+                                <span wire:loading wire:target="form.manufacturer, form.model"
+                                    class="self-center text-xs text-gray-400 dark:text-gray-500">
+                                    {{ __('wird geprüft …') }}
+                                </span>
+                            </div>
+
+                            <p class="mt-2 text-xs text-gray-400 dark:text-gray-500">
+                                {{ __('Das Bild gehört zum Modell, nicht zu diesem Gerät: Es erscheint überall dort, wo Hersteller und Modell übereinstimmen — auch bei anderen Kunden. Gepflegt wird es im Adminbereich unter „Auswahlmenüs → Gerätemodelle".') }}
+                            </p>
+
+                            <div wire:loading wire:target="modellbild" class="mt-1 text-xs text-cerulean-600 dark:text-cerulean-400">
+                                {{ __('Datei wird übertragen …') }}
+                            </div>
+
+                            @error('modellbild')
+                                <span class="mt-1 text-xs text-red-600">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    @endif
 
                     @if ($erzeugerLabel)
                         {{-- Fuellt Felder, speichert aber nicht: Erst der

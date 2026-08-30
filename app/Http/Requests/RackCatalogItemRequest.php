@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\RackCatalogItem;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -43,8 +42,8 @@ class RackCatalogItemRequest extends FormRequest
             'appearance' => ['required', Rule::in(array_keys(config('custom.rack_appearances')))],
             // Eigenes Foto der Frontblende. Ist eines hinterlegt, tritt es an
             // die Stelle der Zeichnung; die Darstellung bleibt als Rueckfall
-            // stehen. SVG ist nicht dabei - siehe RackCatalogItem::FORMATE.
-            'image' => ['nullable', 'image', 'mimes:'.implode(',', RackCatalogItem::FORMATE), 'max:2048'],
+            // stehen. SVG ist nicht dabei - siehe config/custom.php.
+            'image' => ['nullable', 'image', 'mimes:'.implode(',', config('custom.bild_formate')), 'max:2048'],
             'image_remove' => 'nullable|boolean',
         ];
     }

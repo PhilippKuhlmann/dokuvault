@@ -95,7 +95,7 @@
                 <div class="w-48 text-gray-500 dark:text-gray-400"
                     style="aspect-ratio: 1086 / {{ 100 * max(1, (int) $value->height_units) }};">
                     <x-rack.face :appearance="$value->appearance ?: 'blank'" :he="$value->height_units"
-                        :image="$value->bildUrl()" />
+                        :image="$value->bildUrl()" :drawing="$value->drawing ?? null" />
                 </div>
             </td>
         @elseif ($key == 'fingerprint')

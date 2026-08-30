@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
+use App\Models\DeviceModel;
 use App\Models\Setting;
 use App\Models\Site;
 use App\Rules\BelongsToCustomer;
@@ -12,6 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -64,6 +66,16 @@ class ObjektFormular extends Component
      */
     public $datei;
 
+    /**
+     * Ein Foto der Frontblende - fuer das Geraetemodell, nicht fuer dieses
+     * eine Geraet.
+     *
+     * Es landet in device_models und gilt damit fuer jeden Kunden, bei dem
+     * dieselbe "APC Smart-UPS 1500" steht. Deshalb liegt es getrennt vom
+     * Formular: Es wird nie in eine Spalte dieses Geraets geschrieben.
+     */
+    public $modellbild;
+
     public function mount(string $typ, Customer $customer): void
     {
         abort_unless(array_key_exists($typ, config('forms')), 404);
@@ -103,6 +115,7 @@ class ObjektFormular extends Component
         }
 
         $this->datei = null;
+        $this->modellbild = null;
         $this->bearbeiteId = null;
         $this->loeschenGefragt = false;
         $this->resetValidation();
@@ -245,6 +258,8 @@ class ObjektFormular extends Component
     {
         Gate::authorize($this->bearbeiteId ? $this->typ.'_update' : $this->typ.'_create');
 
+        $this->modellbildPruefen();
+
         $regeln = $this->einstellung()['request'];
         $request = new $regeln;
 
@@ -321,6 +336,10 @@ class ObjektFormular extends Component
             $meldung = $this->einstellung()['einzahl'].' angelegt.';
         }
 
+        // Nach dem Geraet, aber vor dem Leeren des Formulars: Die Zuordnung
+        // braucht Hersteller und Modell, die dort stehen.
+        $this->modellbildAblegen();
+
         $this->offen = false;
         $this->formularLeeren();
 
@@ -358,6 +377,88 @@ class ObjektFormular extends Component
             $this->datei->getClientOriginalName(),
             PATHINFO_FILENAME
         );
+    }
+
+    /**
+     * Das Bild pruefen, bevor irgendetwas gespeichert wird.
+     *
+     * Ohne Hersteller laesst es sich keinem Modell zuordnen - es waere ein
+     * Upload ins Nichts, und niemand saehe, warum das Bild spaeter fehlt.
+     */
+    protected function modellbildPruefen(): void
+    {
+        if (! $this->modellbild || ! $this->zeigtModellbild()) {
+            return;
+        }
+
+        $this->validate([
+            'modellbild' => ['image', 'mimes:'.implode(',', config('custom.bild_formate')), 'max:2048'],
+        ], [], ['modellbild' => __('Bild der Frontblende')]);
+
+        if (trim((string) ($this->form['manufacturer'] ?? '')) === '') {
+            throw ValidationException::withMessages([
+                'modellbild' => __('Ohne Hersteller lässt sich das Bild keinem Modell zuordnen.'),
+            ]);
+        }
+    }
+
+    /**
+     * Darf hier ein Modellbild hinterlegt werden?
+     *
+     * Abgeleitet statt konfiguriert: Wer im Rack sitzt, hat eine Frontblende.
+     * Ein neuer Eintrag in rack_device_types bekommt das Feld damit von selbst,
+     * und es steht nirgends ein zweites Mal.
+     *
+     * Nur mit admin_catalog: Das Bild gilt fuer alle Kunden. Wer nur seine
+     * eigene Dokumentation pflegen darf, soll nichts hinterlegen, das anderswo
+     * erscheint - sehen darf er es trotzdem.
+     */
+    protected function zeigtModellbild(): bool
+    {
+        return array_key_exists($this->typ, config('custom.rack_device_types'))
+            && Gate::allows('admin_catalog');
+    }
+
+    /** Der Katalogeintrag zu dem, was gerade im Formular steht. */
+    protected function modell(): ?DeviceModel
+    {
+        return DeviceModel::fuer(
+            $this->typ,
+            $this->form['manufacturer'] ?? null,
+            $this->form['model'] ?? null
+        );
+    }
+
+    /**
+     * Das hochgeladene Bild dem Geraetemodell zuordnen.
+     *
+     * Gibt es zu Hersteller und Modell noch keinen Eintrag, entsteht er hier -
+     * mit der Hoehe des Geraets, wenn es eine fuehrt. Einen vorhandenen Eintrag
+     * ruehrt nur das Bild an: Seine Hoehe hat jemand im Adminbereich gesetzt,
+     * und ein neu angelegtes Geraet soll sie nicht stillschweigend umwerfen.
+     */
+    protected function modellbildAblegen(): void
+    {
+        if (! $this->modellbild || ! $this->zeigtModellbild()) {
+            return;
+        }
+
+        $hersteller = trim((string) ($this->form['manufacturer'] ?? ''));
+        $modellname = trim((string) ($this->form['model'] ?? ''));
+
+        $modell = $this->modell() ?? new DeviceModel([
+            'device_type' => $this->typ,
+            'manufacturer' => $hersteller,
+            'model' => $modellname ?: null,
+            'height_units' => max(1, (int) ($this->form['height_units'] ?? 1)),
+        ]);
+
+        // Erst die alte Datei weg, sonst bleibt bei jedem Wechsel eine liegen.
+        $modell->bildLoeschen();
+        $modell->image_path = $this->modellbild->store(DeviceModel::BILDORDNER, 'local');
+        $modell->save();
+
+        $this->modellbild = null;
     }
 
     /**
@@ -538,6 +639,9 @@ class ObjektFormular extends Component
             // ipAddresses() auf einem Model auf, das die Relation nicht hat.
             'mitIpAdressen' => in_array(HasIpAddresses::class, class_uses_recursive($einstellung['model']), true),
             'mitZugangsdaten' => in_array(HasCredentials::class, class_uses_recursive($einstellung['model']), true),
+            // Foto der Frontblende, das fuer alle Kunden gilt (device_models).
+            'mitModellbild' => $this->zeigtModellbild(),
+            'modell' => $this->zeigtModellbild() ? $this->modell() : null,
             'felder' => $felder,
             'einzahl' => $einstellung['einzahl'],
             'spalten' => $einstellung['spalten'] ?? 1,

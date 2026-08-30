@@ -23,15 +23,6 @@ class RackCatalogItem extends Model
     /** Ordner auf der local-Disk, in dem die hochgeladenen Bilder liegen. */
     public const BILDORDNER = 'rack-catalog';
 
-    /**
-     * Erlaubte Bildformate.
-     *
-     * Ohne SVG, aus demselben Grund wie bei den Logos: Eine SVG-Datei darf
-     * Skript enthalten, und von derselben Herkunft ausgeliefert waere das
-     * ausfuehrbarer Code in einer Dokumentation, in der Kennwoerter stehen.
-     */
-    public const FORMATE = ['png', 'jpg', 'jpeg', 'webp'];
-
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     protected $casts = [
