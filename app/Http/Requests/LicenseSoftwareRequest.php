@@ -26,7 +26,7 @@ class LicenseSoftwareRequest extends FormRequest
             'name' => 'required|max:255',
             'key' => 'nullable',
             'username' => 'nullable',
-            'password' => 'nullable',
+            'password' => 'nullable|max:255',
             'start_date' => 'nullable',
             'end_date' => 'nullable',
             'abo' => 'nullable',

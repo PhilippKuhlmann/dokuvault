@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HatBild;
 use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,10 +22,13 @@ use Illuminate\Support\Facades\Storage;
 class DeviceModel extends Model
 {
     use HasFactory;
+    use HatBild;
     use TracksChanges;
 
-    /** Ordner auf der local-Disk, in dem die Bilder liegen. */
+    /** Ordner auf der local-Disk und Route, die das Bild ausliefert - siehe HatBild. */
     public const BILDORDNER = 'device-models';
+
+    public const BILDROUTE = 'devicemodel.image';
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
@@ -40,9 +44,6 @@ class DeviceModel extends Model
             $modell->manufacturer_key = self::schluessel($modell->manufacturer);
             $modell->model_key = self::schluessel($modell->model);
         });
-
-        // Sonst bliebe zu jedem geloeschten Modell eine Datei liegen.
-        static::deleting(fn (self $modell) => $modell->bildLoeschen());
 
         // Die geladene Liste ist nach jeder Aenderung veraltet.
         static::saved(fn () => app()->forgetInstance(self::SPEICHER));

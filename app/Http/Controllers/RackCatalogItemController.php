@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\PflegtBilder;
 use App\Http\Requests\RackCatalogItemRequest;
 use App\Models\RackCatalogItem;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Pflege des Rack-Katalogs im Adminbereich. Die Route-Gruppe laeuft bereits
@@ -17,6 +15,8 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class RackCatalogItemController extends Controller
 {
+    use PflegtBilder;
+
     public function index()
     {
         $rackCatalogItems = RackCatalogItem::ordered()->paginate(20);
@@ -32,11 +32,9 @@ class RackCatalogItemController extends Controller
 
     public function store(RackCatalogItemRequest $request)
     {
-        $eintrag = RackCatalogItem::create($this->stammdaten($request));
-
-        if ($request->hasFile('image')) {
-            $eintrag->update(['image_path' => $this->bildAblegen($request)]);
-        }
+        // Der Ablageort haengt nicht am Datensatz, das Bild kann also gleich
+        // mit angelegt werden - sonst folgte auf jedes Anlegen ein Update.
+        RackCatalogItem::create($this->bildPflegen($request, new RackCatalogItem, $this->stammdaten($request)));
 
         return redirect(route('admin.rackcatalogitem.index'));
     }
@@ -48,19 +46,7 @@ class RackCatalogItemController extends Controller
 
     public function update(RackCatalogItem $rackcatalogitem, RackCatalogItemRequest $request)
     {
-        $daten = $this->stammdaten($request);
-
-        // Erst die alte Datei weg, sonst bleibt bei jedem Wechsel eine liegen,
-        // die niemand mehr findet.
-        if ($request->hasFile('image')) {
-            $rackcatalogitem->bildLoeschen();
-            $daten['image_path'] = $this->bildAblegen($request);
-        } elseif ($request->boolean('image_remove')) {
-            $rackcatalogitem->bildLoeschen();
-            $daten['image_path'] = null;
-        }
-
-        $rackcatalogitem->update($daten);
+        $rackcatalogitem->update($this->bildPflegen($request, $rackcatalogitem, $this->stammdaten($request)));
 
         return redirect(route('admin.rackcatalogitem.index'));
     }
@@ -90,26 +76,6 @@ class RackCatalogItemController extends Controller
      */
     public function image(RackCatalogItem $rackcatalogitem)
     {
-        $pfad = $rackcatalogitem->image_path;
-
-        abort_if($pfad === null || ! Storage::disk('local')->exists($pfad), 404);
-
-        return response(Storage::disk('local')->get($pfad), Response::HTTP_OK, [
-            'Content-Type' => Storage::disk('local')->mimeType($pfad),
-            'X-Content-Type-Options' => 'nosniff',
-            // Ein Katalogbild aendert sich selten, steht aber in jedem Rack.
-            'Cache-Control' => 'private, max-age=86400',
-        ]);
-    }
-
-    /** Die geprueften Werte ohne die Upload-Felder - die gehoeren nicht in die Spalten. */
-    private function stammdaten(RackCatalogItemRequest $request): array
-    {
-        return Arr::except($request->validated(), ['image', 'image_remove']);
-    }
-
-    private function bildAblegen(RackCatalogItemRequest $request): string
-    {
-        return $request->file('image')->store(RackCatalogItem::BILDORDNER, 'local');
+        return $this->bildAusliefern($rackcatalogitem);
     }
 }

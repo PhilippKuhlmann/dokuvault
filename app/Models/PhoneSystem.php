@@ -34,4 +34,15 @@ class PhoneSystem extends Model
     {
         return $this->belongsTo(Customer::class);
     }
+
+    /**
+     * Eine TK-Anlage hat keinen Namen, nur Hersteller, Art und Modell.
+     *
+     * Ohne diese Methode fiele die zentrale Liste auf username zurueck - und
+     * im Protokoll hiesse die Anlage dann "admin".
+     */
+    public function protokollName(): ?string
+    {
+        return trim($this->manufacturer.' '.($this->model ?: $this->type)) ?: null;
+    }
 }

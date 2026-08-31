@@ -45,7 +45,11 @@
                                            hover:bg-cerulean-50 dark:hover:bg-gray-700
                                            focus:outline-none focus:ring-2 focus:ring-cerulean-500 transition-colors">
                                     <span>
-                                        {{ $result->name ?? $result->ssid ?? $result->wan_ip ?? ('#' . $result->id) }}
+                                        {{-- Dieselbe Quelle wie Protokoll und Papierkorb: config('custom.name_fields'),
+                                             ueberschreibbar je Model. Vorher stand hier eine eigene Kette
+                                             (name, ssid, wan_ip) - ein Telefon hat keines davon und hiess
+                                             deshalb "#14", ausgerechnet in der Suche nach seiner MAC. --}}
+                                        {{ $result->protokollName() ?? '#'.$result->id }}
                                         <span class="text-sm text-gray-400">
                                             {{ $result->ip ?? $result->ip1 ?? '' }}
                                         </span>

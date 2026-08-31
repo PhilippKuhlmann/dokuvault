@@ -25,7 +25,7 @@ class LoginGeneralRequest extends FormRequest
         return [
             'name' => 'max:255',
             'username' => 'max:255',
-            'password' => 'max:255',
+            'password' => 'nullable|max:255',
             'description' => 'max:255',
         ];
     }

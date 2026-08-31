@@ -28,7 +28,7 @@ class SecurepointUMARequest extends FormRequest
             'manufacturer' => 'nullable|max:255',
             'type' => 'nullable|max:255',
             'username' => 'required|max:255',
-            'password' => 'required|max:255',
+            'password' => 'nullable|max:255',
             'encryptionkey' => 'required|max:255',
             'urlAdmin' => 'required|url|max:255',
             'urlUser' => 'nullable|url|max:255',

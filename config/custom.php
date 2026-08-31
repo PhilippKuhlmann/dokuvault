@@ -557,13 +557,6 @@ return [
     ],
 
     /*
-     * Geraetetypen, die sich in ein Rack einbauen lassen.
-     * Schluessel = stabiler Bezeichner im Editor (nie Klassennamen vom Client annehmen),
-     * Wert = [Model-Klasse, Anzeigename, Darstellung in der Frontansicht].
-     * Reihenfolge = Reihenfolge der Palette.
-     * Voraussetzung: Model hat customer_id und ein name-Feld.
-     */
-    /*
     |--------------------------------------------------------------------------
     | Bauform von Servern
     |--------------------------------------------------------------------------
@@ -574,28 +567,6 @@ return [
     */
     'server_form_factors' => $serverBauformen,
 
-    /*
-    |--------------------------------------------------------------------------
-    | Art eines Server-Clusters
-    |--------------------------------------------------------------------------
-    |
-    | Womit die Knoten ihre Daten zusammenhalten. Bewusst als Konfiguration
-    | statt als Datenbank-Enum: Eine neue Technik ist damit eine Zeile hier,
-    | keine Migration. "Sonstiges" faengt ab, was die Liste nicht kennt - dann
-    | steht die Erklaerung in der Notiz.
-    |
-    */
-    /*
-    |--------------------------------------------------------------------------
-    | Stellen, an denen ein eigenes Logo stehen kann
-    |--------------------------------------------------------------------------
-    |
-    | Drei statt einer: Das Logo auf der Anmeldeseite darf gross und breit
-    | sein, das in der Kopfzeile muss neben den Namen passen, ein Favicon ist
-    | quadratisch. Hier statt im Controller, damit der Uebersetzungs-Test die
-    | Beschriftungen findet - sie laufen erst zur Laufzeit durch __().
-    |
-    */
     /*
     |--------------------------------------------------------------------------
     | Dateiarten
@@ -618,12 +589,34 @@ return [
         'archiv' => ['Archiv', ['zip', 'rar', '7z', 'tar', 'gz']],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Stellen, an denen ein eigenes Logo stehen kann
+    |--------------------------------------------------------------------------
+    |
+    | Drei statt einer: Das Logo auf der Anmeldeseite darf gross und breit
+    | sein, das in der Kopfzeile muss neben den Namen passen, ein Favicon ist
+    | quadratisch. Hier statt im Controller, damit der Uebersetzungs-Test die
+    | Beschriftungen findet - sie laufen erst zur Laufzeit durch __().
+    |
+    */
     'branding_logos' => [
         'login' => ['Anmeldeseite', 'Steht gross über dem Anmeldeformular.'],
         'header' => ['Kopfzeile', 'Steht oben links neben dem Namen — ein schmales, breites Logo passt hier am besten.'],
         'favicon' => ['Favicon', 'Das Symbol im Browser-Tab. Quadratisch, mindestens 32 × 32 Pixel.'],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Art eines Server-Clusters
+    |--------------------------------------------------------------------------
+    |
+    | Womit die Knoten ihre Daten zusammenhalten. Bewusst als Konfiguration
+    | statt als Datenbank-Enum: Eine neue Technik ist damit eine Zeile hier,
+    | keine Migration. "Sonstiges" faengt ab, was die Liste nicht kennt - dann
+    | steht die Erklaerung in der Notiz.
+    |
+    */
     'cluster_types' => [
         'ceph' => 'Ceph (verteilter Speicher)',
         'replication' => 'Replikation (ZFS/Storage-Replikation)',
@@ -632,16 +625,6 @@ return [
         'other' => 'Sonstiges',
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Bauform einer Firewall
-    |--------------------------------------------------------------------------
-    |
-    | Eine Appliance steht im Schrank, eine virtuelle Firewall (OPNsense,
-    | pfSense, auch die Securepoint UTM) laeuft auf einem Host. Die Bauform
-    | entscheidet, ob ein Einbau ueberhaupt in Frage kommt.
-    |
-    */
     /*
     |--------------------------------------------------------------------------
     | Fernwartungsloesungen
@@ -688,6 +671,16 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Bauform einer Firewall
+    |--------------------------------------------------------------------------
+    |
+    | Eine Appliance steht im Schrank, eine virtuelle Firewall (OPNsense,
+    | pfSense, auch die Securepoint UTM) laeuft auf einem Host. Die Bauform
+    | entscheidet, ob ein Einbau ueberhaupt in Frage kommt.
+    |
+    */
     'firewall_form_factors' => [
         'appliance' => 'Appliance',
         'vm' => 'Virtuelle Maschine',
@@ -705,6 +698,13 @@ return [
     */
     'server_depths' => $serverTiefen,
 
+    /*
+     * Geraetetypen, die sich in ein Rack einbauen lassen.
+     * Schluessel = stabiler Bezeichner im Editor (nie Klassennamen vom Client annehmen),
+     * Wert = [Model-Klasse, Anzeigename, Darstellung in der Frontansicht].
+     * Reihenfolge = Reihenfolge der Palette.
+     * Voraussetzung: Model hat customer_id und ein name-Feld.
+     */
     'rack_device_types' => [
         'server' => [Server::class, 'Server', 'server'],
         'networkswitch' => [NetworkSwitch::class, 'Switch', 'switch'],
@@ -728,33 +728,6 @@ return [
      * stuendlichen Reset. Ausserhalb des Demo-Modus wirkt die Liste nicht.
      */
     'demo_protected_users' => ['admin', 'techniker', 'kunde-rw', 'kunde-r'],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Spalten, deren Inhalt nie ins Protokoll darf
-    |--------------------------------------------------------------------------
-    |
-    | spatie/activitylog liest die Werte ueber die Eloquent-Accessoren - ein
-    | verschluesseltes Feld stuende sonst im Klartext im Protokoll, alter und
-    | neuer Wert.
-    |
-    | Geschrieben wie die SPALTE heisst, nicht wie die Accessor-Methode: Die
-    | Liste nannte einmal "uscpin" und "cloudBackupPassword", die Spalten heissen
-    | "usc_pin" und "cloud_backup_password" - und damit standen USC-PIN und
-    | Cloud-Backup-Kennwort im Protokoll. Ein Test in VerschluesselteSpaltenTest
-    | gleicht diese Liste gegen die tatsaechlich verschluesselten Spalten ab.
-    |
-    */
-    /*
-    |--------------------------------------------------------------------------
-    | Verfahren eines SSH-Schluessels
-    |--------------------------------------------------------------------------
-    |
-    | Feste Liste statt Freitext: "ed25519", "ED25519" und "Ed25519" waeren
-    | sonst drei Verfahren. Die Beschriftungen sind Eigennamen und werden
-    | nicht uebersetzt.
-    |
-    */
 
     /*
     |--------------------------------------------------------------------------
@@ -809,12 +782,38 @@ return [
     */
     'bild_formate' => ['png', 'jpg', 'jpeg', 'webp'],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Verfahren eines SSH-Schluessels
+    |--------------------------------------------------------------------------
+    |
+    | Feste Liste statt Freitext: "ed25519", "ED25519" und "Ed25519" waeren
+    | sonst drei Verfahren. Die Beschriftungen sind Eigennamen und werden
+    | nicht uebersetzt.
+    |
+    */
     'ssh_key_types' => [
         'ed25519' => 'Ed25519',
         'ecdsa' => 'ECDSA',
         'rsa' => 'RSA',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Spalten, deren Inhalt nie ins Protokoll darf
+    |--------------------------------------------------------------------------
+    |
+    | spatie/activitylog liest die Werte ueber die Eloquent-Accessoren - ein
+    | verschluesseltes Feld stuende sonst im Klartext im Protokoll, alter und
+    | neuer Wert.
+    |
+    | Geschrieben wie die SPALTE heisst, nicht wie die Accessor-Methode: Die
+    | Liste nannte einmal "uscpin" und "cloudBackupPassword", die Spalten heissen
+    | "usc_pin" und "cloud_backup_password" - und damit standen USC-PIN und
+    | Cloud-Backup-Kennwort im Protokoll. Ein Test in VerschluesselteSpaltenTest
+    | gleicht diese Liste gegen die tatsaechlich verschluesselten Spalten ab.
+    |
+    */
     'secret_columns' => [
         'password',
         'private_key',
@@ -841,23 +840,36 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Wie ein Kennwortfeld heisst, wenn man es benennen muss
+    | Woran man ein Objekt erkennt
     |--------------------------------------------------------------------------
     |
-    | Ein Geraet hat oft mehrere Kennwoerter. "Kennwort geaendert" allein waere
-    | die halbe Auskunft - welches denn?
+    | Nicht jedes Model hat eine name-Spalte: Ein WLAN heisst ssid, eine
+    | IP-Adresse address, ein Postfach mailAdress. Protokoll und Papierkorb
+    | stellen dieselbe Frage - welcher Eintrag ist das eigentlich - und
+    | beantworten sie jetzt aus derselben Liste. Die Reihenfolge entscheidet.
+    |
+    | Ein Model, das etwas Besseres weiss, ueberschreibt protokollName().
     |
     */
-    /*
-    |--------------------------------------------------------------------------
-    | Ereignisse im Aktivitaetsprotokoll
-    |--------------------------------------------------------------------------
-    |
-    | Beschriftung und Farbe je Ereignis. "password_changed" ist keines von
-    | spatie, sondern unseres: Der Wert eines Kennworts darf nie ins Protokoll,
-    | die Tatsache der Aenderung sehr wohl.
-    |
-    */
+    'name_fields' => [
+        'name',
+        'ssid',
+        'address',
+        // Vor username: Ein Telefon heisst nach seiner Nebenstelle, ein
+        // DECT-Geraet nach seiner Rolle. Beide fuehren daneben einen
+        // Benutzernamen, der oft "admin" ist - als Bezeichnung waere er
+        // schlimmer als eine Nummer.
+        'extension',
+        'role',
+        'username',
+        'mailAdress',
+        'domain',
+        'provider',
+        'description',
+        'host',
+        'key',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Rechte fuer den Admin-Bereich
@@ -878,32 +890,6 @@ return [
     | Rollenverwaltung.
     |
     */
-    /*
-    |--------------------------------------------------------------------------
-    | Woran man ein Objekt erkennt
-    |--------------------------------------------------------------------------
-    |
-    | Nicht jedes Model hat eine name-Spalte: Ein WLAN heisst ssid, eine
-    | IP-Adresse address, ein Postfach mailAdress. Protokoll und Papierkorb
-    | stellen dieselbe Frage - welcher Eintrag ist das eigentlich - und
-    | beantworten sie jetzt aus derselben Liste. Die Reihenfolge entscheidet.
-    |
-    | Ein Model, das etwas Besseres weiss, ueberschreibt protokollName().
-    |
-    */
-    'name_fields' => [
-        'name',
-        'ssid',
-        'address',
-        'username',
-        'mailAdress',
-        'domain',
-        'provider',
-        'description',
-        'host',
-        'key',
-    ],
-
     'admin_permissions' => [
         // Die Beschreibung steht so in der Rollenverwaltung - deshalb mit
         // Umlauten, anders als die Kommentare in dieser Datei.
@@ -932,6 +918,16 @@ return [
         'remote_search' => 'Fernwartungs-Suche benutzen',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Ereignisse im Aktivitaetsprotokoll
+    |--------------------------------------------------------------------------
+    |
+    | Beschriftung und Farbe je Ereignis. "password_changed" ist keines von
+    | spatie, sondern unseres: Der Wert eines Kennworts darf nie ins Protokoll,
+    | die Tatsache der Aenderung sehr wohl.
+    |
+    */
     'activity_events' => [
         'created' => ['Erstellt', 'text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-900/30'],
         'updated' => ['Geändert', 'text-cerulean-700 bg-cerulean-50 dark:text-cerulean-400 dark:bg-gray-700'],
@@ -940,6 +936,15 @@ return [
         'password_changed' => ['Kennwort geändert', 'text-purple-700 bg-purple-50 dark:text-purple-300 dark:bg-purple-900/30'],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Wie ein Kennwortfeld heisst, wenn man es benennen muss
+    |--------------------------------------------------------------------------
+    |
+    | Ein Geraet hat oft mehrere Kennwoerter. "Kennwort geaendert" allein waere
+    | die halbe Auskunft - welches denn?
+    |
+    */
     'secret_field_labels' => [
         'password' => 'Kennwort',
         'remotePassword' => 'Fernwartungs-Kennwort',
@@ -1008,10 +1013,6 @@ return [
         'pdu' => 'Steckdosenleiste',
         'blank' => 'Blindplatte',
     ],
-
-    /*
-     * Passive Rack-Elemente ohne eigene Dokumentation: Schluessel => [Label, Hoeheneinheiten].
-     */
 
     /*
     |--------------------------------------------------------------------------

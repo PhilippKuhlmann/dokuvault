@@ -34,7 +34,7 @@ class NASRequest extends FormRequest
             'serialNumber' => 'max:255',
             'port' => 'numeric',
             'username' => 'required|max:255',
-            'password' => 'required|max:255',
+            'password' => 'nullable|max:255',
             ...$this->beschaffungRegeln(),
         ];
     }

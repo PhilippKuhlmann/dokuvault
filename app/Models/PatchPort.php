@@ -38,6 +38,17 @@ class PatchPort extends Model
             : 'Port '.$this->number;
     }
 
+    /**
+     * Eine Dose heisst wie ihr Aufdruck - dieselbe Auskunft wie name.
+     *
+     * Die Methode gehoert sonst zu TracksChanges; eine Dose wird nicht
+     * protokolliert, aber die globale Suche fragt jeden Treffer danach.
+     */
+    public function protokollName(): ?string
+    {
+        return $this->name ?: null;
+    }
+
     public function networkSwitch()
     {
         return $this->belongsTo(NetworkSwitch::class, 'network_switch_id');

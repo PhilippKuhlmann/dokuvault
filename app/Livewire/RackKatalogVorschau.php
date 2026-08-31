@@ -16,8 +16,8 @@ use Livewire\Component;
  * bei jeder Aenderung genau eine Zeichnung nach.
  *
  * Keine Rechtepruefung: Hier wird nichts gelesen und nichts geschrieben, es
- * entsteht nur ein Bild aus zwei Werten, die beide gegen feste Listen
- * geprueft werden.
+ * entsteht nur ein Bild aus Werten, die alle gegen feste Listen geprueft
+ * werden.
  */
 class RackKatalogVorschau extends Component
 {
@@ -32,12 +32,10 @@ class RackKatalogVorschau extends Component
     public ?string $drawing = null;
 
     public function mount(string $appearance = 'blank', int $he = 1, ?string $bild = null,
-        ?int $ports = null, ?int $sfp = null, bool $poe = false, ?bool $display = null,
         ?string $drawing = null): void
     {
         $this->bild = $bild;
-        $this->display = $display;
-        $this->aendern($appearance, $he, $ports, $sfp, $poe, $display, $drawing);
+        $this->aendern($appearance, $he, $drawing);
     }
 
     /**

@@ -1,5 +1,30 @@
 # Changelog
 
+## 26.08.31
+
+### Fixed
+
+- **Ein Gerät durfte ohne Kennwort nicht dokumentiert werden — je nach Gerät.** Ein Etikettendrucker im Netz hat oft gar keinen Login; speichern ließ er sich trotzdem nicht, während Switch, Kamera und Accesspoint es erlaubten. Dahinter standen **fünf verschiedene Schreibweisen** derselben Regel (`required|max:255`, `nullable|max:255`, `nullable`, `max:255` und die leere Zeichenkette).
+  - Jetzt gilt ein Prinzip: **Ein Gerät darf ohne Login dokumentiert sein, ein reiner Zugangsdatensatz nicht.** Pflicht bleibt das Kennwort nur bei Webzugang und DynDNS — dort ist es der Gegenstand.
+  - Fünfzehn Regeln angeglichen; zwei davon hatten gar keine Längenprüfung.
+  - Ein Test hält die Regel als Invariante fest, statt sie an einer Stelle zu prüfen.
+
+- **Telefon, DECT und Ansprechpartner hießen „#15".** Im Protokoll, im Papierkorb und in der globalen Suche. Aufgefallen bei der Suche nach einer MAC-Adresse: Sie fand das richtige Telefon und nannte es „#14".
+  - `config('custom.name_fields')` kannte weder `extension` noch `role` — beide stehen jetzt darin, und zwar **vor** `username`: Ein Telefon führt beides, und „admin" wäre die schlechtere Auskunft.
+  - Ansprechpartner und TK-Anlage haben ein eigenes `protokollName()` bekommen. Die Anlage hieß vorher tatsächlich „admin" — der Rückfall auf den Benutzernamen, und damit schlimmer als eine Nummer.
+
+- **Die globale Suche benutzte die zentrale Namenslogik gar nicht.** Sie hatte eine eigene Kette `name ?? ssid ?? wan_ip ?? '#id'` und ging damit an `name_fields` und `protokollName()` vorbei. Jetzt fragt sie dieselbe Quelle wie Protokoll und Papierkorb.
+  - Die Netzwerkdose wäre dabei beinahe abhandengekommen: Sie führt die Methode nicht, weil sie nicht protokolliert wird. Ein Test prüft jetzt für **jede** der 25 Trefferarten, dass sie sich benennen kann.
+
+- **Die Vorschau zeigte beim Öffnen die falsche Blende.** `mount()` reichte sieben Werte an eine Methode mit drei Parametern durch — die eigene Zeichnung landete auf dem Platz der Portanzahl und ging verloren. Sichtbar wurde es erst nach einer Änderung im Formular, weil dann der andere Weg griff. Ein Test hält jetzt fest, dass ein USW-Pro-48-PoE schon beim Öffnen seine achtundvierzig Buchsen zeigt.
+
+### Changed
+
+- **Aufgeräumt, was beim Umbau liegen geblieben ist.**
+  - **Die Erklärungen in `config/custom.php` standen über den falschen Schlüsseln.** Neun Kommentarblöcke waren von ihren Arrays abgerückt — über `secret_columns` stand die Erklärung zum SSH-Verfahren, über `activity_events` die zu den Admin-Rechten. Jeder sitzt jetzt wieder bei dem, was er beschreibt. Ein zehnter beschrieb eine Konfiguration, die es seit dem Rack-Katalog als Tabelle nicht mehr gibt; der ist weg.
+  - **Die Bildverwaltung stand zweimal im Code.** `bildUrl()`, `bildPfad()`, `bildLoeschen()` und der Haken zum Aufräumen beim Löschen waren im Rack-Katalog und in den Gerätemodellen wortgleich — jetzt einmal als `HatBild`. Das Model nennt nur noch Ordner und Route.
+  - **Dasselbe in den beiden Admin-Controllern**: Ablegen, Ersetzen, Entfernen und Ausliefern liegen als `PflegtBilder` an einer Stelle. Beim Anlegen entsteht das Bild jetzt zusammen mit dem Datensatz, statt in einem zweiten Schritt nachgereicht zu werden.
+
 ## 26.08.29
 
 ### Added

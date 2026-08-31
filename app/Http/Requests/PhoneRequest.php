@@ -36,7 +36,7 @@ class PhoneRequest extends FormRequest
             'port' => 'max:255',
             'mac' => 'max:255',
             'username' => 'max:255',
-            'password' => 'max:255',
+            'password' => 'nullable|max:255',
             ...$this->beschaffungRegeln(),
         ];
     }

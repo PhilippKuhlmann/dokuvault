@@ -34,7 +34,7 @@ class OtherClientRequest extends FormRequest
             'serialNumber' => 'max:255',
             'port' => 'max:255',
             'username' => 'nullable',
-            'password' => 'nullable',
+            'password' => 'nullable|max:255',
             ...$this->beschaffungRegeln(),
         ];
     }

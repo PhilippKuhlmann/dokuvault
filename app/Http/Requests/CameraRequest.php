@@ -34,7 +34,7 @@ class CameraRequest extends FormRequest
             'serialNumber' => '',
             'port' => 'required',
             'username' => '',
-            'password' => '',
+            'password' => 'nullable|max:255',
             ...$this->beschaffungRegeln(),
         ];
     }

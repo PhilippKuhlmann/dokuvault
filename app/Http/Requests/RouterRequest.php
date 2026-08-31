@@ -33,7 +33,7 @@ class RouterRequest extends FormRequest
             'model' => 'nullable|max:255',
             'serialNumber' => 'nullable|max:255',
             'username' => 'required|max:255',
-            'password' => 'required|max:255',
+            'password' => 'nullable|max:255',
             'port' => 'required|numeric',
             ...$this->beschaffungRegeln(),
         ];

@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\PflegtBilder;
 use App\Http\Requests\DeviceModelRequest;
 use App\Models\DeviceModel;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Pflege der Geraetemodelle im Adminbereich. Die Route-Gruppe laeuft bereits
@@ -17,6 +15,8 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class DeviceModelController extends Controller
 {
+    use PflegtBilder;
+
     public function index()
     {
         return view('admin.devicemodel.index', [
@@ -32,11 +32,9 @@ class DeviceModelController extends Controller
 
     public function store(DeviceModelRequest $request)
     {
-        $modell = DeviceModel::create($this->stammdaten($request));
-
-        if ($request->hasFile('image')) {
-            $modell->update(['image_path' => $this->bildAblegen($request)]);
-        }
+        // Der Ablageort haengt nicht am Datensatz, das Bild kann also gleich
+        // mit angelegt werden - sonst folgte auf jedes Anlegen ein Update.
+        DeviceModel::create($this->bildPflegen($request, new DeviceModel, $this->stammdaten($request)));
 
         return redirect(route('admin.devicemodel.index'));
     }
@@ -48,18 +46,7 @@ class DeviceModelController extends Controller
 
     public function update(DeviceModel $devicemodel, DeviceModelRequest $request)
     {
-        $daten = $this->stammdaten($request);
-
-        // Erst die alte Datei weg, sonst bleibt bei jedem Wechsel eine liegen.
-        if ($request->hasFile('image')) {
-            $devicemodel->bildLoeschen();
-            $daten['image_path'] = $this->bildAblegen($request);
-        } elseif ($request->boolean('image_remove')) {
-            $devicemodel->bildLoeschen();
-            $daten['image_path'] = null;
-        }
-
-        $devicemodel->update($daten);
+        $devicemodel->update($this->bildPflegen($request, $devicemodel, $this->stammdaten($request)));
 
         return redirect(route('admin.devicemodel.index'));
     }
@@ -86,25 +73,6 @@ class DeviceModelController extends Controller
      */
     public function image(DeviceModel $devicemodel)
     {
-        $pfad = $devicemodel->image_path;
-
-        abort_if($pfad === null || ! Storage::disk('local')->exists($pfad), 404);
-
-        return response(Storage::disk('local')->get($pfad), Response::HTTP_OK, [
-            'Content-Type' => Storage::disk('local')->mimeType($pfad),
-            'X-Content-Type-Options' => 'nosniff',
-            'Cache-Control' => 'private, max-age=86400',
-        ]);
-    }
-
-    /** Die geprueften Werte ohne die Upload-Felder - die gehoeren nicht in die Spalten. */
-    private function stammdaten(DeviceModelRequest $request): array
-    {
-        return Arr::except($request->validated(), ['image', 'image_remove']);
-    }
-
-    private function bildAblegen(DeviceModelRequest $request): string
-    {
-        return $request->file('image')->store(DeviceModel::BILDORDNER, 'local');
+        return $this->bildAusliefern($devicemodel);
     }
 }

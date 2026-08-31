@@ -35,7 +35,7 @@ class IoTDeviceRequest extends FormRequest
             'port' => 'max:255',
             'url' => 'nullable|url',
             'username' => 'nullable',
-            'password' => 'nullable',
+            'password' => 'nullable|max:255',
             ...$this->beschaffungRegeln(),
         ];
     }

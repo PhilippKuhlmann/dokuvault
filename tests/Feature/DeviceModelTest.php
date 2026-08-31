@@ -2,6 +2,7 @@
 
 use App\Livewire\ObjektFormular;
 use App\Livewire\RackEditor;
+use App\Livewire\RackKatalogVorschau;
 use App\Models\Customer;
 use App\Models\DeviceModel;
 use App\Models\NetworkSwitch;
@@ -543,4 +544,17 @@ test('ein Gerät bekommt die Zeichnung seines Modells', function () {
     // 48 Buchsen statt der ueblichen 24 - und zwar aus der eigenen Zeichnung,
     // die auch bei abweichender Schreibweise gefunden wird.
     expect(substr_count(rackHtml($rack), 'data-port='))->toBe(48);
+});
+
+test('die Vorschau übernimmt die eigene Zeichnung schon beim Öffnen', function () {
+    $this->actingAs(adminUser());
+
+    // Sie kam einmal als vierter von sieben Werten an einer Methode mit drei
+    // Parametern an und ging dabei verloren - das Formular zeigte dann die
+    // Blende des Gerätetyps statt der eigenen Zeichnung.
+    Livewire::test(RackKatalogVorschau::class, [
+        'appearance' => 'switch', 'he' => 1, 'drawing' => 'unifi-usw-pro-48-poe',
+    ])
+        ->assertSet('drawing', 'unifi-usw-pro-48-poe')
+        ->assertSee('data-port="48"', false);
 });
