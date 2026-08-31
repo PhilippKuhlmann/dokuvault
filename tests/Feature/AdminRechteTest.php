@@ -127,13 +127,10 @@ test('der Admin gilt nicht als Kunde', function () {
     $rolle = Role::find(Role::IS_ADMIN) ?? Role::factory()->create(['id' => Role::IS_ADMIN]);
     $admin = User::factory()->create(['role_id' => $rolle->id]);
 
-    // Die Rollen-Gates fragen nach der Rolle, nicht nach einem Recht. Als
-    // Gate::before pauschal true lieferte, galt der Admin als "Kunde nur
-    // lesen" - und der Neu-Knopf verschwand aus jeder Liste, weil er hinter
-    // @cannot('isCustomerR') steht.
-    expect(Gate::forUser($admin)->allows('isCustomerR'))->toBeFalse();
+    // isCustomer fragt nach der Zugehoerigkeit, nicht nach einem Recht. Als
+    // Gate::before pauschal true lieferte, galt der Admin als Kundennutzer -
+    // und die Kopfzeile verlor fuer ihn die internen Suchen.
     expect(Gate::forUser($admin)->allows('isCustomer'))->toBeFalse();
-    expect(Gate::forUser($admin)->allows('isCustomerRW'))->toBeFalse();
 
     expect(Gate::forUser($admin)->allows('isAdmin'))->toBeTrue();
     expect(Gate::forUser($admin)->allows('admin_user'))->toBeTrue();

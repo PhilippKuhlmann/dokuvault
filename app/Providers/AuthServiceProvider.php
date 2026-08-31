@@ -44,12 +44,11 @@ class AuthServiceProvider extends ServiceProvider
         // before() liefert null fuer alle anderen Rollen - dann entscheiden
         // die Gates weiter unten.
         Gate::before(function (User $user, string $ability) {
-            // Die Rollen-Gates sind Fragen nach der Rolle, keine Rechte. Ein
-            // pauschales "darf alles" verfaelscht sie ins Gegenteil: Der Admin
-            // galt damit als isCustomerR - "Kunde, nur lesen" - und der
-            // Neu-Knopf verschwand aus jeder Liste, weil er hinter
-            // @cannot('isCustomerR') steht.
-            if (in_array($ability, ['isCustomer', 'isCustomerR', 'isCustomerRW'], true)) {
+            // isCustomer ist eine Frage nach der Zugehoerigkeit, kein Recht.
+            // Ein pauschales "darf alles" verfaelscht sie ins Gegenteil: Der
+            // Admin galte damit als Kundennutzer, und die Kopfzeile verloere
+            // fuer ihn die internen Suchen.
+            if ($ability === 'isCustomer') {
                 return null;
             }
 

@@ -39,16 +39,23 @@ class AppServiceProvider extends ServiceProvider
             return $user->role->id == Role::IS_ADMIN;
         });
 
+        /*
+         * Ist dieser Nutzer auf einen Kunden festgelegt?
+         *
+         * An der customer_id, nicht an der Rolle. Vorher fragte das Gate nach
+         * den Rollen-Ids 98 und 99 - aus einer Zeit, in der es feste Rollen
+         * gab. Rollen entstehen laengst im Adminbereich und bekommen dort
+         * fortlaufende Nummern; die Kundenrollen dieser Installation haben 11
+         * und 12. Das Gate war damit nie wahr, und die Kopfzeile bot jedem
+         * Kundennutzer die Kundensuche und die Fernwartung an - beides fuehrt
+         * fuer ihn ins Leere.
+         *
+         * Dieselbe Frage stellen die isCustomer-Middleware und die API
+         * laengst so. Die frueheren Abstufungen isCustomerR und isCustomerRW
+         * sind entfallen: Ob jemand nur lesen darf, sagt die Rechtematrix.
+         */
         Gate::define('isCustomer', function (User $user) {
-            return $user->role->id == 98 || $user->role->id == 99;
-        });
-
-        Gate::define('isCustomerR', function (User $user) {
-            return $user->role->id == 98;
-        });
-
-        Gate::define('isCustomerRW', function (User $user) {
-            return $user->role->id == 99;
+            return $user->customer_id !== null;
         });
 
         View::composer('*', function ($view) {

@@ -21,10 +21,14 @@
             @cannot('isCustomer')
                 <div class="hidden md:flex gap-1 dark:text-gray-100">
 
-                    <x-nav.link url="{{ route('customer.dashboard', $customer) }}" :name="__('Daschboard')"><x-svg.home class="h-6 w-6" /> </x-nav.link>
+                    <x-nav.link url="{{ route('customer.dashboard', $customer) }}" :name="__('Dashboard')"><x-svg.home class="h-6 w-6" /> </x-nav.link>
                     <x-nav.link url="{{ route('customer.search') }}" :name="__('Kundensuche')"><x-svg.search class="h-6 w-6" /> </x-nav.link>
                     <x-nav.link url="{{ route('search.global') }}" :name="__('Globale Suche')"><x-svg.db class="h-6 w-6" /> </x-nav.link>
-                    <x-nav.link url="{{ route('search.remote') }}" :name="__('Rustdesk Suche')" target="_blank"><x-svg.software.rustdesk class="h-6 w-6" /> </x-nav.link>
+                    {{-- Nur mit dem Recht: Die Route verlangt es, der Verweis
+                         fuehrte sonst auf eine 403-Seite. --}}
+                    @can('remote_search')
+                        <x-nav.link url="{{ route('search.remote') }}" :name="__('Rustdesk Suche')" target="_blank"><x-svg.software.rustdesk class="h-6 w-6" /> </x-nav.link>
+                    @endcan
 
                 </div>
             <!--

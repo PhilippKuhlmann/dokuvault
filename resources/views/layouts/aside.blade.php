@@ -13,7 +13,9 @@
                         <x-aside.toplink :label="__('Dashboard')" svg="svg.home" :href="route('customer.dashboard', $customer)" />
                         <x-aside.toplink :label="__('Kundensuche')" svg="svg.search" :href="route('customer.search')" />
                         <x-aside.toplink :label="__('Globale Suche')" svg="svg.db" :href="route('search.global')" />
-                        <x-aside.toplink :label="__('Rustdesk Suche')" svg="svg.software.rustdesk" :href="route('search.remote')" />
+                        @can('remote_search')
+                            <x-aside.toplink :label="__('Rustdesk Suche')" svg="svg.software.rustdesk" :href="route('search.remote')" />
+                        @endcan
                     </ul>
                 </li>
             @endcannot

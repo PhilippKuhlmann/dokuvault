@@ -4,6 +4,16 @@
 
 ### Fixed
 
+- **Ein Kundennutzer wurde nicht als solcher erkannt.** Das Gate `isCustomer` fragte nach den Rollen-Ids **98 und 99** — aus einer Zeit mit festen Rollen. Rollen entstehen längst im Adminbereich und bekommen dort fortlaufende Nummern; die Kundenrollen dieser Installation tragen 11 und 12. Das Gate war damit in jeder echten Installation **nie wahr**.
+  - Folge: Die Kopfzeile bot jedem Kundennutzer **Kundensuche, globale Suche und Fernwartung** an — Wege, die für ihn auf eine Weiterleitung oder eine 403-Seite führen.
+  - Es fragt jetzt nach der gesetzten `customer_id` — dieselbe Frage, die die `isCustomer`-Middleware und die API längst so stellen.
+  - `isCustomerR` und `isCustomerRW` sind entfallen. Sie hingen an denselben Nummern, und ihre einzige Verwendung (der Neu-Knopf) steht ohnehin hinter der Rechtematrix. Ob jemand nur lesen darf, sagt die Rechtematrix.
+  - Der vorhandene Test legte eigens eine Rolle mit der Id 99 an und hielt die Abhängigkeit im Kommentar fest — er bewies damit nur, dass es funktioniert, *wenn* die Rolle zufällig diese Nummer hat. Jetzt prüft er den wirklichen Fall: eine frisch angelegte Rolle.
+
+- **Der Verweis auf die Fernwartung stand im Menü ohne das zugehörige Recht.** Die Route verlangt `remote_search`, der Menüpunkt fragte nicht danach — an drei Stellen (Kopfzeile, schlanke Kopfzeile, Seitenleiste). Wer das Recht nicht hat, landete auf einer 403-Seite.
+
+- **„Daschboard"** hieß der Tooltip in der Kopfzeile — samt Eintrag in der Übersetzungsdatei.
+
 - **Ein Gerät durfte ohne Kennwort nicht dokumentiert werden — je nach Gerät.** Ein Etikettendrucker im Netz hat oft gar keinen Login; speichern ließ er sich trotzdem nicht, während Switch, Kamera und Accesspoint es erlaubten. Dahinter standen **fünf verschiedene Schreibweisen** derselben Regel (`required|max:255`, `nullable|max:255`, `nullable`, `max:255` und die leere Zeichenkette).
   - Jetzt gilt ein Prinzip: **Ein Gerät darf ohne Login dokumentiert sein, ein reiner Zugangsdatensatz nicht.** Pflicht bleibt das Kennwort nur bei Webzugang und DynDNS — dort ist es der Gegenstand.
   - Fünfzehn Regeln angeglichen; zwei davon hatten gar keine Längenprüfung.
