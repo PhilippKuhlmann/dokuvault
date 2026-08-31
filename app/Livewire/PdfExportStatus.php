@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Jobs\KundenPdfErzeugen;
+use App\Livewire\Concerns\GehoertZumKunden;
 use App\Models\Customer;
 use App\Models\PdfExport;
 use Illuminate\Support\Facades\Gate;
@@ -18,11 +19,15 @@ use Livewire\Component;
  */
 class PdfExportStatus extends Component
 {
+    use GehoertZumKunden;
+
     #[Locked]
     public int $customerId;
 
     public function mount(Customer $customer): void
     {
+        $this->nurEigenerKunde($customer->id);
+
         $this->customerId = $customer->id;
     }
 

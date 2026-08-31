@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\GehoertZumKunden;
 use App\Models\Customer;
 use App\Models\File;
 use Carbon\Carbon;
@@ -22,6 +23,7 @@ use Livewire\WithPagination;
  */
 class DateiListe extends Component
 {
+    use GehoertZumKunden;
     use WithPagination;
 
     #[Locked]
@@ -46,6 +48,7 @@ class DateiListe extends Component
     public function mount(Customer $customer): void
     {
         Gate::authorize('viewAny', File::class);
+        $this->nurEigenerKunde($customer->id);
 
         $this->customerId = $customer->id;
     }

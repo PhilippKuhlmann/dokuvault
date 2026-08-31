@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\GehoertZumKunden;
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
@@ -32,6 +33,7 @@ use Livewire\WithFileUploads;
  */
 class ObjektFormular extends Component
 {
+    use GehoertZumKunden;
     use WithFileUploads;
 
     #[Locked]
@@ -79,6 +81,7 @@ class ObjektFormular extends Component
     public function mount(string $typ, Customer $customer): void
     {
         abort_unless(array_key_exists($typ, config('forms')), 404);
+        $this->nurEigenerKunde($customer->id);
 
         $this->typ = $typ;
         $this->customerId = $customer->id;

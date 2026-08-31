@@ -32,6 +32,12 @@ class SearchCustomer extends Component
             // Einen mehr holen als angezeigt wird: Damit steht fest, ob es
             // weitere gibt, ohne dafuer ein zweites Mal zu zaehlen.
             $treffer = Customer::whereEnthaelt('name', $this->search)
+                // Ein auf einen Kunden festgelegter Nutzer sieht nur diesen
+                // einen. Die Route leitet ihn zwar auf sein Dashboard, aber
+                // Livewire ruft nicht ueber sie - und der blosse Name eines
+                // fremden Kunden ist schon eine Auskunft, die ihm nicht
+                // zusteht.
+                ->when(auth()->user()?->customer_id, fn ($abfrage, $eigener) => $abfrage->whereKey($eigener))
                 ->orderBy('name')
                 ->limit(self::HOECHSTENS + 1)
                 ->get();

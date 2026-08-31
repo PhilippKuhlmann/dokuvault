@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\GehoertZumKunden;
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
@@ -23,6 +24,7 @@ use Livewire\WithPagination;
  */
 class ObjektListe extends Component
 {
+    use GehoertZumKunden;
     use WithPagination;
 
     #[Locked]
@@ -51,6 +53,7 @@ class ObjektListe extends Component
         abort_unless(array_key_exists($typ, config('forms')), 404);
 
         Gate::authorize($typ.'_viewAny');
+        $this->nurEigenerKunde($customer->id);
 
         $this->typ = $typ;
         $this->customerId = $customer->id;

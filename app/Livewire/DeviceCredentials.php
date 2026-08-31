@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\GehoertZumKunden;
 use App\Models\Customer;
 use App\Models\LoginGeneral;
 use App\Models\SshKey;
@@ -19,6 +20,8 @@ use Livewire\Component;
  */
 class DeviceCredentials extends Component
 {
+    use GehoertZumKunden;
+
     // Skalare statt Model-Instanz: robust bei polymorphen Modellen und Livewire-Hydration.
     #[Locked]
     public string $modelClass;
@@ -53,6 +56,13 @@ class DeviceCredentials extends Component
 
     public function mount($model, $customer, bool $eingebettet = false, bool $randlos = false): void
     {
+        // Beim Einhaengen, nicht erst bei der Aktion: Ein Block, der sich mit
+        // einem fremden Geraet ueberhaupt aufbauen laesst, hat schon zu viel
+        // gesagt. Die Pruefungen in den Aktionen bleiben - sie fangen den Fall
+        // ab, dass jemand die Nummer spaeter austauscht.
+        $this->nurEigenerKunde($customer->id);
+        abort_if($model->customer_id !== $customer->id, 403);
+
         $this->modelClass = $model::class;
         $this->modelId = $model->id;
         $this->customerId = $customer->id;

@@ -2,6 +2,17 @@
 
 ## 26.08.31
 
+### Security
+
+- **Drei Wege, auf denen ein Kunde Daten eines anderen Kunden sehen konnte.** Gefunden beim gezielten Angriff auf die Mandantentrennung — mit einem Nutzer, der **alle Rechte** hatte, damit ihn nur die Trennung aufhält und nicht ein fehlendes Recht.
+  - **Die Geräteliste.** `ObjektListe`, mit einem fremden Kunden aufgerufen, lieferte dessen Geräte aus — samt **Benutzername, Kennwort und Seriennummer**.
+  - **Die Dateiliste** gab die Dateien des fremden Kunden heraus, **die VLAN-Liste** seine Netze samt Adressen.
+  - **Die Kundensuche** zeigte einem Kundennutzer die Namen fremder Kunden.
+  - Warum die Route allein nicht reicht: Die `isCustomer`-Middleware hängt an den Routen, **Livewire ruft aber über `/livewire/update`** — dort läuft sie nicht. Wer den Kunden als Parameter entgegennimmt, nimmt ihn von außen entgegen und muss selbst prüfen. `RackEditor`, `PatchPanelPorts` und der Erstaufnahme-Assistent taten das längst; sechs weitere Komponenten nicht.
+  - Die Prüfung steht jetzt als `GehoertZumKunden` an einer Stelle und wird von acht Komponenten benutzt. Die Blöcke für Zugangsdaten und IP-Adressen prüfen zusätzlich beim Einhängen statt erst bei der Aktion: Ein Block, der sich mit einem fremden Gerät überhaupt aufbauen lässt, hat schon zu viel gesagt.
+  - **Eine Invariante hält es offen:** Ein Test geht alle Livewire-Komponenten durch und verlangt von jeder, die einen Kunden entgegennimmt, eine Prüfung. Wer morgen eine hinzufügt, merkt es sofort.
+  - Und ein Test prüft, dass der Angreifer wirklich alle Rechte hat — ein erster Anlauf gab ihm versehentlich gar keine, und die Tests wären grün gewesen, ohne irgendetwas zu beweisen.
+
 ### Fixed
 
 - **Ein Kundennutzer wurde nicht als solcher erkannt.** Das Gate `isCustomer` fragte nach den Rollen-Ids **98 und 99** — aus einer Zeit mit festen Rollen. Rollen entstehen längst im Adminbereich und bekommen dort fortlaufende Nummern; die Kundenrollen dieser Installation tragen 11 und 12. Das Gate war damit in jeder echten Installation **nie wahr**.

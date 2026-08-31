@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\GehoertZumKunden;
 use App\Models\Network;
 use App\Models\Site;
 use Illuminate\Support\Facades\Gate;
@@ -24,6 +25,8 @@ use Livewire\Component;
  */
 class NetworkQuickCreate extends Component
 {
+    use GehoertZumKunden;
+
     #[Locked]
     public int $customerId;
 
@@ -71,6 +74,8 @@ class NetworkQuickCreate extends Component
 
     public function mount($customer, ?int $siteId = null, string $knopfKlassen = '', string $label = '', bool $mitSymbol = false): void
     {
+        $this->nurEigenerKunde($customer->id);
+
         $this->customerId = $customer->id;
         $this->siteId = $siteId;
         $this->knopfKlassen = $knopfKlassen;

@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\GehoertZumKunden;
 use App\Models\Customer;
 use App\Models\Network;
 use Illuminate\Support\Facades\Gate;
@@ -22,6 +23,7 @@ use Livewire\WithPagination;
  */
 class NetworkList extends Component
 {
+    use GehoertZumKunden;
     use WithPagination;
 
     #[Locked]
@@ -46,6 +48,7 @@ class NetworkList extends Component
     public function mount(Customer $customer): void
     {
         Gate::authorize('viewAny', Network::class);
+        $this->nurEigenerKunde($customer->id);
 
         $this->customerId = $customer->id;
     }
