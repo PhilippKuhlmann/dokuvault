@@ -11,5 +11,7 @@
 
         <x-create.select.customer :$customers/>
 
+        <x-create.zweite-stufe />
+
     </x-create.main>
 </x-admin-layout>

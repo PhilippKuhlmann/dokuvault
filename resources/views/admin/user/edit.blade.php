@@ -40,6 +40,8 @@
 
             <x-edit.select.customer selector="{{ $user->customer_id }}" :$customers/>
 
+            <x-create.zweite-stufe :checked="$user->two_factor_required" />
+
         </x-create.main>
 
         {{-- Verlorenes Telefon: sonst bliebe nur der Griff in die Datenbank. --}}

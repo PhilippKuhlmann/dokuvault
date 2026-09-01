@@ -14,6 +14,12 @@
   - Zwischen Kennwort und Code ist niemand angemeldet: In der Sitzung steht nur, **wer** hereinmöchte.
   - Neu dabei: `pragmarx/google2fa` und `bacon/bacon-qr-code`.
 
+- **Ein Administrator kann sie verlangen.** Haken im Benutzerformular: „Zweite Stufe der Anmeldung verlangen". Der Benutzer kommt nach der Anmeldung dann nur bis zu seinem eigenen Profil, bis er eine App verbunden hat — mit einem Hinweis, der sagt warum. Abschalten kann er sie danach nicht, sonst wäre die Pflicht ein Knopf, den man einmal drückt.
+  - Die Sperre hängt in der Middleware-Gruppe `web`, nicht an einzelnen Routen: sonst bliebe über `/livewire/update` weiterhin jede Liste und jedes Formular erreichbar, und die Pflicht wäre eine Anzeige.
+  - Eine Umleitung, kein 403: Der Benutzer hat nichts falsch gemacht, ihm fehlt ein Schritt — und der steht genau dort, wohin er geschickt wird.
+  - Die Benutzerliste zeigt drei Zustände statt zwei: `—`, „verlangt, offen", „eingerichtet". Zwischen verlangt und eingerichtet sitzt genau der Benutzer, der noch nichts getan hat.
+  - Auf der Demo wird niemand gezwungen: Dort teilen sich alle Besucher einen Zugang, der erste mit einer App sperrte alle übrigen aus.
+
 ## 26.09.01
 
 ### Security

@@ -16,6 +16,7 @@ use App\Http\Middleware\TrimStrings;
 use App\Http\Middleware\TrustProxies;
 use App\Http\Middleware\ValidateSignature;
 use App\Http\Middleware\VerifyCsrfToken;
+use App\Http\Middleware\VerlangtZweiteStufe;
 use Illuminate\Auth\Middleware\AuthenticateWithBasicAuth;
 use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
@@ -75,6 +76,11 @@ class Kernel extends HttpKernel
             // ohne hinterlegten Hash bekommt ihn beim naechsten Aufruf - es
             // fliegt also niemand raus, nur weil das hier neu ist.
             AuthenticateSession::class,
+
+            // Wer die zweite Stufe einrichten muss, kommt bis dahin nur ins
+            // eigene Profil. Ebenfalls in der Gruppe, sonst waere ueber
+            // Livewire weiterhin alles erreichbar.
+            VerlangtZweiteStufe::class,
 
             // Nach StartSession: braucht Session und angemeldeten Nutzer.
             SetLocale::class,

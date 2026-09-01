@@ -31,10 +31,13 @@
 
 <div class="m-3">
     <x-table.main>
-        <x-table.head :labels="['Name', 'Benutzername', 'Rolle', 'Kunde', '', ]" />
+        <x-table.head :labels="['Name', 'Benutzername', 'Rolle', 'Kunde', 'Zweite Stufe', '', ]" />
 
         <x-table.body>
 
+            {{-- Drei Zustaende in der Spalte, nicht zwei: "verlangt" und
+                 "eingerichtet" sind verschiedene Dinge, und genau dazwischen
+                 sitzt der Benutzer, der noch nichts getan hat. --}}
             @foreach ($users as $user)
 
                 <x-table.datarow
@@ -42,7 +45,10 @@
                         $user->name,
                         $user->username,
                         $user->role?->name ?? '—',
-                        $user->customer ? $user->customer->name : ''
+                        $user->customer ? $user->customer->name : '',
+                        $user->hatZweiteStufe()
+                            ? __('eingerichtet')
+                            : ($user->two_factor_required ? __('verlangt, offen') : '—'),
                     ]"
 
                     editUrl="{{ route('admin.user.edit', $user) }}"

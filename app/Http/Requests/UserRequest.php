@@ -45,6 +45,17 @@ class UserRequest extends FormRequest
             // Was hier fehlte und wirklich zaehlt: dass die Nummer zu einem
             // Kunden gehoert, den es gibt und der nicht im Papierkorb liegt.
             'customer_id' => ['nullable', Rule::exists('customers', 'id')->whereNull('deleted_at')],
+            'two_factor_required' => 'boolean',
         ];
+    }
+
+    /**
+     * Ein nicht angehakter Kasten wird vom Browser gar nicht mitgeschickt.
+     * Ohne diese Zeile liesse sich die Pflicht setzen, aber nie wieder
+     * loeschen - der fehlende Wert waere schlicht "nicht geaendert".
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge(['two_factor_required' => $this->boolean('two_factor_required')]);
     }
 }

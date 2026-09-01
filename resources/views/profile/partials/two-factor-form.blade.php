@@ -9,6 +9,13 @@
         </p>
     </header>
 
+    @if ($user->mussZweiteStufeEinrichten())
+        <div class="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-700/60 dark:bg-amber-900/20 dark:text-amber-200" role="status">
+            <span class="font-semibold">{{ __('Ihr Administrator verlangt die zweite Stufe.') }}</span>
+            {{ __('Bis sie eingerichtet ist, kommen Sie nur bis zu dieser Seite.') }}
+        </div>
+    @endif
+
     <x-input-error :messages="$errors->zweiteStufe->get('demo')" class="mt-4" />
 
     {{-- Frisch erzeugte Wiederherstellungscodes. Sie stehen genau einmal hier
@@ -50,15 +57,22 @@
                 <x-input.button color="gray" :label="__('Neu erzeugen')" />
             </form>
 
-            <form method="post" action="{{ route('two-factor.destroy') }}" class="space-y-3">
-                @csrf
-                @method('delete')
-                <p class="text-sm text-gray-700 dark:text-gray-300">{{ __('Zweite Stufe abschalten') }}</p>
-                <x-input.label for="aus_password" :value="__('Kennwort')" class="text-gray-900" />
-                <x-input.text id="aus_password" name="password" type="password" class="mt-1 block w-full" autocomplete="current-password" />
-                <x-input-error :messages="$errors->zweiteStufeAus->get('password')" />
-                <x-input.button color="red" :label="__('Abschalten')" />
-            </form>
+            @if ($user->two_factor_required)
+                <div class="text-sm text-gray-600 dark:text-gray-400">
+                    <p class="font-medium text-gray-700 dark:text-gray-300">{{ __('Zweite Stufe abschalten') }}</p>
+                    <p class="mt-1">{{ __('Ihr Administrator verlangt sie für diesen Zugang – abschalten geht nicht.') }}</p>
+                </div>
+            @else
+                <form method="post" action="{{ route('two-factor.destroy') }}" class="space-y-3">
+                    @csrf
+                    @method('delete')
+                    <p class="text-sm text-gray-700 dark:text-gray-300">{{ __('Zweite Stufe abschalten') }}</p>
+                    <x-input.label for="aus_password" :value="__('Kennwort')" class="text-gray-900" />
+                    <x-input.text id="aus_password" name="password" type="password" class="mt-1 block w-full" autocomplete="current-password" />
+                    <x-input-error :messages="$errors->zweiteStufeAus->get('password')" />
+                    <x-input.button color="red" :label="__('Abschalten')" />
+                </form>
+            @endif
         </div>
 
     @elseif ($zweiteStufeGeheimnis)

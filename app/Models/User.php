@@ -24,6 +24,7 @@ class User extends Authenticatable
         'locale',
         'role_id',
         'customer_id',
+        'two_factor_required',
     ];
 
     protected $hidden = [
@@ -36,6 +37,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'two_factor_confirmed_at' => 'datetime',
+        'two_factor_required' => 'boolean',
     ];
 
     /**
@@ -90,6 +92,20 @@ class User extends Authenticatable
     public function hatZweiteStufe(): bool
     {
         return $this->two_factor_secret !== null && $this->two_factor_confirmed_at !== null;
+    }
+
+    /**
+     * Ein Administrator verlangt die zweite Stufe, sie ist aber noch nicht
+     * eingerichtet. So lange kommt dieser Zugang nur bis zum eigenen Profil.
+     *
+     * Demo-Zugaenge sind ausgenommen: Dort teilen sich alle Besucher einen
+     * Zugang - der erste, der eine App verbindet, sperrt alle uebrigen aus.
+     */
+    public function mussZweiteStufeEinrichten(): bool
+    {
+        return $this->two_factor_required
+            && ! $this->hatZweiteStufe()
+            && ! $this->istDemoGeschuetzt();
     }
 
     /**

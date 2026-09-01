@@ -248,3 +248,93 @@ test('ein fremder Nutzer kann die zweite Stufe eines anderen nicht abschalten', 
     expect($opfer->fresh()->hatZweiteStufe())->toBeTrue()
         ->and($angreifer->fresh()->hatZweiteStufe())->toBeFalse();
 });
+
+// --- Der Administrator verlangt sie ----------------------------------------
+
+test('wer sie einrichten muss, kommt nur bis zum eigenen Profil', function () {
+    $nutzer = userWithPermissions(['server_viewAny']);
+    $nutzer->forceFill(['two_factor_required' => true])->save();
+
+    $this->actingAs($nutzer);
+
+    // Mit Sprungmarke auf den Abschnitt, um den es geht.
+    $ziel = route('profile.edit').'#zweite-stufe';
+
+    $this->get(route('customer.search'))->assertRedirect($ziel);
+    $this->get(route('admin.dashboard'))->assertRedirect($ziel);
+
+    // Das Profil selbst muss offen bleiben - dort steht der Weg hinaus.
+    $this->get(route('profile.edit'))->assertStatus(200);
+});
+
+test('nach der Einrichtung ist der Weg wieder frei', function () {
+    $nutzer = userWithPermissions([]);
+    $nutzer->forceFill(['two_factor_required' => true])->save();
+
+    $this->actingAs($nutzer)->post(route('two-factor.begin'));
+    $this->post(route('two-factor.confirm'), ['code' => gueltigerCode(session(TwoFactorController::IN_ARBEIT))]);
+
+    expect($nutzer->fresh()->mussZweiteStufeEinrichten())->toBeFalse();
+
+    $this->get(route('customer.search'))->assertStatus(200);
+});
+
+test('verlangt heisst: der Benutzer kann sie nicht abschalten', function () {
+    [$nutzer] = nutzerMitZweiterStufe();
+    $nutzer->forceFill(['two_factor_required' => true])->save();
+
+    $this->actingAs($nutzer->fresh())
+        ->delete(route('two-factor.destroy'), ['password' => 'Ein-Gutes-Kennwort-2026'])
+        ->assertSessionHasErrors('password', null, 'zweiteStufeAus');
+
+    expect($nutzer->fresh()->hatZweiteStufe())->toBeTrue();
+});
+
+test('Livewire bleibt offen, damit das Profil bedienbar ist', function () {
+    // Die Seiten dahinter sind ohnehin gesperrt - man kommt nicht hin. Aber
+    // Sprachumschaltung und Formulare auf dem Profil laufen darueber.
+    $nutzer = userWithPermissions([]);
+    $nutzer->forceFill(['two_factor_required' => true])->save();
+
+    $this->actingAs($nutzer)->post('/locale/en')->assertRedirect();
+});
+
+test('ein Administrator setzt und löst die Pflicht über das Formular', function () {
+    $admin = userWithPermissions(['admin_user']);
+    $kunde = userWithPermissions([]);
+
+    $daten = [
+        'name' => $kunde->name,
+        'username' => $kunde->username,
+        'email' => null,
+        'role_id' => $kunde->role_id,
+        'customer_id' => null,
+        'two_factor_required' => '1',
+    ];
+
+    $this->actingAs($admin)->patch(route('admin.user.update', $kunde), $daten);
+    expect($kunde->fresh()->two_factor_required)->toBeTrue();
+
+    // Der Haken fehlt, wenn er nicht gesetzt ist - der Browser schickt ihn gar
+    // nicht mit. Ohne prepareForValidation liesse sich die Pflicht nie wieder
+    // loeschen.
+    unset($daten['two_factor_required']);
+
+    $this->patch(route('admin.user.update', $kunde), $daten);
+    expect($kunde->fresh()->two_factor_required)->toBeFalse();
+});
+
+test('auf der Demo wird niemand gezwungen', function () {
+    // Dort teilen sich alle Besucher einen Zugang: Der erste, der eine App
+    // verbindet, sperrt alle uebrigen aus.
+    config(['app.demo' => true]);
+
+    $nutzer = userWithPermissions([]);
+    $nutzer->forceFill(['two_factor_required' => true])->save();
+
+    config(['custom.demo_protected_users' => [$nutzer->username]]);
+
+    expect($nutzer->fresh()->mussZweiteStufeEinrichten())->toBeFalse();
+
+    $this->actingAs($nutzer->fresh())->get(route('customer.search'))->assertStatus(200);
+});
