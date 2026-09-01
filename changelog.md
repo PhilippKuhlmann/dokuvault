@@ -11,6 +11,12 @@
   - Die Mail geht **synchron** hinaus: Ein Administrator soll sofort erfahren, ob sie ankam — und nicht erst der Benutzer, der drei Tage auf nichts wartet. Schlägt sie fehl, steht das auf der Seite statt in einer 500er-Meldung.
   - Der Link ist nur für den Eingeladenen: Als angemeldeter Benutzer landet man auf der eigenen Startseite. Sonst setzte der Administrator am eigenen Rechner eben doch das Kennwort des neuen Benutzers.
 
+- **Die Mails sehen aus wie die Anwendung.** Kopfband in `cerulean-950`, Knopf in `cerulean-600`, heller blauer Untergrund — dieselben Töne wie in der Oberfläche statt des Schwarzgraus aus dem Gerüst. Gilt für alle Mails, nicht nur die Einladung.
+  - **Das eigene Logo steht im Kopf**, sofern eines hinterlegt ist. Sonst der Name der Installation als Text: Das eingebaute Zeichen ist ein SVG, und SVG zeigen die meisten Mailprogramme gar nicht erst an — ein Name, der immer ankommt, ist besser als ein Bild, das es meistens nicht tut.
+  - Der Kopf zeigt den **eingestellten** Namen, nicht den aus der Konfiguration — eine umbenannte Installation hieß in ihren Mails sonst weiterhin anders.
+  - Die Höhe des Logos ist begrenzt, die Breite läuft: Fest auf 75 × 75 gesetzt sah ein breites Logo gequetscht aus.
+  - Im Fuß steht jetzt, dass die Nachricht automatisch verschickt wurde, statt „All rights reserved" — diese Mails gehen an Kollegen und Kunden, nicht an Abonnenten.
+
 ### Fixed
 
 - **„Kennwort vergessen" war gar nicht gangbar.** Beide Formulare stammten unverändert aus dem Gerüst: englisch, im alten Layout, und sie fragten nach der **E-Mail** — die Anwendung meldet aber mit dem **Benutzernamen** an, und genau den erwartete auch der Controller. Wer den Weg ging, kam nie an. Beide Seiten sehen jetzt aus wie die Anmeldung und fragen nach dem Benutzernamen.

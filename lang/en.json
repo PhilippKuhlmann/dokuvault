@@ -135,6 +135,7 @@
     "DHCP-Start": "DHCP start",
     "Die Einladung konnte nicht verschickt werden. Stimmen die Mail-Einstellungen?": "The invitation could not be sent. Are the mail settings correct?",
     "Die Einrichtung wurde nicht begonnen oder ist abgelaufen.": "Setup was never started, or it has expired.",
+    "Diese Nachricht wurde automatisch verschickt.": "This message was sent automatically.",
     "DSRM Passwort": "DSRM password",
     "DSRM-Kennwort": "DSRM password",
     "DSRM-Passwort": "DSRM password",
