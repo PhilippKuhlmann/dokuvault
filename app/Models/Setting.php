@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Once;
 
 /**
@@ -26,6 +28,27 @@ class Setting extends Model
     /** Eigener Name der Installation, statt des Namens aus der .env. */
     public const APP_NAME = 'app_name';
 
+    /*
+     * Der Mailversand. Steht hier etwas, gilt es statt der .env - siehe
+     * App\Providers\AppServiceProvider. Wer nichts eintraegt, behaelt die
+     * Werte aus der .env, so wie vor dieser Einstellung.
+     */
+    public const MAIL_HOST = 'mail_host';
+
+    public const MAIL_PORT = 'mail_port';
+
+    public const MAIL_USERNAME = 'mail_username';
+
+    /** Verschluesselt abgelegt - siehe mailKennwort(). */
+    public const MAIL_PASSWORD = 'mail_password';
+
+    /** '', 'tls' oder 'ssl'. */
+    public const MAIL_ENCRYPTION = 'mail_encryption';
+
+    public const MAIL_FROM_ADDRESS = 'mail_from_address';
+
+    public const MAIL_FROM_NAME = 'mail_from_name';
+
     /**
      * Pfade der eigenen Logos auf der local-Disk, je Stelle einer.
      *
@@ -46,6 +69,41 @@ class Setting extends Model
         $eigener = trim((string) self::wert(self::APP_NAME));
 
         return $eigener !== '' ? $eigener : (string) config('app.name');
+    }
+
+    /**
+     * Das SMTP-Kennwort im Klartext, oder null.
+     *
+     * Es liegt verschluesselt in der Einstellung: Die Werte gehen ueber einen
+     * Cache, und ein Kennwort, mit dem sich im Namen der Firma Mail
+     * verschicken laesst, hat weder dort noch in einem Datenbank-Abzug etwas
+     * im Klartext zu suchen.
+     *
+     * Der Rueckfall auf den Rohwert ist fuer den Fall, dass jemand die Zeile
+     * von Hand gesetzt hat - besser ein Kennwort, das funktioniert, als eine
+     * Ausnahme beim ersten Mailversand.
+     */
+    public static function mailKennwort(): ?string
+    {
+        $roh = (string) self::wert(self::MAIL_PASSWORD);
+
+        if ($roh === '') {
+            return null;
+        }
+
+        try {
+            return Crypt::decryptString($roh);
+        } catch (DecryptException) {
+            return $roh;
+        }
+    }
+
+    /** Das SMTP-Kennwort setzen; null loescht es. */
+    public static function mailKennwortSetzen(?string $kennwort): void
+    {
+        self::setzen(self::MAIL_PASSWORD, $kennwort === null || $kennwort === ''
+            ? null
+            : Crypt::encryptString($kennwort));
     }
 
     /** Der Einstellungs-Schluessel einer Logo-Stelle. */

@@ -34,6 +34,7 @@ use App\Http\Controllers\LoginGeneralController;
 use App\Http\Controllers\LoginWebsiteController;
 use App\Http\Controllers\MachineController;
 use App\Http\Controllers\MailboxController;
+use App\Http\Controllers\MailSettingController;
 use App\Http\Controllers\MailboxProviderController;
 use App\Http\Controllers\NASController;
 use App\Http\Controllers\NetworkController;
@@ -138,6 +139,14 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
             Route::get('/setting', [SettingController::class, 'index'])->name('admin.setting.index');
             Route::patch('/setting', [SettingController::class, 'update'])->name('admin.setting.update');
+
+            // Mailversand. Was hier steht, gilt statt der .env - siehe
+            // AppServiceProvider::mailEinstellungenAnwenden().
+            Route::get('/mail', [MailSettingController::class, 'index'])->name('admin.mail.index');
+            Route::patch('/mail', [MailSettingController::class, 'update'])->name('admin.mail.update');
+            Route::post('/mail/test', [MailSettingController::class, 'test'])->name('admin.mail.test');
+            Route::delete('/mail/kennwort', [MailSettingController::class, 'kennwortLoeschen'])
+                ->name('admin.mail.kennwort');
         });
 
         // Aktivitätsprotokoll - mit Suche und Filtern, deshalb Livewire.

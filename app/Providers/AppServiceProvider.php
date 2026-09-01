@@ -3,12 +3,14 @@
 namespace App\Providers;
 
 use App\Models\Role;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $this->sucheRegistrieren();
+        $this->mailEinstellungenAnwenden();
 
         Gate::define('isAdmin', function (User $user) {
             return $user->role->id == Role::IS_ADMIN;
@@ -106,5 +109,51 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Builder::macro('sucheMaskieren', fn (string $begriff) => addcslashes($begriff, '%_\\'));
+    }
+
+    /**
+     * Die im Adminbereich gepflegten SMTP-Daten ueber die .env legen.
+     *
+     * Nur was gesetzt ist: Wer nichts eintraegt, behaelt die Werte aus der
+     * .env - so wie vor dieser Einstellung. Damit bleibt auch eine
+     * Installation lauffaehig, die ihren Versand ueber die Umgebung
+     * konfiguriert.
+     *
+     * Der Zugriff ist gekapselt, weil er frueh laeuft: Bei einer frischen
+     * Installation gibt es die Tabelle noch nicht, und ein "artisan migrate"
+     * darf daran nicht scheitern.
+     */
+    private function mailEinstellungenAnwenden(): void
+    {
+        try {
+            $host = trim((string) Setting::wert(Setting::MAIL_HOST));
+        } catch (Throwable) {
+            return;
+        }
+
+        if ($host === '') {
+            return;
+        }
+
+        $kennwort = Setting::mailKennwort();
+
+        config([
+            'mail.default' => 'smtp',
+            'mail.mailers.smtp.host' => $host,
+            'mail.mailers.smtp.port' => (int) Setting::wert(Setting::MAIL_PORT, 587),
+            'mail.mailers.smtp.username' => Setting::wert(Setting::MAIL_USERNAME) ?: null,
+            'mail.mailers.smtp.password' => $kennwort,
+            // Leer heisst wirklich "ohne" - null waere hier dasselbe, aber die
+            // Auswahl kennt drei Zustaende und soll alle drei treffen koennen.
+            'mail.mailers.smtp.encryption' => Setting::wert(Setting::MAIL_ENCRYPTION) ?: null,
+        ]);
+
+        if ($absender = trim((string) Setting::wert(Setting::MAIL_FROM_ADDRESS))) {
+            config(['mail.from.address' => $absender]);
+        }
+
+        if ($name = trim((string) Setting::wert(Setting::MAIL_FROM_NAME))) {
+            config(['mail.from.name' => $name]);
+        }
     }
 }

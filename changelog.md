@@ -1,5 +1,14 @@
 # Changelog
 
+## 26.09.01d
+
+### Added
+
+- **Einstellungen → Mail.** Server, Port, Verschlüsselung, Benutzername, Kennwort und Absender lassen sich im Adminbereich pflegen — bis dahin ging das nur über die `.env` auf dem Server.
+  - **Was hier steht, gilt statt der `.env`.** Bleibt der Server leer, bleibt alles wie vorher: Eine Installation, die ihren Versand über die Umgebung konfiguriert, läuft unverändert weiter. Unter dem Serverfeld steht, was zurzeit aus der Umgebung käme.
+  - **Das Kennwort liegt verschlüsselt.** Die Einstellungen gehen über einen Cache, und ein Kennwort, mit dem sich im Namen der Firma Mail verschicken lässt, hat weder dort noch in einem Datenbank-Abzug etwas im Klartext zu suchen. Es geht auch nie wieder auf die Seite hinaus — nur die Auskunft, dass eines hinterlegt ist. Ein leeres Feld heißt „unverändert"; zum Entfernen gibt es einen eigenen Knopf.
+  - **Testmail mit Fehlermeldung.** Schlägt der Versand fehl, steht die Antwort des Servers auf der Seite. „Verbindung fehlgeschlagen" hilft niemandem, „535 Authentication failed" schon. Ohne diese Probe erfährt ein Administrator erst dann von falschen Zugangsdaten, wenn ein Benutzer auf seine Einladung wartet.
+
 ## 26.09.01c
 
 ### Added

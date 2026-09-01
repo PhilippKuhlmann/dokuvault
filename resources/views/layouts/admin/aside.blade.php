@@ -55,6 +55,7 @@
                         @can('admin_setting')
                             <x-aside.dropdownlink :label="__('Allgemein')" href="{{ route('admin.general.index') }}" />
                             <x-aside.dropdownlink :label="__('Fernwartung')" href="{{ route('admin.setting.index') }}" />
+                            <x-aside.dropdownlink :label="__('Mail')" href="{{ route('admin.mail.index') }}" />
                         @endcan
                         {{-- Die Aufbewahrungsfrist gehoert zum Protokoll, nicht zu
                              den uebrigen Einstellungen. --}}
