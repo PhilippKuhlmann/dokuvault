@@ -10,6 +10,7 @@ use App\Models\DeviceModel;
 use App\Models\Setting;
 use App\Models\Site;
 use App\Rules\BelongsToCustomer;
+use App\Support\Zeit;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
@@ -591,7 +592,7 @@ class ObjektFormular extends Component
             ->get()
             ->map(fn ($eintrag) => [
                 'wert' => $eintrag->value,
-                'wann' => $eintrag->created_at->format('d.m.Y H:i'),
+                'wann' => Zeit::anzeigen($eintrag->created_at),
                 'seit' => $eintrag->created_at->diffForHumans(),
                 'wer' => $eintrag->user?->name,
             ])

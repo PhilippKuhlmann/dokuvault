@@ -1,3 +1,4 @@
+@use('App\Support\Zeit')
 <x-admin-layout>
 
     <div class="flex w-full pl-3 pt-3 gap-3">
@@ -49,7 +50,7 @@
                         $user->hatZweiteStufe()
                             ? __('eingerichtet')
                             : ($user->two_factor_required ? __('verlangt, offen') : '—'),
-                        $user->last_login_at?->format('d.m.Y H:i') ?? __('noch nie'),
+                        Zeit::anzeigen($user->last_login_at, 'd.m.Y H:i', __('noch nie')),
                     ]"
 
                     editUrl="{{ route('admin.user.edit', $user) }}"

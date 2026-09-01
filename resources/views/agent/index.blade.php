@@ -1,3 +1,4 @@
+@use('App\Support\Zeit')
 <x-app-layout :$customer>
     <div class="p-3 sm:p-5 space-y-4">
 
@@ -212,7 +213,7 @@
                         <div class="text-sm text-gray-900 dark:text-gray-100">{{ $token->name ?: 'Token #'.$token->id }}</div>
                         <div class="text-xs text-gray-500 dark:text-gray-400">
                             Standort: {{ $token->site?->name ?? '—' }} ·
-                            Zuletzt genutzt: {{ $token->last_used_at ? $token->last_used_at->format('d.m.Y H:i') : 'noch nie' }}
+                            Zuletzt genutzt: {{ Zeit::anzeigen($token->last_used_at, 'd.m.Y H:i', __('noch nie')) }}
                         </div>
                     </div>
                     <form method="POST" action="{{ route('agent.destroy', [$customer, $token]) }}"

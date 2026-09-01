@@ -1,3 +1,4 @@
+@use('App\Support\Zeit')
 <div class="p-3 sm:p-5 space-y-4">
 
     <div class="flex flex-wrap items-baseline justify-between gap-3">
@@ -79,14 +80,14 @@
                         <tr wire:key="token-{{ $token->id }}"
                             class="border-b border-gray-100 last:border-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/50">
                             <td class="px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100">{{ $token->name }}</td>
-                            <td class="whitespace-nowrap px-4 py-2.5" title="{{ $token->created_at->format('d.m.Y H:i') }}">
+                            <td class="whitespace-nowrap px-4 py-2.5" title="{{ Zeit::anzeigen($token->created_at) }}">
                                 {{-- JUST_NOW, sonst steht beim frisch angelegten
                                      Token "vor 0 Sekunden" da. --}}
                                 {{ $token->created_at->diffForHumans(['options' => Carbon\Carbon::JUST_NOW]) }}
                             </td>
                             <td class="whitespace-nowrap px-4 py-2.5">
                                 @if ($token->last_used_at)
-                                    <span title="{{ $token->last_used_at->format('d.m.Y H:i') }}">{{ $token->last_used_at->diffForHumans(['options' => Carbon\Carbon::JUST_NOW]) }}</span>
+                                    <span title="{{ Zeit::anzeigen($token->last_used_at) }}">{{ $token->last_used_at->diffForHumans(['options' => Carbon\Carbon::JUST_NOW]) }}</span>
                                 @else
                                     {{-- Ein Token, der nie benutzt wurde, ist ein
                                          Kandidat zum Widerrufen. --}}

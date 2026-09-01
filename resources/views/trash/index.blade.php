@@ -1,3 +1,4 @@
+@use('App\Support\Zeit')
 <x-app-layout :$customer>
 
     {{-- Kopfzeile wie in den uebrigen Listen, mit Anzahl statt eines nackten
@@ -64,7 +65,7 @@
                                 {{-- "vor 3 Tagen" beantwortet die Frage, die man hier
                                      stellt; der genaue Zeitpunkt steht im Hover. --}}
                                 <td class="whitespace-nowrap px-4 py-2.5"
-                                    title="{{ $item['deleted_at']->format('d.m.Y H:i') }}">
+                                    title="{{ Zeit::anzeigen($item['deleted_at']) }}">
                                     {{ $item['deleted_at']->diffForHumans() }}
                                 </td>
 

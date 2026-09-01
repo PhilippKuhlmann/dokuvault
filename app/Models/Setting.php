@@ -28,6 +28,12 @@ class Setting extends Model
     /** Eigener Name der Installation, statt des Namens aus der .env. */
     public const APP_NAME = 'app_name';
 
+    /**
+     * Zeitzone der Anzeige. Gespeichert wird weiter in UTC - siehe
+     * App\Support\Zeit.
+     */
+    public const APP_TIMEZONE = 'app_timezone';
+
     /*
      * Der Mailversand. Steht hier etwas, gilt es statt der .env - siehe
      * App\Providers\AppServiceProvider. Wer nichts eintraegt, behaelt die

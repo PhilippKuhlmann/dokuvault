@@ -166,6 +166,13 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
             }
         }
     }
+    // Die Ereignisnamen des Protokolls laufen ebenfalls erst in der View
+    // durch __() - siehe livewire/admin-protokoll.blade.php.
+    $verwendet = array_merge(
+        $verwendet,
+        collect(config('custom.activity_events'))->map(fn ($e) => $e[0])->all(),
+    );
+
     // Beschriftungen aus der Konfiguration laufen erst zur Laufzeit durch __().
     $ausConfig = collect(config('custom.wizard_steps'))
         ->flatMap(fn ($s) => array_merge(

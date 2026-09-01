@@ -1,5 +1,23 @@
 # Changelog
 
+## 26.09.01f
+
+### Added
+
+- **Die Zeitzone lässt sich unter Einstellungen → Allgemein wählen.** Die Anwendung rechnete in UTC, in Deutschland standen damit alle Zeitpunkte zwei Stunden daneben.
+  - **Gespeichert wird weiter in UTC** — das ist der Kern. Würde stattdessen `app.timezone` umgestellt, schriebe die Anwendung ab der Umstellung lokale Zeiten in dieselben Spalten, in denen bereits UTC steht: zwei Zeitzonen in einer Spalte, ohne Merkmal, welche Zeile welche ist. Umgerechnet wird deshalb erst beim Anzeigen.
+  - **Datumsangaben ohne Uhrzeit** (Ablaufdatum, Beschaffung, EOL) laufen bewusst nicht durch die Umrechnung: Ein Datum um Stunden zu verschieben kann es auf den Vortag kippen lassen.
+  - Unter der Auswahl steht die aktuelle Uhrzeit, damit man sieht, was die Umstellung bewirkt.
+
+### Changed
+
+- **„Angemeldet bleiben" hält 30 Tage statt fünf Jahre.** Ohne Angabe lässt Laravel das Cookie praktisch unbegrenzt gelten — in einem Werkzeug, das die Kennwörter ganzer Kundennetze hält, wäre ein gestohlenes Notebook damit ein Dauerzugang. Die Zahl steht in `config/custom.php`.
+
+### Fixed
+
+- Der Protokolleintrag „Zweite Stufe zurückgesetzt" hatte keinen Ereignisnamen — in der Spalte stand „—", und filtern ließ er sich auch nicht.
+- Die Ereignisnamen des Protokolls waren im Englischen deutsch geblieben. Der Test, der übersetzte Zeichenketten gegen ihre Verwendung abgleicht, kannte diese Quelle nicht; jetzt schon.
+
 ## 26.09.01e
 
 ### Added

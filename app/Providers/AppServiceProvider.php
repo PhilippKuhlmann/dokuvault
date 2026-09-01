@@ -6,6 +6,7 @@ use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
@@ -37,6 +38,13 @@ class AppServiceProvider extends ServiceProvider
 
         $this->sucheRegistrieren();
         $this->mailEinstellungenAnwenden();
+
+        // Ohne Angabe gilt das "Angemeldet bleiben"-Cookie fuenf Jahre - siehe
+        // config/custom.php. Ein gestohlenes Notebook waere damit ein
+        // Dauerzugang.
+        Auth::guard('web')->setRememberDuration(
+            60 * 24 * (int) config('custom.remember_days', 30)
+        );
 
         Gate::define('isAdmin', function (User $user) {
             return $user->role->id == Role::IS_ADMIN;

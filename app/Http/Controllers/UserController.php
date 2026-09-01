@@ -147,10 +147,13 @@ class UserController extends Controller
             'two_factor_confirmed_at' => null,
         ])->save();
 
+        // Mit Ereignisnamen: Ohne einen steht in der Protokollspalte "—", und
+        // der Eintrag laesst sich auch nicht filtern.
         activity()
+            ->event('zweite_stufe')
             ->performedOn($user)
             ->causedBy(auth()->user())
-            ->withProperties(['name' => $user->name])
+            ->withProperties(['objekt' => $user->name])
             ->log('Zweite Stufe zurückgesetzt');
 
         return redirect(route('admin.user.edit', $user))

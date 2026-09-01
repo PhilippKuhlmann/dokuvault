@@ -1,3 +1,4 @@
+@use('App\Support\Zeit')
 <div>
     {{-- Titel ausdruecklich: aus dem Routennamen abgeleitet waere er beim
          Livewire-Rerender leer. --}}
@@ -167,7 +168,7 @@
                             {{-- Das genaue Datum im Hover: "vor 3 Tagen" liest sich
                                  schneller, aber manchmal braucht man den Tag. --}}
                             <td class="whitespace-nowrap px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300"
-                                title="{{ $file->created_at->format('d.m.Y H:i') }}">
+                                title="{{ Zeit::anzeigen($file->created_at) }}">
                                 {{ $file->created_at->diffForHumans() }}
                             </td>
 

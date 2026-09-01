@@ -28,6 +28,30 @@
             @enderror
         </div>
 
+        {{-- Nur die Anzeige, nicht die Ablage: Gespeichert wird weiter in
+             UTC. Waere es anders, stuenden nach der Umstellung zwei Zeitzonen
+             in derselben Spalte. --}}
+        <div class="mt-6 border-t border-gray-100 pt-5 dark:border-gray-700">
+            <x-input.label for="zeitzone" :value="__('Zeitzone')" />
+            <x-input.select id="zeitzone" name="zeitzone" wire:model.live="zeitzone" class="mt-1 w-full">
+                @foreach ($zonen as $zone)
+                    <option value="{{ $zone }}">{{ $zone }}</option>
+                @endforeach
+            </x-input.select>
+
+            <div class="mt-1 flex items-center gap-2">
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ __('Gilt für alle angezeigten Zeitpunkte. Gerade ist es:') }}
+                    <span class="font-mono">{{ $jetzt }}</span>
+                </p>
+                <span wire:loading wire:target="zeitzone" class="text-xs text-gray-400 dark:text-gray-500">{{ __('speichert …') }}</span>
+            </div>
+
+            @error('zeitzone')
+                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+            @enderror
+        </div>
+
         {{-- Drei Felder statt eines: Das Logo auf der Anmeldeseite darf gross
              und breit sein, das in der Kopfzeile muss neben den Namen passen,
              ein Favicon ist quadratisch. --}}

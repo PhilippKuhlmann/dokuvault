@@ -842,6 +842,23 @@ return [
     | keine Kennwoerter - sie haetten im Kennwortverlauf nichts zu suchen.
     |
     */
+    /*
+    |--------------------------------------------------------------------------
+    | Wie lange "Angemeldet bleiben" gilt
+    |--------------------------------------------------------------------------
+    |
+    | Laravel laesst das Cookie ohne Angabe fuenf Jahre gelten. Fuer ein
+    | Werkzeug, in dem die Kennwoerter ganzer Kundennetze liegen, ist das zu
+    | lang: Ein gestohlenes Notebook waere damit ein Dauerzugang.
+    |
+    | 30 Tage - lang genug, dass niemand sich taeglich neu anmeldet, kurz
+    | genug, dass ein vergessenes Geraet von selbst zufaellt. Eine
+    | Kennwortaenderung beendet es ohnehin sofort, seit die Sitzung am
+    | Kennwort-Hash haengt.
+    |
+    */
+    'remember_days' => 30,
+
     'non_password_secrets' => [
         'remember_token',
         'two_factor_secret',
@@ -947,6 +964,7 @@ return [
         'anmeldung' => ['Angemeldet', 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-700'],
         'anmeldung_gescheitert' => ['Anmeldung gescheitert', 'text-amber-700 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/30'],
         'anmeldung_gesperrt' => ['Anmeldung gesperrt', 'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-900/30'],
+        'zweite_stufe' => ['Zweite Stufe zurückgesetzt', 'text-purple-700 bg-purple-50 dark:text-purple-300 dark:bg-purple-900/30'],
     ],
 
     /*

@@ -222,8 +222,11 @@ test('ein Administrator kann die zweite Stufe zurücksetzen', function () {
     expect($nutzer->fresh()->hatZweiteStufe())->toBeFalse();
 
     // Und es steht im Protokoll, wer es war.
+    // Mit Ereignisnamen: Ohne einen steht in der Protokollspalte nur "—", und
+    // filtern liesse sich der Eintrag auch nicht.
     expect(Activity::latest('id')->first())
-        ->description->toBe('Zweite Stufe zurückgesetzt');
+        ->description->toBe('Zweite Stufe zurückgesetzt')
+        ->event->toBe('zweite_stufe');
 });
 
 test('ohne das Recht admin_user geht das nicht', function () {

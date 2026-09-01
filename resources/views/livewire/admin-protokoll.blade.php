@@ -1,3 +1,4 @@
+@use('App\Support\Zeit')
 <div class="p-3 sm:p-5 space-y-4">
 
     <div class="flex flex-wrap items-baseline justify-between gap-3">
@@ -120,8 +121,8 @@
                         @endphp
                         <tr wire:key="aktivitaet-{{ $activity->id }}" x-data="{ open: false }"
                             class="border-b border-gray-100 last:border-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/50">
-                            <td class="whitespace-nowrap px-4 py-2.5" title="{{ $activity->created_at->format('d.m.Y H:i:s') }}">
-                                {{ $activity->created_at->format('d.m.Y H:i') }}
+                            <td class="whitespace-nowrap px-4 py-2.5" title="{{ Zeit::anzeigen($activity->created_at, 'd.m.Y H:i:s') }}">
+                                {{ Zeit::anzeigen($activity->created_at) }}
                             </td>
                             <td class="px-4 py-2.5 text-gray-900 dark:text-gray-100">
                                 {{ $activity->causer?->name ?? __('System') }}

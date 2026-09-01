@@ -3,8 +3,10 @@
 namespace App\Livewire;
 
 use App\Models\Setting;
+use App\Support\Zeit;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -23,6 +25,16 @@ class AdminAllgemein extends Component
     /** Eigener Name, leer heisst: der aus der Konfiguration. */
     public string $name = '';
 
+    /**
+     * Zeitzone der Anzeige.
+     *
+     * Nur der Anzeige: Gespeichert wird weiter in UTC. Waere es anders,
+     * schriebe die Anwendung ab der Umstellung lokale Zeiten in dieselben
+     * Spalten, in denen bereits UTC steht - zwei Zeitzonen in einer Spalte
+     * ohne Merkmal, welche Zeile welche ist. Siehe App\Support\Zeit.
+     */
+    public string $zeitzone = '';
+
     /** Je Stelle ein Upload-Feld; die Namen muessen die Stellen spiegeln. */
     public $logo_login;
 
@@ -35,6 +47,7 @@ class AdminAllgemein extends Component
         Gate::authorize('admin_setting');
 
         $this->name = (string) Setting::wert(Setting::APP_NAME);
+        $this->zeitzone = Zeit::zone();
     }
 
     /**
@@ -52,6 +65,22 @@ class AdminAllgemein extends Component
         Setting::setzen(Setting::APP_NAME, trim($this->name) ?: null);
 
         $this->dispatch('hinweis', text: __('Name gespeichert.'));
+    }
+
+    /** Die Zeitzone gilt sofort - wie der Name. */
+    public function updatedZeitzone(): void
+    {
+        Gate::authorize('admin_setting');
+
+        $this->validate(
+            ['zeitzone' => ['required', Rule::in(Zeit::auswahl())]],
+            [],
+            ['zeitzone' => __('Zeitzone')]
+        );
+
+        Setting::setzen(Setting::APP_TIMEZONE, $this->zeitzone);
+
+        $this->dispatch('hinweis', text: __('Zeitzone gespeichert.'));
     }
 
     /**
@@ -136,6 +165,9 @@ class AdminAllgemein extends Component
                     'vorhanden' => Setting::logoPfad($stelle) !== null,
                 ])->values()->all(),
             'formate' => config('custom.bild_formate'),
+            'zonen' => Zeit::auswahl(),
+            // Damit die Seite zeigen kann, was die Umstellung bewirkt.
+            'jetzt' => Zeit::anzeigen(now(), 'd.m.Y H:i'),
         ])->layout('layouts.admin.app');
     }
 }
