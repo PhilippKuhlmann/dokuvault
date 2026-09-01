@@ -944,6 +944,9 @@ return [
         'deleted' => ['Gelöscht', 'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-900/30'],
         'restored' => ['Wiederhergestellt', 'text-amber-700 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/30'],
         'password_changed' => ['Kennwort geändert', 'text-purple-700 bg-purple-50 dark:text-purple-300 dark:bg-purple-900/30'],
+        'anmeldung' => ['Angemeldet', 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-700'],
+        'anmeldung_gescheitert' => ['Anmeldung gescheitert', 'text-amber-700 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/30'],
+        'anmeldung_gesperrt' => ['Anmeldung gesperrt', 'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-900/30'],
     ],
 
     /*

@@ -199,6 +199,17 @@ class DocumentationWizard extends Component
     {
         $this->form = [];
         $this->resetValidation();
+
+        // Der Server hat das Formular geleert - der Browser nicht. Bei
+        // wire:model ohne .live steht der getippte Wert im DOM, und Livewire
+        // schuetzt Eingabefelder beim Morphen: Nach "Hinzufuegen" blieb der
+        // Name im Feld stehen, und ein zweiter Klick legte denselben Standort
+        // noch einmal an.
+        //
+        // Ein neuer wire:key hat daran nichts geaendert - probiert und
+        // verworfen. Also sagt die Komponente es dem Browser ausdruecklich;
+        // die View leert die Felder darauf hin.
+        $this->dispatch('assistent-formular-geleert');
     }
 
     protected function rulesForStep(array $step, int $customerId): array

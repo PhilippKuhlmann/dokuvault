@@ -463,3 +463,20 @@ test('die beiden Felder melden sich waehrend der Eingabe an den Server', functio
     expect($html)->toContain('wire:model.live.debounce.600ms="form.cidr"');
     expect($html)->toContain('wire:model="form.gateway"');
 });
+
+test('nach dem Hinzufügen sagt der Assistent dem Browser, dass er leeren soll', function () {
+    // Der Server leert $form - der Browser nicht: Livewire schuetzt
+    // Eingabefelder beim Morphen. Der getippte Name blieb im Feld stehen, und
+    // ein zweiter Klick legte denselben Standort noch einmal an.
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['site_create']));
+
+    Livewire::test(DocumentationWizard::class, ['customer' => $customer])
+        ->set('form.name', 'Zentrale')
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertSet('form', [])
+        ->assertDispatched('assistent-formular-geleert');
+
+    expect(Site::where('name', 'Zentrale')->count())->toBe(1);
+});

@@ -38,6 +38,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'two_factor_confirmed_at' => 'datetime',
         'two_factor_required' => 'boolean',
+        'last_login_at' => 'datetime',
     ];
 
     /**

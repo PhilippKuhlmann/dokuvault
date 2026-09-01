@@ -31,7 +31,7 @@
 
 <div class="m-3">
     <x-table.main>
-        <x-table.head :labels="['Name', 'Benutzername', 'Rolle', 'Kunde', 'Zweite Stufe', '', ]" />
+        <x-table.head :labels="['Name', 'Benutzername', 'Rolle', 'Kunde', 'Zweite Stufe', 'Zuletzt angemeldet', '', ]" />
 
         <x-table.body>
 
@@ -49,6 +49,7 @@
                         $user->hatZweiteStufe()
                             ? __('eingerichtet')
                             : ($user->two_factor_required ? __('verlangt, offen') : '—'),
+                        $user->last_login_at?->format('d.m.Y H:i') ?? __('noch nie'),
                     ]"
 
                     editUrl="{{ route('admin.user.edit', $user) }}"

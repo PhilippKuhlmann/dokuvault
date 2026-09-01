@@ -71,6 +71,23 @@ class TwoFactorChallengeController extends Controller
         if (! $stimmt) {
             RateLimiter::hit($this->schluessel($nutzer), self::SPERRE);
 
+            // Ein falscher zweiter Faktor loest kein Auth\Events\Failed aus -
+            // das Kennwort stimmte ja. Genau dieser Fall ist aber der
+            // interessante: Jemand kennt das Kennwort und kommt trotzdem nicht
+            // herein.
+            activity()
+                ->event('anmeldung_gescheitert')
+                ->performedOn($nutzer)
+                ->causedBy($nutzer)
+                ->withProperties([
+                    'objekt' => $nutzer->name,
+                    'attributes' => array_filter([
+                        'Schritt' => __('Zweite Stufe'),
+                        'IP' => $request->ip(),
+                    ]),
+                ])
+                ->log('Anmeldung gescheitert');
+
             throw ValidationException::withMessages([
                 'code' => __('Der Code stimmt nicht.'),
             ]);

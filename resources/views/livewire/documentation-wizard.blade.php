@@ -142,7 +142,13 @@
                 </div>
             @endif
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            {{-- Nach "Hinzufuegen" hat der Server das Formular geleert, der
+                 Browser aber nicht: Livewire schuetzt Eingabefelder beim
+                 Morphen, der getippte Name blieb stehen und ein zweiter Klick
+                 legte denselben Eintrag noch einmal an. Siehe resetForm(). --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6"
+                x-data
+                @assistent-formular-geleert.window="$el.querySelectorAll('input, textarea, select').forEach(feld => feld.value = '')">
                 @foreach ($step['fields'] as $field)
                     <div class="flex flex-col" wire:key="{{ $step['key'] }}-{{ $field['name'] }}">
                         <x-input.label :value="__($field['label'])" />

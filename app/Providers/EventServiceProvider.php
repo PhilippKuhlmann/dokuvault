@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Listeners\AnmeldungProtokollieren;
+use Illuminate\Auth\Events\Failed;
+use Illuminate\Auth\Events\Lockout;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -17,6 +21,20 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [
             SendEmailVerificationNotification::class,
+        ],
+
+        // Wer sich anmeldet, woher, und wer es vergeblich versucht - siehe
+        // AnmeldungProtokollieren.
+        Login::class => [
+            [AnmeldungProtokollieren::class, 'handleLogin'],
+        ],
+
+        Failed::class => [
+            [AnmeldungProtokollieren::class, 'handleFailed'],
+        ],
+
+        Lockout::class => [
+            [AnmeldungProtokollieren::class, 'handleLockout'],
         ],
     ];
 

@@ -11,5 +11,8 @@
 
     </x-create.main>
 
-    <x-deletecard action="{{ route('admin.service.destroy', $service) }}" />
+    {{-- Dienste kennen ebenfalls keinen Papierkorb. --}}
+    <x-deletecard action="{{ route('admin.service.destroy', $service) }}"
+        :hinweis="__('Der Eintrag wird endgültig gelöscht und lässt sich nicht wiederherstellen.')"
+        :frage="__('Endgültig löschen?')" />
 </x-admin-layout>

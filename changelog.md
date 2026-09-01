@@ -1,5 +1,21 @@
 # Changelog
 
+## 26.09.01e
+
+### Added
+
+- **Anmeldungen stehen im Protokoll.** Bis dahin stand dort, wer welchen Server geändert hat — aber nicht, wer sich überhaupt angemeldet hat. In einem Werkzeug, das die Kennwörter ganzer Kundennetze hält, war das die erste Frage nach einem Vorfall und die einzige, die sich nicht beantworten ließ.
+  - Drei neue Ereignisse: **Angemeldet**, **Anmeldung gescheitert**, **Anmeldung gesperrt** — mit Herkunft und Browser unter „anzeigen".
+  - Auch ein **falscher zweiter Faktor** landet dort. Laravel löst dabei kein Ereignis aus, das Kennwort stimmte ja — und genau dieser Fall ist der interessante: Jemand kennt das Kennwort und kommt trotzdem nicht herein.
+  - Das **versuchte Kennwort** steht nirgends. Es steckt im Ereignis mit drin; wer sich beim Benutzernamen vertippt, hätte sein richtiges Kennwort sonst im Klartext im Protokoll.
+  - Die Einträge laufen mit derselben Aufbewahrungsfrist ab wie der Rest des Protokolls.
+- **„Zuletzt angemeldet" in der Benutzerliste.** Verwaiste Zugänge waren bis dahin unsichtbar — der Werkstudent von vorletztem Jahr hat vielleicht noch ein Konto. Wer sich nie angemeldet hat, steht als „noch nie" da.
+
+### Fixed
+
+- **Zwei Seiten versprachen einen Papierkorb, den es nicht gibt.** Benutzer und Dienste werden **endgültig** gelöscht — die Warnung sagte „wandert in den Papierkorb und lässt sich von dort wiederherstellen". Wer sich darauf verlassen hat, hat einen Zugang im Glauben gelöscht, ihn zurückholen zu können.
+- **Der Erstaufnahme-Assistent leerte seine Felder nicht.** Der Server tat es, der Browser nicht: Livewire schützt Eingabefelder beim Morphen, der getippte Name blieb stehen — und ein zweiter Klick auf „Hinzufügen" legte denselben Standort noch einmal an.
+
 ## 26.09.01d
 
 ### Added

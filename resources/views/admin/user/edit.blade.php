@@ -105,6 +105,12 @@
             </div>
         @endif
 
-        <x-deletecard action="{{ route('admin.user.destroy', [$user]) }}" />
+        {{-- Benutzer kennen keinen Papierkorb: Die Karte sagte trotzdem, der
+             Eintrag lasse sich wiederherstellen. Wer sich darauf verlassen
+             hat, hat einen Zugang endgueltig geloescht im Glauben, ihn
+             zurueckholen zu koennen. --}}
+        <x-deletecard action="{{ route('admin.user.destroy', [$user]) }}"
+            :hinweis="__('Der Eintrag wird endgültig gelöscht und lässt sich nicht wiederherstellen.')"
+            :frage="__('Endgültig löschen?')" />
     @endif
 </x-admin-layout>
