@@ -42,9 +42,17 @@ class AppServiceProvider extends ServiceProvider
         // Ohne Angabe gilt das "Angemeldet bleiben"-Cookie fuenf Jahre - siehe
         // config/custom.php. Ein gestohlenes Notebook waere damit ein
         // Dauerzugang.
-        Auth::guard('web')->setRememberDuration(
-            60 * 24 * (int) config('custom.remember_days', 30)
-        );
+        //
+        // Nur mit Schluessel: Der Guard zieht die Sitzung, die Sitzung ist
+        // verschluesselt (config/session.php), und ohne APP_KEY wirft der
+        // Verschluessler. Genau das passiert bei "composer install" auf einem
+        // frischen Auscheck-Verzeichnis - dort laeuft package:discover, bevor
+        // es eine .env gibt, und der ganze Lauf brach daran ab.
+        if (config('app.key')) {
+            Auth::guard('web')->setRememberDuration(
+                60 * 24 * (int) config('custom.remember_days', 30)
+            );
+        }
 
         Gate::define('isAdmin', function (User $user) {
             return $user->role->id == Role::IS_ADMIN;

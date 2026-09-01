@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.09.01h
+
+### Fixed
+
+- **`composer install` scheiterte auf einem frischen Auscheck-Verzeichnis.** Die neue Begrenzung für „Angemeldet bleiben" spricht den Anmelde-Guard an; der zieht die Sitzung, die Sitzung ist verschlüsselt — und ohne `APP_KEY` wirft der Verschlüssler. Genau das ist der Zustand, in dem `composer install` sein `package:discover` ausführt: vor der `.env`. Der ganze CI-Lauf brach daran ab, bevor auch nur ein Test lief. Die Zeile läuft jetzt nur mit vorhandenem Schlüssel — ohne einen gibt es ohnehin keine Sitzung.
+
 ## 26.09.01g
 
 ### Added
