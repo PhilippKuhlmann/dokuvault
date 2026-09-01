@@ -175,6 +175,11 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             // dauerhaft ausgesperrt.
             Route::delete('/user/{user}/zweite-stufe', [UserController::class, 'zweiteStufeZuruecksetzen'])
                 ->name('admin.user.two-factor');
+
+            // Einladung erneut schicken: im Spam gelandet, Link abgelaufen,
+            // versehentlich geloescht - das ist der Alltag, nicht der Fehler.
+            Route::post('/user/{user}/einladung', [UserController::class, 'einladen'])
+                ->name('admin.user.einladung');
         });
 
         // Rolen

@@ -33,6 +33,16 @@
             <!-- Karte -->
             <div class="w-full px-6 py-8 sm:px-8 bg-white dark:bg-gray-800 shadow-xl rounded-2xl border border-gray-100 dark:border-gray-700">
 
+                {{-- Rueckmeldung aus einem vorangegangenen Schritt: Wer ueber
+                     eine Einladung oder "Kennwort vergessen" hierher kommt,
+                     stand sonst vor einer leeren Maske und wusste nicht, ob
+                     sein Kennwort angekommen ist. --}}
+                @if (session('status'))
+                    <div class="mb-4 rounded-lg border border-green-300 bg-green-50 p-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-900/25 dark:text-green-300" role="status">
+                        {{ session('status') }}
+                    </div>
+                @endif
+
                 <form method="POST" action="{{ route('login') }}">
                     @csrf
 

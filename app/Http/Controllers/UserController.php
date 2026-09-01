@@ -6,7 +6,11 @@ use App\Http\Requests\UserRequest;
 use App\Models\Customer;
 use App\Models\Role;
 use App\Models\User;
+use App\Notifications\Einladung;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
+use Throwable;
 
 class UserController extends Controller
 {
@@ -30,12 +34,65 @@ class UserController extends Controller
 
     public function store(UserRequest $request)
     {
-        $user = $request->validated();
-        $user['password'] = Hash::make($request->password);
+        $daten = $request->validated();
+        $einladen = (bool) ($daten['einladen'] ?? false);
+        unset($daten['einladen']);
 
-        User::create($user);
+        // Wer eingeladen wird, bekommt hier ein Kennwort, das niemand kennt -
+        // auch der Administrator nicht. Es zu setzen ist nicht ueberfluessig:
+        // die Spalte ist NOT NULL, und ein leeres Feld waere ein Konto, in das
+        // sich jeder mit einem leeren Kennwort setzen koennte, wenn irgendwo
+        // eine Pruefung schlampt.
+        $daten['password'] = Hash::make($einladen ? Str::random(64) : $request->password);
 
-        return redirect(route('admin.user.index'));
+        $user = User::create($daten);
+
+        if (! $einladen) {
+            return redirect(route('admin.user.index'));
+        }
+
+        return $this->einladungSenden($user, route('admin.user.index'));
+    }
+
+    /**
+     * Einladung (erneut) verschicken. Der haeufige Fall ist nicht der Fehler,
+     * sondern der Alltag: Die Mail ist im Spam gelandet, der Link ist
+     * abgelaufen, der Kollege hat sie geloescht.
+     */
+    public function einladen(User $user)
+    {
+        return $this->einladungSenden($user, route('admin.user.edit', $user));
+    }
+
+    /**
+     * Erzeugt einen Einladungs-Token und schickt ihn per Mail.
+     *
+     * Bewusst synchron: Ein Administrator soll sofort erfahren, ob die Mail
+     * hinausging - und nicht erst der Benutzer, der drei Tage auf nichts
+     * wartet. Deshalb faengt es den Fehler auch ab und zeigt ihn an, statt
+     * eine 500er-Seite zu liefern.
+     */
+    private function einladungSenden(User $user, string $ziel)
+    {
+        if (! $user->email) {
+            return redirect($ziel)->withErrors([
+                'einladung' => __('Ohne E-Mail-Adresse lässt sich keine Einladung verschicken.'),
+            ]);
+        }
+
+        try {
+            $token = Password::broker('einladung')->createToken($user);
+
+            $user->notify(new Einladung($token));
+        } catch (Throwable $fehler) {
+            report($fehler);
+
+            return redirect($ziel)->withErrors([
+                'einladung' => __('Die Einladung konnte nicht verschickt werden. Stimmen die Mail-Einstellungen?'),
+            ]);
+        }
+
+        return redirect($ziel)->with('status', 'einladung-verschickt');
     }
 
     public function edit(User $user)

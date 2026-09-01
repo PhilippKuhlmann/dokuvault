@@ -33,13 +33,13 @@
             <!-- Karte -->
             <div class="w-full px-6 py-8 sm:px-8 bg-white dark:bg-gray-800 shadow-xl rounded-2xl border border-gray-100 dark:border-gray-700">
 
-                <form method="POST" action="{{ route('password.store') }}">
+                <form method="POST" action="{{ route('einladung.speichern') }}">
                     @csrf
 
-                    <input type="hidden" name="token" value="{{ $request->route('token') }}">
+                    <input type="hidden" name="token" value="{{ $token }}">
 
                     <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                        {{ __('Neues Kennwort vergeben.') }}
+                        {{ __('Willkommen. Vergeben Sie sich ein Kennwort, dann können Sie sich anmelden.') }}
                     </p>
 
                     <div>
@@ -49,7 +49,7 @@
                     <div>
                         <x-input.label class="text-gray-900" for="username" :value="__('Benutzername')" />
                         <x-input.text id="username" name="username" type="text" required
-                            :value="old('username', $request->query('username'))" class="block mt-1 w-full" />
+                            :value="old('username', $username)" class="block mt-1 w-full" />
                     </div>
 
                     <div class="mt-4">

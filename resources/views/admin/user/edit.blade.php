@@ -44,6 +44,46 @@
 
         </x-create.main>
 
+        @if ($errors->has('einladung'))
+            <div class="mx-auto mt-4 max-w-3xl px-3">
+                <div class="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/25 dark:text-red-300">
+                    {{ $errors->first('einladung') }}
+                </div>
+            </div>
+        @endif
+
+        @if (session('status') === 'einladung-verschickt')
+            <div class="mx-auto mt-4 max-w-3xl px-3">
+                <div class="rounded-lg border border-green-300 bg-green-50 p-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-900/25 dark:text-green-300" role="status">
+                    {{ __('Einladung verschickt an') }} {{ $user->email }}
+                </div>
+            </div>
+        @endif
+
+        {{-- Im Spam gelandet, Link abgelaufen, versehentlich geloescht: das ist
+             der Alltag, nicht der Fehler. --}}
+        <div class="mx-auto mt-4 max-w-3xl px-3">
+            <div class="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 text-sm dark:border-gray-700 dark:bg-gray-800 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p class="font-semibold text-gray-900 dark:text-gray-100">{{ __('Einladung') }}</p>
+                    <p class="mt-1 text-gray-600 dark:text-gray-400">
+                        @if ($user->email)
+                            {{ __('Schickt einen Link an :adresse, hinter dem sich der Benutzer ein neues Kennwort vergibt.', ['adresse' => $user->email]) }}
+                        @else
+                            {{ __('Ohne E-Mail-Adresse lässt sich keine Einladung verschicken.') }}
+                        @endif
+                    </p>
+                </div>
+
+                @if ($user->email)
+                    <form method="post" action="{{ route('admin.user.einladung', $user) }}" class="shrink-0">
+                        @csrf
+                        <x-input.button color="gray" :label="__('Einladung senden')" />
+                    </form>
+                @endif
+            </div>
+        </div>
+
         {{-- Verlorenes Telefon: sonst bliebe nur der Griff in die Datenbank. --}}
         @if ($user->hatZweiteStufe())
             <div class="mx-auto mt-4 max-w-3xl px-3">

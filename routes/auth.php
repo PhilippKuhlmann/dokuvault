@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\Auth\InvitationController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
@@ -34,6 +35,15 @@ Route::middleware('guest')->group(function () {
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->middleware('throttle:5,15')
         ->name('password.store');
+
+    // Einladung: Der neue Benutzer gibt sich sein Kennwort selbst. Gedrosselt
+    // wie das Zuruecksetzen - dahinter steckt derselbe ratbare Token.
+    Route::get('einladung/{token}', [InvitationController::class, 'create'])
+        ->name('einladung.formular');
+
+    Route::post('einladung', [InvitationController::class, 'store'])
+        ->middleware('throttle:5,15')
+        ->name('einladung.speichern');
 
     // Zwischen Kennwort und Einmalcode ist der Nutzer nicht angemeldet -
     // deshalb steht der zweite Schritt hier bei den Gaesten und nicht bei den

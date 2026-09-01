@@ -101,6 +101,20 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
+
+        /*
+         * Einladungen laufen ueber dieselbe Maschinerie, aber mit anderer
+         * Frist: Eine Stunde reicht fuer "ich habe mein Kennwort vergessen" -
+         * eine Einladung geht an jemanden, der vielleicht im Urlaub ist. Eine
+         * Woche. Und ohne Drossel, weil ein Administrator eine Einladung
+         * durchaus zweimal hintereinander verschicken darf.
+         */
+        'einladung' => [
+            'provider' => 'users',
+            'table' => 'password_resets',
+            'expire' => 60 * 24 * 7,
+            'throttle' => 0,
+        ],
     ],
 
     /*

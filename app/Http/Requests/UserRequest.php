@@ -30,10 +30,16 @@ class UserRequest extends FormRequest
             // Dieselbe Latte wie im eigenen Profil (PasswordController). Vorher
             // reichten hier sechs Zeichen - ein Kennwort, das sich trotz der
             // Sperre in LoginRequest noch durchprobieren laesst.
-            'password' => $this->isMethod('post')
+            //
+            // Beim Einladen gibt es hier keins: Der Benutzer vergibt es sich
+            // selbst, und ein Kennwort, das der Administrator kennt und per
+            // Zuruf weitergibt, waere ohnehin das schwaechere Verfahren.
+            'password' => $this->isMethod('post') && ! $this->boolean('einladen')
                 ? ['required', Password::defaults()]
                 : ['nullable', Password::defaults()],
-            'email' => 'nullable',
+            'einladen' => 'boolean',
+            // Ohne Adresse kann die Einladung nirgendwohin.
+            'email' => [$this->boolean('einladen') ? 'required' : 'nullable', 'email'],
             'role_id' => ['required', Rule::exists('roles', 'id')->whereNull('deleted_at')],
             // Frueher stand hier required_if:role_id,98,99 - feste Rollennummern
             // aus einer Zeit vor dem Rollen-Adminbereich. Solche Rollen gibt es
@@ -56,6 +62,9 @@ class UserRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        $this->merge(['two_factor_required' => $this->boolean('two_factor_required')]);
+        $this->merge([
+            'two_factor_required' => $this->boolean('two_factor_required'),
+            'einladen' => $this->boolean('einladen'),
+        ]);
     }
 }

@@ -1,5 +1,22 @@
 # Changelog
 
+## 26.09.01c
+
+### Added
+
+- **Benutzer per E-Mail einladen.** Haken „Per E-Mail einladen" im Formular für einen neuen Benutzer: Statt eines Kennworts, das der Administrator sich ausdenkt und per Zuruf weitergibt, bekommt der Benutzer einen Link und vergibt es sich selbst.
+  - Das Kennwortfeld verschwindet, sobald der Haken sitzt. Beides nebeneinander stehen zu lassen wäre die Einladung zum Missverständnis: ein getipptes Kennwort, das nie gilt.
+  - **Der Link gilt eine Woche**, nicht eine Stunde. Eine Stunde reicht für „ich habe mein Kennwort vergessen"; eine Einladung geht an jemanden, der vielleicht im Urlaub ist. Dafür gibt es einen eigenen Broker `einladung` — dieselbe Maschinerie wie beim Zurücksetzen, andere Frist.
+  - **Erneut schicken** geht auf der Benutzerseite. Im Spam gelandet, Link abgelaufen, versehentlich gelöscht: Das ist der Alltag, nicht der Fehler.
+  - Die Mail geht **synchron** hinaus: Ein Administrator soll sofort erfahren, ob sie ankam — und nicht erst der Benutzer, der drei Tage auf nichts wartet. Schlägt sie fehl, steht das auf der Seite statt in einer 500er-Meldung.
+  - Der Link ist nur für den Eingeladenen: Als angemeldeter Benutzer landet man auf der eigenen Startseite. Sonst setzte der Administrator am eigenen Rechner eben doch das Kennwort des neuen Benutzers.
+
+### Fixed
+
+- **„Kennwort vergessen" war gar nicht gangbar.** Beide Formulare stammten unverändert aus dem Gerüst: englisch, im alten Layout, und sie fragten nach der **E-Mail** — die Anwendung meldet aber mit dem **Benutzernamen** an, und genau den erwartete auch der Controller. Wer den Weg ging, kam nie an. Beide Seiten sehen jetzt aus wie die Anmeldung und fragen nach dem Benutzernamen.
+- **Ein Zugang ohne E-Mail-Adresse führte dabei in einen Serverfehler**, weil die Nachricht an niemanden gehen konnte. Jetzt steht da, woran es liegt.
+- Die Anmeldeseite zeigt jetzt Rückmeldungen aus dem vorigen Schritt an. Wer über eine Einladung oder ein zurückgesetztes Kennwort dort ankam, stand vor einer leeren Maske und wusste nicht, ob es geklappt hat.
+
 ## 26.09.01b
 
 ### Added
