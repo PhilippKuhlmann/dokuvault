@@ -169,6 +169,12 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             Route::get('/user/{user}/edit', [UserController::class, 'edit'])->name('admin.user.edit');
             Route::patch('/user/{user}', [UserController::class, 'update'])->name('admin.user.update');
             Route::delete('/user/{user}', [UserController::class, 'destroy'])->name('admin.user.destroy');
+
+            // Verlorenes Telefon: Ohne diesen Weg waere ein Nutzer mit
+            // eingeschalteter zweiter Stufe und ohne Wiederherstellungscode
+            // dauerhaft ausgesperrt.
+            Route::delete('/user/{user}/zweite-stufe', [UserController::class, 'zweiteStufeZuruecksetzen'])
+                ->name('admin.user.two-factor');
         });
 
         // Rolen

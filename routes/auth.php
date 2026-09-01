@@ -7,7 +7,9 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\TwoFactorController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -32,6 +34,17 @@ Route::middleware('guest')->group(function () {
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->middleware('throttle:5,15')
         ->name('password.store');
+
+    // Zwischen Kennwort und Einmalcode ist der Nutzer nicht angemeldet -
+    // deshalb steht der zweite Schritt hier bei den Gaesten und nicht bei den
+    // angemeldeten Routen.
+    Route::get('two-factor-challenge', [TwoFactorChallengeController::class, 'create'])
+        ->name('two-factor.login');
+
+    Route::post('two-factor-challenge', [TwoFactorChallengeController::class, 'store']);
+
+    Route::post('two-factor-challenge/abbrechen', [TwoFactorChallengeController::class, 'destroy'])
+        ->name('two-factor.abbrechen');
 });
 
 Route::middleware('auth')->group(function () {
@@ -58,4 +71,21 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+
+    // Die zweite Stufe im eigenen Profil. Nur fuer den eigenen Zugang - einen
+    // fremden richtet niemand ein.
+    Route::post('two-factor', [TwoFactorController::class, 'begin'])
+        ->name('two-factor.begin');
+
+    Route::post('two-factor/verwerfen', [TwoFactorController::class, 'cancel'])
+        ->name('two-factor.verwerfen');
+
+    Route::post('two-factor/bestaetigen', [TwoFactorController::class, 'confirm'])
+        ->name('two-factor.confirm');
+
+    Route::post('two-factor/wiederherstellungscodes', [TwoFactorController::class, 'regenerate'])
+        ->name('two-factor.codes');
+
+    Route::delete('two-factor', [TwoFactorController::class, 'destroy'])
+        ->name('two-factor.destroy');
 });

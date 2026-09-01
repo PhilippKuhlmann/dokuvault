@@ -21,6 +21,12 @@
 
             <div class="p-6 sm:p-8 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
                 <div class="max-w-xl">
+                    @include('profile.partials.two-factor-form')
+                </div>
+            </div>
+
+            <div class="p-6 sm:p-8 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                <div class="max-w-xl">
                     @include('profile.partials.delete-user-form')
                 </div>
             </div>

@@ -825,6 +825,8 @@ return [
         'encryptionkey',
         'usc_pin',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ],
 
     /*
@@ -835,8 +837,16 @@ return [
     | Das remember_token ist ein Sitzungsmerkmal: Es aendert sich bei jeder
     | Anmeldung und waere als "Kennwort geaendert" schlicht falsch.
     |
+    | Dasselbe gilt fuer die zweite Stufe: Das TOTP-Geheimnis und die
+    | Wiederherstellungscodes gehoeren aus dem Protokoll heraus, sind aber
+    | keine Kennwoerter - sie haetten im Kennwortverlauf nichts zu suchen.
+    |
     */
-    'non_password_secrets' => ['remember_token'],
+    'non_password_secrets' => [
+        'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+    ],
 
     /*
     |--------------------------------------------------------------------------

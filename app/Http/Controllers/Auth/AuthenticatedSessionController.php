@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\Concerns\LeitetNachAnmeldungWeiter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Providers\RouteServiceProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +12,8 @@ use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
+    use LeitetNachAnmeldungWeiter;
+
     /**
      * Display the login view.
      *
@@ -39,17 +41,21 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
         $request->session()->forget('password_hash_web');
 
-        $user = auth()->user();
+        // Zweite Stufe eingeschaltet? Dann ist die Anmeldung noch nicht fertig.
+        // Der Nutzer wird wieder abgemeldet - in der Sitzung steht nur, wer
+        // hereinmoechte. Bis der Einmalcode stimmt, ist er niemand.
+        if (auth()->user()->hatZweiteStufe()) {
+            $id = auth()->id();
 
-        // Nutzer mit fest zugeordnetem Kunden (Rolle "Kunde") -> direkt zum eigenen
-        // Kunden-Dashboard. Alle anderen (Admin, Techniker, ...) haben keinen
-        // festen Kunden und landen auf der Kundensuche/Übersicht (RouteServiceProvider::HOME),
-        // von der aus auch die globale Suche erreichbar ist.
-        if ($user->hasCustomer()) {
-            return redirect()->intended('/'.$user->customer->slug);
+            Auth::guard('web')->logout();
+
+            $request->session()->put(TwoFactorChallengeController::WARTET, $id);
+            $request->session()->put(TwoFactorChallengeController::GEMERKT, $request->boolean('remember'));
+
+            return redirect()->route('two-factor.login');
         }
 
-        return redirect()->intended(RouteServiceProvider::HOME);
+        return $this->nachDerAnmeldung();
     }
 
     /**

@@ -42,6 +42,27 @@
 
         </x-create.main>
 
+        {{-- Verlorenes Telefon: sonst bliebe nur der Griff in die Datenbank. --}}
+        @if ($user->hatZweiteStufe())
+            <div class="mx-auto mt-4 max-w-3xl px-3">
+                <div class="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 text-sm dark:border-gray-700 dark:bg-gray-800 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="font-semibold text-gray-900 dark:text-gray-100">{{ __('Zweite Stufe der Anmeldung') }}</p>
+                        <p class="mt-1 text-gray-600 dark:text-gray-400">
+                            {{ __('Eingeschaltet seit') }} {{ $user->two_factor_confirmed_at->translatedFormat('d.m.Y') }}.
+                            {{ __('Zurücksetzen, wenn das Telefon weg ist – der Benutzer meldet sich danach wieder nur mit Kennwort an.') }}
+                        </p>
+                    </div>
+
+                    <form method="post" action="{{ route('admin.user.two-factor', $user) }}" class="shrink-0">
+                        @csrf
+                        @method('delete')
+                        <x-input.button color="gray" :label="__('Zurücksetzen')" />
+                    </form>
+                </div>
+            </div>
+        @endif
+
         <x-deletecard action="{{ route('admin.user.destroy', [$user]) }}" />
     @endif
 </x-admin-layout>

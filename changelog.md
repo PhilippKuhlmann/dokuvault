@@ -1,5 +1,19 @@
 # Changelog
 
+## 26.09.01b
+
+### Added
+
+- **Zweite Stufe der Anmeldung (TOTP).** Im Profil einzurichten: QR-Code scannen oder das Geheimnis abtippen — beides steht nebeneinander, der Kopierknopf ist derselbe wie überall in der Anwendung. Danach verlangt die Anmeldung zusätzlich zum Kennwort einen Einmalcode aus der Authentifizierungs-App.
+  - **Bestätigen, bevor es scharf wird.** Zwischen „Geheimnis erzeugt" und „eingeschaltet" liegt ein stimmender Code. Wer seine App falsch eingerichtet hat, merkt es hier — und nicht bei der nächsten Anmeldung, ausgesperrt.
+  - **Acht Wiederherstellungscodes**, einmal angezeigt, jeder genau einmal gültig. Ohne sie wäre ein verlorenes Telefon in einem Werkzeug voller Kundenkennwörter ein verlorener Zugang.
+  - **Ein Administrator kann sie zurücksetzen** — der Fall dahinter ist banal und häufig: neues Telefon, Codes im Papierkorb. Es steht im Protokoll, wer es getan hat.
+  - **Geheimnis und Codes liegen verschlüsselt** und sind vom Aktivitätsprotokoll ausgeschlossen. Wer das Geheimnis liest, kann jeden Code erzeugen — es ist so schützenswert wie ein Kennwort. Der Invariantentest, der verschlüsselte Spalten selbst findet, greift dafür automatisch.
+  - **Der QR-Code entsteht hier**, nicht bei einem Dienst. Ein Geheimnis an einen fremden Server zu schicken, nur damit er ein Bild daraus malt, wäre das Gegenteil dessen, was diese Stufe leisten soll.
+  - **Auch der Einmalcode ist gebremst**: fünf Fehlversuche, dann eine Viertelstunde Pause. Sechs Ziffern sind eine Million Möglichkeiten — ohne Zähler in Ruhe durchzuprobieren.
+  - Zwischen Kennwort und Code ist niemand angemeldet: In der Sitzung steht nur, **wer** hereinmöchte.
+  - Neu dabei: `pragmarx/google2fa` und `bacon/bacon-qr-code`.
+
 ## 26.09.01
 
 ### Security

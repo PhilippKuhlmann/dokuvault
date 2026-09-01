@@ -70,6 +70,36 @@ class UserController extends Controller
         return redirect(route('admin.user.index', $user));
     }
 
+    /**
+     * Die zweite Stufe eines Nutzers abschalten.
+     *
+     * Der Fall dahinter ist banal und haeufig: verlorenes oder neues Telefon,
+     * Wiederherstellungscodes im Papierkorb. Ohne diesen Weg bliebe nur der
+     * Griff in die Datenbank. Es steht im Protokoll, wer es getan hat.
+     */
+    public function zweiteStufeZuruecksetzen(User $user)
+    {
+        if ($user->istDemoGeschuetzt()) {
+            return redirect(route('admin.user.edit', $user))
+                ->withErrors(['demo' => __('Dieser Demo-Zugang ist gesperrt und lässt sich nicht ändern.')]);
+        }
+
+        $user->forceFill([
+            'two_factor_secret' => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at' => null,
+        ])->save();
+
+        activity()
+            ->performedOn($user)
+            ->causedBy(auth()->user())
+            ->withProperties(['name' => $user->name])
+            ->log('Zweite Stufe zurückgesetzt');
+
+        return redirect(route('admin.user.edit', $user))
+            ->with('status', 'zweite-stufe-zurueckgesetzt');
+    }
+
     public function destroy(User $user)
     {
         if ($user->istDemoGeschuetzt()) {

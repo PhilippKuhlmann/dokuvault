@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Support\ZweiteStufe;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,10 +20,19 @@ class ProfileController extends Controller
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request): View
+    public function edit(Request $request, ZweiteStufe $zweiteStufe): View
     {
+        // Ein begonnenes, aber noch nicht bestaetigtes Geheimnis liegt in der
+        // Sitzung - siehe TwoFactorController. Nur dann gibt es einen QR-Code
+        // zu zeigen.
+        $geheimnis = $request->session()->get(TwoFactorController::IN_ARBEIT);
+
         return view('profile.edit', [
             'user' => $request->user(),
+            'zweiteStufeGeheimnis' => $geheimnis,
+            'zweiteStufeQr' => $geheimnis
+                ? $zweiteStufe->qrCode($zweiteStufe->adresse($request->user(), $geheimnis))
+                : null,
         ]);
     }
 
