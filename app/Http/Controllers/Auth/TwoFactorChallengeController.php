@@ -65,8 +65,10 @@ class TwoFactorChallengeController extends Controller
         // sechsstelliger Code aus der App kann kein Wiederherstellungscode
         // sein, und andersherum genauso - die Reihenfolge kostet also nichts
         // und spart eine Zweitunterscheidung an der Eingabe.
-        $stimmt = $this->zweiteStufe->stimmt($nutzer->two_factor_secret, $eingabe)
-            || $nutzer->wiederherstellungscodeVerbrauchen($eingabe);
+        $mitCode = $this->zweiteStufe->stimmt($nutzer->two_factor_secret, $eingabe);
+        $mitZettel = ! $mitCode && $nutzer->wiederherstellungscodeVerbrauchen($eingabe);
+
+        $stimmt = $mitCode || $mitZettel;
 
         if (! $stimmt) {
             RateLimiter::hit($this->schluessel($nutzer), self::SPERRE);
@@ -107,7 +109,40 @@ class TwoFactorChallengeController extends Controller
         // Daten, ein alter Kennwort-Hash wuerde eine Anmeldeschleife ergeben.
         $request->session()->forget('password_hash_web');
 
+        if ($mitZettel) {
+            $this->uebrigeCodesMelden($nutzer->fresh());
+        }
+
         return $this->nachDerAnmeldung();
+    }
+
+    /**
+     * Nach einem verbrauchten Wiederherstellungscode sagen, wie viele noch da
+     * sind.
+     *
+     * Jeder gilt genau einmal. Wer nicht mitzaehlt, merkt beim naechsten
+     * verlorenen Telefon, dass keiner mehr uebrig war - und kommt dann gar
+     * nicht mehr herein.
+     */
+    private function uebrigeCodesMelden(User $nutzer): void
+    {
+        $uebrig = count($nutzer->two_factor_recovery_codes ?? []);
+
+        // put statt flash: Ein Flash gilt genau einen Aufruf. Nach der
+        // Anmeldung liegt aber oft noch eine Weiterleitung dazwischen - ein
+        // Administrator wird von der Kundensuche in den Adminbereich
+        // geschickt -, und der Hinweis waere dort schon verbraucht, ohne je
+        // gezeigt worden zu sein. Die Ansicht raeumt ihn weg, sobald sie ihn
+        // ausgegeben hat.
+        session()->put('warnung', $uebrig === 0
+            ? __('Das war Ihr letzter Wiederherstellungscode. Erzeugen Sie im Profil neue – sonst kommen Sie ohne Ihre App nicht mehr herein.')
+            // Zwei Zeichenketten statt trans_choice: Bei einer Pluralform, die
+            // auf Deutsch nicht hinterlegt ist, faellt Laravel auf die
+            // Ersatzsprache zurueck - ein deutscher Nutzer bekaeme den
+            // englischen Satz. Bei __() passiert das nicht.
+            : ($uebrig === 1
+                ? __('Wiederherstellungscode verbraucht. Es ist noch einer übrig – neue gibt es im Profil.')
+                : __('Wiederherstellungscode verbraucht. Es sind noch :anzahl übrig.', ['anzahl' => $uebrig])));
     }
 
     /**

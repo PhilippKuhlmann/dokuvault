@@ -42,6 +42,9 @@ class InvitationController extends Controller
                 $nutzer->forceFill([
                     'password' => Hash::make($request->password),
                     'remember_token' => Str::random(60),
+                    // Die Einladung ist eingeloest - sie steht ab jetzt nicht
+                    // mehr als offen in der Benutzerliste.
+                    'invited_at' => null,
                 ])->save();
 
                 event(new PasswordReset($nutzer));

@@ -73,6 +73,19 @@
                             {{ __('Ohne E-Mail-Adresse lässt sich keine Einladung verschicken.') }}
                         @endif
                     </p>
+
+                    {{-- Der Stand der letzten Einladung: Ohne ihn sieht ein
+                         Administrator nicht, ob er gerade zum zweiten Mal
+                         schickt oder zum ersten Mal. --}}
+                    @if ($user->einladungAbgelaufen())
+                        <p class="mt-2 text-amber-700 dark:text-amber-400">
+                            {{ __('Die Einladung vom :datum ist abgelaufen und wurde nicht eingelöst.', ['datum' => \App\Support\Zeit::anzeigen($user->invited_at, 'd.m.Y')]) }}
+                        </p>
+                    @elseif ($user->einladungOffen())
+                        <p class="mt-2 text-gray-500 dark:text-gray-400">
+                            {{ __('Verschickt am :datum, noch nicht eingelöst.', ['datum' => \App\Support\Zeit::anzeigen($user->invited_at, 'd.m.Y H:i')]) }}
+                        </p>
+                    @endif
                 </div>
 
                 @if ($user->email)

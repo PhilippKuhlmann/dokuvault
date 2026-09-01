@@ -84,6 +84,11 @@ class UserController extends Controller
             $token = Password::broker('einladung')->createToken($user);
 
             $user->notify(new Einladung($token));
+
+            // saveQuietly: Eine verschickte Einladung ist kein Aenderungs-
+            // eintrag am Benutzer wert - im Protokoll stuende sonst neben
+            // jedem Versand eine leere "Geaendert"-Zeile.
+            $user->forceFill(['invited_at' => now()])->saveQuietly();
         } catch (Throwable $fehler) {
             report($fehler);
 

@@ -136,12 +136,16 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
         foreach ($dateien as $datei) {
             if ($datei->isFile() && preg_match('/\.(php|blade\.php)$/', $datei->getFilename())) {
                 $inhalt = file_get_contents($datei);
-                preg_match_all("/__\('((?:[^'\\\\]|\\\\.)+)'/", $inhalt, $treffer);
+                // \s* nach der Klammer: Pint bricht lange Aufrufe um, die
+                // Zeichenkette steht dann in der naechsten Zeile. Ohne das
+                // meldete der Test sie als verwaist - eine Formatierungsfrage,
+                // an der eine Uebersetzungspruefung nicht haengen darf.
+                preg_match_all("/__\(\s*'((?:[^'\\\\]|\\\\.)+)'/", $inhalt, $treffer);
 
                 // trans_choice() ist ebenso ein Uebersetzungsaufruf - er steht
                 // dort, wo die Mehrzahl von der Anzahl abhaengt ("1 Datei" /
                 // "3 Dateien").
-                preg_match_all("/trans_choice\('((?:[^'\\\\]|\\\\.)+)'/", $inhalt, $mehrzahl);
+                preg_match_all("/trans_choice\(\s*'((?:[^'\\\\]|\\\\.)+)'/", $inhalt, $mehrzahl);
                 $treffer[1] = array_merge($treffer[1], $mehrzahl[1]);
                 $verwendet = array_merge($verwendet, $treffer[1]);
 

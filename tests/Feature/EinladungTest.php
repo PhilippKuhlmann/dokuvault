@@ -7,6 +7,7 @@ use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
+use Spatie\Activitylog\Models\Activity;
 
 function alsBenutzerverwaltung(): User
 {
@@ -243,4 +244,81 @@ test('die Anmeldeseite bestätigt das gesetzte Kennwort', function () {
     $this->withSession(['status' => 'Kennwort gesetzt. Sie können sich jetzt anmelden.'])
         ->get('/login')
         ->assertSee('Kennwort gesetzt');
+});
+
+// --- Wer hat nie reagiert? --------------------------------------------------
+
+test('eine verschickte Einladung steht als offen an dem Zugang', function () {
+    Notification::fake();
+    alsBenutzerverwaltung();
+
+    $this->post(route('admin.user.store'), einladungsdaten());
+    $neu = User::where('username', 'neue.kollegin')->first();
+
+    expect($neu->einladungOffen())->toBeTrue()
+        ->and($neu->einladungAbgelaufen())->toBeFalse();
+});
+
+test('nach dem Einlösen ist sie nicht mehr offen', function () {
+    Notification::fake();
+    alsBenutzerverwaltung();
+
+    $this->post(route('admin.user.store'), einladungsdaten());
+    $neu = User::where('username', 'neue.kollegin')->first();
+
+    $token = Password::broker('einladung')->createToken($neu);
+
+    $this->post('/logout');
+    $this->post(route('einladung.speichern'), [
+        'token' => $token,
+        'username' => $neu->username,
+        'password' => 'Selbst-Gewaehlt-2026',
+        'password_confirmation' => 'Selbst-Gewaehlt-2026',
+    ]);
+
+    expect($neu->fresh()->einladungOffen())->toBeFalse();
+});
+
+test('nach einer Woche gilt sie als abgelaufen', function () {
+    // Die Frist kommt vom Broker "einladung" - hier wird sie gelesen und nicht
+    // noch einmal aufgeschrieben.
+    $nutzer = userWithPermissions([]);
+    $nutzer->forceFill([
+        'invited_at' => now()->subMinutes((int) config('auth.passwords.einladung.expire') + 1),
+    ])->saveQuietly();
+
+    expect($nutzer->fresh()->einladungAbgelaufen())->toBeTrue();
+});
+
+test('die Benutzerliste zeigt offene und abgelaufene Einladungen', function () {
+    $verwalter = userWithPermissions(['admin_user']);
+
+    $offen = userWithPermissions([]);
+    $offen->forceFill(['invited_at' => now()])->saveQuietly();
+
+    $abgelaufen = userWithPermissions([]);
+    $abgelaufen->forceFill([
+        'invited_at' => now()->subMinutes((int) config('auth.passwords.einladung.expire') + 1),
+    ])->saveQuietly();
+
+    $this->actingAs($verwalter)
+        ->get(route('admin.user.index'))
+        ->assertSee('offen seit')
+        ->assertSee('abgelaufen');
+});
+
+test('das Verschicken erzeugt keinen Änderungseintrag im Protokoll', function () {
+    Notification::fake();
+    alsBenutzerverwaltung();
+
+    $nutzer = userWithPermissions([]);
+    $nutzer->forceFill(['email' => 'wieder@example.test'])->save();
+
+    $vorher = Activity::where('subject_id', $nutzer->id)
+        ->where('event', 'updated')->count();
+
+    $this->post(route('admin.user.einladung', $nutzer));
+
+    expect(Activity::where('subject_id', $nutzer->id)
+        ->where('event', 'updated')->count())->toBe($vorher);
 });

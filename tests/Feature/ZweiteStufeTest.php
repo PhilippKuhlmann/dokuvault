@@ -341,3 +341,57 @@ test('auf der Demo wird niemand gezwungen', function () {
 
     $this->actingAs($nutzer->fresh())->get(route('customer.search'))->assertStatus(200);
 });
+
+// --- Wiederherstellungscodes gehen zur Neige --------------------------------
+
+test('ein verbrauchter Wiederherstellungscode sagt, wie viele noch da sind', function () {
+    [$nutzer, , $codes] = nutzerMitZweiterStufe();
+
+    $this->post('/login', ['username' => $nutzer->username, 'password' => 'Ein-Gutes-Kennwort-2026']);
+    $this->post(route('two-factor.login'), ['code' => $codes[0]]);
+
+    expect(session('warnung'))->toContain((string) (ZweiteStufe::CODES - 1));
+});
+
+test('beim letzten Code steht da, was zu tun ist', function () {
+    // Wer nicht mitzaehlt, merkt beim naechsten verlorenen Telefon, dass
+    // keiner mehr uebrig war - und kommt dann gar nicht mehr herein.
+    [$nutzer, , $codes] = nutzerMitZweiterStufe();
+    $nutzer->forceFill(['two_factor_recovery_codes' => [$codes[0]]])->save();
+
+    $this->post('/login', ['username' => $nutzer->username, 'password' => 'Ein-Gutes-Kennwort-2026']);
+    $this->post(route('two-factor.login'), ['code' => $codes[0]]);
+
+    expect(session('warnung'))->toContain('letzter Wiederherstellungscode');
+});
+
+test('der gewöhnliche Einmalcode löst keine Warnung aus', function () {
+    [$nutzer, $geheimnis] = nutzerMitZweiterStufe();
+
+    $this->post('/login', ['username' => $nutzer->username, 'password' => 'Ein-Gutes-Kennwort-2026']);
+    $this->post(route('two-factor.login'), ['code' => gueltigerCode($geheimnis)]);
+
+    expect(session('warnung'))->toBeNull();
+});
+
+test('die Warnung überlebt eine Weiterleitung und wird genau einmal gezeigt', function () {
+    // Ein Flash gilt einen Aufruf. Nach der Anmeldung liegt aber oft noch eine
+    // Weiterleitung dazwischen - ein Administrator wird von der Kundensuche in
+    // den Adminbereich geschickt -, und der Hinweis waere dort schon
+    // verbraucht, ohne je gezeigt worden zu sein.
+    [$nutzer, , $codes] = nutzerMitZweiterStufe();
+
+    $this->post('/login', ['username' => $nutzer->username, 'password' => 'Ein-Gutes-Kennwort-2026']);
+
+    // followingRedirects: genau der Weg, den der Browser geht - samt der
+    // Weiterleitungen dazwischen.
+    // Mit Sprache: Ohne Angabe entscheidet die Browsersprache, und der Text
+    // waere englisch - siehe SetLocale.
+    $this->withHeaders(['Accept-Language' => 'de'])
+        ->followingRedirects()
+        ->post(route('two-factor.login'), ['code' => $codes[0]])
+        ->assertSee('Wiederherstellungscode verbraucht');
+
+    // Und danach ist sie weg.
+    $this->get(route('profile.edit'))->assertDontSee('Wiederherstellungscode verbraucht');
+});

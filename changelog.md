@@ -1,5 +1,20 @@
 # Changelog
 
+## 26.09.01g
+
+### Added
+
+- **Die Benutzerliste zeigt offene Einladungen.** „offen seit 30.08.2026" oder „abgelaufen 23.08.2026" — bis dahin sah man nicht, wer nie reagiert hat. Der Stand steht auch auf der Benutzerseite über dem Knopf, sonst weiß ein Administrator nicht, ob er gerade zum ersten oder zum zweiten Mal schickt.
+  - Der Zeitpunkt steht am Benutzer, nicht in `password_resets`: Dort liegen Einladungen und Kennwort-Zurücksetzungen in derselben Tabelle ohne Merkmal, welche Zeile welche ist — und der Eintrag verschwindet beim Einlösen, die Frage „wer hat nie reagiert?" ließe sich damit gar nicht stellen.
+  - Die Ablauffrist wird beim Broker gelesen, nicht noch einmal aufgeschrieben.
+- **Ein verbrauchter Wiederherstellungscode sagt, wie viele noch da sind.** Beim letzten steht dabei, was zu tun ist. Wer nicht mitzählt, merkt beim nächsten verlorenen Telefon, dass keiner mehr übrig war — und kommt dann gar nicht mehr herein.
+  - Der Hinweis blendet sich **nicht** von selbst aus. Die grüne Meldung nebenan verschwindet nach vier Sekunden — richtig für „gespeichert", falsch hierfür.
+
+### Fixed
+
+- **Eine Pluralform hätte deutschen Nutzern den englischen Satz gezeigt.** `trans_choice` fällt bei fehlender deutscher Übersetzung auf die Ersatzsprache zurück, `__()` tut das nicht. Beim Bauen aufgefallen, nicht im Betrieb.
+- Der Test, der Übersetzungen gegen ihre Verwendung abgleicht, übersah Aufrufe, die der Formatierer umgebrochen hatte — und meldete sie als verwaist.
+
 ## 26.09.01f
 
 ### Added

@@ -32,7 +32,7 @@
 
 <div class="m-3">
     <x-table.main>
-        <x-table.head :labels="['Name', 'Benutzername', 'Rolle', 'Kunde', 'Zweite Stufe', 'Zuletzt angemeldet', '', ]" />
+        <x-table.head :labels="['Name', 'Benutzername', 'Rolle', 'Kunde', 'Zweite Stufe', 'Einladung', 'Zuletzt angemeldet', '', ]" />
 
         <x-table.body>
 
@@ -50,6 +50,11 @@
                         $user->hatZweiteStufe()
                             ? __('eingerichtet')
                             : ($user->two_factor_required ? __('verlangt, offen') : '—'),
+                        $user->einladungAbgelaufen()
+                            ? __('abgelaufen').' '.Zeit::anzeigen($user->invited_at, 'd.m.Y')
+                            : ($user->einladungOffen()
+                                ? __('offen seit').' '.Zeit::anzeigen($user->invited_at, 'd.m.Y')
+                                : '—'),
                         Zeit::anzeigen($user->last_login_at, 'd.m.Y H:i', __('noch nie')),
                     ]"
 

@@ -40,6 +40,7 @@
     </main>
 
     @include('layouts.success')
+    @include('layouts.warnung')
     @include('layouts.errors')
 
     @livewireScriptConfig

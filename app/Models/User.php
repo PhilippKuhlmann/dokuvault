@@ -39,6 +39,7 @@ class User extends Authenticatable
         'two_factor_confirmed_at' => 'datetime',
         'two_factor_required' => 'boolean',
         'last_login_at' => 'datetime',
+        'invited_at' => 'datetime',
     ];
 
     /**
@@ -107,6 +108,25 @@ class User extends Authenticatable
         return $this->two_factor_required
             && ! $this->hatZweiteStufe()
             && ! $this->istDemoGeschuetzt();
+    }
+
+    /** Eine Einladung ist unterwegs und wurde noch nicht eingelöst. */
+    public function einladungOffen(): bool
+    {
+        return $this->invited_at !== null;
+    }
+
+    /**
+     * Die offene Einladung ist abgelaufen.
+     *
+     * Die Frist steht beim Broker "einladung" in config/auth.php - hier wird
+     * sie gelesen und nicht noch einmal aufgeschrieben, sonst laufen die
+     * beiden Zahlen irgendwann auseinander.
+     */
+    public function einladungAbgelaufen(): bool
+    {
+        return $this->einladungOffen()
+            && $this->invited_at->addMinutes((int) config('auth.passwords.einladung.expire'))->isPast();
     }
 
     /**
