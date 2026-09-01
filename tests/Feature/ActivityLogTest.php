@@ -87,6 +87,6 @@ test('Aktivitäten-Seite nur für Admins erreichbar', function () {
     $this->get('/admin/activity')->assertStatus(200);
 
     // Nicht-Admin
-    $this->actingAs(userWithPermissions([]));
+    nutzerWechseln(userWithPermissions([]));
     $this->get('/admin/activity')->assertStatus(403);
 });

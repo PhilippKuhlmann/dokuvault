@@ -7,16 +7,10 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
-        ->name('register');
-
-    Route::post('register', [RegisteredUserController::class, 'store']);
-
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
@@ -25,13 +19,18 @@ Route::middleware('guest')->group(function () {
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
 
+    // Verschickt Mail und verraet ueber die Antwort, ob es den Nutzer gibt.
+    // Beides taugt zum Ausprobieren, also gedrosselt.
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
+        ->middleware('throttle:5,15')
         ->name('password.email');
 
     Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
         ->name('password.reset');
 
+    // Hier laesst sich das Zuruecksetz-Token raten - dieselbe Bremse.
     Route::post('reset-password', [NewPasswordController::class, 'store'])
+        ->middleware('throttle:5,15')
         ->name('password.store');
 });
 
@@ -50,7 +49,10 @@ Route::middleware('auth')->group(function () {
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
         ->name('password.confirm');
 
-    Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
+    // Kennwortabfrage vor heiklen Schritten: mit uebernommener Sitzung koennte
+    // man hier sonst das Kennwort des Opfers durchprobieren.
+    Route::post('confirm-password', [ConfirmablePasswordController::class, 'store'])
+        ->middleware('throttle:5,15');
 
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 

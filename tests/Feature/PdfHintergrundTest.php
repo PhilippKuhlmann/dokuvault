@@ -75,8 +75,8 @@ test('nur der Besteller darf das PDF laden', function () {
     // Das PDF enthaelt alle Zugangsdaten des Kunden - eine ID in der Adresse
     // darf nicht genuegen.
     $anderer = User::factory()->create(['role_id' => $besteller->role_id]);
-    $this->actingAs($anderer)
-        ->get(route('customer.pdf-download', [$customer, $export]))
+    nutzerWechseln($anderer);
+    $this->get(route('customer.pdf-download', [$customer, $export]))
         ->assertForbidden();
 });
 

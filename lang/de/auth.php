@@ -14,7 +14,7 @@ return [
     */
 
     'failed' => 'Diese Anmeldeinformationen stimmen nicht überein',
-    'password' => 'The provided password is incorrect.',
-    'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+    'password' => 'Das angegebene Kennwort ist nicht richtig.',
+    'throttle' => 'Zu viele Anmeldeversuche. Bitte in :minutes Minuten noch einmal versuchen.',
 
 ];

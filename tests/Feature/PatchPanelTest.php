@@ -99,7 +99,7 @@ test('Liste zeigt Patchfeld und Dosen, ohne Berechtigung 403', function () {
     $this->get("/{$customer->slug}/patchpanel")->assertStatus(200)
         ->assertSee('PF-Test')->assertSee('EG 1.05')->assertSee('Besprechung');
 
-    $this->actingAs(userWithPermissions([]));
+    nutzerWechseln(userWithPermissions([]));
     $this->get("/{$customer->slug}/patchpanel")->assertStatus(403);
 });
 

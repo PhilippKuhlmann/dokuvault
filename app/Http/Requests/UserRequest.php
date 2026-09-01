@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Password;
 
 class UserRequest extends FormRequest
 {
@@ -25,7 +26,12 @@ class UserRequest extends FormRequest
         return [
             'name' => 'required',
             'username' => 'required',
-            'password' => $this->isMethod('post') ? 'required|min:6' : 'nullable|min:6',
+            // Dieselbe Latte wie im eigenen Profil (PasswordController). Vorher
+            // reichten hier sechs Zeichen - ein Kennwort, das sich trotz der
+            // Sperre in LoginRequest noch durchprobieren laesst.
+            'password' => $this->isMethod('post')
+                ? ['required', Password::defaults()]
+                : ['nullable', Password::defaults()],
             'email' => 'nullable',
             'role_id' => 'required',
             'customer_id' => 'required_if:role_id,98,99',

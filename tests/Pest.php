@@ -139,3 +139,19 @@ function imModalLoeschen(string $typ, Customer $customer, $objekt): Testable
         ->call('bearbeiten', $typ, $objekt->id)
         ->call('loeschen');
 }
+
+/**
+ * Mitten in einem Test den angemeldeten Nutzer wechseln.
+ *
+ * actingAs() tauscht nur den Nutzer aus, nicht die Sitzung. Seit
+ * AuthenticateSession in der Middleware-Gruppe "web" haengt (siehe
+ * App\Http\Kernel), traegt die Sitzung aber den Kennwort-Hash des vorigen
+ * Nutzers - der naechste Aufruf wuerde deshalb abgemeldet statt beantwortet.
+ * Im Browser gibt es diesen Fall nicht: dort fuehrt jeder Nutzerwechsel ueber
+ * Abmelden und Anmelden, und beides raeumt die Sitzung auf.
+ */
+function nutzerWechseln(User $nutzer): void
+{
+    test()->flushSession();
+    test()->actingAs($nutzer);
+}

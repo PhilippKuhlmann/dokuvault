@@ -1,5 +1,20 @@
 # Changelog
 
+## 26.09.01
+
+### Security
+
+- **Anmeldung: die Bremse gegen Durchprobieren greift jetzt auch beim Kennwort-Spraying.** Es gab bisher genau einen Zähler, und der stand auf `Nutzername|IP`. Wer *ein* gängiges Kennwort gegen *viele* Nutzernamen probiert, löste ihn nie aus — jeder Name bekommt einen eigenen, frischen Zähler. Daneben steht jetzt ein zweiter, der nur die Herkunft kennt: 30 Fehlversuche je IP über alle Konten hinweg. Bewusst hoch, weil ganze Büros hinter einer IP hängen; eine erfolgreiche Anmeldung leert ihn wieder, damit ein vertippter Vormittag niemanden dauerhaft aussperrt.
+- **Die Sperre hält eine Viertelstunde statt einer Minute.** Der Laravel-Standard erlaubte nach 5 Fehlversuchen schon nach 60 Sekunden die nächsten fünf — 300 Versuche pro Stunde und Konto. Jetzt sind es 20.
+- **Kennwort vergessen, Kennwort zurücksetzen und die Kennwortabfrage sind gedrosselt** (5 Versuche je Viertelstunde). Ungedrosselt ließen sich damit Reset-Mails auslösen, vorhandene Nutzernamen abfragen und Zurücksetz-Token raten.
+- **Eine Sitzung überlebt die Kennwortänderung ihres Nutzers nicht mehr.** `AuthenticateSession` hängt jetzt in der Middleware-Gruppe `web` und bindet jede Sitzung an den Kennwort-Hash ihres Nutzers. Ändert der Nutzer oder ein Administrator das Kennwort, verfallen alle übrigen Sitzungen — bisher überlebte eine gestohlene Sitzung jede Kennwortänderung, und es gab **keinen Weg, sie loszuwerden**. Bewusst in der Gruppe und nicht an einzelnen Routen: so greift es auch für Livewire, das über `/livewire/update` läuft. Bestandssitzungen fliegen dabei nicht raus, sie bekommen den Hash beim nächsten Aufruf.
+- **Die Selbstregistrierung ist entfernt.** `/register` stand offen, obwohl Nutzer in dieser Anwendung ein Administrator anlegt. Ein Konto entstand dabei ohnehin nie — die Route lief in einen Fehler, weil sie keine Rolle vergibt. Übrig blieb eine öffentliche Seite, die es nicht geben sollte.
+
+### Changed
+
+- **Vom Administrator vergebene Kennwörter müssen so lang sein wie selbst gesetzte.** Im Adminbereich reichten sechs Zeichen, im eigenen Profil galten acht. Jetzt gilt überall dieselbe Regel.
+- Die Sperrmeldung der Anmeldung stand auf Englisch — sie ist jetzt deutsch und nennt Minuten statt Sekunden.
+
 ## 26.08.31
 
 ### Security

@@ -32,7 +32,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->authenticate();
 
+        // regenerate() vergibt eine neue Kennung, behaelt aber die Daten. Ein
+        // Kennwort-Hash aus einer frueheren Anmeldung in derselben Sitzung
+        // wuerde AuthenticateSession (siehe Kernel) beim naechsten Aufruf zum
+        // Abmelden bringen - und der fuehrt wieder hierher: eine Anmeldeschleife.
         $request->session()->regenerate();
+        $request->session()->forget('password_hash_web');
 
         $user = auth()->user();
 

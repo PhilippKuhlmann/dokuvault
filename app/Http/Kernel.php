@@ -65,6 +65,17 @@ class Kernel extends HttpKernel
             VerifyCsrfToken::class,
             SubstituteBindings::class,
 
+            // Bindet jede Sitzung an den Kennwort-Hash ihres Nutzers. Wird das
+            // Kennwort geaendert - vom Nutzer selbst oder vom Administrator -,
+            // verfallen dadurch alle uebrigen Sitzungen dieses Nutzers. Ohne
+            // das ueberlebt eine gestohlene Sitzung jede Kennwortaenderung.
+            // Bewusst in der Gruppe "web" und nicht nur an einzelnen Routen:
+            // so greift es auch fuer Livewire, das ueber /livewire/update laeuft.
+            // Fuer Gaeste tut die Middleware nichts, und eine Bestandssitzung
+            // ohne hinterlegten Hash bekommt ihn beim naechsten Aufruf - es
+            // fliegt also niemand raus, nur weil das hier neu ist.
+            AuthenticateSession::class,
+
             // Nach StartSession: braucht Session und angemeldeten Nutzer.
             SetLocale::class,
 

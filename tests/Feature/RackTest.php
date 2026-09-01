@@ -130,7 +130,7 @@ test('Liste zeigt Racks samt Belegung, ohne Berechtigung 403', function () {
     $this->get("/{$customer->slug}/rack")->assertStatus(200)
         ->assertSee('SichtbaresRack')->assertSee('Rangierfeld');
 
-    $this->actingAs(userWithPermissions([]));
+    nutzerWechseln(userWithPermissions([]));
     $this->get("/{$customer->slug}/rack")->assertStatus(403);
 });
 

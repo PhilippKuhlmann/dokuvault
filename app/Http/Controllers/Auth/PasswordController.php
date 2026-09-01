@@ -29,6 +29,12 @@ class PasswordController extends Controller
             'password' => ['required', Password::defaults(), 'confirmed'],
         ]);
 
+        // Alle uebrigen Sitzungen dieses Nutzers werden hierdurch ungueltig:
+        // AuthenticateSession (siehe Kernel, Gruppe "web") haelt in jeder
+        // Sitzung den Kennwort-Hash fest und wirft sie raus, sobald er nicht
+        // mehr stimmt. Die eigene Sitzung zieht die Middleware am Ende dieser
+        // Anfrage nach. Ein eigenes "Angemeldet bleiben"-Cookie verfaellt dabei
+        // ebenfalls - es traegt denselben Hash.
         $request->user()->update([
             'password' => Hash::make($validated['password']),
         ]);

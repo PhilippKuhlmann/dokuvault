@@ -79,7 +79,7 @@ test('die Fernwartungs-Suche haengt am Recht, nicht an der Rolle', function () {
     $this->actingAs(userWithPermissions(['remote_search']));
     $this->get(route('search.remote'))->assertOk();
 
-    $this->actingAs(userWithPermissions(['admin_activity']));
+    nutzerWechseln(userWithPermissions(['admin_activity']));
     $this->get(route('search.remote'))->assertForbidden();
 });
 
