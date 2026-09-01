@@ -10,6 +10,9 @@
 - **Eine Sitzung überlebt die Kennwortänderung ihres Nutzers nicht mehr.** `AuthenticateSession` hängt jetzt in der Middleware-Gruppe `web` und bindet jede Sitzung an den Kennwort-Hash ihres Nutzers. Ändert der Nutzer oder ein Administrator das Kennwort, verfallen alle übrigen Sitzungen — bisher überlebte eine gestohlene Sitzung jede Kennwortänderung, und es gab **keinen Weg, sie loszuwerden**. Bewusst in der Gruppe und nicht an einzelnen Routen: so greift es auch für Livewire, das über `/livewire/update` läuft. Bestandssitzungen fliegen dabei nicht raus, sie bekommen den Hash beim nächsten Aufruf.
 - **Die Selbstregistrierung ist entfernt.** `/register` stand offen, obwohl Nutzer in dieser Anwendung ein Administrator anlegt. Ein Konto entstand dabei ohnehin nie — die Route lief in einen Fehler, weil sie keine Rolle vergibt. Übrig blieb eine öffentliche Seite, die es nicht geben sollte.
 
+- **Die Rollennummern 98 und 99 sind aus dem Benutzerformular verschwunden.** `UserRequest` verlangte einen Kunden, wenn die Rolle 98 oder 99 war — feste Nummern aus einer Zeit vor dem Rollen-Adminbereich. Rollen bekommen dort fortlaufende Nummern; solche Rollen gibt es in keiner Installation, die Regel war **nie wahr**. Es war dieselbe tote Annahme, an der auch das Gate `isCustomer` hing (siehe 26.08.31). An ihrer Stelle steht jetzt, was wirklich zählt: die Kundennummer muss zu einem Kunden gehören, den es gibt und der nicht im Papierkorb liegt — geprüft wurde das bisher gar nicht. Dasselbe für die Rolle.
+- **Die Kundenauswahl sagt jetzt, was sie bedeutet.** Sie bot „Kein Kunde" an. Wer das aus Versehen stehen lässt, legt einen Benutzer an, der die Daten **aller** Kunden sieht — das steht jetzt dran.
+
 ### Changed
 
 - **Vom Administrator vergebene Kennwörter müssen so lang sein wie selbst gesetzte.** Im Adminbereich reichten sechs Zeichen, im eigenen Profil galten acht. Jetzt gilt überall dieselbe Regel.

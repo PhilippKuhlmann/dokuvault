@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class UserRequest extends FormRequest
@@ -33,8 +34,17 @@ class UserRequest extends FormRequest
                 ? ['required', Password::defaults()]
                 : ['nullable', Password::defaults()],
             'email' => 'nullable',
-            'role_id' => 'required',
-            'customer_id' => 'required_if:role_id,98,99',
+            'role_id' => ['required', Rule::exists('roles', 'id')->whereNull('deleted_at')],
+            // Frueher stand hier required_if:role_id,98,99 - feste Rollennummern
+            // aus einer Zeit vor dem Rollen-Adminbereich. Solche Rollen gibt es
+            // in keiner Installation, die Regel war also nie wahr. Und sie kann
+            // auch nicht wiederkommen: ob jemand Kundennutzer ist, haengt an
+            // genau diesem Feld, nicht an seiner Rolle - eine Rolle, die es
+            // erzwingen koennte, gibt es nicht.
+            //
+            // Was hier fehlte und wirklich zaehlt: dass die Nummer zu einem
+            // Kunden gehoert, den es gibt und der nicht im Papierkorb liegt.
+            'customer_id' => ['nullable', Rule::exists('customers', 'id')->whereNull('deleted_at')],
         ];
     }
 }
