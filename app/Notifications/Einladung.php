@@ -30,17 +30,19 @@ class Einladung extends Notification
     {
         $name = Setting::appName();
 
+        // "Kennwort festlegen" heisst es hier, auf dem Formular dahinter und
+        // in der Bestaetigung. Die Mail sagte "vergeben", das Formular
+        // "setzen" - dreimal dieselbe Handlung unter drei Namen.
         return (new MailMessage)
             ->subject(__('Ihr Zugang zu :anwendung', ['anwendung' => $name]))
             ->greeting(__('Hallo :name,', ['name' => $notifiable->name]))
-            ->line(__('für Sie wurde ein Zugang zu :anwendung angelegt. Vergeben Sie sich über den Knopf ein Kennwort, dann können Sie sich anmelden.', ['anwendung' => $name]))
-            ->action(__('Kennwort vergeben'), route('einladung.formular', [
+            ->line(__('Sie haben jetzt Zugang zu :anwendung. Es fehlt nur noch Ihr Kennwort.', ['anwendung' => $name]))
+            ->action(__('Kennwort festlegen'), route('einladung.formular', [
                 'token' => $this->token,
                 'username' => $notifiable->username,
             ]))
-            ->line(__('Ihr Benutzername lautet: :username', ['username' => $notifiable->username]))
+            ->line(__('Ihr Benutzername: :username', ['username' => $notifiable->username]))
             // Die Frist steht in config/auth.php beim Broker "einladung".
-            ->line(__('Der Link gilt eine Woche. Ist er abgelaufen, kann Ihr Administrator eine neue Einladung schicken.'))
-            ->salutation(__('Viele Grüße'));
+            ->line(__('Der Link gilt eine Woche. Ist er abgelaufen, fragen Sie Ihren Administrator nach einer neuen Einladung.'));
     }
 }

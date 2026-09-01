@@ -17,6 +17,13 @@
   - Die Höhe des Logos ist begrenzt, die Breite läuft: Fest auf 75 × 75 gesetzt sah ein breites Logo gequetscht aus.
   - Im Fuß steht jetzt, dass die Nachricht automatisch verschickt wurde, statt „All rights reserved" — diese Mails gehen an Kollegen und Kunden, nicht an Abonnenten.
 
+### Changed
+
+- **Der Text der Einladung.** Er war im Passiv geschrieben und erklärte, was der Knopf direkt darunter ohnehin sagt: „für Sie wurde ein Zugang angelegt. Vergeben Sie sich über den Knopf ein Kennwort." Jetzt: „Sie haben jetzt Zugang zu DokuVault. Es fehlt nur noch Ihr Kennwort."
+  - Und **dieselbe Handlung heißt überall gleich**: „Kennwort festlegen" — in der Mail, auf dem Formular dahinter und in der Bestätigung. Vorher hieß sie dreimal anders (vergeben, setzen, gesetzt).
+  - Der Hinweis zur Frist klang, als käme die neue Einladung von selbst. Sie kommt nicht von selbst: „Ist er abgelaufen, fragen Sie Ihren Administrator nach einer neuen Einladung."
+  - Die Grußformel schließt jetzt mit dem Namen der Installation. „Viele Grüße" ohne Absender darunter sah aus wie abgeschnitten.
+
 ### Fixed
 
 - **„Kennwort vergessen" war gar nicht gangbar.** Beide Formulare stammten unverändert aus dem Gerüst: englisch, im alten Layout, und sie fragten nach der **E-Mail** — die Anwendung meldet aber mit dem **Benutzernamen** an, und genau den erwartete auch der Controller. Wer den Weg ging, kam nie an. Beide Seiten sehen jetzt aus wie die Anmeldung und fragen nach dem Benutzernamen.

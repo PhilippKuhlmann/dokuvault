@@ -39,7 +39,7 @@
                     <input type="hidden" name="token" value="{{ $token }}">
 
                     <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                        {{ __('Willkommen. Vergeben Sie sich ein Kennwort, dann können Sie sich anmelden.') }}
+                        {{ __('Willkommen. Legen Sie hier Ihr Kennwort fest, dann können Sie sich anmelden.') }}
                     </p>
 
                     <div>
@@ -66,7 +66,7 @@
                     </div>
 
                     <div class="mt-6">
-                        <x-input.button class="w-full justify-center" :label="__('Kennwort setzen')" />
+                        <x-input.button class="w-full justify-center" :label="__('Kennwort festlegen')" />
                     </div>
                 </form>
             </div>

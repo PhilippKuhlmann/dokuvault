@@ -39,7 +39,7 @@
                     <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
                     <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                        {{ __('Neues Kennwort vergeben.') }}
+                        {{ __('Legen Sie ein neues Kennwort fest.') }}
                     </p>
 
                     <div>
@@ -66,7 +66,7 @@
                     </div>
 
                     <div class="mt-6">
-                        <x-input.button class="w-full justify-center" :label="__('Kennwort setzen')" />
+                        <x-input.button class="w-full justify-center" :label="__('Kennwort festlegen')" />
                     </div>
                 </form>
             </div>

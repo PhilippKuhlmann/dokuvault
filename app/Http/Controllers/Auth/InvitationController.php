@@ -57,6 +57,6 @@ class InvitationController extends Controller
         // Bewusst nicht direkt anmelden: Wer ab jetzt hereinkommt, soll den
         // Weg gehen, den er kuenftig immer geht - samt zweiter Stufe, falls
         // sein Administrator sie verlangt.
-        return redirect()->route('login')->with('status', __('Kennwort gesetzt. Sie können sich jetzt anmelden.'));
+        return redirect()->route('login')->with('status', __('Kennwort festgelegt. Sie können sich jetzt anmelden.'));
     }
 }
