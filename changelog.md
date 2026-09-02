@@ -4,6 +4,11 @@
 
 ### Security
 
+- **Postfach- und Druckerkennwort lagen im Klartext in der Datenbank.** Sie waren die einzigen beiden Kennwörter ohne Verschlüsselung — gefunden beim Abgleich aller Spalten, deren Name auf ein Geheimnis hindeutet, mit denen, die tatsächlich verschlüsselt sind. Eine Migration verschlüsselt die vorhandenen Werte mit; die Spalten sind dabei groß genug geworden.
+  - **Eine Invariante hält es offen:** Wer eine Spalte anlegt, deren Name nach einem Geheimnis klingt, muss sie verschlüsseln — oder im Test eintragen, warum nicht. Beides ist eine Entscheidung; keine ist es nicht.
+  - **Die Lizenzschlüssel bleiben bewusst im Klartext.** Sie waren verschlüsselt, und die Änderung wurde zurückgenommen: Nach ihnen wird gesucht — bei Windows-Lizenzen ist der Schlüssel das einzige Suchfeld —, und über eine verschlüsselte Spalte lässt sich nicht suchen. Der Grund steht jetzt im Test, statt dass die Frage offen bleibt.
+- **Hinweis für Betreiber: Die Sicherung enthält den Schlüssel zur Verschlüsselung.** `spatie/laravel-backup` sichert das ganze Projektverzeichnis, also auch die `.env` mit dem `APP_KEY`. Ohne Archivkennwort liegt in einer Sicherung der Tresor neben seinem Schlüssel. `BACKUP_ARCHIVE_PASSWORD` ist jetzt in der `.env.example` erklärt — es war vorher nirgends erwähnt.
+
 - **Kein Kennwort steht mehr in einer Antwort der Schnittstelle.** `Server` und `Accesspoint` gingen als JSON hinaus, samt `bmcPassword`, `remotePassword` und dem WLAN-Kennwort — bisher als verschlüsselter Wert. Nutzlos für den Aufrufer, und ein Leck in dem Moment, in dem jemand aus dem Attribut einen Cast macht. Sie sind jetzt aus der Serialisierung ausgenommen.
 
 ### Fixed
