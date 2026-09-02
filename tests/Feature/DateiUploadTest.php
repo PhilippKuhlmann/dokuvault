@@ -157,11 +157,16 @@ test('die Endung kommt kleingeschrieben und ohne Sonderzeichen an', function () 
 test('die Obergrenze lässt sich einstellen und gilt sofort', function () {
     $this->actingAs(userWithPermissions(['admin_setting']));
 
+    // Nicht fest 5 MB: Womit die Maschine laeuft, entscheidet die php.ini. Auf
+    // der CI steht upload_max_filesize auf dem PHP-Standard von 2M, und ein
+    // Test, der mehr verlangt, prueft nur die dortige Einstellung.
+    $mb = max(1, min(5, (int) floor(Setting::serverGrenzeKb() / 1024)));
+
     Livewire::test(AdminAllgemein::class)
-        ->set('uploadMb', 5)
+        ->set('uploadMb', $mb)
         ->assertHasNoErrors();
 
-    expect(Setting::uploadMaxKb())->toBe(5 * 1024);
+    expect(Setting::uploadMaxKb())->toBe($mb * 1024);
 });
 
 test('mehr als der Server annimmt geht nicht', function () {
@@ -183,6 +188,11 @@ test('die Grenze wird auch dann gedeckelt, wenn sie schon zu hoch in der Einstel
     expect(Setting::uploadMaxKb())->toBe(Setting::serverGrenzeKb());
 });
 
-test('ohne Einstellung gilt der Wert aus der Konfiguration', function () {
-    expect(Setting::uploadMaxKb())->toBe((int) config('custom.datei_max_kb'));
+test('ohne Einstellung gilt der Wert aus der Konfiguration - gedeckelt', function () {
+    // Gedeckelt, weil die php.ini das letzte Wort hat: Auf einer Maschine mit
+    // upload_max_filesize=2M sind es 2 MB, egal was in der Konfiguration steht.
+    expect(Setting::uploadMaxKb())->toBe(min(
+        (int) config('custom.datei_max_kb'),
+        Setting::serverGrenzeKb(),
+    ));
 });
