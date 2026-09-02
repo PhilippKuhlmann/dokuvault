@@ -28,6 +28,9 @@ class Setting extends Model
     /** Eigener Name der Installation, statt des Namens aus der .env. */
     public const APP_NAME = 'app_name';
 
+    /** Groesste erlaubte Datei in Kilobyte - siehe uploadMaxKb(). */
+    public const UPLOAD_MAX_KB = 'upload_max_kb';
+
     /**
      * Zeitzone der Anzeige. Gespeichert wird weiter in UTC - siehe
      * App\Support\Zeit.
@@ -110,6 +113,45 @@ class Setting extends Model
         self::setzen(self::MAIL_PASSWORD, $kennwort === null || $kennwort === ''
             ? null
             : Crypt::encryptString($kennwort));
+    }
+
+    /**
+     * Die groesste erlaubte Datei in Kilobyte.
+     *
+     * Gedeckelt auf das, was der Server ueberhaupt durchlaesst: PHP und der
+     * Webserver haben eigene Grenzen, und eine Einstellung darueber waere ein
+     * Versprechen, das nicht haelt - der Upload braeche mitten im Hochladen
+     * ab, ohne verstaendliche Meldung.
+     */
+    public static function uploadMaxKb(): int
+    {
+        $eigene = (int) self::wert(self::UPLOAD_MAX_KB);
+        $gewuenscht = $eigene > 0 ? $eigene : (int) config('custom.datei_max_kb');
+
+        return max(1, min($gewuenscht, self::serverGrenzeKb()));
+    }
+
+    /**
+     * Was PHP hoechstens annimmt, in Kilobyte.
+     *
+     * Der kleinere der beiden Werte zaehlt: post_max_size umfasst die ganze
+     * Anfrage, upload_max_filesize nur die Datei darin. Der Webserver hat
+     * davor noch eine eigene Grenze (im Bild: nginx client_max_body_size) -
+     * die kann PHP nicht sehen, deshalb steht sie im Hinweis auf der Seite.
+     */
+    public static function serverGrenzeKb(): int
+    {
+        $inKb = fn (string $wert) => match (strtolower(substr(trim($wert), -1))) {
+            'g' => (int) $wert * 1024 * 1024,
+            'm' => (int) $wert * 1024,
+            'k' => (int) $wert,
+            default => (int) ((int) $wert / 1024),
+        };
+
+        return min(
+            $inKb((string) ini_get('upload_max_filesize')),
+            $inKb((string) ini_get('post_max_size')),
+        );
     }
 
     /** Der Einstellungs-Schluessel einer Logo-Stelle. */

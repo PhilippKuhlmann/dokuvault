@@ -52,6 +52,28 @@
             @enderror
         </div>
 
+        {{-- Nach oben durch den Server begrenzt: Ein hoeherer Wert waere ein
+             Versprechen, das nicht haelt - der Upload braeche mitten im
+             Hochladen ab, ohne verstaendliche Meldung. --}}
+        <div class="mt-6 border-t border-gray-100 pt-5 dark:border-gray-700">
+            <x-input.label for="uploadMb" :value="__('Größte Datei beim Hochladen (MB)')" />
+            <x-input.field id="uploadMb" type="number" min="1" :max="$serverMb"
+                wire:model.live.debounce.600ms="uploadMb" class="mt-1 w-40" />
+
+            <div class="mt-1 flex flex-wrap items-center gap-2">
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ __('Dieser Server nimmt höchstens :max MB an', ['max' => $serverMb]) }}
+                    <span class="font-mono">(upload_max_filesize {{ $phpWerte['upload_max_filesize'] }}, post_max_size {{ $phpWerte['post_max_size'] }})</span>.
+                    {{ __('Sitzt ein Webserver davor, kann dessen eigene Grenze noch niedriger sein.') }}
+                </p>
+                <span wire:loading wire:target="uploadMb" class="text-xs text-gray-400 dark:text-gray-500">{{ __('speichert …') }}</span>
+            </div>
+
+            @error('uploadMb')
+                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+            @enderror
+        </div>
+
         {{-- Drei Felder statt eines: Das Logo auf der Anmeldeseite darf gross
              und breit sein, das in der Kopfzeile muss neben den Namen passen,
              ein Favicon ist quadratisch. --}}

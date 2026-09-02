@@ -10,6 +10,13 @@
 - **Diese Uploads wurden überhaupt nicht geprüft.** Weder wie groß die Datei ist noch was sie ist: Eine 60 MB große Datei ging durch, eine `.php` auch. Jetzt gilt eine Positivliste erlaubter Endungen (`config/custom.php`) und eine Größe.
 - Der Download einer Kundendatei sendet `X-Content-Type-Options: nosniff` — wie die übrigen Ausgabestellen.
 
+### Added
+
+- **Die Obergrenze für Uploads steht unter Einstellungen → Allgemein.** Vorher nur in `config/custom.php` auf dem Server.
+  - Darunter steht, **was der Server überhaupt hergibt**: `upload_max_filesize` und `post_max_size` im Klartext. Ein höherer Wert wird abgewiesen — er wäre ein Versprechen, das nicht hält: Der Upload bräche mitten im Hochladen ab, ohne verständliche Meldung.
+  - Auch eine bereits gespeicherte Zahl wird gedeckelt, etwa nach einem Umzug auf einen Server mit engeren Grenzen.
+  - Der Hinweis nennt auch, dass ein Webserver davor eine eigene, niedrigere Grenze haben kann — die sieht PHP nicht. (Im mitgelieferten Docker-Bild sind beide auf 24 MB gesetzt.)
+
 ### Fixed
 
 - **Für Uploads galten zwei verschiedene Grenzen, und niemand kannte die kleinere.** Livewire lässt ohne Angabe höchstens 12 MB durch, die Anwendung erlaubte 20: Über ein gewöhnliches Formular ging eine 15-MB-Datei, über ein Modal nicht. Jetzt gilt überall dieselbe Zahl, und sie steht an einer Stelle.

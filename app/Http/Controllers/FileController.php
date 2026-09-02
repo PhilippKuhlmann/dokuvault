@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\File;
+use App\Models\Setting;
 use App\Support\Dateiname;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -38,7 +39,7 @@ class FileController extends Controller
             'file' => [
                 'required',
                 'file',
-                'max:'.config('custom.datei_max_kb'),
+                'max:'.Setting::uploadMaxKb(),
                 'mimes:'.implode(',', config('custom.datei_formate')),
             ],
             'name' => ['required', 'string', 'max:255'],

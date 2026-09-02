@@ -488,7 +488,7 @@ class ObjektFormular extends Component
         $this->validate([
             'datei' => [
                 'file',
-                'max:'.config('custom.datei_max_kb'),
+                'max:'.Setting::uploadMaxKb(),
                 'mimes:'.implode(',', config('custom.datei_formate')),
             ],
         ], [], ['datei' => __('Datei')]);

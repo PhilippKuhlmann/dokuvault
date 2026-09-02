@@ -35,6 +35,15 @@ class AdminAllgemein extends Component
      */
     public string $zeitzone = '';
 
+    /**
+     * Groesste erlaubte Datei in Megabyte.
+     *
+     * In MB, nicht in Kilobyte: Wer eine Grenze setzt, denkt in Megabyte.
+     * Gespeichert wird weiterhin in KB, weil die Validierungsregeln so
+     * rechnen.
+     */
+    public int $uploadMb = 0;
+
     /** Je Stelle ein Upload-Feld; die Namen muessen die Stellen spiegeln. */
     public $logo_login;
 
@@ -48,6 +57,7 @@ class AdminAllgemein extends Component
 
         $this->name = (string) Setting::wert(Setting::APP_NAME);
         $this->zeitzone = Zeit::zone();
+        $this->uploadMb = (int) round(Setting::uploadMaxKb() / 1024);
     }
 
     /**
@@ -65,6 +75,30 @@ class AdminAllgemein extends Component
         Setting::setzen(Setting::APP_NAME, trim($this->name) ?: null);
 
         $this->dispatch('hinweis', text: __('Name gespeichert.'));
+    }
+
+    /**
+     * Die Obergrenze fuer Uploads.
+     *
+     * Nach oben durch den Server begrenzt: Ein hoeherer Wert waere ein
+     * Versprechen, das nicht haelt - der Upload braeche mitten im Hochladen
+     * ab, ohne verstaendliche Meldung.
+     */
+    public function updatedUploadMb(): void
+    {
+        Gate::authorize('admin_setting');
+
+        $hoechstens = (int) floor(Setting::serverGrenzeKb() / 1024);
+
+        $this->validate(
+            ['uploadMb' => ['required', 'integer', 'min:1', 'max:'.$hoechstens]],
+            ['uploadMb.max' => __('Mehr als :max MB nimmt dieser Server nicht an.', ['max' => $hoechstens])],
+            ['uploadMb' => __('Größte Datei')]
+        );
+
+        Setting::setzen(Setting::UPLOAD_MAX_KB, $this->uploadMb * 1024);
+
+        $this->dispatch('hinweis', text: __('Obergrenze gespeichert.'));
     }
 
     /** Die Zeitzone gilt sofort - wie der Name. */
@@ -168,6 +202,12 @@ class AdminAllgemein extends Component
             'zonen' => Zeit::auswahl(),
             // Damit die Seite zeigen kann, was die Umstellung bewirkt.
             'jetzt' => Zeit::anzeigen(now(), 'd.m.Y H:i'),
+            // Damit auf der Seite steht, was der Server ueberhaupt hergibt.
+            'serverMb' => (int) floor(Setting::serverGrenzeKb() / 1024),
+            'phpWerte' => [
+                'upload_max_filesize' => ini_get('upload_max_filesize'),
+                'post_max_size' => ini_get('post_max_size'),
+            ],
         ])->layout('layouts.admin.app');
     }
 }

@@ -1,7 +1,9 @@
 <?php
 
+use App\Livewire\AdminAllgemein;
 use App\Livewire\ObjektFormular;
 use App\Models\Customer;
+use App\Models\Setting;
 use App\Support\Dateiname;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -148,4 +150,39 @@ test('die Endung kommt kleingeschrieben und ohne Sonderzeichen an', function () 
     $name = Dateiname::fuer(UploadedFile::fake()->create('x.PDF', 1), 'Urkunde');
 
     expect($name)->toEndWith('_Urkunde.pdf');
+});
+
+// --- Die Obergrenze im Adminbereich -----------------------------------------
+
+test('die Obergrenze lässt sich einstellen und gilt sofort', function () {
+    $this->actingAs(userWithPermissions(['admin_setting']));
+
+    Livewire::test(AdminAllgemein::class)
+        ->set('uploadMb', 5)
+        ->assertHasNoErrors();
+
+    expect(Setting::uploadMaxKb())->toBe(5 * 1024);
+});
+
+test('mehr als der Server annimmt geht nicht', function () {
+    // Ein höherer Wert wäre ein Versprechen, das nicht hält: Der Upload bräche
+    // mitten im Hochladen ab, ohne verständliche Meldung.
+    $this->actingAs(userWithPermissions(['admin_setting']));
+
+    $zuViel = (int) floor(Setting::serverGrenzeKb() / 1024) + 1;
+
+    Livewire::test(AdminAllgemein::class)
+        ->set('uploadMb', $zuViel)
+        ->assertHasErrors('uploadMb');
+});
+
+test('die Grenze wird auch dann gedeckelt, wenn sie schon zu hoch in der Einstellung steht', function () {
+    // Etwa nach einem Umzug auf einen Server mit engeren Grenzen.
+    Setting::setzen(Setting::UPLOAD_MAX_KB, Setting::serverGrenzeKb() * 10);
+
+    expect(Setting::uploadMaxKb())->toBe(Setting::serverGrenzeKb());
+});
+
+test('ohne Einstellung gilt der Wert aus der Konfiguration', function () {
+    expect(Setting::uploadMaxKb())->toBe((int) config('custom.datei_max_kb'));
 });
