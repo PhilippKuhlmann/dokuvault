@@ -12,6 +12,7 @@
 
 ### Added
 
+- **Einstellungen → Allgemein ist in drei Karten geteilt:** „Name und Logo", „Zeitzone", „Hochladen". Zeitzone und Uploadgrenze standen unter der Überschrift „Name und Logo" — dort suchte sie niemand.
 - **Die Obergrenze für Uploads steht unter Einstellungen → Allgemein.** Vorher nur in `config/custom.php` auf dem Server.
   - Darunter steht, **was der Server überhaupt hergibt**: `upload_max_filesize` und `post_max_size` im Klartext. Ein höherer Wert wird abgewiesen — er wäre ein Versprechen, das nicht hält: Der Upload bräche mitten im Hochladen ab, ohne verständliche Meldung.
   - Auch eine bereits gespeicherte Zahl wird gedeckelt, etwa nach einem Umzug auf einen Server mit engeren Grenzen.

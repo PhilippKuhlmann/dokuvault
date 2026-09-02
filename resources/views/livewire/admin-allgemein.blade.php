@@ -28,52 +28,6 @@
             @enderror
         </div>
 
-        {{-- Nur die Anzeige, nicht die Ablage: Gespeichert wird weiter in
-             UTC. Waere es anders, stuenden nach der Umstellung zwei Zeitzonen
-             in derselben Spalte. --}}
-        <div class="mt-6 border-t border-gray-100 pt-5 dark:border-gray-700">
-            <x-input.label for="zeitzone" :value="__('Zeitzone')" />
-            <x-input.select id="zeitzone" name="zeitzone" wire:model.live="zeitzone" class="mt-1 w-full">
-                @foreach ($zonen as $zone)
-                    <option value="{{ $zone }}">{{ $zone }}</option>
-                @endforeach
-            </x-input.select>
-
-            <div class="mt-1 flex items-center gap-2">
-                <p class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ __('Gilt für alle angezeigten Zeitpunkte. Gerade ist es:') }}
-                    <span class="font-mono">{{ $jetzt }}</span>
-                </p>
-                <span wire:loading wire:target="zeitzone" class="text-xs text-gray-400 dark:text-gray-500">{{ __('speichert …') }}</span>
-            </div>
-
-            @error('zeitzone')
-                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-            @enderror
-        </div>
-
-        {{-- Nach oben durch den Server begrenzt: Ein hoeherer Wert waere ein
-             Versprechen, das nicht haelt - der Upload braeche mitten im
-             Hochladen ab, ohne verstaendliche Meldung. --}}
-        <div class="mt-6 border-t border-gray-100 pt-5 dark:border-gray-700">
-            <x-input.label for="uploadMb" :value="__('Größte Datei beim Hochladen (MB)')" />
-            <x-input.field id="uploadMb" type="number" min="1" :max="$serverMb"
-                wire:model.live.debounce.600ms="uploadMb" class="mt-1 w-40" />
-
-            <div class="mt-1 flex flex-wrap items-center gap-2">
-                <p class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ __('Dieser Server nimmt höchstens :max MB an', ['max' => $serverMb]) }}
-                    <span class="font-mono">(upload_max_filesize {{ $phpWerte['upload_max_filesize'] }}, post_max_size {{ $phpWerte['post_max_size'] }})</span>.
-                    {{ __('Sitzt ein Webserver davor, kann dessen eigene Grenze noch niedriger sein.') }}
-                </p>
-                <span wire:loading wire:target="uploadMb" class="text-xs text-gray-400 dark:text-gray-500">{{ __('speichert …') }}</span>
-            </div>
-
-            @error('uploadMb')
-                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-            @enderror
-        </div>
-
         {{-- Drei Felder statt eines: Das Logo auf der Anmeldeseite darf gross
              und breit sein, das in der Kopfzeile muss neben den Namen passen,
              ein Favicon ist quadratisch. --}}
@@ -130,4 +84,64 @@
         {{-- Kein SVG: Eine SVG-Datei darf Skript enthalten, und von derselben
              Herkunft ausgeliefert waere das ausfuehrbarer Code auf jeder Seite. --}}
     </div>
+
+    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+        <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Zeitzone') }}</div>
+        <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">{{ __('Gilt für alle angezeigten Zeitpunkte. Gespeichert wird weiterhin in UTC — die Einstellung ändert nur die Anzeige.') }}</p>
+
+        {{-- Nur die Anzeige, nicht die Ablage: Gespeichert wird weiter in
+             UTC. Waere es anders, stuenden nach der Umstellung zwei Zeitzonen
+             in derselben Spalte. --}}
+        <div>
+            {{-- Beschriftung nur fuer Vorleseprogramme: Ueber dem Feld steht
+                 die Ueberschrift der Karte, und zweimal "Zeitzone"
+                 untereinander liest sich wie ein Fehler. --}}
+            <x-input.label for="zeitzone" :value="__('Zeitzone')" class="sr-only" />
+            <x-input.select id="zeitzone" name="zeitzone" wire:model.live="zeitzone" class="mt-1 w-full">
+                @foreach ($zonen as $zone)
+                    <option value="{{ $zone }}">{{ $zone }}</option>
+                @endforeach
+            </x-input.select>
+
+            <div class="mt-1 flex items-center gap-2">
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ __('Gerade ist es:') }}
+                    <span class="font-mono">{{ $jetzt }}</span>
+                </p>
+                <span wire:loading wire:target="zeitzone" class="text-xs text-gray-400 dark:text-gray-500">{{ __('speichert …') }}</span>
+            </div>
+
+            @error('zeitzone')
+                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+            @enderror
+        </div>
+    </div>
+
+    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+        <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Hochladen') }}</div>
+        <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">{{ __('Gilt für Dateien an Lizenzen und Zertifikaten und für die Dateiablage eines Kunden.') }}</p>
+
+        {{-- Nach oben durch den Server begrenzt: Ein hoeherer Wert waere ein
+             Versprechen, das nicht haelt - der Upload braeche mitten im
+             Hochladen ab, ohne verstaendliche Meldung. --}}
+        <div>
+            <x-input.label for="uploadMb" :value="__('Größte Datei beim Hochladen (MB)')" />
+            <x-input.field id="uploadMb" type="number" min="1" :max="$serverMb"
+                wire:model.live.debounce.600ms="uploadMb" class="mt-1 w-40" />
+
+            <div class="mt-1 flex flex-wrap items-center gap-2">
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ __('Dieser Server nimmt höchstens :max MB an', ['max' => $serverMb]) }}
+                    <span class="font-mono">(upload_max_filesize {{ $phpWerte['upload_max_filesize'] }}, post_max_size {{ $phpWerte['post_max_size'] }})</span>.
+                    {{ __('Sitzt ein Webserver davor, kann dessen eigene Grenze noch niedriger sein.') }}
+                </p>
+                <span wire:loading wire:target="uploadMb" class="text-xs text-gray-400 dark:text-gray-500">{{ __('speichert …') }}</span>
+            </div>
+
+            @error('uploadMb')
+                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+            @enderror
+        </div>
+    </div>
+
 </div>
