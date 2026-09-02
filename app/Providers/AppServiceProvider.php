@@ -39,6 +39,15 @@ class AppServiceProvider extends ServiceProvider
         $this->sucheRegistrieren();
         $this->mailEinstellungenAnwenden();
 
+        // Livewire prueft temporaere Uploads mit einer eigenen Regel und laesst
+        // ohne Angabe hoechstens 12 MB durch. Die Anwendung erlaubt aber 20 -
+        // ueber ein gewoehnliches Formular ging das auch, ueber ein Modal nicht.
+        // Zwei Grenzen, von denen niemand die kleinere kannte. Jetzt gilt
+        // ueberall dieselbe Zahl, und sie steht in config/custom.php.
+        config(['livewire.temporary_file_upload.rules' => [
+            'required', 'file', 'max:'.config('custom.datei_max_kb'),
+        ]]);
+
         // Ohne Angabe gilt das "Angemeldet bleiben"-Cookie fuenf Jahre - siehe
         // config/custom.php. Ein gestohlenes Notebook waere damit ein
         // Dauerzugang.

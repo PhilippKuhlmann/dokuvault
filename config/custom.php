@@ -844,6 +844,30 @@ return [
     */
     /*
     |--------------------------------------------------------------------------
+    | Welche Dateien hochgeladen werden duerfen
+    |--------------------------------------------------------------------------
+    |
+    | Eine Positivliste, keine Sperrliste: Was hier nicht steht, kommt nicht
+    | herein. Andersherum muesste man jede gefaehrliche Endung kennen, die es
+    | gibt - und die naechste, die dazukommt.
+    |
+    | Gilt fuer die Dateien an Lizenzen und Zertifikaten. Bilder haben ihre
+    | eigene, engere Liste (bild_formate).
+    |
+    */
+    'datei_formate' => [
+        'pdf', 'png', 'jpg', 'jpeg', 'webp', 'gif', 'svg',
+        'txt', 'csv', 'rtf',
+        'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods',
+        'zip', '7z',
+        'pem', 'crt', 'cer', 'key', 'p12', 'pfx',
+    ],
+
+    /** Groesste erlaubte Datei in Kilobyte. 20 MB, wie bei den Kundendateien. */
+    'datei_max_kb' => 20480,
+
+    /*
+    |--------------------------------------------------------------------------
     | Wie lange "Angemeldet bleiben" gilt
     |--------------------------------------------------------------------------
     |

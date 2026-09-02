@@ -1,5 +1,19 @@
 # Changelog
 
+## 26.09.02
+
+### Security
+
+- **Ein Kundennutzer konnte Dateien in das Verzeichnis eines anderen Kunden schreiben.** Beim Hochladen an Lizenzen und Zertifikaten ging die eingegebene Bezeichnung ungeprüft in den Ablagepfad. Mit `../../../../fremder-kunde/files/vertrag` landete die Datei dort — und überschrieb, was dort lag. Nachgestellt und belegt, bevor der Schutz entstand; ein Test hält den Angriff jetzt offen.
+  - Bezeichnung **und** Endung laufen jetzt durch `App\Support\Dateiname`. Die Endung kam ebenso ungeprüft durch: Sie stammt aus dem Dateinamen, den der Browser mitschickt, und den bestimmt der Absender.
+  - Der Zeitstempel im Namen war nie ein Schutz davor — er verhindert nur, dass zwei gleichnamige Dateien sich überschreiben.
+- **Diese Uploads wurden überhaupt nicht geprüft.** Weder wie groß die Datei ist noch was sie ist: Eine 60 MB große Datei ging durch, eine `.php` auch. Jetzt gilt eine Positivliste erlaubter Endungen (`config/custom.php`) und eine Größe.
+- Der Download einer Kundendatei sendet `X-Content-Type-Options: nosniff` — wie die übrigen Ausgabestellen.
+
+### Fixed
+
+- **Für Uploads galten zwei verschiedene Grenzen, und niemand kannte die kleinere.** Livewire lässt ohne Angabe höchstens 12 MB durch, die Anwendung erlaubte 20: Über ein gewöhnliches Formular ging eine 15-MB-Datei, über ein Modal nicht. Jetzt gilt überall dieselbe Zahl, und sie steht an einer Stelle.
+
 ## 26.09.01h
 
 ### Fixed

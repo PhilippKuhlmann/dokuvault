@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\File;
+use App\Support\Dateiname;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -30,17 +31,21 @@ class FileController extends Controller
     {
         $this->authorize('create', File::class);
 
-        // Validierung: 'file' ist Pflicht, 'name' wird begrenzt und beim
-        // Aufbau des Dateipfads zusaetzlich auf unbedenkliche Zeichen
-        // reduziert (kein Path-Traversal ueber den Anzeigenamen moeglich).
+        // Der Anzeigename wird begrenzt; fuer den Ablagepfad wird er in
+        // Dateiname::fuer() auf unbedenkliche Zeichen reduziert - dort
+        // zusammen mit der Endung, die genauso aus dem Browser kommt.
         $validated = $request->validate([
-            'file' => ['required', 'file', 'max:20480'],
+            'file' => [
+                'required',
+                'file',
+                'max:'.config('custom.datei_max_kb'),
+                'mimes:'.implode(',', config('custom.datei_formate')),
+            ],
             'name' => ['required', 'string', 'max:255'],
-        ]);
+        ], [], ['file' => __('Datei'), 'name' => __('Name')]);
 
         $file = $request->file('file');
-        $safeName = preg_replace('/[^A-Za-z0-9_-]+/', '_', $validated['name']);
-        $fileName = time().'_'.$safeName.'.'.$file->getClientOriginalExtension();
+        $fileName = Dateiname::fuer($file, $validated['name']);
         $filePath = $file->storeAs($customer->slug.'/files', $fileName, 'local');
 
         $customer->files()->create([
@@ -61,7 +66,12 @@ class FileController extends Controller
 
         $name = $file->name.'.'.$file->extension;
 
-        return Storage::download($file->file_path, $name);
+        // nosniff: Der Browser soll den Inhalt nicht selbst deuten. Mit
+        // "attachment" landet die Datei ohnehin im Download, aber die Angabe
+        // kostet nichts und steht an den anderen Ausgabestellen auch.
+        return Storage::download($file->file_path, $name, [
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     public function destroy(Customer $customer, File $file)

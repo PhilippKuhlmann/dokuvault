@@ -10,6 +10,7 @@ use App\Models\DeviceModel;
 use App\Models\Setting;
 use App\Models\Site;
 use App\Rules\BelongsToCustomer;
+use App\Support\Dateiname;
 use App\Support\Zeit;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -481,10 +482,24 @@ class ObjektFormular extends Component
             return $daten;
         }
 
-        $kunde = $this->kunde();
-        $bezeichnung = $daten[$feld['name_feld']] ?? $this->datei->getClientOriginalName();
+        // Bis hierher wurde die Datei ueberhaupt nicht geprueft: weder wie
+        // gross sie ist noch was sie ist. Eine 60-MB-Datei ging durch, eine
+        // .php auch.
+        $this->validate([
+            'datei' => [
+                'file',
+                'max:'.config('custom.datei_max_kb'),
+                'mimes:'.implode(',', config('custom.datei_formate')),
+            ],
+        ], [], ['datei' => __('Datei')]);
 
-        $dateiname = time().'_'.$bezeichnung.'.'.$this->datei->getClientOriginalExtension();
+        $kunde = $this->kunde();
+
+        // Der Name kommt aus einem Textfeld und die Endung aus dem Browser -
+        // beides bestimmt der Absender. Ungeprueft in den Ablagepfad gesetzt,
+        // schrieb "../../../../fremder-kunde/files/x" die Datei in das
+        // Verzeichnis eines anderen Kunden und ueberschrieb, was dort lag.
+        $dateiname = Dateiname::fuer($this->datei, $daten[$feld['name_feld']] ?? null);
         $pfad = $this->datei->storeAs($kunde->slug.'/'.$feld['ordner'], $dateiname, 'local');
 
         if ($this->bearbeiteId) {
