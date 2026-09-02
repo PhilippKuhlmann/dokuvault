@@ -33,6 +33,9 @@
             <x-create.singlerow :label="__('Name')" name="name" :default="$user->name" />
 
             <x-create.doublerow :label1="__('Benutzername')" name1="username" :default1="$user->username" :label2="__('Passwort')" name2="password" />
+            {{-- Leer lassen heisst hier "unveraendert" - die Regel gilt nur,
+                 wenn tatsaechlich eines eingetragen wird. --}}
+            <x-kennwortregel />
 
             <x-create.singlerow :label="__('E-Mail')" name="email" :default="$user->email" />
 

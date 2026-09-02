@@ -56,6 +56,7 @@
                         <x-input.label class="text-gray-900" for="password" :value="__('Kennwort')" />
                         <x-input.text id="password" name="password" type="password" required autofocus
                             autocomplete="new-password" class="block mt-1 w-full" />
+                        <x-kennwortregel />
                         <x-input.error :messages="$errors->get('password')" class="mt-2" />
                     </div>
 

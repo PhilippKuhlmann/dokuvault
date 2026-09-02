@@ -2,6 +2,16 @@
 
 ## 26.09.02
 
+### Added
+
+- **Einstellungen → Sicherheit: Länge und Komplexität der Kennwörter.** Mindestlänge (8–64) und vier Häkchen — Groß- und Kleinbuchstaben, Ziffer, Sonderzeichen, Abgleich gegen bekannte Datenlecks.
+  - **Bis dahin stand hier nichts.** `Password::defaults()` wird an vier Stellen benutzt, war aber nirgends konfiguriert: Es galt stillschweigend Laravels Vorgabe von acht Zeichen, ohne Zeichenklassen und ohne Leck-Abgleich. Gesetzt wird die Regel jetzt an **einer** Stelle und wirkt dadurch an allen vier — eigenes Profil, Anlegen durch einen Administrator, Kennwort vergessen, Einladung einlösen. Eine Regel, die nur an einer Stelle greift, ist keine.
+  - **Was verlangt wird, steht unter dem Kennwortfeld** — in allen fünf Ansichten, aus der Einstellung erzeugt. Wer ein Sonderzeichen verlangt, ohne es hinzuschreiben, lässt raten.
+  - **Die Meldungen sind jetzt deutsch.** Sie kamen aus dem Gerüst und standen auf Englisch — samt „Das Feld password" statt „Kennwort". Betrifft alle Kennwortmeldungen der Anwendung, nicht nur die neuen.
+  - Bestehende Kennwörter bleiben gültig; die Regel greift, sobald jemand ein neues setzt. Das steht auf der Seite, sonst traut sich niemand, sie anzuziehen.
+  - Der Abgleich gegen Datenlecks fragt eine fremde Liste. Ist sie nicht erreichbar, lässt die Prüfung durch — sie fällt still aus, statt zu blockieren. Auch das steht dabei.
+  - **Nicht betroffen:** die dokumentierten Kennwörter der Kunden. Dort wird festgehalten, was ist, nicht was sein soll — ein Kunde mit schwachem Kennwort muss dokumentierbar bleiben.
+
 ### Security
 
 - **Postfach- und Druckerkennwort lagen im Klartext in der Datenbank.** Sie waren die einzigen beiden Kennwörter ohne Verschlüsselung — gefunden beim Abgleich aller Spalten, deren Name auf ein Geheimnis hindeutet, mit denen, die tatsächlich verschlüsselt sind. Eine Migration verschlüsselt die vorhandenen Werte mit; die Spalten sind dabei groß genug geworden.

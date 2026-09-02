@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Once;
+use Illuminate\Validation\Rules\Password;
 
 /**
  * Einstellungen einer Installation.
@@ -30,6 +31,22 @@ class Setting extends Model
 
     /** Groesste erlaubte Datei in Kilobyte - siehe uploadMaxKb(). */
     public const UPLOAD_MAX_KB = 'upload_max_kb';
+
+    /*
+     * Wie ein Kennwort aussehen muss, mit dem sich ein Benutzer anmeldet -
+     * siehe kennwortRegel(). Nicht gemeint sind die dokumentierten Kennwoerter
+     * der Kunden: Dort wird festgehalten, was ist, nicht was sein soll. Ein
+     * Kunde mit einem schwachen Kennwort muss dokumentierbar bleiben.
+     */
+    public const PW_MIN = 'pw_min';
+
+    public const PW_MIXED = 'pw_mixed';
+
+    public const PW_NUMBERS = 'pw_numbers';
+
+    public const PW_SYMBOLS = 'pw_symbols';
+
+    public const PW_UNCOMPROMISED = 'pw_uncompromised';
 
     /**
      * Zeitzone der Anzeige. Gespeichert wird weiter in UTC - siehe
@@ -129,6 +146,90 @@ class Setting extends Model
         $gewuenscht = $eigene > 0 ? $eigene : (int) config('custom.datei_max_kb');
 
         return max(1, min($gewuenscht, self::serverGrenzeKb()));
+    }
+
+    /**
+     * Die Regel fuer Kennwoerter, mit denen sich Benutzer anmelden.
+     *
+     * Sie wird an einer Stelle gesetzt - Password::defaults() im
+     * AppServiceProvider - und gilt dadurch ueberall: im eigenen Profil, beim
+     * Anlegen durch einen Administrator, beim Zuruecksetzen und beim Einloesen
+     * einer Einladung. Eine Regel, die nur an einer Stelle greift, ist keine.
+     *
+     * Ohne Einstellung bleibt es bei dem, was Laravel ohnehin verlangt: acht
+     * Zeichen. Genau das galt bisher, nur wusste es niemand.
+     */
+    public static function kennwortRegel(): Password
+    {
+        $regel = Password::min(self::kennwortMindestlaenge());
+
+        if (self::ja(self::PW_MIXED)) {
+            $regel->mixedCase();
+        }
+
+        if (self::ja(self::PW_NUMBERS)) {
+            $regel->numbers();
+        }
+
+        if (self::ja(self::PW_SYMBOLS)) {
+            $regel->symbols();
+        }
+
+        if (self::ja(self::PW_UNCOMPROMISED)) {
+            $regel->uncompromised();
+        }
+
+        return $regel;
+    }
+
+    /** Acht ist Laravels Vorgabe und damit das, was bisher stillschweigend galt. */
+    public static function kennwortMindestlaenge(): int
+    {
+        $eigene = (int) self::wert(self::PW_MIN);
+
+        return $eigene >= 8 ? min($eigene, 64) : 8;
+    }
+
+    /**
+     * Was verlangt wird, in einem Satz.
+     *
+     * Er steht unter jedem Kennwortfeld. Wer ein Sonderzeichen verlangt, ohne
+     * es hinzuschreiben, laesst raten - und der Benutzer erfaehrt die Regel
+     * erst, wenn er gegen sie verstossen hat.
+     */
+    public static function kennwortHinweis(): string
+    {
+        $teile = [];
+
+        if (self::ja(self::PW_MIXED)) {
+            $teile[] = __('Groß- und Kleinbuchstaben');
+        }
+
+        if (self::ja(self::PW_NUMBERS)) {
+            $teile[] = __('eine Ziffer');
+        }
+
+        if (self::ja(self::PW_SYMBOLS)) {
+            $teile[] = __('ein Sonderzeichen');
+        }
+
+        $satz = __('Mindestens :anzahl Zeichen', ['anzahl' => self::kennwortMindestlaenge()]);
+
+        if ($teile !== []) {
+            $letzter = array_pop($teile);
+
+            $satz .= ', '.($teile === []
+                ? $letzter
+                : implode(', ', $teile).' '.__('und').' '.$letzter);
+        }
+
+        return $satz.'.';
+    }
+
+    /** Ein Haekchen aus den Einstellungen. */
+    private static function ja(string $schluessel): bool
+    {
+        return (bool) self::wert($schluessel, false);
     }
 
     /**

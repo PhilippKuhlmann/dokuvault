@@ -20,6 +20,7 @@
              Kennwort noch vor. --}}
         <div x-show="!einladen" x-cloak>
             <x-create.singlerow :label="__('Passwort')" name="password" type="password" />
+            <x-kennwortregel />
         </div>
 
         <x-create.singlerow :label="__('E-Mail')" name="email" />

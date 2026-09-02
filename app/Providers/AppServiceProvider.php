@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 use Throwable;
 
 class AppServiceProvider extends ServiceProvider
@@ -38,6 +39,16 @@ class AppServiceProvider extends ServiceProvider
 
         $this->sucheRegistrieren();
         $this->mailEinstellungenAnwenden();
+
+        // Wie ein Kennwort aussehen muss - an einer Stelle gesetzt, wirksam an
+        // allen vier: eigenes Profil, Anlegen durch einen Administrator,
+        // Kennwort vergessen, Einladung einloesen. Bis dahin stand hier nichts,
+        // und es galt stillschweigend Laravels Vorgabe von acht Zeichen.
+        //
+        // Als Funktion, nicht als Wert: So wird die Einstellung erst beim
+        // Pruefen gelesen und nicht beim Hochfahren - dort gibt es die Tabelle
+        // beim ersten "artisan migrate" noch gar nicht.
+        Password::defaults(fn () => Setting::kennwortRegel());
 
         // Livewire prueft temporaere Uploads mit einer eigenen Regel und laesst
         // ohne Angabe hoechstens 12 MB durch. Die Anwendung erlaubt mehr -

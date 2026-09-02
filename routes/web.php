@@ -67,6 +67,7 @@ use App\Livewire\AdminAllgemein;
 use App\Livewire\AdminApiToken;
 use App\Livewire\AdminOperatingSystem;
 use App\Livewire\AdminPapierkorb;
+use App\Livewire\AdminSicherheit;
 use App\Livewire\AdminProtokoll;
 use App\Livewire\AdminProtokollHistorie;
 use App\Livewire\GlobalSearch;
@@ -136,6 +137,9 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             // Eigener Name und eigene Logos - Livewire, damit jede Aenderung
             // sofort gilt statt erst nach einem Speichern-Knopf.
             Route::get('/general', AdminAllgemein::class)->name('admin.general.index');
+
+            // Kennwortregeln fuer die Anmeldung - siehe AdminSicherheit.
+            Route::get('/security', AdminSicherheit::class)->name('admin.security.index');
 
             Route::get('/setting', [SettingController::class, 'index'])->name('admin.setting.index');
             Route::patch('/setting', [SettingController::class, 'update'])->name('admin.setting.update');
