@@ -33,11 +33,21 @@ Route::middleware('agent')->prefix('agent')->group(function () {
 Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/customers', [CustomerController::class, 'index']);
+    Route::post('/customers', [CustomerController::class, 'store']);
+
+    // Vor der Kundenroute: "/{customer}" passt auf jedes einzelne Segment und
+    // fing "GET /api/servers" ab - die Anfrage suchte einen Kunden namens
+    // "servers" und endete in einem 404. Die Server-Schnittstelle war damit
+    // nicht erreichbar, ohne dass es jemandem auffiel.
+    Route::get('servers', [ServerController::class, 'index']);
+    Route::get('servers/{server}', [ServerController::class, 'show']);
+    Route::post('servers', [ServerController::class, 'store']);
+    Route::put('servers/{server}', [ServerController::class, 'update']);
+    Route::delete('servers/{server}', [ServerController::class, 'delete']);
     // isCustomer: verhindert, dass ein auf einen Kunden beschraenkter Token
     // (customer_id gesetzt) Daten eines anderen Kunden ueber die Route
     // abruft. Admin-/Techniker-Token (kein customer_id) bleiben unbeschraenkt.
     Route::get('/{customer}', [CustomerController::class, 'show'])->middleware('isCustomer');
-    Route::post('/customers', [CustomerController::class, 'store']);
 
     Route::prefix('{customer}')->middleware('isCustomer')->group(function () {
 
@@ -52,12 +62,5 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('/accesspoints/{accesspoint}', [AccesspointController::class, 'delete']);
 
     });
-
-    // Server
-    Route::get('servers', [ServerController::class, 'index']);
-    Route::get('servers/{server}', [ServerController::class, 'show']);
-    Route::post('servers', [ServerController::class, 'store']);
-    Route::put('servers/{server}', [ServerController::class, 'update']);
-    Route::delete('servers/{server}', [ServerController::class, 'delete']);
 
 });

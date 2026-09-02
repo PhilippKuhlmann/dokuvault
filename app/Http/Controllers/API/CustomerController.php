@@ -12,9 +12,12 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
 
-        $name = $request->query('name');
+        // Ohne Suchbegriff die ganze Liste: whereEnthaelt() erwartet einen
+        // String, und ein Aufruf ohne ?name= endete in einem 500er.
+        $name = (string) $request->query('name');
 
-        $query = Customer::whereEnthaelt('name', $name);
+        $query = Customer::query()
+            ->when($name !== '', fn ($abfrage) => $abfrage->whereEnthaelt('name', $name));
 
         // Ein auf einen Kunden beschraenkter Token (customer_id gesetzt) darf
         // hierueber nicht alle Kunden auflisten koennen - nur den eigenen.

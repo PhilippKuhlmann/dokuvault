@@ -39,6 +39,21 @@ class Server extends Model
         return $this->form_factor === 'rack';
     }
 
+    /**
+     * Nicht in Antworten der Schnittstelle.
+     *
+     * Das Model geht als JSON hinaus, und dort stand bisher der
+     * verschluesselte Wert - nutzlos fuer den Aufrufer und ein Leck in
+     * dem Moment, in dem jemand aus dem Attribut einen Cast macht.
+     * Wer das Kennwort braucht, holt es dort, wo es hingehoert.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'bmcPassword',
+        'remotePassword',
+    ];
+
     protected function bmcPassword(): Attribute
     {
         return new Attribute(

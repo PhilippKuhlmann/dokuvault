@@ -4,6 +4,13 @@
 
 ### Security
 
+- **Kein Kennwort steht mehr in einer Antwort der Schnittstelle.** `Server` und `Accesspoint` gingen als JSON hinaus, samt `bmcPassword`, `remotePassword` und dem WLAN-Kennwort — bisher als verschlüsselter Wert. Nutzlos für den Aufrufer, und ein Leck in dem Moment, in dem jemand aus dem Attribut einen Cast macht. Sie sind jetzt aus der Serialisierung ausgenommen.
+
+### Fixed
+
+- **Die Server-Schnittstelle war nicht erreichbar.** `/{customer}` passt auf jedes einzelne Segment und stand vor ihr: `GET /api/servers` suchte einen Kunden namens „servers" und endete in einem 404. Aufgefallen erst beim Durchspielen mit echten Tokens.
+- **`GET /api/customers` ohne Suchbegriff endete in einem Serverfehler.** Die Suche erwartete einen String und bekam `null`.
+
 - **Eine URL an einer Firewall konnte fremden Code ausführen.** `management_url`, `url_user` und `url_external` werden nur auf ihre Länge geprüft — dort steht oft eine nackte IP, eine strenge Regel wäre falsch. Sie landeten aber als `href` in der Karte: Stand dort `javascript:…`, führte **jeder Klick** den Code aus — in der Sitzung dessen, der klickt, nicht dessen, der ihn eingetragen hat.
   - Der Schutz sitzt jetzt dort, wo der Link entsteht: Verlinkt wird nur, was `http` oder `https` ist. Alles andere steht weiterhin da, nur nicht als Link. Das deckt auch ab, was längst in der Datenbank steht.
   - Positivliste, keine Sperrliste — andersherum müsste man jedes Schema kennen, das ein Browser ausführt.

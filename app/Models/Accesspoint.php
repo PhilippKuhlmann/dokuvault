@@ -22,6 +22,20 @@ class Accesspoint extends Model
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
+    /**
+     * Nicht in Antworten der Schnittstelle.
+     *
+     * Das Model geht als JSON hinaus, und dort stand bisher der
+     * verschluesselte Wert - nutzlos fuer den Aufrufer und ein Leck in
+     * dem Moment, in dem jemand aus dem Attribut einen Cast macht.
+     * Wer das Kennwort braucht, holt es dort, wo es hingehoert.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'password',
+    ];
+
     protected function password(): Attribute
     {
         return new Attribute(
