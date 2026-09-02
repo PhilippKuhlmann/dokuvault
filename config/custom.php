@@ -856,7 +856,10 @@ return [
     |
     */
     'datei_formate' => [
-        'pdf', 'png', 'jpg', 'jpeg', 'webp', 'gif', 'svg',
+        // Kein SVG: Ein SVG darf Skripte enthalten, und an einer Lizenz oder
+        // einem Zertifikat hat eines ohnehin nichts zu suchen. Fuer Bilder
+        // steht es aus demselben Grund nicht in bild_formate.
+        'pdf', 'png', 'jpg', 'jpeg', 'webp', 'gif',
         'txt', 'csv', 'rtf',
         'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods',
         'zip', '7z',

@@ -65,10 +65,20 @@
                             </div>
                         </td>
                     @elseif ($key == 'URL' || $key == 'Admin URL' || $key == 'User URL' || $key == 'Externe URL')
-                       <td class="py-1 break-all">
-                            <a href="{{ $value }}" target="_blank" class="text-cerulean-600 hover:text-cerulean-700 hover:underline">
+                        {{-- Verlinkt wird nur, was http oder https ist. In
+                             diesen Feldern steht oft eine nackte IP - die soll
+                             weiterhin dastehen, nur eben nicht als Link. Und
+                             ein "javascript:..." fuehrte sonst bei jedem
+                             Klick Code aus, in der Sitzung dessen, der
+                             klickt. --}}
+                        <td class="py-1 break-all">
+                            @if ($ziel = \App\Support\Adresse::sicher($value))
+                                <a href="{{ $ziel }}" target="_blank" rel="noopener noreferrer" class="text-cerulean-600 hover:text-cerulean-700 hover:underline">
+                                    {{ $value }}
+                                </a>
+                            @else
                                 {{ $value }}
-                            </a>
+                            @endif
                         </td>
                     @elseif (\Illuminate\Support\Str::contains($key, ['IP', 'MAC', 'Serien']))
                         <td class="py-1 break-words text-gray-900 dark:text-gray-100">

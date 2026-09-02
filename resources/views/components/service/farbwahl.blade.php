@@ -4,7 +4,10 @@
      das Textfeld zum Einfügen einer Farbe aus der Kundendoku. Die Vorschau
      daneben zeigt sofort, wie die Kachel später aussieht - inklusive der
      Schriftfarbe, die sich aus der Helligkeit ergibt. --}}
-<div class="flex flex-col mt-2" x-data="{ hex: '{{ $farbe }}' }">
+{{-- @js statt '{{ }}': Der Wert kommt als old() zurueck, wenn die
+     Farbpruefung fehlschlaegt - also roh, wie eingetippt. Im Attribut
+     schuetzt das HTML-Escaping nicht, siehe admin/setting/index. --}}
+<div class="flex flex-col mt-2" x-data="{ hex: @js($farbe) }">
     <x-input.label for="color" :value="__('Farbe')" />
 
     <div class="mt-1 flex flex-wrap items-center gap-3">

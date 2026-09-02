@@ -4,7 +4,12 @@
 
         <form method="POST" action="{{ route('admin.setting.update') }}"
             class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700"
-            x-data="{ tool: '{{ old('remote_tool', $aktuell) }}' }">
+            {{-- @js statt '{{ }}': Im Attribut wird der Wert vom Browser
+                 entschluesselt, bevor Alpine ihn auswertet - aus &#039; wird
+                 wieder ein Anfuehrungszeichen, und der Ausdruck laesst sich
+                 verlassen. Nachgestellt: Ein abgewiesener Wert kam als old()
+                 zurueck und fuehrte beim naechsten Aufruf Code aus. --}}
+            x-data="{ tool: @js(old('remote_tool', $aktuell)) }">
             @csrf
             @method('PATCH')
 

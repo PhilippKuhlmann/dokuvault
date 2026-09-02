@@ -4,6 +4,13 @@
 
 ### Security
 
+- **Eine URL an einer Firewall konnte fremden Code ausführen.** `management_url`, `url_user` und `url_external` werden nur auf ihre Länge geprüft — dort steht oft eine nackte IP, eine strenge Regel wäre falsch. Sie landeten aber als `href` in der Karte: Stand dort `javascript:…`, führte **jeder Klick** den Code aus — in der Sitzung dessen, der klickt, nicht dessen, der ihn eingetragen hat.
+  - Der Schutz sitzt jetzt dort, wo der Link entsteht: Verlinkt wird nur, was `http` oder `https` ist. Alles andere steht weiterhin da, nur nicht als Link. Das deckt auch ab, was längst in der Datenbank steht.
+  - Positivliste, keine Sperrliste — andersherum müsste man jedes Schema kennen, das ein Browser ausführt.
+- **Sechs Alpine-Ausdrücke setzten Werte in Anführungszeichen zusammen.** Im HTML-Attribut entschlüsselt der Browser den Wert, bevor Alpine ihn auswertet: Aus `&#039;` wird wieder ein Anführungszeichen, und der Ausdruck lässt sich verlassen. Im Browser nachgestellt — ein von der Validierung abgewiesener Wert kam über `old()` zurück und führte Code aus. Alle sechs nutzen jetzt `@js(…)`.
+  - **Eine Invariante hält es offen:** Ein Test durchsucht alle Blade-Dateien nach dieser Schreibweise. Wer morgen eine hinzufügt, merkt es sofort.
+- SVG ist als Dateianhang nicht mehr erlaubt — ein SVG darf Skripte enthalten, und an einer Lizenz hat eines ohnehin nichts zu suchen. (Bei Bildern stand es nie zur Wahl.)
+
 - **Ein Kundennutzer konnte Dateien in das Verzeichnis eines anderen Kunden schreiben.** Beim Hochladen an Lizenzen und Zertifikaten ging die eingegebene Bezeichnung ungeprüft in den Ablagepfad. Mit `../../../../fremder-kunde/files/vertrag` landete die Datei dort — und überschrieb, was dort lag. Nachgestellt und belegt, bevor der Schutz entstand; ein Test hält den Angriff jetzt offen.
   - Bezeichnung **und** Endung laufen jetzt durch `App\Support\Dateiname`. Die Endung kam ebenso ungeprüft durch: Sie stammt aus dem Dateinamen, den der Browser mitschickt, und den bestimmt der Absender.
   - Der Zeitstempel im Namen war nie ein Schutz davor — er verhindert nur, dass zwei gleichnamige Dateien sich überschreiben.

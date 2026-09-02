@@ -11,8 +11,10 @@
 @endphp
 
 <div x-data="{
-    appearance: '{{ $gewaehlt }}',
-    he: {{ $he }},
+    {{-- @js statt '{{ }}': Beide kommen ueber old() zurueck - siehe
+         admin/devicemodel/_form. --}}
+    appearance: @js($gewaehlt),
+    he: @js((int) $he),
     neuesBild: null,
     melden() { $dispatch('rack-vorschau', { appearance: this.appearance, he: this.he }) },
 }">

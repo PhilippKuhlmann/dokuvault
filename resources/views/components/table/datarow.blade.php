@@ -10,8 +10,13 @@
 ])>
     @foreach ($values as $key => $value)
         @if ($key == 'url')
+            {{-- Nur http und https werden verlinkt - siehe App\Support\Adresse. --}}
             <td scope="row" class="py-2.5 px-4">
-                <a href="{{ $value }}" target="_blank"  class=" text-cerulean-500 hover:text-cerulean-600">{{ $value }}</a>
+                @if ($ziel = \App\Support\Adresse::sicher($value))
+                    <a href="{{ $ziel }}" target="_blank" rel="noopener noreferrer" class=" text-cerulean-500 hover:text-cerulean-600">{{ $value }}</a>
+                @else
+                    {{ $value }}
+                @endif
             </td>
         @elseif ($key == 'download')
             @if ($value)

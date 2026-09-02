@@ -14,9 +14,12 @@
 @endphp
 
 <div x-data="{
-    typ: '{{ $gewaehlt }}',
-    he: {{ $he }},
-    drawing: '{{ old('drawing', $item->drawing ?? '') }}',
+    {{-- @js statt '{{ }}': Alle drei kommen ueber old() zurueck, also roh
+         wie eingetippt. Im Attribut entschluesselt der Browser den Wert,
+         bevor Alpine ihn auswertet - das HTML-Escaping schuetzt hier nicht. --}}
+    typ: @js($gewaehlt),
+    he: @js((int) $he),
+    drawing: @js(old('drawing', $item->drawing ?? '')),
     neuesBild: null,
     weg: false,
     zeichnungen: {{ Illuminate\Support\Js::from($zeichnungen) }},
