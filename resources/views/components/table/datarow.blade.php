@@ -9,7 +9,18 @@
     'opacity-60' => $inaktiv,
 ])>
     @foreach ($values as $key => $value)
-        @if ($key == 'download')
+        @if ($key == 'pfad')
+            {{-- Ein Weg innerhalb der Anwendung. Der Schluessel sagt es, nicht
+                 der Wert: Ob "/24" ein Pfad ist oder eine Netzmaske, kann die
+                 Tabelle nicht wissen - hier weiss es die Ansicht. --}}
+            <td scope="row" class="py-2.5 px-4">
+                @if ($ziel = \App\Support\Adresse::pfad($value))
+                    <a href="{{ $ziel }}" class="text-cerulean-500 hover:text-cerulean-600">{{ $value }}</a>
+                @else
+                    {{ $value }}
+                @endif
+            </td>
+        @elseif ($key == 'download')
             @if ($value)
                 <td scope="row" class="py-2.5 px-4">
                     <a href="{{ $value }}" target="_blank"  class="text-cerulean-500 hover:text-cerulean-600">{{ __('Download') }}</a>

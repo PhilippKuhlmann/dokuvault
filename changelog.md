@@ -4,7 +4,9 @@
 
 ### Fixed
 
-- **Die Kundenliste im Adminbereich hatte ihren Link auf den Kunden verloren.** In der Spalte „URL" steht `/mustermann` — ein Pfad innerhalb der Anwendung, kein `http`. Der XSS-Schutz von gestern ließ nur absolute `http`- und `https`-Adressen durch und hat damit die eigene Anwendung ausgesperrt. Der Pfad zählt jetzt mit; ausgenommen bleibt, was nur wie ein Pfad aussieht: `//example.test` ist protokoll-relativ und führt nach draußen, `/\example.test` behandeln Browser genauso.
+- **Die Kundenliste im Adminbereich hatte ihren Link auf den Kunden verloren.** In der Spalte „URL" steht `/mustermann` — ein Pfad innerhalb der Anwendung, kein `http`. Der XSS-Schutz von gestern ließ nur absolute Adressen durch und hat damit die eigene Anwendung ausgesperrt.
+  - Der erste Versuch war falsch: Jeder Wert mit führendem Schrägstrich galt als Pfad — und in der VLAN-Liste steht `/24`. Aus der Netzmaske wurde ein Link auf eine Seite `/24`. Aus dem Wert allein ist das nicht zu unterscheiden.
+  - Jetzt entscheidet der **Schlüssel**, nicht der Wert: Die Kundenliste übergibt den Weg unter `pfad`, die Netzmaske steht unter `CIDR` und kommt gar nicht erst in die Nähe. Geraten wird nichts mehr.
 - **Die Verwaltungsoberfläche einer Firewall war nicht anklickbar.** In der Karte heißt das Feld „Oberfläche", und verlinkt wurde nach der **Beschriftung** — die Bedingung zählte vier Namen auf („URL", „Admin URL", „User URL", „Externe URL"), und „Oberfläche" stand nicht darunter. Dort steht eine `https`-Adresse, die man nur markieren und kopieren konnte.
   - Das war schon vorher so und ist beim gestrigen XSS-Umbau nicht aufgefallen. Die dortige Commit-Nachricht behauptet, dieses Feld sei als `href` ausgegeben worden — das stimmte nicht.
   - Geprüft wird jetzt der **Wert** statt der Beschriftung. Damit funktioniert jedes URL-Feld, auch künftige: Wer eins anlegt, müsste sonst eine Liste pflegen, von der er nichts weiß.

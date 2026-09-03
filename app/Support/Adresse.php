@@ -20,9 +20,17 @@ class Adresse
     /**
      * Die Adresse, wenn man sie gefahrlos verlinken kann - sonst null.
      *
-     * Positivliste: http, https und der eigene Pfad. Andersherum müsste man
-     * jedes Schema kennen, das ein Browser ausführt - javascript, data,
-     * vbscript, und das nächste, das dazukommt.
+     * Positivliste, und zwar nur vollständige Adressen: http und https.
+     * Andersherum müsste man jedes Schema kennen, das ein Browser ausführt -
+     * javascript, data, vbscript, und das nächste, das dazukommt.
+     *
+     * Ein Wert, der mit "/" beginnt, zählt ausdrücklich nicht dazu. Er sah
+     * einen Nachmittag lang nach einem Pfad innerhalb der Anwendung aus, bis
+     * in der VLAN-Liste "/24" stand - eine Netzmaske, die prompt als Link auf
+     * eine Seite "/24" ausgegeben wurde. Aus dem Wert allein lässt sich das
+     * nicht unterscheiden. Wer einen anwendungsinternen Link ausgeben will,
+     * gibt eine vollständige Adresse mit - dort weiß die Ansicht, dass es
+     * einer ist; hier ist es geraten.
      */
     public static function sicher(mixed $wert): ?string
     {
@@ -30,10 +38,6 @@ class Adresse
 
         if ($adresse === '') {
             return null;
-        }
-
-        if (self::eigenerPfad($adresse)) {
-            return $adresse;
         }
 
         $schema = strtolower((string) parse_url($adresse, PHP_URL_SCHEME));
@@ -44,20 +48,25 @@ class Adresse
     /**
      * Ein Pfad innerhalb dieser Anwendung, etwa "/mustermann".
      *
-     * Er kam beim ersten Anlauf nicht durch, und die Kundenliste im
-     * Adminbereich verlor damit ihren Link auf den Kunden - dort steht
-     * "/" . $customer->slug, kein http. Ein Schutz, der die eigene Anwendung
-     * aussperrt, ist zu grob geraten.
+     * Getrennt von sicher(), und das ist der Punkt: Hier hat die Ansicht
+     * bereits entschieden, dass ein Link gemeint ist - sie übergibt den Wert
+     * unter einem eigenen Schlüssel. Geraten wird nichts mehr; die Netzmaske
+     * "/24" steht unter "CIDR" und kommt hier gar nicht an.
      *
-     * Ausgenommen bleibt, was nur wie ein Pfad aussieht: "//example.test" ist
-     * protokoll-relativ und führt nach draußen, und "/\example.test" wird von
-     * Browsern genauso behandelt. Beides gehört nicht in ein Feld, in dem ein
-     * eigener Pfad erwartet wird.
+     * Geprüft wird trotzdem, damit die nächste Verwendung nicht aus Versehen
+     * nach draußen führt: "//example.test" ist protokoll-relativ, und
+     * "/\example.test" behandeln Browser genauso.
      */
-    private static function eigenerPfad(string $adresse): bool
+    public static function pfad(mixed $wert): ?string
     {
-        return str_starts_with($adresse, '/')
-            && ! str_starts_with($adresse, '//')
-            && ! str_starts_with($adresse, '/\\');
+        $pfad = trim((string) $wert);
+
+        if (! str_starts_with($pfad, '/')
+            || str_starts_with($pfad, '//')
+            || str_starts_with($pfad, '/\\')) {
+            return null;
+        }
+
+        return $pfad;
     }
 }

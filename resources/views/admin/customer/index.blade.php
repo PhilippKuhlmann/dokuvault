@@ -29,7 +29,11 @@
                     :values="[
                         $customer->name,
                         $customer->customer_number,
-                        'url' => '/' . $customer->slug,
+                        {{-- Unter "pfad", nicht unter "url": Damit steht der
+                             kurze Weg da und nicht die volle Adresse - und die
+                             Tabelle muss nicht raten, ob ein fuehrender
+                             Schraegstrich einen Pfad meint. --}}
+                        'pfad' => '/'.$customer->slug,
                     ]"
 
                     editUrl="/{{ Request::path() }}/{{ $customer->id }}/edit"

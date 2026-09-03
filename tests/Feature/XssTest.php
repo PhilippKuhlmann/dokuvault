@@ -2,6 +2,7 @@
 
 use App\Models\Customer;
 use App\Models\Firewall;
+use App\Models\Network;
 use App\Models\Site;
 use App\Support\Adresse;
 
@@ -21,17 +22,51 @@ test('nur http und https werden verlinkt', function () {
         ->and(Adresse::sicher(null))->toBeNull();
 });
 
-test('der eigene Pfad wird verlinkt, was nur so aussieht nicht', function () {
-    // Die Kundenliste im Adminbereich verlinkt "/" . $customer->slug. Beim
-    // ersten Anlauf liess die Positivliste nur http und https durch - und
-    // sperrte damit die eigene Anwendung aus.
-    expect(Adresse::sicher('/mustermann'))->toBe('/mustermann')
-        ->and(Adresse::sicher('/kunde/geraet?seite=2'))->toBe('/kunde/geraet?seite=2')
-        // Protokoll-relativ: sieht aus wie ein Pfad, fuehrt aber nach draussen.
-        ->and(Adresse::sicher('//evil.example'))->toBeNull()
-        // Browser behandeln den Backslash wie den zweiten Schraegstrich.
-        ->and(Adresse::sicher('/\\evil.example'))->toBeNull()
-        ->and(Adresse::sicher('/'))->toBe('/');
+test('ein führender Schrägstrich macht noch keine Adresse', function () {
+    // Der Grund steht in der VLAN-Liste: Dort wird die Netzmaske als "/24"
+    // ausgegeben. Ein Zwischenstand hat jeden Wert mit fuehrendem
+    // Schraegstrich als anwendungsinternen Pfad verlinkt - aus "/24" wurde
+    // ein Link auf eine Seite "/24", die es nicht gibt.
+    //
+    // Aus dem Wert allein ist das nicht zu unterscheiden. Wer einen internen
+    // Link ausgeben will, gibt eine vollstaendige Adresse mit.
+    expect(Adresse::sicher('/24'))->toBeNull()
+        ->and(Adresse::sicher('/mustermann'))->toBeNull()
+        ->and(Adresse::sicher('//evil.example'))->toBeNull();
+
+    // Wo die Ansicht es ausdruecklich sagt, geht der Pfad durch - aber nur,
+    // wenn er wirklich einer ist.
+    expect(Adresse::pfad('/mustermann'))->toBe('/mustermann')
+        ->and(Adresse::pfad('//evil.example'))->toBeNull()
+        ->and(Adresse::pfad('/\\evil.example'))->toBeNull()
+        ->and(Adresse::pfad('mustermann'))->toBeNull();
+});
+
+test('die Netzmaske in der VLAN-Liste ist kein Link', function () {
+    // Der Fall, an dem die Vermutung "Schrägstrich heißt Pfad" gescheitert
+    // ist: In der Liste steht "/24", und daraus wurde ein Link auf eine Seite
+    // "/24".
+    $nutzer = userWithPermissions(['network_viewAny']);
+    $this->actingAs($nutzer);
+
+    $kunde = Customer::factory()->create();
+    $standort = Site::factory()->create(['customer_id' => $kunde->id]);
+
+    Network::create([
+        'customer_id' => $kunde->id,
+        'site_id' => $standort->id,
+        'description' => 'Clients',
+        'vlanId' => 20,
+        'network' => '10.10.20.0',
+        'cidr' => 24,
+    ]);
+
+    $antwort = $this->get("/{$kunde->slug}/network");
+
+    $antwort->assertStatus(200)
+        ->assertDontSee('href="/24"', false)
+        // Dastehen soll sie weiterhin.
+        ->assertSee('/24');
 });
 
 test('die Kundenliste im Adminbereich verlinkt den Kunden', function () {
@@ -41,9 +76,11 @@ test('die Kundenliste im Adminbereich verlinkt den Kunden', function () {
 
     $kunde = Customer::factory()->create();
 
+    // Der kurze Weg steht da, nicht die volle Adresse.
     $this->get('/admin/customer')
         ->assertStatus(200)
-        ->assertSee('href="/'.$kunde->slug.'"', false);
+        ->assertSee('href="/'.$kunde->slug.'"', false)
+        ->assertDontSee(url('/'.$kunde->slug), false);
 });
 
 test('ein javascript-Link an einer Firewall wird nicht verlinkt', function () {
