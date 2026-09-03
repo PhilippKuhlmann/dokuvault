@@ -886,6 +886,40 @@ return [
     */
     'remember_days' => 30,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Fristen: wie lange vorher gewarnt wird
+    |--------------------------------------------------------------------------
+    |
+    | Diese Werte sind die Vorgabe. Wer sie aendern will, tut das unter
+    | Einstellungen > Fristen; erst wenn dort nichts steht, gilt, was hier
+    | steht. Gelesen wird ausschliesslich ueber App\Models\Setting - die
+    | Zahlen standen vorher an sieben Stellen einzeln im Code, und wer eine
+    | davon aendert, laesst die uebrigen stehen.
+    |
+    */
+    'fristen' => [
+
+        // Lizenzen, Zertifikate und Domains. Alle drei werden verlaengert,
+        // nicht ersetzt - eine Frist genuegt fuer alle drei.
+        'vertraege_tage' => 60,
+
+        // Garantien. Getrennt von den Vertraegen, weil das die andere Arbeit
+        // ist: Eine Lizenz verlaengert man, ein Geraet ohne Garantie muss
+        // ersetzt werden. Ersatz braucht Budget und einen Termin.
+        'garantie_tage' => 60,
+
+        // Support-Ende der Betriebssysteme. Ein halbes Jahr, weil ein
+        // Serverwechsel geplant, budgetiert und in ein Wartungsfenster
+        // gelegt werden will.
+        'eol_tage' => 180,
+
+        // Wie lange eine fertige PDF-Ausgabe liegen bleibt. Die Datei
+        // enthaelt alle Zugangsdaten eines Kunden im Klartext, deshalb in
+        // Stunden statt in Tagen.
+        'pdf_stunden' => 24,
+    ],
+
     'non_password_secrets' => [
         'remember_token',
         'two_factor_secret',

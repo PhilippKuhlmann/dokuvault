@@ -21,6 +21,7 @@ use App\Models\Printer;
 use App\Models\Role;
 use App\Models\Router;
 use App\Models\Server;
+use App\Models\Setting;
 use App\Models\User;
 use App\Models\VM;
 use App\Models\Wifi;
@@ -86,8 +87,9 @@ class AdminController extends Controller
             ['label' => 'Aktivitäten', 'icon' => 'svg.document', 'count' => $zahlen['activities'], 'route' => route('admin.activity.index'), 'can' => 'admin_activity'],
         ])->filter(fn ($tile) => Gate::allows($tile['can']))->values()->all();
 
-        // Globale Ablauf-Übersicht (<= 60 Tage, inkl. bereits abgelaufen) über alle Kunden
-        $limit = now()->addDays(60);
+        // Globale Ablauf-Übersicht über alle Kunden, inkl. bereits abgelaufen.
+        // Die Frist steht unter Einstellungen > Fristen.
+        $limit = now()->addDays(Setting::fristVertraege());
         $expiring = collect();
         foreach (LicenseSoftware::whereNotNull('end_date')->whereDate('end_date', '<=', $limit)->with('customer')->get() as $l) {
             $expiring->push(['type' => 'Lizenz', 'name' => $l->name, 'date' => $l->end_date, 'customer' => $l->customer, 'route' => $l->customer ? route('licensesoftware.index', $l->customer) : null]);

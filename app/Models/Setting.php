@@ -278,6 +278,70 @@ class Setting extends Model
      */
     public const PROTOKOLL_TAGE = 'protokoll_tage';
 
+    /*
+    |--------------------------------------------------------------------------
+    | Fristen
+    |--------------------------------------------------------------------------
+    |
+    | Die Vorwarnzeiten standen an sieben Stellen einzeln im Code - zweimal
+    | dieselbe Zahl mit dem Kommentar, es sei dieselbe. Genau so laufen zwei
+    | Werte auseinander: Jemand aendert die eine Stelle und findet die andere
+    | nicht. Ab hier gibt es je Frist eine Funktion, und alle lesen sie.
+    |
+    */
+
+    public const FRIST_VERTRAEGE = 'frist_vertraege';
+
+    public const FRIST_GARANTIE = 'frist_garantie';
+
+    public const FRIST_EOL = 'frist_eol';
+
+    public const PDF_STUNDEN = 'pdf_stunden';
+
+    /** Vorwarnzeit fuer Lizenzen, Zertifikate und Domains, in Tagen. */
+    public static function fristVertraege(): int
+    {
+        return self::frist(self::FRIST_VERTRAEGE, 'vertraege_tage');
+    }
+
+    /** Vorwarnzeit fuer ablaufende Garantien, in Tagen. */
+    public static function fristGarantie(): int
+    {
+        return self::frist(self::FRIST_GARANTIE, 'garantie_tage');
+    }
+
+    /** Vorwarnzeit fuer das Support-Ende von Betriebssystemen, in Tagen. */
+    public static function fristEol(): int
+    {
+        return self::frist(self::FRIST_EOL, 'eol_tage');
+    }
+
+    /**
+     * Wie lange eine fertige PDF-Ausgabe liegen bleibt, in Stunden.
+     *
+     * Aufgeraeumt wird stuendlich, nicht in dem Augenblick, in dem die Frist
+     * ablaeuft - eine Datei liegt also bis zu eine Stunde laenger. Wer eine
+     * Stunde einstellt, bekommt bis zu zwei.
+     */
+    public static function pdfStunden(): int
+    {
+        return self::frist(self::PDF_STUNDEN, 'pdf_stunden');
+    }
+
+    /**
+     * Eine Frist lesen: eigener Wert, sonst der aus der Konfiguration.
+     *
+     * Null und 0 sind hier dasselbe wie "nicht gesetzt". Eine Vorwarnzeit von
+     * null Tagen waere keine Einstellung, sondern eine abgeschaltete Warnung -
+     * und die schaltet man nicht versehentlich ueber ein leeres Feld ab.
+     */
+    private static function frist(string $schluessel, string $konfiguration): int
+    {
+        $eigene = (int) self::wert($schluessel);
+
+        return $eigene > 0 ? $eigene : (int) config('custom.fristen.'.$konfiguration);
+    }
+
     /** Aufbewahrungsfrist des Protokolls in Tagen, 0 wenn unbegrenzt. */
     public static function protokollTage(): int
     {

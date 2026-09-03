@@ -13,9 +13,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class PdfExport extends Model
 {
-    /** Aufgeraeumt wird nach dieser Zeit - das PDF enthaelt alle Zugangsdaten. */
-    public const AUFBEWAHRUNG_STUNDEN = 24;
-
     public const OFFEN = 'offen';
 
     public const LAEUFT = 'laeuft';

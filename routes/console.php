@@ -42,7 +42,10 @@ Schedule::command('queue:work --stop-when-empty --max-time=55 --tries=1')
 
 // Fertige PDF wieder loeschen: Sie enthalten alle Zugangsdaten des Kunden und
 // haben nach dem Abholen keinen Grund, liegen zu bleiben.
-Schedule::command('pdf:aufraeumen')->dailyAt('03:30');
+// Stuendlich, nicht einmal nachts: Die Frist steht in Stunden, und eine Frist,
+// die nur um 03:30 durchgesetzt wird, ist keine. Ein PDF von 04:00 Uhr lag mit
+// 24 Stunden Frist bis zum uebernaechsten Lauf - fast zwei Tage statt einem.
+Schedule::command('pdf:aufraeumen')->hourly();
 
 // Das Protokoll nach der eingestellten Frist kuerzen, samt der daran
 // haengenden Kennwoerter. Taeglich, nicht stuendlich: Die Frist wird in Tagen

@@ -2,6 +2,7 @@
 
 namespace App\Models\Concerns;
 
+use App\Models\Setting;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -34,8 +35,10 @@ trait HatBeschaffung
      * Geraete, deren Garantie in den naechsten $tage Tagen ablaeuft oder schon
      * abgelaufen ist.
      */
-    public function scopeGarantieLaeuftAb(Builder $query, int $tage = 60): Builder
+    public function scopeGarantieLaeuftAb(Builder $query, ?int $tage = null): Builder
     {
+        $tage ??= Setting::fristGarantie();
+
         return $query->whereNotNull('warranty_until')
             ->whereDate('warranty_until', '<=', now()->addDays($tage));
     }

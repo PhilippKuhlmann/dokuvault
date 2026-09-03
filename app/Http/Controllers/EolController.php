@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Computer;
 use App\Models\OperatingSystem;
 use App\Models\Server;
+use App\Models\Setting;
 use App\Models\VM;
 
 /**
@@ -25,9 +26,10 @@ class EolController extends Controller
 
     public function index()
     {
-        // Ein halbes Jahr Vorlauf, dieselbe Schwelle wie beim Abzeichen.
+        // Dieselbe Schwelle wie beim Abzeichen - und jetzt auch dieselbe
+        // Quelle. Zwei Zahlen mit demselben Kommentar laufen sonst auseinander.
         $systeme = OperatingSystem::whereNotNull('eol_date')
-            ->whereDate('eol_date', '<=', now()->addDays(180))
+            ->whereDate('eol_date', '<=', now()->addDays(Setting::fristEol()))
             ->get()
             ->keyBy('id');
 

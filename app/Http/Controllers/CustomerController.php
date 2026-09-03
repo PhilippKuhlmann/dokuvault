@@ -12,6 +12,7 @@ use App\Models\DocumentationRun;
 use App\Models\LicenseSoftware;
 use App\Models\PdfExport;
 use App\Models\Role;
+use App\Models\Setting;
 use App\Models\Site;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -86,22 +87,22 @@ class CustomerController extends Controller
             ['label' => 'AD-User',        'icon' => 'svg.user',     'count' => $customer->adusers_count,             'route' => route('aduser.index', $customer),             'can' => 'aduser_viewAny'],
         ];
 
-        // Software-Lizenzen, die in den nächsten 60 Tagen ablaufen oder bereits abgelaufen sind
+        // Software-Lizenzen, die bald ablaufen oder bereits abgelaufen sind
         $expiringLicenses = LicenseSoftware::where('customer_id', $customer->id)
             ->whereNotNull('end_date')
-            ->whereDate('end_date', '<=', now()->addDays(60))
+            ->whereDate('end_date', '<=', now()->addDays(Setting::fristVertraege()))
             ->orderBy('end_date')
             ->get();
 
-        // SSL/TLS-Zertifikate, die in den nächsten 60 Tagen ablaufen oder bereits abgelaufen sind
+        // SSL/TLS-Zertifikate, die bald ablaufen oder bereits abgelaufen sind
         $expiringCertificates = Certificate::where('customer_id', $customer->id)
             ->whereNotNull('expiry_date')
-            ->whereDate('expiry_date', '<=', now()->addDays(60))
+            ->whereDate('expiry_date', '<=', now()->addDays(Setting::fristVertraege()))
             ->orderBy('expiry_date')
             ->get();
 
-        // Hardware, deren Garantie in den nächsten 60 Tagen ausläuft oder schon
-        // ausgelaufen ist - dieselbe Frist wie bei Lizenzen und Zertifikaten.
+        // Hardware, deren Garantie ausläuft oder schon ausgelaufen ist. Eigene
+        // Frist: Eine Lizenz verlängert man, ein Gerät muss ersetzt werden.
         $expiringWarranties = $this->ablaufendeGarantien($customer);
 
         // Einstieg zum Dokumentations-Assistenten: anbieten, wenn ein Durchlauf dieses Nutzers
@@ -133,8 +134,10 @@ class CustomerController extends Controller
      * Je Geraeteart wird die Sichtbarkeit geprueft. Ohne das stuenden auf dem
      * Dashboard Geraete, deren Liste der Nutzer nicht oeffnen darf.
      */
-    private function ablaufendeGarantien(Customer $customer, int $tage = 60): Collection
+    private function ablaufendeGarantien(Customer $customer, ?int $tage = null): Collection
     {
+        $tage ??= Setting::fristGarantie();
+
         return collect(config('custom.trashables'))
             ->filter(fn ($eintrag, $slug) => in_array(HatBeschaffung::class, class_uses_recursive($eintrag[0]), true)
                 && Gate::allows($slug.'_viewAny'))

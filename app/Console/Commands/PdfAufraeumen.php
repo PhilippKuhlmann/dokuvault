@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\PdfExport;
+use App\Models\Setting;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
@@ -21,7 +22,7 @@ class PdfAufraeumen extends Command
 
     public function handle(): int
     {
-        $grenze = now()->subHours(PdfExport::AUFBEWAHRUNG_STUNDEN);
+        $grenze = now()->subHours(Setting::pdfStunden());
         $anzahl = 0;
 
         PdfExport::where('created_at', '<', $grenze)

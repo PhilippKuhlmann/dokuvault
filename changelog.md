@@ -1,5 +1,23 @@
 # Changelog
 
+## 26.09.03
+
+### Added
+
+- **Einstellungen → Fristen: Vorwarnzeiten und die Aufbewahrung der PDF-Ausgaben.** Vier Zahlen — Lizenzen/Zertifikate/Domains (60 Tage), Garantien (60), Support-Ende der Betriebssysteme (180) und wie lange eine PDF-Ausgabe liegen bleibt (24 Stunden).
+  - **Die Zahlen standen an sieben Stellen einzeln im Code.** Zweimal dieselbe, mit dem Kommentar, es sei dieselbe: die 180 Tage in `OperatingSystem::laeuftAus()` und im `EolController`. Wer eine davon geändert hätte, hätte die andere stehen lassen — die Liste hätte dann ein System gezeigt, das kein Abzeichen trägt. Ein Test hält offen, dass beide derselben Quelle folgen.
+  - Garantien haben eine eigene Frist bekommen, obwohl sie heute gleich eingestellt ist. Es ist die andere Arbeit: Eine Lizenz verlängert man, ein Gerät ohne Garantie muss ersetzt werden — und Ersatz braucht Budget und einen Termin.
+  - Auf der Seite steht bei jeder Frist, **wo** sie wirkt. Eine Zahl ohne diesen Satz stellt man ein und weiß nicht, was sich ändert.
+  - Null Tage wird abgewiesen: Das wäre keine Frist, sondern eine abgeschaltete Warnung — und die schaltet man nicht versehentlich über ein leergeräumtes Feld ab.
+
+### Changed
+
+- **PDF-Ausgaben werden jetzt stündlich aufgeräumt statt einmal nachts um 03:30.** Die Frist stand immer in Stunden, durchgesetzt wurde sie einmal am Tag: Eine Ausgabe von 04:00 Uhr lag mit „24 Stunden" bis zum übernächsten Lauf — fast zwei Tage. Die Dateien enthalten alle Zugangsdaten eines Kunden im Klartext, deshalb ist das die sicherheitsrelevante der vier Fristen. Dass eine Datei bis zu eine Stunde länger liegt als eingestellt, steht jetzt unter dem Feld.
+
+### Fixed
+
+- **Zahlenprüfungen meldeten sich auf Englisch.** `lang/de/validation.php` kannte `min`/`max` nur für Texte, nicht für Zahlen — eine zu kleine Frist wurde mit „The … must be at least 1." abgewiesen. Im Browser gesehen, nicht im Code vermutet. Betrifft jede Zahlen-, Datei- und Auswahlprüfung der Anwendung, nicht nur die Fristen.
+
 ## 26.09.02
 
 ### Added

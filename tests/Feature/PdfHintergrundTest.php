@@ -4,6 +4,7 @@ use App\Jobs\KundenPdfErzeugen;
 use App\Livewire\PdfExportStatus;
 use App\Models\Customer;
 use App\Models\PdfExport;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
@@ -101,7 +102,7 @@ test('der Aufraeumbefehl loescht alte Ausgaben mitsamt Datei', function () {
         'customer_id' => $customer->id, 'user_id' => $nutzer->id,
         'status' => PdfExport::FERTIG, 'path' => 'pdf-exports/test.pdf',
     ]);
-    $alt->forceFill(['created_at' => now()->subHours(PdfExport::AUFBEWAHRUNG_STUNDEN + 1)])->save();
+    $alt->forceFill(['created_at' => now()->subHours(Setting::pdfStunden() + 1)])->save();
 
     $this->artisan('pdf:aufraeumen')->assertSuccessful();
 

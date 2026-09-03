@@ -65,6 +65,7 @@ use App\Http\Controllers\WifiController;
 use App\Http\Controllers\WizardController;
 use App\Livewire\AdminAllgemein;
 use App\Livewire\AdminApiToken;
+use App\Livewire\AdminFristen;
 use App\Livewire\AdminOperatingSystem;
 use App\Livewire\AdminPapierkorb;
 use App\Livewire\AdminProtokoll;
@@ -140,6 +141,9 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
             // Kennwortregeln fuer die Anmeldung - siehe AdminSicherheit.
             Route::get('/security', AdminSicherheit::class)->name('admin.security.index');
+
+            // Vorwarnzeiten und die Aufbewahrung der PDF-Ausgaben.
+            Route::get('/fristen', AdminFristen::class)->name('admin.fristen.index');
 
             Route::get('/setting', [SettingController::class, 'index'])->name('admin.setting.index');
             Route::patch('/setting', [SettingController::class, 'update'])->name('admin.setting.update');

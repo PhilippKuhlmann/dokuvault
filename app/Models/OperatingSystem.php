@@ -39,9 +39,12 @@ class OperatingSystem extends Model
      *
      * Ein halbes Jahr Vorlauf: Ein Serverwechsel will geplant, budgetiert und
      * in ein Wartungsfenster gelegt werden - mit 30 Tagen Warnung ist es zu spät.
+     * Einstellbar unter Einstellungen > Fristen.
      */
-    public function laeuftAus(int $tage = 180): bool
+    public function laeuftAus(?int $tage = null): bool
     {
+        $tage ??= Setting::fristEol();
+
         return $this->eol_date !== null
             && ! $this->istEol()
             && $this->eol_date->lessThanOrEqualTo(now()->addDays($tage));

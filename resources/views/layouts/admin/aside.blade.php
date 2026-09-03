@@ -57,6 +57,7 @@
                             <x-aside.dropdownlink :label="__('Fernwartung')" href="{{ route('admin.setting.index') }}" />
                             <x-aside.dropdownlink :label="__('Mail')" href="{{ route('admin.mail.index') }}" />
                             <x-aside.dropdownlink :label="__('Sicherheit')" href="{{ route('admin.security.index') }}" />
+                            <x-aside.dropdownlink :label="__('Fristen')" href="{{ route('admin.fristen.index') }}" />
                         @endcan
                         {{-- Die Aufbewahrungsfrist gehoert zum Protokoll, nicht zu
                              den uebrigen Einstellungen. --}}
