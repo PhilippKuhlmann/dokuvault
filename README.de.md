@@ -15,7 +15,7 @@ PDF-Export, globaler Suche über alle Kunden und Geräten, die sich per Agent
 ![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php&logoColor=white)
 ![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)
 ![Livewire](https://img.shields.io/badge/Livewire-4-FB70A9)
-![Tests](https://img.shields.io/badge/Tests-609%20grün-3fb950)
+![Tests](https://img.shields.io/badge/Tests-1033%20grün-3fb950)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
 **[▶ Live-Demo ausprobieren](https://doku.dokuvault.de)**
@@ -174,9 +174,15 @@ Agenten folgen.
 - **Betrieb** – globale Suche, durchsuch- und filterbares Aktivitätsprotokoll (Ereignis, Objektart,
   Benutzer, Zeitraum), Papierkorb (Wiederherstellen, dazu eine Adminansicht über alle Kunden),
   PDF-Export, Dateiablage
+- **Benutzer einladen** – per E-Mail statt mit einem Kennwort, das man ihnen durchsagt: Der
+  Eingeladene vergibt es sich selbst über einen Link
 - **Adminbereich** – rechtebasiert statt an eine Rolle verdrahtet: Kunden, Benutzer & Rollen,
   Auswahlmenüs, Einstellungen, Papierkorb, Aktivitätsprotokoll und API-Token sind eigene Rechte,
   frei kombinierbar je Rolle
+- **Einstellungen** – ohne Zugang zum Server: Name und Logos, Sprache, Zeitzone, ein Hinweis auf
+  der Anmeldeseite, Zeilen je Seite, Upload-Grenze und erlaubte Dateiendungen; SMTP-Zugang für den
+  Mailversand; Vorwarnzeiten für Lizenzen, Zertifikate, Garantien und Support-Ende sowie die
+  Aufbewahrung der PDF-Ausgaben; Kennwortregeln, Anmeldesperre und Sitzungsdauer
 - **Standortfilter** – schränkt Gerätelisten, IPAM und Auto-Dokumentation auf einen Standort ein
 - **Sprache** – Deutsch und Englisch, je Benutzer oder der Browsersprache folgend
 
@@ -184,12 +190,28 @@ Agenten folgen.
 
 ## 🔒 Sicherheit
 
+- **Zwei-Faktor-Anmeldung (TOTP)** – im Profil einzurichten, per QR-Code oder kopierbarem
+  Geheimnis, mit Wiederherstellungscodes zum Ausdrucken. Ein Administrator kann sie für einzelne
+  Benutzer verpflichtend machen; wer sie einrichten muss, kommt bis dahin nur ins eigene Profil
+- **Bremse gegen Durchprobieren** – zwei Zähler: einer je Konto, einer je Herkunft. Wer ein
+  einziges Kennwort gegen viele Benutzernamen probiert, löst den ersten nie aus. Versuche und
+  Sperrdauer sind einstellbar
+- **Kennwortregeln einstellbar** – Mindestlänge, Groß-/Kleinschreibung, Ziffer, Sonderzeichen und
+  Abgleich gegen bekannte Datenlecks. Gilt für die Kennwörter, mit denen sich Benutzer **anmelden**
+  – nicht für die dokumentierten Kennwörter der Kunden: Dort wird festgehalten, was ist, nicht was
+  sein soll
+- **Sitzung am Kennwort-Hash** – eine Kennwortänderung beendet jede andere Sitzung des Benutzers,
+  auch die auf einem verlorenen Gerät
 - Passwörter & sensible Felder **verschlüsselt at rest** (`Crypt`)
 - **Rollenbasierte** Zugriffe (Admin / Techniker / Kunde) mit granularen Berechtigungen
 - **Audit-Log** aller Änderungen; ein geändertes Passwort steht nie im Eintrag selbst – der alte
   Wert liegt verschlüsselt in einer eigenen Tabelle, sichtbar erst auf Klick und nur für den, der
   das Gerät ohnehin sehen darf
 - Schutz gegen **IDOR** (fremde Kunden-/Standortzuweisung), XSS-Härtung, verschlüsselte Sessions
+- **Dateiuploads** gegen Pfadmanipulation im Dateinamen gehärtet; erlaubt ist eine Positivliste von
+  Endungen, die sich kürzen, aber nicht erweitern lässt
+- **PDF-Ausgaben** enthalten alle Zugangsdaten eines Kunden im Klartext und werden nach einer
+  einstellbaren Frist automatisch gelöscht
 - Verantwortungsvolle Meldung von Lücken über [SECURITY.de.md](SECURITY.de.md)
 
 ---
@@ -225,7 +247,7 @@ Klartext weder in der Datenbank noch im Audit-Log landet.
 | **Pakete** | spatie/laravel-activitylog 4.12 *(Audit-Log)* · barryvdh/laravel-dompdf 3.0 *(PDF-Export)* · spatie/laravel-backup 9.3 |
 | **Frontend** | Tailwind CSS 3.4 · Alpine.js 3 · Flowbite 1.8 · Vite 3 |
 | **Datenbank** | MySQL / MariaDB |
-| **Qualität** | Pest 3 *(609 Tests)* · Laravel Pint · GitHub Actions CI |
+| **Qualität** | Pest 3 *(1033 Tests)* · Laravel Pint · GitHub Actions CI |
 
 ---
 
@@ -342,9 +364,10 @@ deshalb sehen sie dort gleich aus.
 
 ## 🧪 Tests
 
-609 Feature-Tests (Pest 3) laufen gegen eine In-Memory-SQLite – keine Einrichtung nötig, keine
+1033 Feature-Tests (Pest 3) laufen gegen eine In-Memory-SQLite – keine Einrichtung nötig, keine
 Spuren in der Entwicklungsdatenbank. Bei jedem Push führt GitHub Actions dieselbe Suite aus –
-gegen PHP 8.2 und 8.3, jeweils mit SQLite und MariaDB.
+gegen PHP 8.2 und 8.3, jeweils mit SQLite und MariaDB, dazu PHP 8.4 mitlaufend, aber nicht
+blockierend.
 
 ```bash
 php artisan test
@@ -358,7 +381,10 @@ php artisan test --filter=DocumentationWizard
 
 Abgedeckt sind unter anderem die Mandantentrennung (kein Zugriff auf fremde Kunden und Standorte),
 die Berechtigungs-Gates je Rolle, der Erstaufnahme-Assistent inklusive der Feldlisten seiner
-Schritte, der Standortfilter über alle Listen sowie Papierkorb und Wiederherstellung.
+Schritte, der Standortfilter über alle Listen sowie Papierkorb und Wiederherstellung. Dazu die
+Anmeldung mit zweiter Stufe, die Bremse gegen Durchprobieren und die Verschlüsselung: Ein Test
+gleicht alle Spalten, deren Name auf ein Geheimnis hindeutet, mit denen ab, die tatsächlich
+verschlüsselt sind – wer eine neue anlegt, muss sie verschlüsseln oder begründen, warum nicht.
 
 Code-Stil vor dem Commit prüfen:
 

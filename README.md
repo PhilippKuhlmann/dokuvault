@@ -15,7 +15,7 @@ PDF export, global search across every customer, and devices that
 ![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php&logoColor=white)
 ![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)
 ![Livewire](https://img.shields.io/badge/Livewire-4-FB70A9)
-![Tests](https://img.shields.io/badge/Tests-609%20passing-3fb950)
+![Tests](https://img.shields.io/badge/Tests-1033%20passing-3fb950)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
 **[▶ Try the live demo](https://doku.dokuvault.de)**
@@ -169,9 +169,15 @@ Every token may **only document** — a leaked one grants no further access. Mor
 - **Operations** — global search, searchable & filterable activity log (event, object type, user,
   time range), recycle bin (restore, plus an admin-wide view across every customer), PDF export,
   file storage
+- **Invite users** — by email rather than by reading a password out to them: the invitee sets
+  their own via a link
 - **Admin area** — permission-based, not role-hardcoded: customers, users & roles, dropdowns,
   settings, recycle bin, activity log and API tokens are separate permissions, freely combinable
   per role
+- **Settings** — without server access: name and logos, language, time zone, a note on the sign-in
+  page, rows per page, upload limit and permitted file extensions; SMTP credentials for outgoing
+  mail; advance warning for licences, certificates, warranties and end of support, plus how long
+  PDF exports are kept; password rules, login lockout and session length
 - **Site filter** — narrows device lists, IPAM and auto-documentation to a single site
 - **Language** — German and English, per user or following the browser
 
@@ -179,12 +185,27 @@ Every token may **only document** — a leaked one grants no further access. Mor
 
 ## 🔒 Security
 
+- **Two-factor sign-in (TOTP)** — set up in the profile, by QR code or a copyable secret, with
+  recovery codes to print. An administrator can require it for individual users; until they set it
+  up, those users get no further than their own profile
+- **Brake against guessing** — two counters: one per account, one per origin. Trying a single
+  password against many usernames never trips the first one. Attempts and lockout period are
+  configurable
+- **Configurable password rules** — minimum length, mixed case, digit, symbol and a check against
+  known breaches. This governs the passwords users **sign in** with — not the customer passwords
+  you document: there you record what is, not what ought to be
+- **Sessions bound to the password hash** — changing a password ends every other session that user
+  has, including the one on a lost laptop
 - Passwords and sensitive fields **encrypted at rest** (`Crypt`)
 - **Role-based** access (admin / technician / customer) with granular permissions
 - **Audit log** of every change; a changed password never appears in the log itself — the previous
   value lives encrypted in its own table, revealed only on click and only to those who can already
   see the device
 - Protection against **IDOR** (foreign customer/site assignment), XSS hardening, encrypted sessions
+- **File uploads** hardened against path traversal in the filename; what is allowed is an allow
+  list of extensions that can be shortened but not extended
+- **PDF exports** hold every one of a customer's credentials in the clear and are deleted
+  automatically after a configurable period
 - Responsible disclosure via [SECURITY.md](SECURITY.md)
 
 ---
@@ -220,7 +241,7 @@ text reaches neither the database nor the audit log.
 | **Packages** | spatie/laravel-activitylog 4.12 *(audit log)* · barryvdh/laravel-dompdf 3.0 *(PDF export)* · spatie/laravel-backup 9.3 |
 | **Frontend** | Tailwind CSS 3.4 · Alpine.js 3 · Flowbite 1.8 · Vite 3 |
 | **Database** | MySQL / MariaDB |
-| **Quality** | Pest 3 *(609 tests)* · Laravel Pint · GitHub Actions CI |
+| **Quality** | Pest 3 *(1033 tests)* · Laravel Pint · GitHub Actions CI |
 
 ---
 
@@ -331,9 +352,9 @@ built-in **Admin** role is special: it passes every permission check uncondition
 
 ## 🧪 Tests
 
-609 feature tests (Pest 3) run against an in-memory SQLite — no setup needed, no traces in your
+1033 feature tests (Pest 3) run against an in-memory SQLite — no setup needed, no traces in your
 development database. GitHub Actions runs the same suite on every push, against PHP 8.2 and 8.3 with
-SQLite and MariaDB.
+SQLite and MariaDB, plus PHP 8.4 alongside but not blocking.
 
 ```bash
 php artisan test
@@ -347,7 +368,9 @@ php artisan test --filter=DocumentationWizard
 
 Covered are, among others, tenant separation (no access to other customers or sites), the permission
 gates per role, the initial survey wizard including the field lists of its steps, the site filter
-across all lists, and the recycle bin with restoring.
+across all lists, and the recycle bin with restoring. Plus two-factor sign-in, the brake against
+guessing, and encryption at rest: one test compares every column whose name suggests a secret
+against those actually encrypted — add a new one and you must either encrypt it or record why not.
 
 Check the code style before committing:
 
