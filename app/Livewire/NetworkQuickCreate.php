@@ -72,6 +72,13 @@ class NetworkQuickCreate extends Component
 
     public bool $mitSymbol = false;
 
+    /**
+     * Ist einmal abgeschickt worden?
+     *
+     * Steuert, ob waehrend der Eingabe geprueft wird. Siehe updated().
+     */
+    public bool $geprueft = false;
+
     public function mount($customer, ?int $siteId = null, string $knopfKlassen = '', string $label = '', bool $mitSymbol = false): void
     {
         $this->nurEigenerKunde($customer->id);
@@ -130,6 +137,10 @@ class NetworkQuickCreate extends Component
 
         if ($cidr !== null) {
             $this->cidr = $cidr;
+            // Das Partnerfeld hat gerade einen gueltigen Wert bekommen - sein
+            // roter Rahmen gehoert weg. updated() lief schon, bevor dieser
+            // Wert stand.
+            $this->partnerPruefen('cidr');
         }
     }
 
@@ -139,6 +150,15 @@ class NetworkQuickCreate extends Component
 
         if ($maske !== null) {
             $this->subnetmask = $maske;
+            $this->partnerPruefen('subnetmask');
+        }
+    }
+
+    /** Maske und CIDR setzen sich gegenseitig - siehe updatedSubnetmask(). */
+    private function partnerPruefen(string $feld): void
+    {
+        if ($this->geprueft) {
+            $this->validateOnly($feld, $this->regeln(), [], $this->feldnamen());
         }
     }
 
@@ -153,7 +173,7 @@ class NetworkQuickCreate extends Component
         // gehoeren zusammen und sollen es auch beim Aufraeumen bleiben.
         $this->reset('offen', 'bearbeiteId', 'loeschenGefragt', 'site_id', 'description',
             'vlanId', 'network', 'subnetmask', 'cidr', 'gateway', 'dns1', 'dns2',
-            'dhcpStart', 'dhcpEnd');
+            'dhcpStart', 'dhcpEnd', 'geprueft');
         $this->resetErrorBag();
     }
 
@@ -180,10 +200,13 @@ class NetworkQuickCreate extends Component
         $this->formularLeeren();
     }
 
-    public function speichern(): void
+    /**
+     * Die Regeln - eine Quelle fuer das Speichern und fuer die laufende
+     * Pruefung waehrend der Eingabe. Zweimal dieselbe Liste liefe frueher oder
+     * spaeter auseinander.
+     */
+    protected function regeln(): array
     {
-        Gate::authorize($this->bearbeiteId ? 'network_update' : 'network_create');
-
         $regeln = [
             'description' => ['required', 'max:255'],
             'vlanId' => ['nullable', 'integer', 'min:1', 'max:4094'],
@@ -204,7 +227,13 @@ class NetworkQuickCreate extends Component
                 ->where('customer_id', $this->customerId)->whereNull('deleted_at')];
         }
 
-        $daten = $this->validate($regeln, [], [
+        return $regeln;
+    }
+
+    /** Die Beschriftungen fuer die Meldungen - "Bitte Bezeichnung angeben.". */
+    protected function feldnamen(): array
+    {
+        return [
             'site_id' => __('Standort'),
             'description' => __('Bezeichnung'),
             'vlanId' => __('VLAN-ID'),
@@ -216,7 +245,35 @@ class NetworkQuickCreate extends Component
             'dns2' => __('DNS 2'),
             'dhcpStart' => __('DHCP-Start'),
             'dhcpEnd' => __('DHCP-Ende'),
-        ]);
+        ];
+    }
+
+    /**
+     * Waehrend der Eingabe pruefen - aber erst, nachdem einmal abgeschickt
+     * wurde.
+     *
+     * Vorher waere es Meckern: Wer anfaengt zu tippen, bekaeme nach dem ersten
+     * Zeichen "Bitte Netz angeben", weil das Feld noch nicht fertig ist. Nach
+     * einem abgewiesenen Absenden ist es umgekehrt richtig - dort steht schon
+     * ein roter Rahmen, und der soll verschwinden, sobald der Wert stimmt.
+     */
+    public function updated(string $eigenschaft): void
+    {
+        if (! $this->geprueft || ! array_key_exists($eigenschaft, $this->regeln())) {
+            return;
+        }
+
+        $this->validateOnly($eigenschaft, $this->regeln(), [], $this->feldnamen());
+    }
+
+    public function speichern(): void
+    {
+        Gate::authorize($this->bearbeiteId ? 'network_update' : 'network_create');
+
+        // Ab jetzt wird bei jeder Eingabe geprueft - siehe updated().
+        $this->geprueft = true;
+
+        $daten = $this->validate($this->regeln(), [], $this->feldnamen());
 
         $werte = [
             'site_id' => $this->siteId && ! $this->bearbeiteId ? $this->siteId : $daten['site_id'],

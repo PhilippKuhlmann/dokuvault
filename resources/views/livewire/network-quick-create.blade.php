@@ -39,7 +39,7 @@
                     @if ($sites->isNotEmpty())
                         <div class="flex flex-col">
                             <x-input.label :value="__('Standort')" />
-                            <x-input.select name="site_id" feld="site_id" wire:model="site_id" class="mt-1">
+                            <x-input.select name="site_id" feld="site_id" wire:model.live.debounce.400ms="site_id" class="mt-1">
                                 <option value="">— {{ __('bitte wählen') }} —</option>
                                 @foreach ($sites as $site)
                                     <option value="{{ $site->id }}">{{ $site->name }}</option>
@@ -51,20 +51,20 @@
 
                     <div class="flex flex-col">
                         <x-input.label :value="__('Bezeichnung')" />
-                        <x-input.text feld="description" wire:model="description" type="text" class="mt-1" :placeholder="__('z. B. Clients')" />
+                        <x-input.text feld="description" wire:model.live.debounce.400ms="description" type="text" class="mt-1" :placeholder="__('z. B. Clients')" />
                         <x-input.fehler feld="description" />
                     </div>
 
                     <div class="flex gap-3">
                         <div class="flex w-1/3 flex-col">
                             <x-input.label :value="__('VLAN-ID')" />
-                            <x-input.text feld="vlanId" wire:model="vlanId" type="number" class="mt-1" placeholder="20" />
+                            <x-input.text feld="vlanId" wire:model.live.debounce.400ms="vlanId" type="number" class="mt-1" placeholder="20" />
                             <x-input.fehler feld="vlanId" />
                         </div>
 
                         <div class="flex flex-1 flex-col">
                             <x-input.label :value="__('Netz')" />
-                            <x-input.text feld="network" wire:model="network" type="text" class="mt-1" placeholder="10.10.20.0" />
+                            <x-input.text feld="network" wire:model.live.debounce.400ms="network" type="text" class="mt-1" placeholder="10.10.20.0" />
                             <x-input.fehler feld="network" />
                         </div>
                     </div>
@@ -91,20 +91,20 @@
 
                     <div class="flex flex-col">
                         <x-input.label :value="__('Gateway')" />
-                        <x-input.text feld="gateway" wire:model="gateway" type="text" class="mt-1" placeholder="10.10.20.1" />
+                        <x-input.text feld="gateway" wire:model.live.debounce.400ms="gateway" type="text" class="mt-1" placeholder="10.10.20.1" />
                         <x-input.fehler feld="gateway" />
                     </div>
 
                     <div class="flex gap-3">
                         <div class="flex flex-1 flex-col">
                             <x-input.label :value="__('DNS 1')" />
-                            <x-input.text feld="dns1" wire:model="dns1" type="text" class="mt-1" />
+                            <x-input.text feld="dns1" wire:model.live.debounce.400ms="dns1" type="text" class="mt-1" />
                             <x-input.fehler feld="dns1" />
                         </div>
 
                         <div class="flex flex-1 flex-col">
                             <x-input.label :value="__('DNS 2')" />
-                            <x-input.text feld="dns2" wire:model="dns2" type="text" class="mt-1" />
+                            <x-input.text feld="dns2" wire:model.live.debounce.400ms="dns2" type="text" class="mt-1" />
                             <x-input.fehler feld="dns2" />
                         </div>
                     </div>
@@ -112,13 +112,13 @@
                     <div class="flex gap-3">
                         <div class="flex flex-1 flex-col">
                             <x-input.label :value="__('DHCP-Start')" />
-                            <x-input.text feld="dhcpStart" wire:model="dhcpStart" type="text" class="mt-1" />
+                            <x-input.text feld="dhcpStart" wire:model.live.debounce.400ms="dhcpStart" type="text" class="mt-1" />
                             <x-input.fehler feld="dhcpStart" />
                         </div>
 
                         <div class="flex flex-1 flex-col">
                             <x-input.label :value="__('DHCP-Ende')" />
-                            <x-input.text feld="dhcpEnd" wire:model="dhcpEnd" type="text" class="mt-1" />
+                            <x-input.text feld="dhcpEnd" wire:model.live.debounce.400ms="dhcpEnd" type="text" class="mt-1" />
                             <x-input.fehler feld="dhcpEnd" />
                         </div>
                     </div>

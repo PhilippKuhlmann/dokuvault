@@ -117,3 +117,89 @@ test('keine Fehlermeldung im Projekt steht ohne Dunkelmodus-Farbe da', function 
     expect(array_unique($treffer))->toBeEmpty(
         'Fehlermeldung ohne Dunkelmodus-Farbe - x-input.fehler benutzen: '.implode(', ', array_unique($treffer)));
 });
+
+/*
+|--------------------------------------------------------------------------
+| Laufende Prüfung während der Eingabe
+|--------------------------------------------------------------------------
+*/
+
+test('vor dem ersten Absenden meckert das Formular nicht', function () {
+    $nutzer = userWithPermissions(['network_viewAny', 'network_create']);
+    $this->actingAs($nutzer);
+
+    $kunde = Customer::factory()->create();
+
+    // Wer anfängt zu tippen, hat das Feld noch nicht fertig. Eine Meldung nach
+    // dem ersten Zeichen wäre Meckern, kein Hinweis.
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $kunde])
+        ->call('neu')
+        ->set('network', '10.')
+        ->assertHasNoErrors();
+});
+
+test('nach einem abgewiesenen Absenden verschwindet Rot, sobald der Wert stimmt', function () {
+    $nutzer = userWithPermissions(['network_viewAny', 'network_create']);
+    $this->actingAs($nutzer);
+
+    $kunde = Customer::factory()->create();
+
+    $test = Livewire::test(NetworkQuickCreate::class, ['customer' => $kunde])
+        ->call('neu')
+        ->call('speichern')
+        ->assertHasErrors(['description', 'network']);
+
+    // Ein gültiger Wert räumt genau dieses Feld frei - die übrigen bleiben rot.
+    $test->set('description', 'Clients')
+        ->assertHasNoErrors('description')
+        ->assertHasErrors(['network']);
+});
+
+test('ein weiterhin falscher Wert bleibt rot', function () {
+    $nutzer = userWithPermissions(['network_viewAny', 'network_create']);
+    $this->actingAs($nutzer);
+
+    $kunde = Customer::factory()->create();
+
+    // Sonst wäre es nur ein Ausblenden der Farbe, keine Prüfung.
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $kunde])
+        ->call('neu')
+        ->call('speichern')
+        ->set('network', 'keine-adresse')
+        ->assertHasErrors(['network']);
+});
+
+test('Maske und CIDR räumen sich gegenseitig frei', function () {
+    $nutzer = userWithPermissions(['network_viewAny', 'network_create']);
+    $this->actingAs($nutzer);
+
+    $kunde = Customer::factory()->create();
+
+    // Die Maske setzt das CIDR-Feld mit. Dessen Hook läuft erst nach updated(),
+    // ohne Nacharbeit bliebe der rote Rahmen dort stehen.
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $kunde])
+        ->call('neu')
+        ->set('subnetmask', 'unfug')
+        ->call('speichern')
+        ->assertHasErrors(['subnetmask'])
+        ->set('subnetmask', '255.255.255.0')
+        ->assertHasNoErrors(['subnetmask', 'cidr']);
+});
+
+test('ein neuer Anlauf beginnt wieder ohne Meckern', function () {
+    $nutzer = userWithPermissions(['network_viewAny', 'network_create']);
+    $this->actingAs($nutzer);
+
+    $kunde = Customer::factory()->create();
+
+    // Nach "Neu" ist das Formular leer - dann darf es nicht sofort rot sein,
+    // nur weil vorher einmal etwas gefehlt hat.
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $kunde])
+        ->call('neu')
+        ->call('speichern')
+        ->assertHasErrors()
+        ->call('neu')
+        ->assertHasNoErrors()
+        ->set('network', '10.')
+        ->assertHasNoErrors();
+});

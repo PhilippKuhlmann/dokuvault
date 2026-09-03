@@ -10,6 +10,7 @@
   - **Der Wortlaut sagt, was zu tun ist:** „Bitte Bezeichnung angeben." statt „Das Feld Bezeichnung ist erforderlich." — der Satz stand direkt unter der Beschriftung, die er wiederholt hat. Das gilt für alle Pflichtfeld-Meldungen der Anwendung.
   - **Eine Komponente statt vier Schreibweisen.** Derselbe Text stand im Projekt in vier Varianten — `text-sm` und `text-xs`, mit und ohne Abstand — und **18 von 37 hatten keine Farbe für den Dunkelmodus**: `text-red-600` auf dunklem Grund. Alle 35 Feldmeldungen benutzen jetzt `x-input.fehler`; ein Test hält offen, dass keine neue ohne Dunkelmodus-Farbe dazukommt.
   - Vor dem Text steht ein Zeichen. Nicht als Zierde: Wer Rot und Grau schlecht unterscheidet, sieht sonst nur Text.
+- **Das VLAN-Formular prüft während der Eingabe** — aber erst, nachdem einmal abgeschickt wurde. Wer ein rotes Feld ausfüllt, sieht das Rot verschwinden, sobald der Wert stimmt; ein weiterhin falscher Wert bleibt rot. Vor dem ersten Absenden wird nicht geprüft: Nach dem ersten getippten Zeichen „Bitte Netz angeben" zu melden wäre Meckern, kein Hinweis.
 
 ### Fixed
 
