@@ -31,6 +31,20 @@ class AdminSicherheit extends Component
 
     public bool $pwUncompromised = false;
 
+    /** Bremse gegen Durchprobieren - dieselben Zahlen gelten in der zweiten Stufe. */
+    public int $versuche = 0;
+
+    public int $sperre = 0;
+
+    public int $herkunft = 0;
+
+    /** Sitzung. */
+    public int $sitzungMinuten = 0;
+
+    public bool $sitzungSchliessen = false;
+
+    public int $rememberTage = 0;
+
     public function mount(): void
     {
         Gate::authorize('admin_setting');
@@ -40,6 +54,63 @@ class AdminSicherheit extends Component
         $this->pwNumbers = (bool) Setting::wert(Setting::PW_NUMBERS, false);
         $this->pwSymbols = (bool) Setting::wert(Setting::PW_SYMBOLS, false);
         $this->pwUncompromised = (bool) Setting::wert(Setting::PW_UNCOMPROMISED, false);
+
+        $this->versuche = Setting::anmeldungVersuche();
+        $this->sperre = Setting::anmeldungSperreMinuten();
+        $this->herkunft = Setting::anmeldungHerkunft();
+
+        $this->sitzungMinuten = Setting::sitzungMinuten();
+        $this->sitzungSchliessen = Setting::sitzungBeimSchliessen();
+        $this->rememberTage = Setting::rememberTage();
+    }
+
+    public function updatedVersuche(): void
+    {
+        $this->zahl('versuche', Setting::ANMELDUNG_VERSUCHE, 1, 50, __('Fehlversuche je Konto'));
+    }
+
+    public function updatedSperre(): void
+    {
+        $this->zahl('sperre', Setting::ANMELDUNG_SPERRE, 1, 1440, __('Sperrdauer'));
+    }
+
+    public function updatedHerkunft(): void
+    {
+        $this->zahl('herkunft', Setting::ANMELDUNG_HERKUNFT, 1, 1000, __('Fehlversuche je Herkunft'));
+    }
+
+    public function updatedSitzungMinuten(): void
+    {
+        // Nach unten fuenf Minuten: Kuerzer meldet die Anwendung jemanden
+        // waehrend des Tippens ab. Nach oben 30 Tage - laenger ist keine
+        // Sitzung mehr, dafuer gibt es "Angemeldet bleiben".
+        $this->zahl('sitzungMinuten', Setting::SITZUNG_MINUTEN, 5, 43200, __('Dauer einer Sitzung'));
+    }
+
+    public function updatedRememberTage(): void
+    {
+        $this->zahl('rememberTage', Setting::REMEMBER_TAGE, 1, 365, __('„Angemeldet bleiben“'));
+    }
+
+    public function updatedSitzungSchliessen(): void
+    {
+        $this->haken(Setting::SITZUNG_SCHLIESSEN, $this->sitzungSchliessen);
+    }
+
+    /** Eine Zahl pruefen und ablegen. */
+    private function zahl(string $feld, string $schluessel, int $min, int $max, string $bezeichnung): void
+    {
+        Gate::authorize('admin_setting');
+
+        $this->validate(
+            [$feld => ['required', 'integer', 'min:'.$min, 'max:'.$max]],
+            [],
+            [$feld => $bezeichnung]
+        );
+
+        Setting::setzen($schluessel, $this->$feld);
+
+        $this->dispatch('hinweis', text: __('Einstellung gespeichert.'));
     }
 
     public function updatedPwMin(): void

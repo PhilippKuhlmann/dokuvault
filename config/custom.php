@@ -888,6 +888,36 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Bremse gegen Durchprobieren
+    |--------------------------------------------------------------------------
+    |
+    | Die Vorgabe. Geaendert wird sie unter Einstellungen > Sicherheit.
+    | Gelesen wird ausschliesslich ueber App\Models\Setting - dieselben drei
+    | Zahlen standen vorher in LoginRequest und im TwoFactorChallengeController,
+    | die zweite Stelle mit dem Kommentar "wie bei der Anmeldung selbst".
+    |
+    */
+    'anmeldung' => [
+
+        // Fehlversuche je Konto und Herkunft. Laravel liefert fuenf Versuche
+        // je Minute mit; hier gilt dieselbe Zahl, aber mit laengerer Sperre.
+        'versuche' => 5,
+
+        // Wie lange gesperrt wird, in Minuten. Eine Minute - die Vorgabe des
+        // Geruests - erlaubt 300 Versuche je Stunde und Konto. Eine
+        // Viertelstunde macht daraus 20.
+        'sperre_minuten' => 15,
+
+        // Fehlversuche je Herkunft ueber alle Konten hinweg. Der Zaehler oben
+        // enthaelt den Nutzernamen - wer ein Kennwort gegen viele Namen
+        // probiert, loest ihn nie aus. Bewusst hoch: Ein ganzes Buero haengt
+        // hinter einer IP, und niemand soll es aussperren koennen, weil sich
+        // morgens ein paar Leute vertippen.
+        'versuche_je_herkunft' => 30,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Fristen: wie lange vorher gewarnt wird
     |--------------------------------------------------------------------------
     |

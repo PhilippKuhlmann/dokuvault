@@ -4,6 +4,9 @@
 
 ### Added
 
+- **Einstellungen → Sicherheit: Anmeldung und Sitzung.** Fehlversuche je Konto (5), Sperrdauer (15 Minuten), Fehlversuche je Herkunft (30) — und für die Sitzung: Dauer (120 Minuten), „Angemeldet bleiben" (30 Tage), „Beim Schließen des Browsers abmelden".
+  - **Auch hier standen die Zahlen zweimal im Code:** in `LoginRequest` und im `TwoFactorChallengeController`, die zweite Stelle mit dem Kommentar „wie bei der Anmeldung selbst". Ein Kommentar hält zwei Zahlen nicht zusammen. Beide lesen jetzt dieselbe Quelle; ein Test hält fest, dass keine der beiden Klassen mehr eigene Konstanten hat.
+  - Bei „Beim Schließen des Browsers abmelden" steht dabei, dass es **nur die Sitzung** betrifft: Wer beim Anmelden „Angemeldet bleiben" angehakt hat, kommt trotzdem wieder herein. Der halbe Satz wäre gefährlicher als keiner.
 - **Einstellungen → Fristen: Vorwarnzeiten und die Aufbewahrung der PDF-Ausgaben.** Vier Zahlen — Lizenzen/Zertifikate/Domains (60 Tage), Garantien (60), Support-Ende der Betriebssysteme (180) und wie lange eine PDF-Ausgabe liegen bleibt (24 Stunden).
   - **Die Zahlen standen an sieben Stellen einzeln im Code.** Zweimal dieselbe, mit dem Kommentar, es sei dieselbe: die 180 Tage in `OperatingSystem::laeuftAus()` und im `EolController`. Wer eine davon geändert hätte, hätte die andere stehen lassen — die Liste hätte dann ein System gezeigt, das kein Abzeichen trägt. Ein Test hält offen, dass beide derselben Quelle folgen.
   - Garantien haben eine eigene Frist bekommen, obwohl sie heute gleich eingestellt ist. Es ist die andere Arbeit: Eine Lizenz verlängert man, ein Gerät ohne Garantie muss ersetzt werden — und Ersatz braucht Budget und einen Termin.
@@ -16,6 +19,7 @@
 
 ### Fixed
 
+- **„Angemeldet bleiben" wäre auf 400 Tage zurückgefallen, wenn die Einstellungen nicht lesbar sind.** Beim Umbau lag der Aufruf, der die Frist auf 30 Tage begrenzt, zuerst im `try` — und ein Fehler beim Lesen hieß damit nicht „es bleibt bei 30", sondern „es gilt wieder Laravels Vorgabe". Ein bestehender Test hat das aufgedeckt; ein neuer hält den Aufruf jetzt außerhalb.
 - **Zahlenprüfungen meldeten sich auf Englisch.** `lang/de/validation.php` kannte `min`/`max` nur für Texte, nicht für Zahlen — eine zu kleine Frist wurde mit „The … must be at least 1." abgewiesen. Im Browser gesehen, nicht im Code vermutet. Betrifft jede Zahlen-, Datei- und Auswahlprüfung der Anwendung, nicht nur die Fristen.
 
 ## 26.09.02

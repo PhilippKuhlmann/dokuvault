@@ -290,6 +290,92 @@ class Setting extends Model
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Anmeldung und Sitzung
+    |--------------------------------------------------------------------------
+    |
+    | Die drei Zahlen der Bremse standen zweimal im Code - in LoginRequest und
+    | im TwoFactorChallengeController, dort mit dem Kommentar "wie bei der
+    | Anmeldung selbst". Ein Kommentar haelt zwei Zahlen nicht zusammen.
+    |
+    */
+
+    public const ANMELDUNG_VERSUCHE = 'anmeldung_versuche';
+
+    public const ANMELDUNG_SPERRE = 'anmeldung_sperre';
+
+    public const ANMELDUNG_HERKUNFT = 'anmeldung_herkunft';
+
+    public const SITZUNG_MINUTEN = 'sitzung_minuten';
+
+    public const SITZUNG_SCHLIESSEN = 'sitzung_schliessen';
+
+    public const REMEMBER_TAGE = 'remember_tage';
+
+    /** Fehlversuche je Konto, bevor gesperrt wird. */
+    public static function anmeldungVersuche(): int
+    {
+        return self::zahl(self::ANMELDUNG_VERSUCHE, (int) config('custom.anmeldung.versuche'));
+    }
+
+    /** Dauer der Sperre in Minuten. */
+    public static function anmeldungSperreMinuten(): int
+    {
+        return self::zahl(self::ANMELDUNG_SPERRE, (int) config('custom.anmeldung.sperre_minuten'));
+    }
+
+    /** Dieselbe Sperre in Sekunden - so rechnet der RateLimiter. */
+    public static function anmeldungSperreSekunden(): int
+    {
+        return self::anmeldungSperreMinuten() * 60;
+    }
+
+    /** Fehlversuche je Herkunft ueber alle Konten hinweg. */
+    public static function anmeldungHerkunft(): int
+    {
+        return self::zahl(self::ANMELDUNG_HERKUNFT, (int) config('custom.anmeldung.versuche_je_herkunft'));
+    }
+
+    /** Wie lange eine untaetige Sitzung gilt, in Minuten. */
+    public static function sitzungMinuten(): int
+    {
+        return self::zahl(self::SITZUNG_MINUTEN, (int) config('session.lifetime'));
+    }
+
+    /**
+     * Mit dem Browserfenster abmelden.
+     *
+     * Nur die Sitzung. Wer "Angemeldet bleiben" angehakt hat, kommt trotzdem
+     * wieder herein - dafuer gibt es ein eigenes Cookie mit eigener Frist.
+     */
+    public static function sitzungBeimSchliessen(): bool
+    {
+        $eigene = self::wert(self::SITZUNG_SCHLIESSEN);
+
+        return $eigene === null ? (bool) config('session.expire_on_close') : (bool) $eigene;
+    }
+
+    /** Wie lange "Angemeldet bleiben" gilt, in Tagen. */
+    public static function rememberTage(): int
+    {
+        return self::zahl(self::REMEMBER_TAGE, (int) config('custom.remember_days', 30));
+    }
+
+    /**
+     * Eine Zahl lesen: eigener Wert, sonst die Vorgabe.
+     *
+     * 0 zaehlt als "nicht gesetzt". Null Versuche waeren eine Anmeldung, die
+     * niemanden durchlaesst, null Minuten eine Sperre, die keine ist - beides
+     * entsteht sonst aus einem leergeraeumten Feld.
+     */
+    private static function zahl(string $schluessel, int $standard): int
+    {
+        $eigene = (int) self::wert($schluessel);
+
+        return $eigene > 0 ? $eigene : $standard;
+    }
+
     public const FRIST_VERTRAEGE = 'frist_vertraege';
 
     public const FRIST_GARANTIE = 'frist_garantie';

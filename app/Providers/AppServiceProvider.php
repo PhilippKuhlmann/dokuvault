@@ -68,20 +68,7 @@ class AppServiceProvider extends ServiceProvider
             'required', 'file', 'max:'.$grenze,
         ]]);
 
-        // Ohne Angabe gilt das "Angemeldet bleiben"-Cookie fuenf Jahre - siehe
-        // config/custom.php. Ein gestohlenes Notebook waere damit ein
-        // Dauerzugang.
-        //
-        // Nur mit Schluessel: Der Guard zieht die Sitzung, die Sitzung ist
-        // verschluesselt (config/session.php), und ohne APP_KEY wirft der
-        // Verschluessler. Genau das passiert bei "composer install" auf einem
-        // frischen Auscheck-Verzeichnis - dort laeuft package:discover, bevor
-        // es eine .env gibt, und der ganze Lauf brach daran ab.
-        if (config('app.key')) {
-            Auth::guard('web')->setRememberDuration(
-                60 * 24 * (int) config('custom.remember_days', 30)
-            );
-        }
+        $this->sitzungEinstellungenAnwenden();
 
         Gate::define('isAdmin', function (User $user) {
             return $user->role->id == Role::IS_ADMIN;
@@ -168,6 +155,49 @@ class AppServiceProvider extends ServiceProvider
      * Installation gibt es die Tabelle noch nicht, und ein "artisan migrate"
      * darf daran nicht scheitern.
      */
+
+    /**
+     * Sitzungsdauer und "Angemeldet bleiben" aus den Einstellungen.
+     *
+     * Die Werte kommen aus der Datenbank, gelesen bevor die Sitzung startet -
+     * StartSession laeuft als Middleware, also nach den Providern. Steht in
+     * den Einstellungen nichts, bleibt es bei SESSION_LIFETIME aus der .env.
+     *
+     * try: Diese Zeilen laufen auch beim ersten "composer install" auf einem
+     * frischen Auscheck-Verzeichnis - package:discover startet, bevor es eine
+     * .env oder eine Tabelle gibt. Genau daran ist schon ein CI-Lauf
+     * gescheitert.
+     */
+    private function sitzungEinstellungenAnwenden(): void
+    {
+        // Ohne Schluessel gar nicht erst anfangen: Der Guard zieht die Sitzung,
+        // die Sitzung ist verschluesselt, und ohne APP_KEY wirft der
+        // Verschluessler.
+        if (! config('app.key')) {
+            return;
+        }
+
+        try {
+            $tage = Setting::rememberTage();
+
+            config([
+                'session.lifetime' => Setting::sitzungMinuten(),
+                'session.expire_on_close' => Setting::sitzungBeimSchliessen(),
+            ]);
+        } catch (Throwable) {
+            // Ohne Tabelle die Vorgabe. Fuer die Sitzung steht sie ohnehin
+            // schon in der Konfiguration, hier fehlt nur die Zahl.
+            $tage = (int) config('custom.remember_days', 30);
+        }
+
+        // Ausserhalb des try, und das ist der Punkt: Ohne diesen Aufruf gilt
+        // Laravels Vorgabe von 400 Tagen. Stand er innen, hiess ein Fehler
+        // beim Lesen der Einstellung nicht "es bleibt bei 30", sondern "es
+        // sind wieder 400" - ein gestohlenes Notebook waere ein Dauerzugang.
+        // Ein bestehender Test hat genau das aufgedeckt.
+        Auth::guard('web')->setRememberDuration(60 * 24 * $tage);
+    }
+
     private function mailEinstellungenAnwenden(): void
     {
         try {

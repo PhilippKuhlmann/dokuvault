@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Concerns\LeitetNachAnmeldungWeiter;
 use App\Http\Controllers\Controller;
+use App\Models\Setting;
 use App\Models\User;
 use App\Support\ZweiteStufe;
 use Illuminate\Http\RedirectResponse;
@@ -28,11 +29,6 @@ class TwoFactorChallengeController extends Controller
     public const WARTET = 'zweite-stufe.wartet';
 
     public const GEMERKT = 'zweite-stufe.gemerkt';
-
-    /** Versuche und Sperrdauer wie bei der Anmeldung selbst. */
-    private const VERSUCHE = 5;
-
-    private const SPERRE = 900;
 
     public function __construct(private ZweiteStufe $zweiteStufe) {}
 
@@ -71,7 +67,7 @@ class TwoFactorChallengeController extends Controller
         $stimmt = $mitCode || $mitZettel;
 
         if (! $stimmt) {
-            RateLimiter::hit($this->schluessel($nutzer), self::SPERRE);
+            RateLimiter::hit($this->schluessel($nutzer), Setting::anmeldungSperreSekunden());
 
             // Ein falscher zweiter Faktor loest kein Auth\Events\Failed aus -
             // das Kennwort stimmte ja. Genau dieser Fall ist aber der
@@ -172,10 +168,14 @@ class TwoFactorChallengeController extends Controller
      * Ohne diese Bremse waere die zweite Stufe sechs Ziffern, die sich in
      * Ruhe durchprobieren lassen - eine Million Moeglichkeiten sind schnell
      * durch, wenn niemand mitzaehlt.
+     *
+     * Dieselben Zahlen wie bei der Anmeldung, und jetzt auch dieselbe Quelle:
+     * Sie standen hier ein zweites Mal, mit einem Kommentar, der behauptete,
+     * es seien dieselben. Ein Kommentar haelt zwei Zahlen nicht zusammen.
      */
     private function nichtGesperrt(User $nutzer): void
     {
-        if (! RateLimiter::tooManyAttempts($this->schluessel($nutzer), self::VERSUCHE)) {
+        if (! RateLimiter::tooManyAttempts($this->schluessel($nutzer), Setting::anmeldungVersuche())) {
             return;
         }
 
