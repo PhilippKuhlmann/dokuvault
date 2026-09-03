@@ -191,9 +191,7 @@
                             @endif
                         @endif
 
-                        @error('form.' . $field['name'])
-                            <span class="text-xs text-red-600 mt-1">{{ $message }}</span>
-                        @enderror
+                        <x-input.fehler :feld="'form.' . $field['name']" />
                     </div>
                 @endforeach
             </div>

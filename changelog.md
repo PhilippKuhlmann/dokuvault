@@ -2,6 +2,15 @@
 
 ## 26.09.03
 
+### Changed
+
+- **Fehlermeldungen in Formularen sehen anders aus.** Anlass war das VLAN-Formular: Wer ein Pflichtfeld vergaß, bekam kleinen roten Text unter dem Feld — sonst nichts.
+  - **Das fehlerhafte Feld markiert sich jetzt selbst** (rote Umrandung, `aria-invalid`). Das ist der Unterschied zwischen „irgendwo stimmt etwas nicht" und „hier". Vorher musste man den Text lesen, um es zu finden.
+  - **Über dem Formular steht ein Satz**, dass etwas fehlt. Ein Dialog, der sich nicht schließt, wirkt sonst wie ein hängender Knopf.
+  - **Der Wortlaut sagt, was zu tun ist:** „Bitte Bezeichnung angeben." statt „Das Feld Bezeichnung ist erforderlich." — der Satz stand direkt unter der Beschriftung, die er wiederholt hat. Das gilt für alle Pflichtfeld-Meldungen der Anwendung.
+  - **Eine Komponente statt vier Schreibweisen.** Derselbe Text stand im Projekt in vier Varianten — `text-sm` und `text-xs`, mit und ohne Abstand — und **18 von 37 hatten keine Farbe für den Dunkelmodus**: `text-red-600` auf dunklem Grund. Alle 35 Feldmeldungen benutzen jetzt `x-input.fehler`; ein Test hält offen, dass keine neue ohne Dunkelmodus-Farbe dazukommt.
+  - Vor dem Text steht ein Zeichen. Nicht als Zierde: Wer Rot und Grau schlecht unterscheidet, sieht sonst nur Text.
+
 ### Fixed
 
 - **Die Kundenliste im Adminbereich hatte ihren Link auf den Kunden verloren.** In der Spalte „URL" steht `/mustermann` — ein Pfad innerhalb der Anwendung, kein `http`. Der XSS-Schutz von gestern ließ nur absolute Adressen durch und hat damit die eigene Anwendung ausgesperrt.

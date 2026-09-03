@@ -159,9 +159,7 @@
                                         {{ __('Datei wird übertragen …') }}
                                     </div>
 
-                                    @error('datei')
-                                        <span class="mt-1 text-xs text-red-600">{{ $message }}</span>
-                                    @enderror
+                                    <x-input.fehler feld="datei" />
                                 @elseif ($feld['type'] === 'schalter')
                                     <label class="mt-1 inline-flex items-center gap-2">
                                         <input type="checkbox" wire:model="form.{{ $feld['name'] }}"
@@ -200,9 +198,7 @@
                                     @endif
                                 @endif
 
-                                @error('form.'.$feld['name'])
-                                    <span class="mt-1 text-xs text-red-600">{{ $message }}</span>
-                                @enderror
+                                <x-input.fehler :feld="'form.'.$feld['name']" />
 
                                 {{-- Vorherige Kennwoerter. Der Fall dahinter: Jemand
                                      hat falsch geaendert, und man braucht das alte
@@ -286,9 +282,7 @@
                                 {{ __('Datei wird übertragen …') }}
                             </div>
 
-                            @error('modellbild')
-                                <span class="mt-1 text-xs text-red-600">{{ $message }}</span>
-                            @enderror
+                            <x-input.fehler feld="modellbild" />
                         </div>
                     @endif
 

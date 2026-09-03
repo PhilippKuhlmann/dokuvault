@@ -23,9 +23,7 @@
                 <span wire:loading wire:target="name" class="text-xs text-gray-400 dark:text-gray-500">{{ __('speichert …') }}</span>
             </div>
 
-            @error('name')
-                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-            @enderror
+            <x-input.fehler feld="name" />
         </div>
 
         {{-- Drei Felder statt eines: Das Logo auf der Anmeldeseite darf gross
@@ -72,9 +70,7 @@
                     </span>
                 </div>
 
-                @error('logo_'.$s['stelle'])
-                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                @enderror
+                <x-input.fehler :feld="'logo_'.$s['stelle']" />
             </div>
         @endforeach
 
@@ -104,9 +100,7 @@
                 <span wire:loading wire:target="sprache" class="text-xs text-gray-400 dark:text-gray-500">{{ __('speichert …') }}</span>
             </div>
 
-            @error('sprache')
-                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-            @enderror
+            <x-input.fehler feld="sprache" />
         </div>
 
         {{-- Nur die Anzeige, nicht die Ablage: Gespeichert wird weiter in
@@ -128,9 +122,7 @@
                 <span wire:loading wire:target="zeitzone" class="text-xs text-gray-400 dark:text-gray-500">{{ __('speichert …') }}</span>
             </div>
 
-            @error('zeitzone')
-                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-            @enderror
+            <x-input.fehler feld="zeitzone" />
         </div>
     </div>
 
@@ -155,9 +147,7 @@
                 <span wire:loading wire:target="uploadMb" class="text-xs text-gray-400 dark:text-gray-500">{{ __('speichert …') }}</span>
             </div>
 
-            @error('uploadMb')
-                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-            @enderror
+            <x-input.fehler feld="uploadMb" />
         </div>
 
         <div class="mt-6 border-t border-gray-100 pt-5 dark:border-gray-700">
@@ -185,9 +175,7 @@
                 <span wire:loading wire:target="endungen" class="text-xs text-gray-400 dark:text-gray-500">{{ __('speichert …') }}</span>
             </div>
 
-            @error('endungen')
-                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-            @enderror
+            <x-input.fehler feld="endungen" />
         </div>
     </div>
 
@@ -210,9 +198,7 @@
                 <span wire:loading wire:target="anmeldeHinweis" class="text-xs text-gray-400 dark:text-gray-500">{{ __('speichert …') }}</span>
             </div>
 
-            @error('anmeldeHinweis')
-                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-            @enderror
+            <x-input.fehler feld="anmeldeHinweis" />
         </div>
     </div>
 
@@ -239,9 +225,7 @@
 
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $wirkung }}</p>
 
-                    @error($feld)
-                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                    @enderror
+                    <x-input.fehler :feld="$feld" />
                 </div>
             @endforeach
         </div>

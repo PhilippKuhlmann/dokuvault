@@ -55,9 +55,7 @@
             <x-input.button type="button" size="feld" wire:click="anlegen" :label="__('Token anlegen')" />
         </div>
 
-        @error('name')
-            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-        @enderror
+        <x-input.fehler feld="name" />
     </div>
 
     @if ($tokens->isEmpty())

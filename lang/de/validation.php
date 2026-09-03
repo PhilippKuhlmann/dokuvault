@@ -1,7 +1,11 @@
 <?php
 
 return [
-    'required' => 'Das Feld :attribute ist erforderlich.',
+    // "Bitte ... angeben" statt "Das Feld ... ist erforderlich": Der Satz steht
+    // direkt unter dem Feld, dessen Beschriftung daneben schon dasteht. Und er
+    // sagt, was zu tun ist, statt einen Zustand festzustellen. "Angeben" passt
+    // sowohl fuer ein Textfeld als auch fuer eine Auswahl.
+    'required' => 'Bitte :attribute angeben.',
     'email' => 'Das Feld :attribute muss eine gültige E-Mail-Adresse enthalten.',
     'ipv4' => 'Das  Feld :attribute muss eine gültige IPv4-Adresse sein.',
     'url' => 'Das Feld URL muss eine gültige URL sein.',

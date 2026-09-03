@@ -154,7 +154,7 @@
                     @endif
                 @endforeach
             </x-input.select>
-            @error('login_id') <span class="text-xs text-red-600 mt-1">{{ $message }}</span> @enderror
+            <x-input.fehler feld="login_id" />
         </div>
         <div class="flex flex-col">
             <x-input.label :value="__('Abweichende Verwendung')" />
@@ -172,8 +172,8 @@
     <div class="flex flex-wrap items-end gap-2" wire:key="neu-anlegen">
         <div class="flex flex-col">
             <x-input.label :value="__('Name')" />
-            <x-input.text wire:model="name" type="text" class="mt-1 w-44" :placeholder="__('z. B. Linux root')" />
-            @error('name') <span class="text-xs text-red-600 mt-1">{{ $message }}</span> @enderror
+            <x-input.text feld="name" wire:model="name" type="text" class="mt-1 w-44" :placeholder="__('z. B. Linux root')" />
+            <x-input.fehler feld="name" />
         </div>
         <div class="flex flex-col">
             <x-input.label :value="__('Benutzername')" />

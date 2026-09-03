@@ -54,9 +54,7 @@
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                     {{ __('{id} wird durch die Kennung des Geräts ersetzt, {password} durch das Kennwort. Ein Muster ohne {password} ist der Normalfall.') }}
                 </p>
-                @error('remote_pattern')
-                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                @enderror
+                <x-input.fehler feld="remote_pattern" />
             </div>
 
             <div class="mt-5 flex items-center gap-3">

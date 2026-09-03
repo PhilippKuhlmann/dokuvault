@@ -19,9 +19,7 @@
                 <span wire:loading wire:target="pwMin" class="text-xs text-gray-400 dark:text-gray-500">{{ __('speichert …') }}</span>
             </div>
 
-            @error('pwMin')
-                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-            @enderror
+            <x-input.fehler feld="pwMin" />
         </div>
 
         <div class="mt-6 space-y-3 border-t border-gray-100 pt-5 dark:border-gray-700">
@@ -84,9 +82,7 @@
 
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $fussnote }}</p>
 
-                    @error($feld)
-                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                    @enderror
+                    <x-input.fehler :feld="$feld" />
                 </div>
             @endforeach
         </div>
@@ -121,9 +117,7 @@
 
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $fussnote }}</p>
 
-                    @error($feld)
-                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                    @enderror
+                    <x-input.fehler :feld="$feld" />
                 </div>
             @endforeach
         </div>

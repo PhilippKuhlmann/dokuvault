@@ -15,9 +15,7 @@
             <x-input.button type="button" size="feld" wire:click="speichern" :label="__('Speichern')" />
         </div>
 
-        @error('tage')
-            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-        @enderror
+        <x-input.fehler feld="tage" />
 
         <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
             {{ __('0 heißt: unbegrenzt aufbewahren.') }}

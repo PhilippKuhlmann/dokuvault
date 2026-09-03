@@ -32,38 +32,40 @@
                 @endunless
 
                 @unless ($loeschenGefragt)
+                <x-input.fehlerliste />
+
                 <div class="flex flex-col gap-3">
                     {{-- Nur ohne vorgegebenen Standort: Am Geraet erbt das Netz dessen Standort. --}}
                     @if ($sites->isNotEmpty())
                         <div class="flex flex-col">
                             <x-input.label :value="__('Standort')" />
-                            <x-input.select name="site_id" wire:model="site_id" class="mt-1">
+                            <x-input.select name="site_id" feld="site_id" wire:model="site_id" class="mt-1">
                                 <option value="">— {{ __('bitte wählen') }} —</option>
                                 @foreach ($sites as $site)
                                     <option value="{{ $site->id }}">{{ $site->name }}</option>
                                 @endforeach
                             </x-input.select>
-                            @error('site_id') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
+                            <x-input.fehler feld="site_id" />
                         </div>
                     @endif
 
                     <div class="flex flex-col">
                         <x-input.label :value="__('Bezeichnung')" />
-                        <x-input.text wire:model="description" type="text" class="mt-1" :placeholder="__('z. B. Clients')" />
-                        @error('description') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
+                        <x-input.text feld="description" wire:model="description" type="text" class="mt-1" :placeholder="__('z. B. Clients')" />
+                        <x-input.fehler feld="description" />
                     </div>
 
                     <div class="flex gap-3">
                         <div class="flex w-1/3 flex-col">
                             <x-input.label :value="__('VLAN-ID')" />
-                            <x-input.text wire:model="vlanId" type="number" class="mt-1" placeholder="20" />
-                            @error('vlanId') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
+                            <x-input.text feld="vlanId" wire:model="vlanId" type="number" class="mt-1" placeholder="20" />
+                            <x-input.fehler feld="vlanId" />
                         </div>
 
                         <div class="flex flex-1 flex-col">
                             <x-input.label :value="__('Netz')" />
-                            <x-input.text wire:model="network" type="text" class="mt-1" placeholder="10.10.20.0" />
-                            @error('network') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
+                            <x-input.text feld="network" wire:model="network" type="text" class="mt-1" placeholder="10.10.20.0" />
+                            <x-input.fehler feld="network" />
                         </div>
                     </div>
 
@@ -76,48 +78,48 @@
                                  feuert dann nie. Das debounce haelt die Anfragen
                                  im Zaum, halb getippte Masken ergeben ohnehin
                                  keine Zahl und lassen das Partnerfeld in Ruhe. --}}
-                            <x-input.text wire:model.live.debounce.600ms="subnetmask" type="text" class="mt-1" />
-                            @error('subnetmask') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
+                            <x-input.text feld="subnetmask" wire:model.live.debounce.600ms="subnetmask" type="text" class="mt-1" />
+                            <x-input.fehler feld="subnetmask" />
                         </div>
 
                         <div class="flex w-1/3 flex-col">
                             <x-input.label :value="__('CIDR')" />
-                            <x-input.text wire:model.live.debounce.600ms="cidr" type="number" class="mt-1" placeholder="24" />
-                            @error('cidr') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
+                            <x-input.text feld="cidr" wire:model.live.debounce.600ms="cidr" type="number" class="mt-1" placeholder="24" />
+                            <x-input.fehler feld="cidr" />
                         </div>
                     </div>
 
                     <div class="flex flex-col">
                         <x-input.label :value="__('Gateway')" />
-                        <x-input.text wire:model="gateway" type="text" class="mt-1" placeholder="10.10.20.1" />
-                        @error('gateway') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
+                        <x-input.text feld="gateway" wire:model="gateway" type="text" class="mt-1" placeholder="10.10.20.1" />
+                        <x-input.fehler feld="gateway" />
                     </div>
 
                     <div class="flex gap-3">
                         <div class="flex flex-1 flex-col">
                             <x-input.label :value="__('DNS 1')" />
-                            <x-input.text wire:model="dns1" type="text" class="mt-1" />
-                            @error('dns1') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
+                            <x-input.text feld="dns1" wire:model="dns1" type="text" class="mt-1" />
+                            <x-input.fehler feld="dns1" />
                         </div>
 
                         <div class="flex flex-1 flex-col">
                             <x-input.label :value="__('DNS 2')" />
-                            <x-input.text wire:model="dns2" type="text" class="mt-1" />
-                            @error('dns2') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
+                            <x-input.text feld="dns2" wire:model="dns2" type="text" class="mt-1" />
+                            <x-input.fehler feld="dns2" />
                         </div>
                     </div>
 
                     <div class="flex gap-3">
                         <div class="flex flex-1 flex-col">
                             <x-input.label :value="__('DHCP-Start')" />
-                            <x-input.text wire:model="dhcpStart" type="text" class="mt-1" />
-                            @error('dhcpStart') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
+                            <x-input.text feld="dhcpStart" wire:model="dhcpStart" type="text" class="mt-1" />
+                            <x-input.fehler feld="dhcpStart" />
                         </div>
 
                         <div class="flex flex-1 flex-col">
                             <x-input.label :value="__('DHCP-Ende')" />
-                            <x-input.text wire:model="dhcpEnd" type="text" class="mt-1" />
-                            @error('dhcpEnd') <span class="mt-1 text-xs text-red-600">{{ $message }}</span> @enderror
+                            <x-input.text feld="dhcpEnd" wire:model="dhcpEnd" type="text" class="mt-1" />
+                            <x-input.fehler feld="dhcpEnd" />
                         </div>
                     </div>
                 </div>

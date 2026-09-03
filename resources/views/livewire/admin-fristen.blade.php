@@ -28,9 +28,7 @@
 
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $wirkung }}</p>
 
-                    @error($feld)
-                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                    @enderror
+                    <x-input.fehler :feld="$feld" />
                 </div>
             @endforeach
         </div>
@@ -58,8 +56,6 @@
             {{ __('Aufgeräumt wird stündlich. Eine Datei liegt also bis zu eine Stunde länger, als hier steht.') }}
         </p>
 
-        @error('pdfStunden')
-            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-        @enderror
+        <x-input.fehler feld="pdfStunden" />
     </div>
 </div>

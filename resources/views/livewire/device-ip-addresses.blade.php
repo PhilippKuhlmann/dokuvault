@@ -51,8 +51,8 @@
     <div class="flex flex-wrap items-end gap-2" x-data>
         <div class="flex flex-col">
             <x-input.label :value="__('IP-Adresse')" />
-            <x-input.text wire:model="address" x-ref="addr" type="text" class="mt-1 w-40" placeholder="10.10.30.1" />
-            @error('address') <span class="text-xs text-red-600 mt-1">{{ $message }}</span> @enderror
+            <x-input.text feld="address" wire:model="address" x-ref="addr" type="text" class="mt-1 w-40" placeholder="10.10.30.1" />
+            <x-input.fehler feld="address" />
         </div>
         {{-- min-w-0 + max-w-full: das Select waechst sonst auf die Breite der laengsten
              Option ("Beschreibung (10.10.30.0/24)") und schiebt die Seite auf Mobil seitlich raus --}}
