@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Livewire\Concerns\GehoertZumKunden;
+use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
 use App\Models\Customer;
 use App\Models\Network;
 use Illuminate\Support\Facades\Gate;
@@ -15,6 +16,7 @@ use Livewire\Component;
 class DeviceIpAddresses extends Component
 {
     use GehoertZumKunden;
+    use PrueftWaehrendDerEingabe;
 
     // Skalare statt Model-Instanz: robust bei polymorphen Modellen und Livewire-Hydration.
     #[Locked]
@@ -40,6 +42,25 @@ class DeviceIpAddresses extends Component
 
     /** Im Modal bringt der Rahmen das Padding mit - dann keins vom Block. */
     public bool $randlos = false;
+
+    /** Eine Quelle fuer das Anlegen und fuer die Pruefung waehrend der Eingabe. */
+    protected function regeln(): array
+    {
+        return [
+            // Eine Adresse gibt es beim selben Kunden nur einmal. Vorher liess
+            // sich dieselbe IP zweimal am selben Geraet und zusaetzlich an
+            // einem zweiten eintragen - danach stand in der Doku, sie gehoere
+            // zu beiden, und der IP-Plan zeigte sie doppelt als belegt.
+            'address' => ['required', 'ip', $this->nochNichtVergeben()],
+            'network_id' => ['nullable', Rule::exists('networks', 'id')->where('customer_id', $this->customerId)],
+            'label' => ['nullable', 'max:255'],
+        ];
+    }
+
+    protected function feldnamen(): array
+    {
+        return ['address' => __('Adresse'), 'network_id' => __('Netz'), 'label' => __('Bezeichnung')];
+    }
 
     public function mount($model, $customer, bool $eingebettet = false, bool $randlos = false): void
     {
@@ -91,17 +112,11 @@ class DeviceIpAddresses extends Component
     {
         $device = $this->device();
 
-        $validated = $this->validate([
-            // Eine Adresse gibt es beim selben Kunden nur einmal. Vorher liess
-            // sich dieselbe IP zweimal am selben Geraet und zusaetzlich an
-            // einem zweiten eintragen - danach stand in der Doku, sie gehoere
-            // zu beiden, und der IP-Plan zeigte sie doppelt als belegt.
-            'address' => ['required', 'ip', $this->nochNichtVergeben()],
-            'network_id' => ['nullable', Rule::exists('networks', 'id')->where('customer_id', $this->customerId)],
-            'label' => ['nullable', 'max:255'],
-        ], [
+        $this->pruefungEinschalten();
+
+        $validated = $this->validate($this->regeln(), [
             'address.unique' => __('Diese Adresse ist bei diesem Kunden schon vergeben.'),
-        ]);
+        ], $this->feldnamen());
 
         $device->ipAddresses()->create([
             'customer_id' => $this->customerId,

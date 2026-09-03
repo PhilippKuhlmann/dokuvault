@@ -452,16 +452,22 @@ test('die beiden Felder melden sich waehrend der Eingabe an den Server', functio
     $customer = Customer::factory()->create();
     $this->actingAs(userWithPermissions(['network_create']));
 
-    // Ohne .blur bliebe die Eingabe bis zum Speichern im Browser und die
-    // Umrechnung liefe nie. Die uebrigen Felder sollen stumm bleiben, sonst
-    // kostet jedes Verlassen eines Feldes eine Anfrage.
+    // Maske und CIDR brauchen eine laengere Pause: Sie rechnen sich
+    // gegenseitig um, und eine halb getippte Maske ergibt keine Zahl.
+    //
+    // Die uebrigen Felder haengen seit der laufenden Pruefung ebenfalls live,
+    // nur kuerzer. Das war vorher anders und mit "sonst kostet jedes Feld eine
+    // Anfrage" begruendet - der Einwand stimmt weiterhin, aber ohne diese
+    // Bindung bliebe ein rot markiertes Feld bis zum naechsten Absenden rot.
+    // Die Pause von 400 ms haelt es bei einer Anfrage je Tipppause, nicht je
+    // Anschlag.
     $html = Livewire::test(DocumentationWizard::class, ['customer' => $customer])
         ->call('gotoStep', 'network')
         ->html();
 
     expect($html)->toContain('wire:model.live.debounce.600ms="form.subnetmask"');
     expect($html)->toContain('wire:model.live.debounce.600ms="form.cidr"');
-    expect($html)->toContain('wire:model="form.gateway"');
+    expect($html)->toContain('wire:model.live.debounce.400ms="form.gateway"');
 });
 
 test('nach dem Hinzufügen sagt der Assistent dem Browser, dass er leeren soll', function () {

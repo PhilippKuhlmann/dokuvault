@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\NetworkQuickCreate;
+use App\Livewire\ObjektFormular;
 use App\Models\Customer;
 use App\Models\Site;
 use Livewire\Livewire;
@@ -202,4 +203,79 @@ test('ein neuer Anlauf beginnt wieder ohne Meckern', function () {
         ->assertHasNoErrors()
         ->set('network', '10.')
         ->assertHasNoErrors();
+});
+
+/*
+|--------------------------------------------------------------------------
+| Dasselbe im generischen Formular - es bedient rund 40 Objekttypen
+|--------------------------------------------------------------------------
+*/
+
+test('auch das Objektformular prüft während der Eingabe', function () {
+    $nutzer = userWithPermissions(['site_viewAny', 'site_create']);
+    $this->actingAs($nutzer);
+
+    $kunde = Customer::factory()->create();
+
+    $test = Livewire::test(ObjektFormular::class, ['typ' => 'site', 'customer' => $kunde])
+        ->call('neu')
+        ->call('speichern')
+        ->assertHasErrors(['form.name']);
+
+    $test->set('form.name', 'Zentrale')
+        ->assertHasNoErrors('form.name');
+});
+
+test('auch dort meckert es nicht vor dem ersten Absenden', function () {
+    $nutzer = userWithPermissions(['site_viewAny', 'site_create']);
+    $this->actingAs($nutzer);
+
+    $kunde = Customer::factory()->create();
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'site', 'customer' => $kunde])
+        ->call('neu')
+        ->set('form.name', '')
+        ->assertHasNoErrors();
+});
+
+test('wer den Baustein einbindet und updated() selbst schreibt, muss ihn rufen', function () {
+    // Die Falle: Eine Klasse gewinnt gegen die Methode aus dem Trait, ohne dass
+    // es irgendwo knallt. Die laufende Pruefung fiele dann still aus - und
+    // still ausfallen ist genau das, was man an einer Pruefung nicht merkt.
+    $verdaechtig = [];
+
+    foreach (glob(app_path('Livewire/*.php')) as $datei) {
+        $inhalt = file_get_contents($datei);
+
+        if (! str_contains($inhalt, 'use PrueftWaehrendDerEingabe;')) {
+            continue;
+        }
+
+        // Ein eigenes updated() - nicht updatedFoo(), das laeuft zusaetzlich.
+        if (preg_match('/function updated\(/', $inhalt)
+            && ! str_contains($inhalt, 'waehrendDerEingabePruefen')) {
+            $verdaechtig[] = basename($datei);
+        }
+    }
+
+    expect($verdaechtig)->toBeEmpty(
+        'Eigenes updated() überdeckt das aus dem Trait, ohne waehrendDerEingabePruefen() zu rufen: '
+        .implode(', ', $verdaechtig));
+});
+
+test('jedes Formular mit dem Baustein schaltet die Prüfung auch ein', function () {
+    // Ohne pruefungEinschalten() bliebe geprueft auf false, und die laufende
+    // Pruefung liefe nie an - wieder ein stiller Ausfall.
+    $ohne = [];
+
+    foreach (glob(app_path('Livewire/*.php')) as $datei) {
+        $inhalt = file_get_contents($datei);
+
+        if (str_contains($inhalt, 'use PrueftWaehrendDerEingabe;')
+            && ! str_contains($inhalt, 'pruefungEinschalten()')) {
+            $ohne[] = basename($datei);
+        }
+    }
+
+    expect($ohne)->toBeEmpty('Baustein eingebunden, aber nie eingeschaltet: '.implode(', ', $ohne));
 });

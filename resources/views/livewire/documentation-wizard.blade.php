@@ -154,7 +154,7 @@
                         <x-input.label :value="__($field['label'])" />
 
                         @if (($field['type'] ?? 'text') === 'select')
-                            <x-input.select :name="$field['name']" wire:model="form.{{ $field['name'] }}" class="mt-1">
+                            <x-input.select :name="$field['name']" wire:model.live.debounce.400ms="form.{{ $field['name'] }}" class="mt-1">
                                 <option value="">— bitte wählen —</option>
                                 @if (is_array($field['options'] ?? null))
                                     @foreach ($field['options'] as $value => $optionLabel)
@@ -185,7 +185,7 @@
                                     type="{{ $field['type'] ?? 'text' }}" class="mt-1"
                                     placeholder="{{ $field['placeholder'] ?? '' }}" />
                             @else
-                                <x-input.field :name="$field['name']" wire:model="form.{{ $field['name'] }}"
+                                <x-input.field :name="$field['name']" wire:model.live.debounce.400ms="form.{{ $field['name'] }}"
                                     type="{{ $field['type'] ?? 'text' }}" class="mt-1"
                                     placeholder="{{ $field['placeholder'] ?? '' }}" />
                             @endif

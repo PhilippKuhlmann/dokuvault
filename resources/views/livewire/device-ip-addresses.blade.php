@@ -51,7 +51,7 @@
     <div class="flex flex-wrap items-end gap-2" x-data>
         <div class="flex flex-col">
             <x-input.label :value="__('IP-Adresse')" />
-            <x-input.text feld="address" wire:model="address" x-ref="addr" type="text" class="mt-1 w-40" placeholder="10.10.30.1" />
+            <x-input.text feld="address" wire:model.live.debounce.400ms="address" x-ref="addr" type="text" class="mt-1 w-40" placeholder="10.10.30.1" />
             <x-input.fehler feld="address" />
         </div>
         {{-- min-w-0 + max-w-full: das Select waechst sonst auf die Breite der laengsten
@@ -67,7 +67,7 @@
             </div>
             {{-- Bei Auswahl eines VLANs das IP-Feld mit dem Netz-Präfix (erste 3 Oktette) vorbefüllen;
                  ein bereits eingegebenes letztes Oktett bleibt erhalten. --}}
-            <x-input.select name="network_id" wire:model="network_id" class="mt-1 max-w-full"
+            <x-input.select name="network_id" wire:model.live.debounce.400ms="network_id" class="mt-1 max-w-full"
                 x-on:change="
                     const prefix = $event.target.selectedOptions[0]?.dataset.prefix || '';
                     if (prefix) {
@@ -89,7 +89,7 @@
         </div>
         <div class="flex flex-col">
             <x-input.label :value="__('Bezeichnung (optional)')" />
-            <x-input.text wire:model="label" type="text" class="mt-1 w-48" :placeholder="__('z. B. Gateway')" />
+            <x-input.text wire:model.live.debounce.400ms="label" type="text" class="mt-1 w-48" :placeholder="__('z. B. Gateway')" />
         </div>
         <x-input.button type="button" size="feld" wire:click="add" :label="__('Hinzufügen')" />
     </div>

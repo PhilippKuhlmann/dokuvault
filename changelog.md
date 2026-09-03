@@ -10,7 +10,11 @@
   - **Der Wortlaut sagt, was zu tun ist:** „Bitte Bezeichnung angeben." statt „Das Feld Bezeichnung ist erforderlich." — der Satz stand direkt unter der Beschriftung, die er wiederholt hat. Das gilt für alle Pflichtfeld-Meldungen der Anwendung.
   - **Eine Komponente statt vier Schreibweisen.** Derselbe Text stand im Projekt in vier Varianten — `text-sm` und `text-xs`, mit und ohne Abstand — und **18 von 37 hatten keine Farbe für den Dunkelmodus**: `text-red-600` auf dunklem Grund. Alle 35 Feldmeldungen benutzen jetzt `x-input.fehler`; ein Test hält offen, dass keine neue ohne Dunkelmodus-Farbe dazukommt.
   - Vor dem Text steht ein Zeichen. Nicht als Zierde: Wer Rot und Grau schlecht unterscheidet, sieht sonst nur Text.
-- **Das VLAN-Formular prüft während der Eingabe** — aber erst, nachdem einmal abgeschickt wurde. Wer ein rotes Feld ausfüllt, sieht das Rot verschwinden, sobald der Wert stimmt; ein weiterhin falscher Wert bleibt rot. Vor dem ersten Absenden wird nicht geprüft: Nach dem ersten getippten Zeichen „Bitte Netz angeben" zu melden wäre Meckern, kein Hinweis.
+- **Alle Livewire-Formulare prüfen während der Eingabe** — aber erst, nachdem einmal abgeschickt wurde. Wer ein rotes Feld ausfüllt, sieht das Rot verschwinden, sobald der Wert stimmt; ein weiterhin falscher Wert bleibt rot. Vor dem ersten Absenden wird nicht geprüft: Nach dem ersten getippten Zeichen „Bitte Netz angeben" zu melden wäre Meckern, kein Hinweis.
+  - Betroffen sind sieben Formulare, darunter das generische, das rund 40 Objekttypen bedient. Die Einstellungsseiten brauchten nichts: Sie speichern beim Ändern und prüfen dadurch längst live.
+  - Der Preis: Die Felder hängen jetzt live am Server, mit 400 ms Pause. Das war vorher bewusst nicht so („eine Runde je Tastenpause für jedes Feld wäre Verschwendung") — ohne die Bindung bliebe ein rot markiertes Feld aber bis zum nächsten Absenden rot. Die Pause hält es bei einer Anfrage je Tipppause, nicht je Anschlag.
+  - Die Regeln stehen je Formular in **einer** Methode, die Speichern und laufende Prüfung teilen. Zwei Listen liefen früher oder später auseinander.
+  - Zwei Invarianten gegen stille Ausfälle: Wer den Baustein einbindet und `updated()` selbst schreibt, muss die Prüfung aufrufen — die eigene Methode gewinnt sonst, ohne dass es knallt. Und wer ihn einbindet, muss ihn auch einschalten.
 
 ### Fixed
 

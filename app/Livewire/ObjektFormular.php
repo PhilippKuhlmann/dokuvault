@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Livewire\Concerns\GehoertZumKunden;
+use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
@@ -13,6 +14,7 @@ use App\Rules\BelongsToCustomer;
 use App\Support\Dateiname;
 use App\Support\Zeit;
 use Carbon\Carbon;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -36,6 +38,7 @@ use Livewire\WithFileUploads;
 class ObjektFormular extends Component
 {
     use GehoertZumKunden;
+    use PrueftWaehrendDerEingabe;
     use WithFileUploads;
 
     #[Locked]
@@ -259,22 +262,15 @@ class ObjektFormular extends Component
         }
     }
 
-    public function speichern(): void
+    /**
+     * Die Regeln des Objekttyps, mit "form." davor.
+     *
+     * Eine Quelle fuer das Speichern und fuer die laufende Pruefung waehrend
+     * der Eingabe - zwei Listen liefen frueher oder spaeter auseinander.
+     */
+    protected function regeln(): array
     {
-        Gate::authorize($this->bearbeiteId ? $this->typ.'_update' : $this->typ.'_create');
-
-        $this->modellbildPruefen();
-
-        $regeln = $this->einstellung()['request'];
-        $request = new $regeln;
-
-        // Die Formularwerte in den Request: Manche Regel wird aus einem anderen
-        // Feld gebaut - "das Gateway muss im Netz liegen" etwa liest dafuer
-        // $this->input('subnet'). Ohne die Werte bekaeme sie null und pruefte
-        // gegen nichts, ohne dass ein Fehler sichtbar wuerde.
-        $request->merge($this->form);
-
-        $klasse = $this->einstellung()['model'];
+        $request = $this->request();
 
         // Die Mandantenregel holt den Kunden sonst aus der Route - die heisst
         // hier livewire.update und kennt ihn nicht.
@@ -291,19 +287,53 @@ class ObjektFormular extends Component
             );
         })->all();
 
-        $daten = $this->validate(
-            collect($regelnMitKunde)
-                ->map(fn ($regel) => $this->feldverweiseUmschreiben($regel))
-                ->mapWithKeys(fn ($regel, $feld) => ['form.'.$feld => $regel])->all(),
-            [],
-            // Beschriftungen aus der eigenen Felddefinition: Nicht jeder Request
-            // nennt jedes Feld in attributes(), und dann steht der interne Name
-            // in der Meldung ("Das Feld form.form factor ist erforderlich").
-            collect($this->einstellung()['felder'])
-                ->mapWithKeys(fn ($feld) => ['form.'.$feld['name'] => __($feld['label'])])
-                ->merge(collect($request->attributes())->mapWithKeys(fn ($name, $feld) => ['form.'.$feld => $name]))
-                ->all()
-        )['form'];
+        return collect($regelnMitKunde)
+            ->map(fn ($regel) => $this->feldverweiseUmschreiben($regel))
+            ->mapWithKeys(fn ($regel, $feld) => ['form.'.$feld => $regel])->all();
+    }
+
+    /**
+     * Beschriftungen aus der eigenen Felddefinition.
+     *
+     * Nicht jeder Request nennt jedes Feld in attributes(), und dann stuende
+     * der interne Name in der Meldung ("Bitte form.form factor angeben").
+     */
+    protected function feldnamen(): array
+    {
+        return collect($this->einstellung()['felder'])
+            ->mapWithKeys(fn ($feld) => ['form.'.$feld['name'] => __($feld['label'])])
+            ->merge(collect($this->request()->attributes())->mapWithKeys(fn ($name, $feld) => ['form.'.$feld => $name]))
+            ->all();
+    }
+
+    /**
+     * Der Request des Objekttyps, mit den Formularwerten gefuellt.
+     *
+     * Gefuellt, weil manche Regel aus einem anderen Feld gebaut wird - "das
+     * Gateway muss im Netz liegen" liest dafuer $this->input('subnet'). Ohne
+     * die Werte bekaeme sie null und pruefte gegen nichts, ohne dass ein
+     * Fehler sichtbar wuerde.
+     */
+    private function request(): FormRequest
+    {
+        $klasse = $this->einstellung()['request'];
+        $request = new $klasse;
+        $request->merge($this->form);
+
+        return $request;
+    }
+
+    public function speichern(): void
+    {
+        Gate::authorize($this->bearbeiteId ? $this->typ.'_update' : $this->typ.'_create');
+
+        $this->modellbildPruefen();
+
+        $klasse = $this->einstellung()['model'];
+
+        $this->pruefungEinschalten();
+
+        $daten = $this->validate($this->regeln(), [], $this->feldnamen())['form'];
 
         // Leere Felder als null, nicht als Leerstring: MySQL lehnt '' fuer eine
         // date-Spalte ab ("Incorrect date value"), waehrend SQLite es

@@ -3,9 +3,11 @@
 namespace App\Livewire;
 
 use App\Livewire\Concerns\GehoertZumKunden;
+use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
 use App\Models\Customer;
 use App\Models\LoginGeneral;
 use App\Models\SshKey;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
@@ -21,6 +23,7 @@ use Livewire\Component;
 class DeviceCredentials extends Component
 {
     use GehoertZumKunden;
+    use PrueftWaehrendDerEingabe;
 
     // Skalare statt Model-Instanz: robust bei polymorphen Modellen und Livewire-Hydration.
     #[Locked]
@@ -53,6 +56,44 @@ class DeviceCredentials extends Component
 
     /** Im Modal bringt der Rahmen das Padding mit - dann keins vom Block. */
     public bool $randlos = false;
+
+    /**
+     * Die Regeln beider Formulare zusammen.
+     *
+     * Der Block hat zwei: eines haengt vorhandene Zugangsdaten an, eines legt
+     * neue an. Zusammen sind sie richtig, weil waehrend der Eingabe immer nur
+     * das eine geaenderte Feld geprueft wird - wer einen Namen tippt, loest
+     * keine Pruefung von login_id aus.
+     */
+    protected function regeln(): array
+    {
+        return [
+            // Kundengebunden geprüft: sonst hängt man sich mit einer geratenen ID
+            // fremde Zugangsdaten an das eigene Gerät.
+            'login_id' => ['required', Rule::exists('login_generals', 'id')
+                ->where('customer_id', $this->customerId)
+                // Nur die Arten, die dieser Benutzer sehen darf: sonst haengt
+                // er mit einer geratenen Id einen Schluessel an, den er in
+                // seiner eigenen Liste gar nicht zu sehen bekaeme.
+                ->whereIn('kind', $this->sichtbareArten())
+                ->whereNull('deleted_at')],
+            'name' => ['required', 'max:255'],
+            'username' => ['nullable', 'max:255'],
+            'password' => ['nullable', 'max:255'],
+            'note' => ['nullable', 'max:255'],
+        ];
+    }
+
+    protected function feldnamen(): array
+    {
+        return [
+            'login_id' => __('Zugangsdaten'),
+            'name' => __('Bezeichnung'),
+            'username' => __('Benutzername'),
+            'password' => __('Kennwort'),
+            'note' => __('Notiz'),
+        ];
+    }
 
     public function mount($model, $customer, bool $eingebettet = false, bool $randlos = false): void
     {
@@ -111,18 +152,11 @@ class DeviceCredentials extends Component
     {
         $device = $this->device();
 
-        $validated = $this->validate([
-            // Kundengebunden geprüft: sonst hängt man sich mit einer geratenen ID
-            // fremde Zugangsdaten an das eigene Gerät.
-            'login_id' => ['required', Rule::exists('login_generals', 'id')
-                ->where('customer_id', $this->customerId)
-                // Nur die Arten, die dieser Benutzer sehen darf: sonst haengt
-                // er mit einer geratenen Id einen Schluessel an, den er in
-                // seiner eigenen Liste gar nicht zu sehen bekaeme.
-                ->whereIn('kind', $this->sichtbareArten())
-                ->whereNull('deleted_at')],
-            'note' => ['nullable', 'max:255'],
-        ]);
+        $this->pruefungEinschalten();
+
+        $validated = $this->validate(
+            Arr::only($this->regeln(), ['login_id', 'note']), [], $this->feldnamen()
+        );
 
         $this->verknuepfen($device, (int) $validated['login_id'], $validated['note']);
         // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
@@ -135,12 +169,11 @@ class DeviceCredentials extends Component
         $device = $this->device();
         Gate::authorize('logingeneral_create');
 
-        $validated = $this->validate([
-            'name' => ['required', 'max:255'],
-            'username' => ['nullable', 'max:255'],
-            'password' => ['nullable', 'max:255'],
-            'note' => ['nullable', 'max:255'],
-        ]);
+        $this->pruefungEinschalten();
+
+        $validated = $this->validate(
+            Arr::only($this->regeln(), ['name', 'username', 'password', 'note']), [], $this->feldnamen()
+        );
 
         $login = LoginGeneral::create([
             'customer_id' => $this->customerId,

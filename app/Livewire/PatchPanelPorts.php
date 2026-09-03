@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
 use App\Models\NetworkSwitch;
 use App\Models\PatchPanel;
 use Illuminate\Support\Facades\Gate;
@@ -19,6 +20,8 @@ use Livewire\Component;
  */
 class PatchPanelPorts extends Component
 {
+    use PrueftWaehrendDerEingabe;
+
     // Skalare statt Model-Instanz: robust bei Livewire-Hydration (wie DeviceIpAddresses).
     #[Locked]
     public int $panelId;
@@ -38,6 +41,30 @@ class PatchPanelPorts extends Component
     public array $note = [];
 
     public bool $saved = false;
+
+    /**
+     * Eine Quelle fuer das Speichern und fuer die Pruefung waehrend der
+     * Eingabe. Die Schluessel tragen Platzhalter - ein Patchfeld hat viele
+     * Ports, und "outlet.7" faellt unter "outlet.*".
+     */
+    protected function regeln(): array
+    {
+        return [
+            // Schreibweise ist je Kunde verschieden ("EG 1.01", "A.12", "2.23") -
+            // deshalb kein Format erzwingen, nur die Laenge begrenzen.
+            'outlet.*' => 'nullable|string|max:50',
+            'label.*' => 'nullable|string|max:255',
+            'switchPort.*' => 'nullable|string|max:50',
+            'note.*' => 'nullable|string|max:255',
+            // Kundengebunden: der Switch eines fremden Kunden wird abgelehnt.
+            'switchId.*' => [
+                'nullable',
+                Rule::exists('network_switches', 'id')
+                    ->where('customer_id', $this->customerId)
+                    ->whereNull('deleted_at'),
+            ],
+        ];
+    }
 
     public function mount(PatchPanel $panel, $customer): void
     {
@@ -78,21 +105,9 @@ class PatchPanelPorts extends Component
         // waere sonst beschreibbar.
         $ports = $panel->ports()->get()->keyBy('id');
 
-        $this->validate([
-            // Schreibweise ist je Kunde verschieden ("EG 1.01", "A.12", "2.23") -
-            // deshalb kein Format erzwingen, nur die Laenge begrenzen.
-            'outlet.*' => 'nullable|string|max:50',
-            'label.*' => 'nullable|string|max:255',
-            'switchPort.*' => 'nullable|string|max:50',
-            'note.*' => 'nullable|string|max:255',
-            // Kundengebunden: der Switch eines fremden Kunden wird abgelehnt.
-            'switchId.*' => [
-                'nullable',
-                Rule::exists('network_switches', 'id')
-                    ->where('customer_id', $this->customerId)
-                    ->whereNull('deleted_at'),
-            ],
-        ], [], $this->fehlerNamen($ports));
+        $this->pruefungEinschalten();
+
+        $this->validate($this->regeln(), [], $this->fehlerNamen($ports));
 
         foreach ($ports as $id => $port) {
             $port->update([

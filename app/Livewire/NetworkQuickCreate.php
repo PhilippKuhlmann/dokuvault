@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Livewire\Concerns\GehoertZumKunden;
+use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
 use App\Models\Network;
 use App\Models\Site;
 use Illuminate\Support\Facades\Gate;
@@ -26,6 +27,7 @@ use Livewire\Component;
 class NetworkQuickCreate extends Component
 {
     use GehoertZumKunden;
+    use PrueftWaehrendDerEingabe;
 
     #[Locked]
     public int $customerId;
@@ -71,13 +73,6 @@ class NetworkQuickCreate extends Component
     public string $label = '';
 
     public bool $mitSymbol = false;
-
-    /**
-     * Ist einmal abgeschickt worden?
-     *
-     * Steuert, ob waehrend der Eingabe geprueft wird. Siehe updated().
-     */
-    public bool $geprueft = false;
 
     public function mount($customer, ?int $siteId = null, string $knopfKlassen = '', string $label = '', bool $mitSymbol = false): void
     {
@@ -157,9 +152,7 @@ class NetworkQuickCreate extends Component
     /** Maske und CIDR setzen sich gegenseitig - siehe updatedSubnetmask(). */
     private function partnerPruefen(string $feld): void
     {
-        if ($this->geprueft) {
-            $this->validateOnly($feld, $this->regeln(), [], $this->feldnamen());
-        }
+        $this->waehrendDerEingabePruefen($feld);
     }
 
     /**
@@ -248,30 +241,11 @@ class NetworkQuickCreate extends Component
         ];
     }
 
-    /**
-     * Waehrend der Eingabe pruefen - aber erst, nachdem einmal abgeschickt
-     * wurde.
-     *
-     * Vorher waere es Meckern: Wer anfaengt zu tippen, bekaeme nach dem ersten
-     * Zeichen "Bitte Netz angeben", weil das Feld noch nicht fertig ist. Nach
-     * einem abgewiesenen Absenden ist es umgekehrt richtig - dort steht schon
-     * ein roter Rahmen, und der soll verschwinden, sobald der Wert stimmt.
-     */
-    public function updated(string $eigenschaft): void
-    {
-        if (! $this->geprueft || ! array_key_exists($eigenschaft, $this->regeln())) {
-            return;
-        }
-
-        $this->validateOnly($eigenschaft, $this->regeln(), [], $this->feldnamen());
-    }
-
     public function speichern(): void
     {
         Gate::authorize($this->bearbeiteId ? 'network_update' : 'network_create');
 
-        // Ab jetzt wird bei jeder Eingabe geprueft - siehe updated().
-        $this->geprueft = true;
+        $this->pruefungEinschalten();
 
         $daten = $this->validate($this->regeln(), [], $this->feldnamen());
 

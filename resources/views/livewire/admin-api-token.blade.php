@@ -49,7 +49,7 @@
                 <x-input.label :value="__('Bezeichnung')" />
                 {{-- Ein Name, der sagt, wofür er da ist: Beim Widerrufen ist er
                      das Einzige, woran sich ein Token erkennen lässt. --}}
-                <x-input.field wire:model="name" class="mt-1 w-full"
+                <x-input.field wire:model.live.debounce.400ms="name" class="mt-1 w-full"
                     placeholder="{{ __('z. B. Agent Standort Hamburg') }}" />
             </div>
             <x-input.button type="button" size="feld" wire:click="anlegen" :label="__('Token anlegen')" />

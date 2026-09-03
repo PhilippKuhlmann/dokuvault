@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
 use App\Models\Customer;
 use App\Models\DocumentationRun;
 use App\Models\Network;
@@ -30,6 +31,8 @@ use Livewire\Component;
  */
 class DocumentationWizard extends Component
 {
+    use PrueftWaehrendDerEingabe;
+
     public int $customerId;
 
     public int $runId;
@@ -74,6 +77,9 @@ class DocumentationWizard extends Component
 
             if ($cidr !== null) {
                 $this->form['cidr'] = $cidr;
+                // Das Partnerfeld hat gerade einen gueltigen Wert bekommen -
+                // sein roter Rahmen gehoert weg.
+                $this->waehrendDerEingabePruefen('form.cidr');
             }
         }
 
@@ -82,6 +88,7 @@ class DocumentationWizard extends Component
 
             if ($maske !== null) {
                 $this->form['subnetmask'] = $maske;
+                $this->waehrendDerEingabePruefen('form.subnetmask');
             }
         }
     }
@@ -272,6 +279,29 @@ class DocumentationWizard extends Component
 
     // --- Aktionen --------------------------------------------------------
 
+    /**
+     * Die Regeln des aktuellen Schritts.
+     *
+     * Der Assistent hat je Schritt eigene Felder; rulesForStep() baut sie aus
+     * dem FormRequest des Schritts. Hier wird nur der Schritt herausgesucht -
+     * eine zweite Regelliste gaebe es sonst.
+     */
+    protected function regeln(): array
+    {
+        [$customer, $run] = $this->guard();
+        $step = $this->currentStep($run);
+
+        return $step ? $this->rulesForStep($step, $customer->id) : [];
+    }
+
+    protected function feldnamen(): array
+    {
+        [, $run] = $this->guard();
+        $step = $this->currentStep($run);
+
+        return $step ? $this->attributesForStep($step) : [];
+    }
+
     public function save(): void
     {
         [$customer, $run] = $this->guard();
@@ -285,6 +315,8 @@ class DocumentationWizard extends Component
 
             return;
         }
+
+        $this->pruefungEinschalten();
 
         $this->validate($this->rulesForStep($step, $customer->id), [], $this->attributesForStep($step));
 

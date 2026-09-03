@@ -52,15 +52,15 @@
                         <td class="py-1 pr-2 font-mono text-gray-500 dark:text-gray-400">{{ $port->number }}</td>
                         <td class="py-1 pr-2">
                             <x-input.text type="text" class="w-full text-sm py-1 font-mono"
-                                wire:model="outlet.{{ $port->id }}" :placeholder="__('EG 1.01')" />
+                                wire:model.live.debounce.400ms="outlet.{{ $port->id }}" :placeholder="__('EG 1.01')" />
                         </td>
                         <td class="py-1 pr-2">
                             <x-input.text type="text" class="w-full text-sm py-1"
-                                wire:model="label.{{ $port->id }}" :placeholder="__('z. B. Besprechung')" />
+                                wire:model.live.debounce.400ms="label.{{ $port->id }}" :placeholder="__('z. B. Besprechung')" />
                         </td>
                         <td class="py-1 pr-2">
                             <x-input.select name="switch-{{ $port->id }}" class="w-full text-sm py-1"
-                                wire:model="switchId.{{ $port->id }}">
+                                wire:model.live.debounce.400ms="switchId.{{ $port->id }}">
                                 <option value="">—</option>
                                 @foreach ($switches as $switch)
                                     <option value="{{ $switch->id }}">{{ $switch->name }}</option>
@@ -69,11 +69,11 @@
                         </td>
                         <td class="py-1 pr-2">
                             <x-input.text type="text" class="w-full text-sm py-1"
-                                wire:model="switchPort.{{ $port->id }}" placeholder="12" />
+                                wire:model.live.debounce.400ms="switchPort.{{ $port->id }}" placeholder="12" />
                         </td>
                         <td class="py-1 pr-2">
                             <x-input.text type="text" class="w-full text-sm py-1"
-                                wire:model="note.{{ $port->id }}" />
+                                wire:model.live.debounce.400ms="note.{{ $port->id }}" />
                         </td>
                         <td class="py-1 text-right">
                             <button type="button" wire:click="clearPort({{ $port->id }})"

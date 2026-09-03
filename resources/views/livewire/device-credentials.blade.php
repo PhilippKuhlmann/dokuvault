@@ -140,7 +140,7 @@
     <div class="flex flex-wrap items-end gap-2" wire:key="anhaengen">
         <div class="flex flex-col min-w-0 max-w-full">
             <x-input.label :value="__('Vorhandenes Login')" />
-            <x-input.select name="login_id" wire:model="login_id" class="mt-1 max-w-full">
+            <x-input.select name="login_id" wire:model.live.debounce.400ms="login_id" class="mt-1 max-w-full">
                 <option value="">{{ __('— bitte wählen —') }}</option>
                 {{-- Benutzername nur anhaengen, wenn der Name ihn nicht schon nennt:
                      umgezogene Geraete-Logins heissen bereits "NAS-01 (admin)". --}}
@@ -158,7 +158,7 @@
         </div>
         <div class="flex flex-col">
             <x-input.label :value="__('Abweichende Verwendung')" />
-            <x-input.text wire:model="note" type="text" class="mt-1 w-48" :placeholder="__('nur wenn abweichend')" />
+            <x-input.text wire:model.live.debounce.400ms="note" type="text" class="mt-1 w-48" :placeholder="__('nur wenn abweichend')" />
         </div>
         <x-input.button type="button" size="feld" wire:click="attach" :label="__('Verknüpfen')" />
         {{-- Textknopf ohne Flaeche, aber auf derselben Hoehe wie die Felder daneben --}}
@@ -172,20 +172,20 @@
     <div class="flex flex-wrap items-end gap-2" wire:key="neu-anlegen">
         <div class="flex flex-col">
             <x-input.label :value="__('Name')" />
-            <x-input.text feld="name" wire:model="name" type="text" class="mt-1 w-44" :placeholder="__('z. B. Linux root')" />
+            <x-input.text feld="name" wire:model.live.debounce.400ms="name" type="text" class="mt-1 w-44" :placeholder="__('z. B. Linux root')" />
             <x-input.fehler feld="name" />
         </div>
         <div class="flex flex-col">
             <x-input.label :value="__('Benutzername')" />
-            <x-input.text wire:model="username" type="text" class="mt-1 w-32" placeholder="root" />
+            <x-input.text wire:model.live.debounce.400ms="username" type="text" class="mt-1 w-32" placeholder="root" />
         </div>
         <div class="flex flex-col">
             <x-input.label :value="__('Passwort')" />
-            <x-input.text wire:model="password" type="text" class="mt-1 w-40" />
+            <x-input.text wire:model.live.debounce.400ms="password" type="text" class="mt-1 w-40" />
         </div>
         <div class="flex flex-col">
             <x-input.label :value="__('Abweichende Verwendung')" />
-            <x-input.text wire:model="note" type="text" class="mt-1 w-40" :placeholder="__('nur wenn abweichend')" />
+            <x-input.text wire:model.live.debounce.400ms="note" type="text" class="mt-1 w-40" :placeholder="__('nur wenn abweichend')" />
         </div>
         <x-input.button type="button" size="feld" wire:click="create" :label="__('Anlegen und verknüpfen')" />
         {{-- Textknopf ohne Flaeche, aber auf derselben Hoehe wie die Felder daneben --}}

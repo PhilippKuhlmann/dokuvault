@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
@@ -18,6 +19,8 @@ use Livewire\Component;
  */
 class AdminApiToken extends Component
 {
+    use PrueftWaehrendDerEingabe;
+
     /** Name des neuen Tokens - wofuer er da ist. */
     public string $name = '';
 
@@ -30,6 +33,17 @@ class AdminApiToken extends Component
      */
     public ?string $frischerToken = null;
 
+    /** Eine Quelle fuer das Anlegen und fuer die Pruefung waehrend der Eingabe. */
+    protected function regeln(): array
+    {
+        return ['name' => ['required', 'string', 'max:100']];
+    }
+
+    protected function feldnamen(): array
+    {
+        return ['name' => __('Bezeichnung')];
+    }
+
     public function mount(): void
     {
         Gate::authorize('admin_apitoken');
@@ -39,11 +53,9 @@ class AdminApiToken extends Component
     {
         Gate::authorize('admin_apitoken');
 
-        $this->validate(
-            ['name' => ['required', 'string', 'max:100']],
-            [],
-            ['name' => __('Bezeichnung')]
-        );
+        $this->pruefungEinschalten();
+
+        $this->validate($this->regeln(), [], $this->feldnamen());
 
         $this->frischerToken = auth()->user()->createToken($this->name)->plainTextToken;
         $this->name = '';
