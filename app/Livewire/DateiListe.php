@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Livewire\Concerns\GehoertZumKunden;
 use App\Models\Customer;
 use App\Models\File;
+use App\Models\Setting;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -106,7 +107,7 @@ class DateiListe extends Component
 
         return view('livewire.datei-liste', [
             'customer' => Customer::findOrFail($this->customerId),
-            'files' => $abfrage->paginate(25),
+            'files' => $abfrage->paginate(Setting::seiteListe()),
             'gesamt' => File::where('customer_id', $this->customerId)->count(),
             'arten' => collect(config('custom.file_arten'))->map(fn ($a) => $a[0])->all(),
             'gefiltert' => $this->suche !== '' || $this->art !== '' || $this->tage > 0,

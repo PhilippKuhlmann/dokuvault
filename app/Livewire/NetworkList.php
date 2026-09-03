@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Livewire\Concerns\GehoertZumKunden;
 use App\Models\Customer;
 use App\Models\Network;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -96,7 +97,7 @@ class NetworkList extends Component
 
         return view('livewire.network-list', [
             'customer' => $customer,
-            'networks' => $query->orderBy('vlanId')->paginate(25),
+            'networks' => $query->orderBy('vlanId')->paginate(Setting::seiteListe()),
         ]);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PatchPanelRequest;
 use App\Models\Customer;
 use App\Models\PatchPanel;
+use App\Models\Setting;
 
 class PatchPanelController extends Controller
 {
@@ -14,7 +15,7 @@ class PatchPanelController extends Controller
 
         $patchpanels = $this->getFilteredQuery(PatchPanel::class, $customer)
             ->with(['ports.networkSwitch', 'rackItem.rack'])
-            ->latest()->paginate(25);
+            ->latest()->paginate(Setting::seiteListe());
 
         return view('patchpanel.index', compact('customer', 'patchpanels'));
     }

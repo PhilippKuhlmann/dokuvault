@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\PflegtBilder;
 use App\Http\Requests\DeviceModelRequest;
 use App\Models\DeviceModel;
+use App\Models\Setting;
 
 /**
  * Pflege der Geraetemodelle im Adminbereich. Die Route-Gruppe laeuft bereits
@@ -20,7 +21,7 @@ class DeviceModelController extends Controller
     public function index()
     {
         return view('admin.devicemodel.index', [
-            'deviceModels' => DeviceModel::ordered()->paginate(20),
+            'deviceModels' => DeviceModel::ordered()->paginate(Setting::seiteAdmin()),
             'deviceModelsCount' => DeviceModel::count(),
         ]);
     }

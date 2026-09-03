@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\OperatingSystem;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -42,7 +43,7 @@ class AdminOperatingSystem extends Component
         }
 
         return view('livewire.admin-operating-system', [
-            'operatingSystems' => $abfrage->paginate(20),
+            'operatingSystems' => $abfrage->paginate(Setting::seiteAdmin()),
             'operatingSystemsCount' => OperatingSystem::count(),
         ])->layout('layouts.admin.app');
     }

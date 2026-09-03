@@ -888,6 +888,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Wie viele Zeilen eine Seite hat
+    |--------------------------------------------------------------------------
+    |
+    | Die Vorgabe; geaendert wird sie unter Einstellungen > Allgemein. Die
+    | Adminlisten sind kuerzer, weil sie schmaler sind - eine Rollenliste mit
+    | 25 Zeilen ist Scrollen ohne Gewinn.
+    |
+    | Das Protokoll bleibt bei 50 und ist bewusst nicht dabei: Dort sucht man
+    | nach einem Vorgang und ueberfliegt, statt zu lesen.
+    |
+    */
+    'seiten' => [
+        'liste' => 25,
+        'admin' => 20,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Bremse gegen Durchprobieren
     |--------------------------------------------------------------------------
     |

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RackRequest;
 use App\Models\Customer;
 use App\Models\Rack;
+use App\Models\Setting;
 
 class RackController extends Controller
 {
@@ -14,7 +15,7 @@ class RackController extends Controller
 
         $racks = $this->getFilteredQuery(Rack::class, $customer)
             ->with('items.device', 'items.catalogItem')
-            ->latest()->paginate(25);
+            ->latest()->paginate(Setting::seiteListe());
 
         return view('rack.index', compact('customer', 'racks'));
     }

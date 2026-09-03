@@ -86,17 +86,34 @@
     </div>
 
     <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
-        <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Zeitzone') }}</div>
-        <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">{{ __('Gilt für alle angezeigten Zeitpunkte. Gespeichert wird weiterhin in UTC — die Einstellung ändert nur die Anzeige.') }}</p>
+        <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Sprache und Zeitzone') }}</div>
+        <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">{{ __('Beides gilt für die ganze Installation. Die Zeitzone ändert nur die Anzeige — gespeichert wird weiterhin in UTC.') }}</p>
+
+        <div class="mb-6">
+            <x-input.label for="sprache" :value="__('Sprache')" />
+            <x-input.select id="sprache" name="sprache" wire:model.live="sprache" class="mt-1 w-full">
+                @foreach (config('custom.locales') as $kuerzel => $bezeichnung)
+                    <option value="{{ $kuerzel }}">{{ $bezeichnung }}</option>
+                @endforeach
+            </x-input.select>
+
+            <div class="mt-1 flex items-center gap-2">
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ __('Greift, wenn der Benutzer im Profil nichts gewählt hat und der Browser keine der angebotenen Sprachen verlangt.') }}
+                </p>
+                <span wire:loading wire:target="sprache" class="text-xs text-gray-400 dark:text-gray-500">{{ __('speichert …') }}</span>
+            </div>
+
+            @error('sprache')
+                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+            @enderror
+        </div>
 
         {{-- Nur die Anzeige, nicht die Ablage: Gespeichert wird weiter in
              UTC. Waere es anders, stuenden nach der Umstellung zwei Zeitzonen
              in derselben Spalte. --}}
         <div>
-            {{-- Beschriftung nur fuer Vorleseprogramme: Ueber dem Feld steht
-                 die Ueberschrift der Karte, und zweimal "Zeitzone"
-                 untereinander liest sich wie ein Fehler. --}}
-            <x-input.label for="zeitzone" :value="__('Zeitzone')" class="sr-only" />
+            <x-input.label for="zeitzone" :value="__('Zeitzone')" />
             <x-input.select id="zeitzone" name="zeitzone" wire:model.live="zeitzone" class="mt-1 w-full">
                 @foreach ($zonen as $zone)
                     <option value="{{ $zone }}">{{ $zone }}</option>
@@ -142,6 +159,66 @@
                 <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
             @enderror
         </div>
+    </div>
+
+    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+        <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Anmeldeseite') }}</div>
+        <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">{{ __('Ein Satz unter dem Anmeldeformular — etwa, wer bei Fragen zum Zugang hilft.') }}</p>
+
+        <div>
+            <x-input.label for="anmeldeHinweis" :value="__('Hinweis')" />
+            <textarea id="anmeldeHinweis" rows="2" maxlength="200"
+                wire:model.live.debounce.600ms="anmeldeHinweis"
+                class="mt-1 w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-cerulean-500 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"></textarea>
+
+            <div class="mt-1 flex flex-wrap items-center gap-2">
+                {{-- Ausgegeben wird der Text escaped. Die Anmeldeseite ist die
+                     eine Seite, die jeder erreicht - auch ohne Zugang. --}}
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ __('Höchstens 200 Zeichen, reiner Text. Leer lassen heißt: kein Hinweis.') }}
+                </p>
+                <span wire:loading wire:target="anmeldeHinweis" class="text-xs text-gray-400 dark:text-gray-500">{{ __('speichert …') }}</span>
+            </div>
+
+            @error('anmeldeHinweis')
+                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+            @enderror
+        </div>
+    </div>
+
+    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+        <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Listen') }}</div>
+        <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">{{ __('Wie viele Zeilen eine Seite zeigt, bevor geblättert wird.') }}</p>
+
+        <div class="space-y-6">
+            @foreach ([
+                ['seiteListe', __('In den Listen eines Kunden'),
+                    __('Geräte, Dateien, Netzwerke, Racks und Patchfelder.')],
+                ['seiteAdmin', __('Im Adminbereich'),
+                    __('Benutzer, Rollen, Kunden und die Auswahlmenüs. Kürzer, weil diese Listen schmaler sind.')],
+            ] as [$feld, $label, $wirkung])
+                <div wire:key="seite-{{ $feld }}">
+                    <x-input.label for="{{ $feld }}" :value="$label" />
+
+                    <div class="mt-1 flex items-center gap-2">
+                        <x-input.field id="{{ $feld }}" type="number" min="5" max="200"
+                            wire:model.live.debounce.600ms="{{ $feld }}" class="w-32" />
+                        <span class="text-sm text-gray-500 dark:text-gray-400">{{ __('Zeilen') }}</span>
+                        <span wire:loading wire:target="{{ $feld }}" class="text-xs text-gray-400 dark:text-gray-500">{{ __('speichert …') }}</span>
+                    </div>
+
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $wirkung }}</p>
+
+                    @error($feld)
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                    @enderror
+                </div>
+            @endforeach
+        </div>
+
+        <p class="mt-6 text-xs text-gray-500 dark:text-gray-400">
+            {{ __('Das Protokoll bleibt bei 50 Zeilen: Dort sucht man nach einem Vorgang und überfliegt, statt zu lesen.') }}
+        </p>
     </div>
 
 </div>

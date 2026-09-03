@@ -97,6 +97,15 @@
                         </button>
                     </div>
                 </form>
+
+                {{-- Der Hinweis aus den Einstellungen, etwa wer bei Fragen zum
+                     Zugang hilft. Escaped, kein {!! !!}: Dies ist die eine
+                     Seite, die jeder erreicht - auch ohne Zugang. --}}
+                @if ($hinweis = \App\Models\Setting::anmeldeHinweis())
+                    <p class="mt-6 border-t border-gray-200 pt-4 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                        {{ $hinweis }}
+                    </p>
+                @endif
             </div>
         </div>
     </div>

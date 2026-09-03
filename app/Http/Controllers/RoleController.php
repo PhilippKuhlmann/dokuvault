@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 
 class RoleController extends Controller
@@ -11,7 +12,7 @@ class RoleController extends Controller
     // ADMIN Bereich
     public function index()
     {
-        $roles = Role::paginate(20);
+        $roles = Role::paginate(Setting::seiteAdmin());
         $roleCount = Role::all()->count();
         $roleLastAdded = Role::latest('created_at')->first();
 

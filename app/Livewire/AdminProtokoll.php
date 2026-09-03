@@ -77,6 +77,8 @@ class AdminProtokoll extends Component
             ->latest('id');
 
         return view('livewire.admin-protokoll', [
+            // Bewusst nicht einstellbar wie die uebrigen Listen: Im Protokoll
+            // sucht man nach einem Vorgang und ueberfliegt, statt zu lesen.
             'activities' => $abfrage->paginate(50),
             'gesamt' => Activity::count(),
             'ereignisse' => config('custom.activity_events'),

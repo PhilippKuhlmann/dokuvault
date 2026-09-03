@@ -1,7 +1,12 @@
 <?php
 
 use App\Livewire\AdminAllgemein;
+use App\Livewire\ObjektListe;
+use App\Models\Customer;
+use App\Models\Role;
 use App\Models\Setting;
+use App\Models\Site;
+use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -177,4 +182,170 @@ test('ohne das Recht admin_setting bleibt die Seite zu', function () {
     $this->actingAs(userWithPermissions(['server_viewAny']));
 
     $this->get(route('admin.general.index'))->assertForbidden();
+});
+
+/*
+|--------------------------------------------------------------------------
+| Sprache, Anmeldehinweis und Seitengrößen
+|--------------------------------------------------------------------------
+*/
+
+test('ohne Einstellung gelten Sprache, Seitengröße und Hinweis aus der Konfiguration', function () {
+    expect(Setting::sprache())->toBe(config('app.locale'))
+        ->and(Setting::seiteListe())->toBe(config('custom.seiten.liste'))
+        ->and(Setting::seiteAdmin())->toBe(config('custom.seiten.admin'))
+        ->and(Setting::anmeldeHinweis())->toBe('');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Sprache
+|--------------------------------------------------------------------------
+*/
+
+test('die Sprache der Installation greift, wenn der Browser nichts Passendes verlangt', function () {
+    Setting::setzen(Setting::APP_LOCALE, 'en');
+
+    // Vor der Korrektur an SetLocale kam diese Stufe nie zum Zug:
+    // getPreferredLanguage() liefert bei unbekannter Browsersprache die erste
+    // aus der Liste - also "de" - statt null. Die Einstellung waere wirkungslos
+    // geblieben, ohne dass es jemandem auffaellt.
+    $this->withHeaders(['Accept-Language' => 'fr-FR,fr'])->get('/login')->assertOk();
+
+    expect(app()->getLocale())->toBe('en');
+});
+
+test('der Browser schlägt die Sprache der Installation', function () {
+    Setting::setzen(Setting::APP_LOCALE, 'en');
+
+    $this->withHeaders(['Accept-Language' => 'de-DE,de'])->get('/login')->assertOk();
+
+    expect(app()->getLocale())->toBe('de');
+});
+
+test('eine nicht angebotene Sprache wird verworfen', function () {
+    // Der Wert kaeme sonst ungeprueft aus der Datenbank in App::setLocale().
+    Setting::setzen(Setting::APP_LOCALE, 'kl');
+
+    expect(Setting::sprache())->toBe(config('app.locale'));
+});
+
+/*
+|--------------------------------------------------------------------------
+| Hinweis auf der Anmeldeseite
+|--------------------------------------------------------------------------
+*/
+
+test('der Hinweis steht auf der Anmeldeseite', function () {
+    Setting::setzen(Setting::ANMELDE_HINWEIS, 'Bei Fragen: 0800 123456');
+
+    $this->get('/login')->assertSee('Bei Fragen: 0800 123456');
+});
+
+test('ohne Hinweis steht dort nichts', function () {
+    $this->get('/login')->assertOk()->assertDontSee('border-t border-gray-200 pt-4 text-center', false);
+});
+
+test('der Hinweis kommt escaped heraus', function () {
+    // Die Anmeldeseite ist die eine Seite, die jeder erreicht - auch ohne
+    // Zugang. Ein Feld, das dort HTML einschleusen kann, waere der schlechteste
+    // denkbare Ort dafuer.
+    Setting::setzen(Setting::ANMELDE_HINWEIS, '<script>window.beweis=1</script>');
+
+    $antwort = $this->get('/login');
+
+    $antwort->assertDontSee('<script>window.beweis=1</script>', false)
+        ->assertSee('&lt;script&gt;', false);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Zeilen je Seite
+|--------------------------------------------------------------------------
+*/
+
+test('die eingestellte Seitengröße wirkt in den Adminlisten', function () {
+    Setting::setzen(Setting::SEITE_ADMIN, 5);
+
+    $rolle = Role::factory()->create(['id' => Role::IS_ADMIN]);
+    User::factory()->count(8)->create(['role_id' => $rolle->id]);
+    $admin = User::factory()->create(['role_id' => $rolle->id]);
+
+    $this->actingAs($admin);
+
+    // Am Paginator selbst: Der Blaetter-Link haengt am Aussehen der
+    // Paginierungsvorlage, die Seitengroesse nicht.
+    $liste = $this->get('/admin/user')->assertOk()->viewData('users');
+
+    expect($liste->perPage())->toBe(5)
+        ->and($liste->count())->toBe(5)
+        ->and($liste->hasMorePages())->toBeTrue();
+});
+
+test('die eingestellte Seitengröße wirkt in den Kundenlisten', function () {
+    Setting::setzen(Setting::SEITE_LISTE, 5);
+
+    $customer = Customer::factory()->create();
+    $nutzer = adminNutzer();
+    $this->actingAs($nutzer);
+
+    Site::factory()->count(7)->create(['customer_id' => $customer->id]);
+
+    // Am Paginator, nicht am Blaetter-Link: Livewire blaettert per wire:click,
+    // in der Ausgabe steht kein "page=2".
+    $eintraege = Livewire::test(ObjektListe::class, ['typ' => 'site', 'customer' => $customer])
+        ->viewData('eintraege');
+
+    expect($eintraege->perPage())->toBe(5)
+        ->and($eintraege->count())->toBe(5)
+        ->and($eintraege->hasMorePages())->toBeTrue();
+});
+
+/*
+|--------------------------------------------------------------------------
+| Die Einstellungsseite
+|--------------------------------------------------------------------------
+*/
+
+test('Sprache, Hinweis und Seitengrößen speichern beim Ändern', function () {
+    $this->actingAs(adminNutzer());
+
+    Livewire::test(AdminAllgemein::class)
+        ->set('sprache', 'en')
+        ->set('anmeldeHinweis', 'Support: it@example.test')
+        ->set('seiteListe', 50)
+        ->set('seiteAdmin', 10)
+        ->assertHasNoErrors();
+
+    expect(Setting::sprache())->toBe('en')
+        ->and(Setting::anmeldeHinweis())->toBe('Support: it@example.test')
+        ->and(Setting::seiteListe())->toBe(50)
+        ->and(Setting::seiteAdmin())->toBe(10);
+});
+
+test('eine erfundene Sprache wird abgewiesen', function () {
+    $this->actingAs(adminNutzer());
+
+    Livewire::test(AdminAllgemein::class)
+        ->set('sprache', 'kl')
+        ->assertHasErrors(['sprache']);
+});
+
+test('ein zu langer Hinweis wird abgewiesen', function () {
+    $this->actingAs(adminNutzer());
+
+    // Es ist ein Satz, kein Aushang.
+    Livewire::test(AdminAllgemein::class)
+        ->set('anmeldeHinweis', str_repeat('a', 201))
+        ->assertHasErrors(['anmeldeHinweis']);
+});
+
+test('eine Seite mit einer Zeile wird abgewiesen', function () {
+    $this->actingAs(adminNutzer());
+
+    Livewire::test(AdminAllgemein::class)
+        ->set('seiteListe', 1)
+        ->assertHasErrors(['seiteListe']);
+
+    expect(Setting::seiteListe())->toBe(config('custom.seiten.liste'));
 });

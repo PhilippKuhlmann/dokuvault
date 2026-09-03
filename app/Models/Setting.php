@@ -301,6 +301,48 @@ class Setting extends Model
     |
     */
 
+    public const APP_LOCALE = 'app_locale';
+
+    public const ANMELDE_HINWEIS = 'anmelde_hinweis';
+
+    public const SEITE_LISTE = 'seite_liste';
+
+    public const SEITE_ADMIN = 'seite_admin';
+
+    /**
+     * Die Sprache der Installation.
+     *
+     * Die letzte Stufe von SetLocale: Nutzer, dann Sitzung, dann Browser,
+     * dann diese. Ein unbekannter Wert wird verworfen - er kaeme sonst
+     * ungeprueft aus der Datenbank in App::setLocale().
+     */
+    public static function sprache(): string
+    {
+        $eigene = (string) self::wert(self::APP_LOCALE);
+
+        return array_key_exists($eigene, config('custom.locales', []))
+            ? $eigene
+            : (string) config('app.locale');
+    }
+
+    /** Ein Satz auf der Anmeldeseite, etwa wer bei Fragen hilft. */
+    public static function anmeldeHinweis(): string
+    {
+        return trim((string) self::wert(self::ANMELDE_HINWEIS));
+    }
+
+    /** Zeilen je Seite in den Listen eines Kunden. */
+    public static function seiteListe(): int
+    {
+        return self::zahl(self::SEITE_LISTE, (int) config('custom.seiten.liste'));
+    }
+
+    /** Zeilen je Seite in den Listen des Adminbereichs. */
+    public static function seiteAdmin(): int
+    {
+        return self::zahl(self::SEITE_ADMIN, (int) config('custom.seiten.admin'));
+    }
+
     public const ANMELDUNG_VERSUCHE = 'anmeldung_versuche';
 
     public const ANMELDUNG_SPERRE = 'anmeldung_sperre';

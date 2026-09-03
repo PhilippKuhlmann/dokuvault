@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ServiceRequest;
 use App\Models\Service;
+use App\Models\Setting;
 
 class ServiceController extends Controller
 {
     public function index()
     {
-        $services = Service::orderBy('name')->paginate(20);
+        $services = Service::orderBy('name')->paginate(Setting::seiteAdmin());
         $servicesCount = Service::count();
 
         return view('admin.service.index', compact('services', 'servicesCount'));

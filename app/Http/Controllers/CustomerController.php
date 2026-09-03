@@ -221,7 +221,7 @@ class CustomerController extends Controller
     // ADMIN Bereich
     public function index()
     {
-        $customers = Customer::paginate(20);
+        $customers = Customer::paginate(Setting::seiteAdmin());
         $customersCount = Customer::all()->count();
 
         return view('admin.customer.index', compact('customers', 'customersCount'));

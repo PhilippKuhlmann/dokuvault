@@ -90,3 +90,67 @@ test('die Karten-Tabellen halten ihre Beschriftungsspalte umbrechbar', function 
         }
     }
 });
+
+/**
+ * Dasselbe fuer Groessen und Abstaende.
+ *
+ * Der Test darueber prueft nur Klassen mit Deckkraft-Angabe. Damit blieb eine
+ * ganze Sorte ungedeckt: "space-y-5" stand in einer neuen Einstellungsseite,
+ * fehlte im gebauten CSS - und die Karte hatte zwischen zwei Feldern weniger
+ * Abstand als innerhalb eines. Die Gruppen lasen sich verkehrt herum. Kein
+ * Fehler, nur eine Regel, die es nicht gab.
+ *
+ * Anders als bei Farben faellt das nicht auf, wenn man nicht hinsieht: Es
+ * fehlt kein Kontrast, es fehlt ein Abstand.
+ */
+test('jede Größen- und Abstandsklasse steht auch im gebauten CSS', function () {
+    $css = collect(glob(public_path('build/assets/*.css')))
+        ->sortByDesc(fn ($d) => filemtime($d))
+        ->first();
+
+    expect($css)->not->toBeNull('Kein gebautes CSS gefunden - "npm run build" ausfuehren.');
+
+    $inhalt = file_get_contents($css);
+
+    $views = [];
+    foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(resource_path('views'))) as $eintrag) {
+        if (str_ends_with($eintrag->getFilename(), '.blade.php')) {
+            $views[] = $eintrag->getPathname();
+        }
+    }
+
+    // Nur woertliche class="..."-Angaben ohne Blade- oder Alpine-Ausdruck
+    // darin: Was erst zur Laufzeit entsteht, laesst sich hier nicht pruefen.
+    $muster = '/^(?:[a-z]+:)*(?:space-[xy]|gap|max-w|min-w|max-h|min-h|w|h|p|px|py|pt|pb|pl|pr|m|mx|my|mt|mb|ml|mr|basis|grid-cols|col-span)-[A-Za-z0-9\.\/\[\]%_-]+$/';
+
+    $gefunden = [];
+    foreach ($views as $datei) {
+        preg_match_all('/class="([^"{}@]+)"/', file_get_contents($datei), $treffer);
+
+        foreach ($treffer[1] as $block) {
+            foreach (preg_split('/\s+/', trim($block)) as $klasse) {
+                if ($klasse !== '' && preg_match($muster, $klasse)) {
+                    $gefunden[$klasse][basename($datei)] = true;
+                }
+            }
+        }
+    }
+
+    expect(count($gefunden))->toBeGreaterThan(100, 'Zu wenige Klassen gefunden - stimmt das Muster?');
+
+    $fehlend = [];
+    foreach ($gefunden as $klasse => $wo) {
+        // Tailwind maskiert Sonderzeichen im CSS: aus "max-w-[12rem]" wird
+        // "max-w-\[12rem\]". Ohne dieselbe Maskierung meldet der Test jede
+        // Klasse mit Klammern als fehlend.
+        $gesucht = preg_replace('/([:\/\.\[\]()%])/', '\\\\$1', $klasse);
+
+        if (! str_contains($inhalt, $gesucht)) {
+            $fehlend[] = $klasse.' ('.implode(', ', array_slice(array_keys($wo), 0, 2)).')';
+        }
+    }
+
+    expect($fehlend)->toBeEmpty(
+        'Diese Klassen stehen in den Views, aber nicht im gebauten CSS - '.
+        '"npm run build" ausfuehren: '.implode(', ', $fehlend));
+});

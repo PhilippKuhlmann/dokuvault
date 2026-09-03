@@ -4,6 +4,9 @@
 
 ### Added
 
+- **Einstellungen → Allgemein: Sprache, Anmeldehinweis und Seitengrößen.** Die Sprache der Installation (bisher nur über `config/app.php` zu ändern), ein Satz unter dem Anmeldeformular — etwa wer bei Fragen zum Zugang hilft — und wie viele Zeilen eine Seite zeigt (25 in den Kundenlisten, 20 im Adminbereich, an 13 Stellen fest verdrahtet).
+  - Der Hinweis wird **escaped** ausgegeben. Die Anmeldeseite ist die eine Seite, die jeder erreicht, auch ohne Zugang; ein Feld, das dort HTML einschleusen könnte, wäre der schlechteste denkbare Ort dafür. Ein Test hält das fest.
+  - Das Protokoll bleibt bei 50 Zeilen und ist bewusst nicht dabei: Dort sucht man nach einem Vorgang und überfliegt, statt zu lesen.
 - **Einstellungen → Sicherheit: Anmeldung und Sitzung.** Fehlversuche je Konto (5), Sperrdauer (15 Minuten), Fehlversuche je Herkunft (30) — und für die Sitzung: Dauer (120 Minuten), „Angemeldet bleiben" (30 Tage), „Beim Schließen des Browsers abmelden".
   - **Auch hier standen die Zahlen zweimal im Code:** in `LoginRequest` und im `TwoFactorChallengeController`, die zweite Stelle mit dem Kommentar „wie bei der Anmeldung selbst". Ein Kommentar hält zwei Zahlen nicht zusammen. Beide lesen jetzt dieselbe Quelle; ein Test hält fest, dass keine der beiden Klassen mehr eigene Konstanten hat.
   - Bei „Beim Schließen des Browsers abmelden" steht dabei, dass es **nur die Sitzung** betrifft: Wer beim Anmelden „Angemeldet bleiben" angehakt hat, kommt trotzdem wieder herein. Der halbe Satz wäre gefährlicher als keiner.
@@ -19,6 +22,8 @@
 
 ### Fixed
 
+- **Die letzte Stufe der Sprachwahl lief nie.** `SetLocale` fragt Nutzer → Sitzung → Browser → Vorgabe. Die Browserstufe benutzte `getPreferredLanguage()`, und das liefert bei einer unbekannten Browsersprache **die erste angebotene** statt `null` — die Stufe darunter kam also nie zum Zug. Das fiel nicht auf, solange „erste angebotene" und „Vorgabe" beide Deutsch waren; die neue Einstellung wäre wirkungslos geblieben. Jetzt zählt die Browsersprache nur, wenn der Browser tatsächlich eine der angebotenen verlangt.
+- **`StilKlassenTest` prüfte nur Farbklassen mit Deckkraft.** Damit blieb eine ganze Sorte ungedeckt: `space-y-5` stand in einer neuen Seite, fehlte im gebauten CSS, und die Karte hatte zwischen zwei Feldern weniger Abstand als innerhalb eines — die Gruppen lasen sich verkehrt herum. Anders als bei Farben fällt das nicht auf, wenn man nicht hinsieht: Es fehlt kein Kontrast, es fehlt ein Abstand. Der Test deckt jetzt auch Größen und Abstände ab (232 Klassen, alle vorhanden).
 - **„Angemeldet bleiben" wäre auf 400 Tage zurückgefallen, wenn die Einstellungen nicht lesbar sind.** Beim Umbau lag der Aufruf, der die Frist auf 30 Tage begrenzt, zuerst im `try` — und ein Fehler beim Lesen hieß damit nicht „es bleibt bei 30", sondern „es gilt wieder Laravels Vorgabe". Ein bestehender Test hat das aufgedeckt; ein neuer hält den Aufruf jetzt außerhalb.
 - **Zahlenprüfungen meldeten sich auf Englisch.** `lang/de/validation.php` kannte `min`/`max` nur für Texte, nicht für Zahlen — eine zu kleine Frist wurde mit „The … must be at least 1." abgewiesen. Im Browser gesehen, nicht im Code vermutet. Betrifft jede Zahlen-, Datei- und Auswahlprüfung der Anwendung, nicht nur die Fristen.
 

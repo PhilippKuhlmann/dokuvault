@@ -44,6 +44,23 @@ class AdminAllgemein extends Component
      */
     public int $uploadMb = 0;
 
+    /** Sprache der Installation - die letzte Stufe, wenn Nutzer und Browser nichts sagen. */
+    public string $sprache = '';
+
+    /**
+     * Ein Satz auf der Anmeldeseite, etwa wer bei Fragen hilft.
+     *
+     * Escaped ausgegeben, kein {!! !!}: Sonst waere das Feld ein Weg, HTML in
+     * die Anmeldeseite zu schreiben - die eine Seite, die jeder sieht, auch
+     * ohne Zugang.
+     */
+    public string $anmeldeHinweis = '';
+
+    /** Zeilen je Seite, in den Kundenlisten und im Adminbereich. */
+    public int $seiteListe = 0;
+
+    public int $seiteAdmin = 0;
+
     /** Je Stelle ein Upload-Feld; die Namen muessen die Stellen spiegeln. */
     public $logo_login;
 
@@ -58,6 +75,10 @@ class AdminAllgemein extends Component
         $this->name = (string) Setting::wert(Setting::APP_NAME);
         $this->zeitzone = Zeit::zone();
         $this->uploadMb = (int) round(Setting::uploadMaxKb() / 1024);
+        $this->sprache = Setting::sprache();
+        $this->anmeldeHinweis = Setting::anmeldeHinweis();
+        $this->seiteListe = Setting::seiteListe();
+        $this->seiteAdmin = Setting::seiteAdmin();
     }
 
     /**
@@ -115,6 +136,76 @@ class AdminAllgemein extends Component
         Setting::setzen(Setting::APP_TIMEZONE, $this->zeitzone);
 
         $this->dispatch('hinweis', text: __('Zeitzone gespeichert.'));
+    }
+
+    /** Die Sprache der Installation - wirkt, wo Nutzer und Browser nichts sagen. */
+    public function updatedSprache(): void
+    {
+        Gate::authorize('admin_setting');
+
+        $this->validate(
+            ['sprache' => ['required', Rule::in(array_keys(config('custom.locales', [])))]],
+            [],
+            ['sprache' => __('Sprache')]
+        );
+
+        Setting::setzen(Setting::APP_LOCALE, $this->sprache);
+
+        $this->dispatch('hinweis', text: __('Sprache gespeichert.'));
+    }
+
+    /**
+     * Der Hinweis auf der Anmeldeseite.
+     *
+     * 200 Zeichen: Es ist ein Satz, kein Aushang. Ausgegeben wird er escaped -
+     * die Anmeldeseite ist die eine Seite, die jeder erreicht, auch ohne
+     * Zugang.
+     */
+    public function updatedAnmeldeHinweis(): void
+    {
+        Gate::authorize('admin_setting');
+
+        $this->validate(
+            ['anmeldeHinweis' => ['nullable', 'string', 'max:200']],
+            [],
+            ['anmeldeHinweis' => __('Hinweis auf der Anmeldeseite')]
+        );
+
+        Setting::setzen(Setting::ANMELDE_HINWEIS, trim($this->anmeldeHinweis) ?: null);
+
+        $this->dispatch('hinweis', text: __('Hinweis gespeichert.'));
+    }
+
+    public function updatedSeiteListe(): void
+    {
+        $this->seitengroesse('seiteListe', Setting::SEITE_LISTE, __('Zeilen je Seite in den Listen'));
+    }
+
+    public function updatedSeiteAdmin(): void
+    {
+        $this->seitengroesse('seiteAdmin', Setting::SEITE_ADMIN, __('Zeilen je Seite im Adminbereich'));
+    }
+
+    /**
+     * Zeilen je Seite.
+     *
+     * Hoechstens 200: Eine Liste, die alles auf einmal zeigt, laedt bei einem
+     * grossen Kunden jede Zeile samt Beziehungen - die Seite waere dann
+     * langsam, ohne dass jemand den Zusammenhang zur Einstellung sieht.
+     */
+    private function seitengroesse(string $feld, string $schluessel, string $bezeichnung): void
+    {
+        Gate::authorize('admin_setting');
+
+        $this->validate(
+            [$feld => ['required', 'integer', 'min:5', 'max:200']],
+            [],
+            [$feld => $bezeichnung]
+        );
+
+        Setting::setzen($schluessel, $this->$feld);
+
+        $this->dispatch('hinweis', text: __('Seitengröße gespeichert.'));
     }
 
     /**

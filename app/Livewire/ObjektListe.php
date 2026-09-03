@@ -6,6 +6,7 @@ use App\Livewire\Concerns\GehoertZumKunden;
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -182,7 +183,7 @@ class ObjektListe extends Component
         $this->sortierungAnwenden($abfrage);
 
         return view('livewire.objekt-liste', [
-            'eintraege' => $abfrage->paginate(25),
+            'eintraege' => $abfrage->paginate(Setting::seiteListe()),
             'filterDefinition' => $this->filterDefinition(),
             'sortierungen' => $this->sortierungen(),
             'gefiltert' => $this->gefiltert(),

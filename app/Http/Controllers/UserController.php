@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UserRequest;
 use App\Models\Customer;
 use App\Models\Role;
+use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\Einladung;
 use Illuminate\Support\Facades\Hash;
@@ -17,7 +18,7 @@ class UserController extends Controller
     // ADMIN Bereich
     public function index()
     {
-        $users = User::paginate(20);
+        $users = User::paginate(Setting::seiteAdmin());
         $usersCount = User::all()->count();
         $userLastAdded = User::latest('created_at')->first();
 

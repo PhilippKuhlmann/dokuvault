@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\PflegtBilder;
 use App\Http\Requests\RackCatalogItemRequest;
 use App\Models\RackCatalogItem;
+use App\Models\Setting;
 
 /**
  * Pflege des Rack-Katalogs im Adminbereich. Die Route-Gruppe laeuft bereits
@@ -19,7 +20,7 @@ class RackCatalogItemController extends Controller
 
     public function index()
     {
-        $rackCatalogItems = RackCatalogItem::ordered()->paginate(20);
+        $rackCatalogItems = RackCatalogItem::ordered()->paginate(Setting::seiteAdmin());
         $rackCatalogItemsCount = RackCatalogItem::count();
 
         return view('admin.rackcatalogitem.index', compact('rackCatalogItems', 'rackCatalogItemsCount'));

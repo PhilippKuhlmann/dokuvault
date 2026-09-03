@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\MailboxProviderRequest;
 use App\Models\MailboxProvider;
+use App\Models\Setting;
 
 class MailboxProviderController extends Controller
 {
     public function index()
     {
-        $mailboxproviders = MailboxProvider::paginate(20);
+        $mailboxproviders = MailboxProvider::paginate(Setting::seiteAdmin());
         $mailboxprovidersCount = MailboxProvider::all()->count();
 
         return view('admin.mailboxprovider.index', compact('mailboxproviders', 'mailboxprovidersCount'));
