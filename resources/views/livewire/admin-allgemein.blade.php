@@ -159,6 +159,36 @@
                 <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
             @enderror
         </div>
+
+        <div class="mt-6 border-t border-gray-100 pt-5 dark:border-gray-700">
+            <x-input.label :value="__('Erlaubte Dateiendungen')" />
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {{ __('Eine Positivliste: Was hier nicht angehakt ist, kommt nicht herein. Abwählen geht, hinzufügen nicht — die Auswahl stammt aus der Konfiguration.') }}
+            </p>
+
+            <div class="mt-3 grid grid-cols-3 gap-x-4 gap-y-2 sm:grid-cols-4">
+                @foreach (config('custom.datei_formate') as $endung)
+                    <label class="flex cursor-pointer select-none items-center gap-2" wire:key="format-{{ $endung }}">
+                        <input type="checkbox" value="{{ $endung }}" wire:model.live="endungen"
+                            class="h-4 w-4 rounded border-gray-300 text-cerulean-600 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700">
+                        <span class="font-mono text-sm text-gray-900 dark:text-gray-100">{{ $endung }}</span>
+                    </label>
+                @endforeach
+            </div>
+
+            <div class="mt-2 flex items-center gap-2">
+                {{-- Kein SVG in der Liste: Ein SVG darf Skripte enthalten. Das
+                     ist eine Sicherheitsentscheidung und bleibt im Code. --}}
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ __('SVG steht bewusst nicht zur Wahl: Eine SVG-Datei darf Skripte enthalten.') }}
+                </p>
+                <span wire:loading wire:target="endungen" class="text-xs text-gray-400 dark:text-gray-500">{{ __('speichert …') }}</span>
+            </div>
+
+            @error('endungen')
+                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+            @enderror
+        </div>
     </div>
 
     <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">

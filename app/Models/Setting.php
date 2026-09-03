@@ -301,6 +301,30 @@ class Setting extends Model
     |
     */
 
+    public const DATEI_FORMATE = 'datei_formate';
+
+    /**
+     * Welche Dateiendungen hochgeladen werden duerfen.
+     *
+     * Nur eine Auswahl aus config('custom.datei_formate') - was dort nicht
+     * steht, kommt hier nicht heraus. Das ist der Punkt der ganzen
+     * Einstellung: Sie laesst die Positivliste kuerzen, nicht erweitern. Eine
+     * Liste, in die jemand "php" eintragen kann, ist keine Positivliste, und
+     * der Weg dorthin muesste nicht einmal ueber die Oberflaeche gehen -
+     * gegen einen Eintrag direkt in der Tabelle hilft nur, hier zu schneiden.
+     *
+     * Ohne Auswahl gilt die ganze Liste aus der Konfiguration.
+     */
+    public static function dateiFormate(): array
+    {
+        $erlaubt = array_map('strtolower', config('custom.datei_formate', []));
+        $eigene = array_filter(explode(',', (string) self::wert(self::DATEI_FORMATE)));
+
+        $auswahl = array_values(array_intersect($erlaubt, array_map('strtolower', $eigene)));
+
+        return $auswahl ?: $erlaubt;
+    }
+
     public const APP_LOCALE = 'app_locale';
 
     public const ANMELDE_HINWEIS = 'anmelde_hinweis';

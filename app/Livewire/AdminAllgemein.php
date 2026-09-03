@@ -56,6 +56,19 @@ class AdminAllgemein extends Component
      */
     public string $anmeldeHinweis = '';
 
+    /**
+     * Erlaubte Dateiendungen - eine Auswahl aus der Liste in der Konfiguration.
+     *
+     * Auswahl, keine Freitexteingabe: Eine Positivliste, in die jemand "php"
+     * eintragen kann, ist keine.
+     *
+     * Nicht "formate": render() gibt eine Ansichtsvariable dieses Namens mit
+     * den Bildformaten fuer den Logo-Hinweis heraus, und eine oeffentliche
+     * Eigenschaft haette sie ueberdeckt. Der Hinweis unter den Logos listete
+     * dann Dokumentformate - im Browser gesehen, kein Test hat es gemerkt.
+     */
+    public array $endungen = [];
+
     /** Zeilen je Seite, in den Kundenlisten und im Adminbereich. */
     public int $seiteListe = 0;
 
@@ -79,6 +92,7 @@ class AdminAllgemein extends Component
         $this->anmeldeHinweis = Setting::anmeldeHinweis();
         $this->seiteListe = Setting::seiteListe();
         $this->seiteAdmin = Setting::seiteAdmin();
+        $this->endungen = Setting::dateiFormate();
     }
 
     /**
@@ -174,6 +188,33 @@ class AdminAllgemein extends Component
         Setting::setzen(Setting::ANMELDE_HINWEIS, trim($this->anmeldeHinweis) ?: null);
 
         $this->dispatch('hinweis', text: __('Hinweis gespeichert.'));
+    }
+
+    /**
+     * Die erlaubten Dateiendungen.
+     *
+     * Mindestens eine: Ohne Auswahl gilt wieder die ganze Liste aus der
+     * Konfiguration, und ein leergeraeumtes Feld haette damit das Gegenteil
+     * dessen bewirkt, was der Haken sagt - alles erlaubt statt nichts.
+     */
+    public function updatedEndungen(): void
+    {
+        Gate::authorize('admin_setting');
+
+        $erlaubt = config('custom.datei_formate', []);
+
+        $this->validate([
+            'endungen' => ['required', 'array', 'min:1'],
+            'endungen.*' => [Rule::in($erlaubt)],
+        ], [], ['endungen' => __('Erlaubte Dateiendungen')]);
+
+        // In der Reihenfolge der Konfiguration ablegen, nicht in der des
+        // Anklickens - sonst steht dieselbe Auswahl je nach Weg anders da.
+        $auswahl = array_values(array_intersect($erlaubt, $this->endungen));
+
+        Setting::setzen(Setting::DATEI_FORMATE, implode(',', $auswahl));
+
+        $this->dispatch('hinweis', text: __('Dateiendungen gespeichert.'));
     }
 
     public function updatedSeiteListe(): void

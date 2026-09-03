@@ -349,3 +349,106 @@ test('eine Seite mit einer Zeile wird abgewiesen', function () {
 
     expect(Setting::seiteListe())->toBe(config('custom.seiten.liste'));
 });
+
+/*
+|--------------------------------------------------------------------------
+| Erlaubte Dateiendungen
+|--------------------------------------------------------------------------
+*/
+
+test('der Logo-Hinweis nennt die Bildformate, nicht die Dokumentformate', function () {
+    // Beide Listen stehen auf derselben Seite, und die Ansichtsvariable hiess
+    // genauso wie eine neue Eigenschaft der Komponente - die Eigenschaft
+    // ueberdeckte sie, und unter den Logos standen ploetzlich PDF, DOCX und
+    // ZIP. Im Browser gesehen; kein Test hat es gemerkt.
+    $this->actingAs(adminNutzer());
+
+    Livewire::test(AdminAllgemein::class)
+        ->assertSee('Erlaubt sind PNG, JPG, JPEG, WEBP')
+        ->assertDontSee('Erlaubt sind PDF');
+});
+
+test('ohne Auswahl gilt die ganze Liste aus der Konfiguration', function () {
+    expect(Setting::dateiFormate())->toBe(array_map('strtolower', config('custom.datei_formate')));
+});
+
+test('die Liste lässt sich kürzen', function () {
+    Setting::setzen(Setting::DATEI_FORMATE, 'pdf,png');
+
+    expect(Setting::dateiFormate())->toBe(['pdf', 'png']);
+});
+
+test('die Liste lässt sich nicht erweitern - auch nicht an der Oberfläche vorbei', function () {
+    // Der Kern der Sache. Eine Positivliste, in die jemand "php" eintragen
+    // kann, ist keine - und der Weg dorthin muss nicht ueber das Formular
+    // gehen. Deshalb wird beim Lesen geschnitten, nicht nur beim Speichern.
+    Setting::setzen(Setting::DATEI_FORMATE, 'pdf,php,exe,phtml');
+
+    expect(Setting::dateiFormate())->toBe(['pdf']);
+});
+
+test('eine leere Auswahl heißt nicht "nichts erlaubt"', function () {
+    Setting::setzen(Setting::DATEI_FORMATE, '');
+
+    // Sonst haette ein leergeraeumtes Feld jeden Upload lahmgelegt, ohne dass
+    // irgendwo steht, warum.
+    expect(Setting::dateiFormate())->toBe(array_map('strtolower', config('custom.datei_formate')));
+});
+
+test('eine abgewählte Endung wird beim Hochladen abgewiesen', function () {
+    Storage::fake('local');
+    Setting::setzen(Setting::DATEI_FORMATE, 'pdf');
+
+    $customer = Customer::factory()->create();
+    $this->actingAs(adminNutzer());
+
+    $antwort = $this->post(route('file.store', $customer), [
+        'name' => 'Ein Bild',
+        'file' => UploadedFile::fake()->create('bild.png', 10, 'image/png'),
+    ]);
+
+    // Genau am Feld "file", nicht irgendein Fehler: Sonst waere der Test auch
+    // gruen, wenn nur ein Pflichtfeld fehlte.
+    $antwort->assertSessionHasErrors('file');
+});
+
+test('eine erlaubte Endung geht durch', function () {
+    Storage::fake('local');
+    Setting::setzen(Setting::DATEI_FORMATE, 'pdf');
+
+    $customer = Customer::factory()->create();
+    $this->actingAs(adminNutzer());
+
+    $this->post(route('file.store', $customer), [
+        'name' => 'Ein Vertrag',
+        'file' => UploadedFile::fake()->create('vertrag.pdf', 10, 'application/pdf'),
+    ])->assertSessionHasNoErrors();
+});
+
+test('die Seite speichert die Auswahl in der Reihenfolge der Konfiguration', function () {
+    $this->actingAs(adminNutzer());
+
+    Livewire::test(AdminAllgemein::class)
+        ->set('endungen', ['png', 'pdf'])
+        ->assertHasNoErrors();
+
+    // Nicht in der Reihenfolge des Anklickens - sonst steht dieselbe Auswahl
+    // je nach Weg anders da.
+    expect(Setting::dateiFormate())->toBe(['pdf', 'png']);
+});
+
+test('eine Endung außerhalb der Konfiguration wird abgewiesen', function () {
+    $this->actingAs(adminNutzer());
+
+    Livewire::test(AdminAllgemein::class)
+        ->set('endungen', ['pdf', 'php'])
+        ->assertHasErrors(['endungen.1']);
+});
+
+test('gar keine Endung wird abgewiesen', function () {
+    $this->actingAs(adminNutzer());
+
+    Livewire::test(AdminAllgemein::class)
+        ->set('endungen', [])
+        ->assertHasErrors(['endungen']);
+});

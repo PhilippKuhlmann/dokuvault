@@ -4,6 +4,8 @@
 
 ### Added
 
+- **Einstellungen → Allgemein: erlaubte Dateiendungen.** Ankreuzfelder statt Freitext — die Auswahl stammt aus `config/custom.php`. Man kann die Positivliste **kürzen, nicht erweitern**: Eine Liste, in die jemand `php` eintragen kann, ist keine. Geschnitten wird beim Lesen, nicht nur beim Speichern, damit auch ein Eintrag direkt in der Tabelle nichts hinzufügt. Ein Test hält genau das fest.
+  - SVG steht weiterhin nicht zur Wahl und bleibt im Code: Eine SVG-Datei darf Skripte enthalten. Das ist eine Sicherheitsentscheidung, keine Vorliebe.
 - **Einstellungen → Allgemein: Sprache, Anmeldehinweis und Seitengrößen.** Die Sprache der Installation (bisher nur über `config/app.php` zu ändern), ein Satz unter dem Anmeldeformular — etwa wer bei Fragen zum Zugang hilft — und wie viele Zeilen eine Seite zeigt (25 in den Kundenlisten, 20 im Adminbereich, an 13 Stellen fest verdrahtet).
   - Der Hinweis wird **escaped** ausgegeben. Die Anmeldeseite ist die eine Seite, die jeder erreicht, auch ohne Zugang; ein Feld, das dort HTML einschleusen könnte, wäre der schlechteste denkbare Ort dafür. Ein Test hält das fest.
   - Das Protokoll bleibt bei 50 Zeilen und ist bewusst nicht dabei: Dort sucht man nach einem Vorgang und überfliegt, statt zu lesen.
@@ -22,6 +24,7 @@
 
 ### Fixed
 
+- **Der Hinweis unter den Logos listete kurzzeitig Dokumentformate.** Die neue Eigenschaft für die Dateiendungen hieß wie die Ansichtsvariable mit den Bildformaten und überdeckte sie — unter „Logo" stand plötzlich PDF, DOCX, ZIP. Im Browser gesehen, kein Test hat es gemerkt; jetzt gibt es einen.
 - **Die letzte Stufe der Sprachwahl lief nie.** `SetLocale` fragt Nutzer → Sitzung → Browser → Vorgabe. Die Browserstufe benutzte `getPreferredLanguage()`, und das liefert bei einer unbekannten Browsersprache **die erste angebotene** statt `null` — die Stufe darunter kam also nie zum Zug. Das fiel nicht auf, solange „erste angebotene" und „Vorgabe" beide Deutsch waren; die neue Einstellung wäre wirkungslos geblieben. Jetzt zählt die Browsersprache nur, wenn der Browser tatsächlich eine der angebotenen verlangt.
 - **`StilKlassenTest` prüfte nur Farbklassen mit Deckkraft.** Damit blieb eine ganze Sorte ungedeckt: `space-y-5` stand in einer neuen Seite, fehlte im gebauten CSS, und die Karte hatte zwischen zwei Feldern weniger Abstand als innerhalb eines — die Gruppen lasen sich verkehrt herum. Anders als bei Farben fällt das nicht auf, wenn man nicht hinsieht: Es fehlt kein Kontrast, es fehlt ein Abstand. Der Test deckt jetzt auch Größen und Abstände ab (232 Klassen, alle vorhanden).
 - **„Angemeldet bleiben" wäre auf 400 Tage zurückgefallen, wenn die Einstellungen nicht lesbar sind.** Beim Umbau lag der Aufruf, der die Frist auf 30 Tage begrenzt, zuerst im `try` — und ein Fehler beim Lesen hieß damit nicht „es bleibt bei 30", sondern „es gilt wieder Laravels Vorgabe". Ein bestehender Test hat das aufgedeckt; ein neuer hält den Aufruf jetzt außerhalb.

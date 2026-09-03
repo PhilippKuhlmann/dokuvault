@@ -489,7 +489,7 @@ class ObjektFormular extends Component
             'datei' => [
                 'file',
                 'max:'.Setting::uploadMaxKb(),
-                'mimes:'.implode(',', config('custom.datei_formate')),
+                'mimes:'.implode(',', Setting::dateiFormate()),
             ],
         ], [], ['datei' => __('Datei')]);
 
