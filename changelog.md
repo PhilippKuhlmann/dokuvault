@@ -2,6 +2,13 @@
 
 ## 26.09.03
 
+### Fixed
+
+- **Die Verwaltungsoberfläche einer Firewall war nicht anklickbar.** In der Karte heißt das Feld „Oberfläche", und verlinkt wurde nach der **Beschriftung** — die Bedingung zählte vier Namen auf („URL", „Admin URL", „User URL", „Externe URL"), und „Oberfläche" stand nicht darunter. Dort steht eine `https`-Adresse, die man nur markieren und kopieren konnte.
+  - Das war schon vorher so und ist beim gestrigen XSS-Umbau nicht aufgefallen. Die dortige Commit-Nachricht behauptet, dieses Feld sei als `href` ausgegeben worden — das stimmte nicht.
+  - Geprüft wird jetzt der **Wert** statt der Beschriftung. Damit funktioniert jedes URL-Feld, auch künftige: Wer eins anlegt, müsste sonst eine Liste pflegen, von der er nichts weiß.
+  - Unverändert bleibt, was der Schutz leistet: Verlinkt wird nur `http` und `https`, eine nackte IP bleibt Text, und ein Kennwort bleibt maskiert, auch wenn es wie eine Adresse aussieht. Drei Tests halten das fest.
+
 ### Added
 
 - **Einstellungen → Allgemein: erlaubte Dateiendungen.** Ankreuzfelder statt Freitext — die Auswahl stammt aus `config/custom.php`. Man kann die Positivliste **kürzen, nicht erweitern**: Eine Liste, in die jemand `php` eintragen kann, ist keine. Geschnitten wird beim Lesen, nicht nur beim Speichern, damit auch ein Eintrag direkt in der Tabelle nichts hinzufügt. Ein Test hält genau das fest.

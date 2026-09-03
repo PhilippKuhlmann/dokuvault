@@ -52,6 +52,77 @@ test('ein javascript-Link an einer Firewall wird nicht verlinkt', function () {
     $antwort->assertSee('javascript:alert(document.cookie)');
 });
 
+test('verlinkt wird nach dem Wert, nicht nach der Beschriftung', function () {
+    // Die Verwaltungsoberfläche einer Firewall heißt in der Karte
+    // "Oberfläche". Die Bedingung zählte vier Beschriftungen auf - "URL",
+    // "Admin URL", "User URL", "Externe URL" -, und "Oberfläche" stand nicht
+    // darunter. Dort steht eine https-Adresse, und sie war nie anklickbar.
+    //
+    // Wer ein neues URL-Feld anlegt, müsste sonst eine Liste pflegen, von der
+    // er nichts weiß. Geprüft wird deshalb der Wert.
+    $nutzer = userWithPermissions(['firewall_viewAny', 'see_hidden']);
+    $this->actingAs($nutzer);
+
+    $kunde = Customer::factory()->create();
+    $standort = Site::factory()->create(['customer_id' => $kunde->id]);
+
+    Firewall::create([
+        'customer_id' => $kunde->id,
+        'site_id' => $standort->id,
+        'name' => 'Perimeter',
+        'management_url' => 'https://192.168.175.1:11115',
+    ]);
+
+    $this->get("/{$kunde->slug}/firewall")
+        ->assertStatus(200)
+        ->assertSee('href="https://192.168.175.1:11115"', false);
+});
+
+test('eine nackte Adresse ohne Schema bleibt Text', function () {
+    // In diesen Feldern steht oft nur eine IP. Sie als Link auszugeben hieße:
+    // ein Klick landet auf /kunde/192.168.178.1 - ein Link, der nirgendwo
+    // hinführt, sieht schlimmer aus als gar keiner.
+    $nutzer = userWithPermissions(['firewall_viewAny', 'see_hidden']);
+    $this->actingAs($nutzer);
+
+    $kunde = Customer::factory()->create();
+    $standort = Site::factory()->create(['customer_id' => $kunde->id]);
+
+    Firewall::create([
+        'customer_id' => $kunde->id,
+        'site_id' => $standort->id,
+        'name' => 'Perimeter',
+        'management_url' => '192.168.178.1',
+    ]);
+
+    $antwort = $this->get("/{$kunde->slug}/firewall");
+
+    $antwort->assertStatus(200)
+        ->assertDontSee('href="192.168.178.1"', false)
+        ->assertSee('192.168.178.1');
+});
+
+test('ein Kennwort bleibt maskiert, auch wenn es wie eine Adresse aussieht', function () {
+    // Die Wertprüfung steht hinter den Geheimnissen, nicht davor. Sonst wäre
+    // aus einem Kennwort ein sichtbarer Link geworden.
+    $nutzer = userWithPermissions(['firewall_viewAny', 'see_hidden']);
+    $this->actingAs($nutzer);
+
+    $kunde = Customer::factory()->create();
+    $standort = Site::factory()->create(['customer_id' => $kunde->id]);
+
+    Firewall::create([
+        'customer_id' => $kunde->id,
+        'site_id' => $standort->id,
+        'name' => 'Perimeter',
+        'cloud_backup_password' => 'https://nicht-anklicken.example',
+    ]);
+
+    $this->get("/{$kunde->slug}/firewall")
+        ->assertStatus(200)
+        ->assertDontSee('href="https://nicht-anklicken.example"', false);
+});
+
 // --- Werte in Alpine-Ausdrücken ---------------------------------------------
 
 test('kein Alpine-Ausdruck setzt einen Wert in Anführungszeichen zusammen', function () {

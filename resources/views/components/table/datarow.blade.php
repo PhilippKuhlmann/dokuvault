@@ -9,16 +9,7 @@
     'opacity-60' => $inaktiv,
 ])>
     @foreach ($values as $key => $value)
-        @if ($key == 'url')
-            {{-- Nur http und https werden verlinkt - siehe App\Support\Adresse. --}}
-            <td scope="row" class="py-2.5 px-4">
-                @if ($ziel = \App\Support\Adresse::sicher($value))
-                    <a href="{{ $ziel }}" target="_blank" rel="noopener noreferrer" class=" text-cerulean-500 hover:text-cerulean-600">{{ $value }}</a>
-                @else
-                    {{ $value }}
-                @endif
-            </td>
-        @elseif ($key == 'download')
+        @if ($key == 'download')
             @if ($value)
                 <td scope="row" class="py-2.5 px-4">
                     <a href="{{ $value }}" target="_blank"  class="text-cerulean-500 hover:text-cerulean-600">{{ __('Download') }}</a>
@@ -107,6 +98,17 @@
             {{-- Gekuerzt mit Kopier-Knopf: vollstaendig bricht er auf fuenf
                  Zeilen um und bestimmt die Zeilenhoehe. --}}
             <td scope="row" class="py-2.5 px-4"><x-fingerprint :value="$value" /></td>
+        @elseif ($ziel = \App\Support\Adresse::sicher($value))
+            {{-- Am Wert, nicht am Spaltennamen: Die Spalte hiess frueher "url",
+                 und ein Feld wie "management_url" wurde deshalb nicht verlinkt.
+                 Nur http und https - siehe App\Support\Adresse.
+
+                 Nach den eigenen Spalten, nicht davor: "download" ist ebenfalls
+                 eine Adresse, soll aber "Download" heissen und nicht die URL
+                 zeigen. --}}
+            <td scope="row" class="py-2.5 px-4 break-all">
+                <a href="{{ $ziel }}" target="_blank" rel="noopener noreferrer" class=" text-cerulean-500 hover:text-cerulean-600">{{ $value }}</a>
+            </td>
         @else
             <td scope="row" class="py-2.5 px-4 text-gray-900 dark:text-gray-100">
                 {{ $value }}

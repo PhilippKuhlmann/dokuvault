@@ -64,21 +64,28 @@
                                 </div>
                             </div>
                         </td>
-                    @elseif ($key == 'URL' || $key == 'Admin URL' || $key == 'User URL' || $key == 'Externe URL')
-                        {{-- Verlinkt wird nur, was http oder https ist. In
+                    @elseif ($ziel = \App\Support\Adresse::sicher($value))
+                        {{-- Am Wert, nicht an der Beschriftung. Vorher stand hier
+                             eine Liste von vier Beschriftungen, und die
+                             Verwaltungsoberflaeche einer Firewall heisst
+                             "Oberflaeche" - sie war deshalb nie ein Link, obwohl
+                             dort eine https-Adresse steht. Wer ein neues URL-Feld
+                             anlegt, muesste sonst eine Liste pflegen, die er
+                             nicht findet.
+
+                             Verlinkt wird nur, was http oder https ist. In
                              diesen Feldern steht oft eine nackte IP - die soll
-                             weiterhin dastehen, nur eben nicht als Link. Und
-                             ein "javascript:..." fuehrte sonst bei jedem
-                             Klick Code aus, in der Sitzung dessen, der
-                             klickt. --}}
+                             weiterhin dastehen, nur eben nicht als Link. Und ein
+                             "javascript:..." fuehrte sonst bei jedem Klick Code
+                             aus, in der Sitzung dessen, der klickt.
+
+                             Nach den Geheimnissen, nicht davor: Ein Kennwort
+                             bleibt maskiert, auch wenn es wie eine Adresse
+                             aussieht. --}}
                         <td class="py-1 break-all">
-                            @if ($ziel = \App\Support\Adresse::sicher($value))
-                                <a href="{{ $ziel }}" target="_blank" rel="noopener noreferrer" class="text-cerulean-600 hover:text-cerulean-700 hover:underline">
-                                    {{ $value }}
-                                </a>
-                            @else
+                            <a href="{{ $ziel }}" target="_blank" rel="noopener noreferrer" class="text-cerulean-600 hover:text-cerulean-700 hover:underline">
                                 {{ $value }}
-                            @endif
+                            </a>
                         </td>
                     @elseif (\Illuminate\Support\Str::contains($key, ['IP', 'MAC', 'Serien']))
                         <td class="py-1 break-words text-gray-900 dark:text-gray-100">
