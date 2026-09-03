@@ -21,6 +21,31 @@ test('nur http und https werden verlinkt', function () {
         ->and(Adresse::sicher(null))->toBeNull();
 });
 
+test('der eigene Pfad wird verlinkt, was nur so aussieht nicht', function () {
+    // Die Kundenliste im Adminbereich verlinkt "/" . $customer->slug. Beim
+    // ersten Anlauf liess die Positivliste nur http und https durch - und
+    // sperrte damit die eigene Anwendung aus.
+    expect(Adresse::sicher('/mustermann'))->toBe('/mustermann')
+        ->and(Adresse::sicher('/kunde/geraet?seite=2'))->toBe('/kunde/geraet?seite=2')
+        // Protokoll-relativ: sieht aus wie ein Pfad, fuehrt aber nach draussen.
+        ->and(Adresse::sicher('//evil.example'))->toBeNull()
+        // Browser behandeln den Backslash wie den zweiten Schraegstrich.
+        ->and(Adresse::sicher('/\\evil.example'))->toBeNull()
+        ->and(Adresse::sicher('/'))->toBe('/');
+});
+
+test('die Kundenliste im Adminbereich verlinkt den Kunden', function () {
+    // Genau der Link, der ausgefallen ist: In der Spalte "URL" stand
+    // "/mustermann" nur noch als Text da.
+    $this->actingAs(userWithPermissions(['admin_customer']));
+
+    $kunde = Customer::factory()->create();
+
+    $this->get('/admin/customer')
+        ->assertStatus(200)
+        ->assertSee('href="/'.$kunde->slug.'"', false);
+});
+
 test('ein javascript-Link an einer Firewall wird nicht verlinkt', function () {
     // Diese Felder werden nur auf ihre Länge geprüft - dort steht oft eine
     // nackte IP, eine strenge Regel wäre falsch. Der Schutz gehört deshalb

@@ -20,9 +20,9 @@ class Adresse
     /**
      * Die Adresse, wenn man sie gefahrlos verlinken kann - sonst null.
      *
-     * Positivliste: Nur http und https. Andersherum müsste man jedes Schema
-     * kennen, das ein Browser ausführt - javascript, data, vbscript, und das
-     * nächste, das dazukommt.
+     * Positivliste: http, https und der eigene Pfad. Andersherum müsste man
+     * jedes Schema kennen, das ein Browser ausführt - javascript, data,
+     * vbscript, und das nächste, das dazukommt.
      */
     public static function sicher(mixed $wert): ?string
     {
@@ -32,8 +32,32 @@ class Adresse
             return null;
         }
 
+        if (self::eigenerPfad($adresse)) {
+            return $adresse;
+        }
+
         $schema = strtolower((string) parse_url($adresse, PHP_URL_SCHEME));
 
         return in_array($schema, ['http', 'https'], true) ? $adresse : null;
+    }
+
+    /**
+     * Ein Pfad innerhalb dieser Anwendung, etwa "/mustermann".
+     *
+     * Er kam beim ersten Anlauf nicht durch, und die Kundenliste im
+     * Adminbereich verlor damit ihren Link auf den Kunden - dort steht
+     * "/" . $customer->slug, kein http. Ein Schutz, der die eigene Anwendung
+     * aussperrt, ist zu grob geraten.
+     *
+     * Ausgenommen bleibt, was nur wie ein Pfad aussieht: "//example.test" ist
+     * protokoll-relativ und führt nach draußen, und "/\example.test" wird von
+     * Browsern genauso behandelt. Beides gehört nicht in ein Feld, in dem ein
+     * eigener Pfad erwartet wird.
+     */
+    private static function eigenerPfad(string $adresse): bool
+    {
+        return str_starts_with($adresse, '/')
+            && ! str_starts_with($adresse, '//')
+            && ! str_starts_with($adresse, '/\\');
     }
 }
