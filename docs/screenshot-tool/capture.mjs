@@ -8,6 +8,14 @@
 //   DOKUVAULT_USER=admin DOKUVAULT_PASSWORD=password node docs/screenshot-tool/capture.mjs
 //
 // Optional: SPRACHEN=de oder SPRACHEN=en, um nur eine Sprache zu erzeugen.
+//
+// Nachher aufraeumen: Das Skript meldet sich je Sprache einmal an, und das
+// steht danach im Aktivitaetsprotokoll - auf dem Protokoll-Screenshot selbst
+// und in "Letzte Aktivitaeten" auf dem Admin-Dashboard. Wer die Bilder fuer
+// die README erzeugt, raeumt die eigenen Anmeldungen hinterher weg, sonst
+// zeigen beide Bilder das Werkzeug statt der Anwendung:
+//
+//   php artisan tinker --execute='Spatie\Activitylog\Models\Activity::where("event","anmeldung")->where("created_at",">=",now()->subHour())->delete();'
 
 import puppeteer from 'puppeteer';
 import { mkdir } from 'node:fs/promises';
@@ -38,7 +46,10 @@ const SEITEN = [
   { datei: 'ipam', pfad: `/${KUNDE}/ip-plan` },
   { datei: 'certificates', pfad: `/${KUNDE}/certificate` },
   { datei: 'wizard', pfad: `/${KUNDE}/assistent` },
-  { datei: 'rack', pfad: `/${KUNDE}/rack/1/edit` },
+  // scrollZu: Der Schrank-Editor beginnt mit dem Formular (Name, Ort, Notiz).
+  // Interessant ist aber die Bestueckung darunter - ohne das Scrollen zeigte
+  // das Bild hauptsaechlich Eingabefelder und vom Rack nur die Oberkante.
+  { datei: 'rack', pfad: `/${KUNDE}/rack/1/edit`, scrollZu: '#bestueckung' },
   { datei: 'patchpanel', pfad: `/${KUNDE}/patchpanel/1/edit` },
   { datei: 'patchpanel-liste', pfad: `/${KUNDE}/patchpanel` },
   { datei: 'rackcatalog', pfad: '/admin/rackcatalogitem' },
@@ -48,6 +59,7 @@ const SEITEN = [
   { datei: 'loginwebsites', pfad: `/${KUNDE}/loginwebsite` },
   { datei: 'eol', pfad: '/admin/eol' },
   { datei: 'protokoll', pfad: '/admin/activity' },
+  { datei: 'admin-dashboard', pfad: '/admin' },
 ];
 
 const AGENT_PFAD = `/${KUNDE}/agent`;
@@ -136,6 +148,24 @@ async function screenshot(page, ziel, dateipfad) {
   await page.goto(`${BASIS}${ziel.pfad}`, { waitUntil: 'networkidle0', timeout: 30000 });
   // Kurze Ruhe fuer Livewire/Alpine-Animationen (Dropdowns, Fade-ins).
   await new Promise((r) => setTimeout(r, 400));
+
+  // scrollZu: Manche Seite beginnt mit einem Formular, und das Sehenswerte
+  // steht darunter - beim Schrank-Editor das Rack selbst. Ueber eine id im
+  // Markup, damit es in beiden Sprachen dieselbe Stelle trifft.
+  if (ziel.scrollZu) {
+    const gefunden = await page.evaluate((wahl) => {
+      const el = document.querySelector(wahl);
+      if (!el) return false;
+      el.scrollIntoView({ block: 'start' });
+      return true;
+    }, ziel.scrollZu);
+
+    if (!gefunden) {
+      console.error(`  WARNUNG bei ${ziel.datei}: ${ziel.scrollZu} nicht gefunden - Bild zeigt den Seitenanfang.`);
+    }
+
+    await new Promise((r) => setTimeout(r, 300));
+  }
   await page.screenshot({ path: dateipfad, fullPage: false });
   console.log('  ' + dateipfad);
 }

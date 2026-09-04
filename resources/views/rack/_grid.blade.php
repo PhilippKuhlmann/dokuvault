@@ -42,7 +42,12 @@
     {{-- Ohne Zeilenabstand. Der Abstand summiert sich ueber 42 HE auf 41 px und
          haette das Schema hoeher gemacht als die Frontansicht daneben - beide
          muessen Zeile fuer Zeile auf gleicher Hoehe liegen. --}}
-    <div class="grid" style="grid-template-columns: 2.5rem 1fr;"
+    {{-- minmax(0, 1fr) statt 1fr: Eine fr-Spalte schrumpft von sich aus nicht
+         unter die Inhaltsbreite ihrer Zeilen. Das Raster wurde dadurch breiter
+         als das Gehaeuse, und die Geraetezeilen standen rechts darueber hinaus -
+         Entfernen-Kreuz ausserhalb des Rahmens, die unterste Zeile abgeschnitten.
+         Dieselbe Falle wie min-w-0 bei Flex, eine Ebene hoeher. --}}
+    <div class="grid" style="grid-template-columns: 2.5rem minmax(0, 1fr);"
         @if ($interactive)
             {{-- Vorschau nur ausblenden, wenn der Zeiger den Schrank wirklich verlaesst --}}
             x-on:dragleave="if (! $el.contains($event.relatedTarget)) hover = null"
@@ -104,7 +109,11 @@
                 class="flex items-center justify-between gap-2 rounded border px-2 text-xs
                        {{ $geist ? 'border-dashed bg-gray-50 text-gray-400 dark:bg-gray-800/60 dark:border-gray-600 dark:text-gray-500' : $color }}
                        {{ $bearbeitbar ? 'cursor-grab active:cursor-grabbing' : '' }}">
-                <span class="truncate {{ $geist ? '' : 'font-medium' }}">{{ $item->label() }}</span>
+                {{-- min-w-0 zu truncate: Ohne das schrumpft ein Flex-Element nicht
+                     unter seine Textbreite - die Zeile wuchs stattdessen und stand
+                     rechts aus dem Gehaeuse heraus, samt Entfernen-Kreuz. truncate
+                     allein sieht richtig aus und wirkt nicht. --}}
+                <span class="min-w-0 truncate {{ $geist ? '' : 'font-medium' }}">{{ $item->label() }}</span>
                 <span class="flex shrink-0 items-center gap-2">
                     @if ($geist)
                         <span class="text-[10px] uppercase tracking-wide">{{ __('durchgehend') }}</span>

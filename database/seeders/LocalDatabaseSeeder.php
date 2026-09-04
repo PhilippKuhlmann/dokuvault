@@ -890,6 +890,9 @@ class LocalDatabaseSeeder extends Seeder
 
         $this->call([
             CustomerSeeder::class,
+            // Zum Schluss, damit die Historie auf fertigen Daten aufsetzt und
+            // im Protokoll ganz oben steht.
+            DemoProtokollSeeder::class,
         ]);
     }
 }

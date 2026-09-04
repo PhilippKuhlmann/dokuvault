@@ -91,7 +91,11 @@ immer aktuell.
   </tr>
   <tr>
     <td width="50%"><img src="docs/screenshots/eol.png" alt="Support-Ende (EOL)"><br><sub><b>Support-Ende (EOL)</b> – welche Systeme ohne Sicherheitsupdates laufen, je Kunde gruppiert</sub></td>
-    <td width="50%"><img src="docs/screenshots/protokoll.png" alt="Aktivitätsprotokoll"><br><sub><b>Aktivitätsprotokoll</b> – durchsuch- und filterbar, inklusive gescheiterter und gesperrter Anmeldungen</sub></td>
+    <td width="50%"><img src="docs/screenshots/protokoll.png" alt="Aktivitätsprotokoll"><br><sub><b>Aktivitätsprotokoll</b> – wer wann was angelegt, geändert, gelöscht oder wiederhergestellt hat; durchsuch- und filterbar</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/admin-dashboard.png" alt="Admin-Dashboard"><br><sub><b>Adminbereich</b> – Inventar über alle Kunden, ablaufende Verträge und die letzten Änderungen</sub></td>
+    <td width="50%"></td>
   </tr>
 </table>
 

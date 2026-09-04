@@ -90,7 +90,11 @@ MSPs lose time to scattered spreadsheets, stale wikis and “where did we write 
   </tr>
   <tr>
     <td width="50%"><img src="docs/screenshots/en/eol.png" alt="End of support (EOL)"><br><sub><b>End of support (EOL)</b> – which systems run without security updates, grouped per customer</sub></td>
-    <td width="50%"><img src="docs/screenshots/en/protokoll.png" alt="Activity log"><br><sub><b>Activity log</b> – searchable and filterable, including failed and locked-out sign-ins</sub></td>
+    <td width="50%"><img src="docs/screenshots/en/protokoll.png" alt="Activity log"><br><sub><b>Activity log</b> – who created, changed, deleted or restored what and when; searchable and filterable</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/en/admin-dashboard.png" alt="Admin area"><br><sub><b>Admin area</b> – inventory across all customers, expiring contracts and the latest changes</sub></td>
+    <td width="50%"></td>
   </tr>
 </table>
 

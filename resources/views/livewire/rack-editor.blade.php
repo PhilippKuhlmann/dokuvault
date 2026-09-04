@@ -57,7 +57,9 @@
         },
     }">
 
-    <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">{{ __('Bestückung') }}</div>
+    {{-- id: Anker fuer das Screenshot-Werkzeug. Ohne ihn zeigte das Bild
+         hauptsaechlich das Formular darueber und vom Rack nur die Oberkante. --}}
+    <div id="bestueckung" class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">{{ __('Bestückung') }}</div>
     <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">
         {{ __('Geräte aus der Palette auf eine freie Höheneinheit ziehen – die Vorschau zeigt, welche Einheiten belegt würden. Oder per Knopf auf den untersten freien Platz einbauen. Eingebautes lässt sich ebenfalls per Ziehen verschieben.') }}
     </p>
@@ -139,10 +141,13 @@
         {{-- Links das beschriftete Arbeitsschema, rechts die gezeichnete Frontansicht.
              Die Zeichnung haette gern das 10,857-fache ihrer Zeilenhoehe, sonst
              stauchen sich die Blenden (siehe rack/_rackview) - deshalb 27rem als
-             Ausgangsbreite. Nachgeben muss aber sie, nicht das Schema: min-w-64
-             haelt das Arbeitsschema auf der Breite seines Gehaeuses, sonst
-             stuende es aus seiner Spalte heraus. --}}
-        <div class="grow basis-0 min-w-64">
+             Ausgangsbreite. Nachgeben muss aber sie, nicht das Schema: die
+             Mindestbreite haelt das Arbeitsschema breit genug fuer seine Zeilen.
+
+             20rem statt 16rem: Bei 16 blieb fuer den Namen so wenig uebrig, dass
+             "PF-EG-01" als "PF-E..." dastand und "SW-Edge-01" als "SW-Edg...".
+             Gekuerzt wird jetzt erst, wo es wirklich eng wird. --}}
+        <div class="grow basis-0 min-w-80">
             <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">{{ __('Schema') }} · {{ __(\App\Models\Rack::SEITEN[$side]) }}</div>
             @include('rack._grid', ['rack' => $rack, 'interactive' => true, 'seite' => $side])
         </div>
