@@ -58,12 +58,13 @@
                                 <tr class="border-b border-gray-50 last:border-0 dark:border-gray-700/50
                                     @if ($row['kind'] === 'free') text-gray-400 dark:text-gray-500
                                     @elseif ($row['kind'] === 'dhcp') bg-slate-50/60 dark:bg-slate-700/20
-                                    @elseif ($row['kind'] === 'reserved') bg-amber-50/60 dark:bg-amber-900/10 @endif">
+                                    @endif">
                                     <td class="py-1.5 px-5 font-mono tabular-nums whitespace-nowrap {{ $row['kind'] === 'device' ? 'text-gray-900 dark:text-gray-100' : '' }} {{ $row['kind'] === 'dhcp' ? 'border-l-2 border-slate-400 dark:border-slate-500' : '' }} {{ $row['kind'] === 'reserved' ? 'border-l-2 border-amber-400 dark:border-amber-500 text-amber-700 dark:text-amber-300' : '' }}
-                                        {{-- Belegte Adresse innerhalb einer Reservierung: nur der
-                                             Streifen, kein gelber Grund. Die Zeile bleibt eine
-                                             belegte Zeile - der Streifen zeigt, dass der Block
-                                             hier durchlaeuft und nicht aufhoert. --}}
+                                        {{-- Eine Reservierung wird nur vorn markiert, nicht
+                                             flaechig eingefaerbt - weder die freien Adressen
+                                             darin noch die belegten. Der Streifen sagt, wie weit
+                                             der Block reicht; ein gelber Grund ueber zehn Zeilen
+                                             faellt mehr auf als das, was tatsaechlich drinsteht. --}}
                                         {{ ($row['reservierung'] ?? null) ? 'border-l-2 border-amber-400 dark:border-amber-500' : '' }}">
                                         @if ($row['single'])
                                             {{ $row['from'] }}
