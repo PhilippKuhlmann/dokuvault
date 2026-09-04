@@ -43,7 +43,7 @@ MSPs lose time to scattered spreadsheets, stale wikis and “where did we write 
 | 🔌 **Patch panels** | Outlet number, room and target switch per port — “where does outlet A.12 go?” |
 | 🔎 **Global search** | Find a server, IP, serial number or MAC across **all** customers in seconds |
 | 🤖 **Auto-documentation** | One script on the device — the rest documents itself (Proxmox, Windows AD) |
-| 🌐 **IPAM** | Used and free IP addresses per VLAN at a glance, DHCP and gateway detection |
+| 🌐 **IPAM** | Used, free and reserved IP addresses per VLAN at a glance, DHCP and gateway detection |
 | 🔐 **Encrypted** | Every password stored encrypted, role-based access, audit log |
 | 📄 **PDF export** | Complete customer documentation as a PDF at the push of a button |
 | 🌙 **Light & dark** | Modern, responsive UI — on the phone too |
@@ -62,7 +62,7 @@ MSPs lose time to scattered spreadsheets, stale wikis and “where did we write 
   </tr>
   <tr>
     <td width="50%"><img src="docs/screenshots/en/computers.png" alt="Device list"><br><sub><b>Devices</b> – tidy cards, copy IP or serial number with one click</sub></td>
-    <td width="50%"><img src="docs/screenshots/en/ipam.png" alt="IPAM"><br><sub><b>IPAM</b> – used and free addresses per VLAN</sub></td>
+    <td width="50%"><img src="docs/screenshots/en/ipam.png" alt="IPAM"><br><sub><b>IPAM</b> – used, free and reserved addresses per VLAN, each range in its own colour</sub></td>
   </tr>
   <tr>
     <td width="50%"><img src="docs/screenshots/en/autodoc.png" alt="Auto-documentation"><br><sub><b>Auto-documentation</b> – create an agent token, run the script, done</sub></td>
@@ -155,7 +155,7 @@ Every token may **only document** — a leaked one grants no further access. Mor
   items is maintained in the admin area
 - **Patch panels** — outlet number, room and target switch with port number per port; the port rows
   are created automatically from the port count
-- **Network** — routers, switches, access points, Wi-Fi, VLANs, **IPAM**, internet/WAN, UTM firewalls; internet connections optionally with a routed subnet (CIDR) and gateway
+- **Network** — routers, switches, access points, Wi-Fi, VLANs, **IPAM** (with reserved address ranges per VLAN, colour-coded), internet/WAN, UTM firewalls; internet connections optionally with a routed subnet (CIDR) and gateway
 - **Active Directory** — domains, users, groups
 - **Communication** — phone systems, DECT, mailboxes, email archiving
 - **Security & certificates** — SSL/TLS certificates with expiry warnings

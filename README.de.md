@@ -44,7 +44,7 @@ immer aktuell.
 | 🔌 **Patchfelder** | Je Port die Dosennummer, den Raum und den Ziel-Switch – „wo hängt Dose A.12?" |
 | 🔎 **Globale Suche** | Server, IP, Seriennummer oder MAC über **alle** Kunden in Sekunden finden |
 | 🤖 **Auto-Dokumentation** | Ein Script auf dem Gerät – der Rest dokumentiert sich selbst (Proxmox, Windows AD) |
-| 🌐 **IPAM** | Belegte & freie IP-Adressen je VLAN auf einen Blick, DHCP- und Gateway-Erkennung |
+| 🌐 **IPAM** | Belegte, freie & reservierte IP-Adressen je VLAN auf einen Blick, DHCP- und Gateway-Erkennung |
 | 🔐 **Verschlüsselt** | Alle Passwörter verschlüsselt gespeichert, rollenbasierte Zugriffe, Audit-Log |
 | 📄 **PDF-Export** | Komplette Kundendokumentation auf Knopfdruck als PDF |
 | 🌙 **Hell & Dunkel** | Modernes, responsives UI – auch auf dem Smartphone |
@@ -63,7 +63,7 @@ immer aktuell.
   </tr>
   <tr>
     <td width="50%"><img src="docs/screenshots/computers.png" alt="Geräteliste"><br><sub><b>Geräte</b> – übersichtliche Karten, IP/Seriennummer per Klick kopieren</sub></td>
-    <td width="50%"><img src="docs/screenshots/ipam.png" alt="IPAM"><br><sub><b>IPAM</b> – belegte und freie Adressen je VLAN</sub></td>
+    <td width="50%"><img src="docs/screenshots/ipam.png" alt="IPAM"><br><sub><b>IPAM</b> – belegte, freie und reservierte Adressen je VLAN, jeder Bereich in eigener Farbe</sub></td>
   </tr>
   <tr>
     <td width="50%"><img src="docs/screenshots/autodoc.png" alt="Auto-Dokumentation"><br><sub><b>Auto-Dokumentation</b> – Agent-Token erzeugen, Script ausführen, fertig</sub></td>
@@ -160,7 +160,7 @@ Agenten folgen.
   Elemente wird im Adminbereich gepflegt
 - **Patchfelder** – je Port Dosennummer, Raum und Ziel-Switch samt Portnummer; die Portzeilen
   entstehen automatisch aus der Portanzahl
-- **Netzwerk** – Router, Switches, Access Points, WLAN, VLANs, **IPAM**, Internet/WAN, UTM-Firewalls; Internet-Anschlüsse optional mit geroutetem Netz (CIDR) und Gateway
+- **Netzwerk** – Router, Switches, Access Points, WLAN, VLANs, **IPAM** (mit reservierten Adressbereichen je VLAN, farblich getrennt), Internet/WAN, UTM-Firewalls; Internet-Anschlüsse optional mit geroutetem Netz (CIDR) und Gateway
 - **Active Directory** – Domains, Benutzer, Gruppen
 - **Kommunikation** – Telefonanlagen, DECT, E-Mail-Postfächer, E-Mail-Archivierung
 - **Sicherheit & Zertifikate** – SSL/TLS-Zertifikate mit Ablauf-Warnung

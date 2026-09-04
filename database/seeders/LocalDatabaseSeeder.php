@@ -20,6 +20,7 @@ use App\Models\Firewall;
 use App\Models\FTPServer;
 use App\Models\InternetConnection;
 use App\Models\IoTDevice;
+use App\Models\IpRange;
 use App\Models\LicenseAccess;
 use App\Models\LicenseSoftware;
 use App\Models\LicenseWindows;
@@ -199,6 +200,28 @@ class LocalDatabaseSeeder extends Seeder
             'dhcpStart' => '10.10.20.100',
             'dhcpEnd' => '10.10.20.200',
         ]);
+
+        // Reservierte Bereiche: Sie belegen nichts, sie halten fest, wofuer ein
+        // Stueck des Netzes gedacht ist. Drei aneinandergrenzende, damit im
+        // Demo-Datensatz sichtbar ist, dass jeder seine eigene Farbe bekommt -
+        // in einer Farbe waeren sie eine einzige Flaeche.
+        //
+        // Der erste beginnt bewusst bei .10, wo SRV-DC01 haengt: So sieht man,
+        // dass eine belegte Adresse im Bereich belegt bleibt und der Block
+        // trotzdem durchlaeuft.
+        foreach ([
+            ['10.10.20.10', '10.10.20.20', 'Proxmox-Server'],
+            ['10.10.20.21', '10.10.20.30', 'Drucker'],
+            ['10.10.20.31', '10.10.20.40', 'Kameras'],
+        ] as [$von, $bis, $wofuer]) {
+            IpRange::create([
+                'customer_id' => $customer->id,
+                'network_id' => $clientsVlan->id,
+                'from_ip' => $von,
+                'to_ip' => $bis,
+                'label' => $wofuer,
+            ]);
+        }
 
         $rtrCore = Router::factory()->create(['customer_id' => $customer->id, 'site_id' => $site1->id, 'name' => 'RTR-Core']);
         // Router hängt in mehreren VLANs -> zusätzliche Gateway-IP im Clients-VLAN
