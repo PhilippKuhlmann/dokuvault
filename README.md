@@ -82,7 +82,15 @@ MSPs lose time to scattered spreadsheets, stale wikis and “where did we write 
   </tr>
   <tr>
     <td width="50%"><img src="docs/screenshots/en/rackliste.png" alt="Rack list"><br><sub><b>Rack overview</b> – key facts in one row, occupancy and drawing per side</sub></td>
-    <td width="50%"></td>
+    <td width="50%"><img src="docs/screenshots/en/server.png" alt="Server list"><br><sub><b>Servers</b> – credentials, BMC, remote access and hardware per device, passwords masked</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/en/vms.png" alt="VM list"><br><sub><b>VMs</b> – with the host or cluster they run on</sub></td>
+    <td width="50%"><img src="docs/screenshots/en/loginwebsites.png" alt="Website logins"><br><sub><b>Website logins</b> – password masked, revealed or copied on click</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/en/eol.png" alt="End of support (EOL)"><br><sub><b>End of support (EOL)</b> – which systems run without security updates, grouped per customer</sub></td>
+    <td width="50%"><img src="docs/screenshots/en/protokoll.png" alt="Activity log"><br><sub><b>Activity log</b> – searchable and filterable, including failed and locked-out sign-ins</sub></td>
   </tr>
 </table>
 

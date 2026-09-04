@@ -43,6 +43,11 @@ const SEITEN = [
   { datei: 'patchpanel-liste', pfad: `/${KUNDE}/patchpanel` },
   { datei: 'rackcatalog', pfad: '/admin/rackcatalogitem' },
   { datei: 'rackliste', pfad: `/${KUNDE}/rack` },
+  { datei: 'server', pfad: `/${KUNDE}/server` },
+  { datei: 'vms', pfad: `/${KUNDE}/vm` },
+  { datei: 'loginwebsites', pfad: `/${KUNDE}/loginwebsite` },
+  { datei: 'eol', pfad: '/admin/eol' },
+  { datei: 'protokoll', pfad: '/admin/activity' },
 ];
 
 const AGENT_PFAD = `/${KUNDE}/agent`;

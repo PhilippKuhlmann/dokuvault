@@ -83,7 +83,15 @@ immer aktuell.
   </tr>
   <tr>
     <td width="50%"><img src="docs/screenshots/rackliste.png" alt="Serverschrank-Liste"><br><sub><b>Schrank-Übersicht</b> – Eckdaten in einer Zeile, Belegung und Zeichnung je Seite</sub></td>
-    <td width="50%"></td>
+    <td width="50%"><img src="docs/screenshots/server.png" alt="Serverliste"><br><sub><b>Server</b> – Zugangsdaten, BMC, Fernwartung und Hardware je Gerät, Kennwörter maskiert</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/vms.png" alt="VM-Liste"><br><sub><b>VMs</b> – mit Host oder Cluster, auf dem sie laufen</sub></td>
+    <td width="50%"><img src="docs/screenshots/loginwebsites.png" alt="Webseiten-Logins"><br><sub><b>Webseiten-Logins</b> – Kennwort maskiert, auf Klick sichtbar oder kopiert</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/eol.png" alt="Support-Ende (EOL)"><br><sub><b>Support-Ende (EOL)</b> – welche Systeme ohne Sicherheitsupdates laufen, je Kunde gruppiert</sub></td>
+    <td width="50%"><img src="docs/screenshots/protokoll.png" alt="Aktivitätsprotokoll"><br><sub><b>Aktivitätsprotokoll</b> – durchsuch- und filterbar, inklusive gescheiterter und gesperrter Anmeldungen</sub></td>
   </tr>
 </table>
 
