@@ -56,10 +56,10 @@
                         <tbody>
                             @foreach ($plan['rows'] as $row)
                                 <tr class="border-b border-gray-50 last:border-0 dark:border-gray-700/50
-                                    @if ($row['kind'] === 'free') text-gray-400 dark:text-gray-500
+                                    @if ($row['kind'] === 'free' || $row['kind'] === 'reserved') text-gray-400 dark:text-gray-500
                                     @elseif ($row['kind'] === 'dhcp') bg-slate-50/60 dark:bg-slate-700/20
                                     @endif">
-                                    <td class="py-1.5 px-5 font-mono tabular-nums whitespace-nowrap {{ $row['kind'] === 'device' ? 'text-gray-900 dark:text-gray-100' : '' }} {{ $row['kind'] === 'dhcp' ? 'border-l-2 border-slate-400 dark:border-slate-500' : '' }} {{ $row['kind'] === 'reserved' ? 'border-l-2 border-amber-400 dark:border-amber-500 text-amber-700 dark:text-amber-300' : '' }}
+                                    <td class="py-1.5 px-5 font-mono tabular-nums whitespace-nowrap {{ $row['kind'] === 'device' ? 'text-gray-900 dark:text-gray-100' : '' }} {{ $row['kind'] === 'dhcp' ? 'border-l-2 border-slate-400 dark:border-slate-500' : '' }} {{ $row['kind'] === 'reserved' ? 'border-l-2 border-amber-400 dark:border-amber-500' : '' }}
                                         {{-- Eine Reservierung wird nur vorn markiert, nicht
                                              flaechig eingefaerbt - weder die freien Adressen
                                              darin noch die belegten. Der Streifen sagt, wie weit
