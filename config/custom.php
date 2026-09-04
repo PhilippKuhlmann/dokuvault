@@ -914,6 +914,7 @@ return [
             'chip' => 'border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-900/20',
             'chipText' => 'text-amber-800 dark:text-amber-200',
             'chipLeise' => 'text-amber-600 dark:text-amber-400',
+            'balken' => 'bg-amber-400 dark:bg-amber-500',
         ],
         [
             'rand' => 'border-sky-400 dark:border-sky-500',
@@ -922,6 +923,7 @@ return [
             'chip' => 'border-sky-200 bg-sky-50 dark:border-sky-900 dark:bg-sky-900/20',
             'chipText' => 'text-sky-800 dark:text-sky-200',
             'chipLeise' => 'text-sky-600 dark:text-sky-400',
+            'balken' => 'bg-sky-400 dark:bg-sky-500',
         ],
         [
             'rand' => 'border-violet-400 dark:border-violet-500',
@@ -930,6 +932,7 @@ return [
             'chip' => 'border-violet-200 bg-violet-50 dark:border-violet-900 dark:bg-violet-900/20',
             'chipText' => 'text-violet-800 dark:text-violet-200',
             'chipLeise' => 'text-violet-600 dark:text-violet-400',
+            'balken' => 'bg-violet-400 dark:bg-violet-500',
         ],
         [
             'rand' => 'border-emerald-400 dark:border-emerald-500',
@@ -938,6 +941,7 @@ return [
             'chip' => 'border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-900/20',
             'chipText' => 'text-emerald-800 dark:text-emerald-200',
             'chipLeise' => 'text-emerald-600 dark:text-emerald-400',
+            'balken' => 'bg-emerald-400 dark:bg-emerald-500',
         ],
         [
             'rand' => 'border-rose-400 dark:border-rose-500',
@@ -946,6 +950,7 @@ return [
             'chip' => 'border-rose-200 bg-rose-50 dark:border-rose-900 dark:bg-rose-900/20',
             'chipText' => 'text-rose-800 dark:text-rose-200',
             'chipLeise' => 'text-rose-600 dark:text-rose-400',
+            'balken' => 'bg-rose-400 dark:bg-rose-500',
         ],
         [
             'rand' => 'border-cyan-400 dark:border-cyan-500',
@@ -954,6 +959,7 @@ return [
             'chip' => 'border-cyan-200 bg-cyan-50 dark:border-cyan-900 dark:bg-cyan-900/20',
             'chipText' => 'text-cyan-800 dark:text-cyan-200',
             'chipLeise' => 'text-cyan-600 dark:text-cyan-400',
+            'balken' => 'bg-cyan-400 dark:bg-cyan-500',
         ],
     ],
 

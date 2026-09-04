@@ -145,6 +145,12 @@ class IpPlanController extends Controller
 
         $rows = [];
         $counts = ['device' => 0, 'dhcp' => 0, 'free' => 0, 'reserved' => 0];
+
+        // Je Bereich getrennt mitzaehlen, damit der Balken oben ihn in seiner
+        // eigenen Farbe zeigen kann. Gezaehlt wird nur, was auch als
+        // reserviert in der Tabelle steht - eine belegte Adresse im Bereich
+        // zaehlt als belegt, sonst kaeme der Balken ueber 100 Prozent.
+        $jeBereich = [];
         $runStart = null;
         $runKind = null;
 
@@ -208,6 +214,11 @@ class IpPlanController extends Controller
 
             $counts[$kind]++;
 
+            if ($kind === 'reserved') {
+                $jeBereich[$bereich['id']] ??= ['farbe' => $bereich['farbe'], 'label' => $bereich['label'], 'anzahl' => 0];
+                $jeBereich[$bereich['id']]['anzahl']++;
+            }
+
             // Auch bei gleicher Art umbrechen, wenn ein anderer Bereich
             // beginnt - sonst verschmelzen zwei Reservierungen zu einer Zeile
             // mit der Beschriftung und der Farbe der ersten. An der Id, nicht
@@ -226,6 +237,9 @@ class IpPlanController extends Controller
             'error' => null,
             'rows' => $rows,
             'counts' => $counts,
+            // In Lesereihenfolge, damit der Balken die Farben in derselben
+            // Folge zeigt wie die Tabelle darunter.
+            'reserviert' => array_values($jeBereich),
             'truncated' => $truncated,
             'total' => $last - $first + 1,
             'usedCount' => count($map),

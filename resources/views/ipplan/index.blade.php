@@ -13,7 +13,7 @@
                 $counts = $plan['counts'] ?? ['device' => 0, 'dhcp' => 0, 'free' => 0, 'reserved' => 0];
                 $pctDevice = $counts['device'] / $total * 100;
                 $pctDhcp = $counts['dhcp'] / $total * 100;
-                $pctReserved = ($counts['reserved'] ?? 0) / $total * 100;
+                $reserviert = $plan['reserviert'] ?? [];
             @endphp
 
             <div class="mb-6 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
@@ -36,7 +36,13 @@
                     @if (! ($plan['error'] ?? null))
                         <div class="flex h-1.5 w-full overflow-hidden rounded-full bg-gray-200/70 dark:bg-gray-600/50 mt-2.5">
                             <div class="bg-cerulean-500" style="width: {{ $counts['device'] > 0 ? 'max(3px, ' . $pctDevice . '%)' : '0' }}"></div>
-                            <div class="bg-amber-400 dark:bg-amber-500" style="width: {{ ($counts['reserved'] ?? 0) > 0 ? 'max(3px, ' . $pctReserved . '%)' : '0' }}"></div>
+                            {{-- Ein Stueck je Reservierung in ihrer Farbe, nicht ein
+                                 Sammelstueck: Sonst sagt der Balken "reserviert", aber
+                                 nicht, von wem - und drei Bereiche saehen aus wie einer. --}}
+                            @foreach ($reserviert as $block)
+                                <div class="{{ $block['farbe']['balken'] ?? '' }}" title="{{ $block['label'] }}"
+                                    style="width: {{ 'max(3px, ' . ($block['anzahl'] / $total * 100) . '%)' }}"></div>
+                            @endforeach
                             <div class="bg-slate-400 dark:bg-slate-500" style="width: {{ $counts['dhcp'] > 0 ? 'max(3px, ' . $pctDhcp . '%)' : '0' }}"></div>
                         </div>
                     @endif

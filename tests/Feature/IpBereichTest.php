@@ -336,3 +336,48 @@ test('Tabelle und Liste färben denselben Bereich gleich', function () {
 
     expect($ausListe->all())->toBe($ausPlan->all());
 });
+
+test('der Balken oben zeigt jeden Bereich in seiner Farbe', function () {
+    $this->actingAs(userWithPermissions(['network_viewAny']));
+
+    $kunde = Customer::factory()->create();
+    $netz = netzMitBereich($kunde);
+    bereichAnlegen($netz, '10.10.250.10', '10.10.250.20', 'Proxmox-Server');
+    bereichAnlegen($netz, '10.10.250.21', '10.10.250.30', 'Drucker');
+
+    $antwort = $this->get("/{$kunde->slug}/ip-plan")->assertStatus(200);
+
+    $plan = collect($antwort->viewData('plans'))->firstWhere('network.id', $netz->id)['plan'];
+
+    // Ein Stueck je Reservierung, nicht ein Sammelstueck: Sonst sagt der Balken
+    // "reserviert", aber nicht, von wem - und zwei Bereiche saehen aus wie einer.
+    expect($plan['reserviert'])->toHaveCount(2)
+        ->and($plan['reserviert'][0]['label'])->toBe('Proxmox-Server')
+        ->and($plan['reserviert'][1]['label'])->toBe('Drucker')
+        ->and($plan['reserviert'][0]['farbe']['balken'])
+        ->not->toBe($plan['reserviert'][1]['farbe']['balken']);
+});
+
+test('eine belegte Adresse im Bereich zählt nicht doppelt', function () {
+    $this->actingAs(userWithPermissions(['network_viewAny', 'server_viewAny']));
+
+    $kunde = Customer::factory()->create();
+    $netz = netzMitBereich($kunde);
+    bereichAnlegen($netz, '10.10.250.10', '10.10.250.20', 'Proxmox-Server');
+
+    $standort = Site::factory()->create(['customer_id' => $kunde->id]);
+    $server = Server::create([
+        'customer_id' => $kunde->id, 'site_id' => $standort->id, 'name' => 'PVE-01',
+        'operating_system_id' => OperatingSystem::factory()->create(['name' => 'Debian 12'])->id,
+    ]);
+    $server->ipAddresses()->create([
+        'customer_id' => $kunde->id, 'network_id' => $netz->id, 'address' => '10.10.250.12',
+    ]);
+
+    $antwort = $this->get("/{$kunde->slug}/ip-plan")->assertStatus(200);
+    $plan = collect($antwort->viewData('plans'))->firstWhere('network.id', $netz->id)['plan'];
+
+    // Elf Adressen im Bereich, eine davon belegt - der Balken zeigt zehn als
+    // reserviert und eine als belegt. Zaehlte er elf, ginge er ueber 100 Prozent.
+    expect($plan['reserviert'][0]['anzahl'])->toBe(10);
+});
