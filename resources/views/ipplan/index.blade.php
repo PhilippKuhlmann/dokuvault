@@ -59,7 +59,12 @@
                                     @if ($row['kind'] === 'free') text-gray-400 dark:text-gray-500
                                     @elseif ($row['kind'] === 'dhcp') bg-slate-50/60 dark:bg-slate-700/20
                                     @elseif ($row['kind'] === 'reserved') bg-amber-50/60 dark:bg-amber-900/10 @endif">
-                                    <td class="py-1.5 px-5 font-mono tabular-nums whitespace-nowrap {{ $row['kind'] === 'device' ? 'text-gray-900 dark:text-gray-100' : '' }} {{ $row['kind'] === 'dhcp' ? 'border-l-2 border-slate-400 dark:border-slate-500' : '' }} {{ $row['kind'] === 'reserved' ? 'border-l-2 border-amber-400 dark:border-amber-500 text-amber-700 dark:text-amber-300' : '' }}">
+                                    <td class="py-1.5 px-5 font-mono tabular-nums whitespace-nowrap {{ $row['kind'] === 'device' ? 'text-gray-900 dark:text-gray-100' : '' }} {{ $row['kind'] === 'dhcp' ? 'border-l-2 border-slate-400 dark:border-slate-500' : '' }} {{ $row['kind'] === 'reserved' ? 'border-l-2 border-amber-400 dark:border-amber-500 text-amber-700 dark:text-amber-300' : '' }}
+                                        {{-- Belegte Adresse innerhalb einer Reservierung: nur der
+                                             Streifen, kein gelber Grund. Die Zeile bleibt eine
+                                             belegte Zeile - der Streifen zeigt, dass der Block
+                                             hier durchlaeuft und nicht aufhoert. --}}
+                                        {{ ($row['reservierung'] ?? null) ? 'border-l-2 border-amber-400 dark:border-amber-500' : '' }}">
                                         @if ($row['single'])
                                             {{ $row['from'] }}
                                         @else

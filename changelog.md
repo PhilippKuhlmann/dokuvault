@@ -5,7 +5,7 @@
 ### Added
 
 - **IPAM: Adressbereiche reservieren.** Ein Bereich belegt nichts — er hält fest, wofür ein Stück des Netzes gedacht ist: „10.10.250.10 bis .20 sind für die Proxmox-Server". Im Plan steht dort „reserviert · Proxmox-Server" statt „frei", auch wenn davon erst zwei Adressen vergeben sind.
-  - **Belegte Adressen im Bereich bleiben belegt** und tragen zusätzlich die Marke des Blocks. Ohne das sähe eine Reservierung löchrig aus, sobald jemand eine Adresse daraus vergibt.
+  - **Belegte Adressen im Bereich bleiben belegt** und tragen zusätzlich die Marke des Blocks sowie den schmalen Randstreifen — nicht den gelben Grund. Der Streifen zeigt, dass der Block hier durchläuft; ohne ihn sähe eine Reservierung löchrig aus, sobald jemand eine Adresse daraus vergibt.
   - Gepflegt wird der Bereich **dort, wo man ihn sieht** — unter dem jeweiligen VLAN im IPAM, nicht in einer eigenen Liste im Menü. Dasselbe Muster wie die IP-Adressen am Gerät.
   - **Der DHCP-Bereich schlägt die Reservierung.** Was der DHCP-Server selbst vergibt, ist kein reservierter Block mehr — und wer beides übereinanderlegt, soll das im Plan sehen.
   - Abgewiesen werden: Adressen außerhalb des Netzes, eine Endadresse vor der Anfangsadresse und Überschneidungen mit einem bestehenden Bereich. Zwei Reservierungen für dieselbe Adresse wären ein Widerspruch in der Doku.
