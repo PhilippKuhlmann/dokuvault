@@ -43,7 +43,7 @@ immer aktuell.
 | 🧭 **Erstaufnahme-Assistent** | 16 Schritte führen durch den Neukunden – Frage stellen, Antwort speichern, weiter |
 | 🔌 **Patchfelder** | Je Port die Dosennummer, den Raum und den Ziel-Switch – „wo hängt Dose A.12?" |
 | 🔎 **Globale Suche** | Server, IP, Seriennummer oder MAC über **alle** Kunden in Sekunden finden |
-| 🤖 **Auto-Dokumentation** | Ein Script auf dem Gerät – der Rest dokumentiert sich selbst (Proxmox, Windows AD) |
+| 🤖 **Auto-Dokumentation** | Ein Script auf dem Gerät – der Rest dokumentiert sich selbst (Proxmox, Windows-AD, Windows-Client) |
 | 🌐 **IPAM** | Belegte, freie & reservierte IP-Adressen je VLAN auf einen Blick, DHCP- und Gateway-Erkennung |
 | 🔐 **Verschlüsselt** | Alle Passwörter verschlüsselt gespeichert, rollenbasierte Zugriffe, Audit-Log |
 | 📄 **PDF-Export** | Komplette Kundendokumentation auf Knopfdruck als PDF |
@@ -152,6 +152,16 @@ Built-in-Gruppen und System-Konten (Gast, krbtgt, DefaultAccount …) werden ber
 herausgefiltert, der eingebaute Administrator bleibt erhalten. Passwörter werden nie ausgelesen
 oder übertragen.
 
+```powershell
+# Auf einem Arbeitsplatzrechner:
+.\windows-client-doku.ps1
+```
+
+Der Windows-Client-Agent meldet Hostname, Hersteller, Modell, Seriennummer, Betriebssystem und
+IP-Adresse eines Arbeitsplatzrechners und legt ihn als Computer an. Erkannt wird er an einer
+eigenen Kennung, nicht am Namen – ein umbenannter Rechner bleibt derselbe Eintrag, statt ein
+zweiter zu werden.
+
 Jeder Token darf **ausschließlich dokumentieren** – bei einem Leak kein weiterer Zugriff. Weitere
 Agenten folgen.
 
@@ -177,7 +187,7 @@ Agenten folgen.
 - **Lizenzen** – Software-, Windows- und Zugriffslizenzen inkl. Ablaufdaten & Datei-Upload
 - **Zugangsdaten** – verschlüsselte Logins, Passwort anzeigen & kopieren, vorheriges Passwort
   bleibt für eine einstellbare Frist nachschlagbar – für den Fall, dass jemand falsch geändert hat
-- **Erfassung** – Erstaufnahme-Assistent (16 geführte Schritte), Auto-Dokumentation per Agent,
+- **Erfassung** – Erstaufnahme-Assistent (16 geführte Schritte), Auto-Dokumentation per Agent (Proxmox, Windows-AD, Windows-Client),
   Agent-Token auf eigener Seite verwaltet (anlegen, einmalig anzeigen, widerrufen)
 - **Betrieb** – globale Suche, durchsuch- und filterbares Aktivitätsprotokoll (Ereignis, Objektart,
   Benutzer, Zeitraum), Papierkorb (Wiederherstellen, dazu eine Adminansicht über alle Kunden),

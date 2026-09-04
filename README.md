@@ -42,7 +42,7 @@ MSPs lose time to scattered spreadsheets, stale wikis and “where did we write 
 | 🧭 **Initial survey wizard** | 16 steps through a new customer — ask, save the answer, next |
 | 🔌 **Patch panels** | Outlet number, room and target switch per port — “where does outlet A.12 go?” |
 | 🔎 **Global search** | Find a server, IP, serial number or MAC across **all** customers in seconds |
-| 🤖 **Auto-documentation** | One script on the device — the rest documents itself (Proxmox, Windows AD) |
+| 🤖 **Auto-documentation** | One script on the device — the rest documents itself (Proxmox, Windows AD, Windows client) |
 | 🌐 **IPAM** | Used, free and reserved IP addresses per VLAN at a glance, DHCP and gateway detection |
 | 🔐 **Encrypted** | Every password stored encrypted, role-based access, audit log |
 | 📄 **PDF export** | Complete customer documentation as a PDF at the push of a button |
@@ -149,6 +149,16 @@ The Windows AD agent reads all users plus **only self-created groups** — defau
 and system accounts (Guest, krbtgt, DefaultAccount …) are filtered out on the domain controller
 itself, while the built-in Administrator is kept. Passwords are never read or transmitted.
 
+```powershell
+# On a workstation:
+.\windows-client-doku.ps1
+```
+
+The Windows client agent reports the hostname, manufacturer, model, serial number, operating
+system and IP address of a workstation and records it as a computer. It is recognised by an
+identifier of its own rather than by name — a renamed machine stays the same entry instead of
+becoming a second one.
+
 Every token may **only document** — a leaked one grants no further access. More agents will follow.
 
 ---
@@ -172,7 +182,7 @@ Every token may **only document** — a leaked one grants no further access. Mor
 - **Licences** — software, Windows and access licences including expiry dates & file upload
 - **Credentials** — encrypted logins, show and copy passwords, previous password stays available
   for a configurable retention period — for when someone changed it by mistake
-- **Data capture** — initial survey wizard (16 guided steps), auto-documentation via agent, agent
+- **Data capture** — initial survey wizard (16 guided steps), auto-documentation via agent (Proxmox, Windows AD, Windows client), agent
   tokens managed on their own page (create, one-time reveal, revoke)
 - **Operations** — global search, searchable & filterable activity log (event, object type, user,
   time range), recycle bin (restore, plus an admin-wide view across every customer), PDF export,
