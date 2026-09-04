@@ -10,9 +10,10 @@
                 $network = $entry['network'];
                 $plan = $entry['plan'];
                 $total = max($plan['total'] ?? 1, 1);
-                $counts = $plan['counts'] ?? ['device' => 0, 'dhcp' => 0, 'free' => 0];
+                $counts = $plan['counts'] ?? ['device' => 0, 'dhcp' => 0, 'free' => 0, 'reserved' => 0];
                 $pctDevice = $counts['device'] / $total * 100;
                 $pctDhcp = $counts['dhcp'] / $total * 100;
+                $pctReserved = ($counts['reserved'] ?? 0) / $total * 100;
             @endphp
 
             <div class="mb-6 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
@@ -35,6 +36,7 @@
                     @if (! ($plan['error'] ?? null))
                         <div class="flex h-1.5 w-full overflow-hidden rounded-full bg-gray-200/70 dark:bg-gray-600/50 mt-2.5">
                             <div class="bg-cerulean-500" style="width: {{ $counts['device'] > 0 ? 'max(3px, ' . $pctDevice . '%)' : '0' }}"></div>
+                            <div class="bg-amber-400 dark:bg-amber-500" style="width: {{ ($counts['reserved'] ?? 0) > 0 ? 'max(3px, ' . $pctReserved . '%)' : '0' }}"></div>
                             <div class="bg-slate-400 dark:bg-slate-500" style="width: {{ $counts['dhcp'] > 0 ? 'max(3px, ' . $pctDhcp . '%)' : '0' }}"></div>
                         </div>
                     @endif
@@ -55,8 +57,9 @@
                             @foreach ($plan['rows'] as $row)
                                 <tr class="border-b border-gray-50 last:border-0 dark:border-gray-700/50
                                     @if ($row['kind'] === 'free') text-gray-400 dark:text-gray-500
-                                    @elseif ($row['kind'] === 'dhcp') bg-slate-50/60 dark:bg-slate-700/20 @endif">
-                                    <td class="py-1.5 px-5 font-mono tabular-nums whitespace-nowrap {{ $row['kind'] === 'device' ? 'text-gray-900 dark:text-gray-100' : '' }} {{ $row['kind'] === 'dhcp' ? 'border-l-2 border-slate-400 dark:border-slate-500' : '' }}">
+                                    @elseif ($row['kind'] === 'dhcp') bg-slate-50/60 dark:bg-slate-700/20
+                                    @elseif ($row['kind'] === 'reserved') bg-amber-50/60 dark:bg-amber-900/10 @endif">
+                                    <td class="py-1.5 px-5 font-mono tabular-nums whitespace-nowrap {{ $row['kind'] === 'device' ? 'text-gray-900 dark:text-gray-100' : '' }} {{ $row['kind'] === 'dhcp' ? 'border-l-2 border-slate-400 dark:border-slate-500' : '' }} {{ $row['kind'] === 'reserved' ? 'border-l-2 border-amber-400 dark:border-amber-500 text-amber-700 dark:text-amber-300' : '' }}">
                                         @if ($row['single'])
                                             {{ $row['from'] }}
                                         @else
@@ -69,6 +72,16 @@
                                                 <span class="inline-flex items-center rounded bg-cerulean-50 px-1.5 py-0.5 text-[10px] font-DINPro-bold text-cerulean-700 dark:bg-cerulean-900/30 dark:text-cerulean-300 mr-1.5 align-middle">{{ __('Gateway') }}</span>
                                             @endif
                                             <span class="text-gray-900 dark:text-gray-100 align-middle">{{ $row['label'] }}</span>
+                                            {{-- Eine belegte Adresse innerhalb einer Reservierung bleibt
+                                                 belegt - sie zeigt zusaetzlich, wozu der Block gehoert.
+                                                 Ohne das saehe der Block loechrig aus, sobald jemand
+                                                 eine Adresse daraus vergibt. --}}
+                                            @if ($row['reservierung'] ?? null)
+                                                <span class="ml-1.5 inline-flex items-center rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-DINPro-bold text-amber-700 align-middle dark:bg-amber-900/30 dark:text-amber-300">{{ $row['reservierung'] }}</span>
+                                            @endif
+                                        @elseif ($row['kind'] === 'reserved')
+                                            <span class="inline-flex items-center rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-DINPro-bold text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">{{ __('reserviert') }}</span>
+                                            <span class="ml-1.5 align-middle text-amber-800 dark:text-amber-200">{{ $row['label'] }}</span>
                                         @elseif ($row['kind'] === 'dhcp')
                                             <span class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-DINPro-bold text-slate-600 dark:bg-slate-700/40 dark:text-slate-300">{{ $row['label'] }}</span>
                                         @else
@@ -80,6 +93,8 @@
                         </tbody>
                     </table>
                     </div>
+
+                    <livewire:ip-bereiche :customer="$customer" :network="$network" :key="'bereiche-'.$network->id" />
 
                     @if ($plan['truncated'] ?? false)
                         <div class="px-5 py-3 text-xs text-gray-400 border-t border-gray-100 dark:border-gray-700">

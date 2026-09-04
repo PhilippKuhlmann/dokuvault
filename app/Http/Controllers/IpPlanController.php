@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\IpAddress;
+use App\Models\IpRange;
 use App\Models\Network;
 use App\Models\Server;
 
@@ -36,10 +37,19 @@ class IpPlanController extends Controller
         // eine tatsächlich vergebene Adresse hier als frei erscheinen.
         $used = $this->collectUsedIps($customer);
 
-        $plans = $networks->map(function (Network $network) use ($used) {
+        // Reservierte Bereiche je Netz. Sie belegen nichts - sie sagen, wofuer
+        // ein Stueck gedacht ist, auch wenn davon noch keine Adresse vergeben
+        // ist.
+        $bereiche = IpRange::where('customer_id', $customer->id)
+            ->orderBy('from_ip')
+            ->get()
+            ->groupBy('network_id');
+
+        $plans = $networks->map(function (Network $network) use ($used, $bereiche) {
             return [
                 'network' => $network,
-                'plan' => $this->buildPlan($network, $used),
+                'bereiche' => $bereiche->get($network->id, collect()),
+                'plan' => $this->buildPlan($network, $used, $bereiche->get($network->id, collect())),
             ];
         });
 
@@ -97,7 +107,7 @@ class IpPlanController extends Controller
     /**
      * Baut die Zeilen für ein VLAN: belegte Adressen einzeln, freie und DHCP-Bereiche zusammengefasst.
      */
-    protected function buildPlan(Network $network, array $used): array
+    protected function buildPlan(Network $network, array $used, $bereiche = null): array
     {
         $range = $this->networkRange($network);
         if (! $range) {
@@ -127,24 +137,36 @@ class IpPlanController extends Controller
 
         $dhcp = $this->dhcpRange($network, $networkLong);
 
+        // Je Adresse die Beschriftung des Bereichs, in dem sie liegt. Als
+        // Nachschlagetabelle statt einer Schleife je Adresse: Ein /16 haette
+        // sonst 65.000 Durchlaeufe mal Anzahl der Bereiche.
+        $reserviert = $this->reservierungen($bereiche, $first, $last);
+
         $rows = [];
-        $counts = ['device' => 0, 'dhcp' => 0, 'free' => 0];
+        $counts = ['device' => 0, 'dhcp' => 0, 'free' => 0, 'reserved' => 0];
         $runStart = null;
         $runKind = null;
 
-        $flush = function ($endLong) use (&$rows, &$runStart, &$runKind) {
+        $runLabel = null;
+
+        $flush = function ($endLong) use (&$rows, &$runStart, &$runKind, &$runLabel) {
             if ($runStart === null) {
                 return;
             }
             $rows[] = [
-                'kind' => $runKind, // 'free' | 'dhcp'
+                'kind' => $runKind, // 'free' | 'dhcp' | 'reserved'
                 'from' => long2ip($runStart),
                 'to' => long2ip($endLong),
                 'single' => $runStart === $endLong,
-                'label' => $runKind === 'dhcp' ? 'DHCP-Bereich' : 'frei',
+                'label' => match ($runKind) {
+                    'dhcp' => 'DHCP-Bereich',
+                    'reserved' => $runLabel,
+                    default => 'frei',
+                },
             ];
             $runStart = null;
             $runKind = null;
+            $runLabel = null;
         };
 
         for ($ip = $first; $ip <= $last; $ip++) {
@@ -158,17 +180,39 @@ class IpPlanController extends Controller
                     'single' => true,
                     'label' => $map[$ip],
                     'isGateway' => $ip === $gatewayLong,
+                    // Eine belegte Adresse innerhalb einer Reservierung bleibt
+                    // eine belegte Adresse - sie traegt nur zusaetzlich, wozu
+                    // der Block gedacht ist.
+                    'reservierung' => $reserviert[$ip] ?? null,
                 ];
 
                 continue;
             }
 
-            $kind = ($dhcp && $ip >= $dhcp[0] && $ip <= $dhcp[1]) ? 'dhcp' : 'free';
+            // Reihenfolge: DHCP schlaegt die Reservierung. Ein Bereich, den der
+            // DHCP-Server selbst vergibt, ist kein reservierter Block mehr -
+            // und wer beides uebereinanderlegt, soll das im Plan sehen.
+            if ($dhcp && $ip >= $dhcp[0] && $ip <= $dhcp[1]) {
+                $kind = 'dhcp';
+                $label = null;
+            } elseif (isset($reserviert[$ip])) {
+                $kind = 'reserved';
+                $label = $reserviert[$ip];
+            } else {
+                $kind = 'free';
+                $label = null;
+            }
+
             $counts[$kind]++;
-            if ($runKind !== $kind) {
+
+            // Auch bei gleicher Art umbrechen, wenn ein anderer Bereich
+            // beginnt - sonst verschmelzen zwei Reservierungen zu einer Zeile
+            // mit der Beschriftung der ersten.
+            if ($runKind !== $kind || ($kind === 'reserved' && $runLabel !== $label)) {
                 $flush($ip - 1);
                 $runStart = $ip;
                 $runKind = $kind;
+                $runLabel = $label;
             }
         }
         $flush($last);
@@ -181,6 +225,38 @@ class IpPlanController extends Controller
             'total' => $last - $first + 1,
             'usedCount' => count($map),
         ];
+    }
+
+    /**
+     * Nachschlagetabelle [ip_long => Beschriftung] fuer die reservierten
+     * Bereiche eines Netzes, auf den sichtbaren Ausschnitt beschnitten.
+     *
+     * Ueberlappen zwei Bereiche, gewinnt der zuletzt angelegte. Das Formular
+     * laesst Ueberlappungen gar nicht erst zu; die Regel steht hier fuer den
+     * Fall, dass doch eine in der Datenbank landet - dann soll der Plan eine
+     * Beschriftung zeigen statt zu raten.
+     */
+    protected function reservierungen($bereiche, int $first, int $last): array
+    {
+        $treffer = [];
+
+        foreach ($bereiche ?? [] as $bereich) {
+            $von = $bereich->vonLong();
+            $bis = $bereich->bisLong();
+
+            if ($von === null || $bis === null || $bis < $von) {
+                continue;
+            }
+
+            $von = max($von, $first);
+            $bis = min($bis, $last);
+
+            for ($ip = $von; $ip <= $bis; $ip++) {
+                $treffer[$ip] = $bereich->label;
+            }
+        }
+
+        return $treffer;
     }
 
     /**
