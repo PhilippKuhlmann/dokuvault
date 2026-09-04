@@ -154,3 +154,42 @@ test('jede Größen- und Abstandsklasse steht auch im gebauten CSS', function ()
         'Diese Klassen stehen in den Views, aber nicht im gebauten CSS - '.
         '"npm run build" ausfuehren: '.implode(', ', $fehlend));
 });
+
+/**
+ * Die Farbpalette der IPAM-Bereiche steht in config/custom.php, nicht in einer
+ * View. Tailwind erzeugt nur, was es im Quelltext findet - die Datei steht
+ * deshalb in den Quellpfaden von tailwind.config.js.
+ *
+ * Faellt dieser Pfad einmal heraus, waeren die Bereiche farblos, ohne dass
+ * irgendwo ein Fehler erscheint. Genau die Sorte Ausfall, die man nicht
+ * bemerkt: Es fehlt keine Meldung, es fehlt eine Farbe.
+ */
+test('jede Farbe der IPAM-Bereiche steht im gebauten CSS', function () {
+    $css = collect(glob(public_path('build/assets/*.css')))
+        ->sortByDesc(fn ($d) => filemtime($d))
+        ->first();
+
+    expect($css)->not->toBeNull('Kein gebautes CSS gefunden - "npm run build" ausfuehren.');
+
+    $inhalt = file_get_contents($css);
+    $fehlend = [];
+
+    foreach (config('custom.ipam_farben', []) as $nummer => $farbe) {
+        foreach ($farbe as $zweck => $klassen) {
+            foreach (preg_split('/\s+/', trim($klassen)) as $klasse) {
+                $gesucht = preg_replace('/([:\/\.\[\]()%])/', '\\\\$1', $klasse);
+
+                if (! str_contains($inhalt, $gesucht)) {
+                    $fehlend[] = "Farbe {$nummer}/{$zweck}: {$klasse}";
+                }
+            }
+        }
+    }
+
+    expect(count(config('custom.ipam_farben', [])))->toBeGreaterThan(1,
+        'Eine einzige Farbe waere keine Unterscheidung.');
+
+    expect($fehlend)->toBeEmpty(
+        'Diese Klassen stehen in config/custom.php, aber nicht im gebauten CSS - '.
+        'steht die Datei noch in tailwind.config.js? '.implode(', ', $fehlend));
+});

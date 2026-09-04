@@ -23,21 +23,24 @@
     @if ($bereiche->isNotEmpty())
         <div class="mt-2 flex flex-wrap gap-2">
             @foreach ($bereiche as $bereich)
+                {{-- Dieselbe Farbe wie in der Tabelle darueber - die Liste ist
+                     deren Legende. Zugeteilt an einer Stelle, siehe
+                     IpRange::eingefaerbt(). --}}
                 <span wire:key="bereich-{{ $bereich->id }}"
-                    class="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 text-xs dark:border-amber-900 dark:bg-amber-900/20">
-                    <span class="font-mono tabular-nums text-amber-800 dark:text-amber-200">{{ $bereich->from_ip }} – {{ $bereich->to_ip }}</span>
-                    <span class="text-amber-900 dark:text-amber-100">{{ $bereich->label }}</span>
-                    <span class="text-amber-600 dark:text-amber-400">{{ $bereich->anzahl() }}&nbsp;{{ __('Adressen') }}</span>
+                    class="inline-flex items-center gap-2 rounded-lg border px-2 py-1 text-xs {{ $bereich->farbe['chip'] ?? '' }}">
+                    <span class="font-mono tabular-nums {{ $bereich->farbe['chipText'] ?? '' }}">{{ $bereich->from_ip }} – {{ $bereich->to_ip }}</span>
+                    <span class="{{ $bereich->farbe['chipText'] ?? '' }}">{{ $bereich->label }}</span>
+                    <span class="{{ $bereich->farbe['chipLeise'] ?? '' }}">{{ $bereich->anzahl() }}&nbsp;{{ __('Adressen') }}</span>
 
                     @if ($bereich->note)
-                        <span class="text-amber-600 dark:text-amber-400">· {{ $bereich->note }}</span>
+                        <span class="{{ $bereich->farbe['chipLeise'] ?? '' }}">· {{ $bereich->note }}</span>
                     @endif
 
                     @if ($darfPflegen)
                         <button type="button" wire:click="loeschen({{ $bereich->id }})"
                             wire:confirm="{{ __('Diesen Bereich entfernen?') }}"
                             title="{{ __('Entfernen') }}"
-                            class="text-amber-500 hover:text-amber-700 dark:hover:text-amber-300">&times;</button>
+                            class="{{ $bereich->farbe['chipLeise'] ?? '' }} hover:opacity-70">&times;</button>
                     @endif
                 </span>
             @endforeach

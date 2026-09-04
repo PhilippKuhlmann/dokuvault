@@ -41,9 +41,10 @@ class IpPlanController extends Controller
         // ein Stueck gedacht ist, auch wenn davon noch keine Adresse vergeben
         // ist.
         $bereiche = IpRange::where('customer_id', $customer->id)
-            ->orderBy('from_ip')
             ->get()
-            ->groupBy('network_id');
+            ->groupBy('network_id')
+            // Je Netz eigene Farben - siehe IpRange::eingefaerbt().
+            ->map(fn ($je) => IpRange::eingefaerbt($je));
 
         $plans = $networks->map(function (Network $network) use ($used, $bereiche) {
             return [
@@ -147,9 +148,9 @@ class IpPlanController extends Controller
         $runStart = null;
         $runKind = null;
 
-        $runLabel = null;
+        $runBereich = null;
 
-        $flush = function ($endLong) use (&$rows, &$runStart, &$runKind, &$runLabel) {
+        $flush = function ($endLong) use (&$rows, &$runStart, &$runKind, &$runBereich) {
             if ($runStart === null) {
                 return;
             }
@@ -160,13 +161,14 @@ class IpPlanController extends Controller
                 'single' => $runStart === $endLong,
                 'label' => match ($runKind) {
                     'dhcp' => 'DHCP-Bereich',
-                    'reserved' => $runLabel,
+                    'reserved' => $runBereich['label'] ?? '',
                     default => 'frei',
                 },
+                'farbe' => $runKind === 'reserved' ? ($runBereich['farbe'] ?? []) : [],
             ];
             $runStart = null;
             $runKind = null;
-            $runLabel = null;
+            $runBereich = null;
         };
 
         for ($ip = $first; $ip <= $last; $ip++) {
@@ -183,7 +185,8 @@ class IpPlanController extends Controller
                     // Eine belegte Adresse innerhalb einer Reservierung bleibt
                     // eine belegte Adresse - sie traegt nur zusaetzlich, wozu
                     // der Block gedacht ist.
-                    'reservierung' => $reserviert[$ip] ?? null,
+                    'reservierung' => $reserviert[$ip]['label'] ?? null,
+                    'farbe' => $reserviert[$ip]['farbe'] ?? [],
                 ];
 
                 continue;
@@ -197,22 +200,24 @@ class IpPlanController extends Controller
                 $label = null;
             } elseif (isset($reserviert[$ip])) {
                 $kind = 'reserved';
-                $label = $reserviert[$ip];
+                $bereich = $reserviert[$ip];
             } else {
                 $kind = 'free';
-                $label = null;
+                $bereich = null;
             }
 
             $counts[$kind]++;
 
             // Auch bei gleicher Art umbrechen, wenn ein anderer Bereich
             // beginnt - sonst verschmelzen zwei Reservierungen zu einer Zeile
-            // mit der Beschriftung der ersten.
-            if ($runKind !== $kind || ($kind === 'reserved' && $runLabel !== $label)) {
+            // mit der Beschriftung und der Farbe der ersten. An der Id, nicht
+            // an der Beschriftung: Zwei Bereiche duerfen gleich heissen.
+            if ($runKind !== $kind
+                || ($kind === 'reserved' && ($runBereich['id'] ?? null) !== $bereich['id'])) {
                 $flush($ip - 1);
                 $runStart = $ip;
                 $runKind = $kind;
-                $runLabel = $label;
+                $runBereich = $bereich;
             }
         }
         $flush($last);
@@ -252,7 +257,11 @@ class IpPlanController extends Controller
             $bis = min($bis, $last);
 
             for ($ip = $von; $ip <= $bis; $ip++) {
-                $treffer[$ip] = $bereich->label;
+                $treffer[$ip] = [
+                    'id' => $bereich->id,
+                    'label' => $bereich->label,
+                    'farbe' => $bereich->farbe ?? [],
+                ];
             }
         }
 

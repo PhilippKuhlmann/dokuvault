@@ -59,13 +59,13 @@
                                     @if ($row['kind'] === 'free' || $row['kind'] === 'reserved') text-gray-400 dark:text-gray-500
                                     @elseif ($row['kind'] === 'dhcp') bg-slate-50/60 dark:bg-slate-700/20
                                     @endif">
-                                    <td class="py-1.5 px-5 font-mono tabular-nums whitespace-nowrap {{ $row['kind'] === 'device' ? 'text-gray-900 dark:text-gray-100' : '' }} {{ $row['kind'] === 'dhcp' ? 'border-l-2 border-slate-400 dark:border-slate-500' : '' }} {{ $row['kind'] === 'reserved' ? 'border-l-2 border-amber-400 dark:border-amber-500' : '' }}
+                                    <td class="py-1.5 px-5 font-mono tabular-nums whitespace-nowrap {{ $row['kind'] === 'device' ? 'text-gray-900 dark:text-gray-100' : '' }} {{ $row['kind'] === 'dhcp' ? 'border-l-2 border-slate-400 dark:border-slate-500' : '' }} {{ $row['kind'] === 'reserved' ? 'border-l-2 '.($row['farbe']['rand'] ?? '') : '' }}
                                         {{-- Eine Reservierung wird nur vorn markiert, nicht
                                              flaechig eingefaerbt - weder die freien Adressen
                                              darin noch die belegten. Der Streifen sagt, wie weit
                                              der Block reicht; ein gelber Grund ueber zehn Zeilen
                                              faellt mehr auf als das, was tatsaechlich drinsteht. --}}
-                                        {{ ($row['reservierung'] ?? null) ? 'border-l-2 border-amber-400 dark:border-amber-500' : '' }}">
+                                        {{ ($row['reservierung'] ?? null) ? 'border-l-2 '.($row['farbe']['rand'] ?? '') : '' }}">
                                         @if ($row['single'])
                                             {{ $row['from'] }}
                                         @else
@@ -83,11 +83,11 @@
                                                  Ohne das saehe der Block loechrig aus, sobald jemand
                                                  eine Adresse daraus vergibt. --}}
                                             @if ($row['reservierung'] ?? null)
-                                                <span class="ml-1.5 inline-flex items-center rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-DINPro-bold text-amber-700 align-middle dark:bg-amber-900/30 dark:text-amber-300">{{ $row['reservierung'] }}</span>
+                                                <span class="ml-1.5 inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-DINPro-bold align-middle {{ $row['farbe']['marke'] ?? '' }}">{{ $row['reservierung'] }}</span>
                                             @endif
                                         @elseif ($row['kind'] === 'reserved')
-                                            <span class="inline-flex items-center rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-DINPro-bold text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">{{ __('reserviert') }}</span>
-                                            <span class="ml-1.5 align-middle text-amber-800 dark:text-amber-200">{{ $row['label'] }}</span>
+                                            <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-DINPro-bold {{ $row['farbe']['marke'] ?? '' }}">{{ __('reserviert') }}</span>
+                                            <span class="ml-1.5 align-middle {{ $row['farbe']['text'] ?? '' }}">{{ $row['label'] }}</span>
                                         @elseif ($row['kind'] === 'dhcp')
                                             <span class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-DINPro-bold text-slate-600 dark:bg-slate-700/40 dark:text-slate-300">{{ $row['label'] }}</span>
                                         @else

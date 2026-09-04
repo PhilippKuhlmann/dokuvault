@@ -169,10 +169,13 @@ class IpBereiche extends Component
 
     private function bereiche()
     {
-        return IpRange::where('network_id', $this->networkId)
-            ->where('customer_id', $this->customerId)
-            ->orderBy('from_ip')
-            ->get();
+        // Eingefaerbt und sortiert wie im Plan darueber - die Liste ist dessen
+        // Legende, und zwei Zuordnungen wuerden auseinanderlaufen.
+        return IpRange::eingefaerbt(
+            IpRange::where('network_id', $this->networkId)
+                ->where('customer_id', $this->customerId)
+                ->get()
+        );
     }
 
     public function render()

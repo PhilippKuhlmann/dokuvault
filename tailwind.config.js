@@ -6,6 +6,11 @@ module.exports = {
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
+        // Die Farbpalette der IPAM-Bereiche steht in der Konfiguration, nicht
+        // in einer View - sie wird von zwei Stellen gelesen. Ohne diesen Pfad
+        // faenden sich ihre Klassen nicht im gebauten CSS, und die Bereiche
+        // waeren farblos, ohne dass irgendwo ein Fehler erscheint.
+        './config/custom.php',
         './node_modules/flowbite/**/*.js'
     ],
 

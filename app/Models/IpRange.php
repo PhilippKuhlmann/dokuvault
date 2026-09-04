@@ -58,6 +58,31 @@ class IpRange extends Model
         return ip2long($adresse) & 0xFFFFFFFF;
     }
 
+    /**
+     * Die Bereiche eines Netzes in Lesereihenfolge, jeder mit seiner Farbe.
+     *
+     * Eine Stelle fuer beides: die Tabelle im Plan und die Liste darunter.
+     * Zwei getrennte Zuordnungen wuerden dieselbe Reservierung verschieden
+     * einfaerben, sobald eine Sortierung abweicht - und dann waere die Liste
+     * keine Legende mehr.
+     *
+     * Sortiert nach Anfangsadresse, nicht nach Anlagedatum: So wechselt die
+     * Farbe von Zeile zu Zeile, und genau darum geht es. Nach from_ip in der
+     * Datenbank zu sortieren taugt nicht - dort steht Text, und ".100" kaeme
+     * vor ".20".
+     */
+    public static function eingefaerbt($bereiche)
+    {
+        $farben = config('custom.ipam_farben', []);
+
+        return collect($bereiche)
+            ->sortBy(fn (self $b) => $b->vonLong() ?? PHP_INT_MAX)
+            ->values()
+            ->each(function (self $b, int $i) use ($farben) {
+                $b->farbe = $farben === [] ? [] : $farben[$i % count($farben)];
+            });
+    }
+
     /** Wie viele Adressen der Bereich umfasst - 0, wenn er unsinnig ist. */
     public function anzahl(): int
     {

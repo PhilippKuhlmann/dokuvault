@@ -888,6 +888,77 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Farben der reservierten Bereiche im IPAM
+    |--------------------------------------------------------------------------
+    |
+    | Je Netz bekommt jeder Bereich die naechste Farbe. Zwei Reservierungen,
+    | die aneinanderstossen, waeren in einer Farbe eine einzige Flaeche - man
+    | saehe nicht, wo die eine aufhoert.
+    |
+    | Die Klassen stehen ausgeschrieben da und werden nicht zusammengesetzt:
+    | Tailwind erzeugt nur, was es im Quelltext findet. Ein 'border-'.$farbe
+    | ergaebe eine Klasse, die es im CSS nicht gibt - und einen Bereich ohne
+    | Farbe, ohne dass irgendwo ein Fehler erscheint. Diese Datei steht
+    | deshalb in den Quellpfaden von tailwind.config.js, und ein Test prueft,
+    | dass jede Klasse hier auch im gebauten CSS steht.
+    |
+    | Sechs reichen: Wer in einem Netz mehr als sechs Bereiche hat, bekommt ab
+    | dem siebten wieder die erste Farbe - und die liegt dann weit genug weg.
+    |
+    */
+    'ipam_farben' => [
+        [
+            'rand' => 'border-amber-400 dark:border-amber-500',
+            'marke' => 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
+            'text' => 'text-amber-800 dark:text-amber-200',
+            'chip' => 'border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-900/20',
+            'chipText' => 'text-amber-800 dark:text-amber-200',
+            'chipLeise' => 'text-amber-600 dark:text-amber-400',
+        ],
+        [
+            'rand' => 'border-sky-400 dark:border-sky-500',
+            'marke' => 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200',
+            'text' => 'text-sky-800 dark:text-sky-200',
+            'chip' => 'border-sky-200 bg-sky-50 dark:border-sky-900 dark:bg-sky-900/20',
+            'chipText' => 'text-sky-800 dark:text-sky-200',
+            'chipLeise' => 'text-sky-600 dark:text-sky-400',
+        ],
+        [
+            'rand' => 'border-violet-400 dark:border-violet-500',
+            'marke' => 'bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200',
+            'text' => 'text-violet-800 dark:text-violet-200',
+            'chip' => 'border-violet-200 bg-violet-50 dark:border-violet-900 dark:bg-violet-900/20',
+            'chipText' => 'text-violet-800 dark:text-violet-200',
+            'chipLeise' => 'text-violet-600 dark:text-violet-400',
+        ],
+        [
+            'rand' => 'border-emerald-400 dark:border-emerald-500',
+            'marke' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
+            'text' => 'text-emerald-800 dark:text-emerald-200',
+            'chip' => 'border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-900/20',
+            'chipText' => 'text-emerald-800 dark:text-emerald-200',
+            'chipLeise' => 'text-emerald-600 dark:text-emerald-400',
+        ],
+        [
+            'rand' => 'border-rose-400 dark:border-rose-500',
+            'marke' => 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200',
+            'text' => 'text-rose-800 dark:text-rose-200',
+            'chip' => 'border-rose-200 bg-rose-50 dark:border-rose-900 dark:bg-rose-900/20',
+            'chipText' => 'text-rose-800 dark:text-rose-200',
+            'chipLeise' => 'text-rose-600 dark:text-rose-400',
+        ],
+        [
+            'rand' => 'border-cyan-400 dark:border-cyan-500',
+            'marke' => 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-200',
+            'text' => 'text-cyan-800 dark:text-cyan-200',
+            'chip' => 'border-cyan-200 bg-cyan-50 dark:border-cyan-900 dark:bg-cyan-900/20',
+            'chipText' => 'text-cyan-800 dark:text-cyan-200',
+            'chipLeise' => 'text-cyan-600 dark:text-cyan-400',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Wie viele Zeilen eine Seite hat
     |--------------------------------------------------------------------------
     |

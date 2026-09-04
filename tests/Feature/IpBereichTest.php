@@ -264,3 +264,75 @@ test('mit dem Netz verschwindet auch der Bereich', function () {
 
     expect(IpRange::count())->toBe(0);
 });
+
+/*
+|--------------------------------------------------------------------------
+| Farben - damit zwei Bereiche nebeneinander zwei Bereiche bleiben
+|--------------------------------------------------------------------------
+*/
+
+test('zwei Bereiche bekommen zwei Farben', function () {
+    $kunde = Customer::factory()->create();
+    $netz = netzMitBereich($kunde);
+    bereichAnlegen($netz, '10.10.250.10', '10.10.250.20', 'Proxmox-Server');
+    bereichAnlegen($netz, '10.10.250.21', '10.10.250.30', 'Drucker');
+
+    $eingefaerbt = IpRange::eingefaerbt(IpRange::all());
+
+    expect($eingefaerbt[0]->farbe)->not->toBe($eingefaerbt[1]->farbe)
+        ->and($eingefaerbt[0]->farbe['rand'])->not->toBe($eingefaerbt[1]->farbe['rand']);
+});
+
+test('die Farbe folgt der Adresse, nicht der Anlegereihenfolge', function () {
+    $kunde = Customer::factory()->create();
+    $netz = netzMitBereich($kunde);
+
+    // Verkehrt herum angelegt: der hintere zuerst.
+    bereichAnlegen($netz, '10.10.250.100', '10.10.250.110', 'Später im Netz');
+    bereichAnlegen($netz, '10.10.250.10', '10.10.250.20', 'Vorne im Netz');
+
+    $eingefaerbt = IpRange::eingefaerbt(IpRange::all());
+
+    // Sortiert nach Adresse, damit die Farbe im Plan von Zeile zu Zeile
+    // wechselt - und nicht nach from_ip als Text, dort käme ".100" vor ".20".
+    expect($eingefaerbt[0]->label)->toBe('Vorne im Netz')
+        ->and($eingefaerbt[1]->label)->toBe('Später im Netz');
+});
+
+test('nach der letzten Farbe geht es wieder von vorn los', function () {
+    $kunde = Customer::factory()->create();
+    $netz = netzMitBereich($kunde);
+
+    $anzahl = count(config('custom.ipam_farben'));
+
+    for ($i = 0; $i <= $anzahl; $i++) {
+        $start = 10 + $i * 2;
+        bereichAnlegen($netz, "10.10.250.{$start}", '10.10.250.'.($start + 1), "Block {$i}");
+    }
+
+    $eingefaerbt = IpRange::eingefaerbt(IpRange::all());
+
+    // Der erste nach dem Umlauf bekommt wieder die erste Farbe - und liegt
+    // weit genug vom Original entfernt, dass das nicht stört.
+    expect($eingefaerbt[$anzahl]->farbe)->toBe($eingefaerbt[0]->farbe);
+});
+
+test('Tabelle und Liste färben denselben Bereich gleich', function () {
+    $this->actingAs(userWithPermissions(['network_viewAny', 'network_update']));
+
+    $kunde = Customer::factory()->create();
+    $netz = netzMitBereich($kunde);
+    bereichAnlegen($netz, '10.10.250.10', '10.10.250.20', 'Proxmox-Server');
+    bereichAnlegen($netz, '10.10.250.21', '10.10.250.30', 'Drucker');
+
+    // Die Liste unter der Tabelle ist deren Legende. Zwei getrennte
+    // Zuordnungen würden auseinanderlaufen, sobald eine Sortierung abweicht.
+    $ausListe = Livewire::test(IpBereiche::class, ['customer' => $kunde, 'network' => $netz])
+        ->viewData('bereiche')
+        ->mapWithKeys(fn ($b) => [$b->label => $b->farbe['rand']]);
+
+    $ausPlan = IpRange::eingefaerbt(IpRange::all())
+        ->mapWithKeys(fn ($b) => [$b->label => $b->farbe['rand']]);
+
+    expect($ausListe->all())->toBe($ausPlan->all());
+});
