@@ -8,6 +8,7 @@ use App\Models\ADGroup;
 use App\Models\ADUser;
 use App\Models\Computer;
 use App\Models\Domain;
+use App\Models\IpAddress;
 use App\Models\LicenseSoftware;
 use App\Models\Mailbox;
 use App\Models\MailboxProvider;
@@ -22,14 +23,6 @@ use Illuminate\Http\Request;
 
 class AgentController extends Controller
 {
-    /**
-     * Die Bezeichnung, die der Agent an eine per DHCP bezogene Adresse
-     * schreibt. Als Konstante, weil dieselbe Zeichenkette an drei Stellen
-     * gebraucht wird: beim Setzen, beim Wiedererkennen der eigenen Marke und
-     * im Test.
-     */
-    public const MARKE_DHCP = 'DHCP';
-
     /**
      * Windows-Rollen und -Rollendienste, die einem Dienst aus dem Katalog
      * entsprechen. Geprüft wird der sprachunabhängige Name, nicht der
@@ -624,7 +617,7 @@ class AgentController extends Controller
             return null;
         }
 
-        return $geraet['dhcp'] ? self::MARKE_DHCP : '';
+        return $geraet['dhcp'] ? IpAddress::MARKE_DHCP : '';
     }
 
     /**
@@ -725,7 +718,7 @@ class AgentController extends Controller
 
         $bisher = (string) $adresse->label;
 
-        if ($bisher !== '' && $bisher !== self::MARKE_DHCP) {
+        if ($bisher !== '' && $bisher !== IpAddress::MARKE_DHCP) {
             return;
         }
 

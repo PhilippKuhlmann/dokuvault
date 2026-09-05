@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\API\AgentController;
 use App\Models\Accesspoint;
 use App\Models\Customer;
+use App\Models\IpAddress;
 use App\Models\Network;
 use App\Models\Site;
 
@@ -41,7 +41,7 @@ function apMitAdresse(Customer $customer, Site $site, Network $netz, string $nam
 test('ein DHCP-Geraet im Pool bekommt keine eigene Zeile, sondern steht am Bereich', function () {
     $this->actingAs(userWithPermissions(['network_viewAny']));
     [$customer, $site, $netz] = dhcpNetz();
-    apMitAdresse($customer, $site, $netz, 'AP-Buero', '10.0.0.150', AgentController::MARKE_DHCP);
+    apMitAdresse($customer, $site, $netz, 'AP-Buero', '10.0.0.150', IpAddress::MARKE_DHCP);
 
     $antwort = $this->get("/{$customer->slug}/ip-plan")->assertOk();
 
@@ -54,8 +54,8 @@ test('ein DHCP-Geraet im Pool bekommt keine eigene Zeile, sondern steht am Berei
 test('mehrere DHCP-Geraete stehen gemeinsam am Bereich', function () {
     $this->actingAs(userWithPermissions(['network_viewAny']));
     [$customer, $site, $netz] = dhcpNetz();
-    apMitAdresse($customer, $site, $netz, 'AP-Buero', '10.0.0.150', AgentController::MARKE_DHCP);
-    apMitAdresse($customer, $site, $netz, 'AP-Lager', '10.0.0.151', AgentController::MARKE_DHCP);
+    apMitAdresse($customer, $site, $netz, 'AP-Buero', '10.0.0.150', IpAddress::MARKE_DHCP);
+    apMitAdresse($customer, $site, $netz, 'AP-Lager', '10.0.0.151', IpAddress::MARKE_DHCP);
 
     $this->get("/{$customer->slug}/ip-plan")->assertOk()
         ->assertSee('AP-Buero')
@@ -79,7 +79,7 @@ test('eine fest vergebene Adresse im DHCP-Bereich bleibt sichtbar', function () 
 test('sitzt beides auf derselben Adresse, bleibt die Zeile stehen', function () {
     $this->actingAs(userWithPermissions(['network_viewAny']));
     [$customer, $site, $netz] = dhcpNetz();
-    apMitAdresse($customer, $site, $netz, 'AP-Geliehen', '10.0.0.150', AgentController::MARKE_DHCP);
+    apMitAdresse($customer, $site, $netz, 'AP-Geliehen', '10.0.0.150', IpAddress::MARKE_DHCP);
     apMitAdresse($customer, $site, $netz, 'AP-Fest', '10.0.0.150', null);
 
     // Zwei Geraete auf einer Adresse ist ein Fehler im Netz. Ihn hinter dem
@@ -92,7 +92,7 @@ test('sitzt beides auf derselben Adresse, bleibt die Zeile stehen', function () 
 test('ausserhalb des Pools bleibt eine DHCP-Adresse eine eigene Zeile', function () {
     $this->actingAs(userWithPermissions(['network_viewAny']));
     [$customer, $site, $netz] = dhcpNetz();
-    apMitAdresse($customer, $site, $netz, 'AP-Draussen', '10.0.0.50', AgentController::MARKE_DHCP);
+    apMitAdresse($customer, $site, $netz, 'AP-Draussen', '10.0.0.50', IpAddress::MARKE_DHCP);
 
     // Ausserhalb des gepflegten Bereichs vergeben: Entweder stimmt der Bereich
     // nicht oder das Geraet haengt an einem anderen DHCP-Server. Beides will
@@ -105,7 +105,7 @@ test('ausserhalb des Pools bleibt eine DHCP-Adresse eine eigene Zeile', function
 test('ein Geraet im Pool zaehlt nicht zusaetzlich als belegte Adresse', function () {
     $this->actingAs(userWithPermissions(['network_viewAny']));
     [$customer, $site, $netz] = dhcpNetz();
-    apMitAdresse($customer, $site, $netz, 'AP-Buero', '10.0.0.150', AgentController::MARKE_DHCP);
+    apMitAdresse($customer, $site, $netz, 'AP-Buero', '10.0.0.150', IpAddress::MARKE_DHCP);
     apMitAdresse($customer, $site, $netz, 'AP-Fest', '10.0.0.50', null);
 
     // Der Pool steht als Ganzes in der Rechnung. Zaehlte die geliehene
@@ -115,4 +115,32 @@ test('ein Geraet im Pool zaehlt nicht zusaetzlich als belegte Adresse', function
 
     expect($plan['usedCount'])->toBe(1);
     expect(collect($plan['rows'])->where('kind', 'device')->count())->toBe(1);
+});
+
+test('am Geraet steht bei DHCP nur "DHCP", nicht die Adresse', function () {
+    $this->actingAs(userWithPermissions(['accesspoint_viewAny']));
+    [$customer, $site, $netz] = dhcpNetz();
+    apMitAdresse($customer, $site, $netz, 'AP-Buero', '10.0.0.150', IpAddress::MARKE_DHCP);
+    apMitAdresse($customer, $site, $netz, 'AP-Fest', '10.0.0.50', null);
+
+    $antwort = $this->get("/{$customer->slug}/accesspoint")->assertOk();
+
+    // Die geliehene Adresse stimmt nur bis zum naechsten Neustart - sie hier
+    // hinzuschreiben laedt dazu ein, sich darauf zu verlassen.
+    $antwort->assertDontSee('10.0.0.150');
+    $antwort->assertSee('DHCP');
+
+    // Die feste bleibt, wo sie ist.
+    $antwort->assertSee('10.0.0.50');
+});
+
+test('die Adresse bleibt gespeichert, auch wenn sie nicht angezeigt wird', function () {
+    [$customer, $site, $netz] = dhcpNetz();
+    $ap = apMitAdresse($customer, $site, $netz, 'AP-Buero', '10.0.0.150', IpAddress::MARKE_DHCP);
+
+    // Der IP-Plan braucht sie, um das Geraet dem richtigen Pool zuzuordnen.
+    $adresse = $ap->ipAddresses()->first();
+    expect($adresse->address)->toBe('10.0.0.150');
+    expect($adresse->anzeige())->toBe('DHCP');
+    expect($adresse->istDhcp())->toBeTrue();
 });

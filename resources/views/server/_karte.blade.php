@@ -3,7 +3,7 @@
             @php
                 $adressen = $eintrag->relationLoaded('ipAddresses') ? $eintrag->ipAddresses : $eintrag->ipAddresses()->get();
                 $anzahlIps = $adressen->count();
-                $primaer = $adressen->first()?->address;
+                $primaer = $adressen->first()?->anzeige();
             @endphp
 
             <x-slot:head>
@@ -27,7 +27,7 @@
                     <x-slot:kernwerte>
                         @if ($primaer)
                             <x-kernwert :label="__('IP')" :zaehler="$anzahlIps - 1">
-                                <x-copy :value="$primaer" />
+                                <x-ip-anzeige :adresse="$adressen->first()" />
                             </x-kernwert>
                         @endif
 

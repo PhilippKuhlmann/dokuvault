@@ -30,11 +30,13 @@
             <tbody>
                 @foreach ($entries as $entry)
                     <tr class="border-b border-gray-50 last:border-0 dark:border-gray-700/50">
-                        <td class="py-2 pr-4 font-mono text-gray-900 dark:text-gray-100">{{ $entry->address }}</td>
+                        {{-- Bei DHCP steht hier "DHCP" statt der Adresse: Sie stimmt
+                             nur bis zum naechsten Neustart. --}}
+                        <td class="py-2 pr-4 font-mono text-gray-900 dark:text-gray-100">{{ $entry->anzeige() }}</td>
                         <td class="py-2 pr-4 text-gray-600 dark:text-gray-300">
                             {{ $entry->network?->anzeige() ?: '—' }}
                         </td>
-                        <td class="py-2 pr-4 text-gray-600 dark:text-gray-300">{{ $entry->label ?: '—' }}</td>
+                        <td class="py-2 pr-4 text-gray-600 dark:text-gray-300">{{ ($entry->istDhcp() ? null : $entry->label) ?: '—' }}</td>
                         <td class="py-2 text-right">
                             <button type="button" wire:click="remove({{ $entry->id }})"
                                 wire:confirm="IP-Adresse entfernen?"

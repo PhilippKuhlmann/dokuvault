@@ -12,11 +12,13 @@
 
     foreach ($weitereAdressen as $weitere) {
         $netz = $weitere->network;
-        $rolle = $weitere->label ?: __('Weitere');
+        // Bei DHCP steht "DHCP" im Wert - als Rolle waere es doppelt und
+        // saehe aus wie eine Bezeichnung, die jemand vergeben hat.
+        $rolle = ($weitere->istDhcp() ? null : $weitere->label) ?: __('Weitere');
 
         $zeilen[] = [
             'rolle' => $rolle,
-            'adresse' => $weitere->address,
+            'adresse' => $weitere,
             // Netzname und VLAN-Nummer zusammen ("DMZ · VLAN 20"): Der Name sagt
             // wofuer, die Nummer braucht man am Switch. Heisst die Bezeichnung
             // schon wie das Netz ("Clients"), bleibt nur die Nummer stehen.
@@ -40,7 +42,7 @@
                              ("10.10.30.7Hersteller"). Umgebrochen wird nur, wenn es sonst nicht passt. --}}
                         <td class="py-1 pr-6 align-top text-gray-500 dark:text-gray-400">{{ $zeile['rolle'] }}</td>
                         <td class="py-1 break-words align-top text-gray-900 dark:text-gray-100">
-                            <x-copy :value="$zeile['adresse']" />
+                            <x-ip-anzeige :adresse="$zeile['adresse']" />
                             @if ($zeile['zusatz'])
                                 <div class="text-xs text-gray-400 dark:text-gray-500">{{ $zeile['zusatz'] }}</div>
                             @endif

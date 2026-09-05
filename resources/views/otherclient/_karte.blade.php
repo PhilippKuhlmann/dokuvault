@@ -1,7 +1,7 @@
 {{-- Ein Eintrag in der Liste. Die Karte bleibt beim Typ. --}}
         @php
             $adressen = $eintrag->relationLoaded('ipAddresses') ? $eintrag->ipAddresses : $eintrag->ipAddresses()->get();
-            $primaer = $adressen->first()?->address;
+            $primaer = $adressen->first()?->anzeige();
             $anzahlIps = $adressen->count();
         @endphp
         <x-card>
@@ -13,7 +13,7 @@
                     <x-slot:kernwerte>
                         @if ($primaer)
                             <x-kernwert :label="__('IP')" :zaehler="$anzahlIps - 1">
-                                <x-copy :value="$primaer" />
+                                <x-ip-anzeige :adresse="$adressen->first()" />
                             </x-kernwert>
                         @endif
                     </x-slot>

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\API\AgentController;
 use App\Models\Customer;
 use App\Models\IpAddress;
 use App\Models\IpRange;
@@ -126,7 +125,7 @@ class IpPlanController extends Controller
                 $addLong(
                     ip2long($ip->address) & 0xFFFFFFFF,
                     $label,
-                    $ip->label === AgentController::MARKE_DHCP ? $deviceName : null
+                    $ip->istDhcp() ? $deviceName : null
                 );
             });
 

@@ -8,7 +8,7 @@
                         $adressen = $eintrag->relationLoaded('ipAddresses')
                             ? $eintrag->ipAddresses
                             : $eintrag->ipAddresses()->get();
-                        $primaer = $adressen->first()?->address;
+                        $primaer = $adressen->first()?->anzeige();
                     @endphp
 
                     <x-table.datarow
