@@ -65,9 +65,12 @@ CONTROLLER="${CONTROLLER%/}"
 # Der Keksbehaelter traegt die Sitzung ueber die folgenden Abfragen. Er liegt
 # nur so lange, wie das Script laeuft.
 KEKSE="$(mktemp)"
-trap 'rm -f "$KEKSE"' EXIT
+KOPFZEILEN="$(mktemp)"
+trap 'rm -f "$KEKSE" "$KOPFZEILEN"' EXIT
 
 anmeldung="$(jq -n --arg u "$BENUTZER" --arg p "$KENNWORT" '{username: $u, password: $p}')"
+
+CSRF=""
 
 # Zwei Bauarten von Controller, zwei Anmeldewege:
 # - UniFi OS (UDM, UDM-Pro, Cloud Key Gen2+): /api/auth/login, die
@@ -76,9 +79,27 @@ anmeldung="$(jq -n --arg u "$BENUTZER" --arg p "$KENNWORT" '{username: $u, passw
 #   Endpunkte liegen direkt unter der Wurzel.
 # Erst UniFi OS versuchen, sonst klassisch - so laeuft dasselbe Script auf
 # beiden, ohne dass man die Bauart kennen muss.
-if curl -fsS $UNSICHER -c "$KEKSE" -X POST "$CONTROLLER/api/auth/login" \
+if curl -fsS $UNSICHER -c "$KEKSE" -D "$KOPFZEILEN" -X POST "$CONTROLLER/api/auth/login" \
      -H "Content-Type: application/json" -d "$anmeldung" >/dev/null 2>&1; then
   BASIS="$CONTROLLER/proxy/network"
+
+  # UniFi OS laesst den Sitzungskeks allein nicht genuegen: jede Anfrage unter
+  # /proxy/network braucht zusaetzlich den CSRF-Token. Ohne ihn antwortet der
+  # Controller mit 403, obwohl die Anmeldung geklappt hat.
+  #
+  # Er steht in der Kopfzeile der Anmeldeantwort. Aeltere Firmware schickt ihn
+  # dort nicht mit - dann steckt er in der Nutzlast des TOKEN-Kekses, der ein
+  # JWT ist. tolower(): die Schreibweise der Kopfzeile wechselt je nach Version.
+  CSRF="$(tr -d '\r' < "$KOPFZEILEN" | awk 'tolower($1) == "x-csrf-token:" {print $2}' | tail -n1)"
+
+  if [ -z "$CSRF" ]; then
+    jwt="$(awk '$6 == "TOKEN" {print $7}' "$KEKSE" | tail -n1)"
+    if [ -n "${jwt:-}" ]; then
+      CSRF="$(printf '%s' "$jwt" | cut -d. -f2 | tr '_-' '/+' \
+        | jq -Rr '@base64d' 2>/dev/null | jq -r '.csrfToken // empty' 2>/dev/null || true)"
+    fi
+  fi
+
   echo "Angemeldet (UniFi OS)."
 else
   curl -fsS $UNSICHER -c "$KEKSE" -X POST "$CONTROLLER/api/login" \
@@ -87,7 +108,36 @@ else
   echo "Angemeldet (klassischer Controller)."
 fi
 
-hole() { curl -fsS $UNSICHER -b "$KEKSE" "$BASIS$1"; }
+# Nicht "curl -f": das verschluckt die Antwort und laesst nur "error: 403"
+# uebrig. Der Controller schreibt aber hinein, was ihm fehlt - und ohne das
+# raet man.
+hole() {
+  local pfad="$1" roh code antwort
+  roh="$(curl -sS $UNSICHER -b "$KEKSE" -w $'\n%{http_code}' \
+    ${CSRF:+-H "X-Csrf-Token: $CSRF"} "$BASIS$pfad")"
+  code="$(printf '%s' "$roh" | tail -n1)"
+  antwort="$(printf '%s' "$roh" | sed '$d')"
+
+  if [ "$code" != "200" ]; then
+    {
+      echo "Fehler: $BASIS$pfad antwortete mit HTTP $code."
+      [ -n "$antwort" ] && echo "  Antwort: $(printf '%s' "$antwort" | head -c 400)"
+      case "$code" in
+        401) echo "  401: die Sitzung gilt nicht (mehr). Benutzername und Kennwort pruefen." ;;
+        403) echo "  403 bei UniFi OS heisst meist eines von beiden:"
+             echo "      - Das Konto ist ein Ubiquiti-Cloud-Konto. Die Schnittstelle braucht"
+             echo "        einen lokalen Administrator (UniFi OS: Einstellungen -> Admins,"
+             echo "        Zugriff 'Nur lokal')."
+             echo "      - Dem Konto fehlen die Leserechte fuer diese Site." ;;
+        404) echo "  404: die Site '$SITE' gibt es nicht. Ihr Name steht in der Controller-URL"
+             echo "      hinter /manage/site/ - meist 'default'. Mit --site uebergeben." ;;
+      esac
+    } >&2
+    exit 1
+  fi
+
+  printf '%s' "$antwort"
+}
 
 GERAETE="$(hole "/api/s/$SITE/stat/device")"
 WLANCONF="$(hole "/api/s/$SITE/rest/wlanconf")"
@@ -121,10 +171,26 @@ PAYLOAD="$(jq -n --arg site "$SITE" --argjson g "$GERAETE" --argjson w "$WLANCON
   }')"
 
 echo "Sende Dokumentation an $API_URL ..."
-curl -fsS -X POST "$API_URL" \
+antwort="$(curl -sS -X POST "$API_URL" -w $'\n%{http_code}' \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
-  -d "$PAYLOAD"
-echo ""
+  -d "$PAYLOAD")"
+code="$(printf '%s' "$antwort" | tail -n1)"
+
+if [ "$code" != "200" ]; then
+  {
+    echo "Fehler: $API_URL antwortete mit HTTP $code."
+    echo "  Antwort: $(printf '%s' "$antwort" | sed '$d' | head -c 400)"
+    case "$code" in
+      401) echo "  401: den Token kennt DokuVault nicht (mehr). Auf der Seite"
+           echo "      Auto-Dokumentation einen neuen erzeugen und das Script neu laden -"
+           echo "      der Token steckt darin." ;;
+      422) echo "  422: DokuVault hat die Daten abgelehnt. Die Antwort oben nennt das Feld." ;;
+    esac
+  } >&2
+  exit 1
+fi
+
+printf '%s\n' "$(printf '%s' "$antwort" | sed '$d')"
 echo "Fertig. $(jq -r '"\(.switches|length) Switches, \(.accesspoints|length) Accesspoints, \(.wifis|length) WLANs"' <<<"$PAYLOAD") gemeldet."

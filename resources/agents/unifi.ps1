@@ -57,10 +57,42 @@ $anmeldung = @{ username = $User; password = $Password } | ConvertTo-Json
   beiden, ohne dass der Nutzer die Bauart kennen muss.
 #>
 $basis = $null
+$csrf = $null
+
 try {
-    Invoke-RestMethod -Method Post -Uri "$Controller/api/auth/login" -Body $anmeldung `
-        -ContentType "application/json" -SessionVariable sitzung @RestExtra | Out-Null
+    $anmeldeantwort = Invoke-WebRequest -Method Post -Uri "$Controller/api/auth/login" -Body $anmeldung `
+        -ContentType "application/json" -SessionVariable sitzung @RestExtra
     $basis = "$Controller/proxy/network"
+
+    <#
+      UniFi OS laesst den Sitzungskeks allein nicht genuegen: jede Anfrage
+      unter /proxy/network braucht zusaetzlich den CSRF-Token. Ohne ihn
+      antwortet der Controller mit 403, obwohl die Anmeldung geklappt hat.
+
+      Er steht in der Kopfzeile der Anmeldeantwort. Aeltere Firmware schickt
+      ihn dort nicht mit - dann steckt er in der Nutzlast des TOKEN-Kekses,
+      der ein JWT ist.
+    #>
+    $csrf = $anmeldeantwort.Headers['X-CSRF-Token']
+    if ($csrf -is [array]) { $csrf = $csrf[0] }
+
+    if (-not $csrf) {
+        $keks = $sitzung.Cookies.GetCookies([uri]$Controller) |
+            Where-Object { $_.Name -eq 'TOKEN' } | Select-Object -First 1
+        if ($keks) {
+            try {
+                $teil = ($keks.Value -split '\.')[1] -replace '-', '+' -replace '_', '/'
+                # Base64 will die Laenge durch vier teilbar haben; im JWT fehlt
+                # die Auffuellung.
+                switch ($teil.Length % 4) { 2 { $teil += '==' } 3 { $teil += '=' } }
+                $csrf = ([System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($teil)) |
+                    ConvertFrom-Json).csrfToken
+            } catch {
+                $csrf = $null
+            }
+        }
+    }
+
     Write-Host "Angemeldet (UniFi OS)."
 } catch {
     Invoke-RestMethod -Method Post -Uri "$Controller/api/login" -Body $anmeldung `
@@ -70,7 +102,34 @@ try {
 }
 
 function Get-UnifiDaten([string]$pfad) {
-    $antwort = Invoke-RestMethod -Method Get -Uri "$basis$pfad" -WebSession $sitzung @RestExtra
+    $kopf = @{}
+    if ($csrf) { $kopf['X-Csrf-Token'] = $csrf }
+
+    try {
+        $antwort = Invoke-RestMethod -Method Get -Uri "$basis$pfad" -WebSession $sitzung `
+            -Headers $kopf @RestExtra
+    } catch {
+        # Der Controller schreibt in die Antwort, was ihm fehlt. Nur den
+        # Statuscode zu zeigen laesst den Nutzer raten.
+        $code = $_.Exception.Response.StatusCode.value__
+        Write-Host "Fehler: $basis$pfad antwortete mit HTTP $code." -ForegroundColor Red
+        if ($_.ErrorDetails.Message) {
+            Write-Host "  Antwort: $($_.ErrorDetails.Message)" -ForegroundColor Red
+        }
+        if ($code -eq 403) {
+            Write-Host "  403 bei UniFi OS heisst meist eines von beiden:" -ForegroundColor Red
+            Write-Host "      - Das Konto ist ein Ubiquiti-Cloud-Konto. Die Schnittstelle braucht" -ForegroundColor Red
+            Write-Host "        einen lokalen Administrator (UniFi OS: Einstellungen -> Admins," -ForegroundColor Red
+            Write-Host "        Zugriff 'Nur lokal')." -ForegroundColor Red
+            Write-Host "      - Dem Konto fehlen die Leserechte fuer diese Site." -ForegroundColor Red
+        }
+        if ($code -eq 404) {
+            Write-Host "  404: die Site '$Site' gibt es nicht. Ihr Name steht in der" -ForegroundColor Red
+            Write-Host "      Controller-URL hinter /manage/site/ - meist 'default'." -ForegroundColor Red
+        }
+        exit 1
+    }
+
     return @($antwort.data)
 }
 

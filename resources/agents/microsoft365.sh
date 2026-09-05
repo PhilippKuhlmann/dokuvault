@@ -109,11 +109,29 @@ PAYLOAD="$(jq -n --arg tenant "$TENANT" \
     } ]
   }')"
 
+# Nicht "curl -f": das verschluckt die Antwort und laesst nur "error: 401"
+# uebrig. DokuVault schreibt aber hinein, was ihm fehlt.
 echo "Sende Dokumentation an $API_URL ..."
-curl -fsS -X POST "$API_URL" \
+antwort="$(curl -sS -X POST "$API_URL" -w $'\n%{http_code}' \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
-  -d "$PAYLOAD"
-echo ""
+  -d "$PAYLOAD")"
+code="$(printf '%s' "$antwort" | tail -n1)"
+
+if [ "$code" != "200" ]; then
+  {
+    echo "Fehler: $API_URL antwortete mit HTTP $code."
+    echo "  Antwort: $(printf '%s' "$antwort" | sed '$d' | head -c 400)"
+    case "$code" in
+      401) echo "  401: den Token kennt DokuVault nicht (mehr). Auf der Seite"
+           echo "      Auto-Dokumentation einen neuen erzeugen und das Script neu laden -"
+           echo "      der Token steckt darin." ;;
+      422) echo "  422: DokuVault hat die Daten abgelehnt. Die Antwort oben nennt das Feld." ;;
+    esac
+  } >&2
+  exit 1
+fi
+
+printf '%s\n' "$(printf '%s' "$antwort" | sed '$d')"
 echo "Fertig. $(jq -r '"\(.mailboxes|length) Postfaecher, \(.domains|length) Domains, \(.licences|length) Lizenzen"' <<<"$PAYLOAD") gemeldet."

@@ -23,6 +23,8 @@
 
 ### Fixed
 
+- **Der UniFi-Agent kam bei UniFi OS nicht an die Daten.** Anmeldung erfolgreich, dann 403 auf jede Abfrage: Bei UniFi OS (UDM, UDM-Pro, Cloud Key Gen2+) reicht der Sitzungskeks nicht — die Anfragen unter `/proxy/network` brauchen zusätzlich den CSRF-Token aus der Anmeldeantwort. Beide Fassungen holen ihn jetzt aus der Kopfzeile und, wo ältere Firmware ihn dort nicht mitschickt, aus der Nutzlast des TOKEN-Kekses. Der klassische Controller war nie betroffen.
+- **Ein Fehler sagt jetzt, was los ist.** `curl -f` verschluckte die Antwort und ließ nur `error: 403` bzw. `error: 401` übrig — beides ohne Hinweis, wo man suchen soll. Die Shell-Fassungen zeigen jetzt den Statuscode, die Antwort des Gegenübers und bei 401/403/404 den wahrscheinlichen Grund: abgelaufener DokuVault-Token, ein Ubiquiti-Cloud-Konto statt eines lokalen Administrators, oder eine Site, die es nicht gibt.
 - **Ein Agent ohne Download kann nicht mehr entstehen.** Ein Invariantentest prüft in beide Richtungen: zu jedem Endpunkt unter `middleware('agent')` gibt es einen Listeneintrag und eine Skriptdatei mit beiden Platzhaltern — und zu jedem Listeneintrag einen Endpunkt.
 
 ## 26.09.04
