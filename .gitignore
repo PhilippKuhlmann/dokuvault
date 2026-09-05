@@ -28,3 +28,7 @@ Homestead.json
 /.fleet
 .phpunit.cache
 /graphify-out
+
+# Lokale Claude-Code-Einstellungen (Startkonfiguration der Vorschau,
+# Berechtigungen). Rechnerabhaengig - gehoert nicht ins Projekt.
+/.claude
