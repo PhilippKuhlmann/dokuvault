@@ -390,6 +390,7 @@
     "Halbe Tiefe": "Half depth",
     "Hallo :name,": "Hello :name,",
     "Hardware": "Hardware",
+    "Hat der Controller mehrere Sites, muss eine gewählt werden – der Token gehört zu genau einem Kunden. Ohne Angabe zeigt das Script die vorhandenen Sites und bricht ab, statt die falsche zu dokumentieren.": "If the controller has several sites, one has to be chosen — the token belongs to exactly one customer. Without one the script lists the available sites and stops, rather than documenting the wrong one.",
     "Hausnummer": "House number",
     "Hersteller": "Manufacturer",
     "Hersteller / Produkt": "Manufacturer / product",

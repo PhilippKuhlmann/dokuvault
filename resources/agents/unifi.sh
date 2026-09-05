@@ -4,7 +4,15 @@
 #
 # Auf einem Mac oder Linux-Rechner ausfuehren, der den UniFi-Controller
 # erreicht:
-#   bash unifi-doku.sh --controller https://unifi.local --user doku
+#   bash unifi-doku.sh --controller https://unifi.local --user doku --site "Kunde A"
+#
+# --site nimmt den internen Namen oder den Anzeigenamen der Site. Welche es
+# gibt, zeigt:
+#   bash unifi-doku.sh --controller https://unifi.local --user doku --sites
+#
+# Bei mehreren Sites ist --site Pflicht. Ein Token gehoert zu genau einem
+# Kunden - griffe das Script von sich aus die falsche Site ab, landeten dessen
+# Geraete in der Dokumentation eines anderen.
 #
 # Das Kennwort kommt aus der Umgebungsvariable UNIFI_PASSWORD oder wird
 # abgefragt. Es als --password mitzugeben ist moeglich, aber es steht dann in
@@ -25,11 +33,12 @@ TOKEN="__AGENT_TOKEN__"
 CONTROLLER=""
 BENUTZER=""
 KENNWORT="${UNIFI_PASSWORD:-}"
-SITE="default"
+SITE=""
+NUR_SITES=""
 UNSICHER=""
 
 hilfe() {
-  sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,28p' "$0" | sed 's/^# \{0,1\}//'
   exit "${1:-0}"
 }
 
@@ -39,6 +48,7 @@ while [ $# -gt 0 ]; do
     --user|--benutzer) BENUTZER="$2"; shift 2 ;;
     --password|--kennwort) KENNWORT="$2"; shift 2 ;;
     --site|--standort) SITE="$2"; shift 2 ;;
+    --sites|--standorte) NUR_SITES="1"; shift ;;
     --api-url) API_URL="$2"; shift 2 ;;
     # Ein UniFi-Controller bringt ab Werk ein selbst signiertes Zertifikat mit.
     --unsicher|--zertifikat-ignorieren|-k) UNSICHER="-k"; shift ;;
@@ -129,8 +139,10 @@ hole() {
              echo "        einen lokalen Administrator (UniFi OS: Einstellungen -> Admins,"
              echo "        Zugriff 'Nur lokal')."
              echo "      - Dem Konto fehlen die Leserechte fuer diese Site." ;;
-        404) echo "  404: die Site '$SITE' gibt es nicht. Ihr Name steht in der Controller-URL"
-             echo "      hinter /manage/site/ - meist 'default'. Mit --site uebergeben." ;;
+        404) case "$pfad" in
+               */api/s/*) echo "  404: die Site '$SITE' gibt es nicht. Mit --sites die vorhandenen anzeigen." ;;
+               *) echo "  404: diesen Endpunkt gibt es nicht. Zeigt die Controller-URL wirklich auf UniFi?" ;;
+             esac ;;
       esac
     } >&2
     exit 1
@@ -138,6 +150,54 @@ hole() {
 
   printf '%s' "$antwort"
 }
+
+# Welche Sites das Konto sehen darf. 'name' ist der interne Schluessel, der in
+# der URL steht (oft eine Zufallsfolge wie 'a1b2c3d4'), 'desc' der Anzeigename
+# aus der Oberflaeche. Waehlen soll man mit dem, was man vor sich sieht -
+# deshalb trifft --site beides.
+SITES="$(hole "/api/self/sites")"
+
+sites_zeigen() {
+  jq -r '.data[] | "  \(.name)   \(.desc // "")"' <<<"$SITES"
+}
+
+if [ -n "$NUR_SITES" ]; then
+  echo "Sites auf diesem Controller:"
+  sites_zeigen
+  exit 0
+fi
+
+ANZAHL="$(jq '.data | length' <<<"$SITES")"
+
+if [ -n "$SITE" ]; then
+  TREFFER="$(jq -r --arg s "$SITE" '
+    [ .data[] | select((.name | ascii_downcase) == ($s | ascii_downcase)
+                    or (((.desc // "") | ascii_downcase) == ($s | ascii_downcase))) ]
+    | .[0].name // empty' <<<"$SITES")"
+
+  if [ -z "$TREFFER" ]; then
+    {
+      echo "Fehler: keine Site '$SITE' auf diesem Controller."
+      echo "Vorhanden sind:"
+      sites_zeigen
+    } >&2
+    exit 1
+  fi
+  SITE="$TREFFER"
+elif [ "$ANZAHL" = "1" ]; then
+  SITE="$(jq -r '.data[0].name' <<<"$SITES")"
+else
+  # Nicht raten: auf einem Controller mit mehreren Sites steckt oft je Kunde
+  # eine. Der Agent-Token gehoert zu genau einem Kunden - die falsche Site
+  # abzugreifen hiesse, fremde Geraete in dessen Dokumentation zu schreiben.
+  {
+    echo "Fehler: dieser Controller hat $ANZAHL Sites. Bitte mit --site waehlen:"
+    sites_zeigen
+  } >&2
+  exit 1
+fi
+
+echo "Site: $SITE ($(jq -r --arg n "$SITE" '.data[] | select(.name == $n) | .desc // "ohne Namen"' <<<"$SITES"))"
 
 GERAETE="$(hole "/api/s/$SITE/stat/device")"
 WLANCONF="$(hole "/api/s/$SITE/rest/wlanconf")"

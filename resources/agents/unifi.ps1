@@ -1,7 +1,14 @@
 <#
   Auto-Dokumentation fuer UniFi  ->  DokuVault
   Auf einem Rechner ausfuehren, der den UniFi-Controller erreicht:
-    .\unifi-doku.ps1 -Controller "https://unifi.local" -User "doku" -Password "..."
+    .\unifi-doku.ps1 -Controller "https://unifi.local" -User "doku" -Password "..." -Site "Kunde A"
+
+  -Site nimmt den internen Namen oder den Anzeigenamen. Welche es gibt, zeigt
+  derselbe Aufruf mit -Sites statt -Site.
+
+  Bei mehreren Sites ist -Site Pflicht. Ein Token gehoert zu genau einem
+  Kunden - griffe das Script von sich aus die falsche Site ab, landeten dessen
+  Geraete in der Dokumentation eines anderen.
 
   Meldet Switches, Accesspoints und WLANs. Rein lesend - es wird nichts am
   Controller veraendert. Ein Konto mit reinen Leserechten genuegt.
@@ -14,7 +21,8 @@ param(
     [Parameter(Mandatory = $true)][string]$Controller,
     [Parameter(Mandatory = $true)][string]$User,
     [Parameter(Mandatory = $true)][string]$Password,
-    [string]$Site = "default",
+    [string]$Site = "",
+    [switch]$Sites,
     [string]$ApiUrl = "__API_URL__",
     [switch]$ZertifikatIgnorieren
 )
@@ -73,7 +81,16 @@ try {
       ihn dort nicht mit - dann steckt er in der Nutzlast des TOKEN-Kekses,
       der ein JWT ist.
     #>
-    $csrf = $anmeldeantwort.Headers['X-CSRF-Token']
+    # Ueber die Schluessel laufen statt $Headers['X-CSRF-Token'] zu lesen: in
+    # PowerShell 5.1 wirft der Indexer bei einem fehlenden Schluessel, statt
+    # $null zu liefern - und die Schreibweise der Kopfzeile wechselt je nach
+    # Firmware. -ieq vergleicht ohne Ruecksicht darauf.
+    foreach ($schluessel in $anmeldeantwort.Headers.Keys) {
+        if ($schluessel -ieq 'X-CSRF-Token') {
+            $csrf = $anmeldeantwort.Headers[$schluessel]
+            break
+        }
+    }
     if ($csrf -is [array]) { $csrf = $csrf[0] }
 
     if (-not $csrf) {
@@ -124,8 +141,11 @@ function Get-UnifiDaten([string]$pfad) {
             Write-Host "      - Dem Konto fehlen die Leserechte fuer diese Site." -ForegroundColor Red
         }
         if ($code -eq 404) {
-            Write-Host "  404: die Site '$Site' gibt es nicht. Ihr Name steht in der" -ForegroundColor Red
-            Write-Host "      Controller-URL hinter /manage/site/ - meist 'default'." -ForegroundColor Red
+            if ($pfad -like '*/api/s/*') {
+                Write-Host "  404: die Site '$Site' gibt es nicht. Mit -Sites die vorhandenen anzeigen." -ForegroundColor Red
+            } else {
+                Write-Host "  404: diesen Endpunkt gibt es nicht. Zeigt die Controller-URL wirklich auf UniFi?" -ForegroundColor Red
+            }
         }
         exit 1
     }
@@ -145,6 +165,54 @@ function Get-Verschluesselung($wlan) {
         default { return $wlan.security }
     }
 }
+
+<#
+  Welche Sites das Konto sehen darf. 'name' ist der interne Schluessel, der in
+  der URL steht (oft eine Zufallsfolge wie 'a1b2c3d4'), 'desc' der Anzeigename
+  aus der Oberflaeche. Waehlen soll man mit dem, was man vor sich sieht -
+  deshalb trifft -Site beides.
+#>
+$alleSites = Get-UnifiDaten "/api/self/sites"
+
+function Show-Sites {
+    foreach ($eintrag in $alleSites) {
+        Write-Host ("  {0}   {1}" -f $eintrag.name, $eintrag.desc)
+    }
+}
+
+if ($Sites) {
+    Write-Host "Sites auf diesem Controller:"
+    Show-Sites
+    exit 0
+}
+
+if ($Site) {
+    # -eq vergleicht bei Zeichenketten ohne Ruecksicht auf Gross- und
+    # Kleinschreibung - genau richtig fuer einen Namen, den jemand abtippt.
+    $treffer = $alleSites | Where-Object { $_.name -eq $Site -or $_.desc -eq $Site } | Select-Object -First 1
+
+    if (-not $treffer) {
+        Write-Host "Fehler: keine Site '$Site' auf diesem Controller." -ForegroundColor Red
+        Write-Host "Vorhanden sind:"
+        Show-Sites
+        exit 1
+    }
+
+    $Site = $treffer.name
+    $anzeige = $treffer.desc
+} elseif ($alleSites.Count -eq 1) {
+    $Site = $alleSites[0].name
+    $anzeige = $alleSites[0].desc
+} else {
+    # Nicht raten: auf einem Controller mit mehreren Sites steckt oft je Kunde
+    # eine. Der Agent-Token gehoert zu genau einem Kunden - die falsche Site
+    # abzugreifen hiesse, fremde Geraete in dessen Dokumentation zu schreiben.
+    Write-Host "Fehler: dieser Controller hat $($alleSites.Count) Sites. Bitte mit -Site waehlen:" -ForegroundColor Red
+    Show-Sites
+    exit 1
+}
+
+Write-Host "Site: $Site ($anzeige)"
 
 $geraete = Get-UnifiDaten "/api/s/$Site/stat/device"
 $wlanconf = Get-UnifiDaten "/api/s/$Site/rest/wlanconf"

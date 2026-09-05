@@ -1412,6 +1412,7 @@ return [
                 'Meldet sich am UniFi-Controller an und liest Switches, Accesspoints und WLANs (Name, Modell, Seriennummer, MAC, IP, SSID, Verschlüsselung) – rein lesend, verändert nichts am Controller.',
                 'Legt Switches, Accesspoints und WLANs als eigene Einträge an oder aktualisiert sie. Nichts wird gelöscht.',
                 'Die Zugangsdaten des Controllers werden dem Script beim Aufruf mitgegeben und nicht in DokuVault gespeichert. Ein Konto mit reinen Leserechten genügt.',
+                'Hat der Controller mehrere Sites, muss eine gewählt werden – der Token gehört zu genau einem Kunden. Ohne Angabe zeigt das Script die vorhandenen Sites und bricht ab, statt die falsche zu dokumentieren.',
                 'Mehrfaches Ausführen aktualisiert dieselben Einträge, statt Duplikate anzulegen.',
             ],
             'varianten' => [
@@ -1420,7 +1421,7 @@ return [
                     'skript' => 'unifi.ps1',
                     'datei' => 'unifi-doku.ps1',
                     'ausfuehren_auf' => 'Ausführen auf einem Windows-Rechner, der den UniFi-Controller erreicht:',
-                    'aufruf' => '.\\unifi-doku.ps1 -Controller "https://unifi.local" -User "doku" -Password "…" -ZertifikatIgnorieren',
+                    'aufruf' => '.\\unifi-doku.ps1 -Controller "https://unifi.local" -User "doku" -Password "…" -Site "Kunde A" -ZertifikatIgnorieren',
                     'ueberschreiben' => '.\\unifi-doku.ps1 -Controller "https://unifi.local" -User "doku" -Password "…" -ApiUrl "https://euer-server/api/agent/unifi"',
                 ],
                 [
@@ -1428,7 +1429,7 @@ return [
                     'skript' => 'unifi.sh',
                     'datei' => 'unifi-doku.sh',
                     'ausfuehren_auf' => 'Ausführen auf einem Mac oder Linux-Rechner, der den UniFi-Controller erreicht (braucht curl und jq; das Kennwort wird abgefragt):',
-                    'aufruf' => 'bash unifi-doku.sh --controller https://unifi.local --user doku --unsicher',
+                    'aufruf' => 'bash unifi-doku.sh --controller https://unifi.local --user doku --site "Kunde A" --unsicher',
                     'ueberschreiben' => 'bash unifi-doku.sh --controller https://unifi.local --user doku --api-url https://euer-server/api/agent/unifi',
                 ],
             ],

@@ -184,12 +184,17 @@ Because those agents only talk to an API, UniFi and Microsoft 365 also ship as a
 offers both versions side by side:
 
 ```bash
-bash unifi-doku.sh        --controller https://unifi.local --user doku --unsicher
+bash unifi-doku.sh        --controller https://unifi.local --user doku --site "Kunde A"
 bash microsoft365-doku.sh --tenant-id "…" --client-id "…"
 ```
 
 The shell versions ask for the password rather than taking it as an argument, so it stays out of
 the process list and the shell history — or read it from `UNIFI_PASSWORD` / `M365_CLIENT_SECRET`.
+
+A UniFi controller often holds **one site per customer**, and an agent token belongs to exactly one
+customer — so the site is never guessed. With a single site it is used; with several the script
+lists them and stops until one is chosen. `--site` takes the internal name or the display name;
+`--sites` just lists them.
 
 Those third-party credentials are **passed on the command line and never stored in DokuVault** — a
 read-only account is enough everywhere. Wi-Fi passphrases and AD passwords are never read at all.
