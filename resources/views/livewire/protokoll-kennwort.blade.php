@@ -14,13 +14,6 @@
                 <div class="flex flex-wrap items-center gap-1.5 text-xs">
                     <span class="text-gray-500">{{ __($eintrag['feld']) }}:</span>
                     <x-password :value="$eintrag['wert']" width="w-32" />
-                    {{-- Der Unterschied muss dranstehen: Sonst haelt man das
-                         geltende Kennwort fuer das abgeloeste. --}}
-                    @if ($eintrag['aktuell'] ?? false)
-                        <span class="text-gray-400 dark:text-gray-500">{{ __('gilt jetzt – vorher war keines gesetzt') }}</span>
-                    @else
-                        <span class="text-gray-400 dark:text-gray-500">{{ __('galt vorher') }}</span>
-                    @endif
                 </div>
             @empty
                 {{-- Die Frist ist abgelaufen oder jemand hat den Eintrag

@@ -141,20 +141,18 @@
                                 <span class="text-gray-400">{{ is_scalar($objectName) ? $objectName : '' }}</span>
                             </td>
                             <td class="px-4 py-2.5">
-                                @if (count($felder))
+                                @if (count($verlaufIds))
                                     {{-- Das bisherige Kennwort steht nicht im
                                          Protokolleintrag, sondern kommt auf Klick aus
-                                         der Historie - und laeuft mit deren Frist ab.
-
-                                         Ohne Vorgaenger (erstes Setzen, etwa durch
-                                         einen Agenten) zeigt die Komponente das
-                                         Kennwort, das jetzt gilt. Vorher stand hier
-                                         nur die Beschriftung "Kennwort" - eine Zeile,
-                                         die sagt, dass sich etwas geaendert hat, ohne
-                                         zu zeigen, was. --}}
+                                         der Historie - und laeuft mit deren Frist ab. --}}
                                     <livewire:protokoll-kennwort :ids="$verlaufIds" :felder="$felder"
-                                        :objekt-typ="$activity->subject_type" :objekt-id="$activity->subject_id"
                                         :key="'pw-'.$activity->id" />
+                                @elseif (count($felder))
+                                    {{-- Kein alter Wert vorhanden - dann wenigstens
+                                         sagen, welches Kennwort gemeint war. --}}
+                                    <span class="text-xs text-gray-500">
+                                        {{ collect($felder)->map(fn ($f) => __(config('custom.secret_field_labels')[$f] ?? $f))->join(', ') }}
+                                    </span>
                                 @elseif (count($attrs) || count($old))
                                     <button type="button" @click="open = !open" class="text-sm text-cerulean-600 hover:text-cerulean-700">
                                         <span x-show="!open">{{ __('anzeigen') }}</span>
