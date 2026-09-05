@@ -35,6 +35,31 @@ class DeviceIpAddresses extends Component
 
     public string $label = '';
 
+    /**
+     * Ob die Adresse per DHCP bezogen wird.
+     *
+     * Eigene Angabe und nicht die Bezeichnung: Frueher loeste genau das Wort
+     * "DHCP" in der Bezeichnung es aus - das stand nirgends, klein
+     * geschrieben tat es nichts, und daneben war fuer "Uplink Dachboden" kein
+     * Platz mehr.
+     */
+    public bool $dhcp = false;
+
+    /**
+     * Beim Anhaken die angefangene Adresse wegnehmen.
+     *
+     * Sonst bliebe eine halb getippte stehen, die Pruefung meldete "darf nicht
+     * vorhanden sein", und der Nutzer suchte den Fehler an einem Feld, das er
+     * gerade nicht mehr sieht.
+     */
+    public function updatedDhcp(): void
+    {
+        if ($this->dhcp) {
+            $this->reset('address');
+            $this->resetValidation('address');
+        }
+    }
+
     // Eingebettet: ohne eigenen Kartenrahmen, weil der Block dann in der Karte
     // des Formulars steht (x-create.main, Slot "nach").
     #[Locked]
@@ -51,15 +76,25 @@ class DeviceIpAddresses extends Component
             // sich dieselbe IP zweimal am selben Geraet und zusaetzlich an
             // einem zweiten eintragen - danach stand in der Doku, sie gehoere
             // zu beiden, und der IP-Plan zeigte sie doppelt als belegt.
-            'address' => ['required', 'ip', $this->nochNichtVergeben()],
-            'network_id' => ['nullable', Rule::exists('networks', 'id')->where('customer_id', $this->customerId)],
+            // Bei DHCP keine Adresse: Welche das Geraet gerade hat, ist
+            // morgen eine andere. Dafuer dann das Netz - ohne es saehe die
+            // Zuordnung so aus: "haengt irgendwo per DHCP", und das hilft
+            // niemandem.
+            'address' => $this->dhcp
+                ? ['nullable', 'prohibited']
+                : ['required', 'ip', $this->nochNichtVergeben()],
+            'network_id' => [
+                $this->dhcp ? 'required' : 'nullable',
+                Rule::exists('networks', 'id')->where('customer_id', $this->customerId),
+            ],
             'label' => ['nullable', 'max:255'],
+            'dhcp' => ['boolean'],
         ];
     }
 
     protected function feldnamen(): array
     {
-        return ['address' => __('Adresse'), 'network_id' => __('Netz'), 'label' => __('Bezeichnung')];
+        return ['address' => __('Adresse'), 'network_id' => __('Netz'), 'label' => __('Bezeichnung'), 'dhcp' => __('DHCP')];
     }
 
     public function mount($model, $customer, bool $eingebettet = false, bool $randlos = false): void
@@ -121,11 +156,12 @@ class DeviceIpAddresses extends Component
         $device->ipAddresses()->create([
             'customer_id' => $this->customerId,
             'network_id' => $validated['network_id'] ?: null,
-            'address' => $validated['address'],
+            'address' => $this->dhcp ? null : $validated['address'],
             'label' => $validated['label'] ?: null,
+            'dhcp' => $this->dhcp,
         ]);
 
-        $this->reset('address', 'network_id', 'label');
+        $this->reset('address', 'network_id', 'label', 'dhcp');
         // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
         // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
         $this->dispatch('geraet-geaendert');

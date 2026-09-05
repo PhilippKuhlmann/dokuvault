@@ -16,18 +16,14 @@ class IpAddress extends Model
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
-    /**
-     * Die Bezeichnung, mit der ein Agent eine per DHCP bezogene Adresse
-     * kennzeichnet.
-     *
-     * Hier und nicht im Controller: Es ist eine Eigenschaft der Adresse. Der
-     * Agent setzt sie, der IP-Plan und die Geraeteansichten lesen sie.
-     */
+    /** Was am Geraet steht, wo sonst die Adresse stuende. */
     public const MARKE_DHCP = 'DHCP';
+
+    protected $casts = ['dhcp' => 'boolean'];
 
     public function istDhcp(): bool
     {
-        return $this->label === self::MARKE_DHCP;
+        return (bool) $this->dhcp;
     }
 
     /**

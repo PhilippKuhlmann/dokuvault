@@ -37,6 +37,9 @@ class IpPlanController extends Controller
         // eine tatsächlich vergebene Adresse hier als frei erscheinen.
         $used = $this->collectUsedIps($customer);
 
+        // Geraete ohne feste Adresse: Sie haengen am Netz, nicht an einer Zeile.
+        $perDhcp = $this->collectDhcpGeraete($customer);
+
         // Reservierte Bereiche je Netz. Sie belegen nichts - sie sagen, wofuer
         // ein Stueck gedacht ist, auch wenn davon noch keine Adresse vergeben
         // ist.
@@ -46,11 +49,13 @@ class IpPlanController extends Controller
             // Je Netz eigene Farben - siehe IpRange::eingefaerbt().
             ->map(fn ($je) => IpRange::eingefaerbt($je));
 
-        $plans = $networks->map(function (Network $network) use ($used, $bereiche) {
+        $plans = $networks->map(function (Network $network) use ($used, $bereiche, $perDhcp) {
             return [
                 'network' => $network,
                 'bereiche' => $bereiche->get($network->id, collect()),
-                'plan' => $this->buildPlan($network, $used, $bereiche->get($network->id, collect())),
+                'plan' => $this->buildPlan(
+                    $network, $used, $bereiche->get($network->id, collect()), $perDhcp[$network->id] ?? []
+                ),
             ];
         });
 
@@ -78,17 +83,9 @@ class IpPlanController extends Controller
     protected function collectUsedIps(Customer $customer): array
     {
         $used = [];
-        $dhcp = [];
-        $fest = [];
 
-        $addLong = function (int $long, string $label, ?string $dhcpName = null) use (&$used, &$dhcp, &$fest) {
+        $addLong = function (int $long, string $label) use (&$used) {
             $used[$long] = ($used[$long] ?? '') === '' ? $label : $used[$long].' / '.$label;
-
-            if ($dhcpName !== null) {
-                $dhcp[$long][] = $dhcpName;
-            } else {
-                $fest[$long] = true;
-            }
         };
 
         foreach (self::IP_SOURCES as [$class, $columns]) {
@@ -119,23 +116,40 @@ class IpPlanController extends Controller
                 $deviceName = $ip->ipable?->getAttribute('name')
                     ?: ($ip->ipable ? class_basename($ip->ipable) : 'Gerät');
                 $label = $deviceName.($ip->label ? ' ('.$ip->label.')' : '');
-
-                // Am Pool steht nur der Geraetename - dass es DHCP ist, sagt
-                // dort schon der Bereich.
-                $addLong(
-                    ip2long($ip->address) & 0xFFFFFFFF,
-                    $label,
-                    $ip->istDhcp() ? $deviceName : null
-                );
+                $addLong(ip2long($ip->address) & 0xFFFFFFFF, $label);
             });
 
-        return ['beschriftung' => $used, 'dhcp' => $dhcp, 'fest' => $fest];
+        return $used;
+    }
+
+    /**
+     * Die per DHCP versorgten Geräte, je Netz: [network_id => [Name, ...]].
+     *
+     * Sie haben keine Adresse - was zählt, ist das Netz. Im Plan stehen sie
+     * deshalb am DHCP-Bereich und nicht auf einer Zeile, die morgen eine
+     * andere wäre.
+     */
+    protected function collectDhcpGeraete(Customer $customer): array
+    {
+        $je = [];
+
+        IpAddress::where('customer_id', $customer->id)
+            ->where('dhcp', true)
+            ->whereNotNull('network_id')
+            ->with('ipable')
+            ->get()
+            ->each(function ($ip) use (&$je) {
+                $je[$ip->network_id][] = $ip->ipable?->getAttribute('name')
+                    ?: ($ip->ipable ? class_basename($ip->ipable) : 'Gerät');
+            });
+
+        return $je;
     }
 
     /**
      * Baut die Zeilen für ein VLAN: belegte Adressen einzeln, freie und DHCP-Bereiche zusammengefasst.
      */
-    protected function buildPlan(Network $network, array $used, $bereiche = null): array
+    protected function buildPlan(Network $network, array $used, $bereiche = null, array $dhcpGeraete = []): array
     {
         $range = $this->networkRange($network);
         if (! $range) {
@@ -151,7 +165,7 @@ class IpPlanController extends Controller
         }
 
         // Nur belegte Adressen innerhalb dieses Subnetzes
-        $map = array_filter($used['beschriftung'], fn ($k) => $k >= $first && $k <= $last, ARRAY_FILTER_USE_KEY);
+        $map = array_filter($used, fn ($k) => $k >= $first && $k <= $last, ARRAY_FILTER_USE_KEY);
 
         // Gateway markieren
         $gatewayLong = null;
@@ -183,15 +197,26 @@ class IpPlanController extends Controller
 
         $runBereich = null;
 
-        // Die Geraete, die aus diesem Pool bedient werden. Sie stehen am
-        // Bereich statt an einer Adresse: welche sie gerade haben, ist morgen
-        // eine andere.
-        $runGeraete = [];
+        // Die Geraete, die aus diesem Netz per DHCP versorgt werden. Sie
+        // stehen am Bereich statt an einer Adresse - welche sie gerade haben,
+        // ist morgen eine andere. Nur am ersten Bereich: Bei mehreren (eine
+        // feste Adresse teilt ihn) stuenden sie sonst doppelt.
+        // Genannt werden sie am ERSTEN DHCP-Bereich. flush() laeuft fuer jeden
+        // Lauf, auch fuer freie und reservierte - ohne die Pruefung auf die Art
+        // stuenden die Geraete am erstbesten Block.
+        $dhcpGenannt = false;
 
-        $flush = function ($endLong) use (&$rows, &$runStart, &$runKind, &$runBereich, &$runGeraete) {
+        $flush = function ($endLong) use (&$rows, &$runStart, &$runKind, &$runBereich, $dhcpGeraete, &$dhcpGenannt) {
             if ($runStart === null) {
                 return;
             }
+
+            $geraete = [];
+            if ($runKind === 'dhcp' && ! $dhcpGenannt) {
+                $geraete = array_values(array_unique($dhcpGeraete));
+                $dhcpGenannt = true;
+            }
+
             $rows[] = [
                 'kind' => $runKind, // 'free' | 'dhcp' | 'reserved'
                 'from' => long2ip($runStart),
@@ -203,27 +228,15 @@ class IpPlanController extends Controller
                     default => 'frei',
                 },
                 'farbe' => $runKind === 'reserved' ? ($runBereich['farbe'] ?? []) : [],
-                'geraete' => array_values(array_unique($runGeraete)),
+                'geraete' => $geraete,
             ];
             $runStart = null;
             $runKind = null;
             $runBereich = null;
-            $runGeraete = [];
         };
 
         for ($ip = $first; $ip <= $last; $ip++) {
-            // Im Pool und ausschliesslich von DHCP-Geraeten belegt: Die Adresse
-            // bekommt keine eigene Zeile. Sitzt dort zusaetzlich etwas fest
-            // Vergebenes, bleibt die Zeile - das ist ein Konflikt und gehoert
-            // gesehen.
-            $imPool = $dhcp && $ip >= $dhcp[0] && $ip <= $dhcp[1];
-            $nurGeliehen = isset($used['dhcp'][$ip]) && ! isset($used['fest'][$ip]);
-
-            if ($imPool && $nurGeliehen) {
-                $runGeraete = array_merge($runGeraete, $used['dhcp'][$ip]);
-            }
-
-            if (isset($map[$ip]) && ! ($imPool && $nurGeliehen)) {
+            if (isset($map[$ip])) {
                 $flush($ip - 1);
                 $counts['device']++;
                 $rows[] = [
@@ -291,6 +304,10 @@ class IpPlanController extends Controller
             // zaehlt nicht zusaetzlich als belegt - der Pool steht schon als
             // Ganzes in der Rechnung. Bis auf diesen Fall sind beide Zahlen
             // dieselbe, denn jede belegte Adresse bekam eine eigene Zeile.
+            // Ohne gepflegten DHCP-Bereich gibt es keine Zeile, an der sie
+            // stehen koennten. Verschwinden duerfen sie trotzdem nicht - dann
+            // waere das Geraet in der Doku, aber nicht im Plan.
+            'dhcpOhneBereich' => $dhcpGenannt ? [] : array_values(array_unique($dhcpGeraete)),
             'usedCount' => $counts['device'],
         ];
     }

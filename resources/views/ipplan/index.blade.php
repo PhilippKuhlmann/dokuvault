@@ -112,6 +112,16 @@
                     </table>
                     </div>
 
+                    {{-- Kein DHCP-Bereich gepflegt, aber Geraete haengen daran:
+                         Dann steht es unter der Tabelle. Sie wegzulassen hiesse,
+                         dass ein dokumentiertes Geraet im Plan nicht vorkommt. --}}
+                    @if (! empty($plan['dhcpOhneBereich']))
+                        <div class="px-5 py-2 text-xs text-gray-500 dark:text-gray-400">
+                            {{ __('Per DHCP versorgt (kein DHCP-Bereich gepflegt):') }}
+                            <span class="text-gray-700 dark:text-gray-300">{{ implode(', ', $plan['dhcpOhneBereich']) }}</span>
+                        </div>
+                    @endif
+
                     <livewire:ip-bereiche :customer="$customer" :network="$network" :key="'bereiche-'.$network->id" />
 
                     @if ($plan['truncated'] ?? false)

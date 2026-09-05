@@ -36,7 +36,7 @@
                         <td class="py-2 pr-4 text-gray-600 dark:text-gray-300">
                             {{ $entry->network?->anzeige() ?: '—' }}
                         </td>
-                        <td class="py-2 pr-4 text-gray-600 dark:text-gray-300">{{ ($entry->istDhcp() ? null : $entry->label) ?: '—' }}</td>
+                        <td class="py-2 pr-4 text-gray-600 dark:text-gray-300">{{ $entry->label ?: '—' }}</td>
                         <td class="py-2 text-right">
                             <button type="button" wire:click="remove({{ $entry->id }})"
                                 wire:confirm="IP-Adresse entfernen?"
@@ -52,15 +52,28 @@
 
     <div class="flex flex-wrap items-end gap-2" x-data>
         <div class="flex flex-col">
-            <x-input.label :value="__('IP-Adresse')" />
-            <x-input.text feld="address" wire:model.live.debounce.400ms="address" x-ref="addr" type="text" class="mt-1 w-40" placeholder="10.10.30.1" />
-            <x-input.fehler feld="address" />
+            {{-- Bei DHCP verschwindet das Adressfeld: Es gaebe nichts
+                 einzutragen, was morgen noch stimmt. Was bleibt, ist das
+                 Netz - und das wird dann Pflicht. --}}
+            @unless ($dhcp)
+                <x-input.label :value="__('IP-Adresse')" />
+                <x-input.text feld="address" wire:model.live.debounce.400ms="address" x-ref="addr" type="text" class="mt-1 w-40" placeholder="10.10.30.1" />
+                <x-input.fehler feld="address" />
+            @else
+                <span class="mt-1 inline-flex h-[38px] w-40 items-center rounded-lg border border-dashed border-gray-300 px-3 text-sm text-gray-400 dark:border-gray-600 dark:text-gray-500">{{ __('ohne feste Adresse') }}</span>
+            @endunless
+
+            <label class="mt-1.5 inline-flex items-center">
+                <input type="checkbox" wire:model.live="dhcp"
+                    class="rounded border-gray-300 text-cerulean-600 shadow-sm focus:ring-cerulean-500 dark:bg-gray-700 dark:border-gray-600">
+                <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">{{ __('Kommt per DHCP') }}</span>
+            </label>
         </div>
         {{-- min-w-0 + max-w-full: das Select waechst sonst auf die Breite der laengsten
              Option ("Beschreibung (10.10.30.0/24)") und schiebt die Seite auf Mobil seitlich raus --}}
         <div class="flex flex-col min-w-0 max-w-full">
             <div class="flex items-baseline gap-2">
-                <x-input.label :value="__('VLAN (optional)')" />
+                <x-input.label :value="$dhcp ? __('VLAN') : __('VLAN (optional)')" />
 
                 {{-- Fehlt das Netz, soll man es hier anlegen koennen: Sonst ist
                      die halb ausgefuellte Zeile beim Zurueckkommen weg. Dieselbe
@@ -88,6 +101,7 @@
                     <option value="{{ $network->id }}" data-prefix="{{ $prefix }}">{{ $network->anzeige() }} ({{ $network->network }}/{{ $network->cidr }})</option>
                 @endforeach
             </x-input.select>
+            <x-input.fehler feld="network_id" />
         </div>
         <div class="flex flex-col">
             <x-input.label :value="__('Bezeichnung (optional)')" />

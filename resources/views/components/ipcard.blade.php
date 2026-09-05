@@ -12,9 +12,7 @@
 
     foreach ($weitereAdressen as $weitere) {
         $netz = $weitere->network;
-        // Bei DHCP steht "DHCP" im Wert - als Rolle waere es doppelt und
-        // saehe aus wie eine Bezeichnung, die jemand vergeben hat.
-        $rolle = ($weitere->istDhcp() ? null : $weitere->label) ?: __('Weitere');
+        $rolle = $weitere->label ?: __('Weitere');
 
         $zeilen[] = [
             'rolle' => $rolle,

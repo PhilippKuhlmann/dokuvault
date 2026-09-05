@@ -8,7 +8,6 @@ use App\Models\ADGroup;
 use App\Models\ADUser;
 use App\Models\Computer;
 use App\Models\Domain;
-use App\Models\IpAddress;
 use App\Models\LicenseSoftware;
 use App\Models\Mailbox;
 use App\Models\MailboxProvider;
@@ -604,20 +603,19 @@ class AgentController extends Controller
     }
 
     /**
-     * Wie das Geraet zu seiner Adresse kommt - als Bezeichnung fuer die
-     * Adresse.
+     * Wie das Geraet zu seiner Adresse kommt.
      *
-     * null, wenn der Controller nichts dazu sagt: Dann bleibt die vorhandene
-     * Bezeichnung, wie sie ist. Ein Leerstring heisst "fest konfiguriert" und
-     * raeumt eine frueher gesetzte DHCP-Marke wieder ab.
+     * null, wenn der Controller nichts dazu sagt - etwa aeltere Firmware ohne
+     * config_network. Dann bleibt der gespeicherte Stand, wie er ist: "nicht
+     * gemeldet" ist nicht dasselbe wie "fest konfiguriert".
      */
-    protected function bezugsweg(array $geraet): ?string
+    protected function bezugsweg(array $geraet): ?bool
     {
         if (! array_key_exists('dhcp', $geraet) || $geraet['dhcp'] === null) {
             return null;
         }
 
-        return $geraet['dhcp'] ? IpAddress::MARKE_DHCP : '';
+        return (bool) $geraet['dhcp'];
     }
 
     /**
@@ -674,7 +672,7 @@ class AgentController extends Controller
      * Zuordnung wieder um (Ueberlappende Netze sind selten, aber moeglich).
      * Nur bei der Neuanlage wird ein passendes Netz gesucht und gesetzt.
      */
-    protected function meldeAdresse($geraet, int $customerId, ?int $siteId, ?string $adresse, ?string $hinweis = null): void
+    protected function meldeAdresse($geraet, int $customerId, ?int $siteId, ?string $adresse, ?bool $dhcp = null): void
     {
         $adresse = trim((string) $adresse);
 
@@ -682,11 +680,38 @@ class AgentController extends Controller
             return;
         }
 
+        // Die gemeldete Adresse dient hier nur noch dazu, das Netz zu finden.
+        $netz = Network::fuerAdresse($customerId, $siteId, $adresse)?->id;
+
+        if ($dhcp === true) {
+            $this->meldeDhcp($geraet, $customerId, $netz);
+
+            return;
+        }
+
         $vorhanden = $geraet->ipAddresses()->where('address', $adresse)->first();
 
         if ($vorhanden) {
             $vorhanden->update(['customer_id' => $customerId]);
-            $this->hinweisPflegen($vorhanden, $hinweis);
+
+            // Die Bezeichnung bleibt in jedem Fall unberuehrt - sie gehoert
+            // dem Nutzer.
+            if ($dhcp === false && $vorhanden->istDhcp()) {
+                $vorhanden->update(['dhcp' => false]);
+            }
+
+            return;
+        }
+
+        // Aus DHCP wurde eine feste Adresse: Die adresslose Zeile wird zur
+        // festen, statt eine zweite danebenzustellen.
+        if ($dhcp === false && $alt = $geraet->ipAddresses()->where('dhcp', true)->first()) {
+            $alt->update([
+                'customer_id' => $customerId,
+                'network_id' => $netz,
+                'address' => $adresse,
+                'dhcp' => false,
+            ]);
 
             return;
         }
@@ -694,39 +719,43 @@ class AgentController extends Controller
         $geraet->ipAddresses()->create([
             'address' => $adresse,
             'customer_id' => $customerId,
-            'network_id' => Network::fuerAdresse($customerId, $siteId, $adresse)?->id,
-            'label' => $hinweis ?: null,
+            'network_id' => $netz,
+            'dhcp' => false,
         ]);
     }
 
     /**
-     * Die Bezeichnung einer schon vorhandenen Adresse nachziehen.
+     * Ein per DHCP versorgtes Gerät: Netz ja, Adresse nein.
      *
-     * Angefasst wird nur die eigene Marke. Wer "Uplink" oder "Management"
-     * hingeschrieben hat, weiß mehr als der Controller - das bleibt stehen.
-     * Umgekehrt verschwindet "DHCP" wieder, sobald das Gerät eine feste
-     * Adresse bekommt: Sonst behauptet die Doku dauerhaft etwas, das nicht
-     * mehr stimmt.
+     * Welche Adresse es gerade hat, ist morgen eine andere - sie zu speichern
+     * hiesse, etwas festzuhalten, das nicht haelt. Was bleibt, ist das Netz.
      *
-     * @param  string|null  $hinweis  null = nicht gemeldet, '' = feste Adresse
+     * Erst die vorhandene DHCP-Zeile, dann die unter der gemeldeten Adresse:
+     * So wird beim Wechsel von fest auf DHCP die alte Zeile umgewandelt, statt
+     * dass Alt und Neu nebeneinander stehen bleiben.
      */
-    protected function hinweisPflegen($adresse, ?string $hinweis): void
+    protected function meldeDhcp($geraet, int $customerId, ?int $netz): void
     {
-        if ($hinweis === null) {
+        $vorhanden = $geraet->ipAddresses()->where('dhcp', true)->first()
+            ?: $geraet->ipAddresses()->whereNotNull('address')->first();
+
+        if ($vorhanden) {
+            $vorhanden->update([
+                'customer_id' => $customerId,
+                'network_id' => $netz,
+                'address' => null,
+                'dhcp' => true,
+            ]);
+
             return;
         }
 
-        $bisher = (string) $adresse->label;
-
-        if ($bisher !== '' && $bisher !== IpAddress::MARKE_DHCP) {
-            return;
-        }
-
-        $neu = $hinweis ?: null;
-
-        if ($bisher !== (string) $neu) {
-            $adresse->update(['label' => $neu]);
-        }
+        $geraet->ipAddresses()->create([
+            'address' => null,
+            'customer_id' => $customerId,
+            'network_id' => $netz,
+            'dhcp' => true,
+        ]);
     }
 
     /**
