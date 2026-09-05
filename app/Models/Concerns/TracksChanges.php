@@ -143,7 +143,7 @@ trait TracksChanges
             // bricht beim Auflösen die ganze Protokollseite.
             ->withProperties([
                 'felder' => $geaendert,
-                'objekt' => $this->name ?? $this->username ?? null,
+                'objekt' => $this->protokollName(),
                 // Verweise, keine Werte: Das Protokoll zeigt das bisherige
                 // Kennwort, holt es aber beim Anzeigen aus der Historie. Damit
                 // steht es nicht im Protokolleintrag, der ewig bleibt, und
@@ -182,7 +182,12 @@ trait TracksChanges
             'customer_id' => $this->customer_id ?? null,
             'subject_type' => $this::class,
             'subject_id' => $this->getKey(),
-            'subject_name' => $this->name ?? $this->username ?? null,
+            // protokollName() statt name/username: Ein WLAN heisst 'ssid', ein
+            // Anschluss 'extension', eine Adresse 'address'. Fuer die stand
+            // hier bisher nichts - und ein aufgehobenes Kennwort ohne Angabe,
+            // wozu es gehoerte, ist genau dann wertlos, wenn man es braucht:
+            // wenn das Geraet laengst weg ist.
+            'subject_name' => $this->protokollName(),
             'field' => $spalte,
             'value' => $alt,
             'user_id' => auth()->id(),

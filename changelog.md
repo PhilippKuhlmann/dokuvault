@@ -4,6 +4,7 @@
 
 ### Added
 
+- **Der Kennwortverlauf nannte bei WLANs nicht, wozu das Kennwort gehörte.** Er schreibt den Namen mit, statt ihn nachzuladen — ein Eintrag soll lesbar bleiben, wenn das Gerät längst weg ist. Genommen wurde dafür `name`/`username`; ein WLAN heißt aber `ssid`, ein Anschluss `extension`, eine Adresse `address`. Für die stand dort schlicht nichts. Jetzt liefert `protokollName()` den Namen — dieselbe Stelle, die ihn auch im Protokoll bestimmt.
 - **Im Protokoll steht jetzt, welcher Agent geschrieben hat.** Vorher stand dort „System": Ein Agent hat keinen angemeldeten Benutzer, und wer nachsah, wer die WLANs angelegt hat, fand niemanden. Verursacher ist jetzt der Agent-Token — mit dem Namen, den man ihm gegeben hat, und dem Kunden darunter: „Agent · UniFi Werkstatt".
   - Auch Kennwortänderungen: Der Eintrag dafür wird von Hand geschrieben und nahm `auth()->user()`, was für einen Agenten null ist.
   - Der Benutzerfilter vergleicht jetzt Art **und** Id. Ein Agent-Token mit der Id 5 ist nicht der Benutzer mit der Id 5 — ohne die Art hätte der Filter beide gezeigt. Agenten stehen in der Auswahl als eigene Gruppe.
