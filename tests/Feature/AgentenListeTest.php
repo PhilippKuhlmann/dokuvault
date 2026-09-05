@@ -74,7 +74,9 @@ test('die Dateiendung passt zur Sprache der Variante', function () {
 
 test('jeder Eintrag beschreibt, was das Script tut und wie man es aufruft', function () {
     foreach (config('custom.agenten') as $schluessel => $agent) {
-        foreach (['name', 'endpunkt', 'erreichbar_von'] as $feld) {
+        // 'kurz' traegt die Uebersicht ueber dem Anlegen-Formular: ohne sie
+        // stuende dort ein Agent ohne Angabe, was er eigentlich dokumentiert.
+        foreach (['name', 'kurz', 'endpunkt', 'erreichbar_von'] as $feld) {
             expect($agent[$feld] ?? null)->toBeString("Agent '$schluessel': '$feld' fehlt.")
                 ->not->toBe('');
         }

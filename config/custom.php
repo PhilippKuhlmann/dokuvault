@@ -1292,6 +1292,7 @@ return [
         'proxmox' => [
             'name' => 'Proxmox',
             'endpunkt' => 'proxmox',
+            'kurz' => 'Host, VMs und LXC-Container',
             'zugangsdaten' => false,
             'erreichbar_von' => 'Diese URL muss vom Gerät aus erreichbar sein. Falls nicht, beim Aufruf überschreiben:',
             'macht' => [
@@ -1315,6 +1316,7 @@ return [
         'hyperv' => [
             'name' => 'Hyper-V',
             'endpunkt' => 'hyperv',
+            'kurz' => 'Host und virtuelle Maschinen',
             'zugangsdaten' => false,
             'erreichbar_von' => 'Diese URL muss vom Host aus erreichbar sein. Falls nicht, beim Aufruf überschreiben:',
             'macht' => [
@@ -1338,6 +1340,7 @@ return [
         'windows-server' => [
             'name' => 'Windows-Server',
             'endpunkt' => 'windows-server',
+            'kurz' => 'Server samt installierter Rollen',
             'zugangsdaten' => false,
             'erreichbar_von' => 'Diese URL muss vom Server aus erreichbar sein. Falls nicht, beim Aufruf überschreiben:',
             'macht' => [
@@ -1361,6 +1364,7 @@ return [
         'windows-ad' => [
             'name' => 'Windows AD',
             'endpunkt' => 'windows-ad',
+            'kurz' => 'AD-Benutzer und -Gruppen',
             'zugangsdaten' => false,
             'erreichbar_von' => 'Diese URL muss vom DC aus erreichbar sein. Falls nicht, beim Aufruf überschreiben:',
             'macht' => [
@@ -1384,6 +1388,7 @@ return [
         'windows-client' => [
             'name' => 'Windows-Client',
             'endpunkt' => 'windows-client',
+            'kurz' => 'Arbeitsplatzrechner',
             'zugangsdaten' => false,
             'erreichbar_von' => 'Diese URL muss vom Client aus erreichbar sein. Falls nicht, beim Aufruf überschreiben:',
             'macht' => [
@@ -1406,6 +1411,7 @@ return [
         'unifi' => [
             'name' => 'UniFi',
             'endpunkt' => 'unifi',
+            'kurz' => 'Switches, Accesspoints und WLANs',
             'zugangsdaten' => true,
             'erreichbar_von' => 'Diese URL muss von diesem Rechner aus erreichbar sein. Falls nicht, zusätzlich überschreiben:',
             'macht' => [
@@ -1439,6 +1445,7 @@ return [
         'vmware' => [
             'name' => 'VMware',
             'endpunkt' => 'vmware',
+            'kurz' => 'ESXi-Hosts und virtuelle Maschinen',
             'zugangsdaten' => true,
             'erreichbar_von' => 'Diese URL muss von diesem Rechner aus erreichbar sein. Falls nicht, zusätzlich überschreiben:',
             'macht' => [
@@ -1462,6 +1469,7 @@ return [
         'microsoft365' => [
             'name' => 'Microsoft 365',
             'endpunkt' => 'microsoft365',
+            'kurz' => 'Postfächer, Domains und Lizenzen',
             'zugangsdaten' => true,
             'erreichbar_von' => 'Diese URL muss von diesem Rechner aus erreichbar sein. Falls nicht, zusätzlich überschreiben:',
             'macht' => [

@@ -4,6 +4,7 @@
 
 ### Added
 
+- **Die Agent-Seite zeigt jetzt vorab, welche Agenten es gibt.** Vorher standen Name und Standort als Erstes da — und welche Scripts überhaupt zur Auswahl stehen, sah man erst nach dem Anlegen des Tokens. Eine Entscheidung zu spät. Über dem Formular steht nun je Agent, was er dokumentiert, in welchen Fassungen es ihn gibt (PowerShell, Bash) und ob er Zugangsdaten für ein fremdes System braucht.
 - **Fünf neue Agenten.** Bisher füllten drei Agenten 5 der 39 Objektarten; alles andere wurde abgetippt. Dazu kommen jetzt:
   - **Hyper-V** — meldet den Host als Server und jede virtuelle Maschine als eigenen Eintrag, mit Name, Status, Kernen, Arbeitsspeicher und IP. Das Gastbetriebssystem kommt über die Integrationsdienste; fehlen sie, bleibt das Feld leer, statt geraten zu werden.
   - **Windows-Server** — legt den Rechner als **Server** an, nicht als Client. Wer den Windows-Client-Agenten auf einem Server laufen ließ, fand ihn danach unter „Clients", wo ihn niemand sucht. Zusätzlich liest er die installierten Serverrollen und trägt sie als Dienste ein, **solange das Feld leer ist** — wer die Dienste einmal von Hand gepflegt hat, weiß mehr als `Get-WindowsFeature`. Gemeldet wird der sprachunabhängige Rollenname (`AD-Domain-Services`), nicht der übersetzte Anzeigename, und übernommen wird nur, was der Dienstekatalog schon führt: der Agent legt keine Katalogeinträge an.

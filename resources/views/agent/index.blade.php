@@ -132,6 +132,38 @@
             </div>
         @endif
 
+        {{-- Welche Agenten es gibt.
+
+             Steht ueber dem Formular, weil dort die Frage aufkommt: Wer einen
+             Namen und einen Standort vergeben soll, muss vorher wissen, was
+             ueberhaupt zur Auswahl steht. Vorher sah man das erst nach dem
+             Anlegen des Tokens - also eine Entscheidung zu spaet. --}}
+        <div class="p-5 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">{{ __('Diese Agenten gibt es') }}</div>
+            <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">
+                {{ __('Ein Token gilt für alle – nach dem Anlegen steht jedes Script zum Herunterladen bereit. Der Name ist nur für dich, damit du den Token später wiedererkennst.') }}
+            </p>
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach (config('custom.agenten', []) as $agent)
+                    <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-600">
+                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ __($agent['name']) }}</div>
+                        <div class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ __($agent['kurz']) }}</div>
+                        <div class="mt-2 flex flex-wrap items-center gap-1">
+                            @foreach ($agent['varianten'] as $fassung)
+                                <span class="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-mono text-gray-600 dark:bg-gray-700 dark:text-gray-300">{{ $fassung['name'] }}</span>
+                            @endforeach
+                            {{-- Vor dem Anlegen wissen, wofuer man noch etwas
+                                 besorgen muss: vCenter, UniFi und Graph wollen
+                                 ein eigenes Lesekonto. --}}
+                            @if ($agent['zugangsdaten'])
+                                <span class="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">{{ __('Zugangsdaten nötig') }}</span>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
         {{-- Neuen Token erzeugen --}}
         <div class="p-5 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700">
             <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-3">{{ __('Neuen Token erzeugen') }}</div>
