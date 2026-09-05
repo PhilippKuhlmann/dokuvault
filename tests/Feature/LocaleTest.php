@@ -227,8 +227,9 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
         // die Punkte unter "Was macht das Script?" stehen nicht mehr in der
         // Ansicht, sondern laufen von dort zur Laufzeit durch __().
         ->merge(collect(config('custom.agenten', []))->flatMap(fn ($a) => array_merge(
-            [$a['name'] ?? null, $a['ausfuehren_auf'] ?? null, $a['erreichbar_von'] ?? null],
-            $a['macht'] ?? []
+            [$a['name'] ?? null, $a['erreichbar_von'] ?? null],
+            $a['macht'] ?? [],
+            collect($a['varianten'] ?? [])->pluck('ausfuehren_auf')->all()
         )))
         // Beschriftungen aus Model-Konstanten laufen ebenfalls erst zur
         // Laufzeit durch __() - etwa die Rackseiten.

@@ -39,29 +39,55 @@ test('zu jedem Eintrag in der Liste gibt es einen Endpunkt', function () {
     }
 });
 
-test('zu jedem Eintrag gibt es eine Scriptdatei mit beiden Platzhaltern', function () {
+test('zu jeder Variante gibt es eine Scriptdatei mit beiden Platzhaltern', function () {
     foreach (config('custom.agenten') as $schluessel => $agent) {
-        $pfad = resource_path('agents/'.$agent['skript']);
+        expect($agent['varianten'] ?? [])->not->toBeEmpty("Agent '$schluessel' hat keine Variante.");
 
-        expect(file_exists($pfad))->toBeTrue("Script fuer '$schluessel' fehlt: $pfad");
+        foreach ($agent['varianten'] as $i => $variante) {
+            $pfad = resource_path('agents/'.$variante['skript']);
 
-        // Ohne die Platzhalter laedt der Nutzer ein Script herunter, das weder
-        // weiss, wohin es melden soll, noch mit welchem Token.
-        $inhalt = file_get_contents($pfad);
-        expect(str_contains($inhalt, '__API_URL__'))->toBeTrue("In '$schluessel' fehlt __API_URL__.");
-        expect(str_contains($inhalt, '__AGENT_TOKEN__'))->toBeTrue("In '$schluessel' fehlt __AGENT_TOKEN__.");
+            expect(file_exists($pfad))->toBeTrue("Script fuer '$schluessel' [$i] fehlt: $pfad");
+
+            // Ohne die Platzhalter laedt der Nutzer ein Script herunter, das weder
+            // weiss, wohin es melden soll, noch mit welchem Token.
+            $inhalt = file_get_contents($pfad);
+            expect(str_contains($inhalt, '__API_URL__'))->toBeTrue("In '$schluessel' [$i] fehlt __API_URL__.");
+            expect(str_contains($inhalt, '__AGENT_TOKEN__'))->toBeTrue("In '$schluessel' [$i] fehlt __AGENT_TOKEN__.");
+        }
+    }
+});
+
+test('die Dateiendung passt zur Sprache der Variante', function () {
+    // Sonst laedt der Nutzer ein "unifi-doku.ps1" herunter, in dem Bash steht.
+    foreach (config('custom.agenten') as $schluessel => $agent) {
+        foreach ($agent['varianten'] as $variante) {
+            $endung = pathinfo($variante['skript'], PATHINFO_EXTENSION);
+
+            expect(pathinfo($variante['datei'], PATHINFO_EXTENSION))->toBe($endung,
+                "Agent '$schluessel': Downloadname und Scriptdatei haben verschiedene Endungen.");
+
+            expect($endung)->toBe($variante['name'] === 'Bash' ? 'sh' : 'ps1',
+                "Agent '$schluessel': Variante '{$variante['name']}' passt nicht zu .$endung.");
+        }
     }
 });
 
 test('jeder Eintrag beschreibt, was das Script tut und wie man es aufruft', function () {
     foreach (config('custom.agenten') as $schluessel => $agent) {
-        foreach (['name', 'skript', 'endpunkt', 'datei', 'ausfuehren_auf', 'aufruf', 'erreichbar_von', 'ueberschreiben'] as $feld) {
+        foreach (['name', 'endpunkt', 'erreichbar_von'] as $feld) {
             expect($agent[$feld] ?? null)->toBeString("Agent '$schluessel': '$feld' fehlt.")
                 ->not->toBe('');
         }
 
         expect($agent['zugangsdaten'] ?? null)->toBeBool("Agent '$schluessel': 'zugangsdaten' fehlt.");
         expect($agent['macht'] ?? [])->not->toBeEmpty("Agent '$schluessel' erklaert nicht, was das Script tut.");
+
+        foreach ($agent['varianten'] as $i => $variante) {
+            foreach (['name', 'skript', 'datei', 'ausfuehren_auf', 'aufruf', 'ueberschreiben'] as $feld) {
+                expect($variante[$feld] ?? null)->toBeString("Agent '$schluessel' [$i]: '$feld' fehlt.")
+                    ->not->toBe('');
+            }
+        }
     }
 });
 
@@ -79,13 +105,16 @@ test('das erzeugte Token liefert zu jedem Agenten ein fertiges Script', function
     expect($skripte)->toHaveCount(count(config('custom.agenten')));
 
     foreach (config('custom.agenten') as $schluessel => $agent) {
-        $skript = $skripte[$schluessel];
+        foreach ($agent['varianten'] as $i => $variante) {
+            $skript = $skripte[$schluessel][$i];
 
-        // Eingesetzt, nicht mehr Platzhalter.
-        expect($skript)->toContain($token)
-            ->and($skript)->toContain(url('/api/agent/'.$agent['endpunkt']))
-            ->and($skript)->not->toContain('__API_URL__')
-            ->and($skript)->not->toContain('__AGENT_TOKEN__');
+            // Eingesetzt, nicht mehr Platzhalter. Beide Fassungen melden an
+            // denselben Endpunkt - sie sind zwei Wege zur selben Aufgabe.
+            expect($skript)->toContain($token)
+                ->and($skript)->toContain(url('/api/agent/'.$agent['endpunkt']))
+                ->and($skript)->not->toContain('__API_URL__')
+                ->and($skript)->not->toContain('__AGENT_TOKEN__');
+        }
     }
 
     // Der Token wurde tatsaechlich angelegt und gehoert diesem Kunden.

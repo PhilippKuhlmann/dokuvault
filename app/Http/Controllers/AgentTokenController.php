@@ -43,7 +43,9 @@ class AgentTokenController extends Controller
         // Ansicht einzeln nachgetragen werden.
         $skripte = [];
         foreach (config('custom.agenten', []) as $schluessel => $agent) {
-            $skripte[$schluessel] = $this->skript($agent, $plain);
+            foreach ($agent['varianten'] as $i => $variante) {
+                $skripte[$schluessel][$i] = $this->skript($variante, $agent['endpunkt'], $plain);
+            }
         }
 
         return redirect(route('agent.index', $customer))
@@ -63,20 +65,24 @@ class AgentTokenController extends Controller
     }
 
     /**
-     * Liest die Skriptdatei zu einem Agenten und setzt Ziel-URL und Token ein.
+     * Liest die Skriptdatei einer Variante und setzt Ziel-URL und Token ein.
      *
      * Die Skripte liegen als Dateien unter resources/agents/ statt als Heredoc
      * im Controller: als Datei sind sie in ihrer eigenen Sprache lesbar, von
      * einem Editor pruefbar und der Controller waechst nicht mit jedem Agenten
      * um hundert Zeilen.
+     *
+     * Die Ziel-URL kommt vom Agenten, nicht von der Variante: PowerShell- und
+     * Bash-Fassung melden an denselben Endpunkt, sie sind zwei Wege zur selben
+     * Aufgabe.
      */
-    protected function skript(array $agent, string $token): string
+    protected function skript(array $variante, string $endpunkt, string $token): string
     {
-        $inhalt = file_get_contents(resource_path('agents/'.$agent['skript']));
+        $inhalt = file_get_contents(resource_path('agents/'.$variante['skript']));
 
         return str_replace(
             ['__API_URL__', '__AGENT_TOKEN__'],
-            [url('/api/agent/'.$agent['endpunkt']), $token],
+            [url('/api/agent/'.$endpunkt), $token],
             $inhalt
         );
     }

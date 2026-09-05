@@ -179,6 +179,18 @@ Some agents do not run on the device itself but query a system across the networ
 under a vCenter, **UniFi** picks up switches, access points and Wi-Fi networks, and
 **Microsoft 365** reads mailboxes, verified domains and booked licences through Graph.
 
+Because those agents only talk to an API, UniFi and Microsoft 365 also ship as a **shell script**
+— run them from a Mac or Linux box, no PowerShell needed (curl and jq are enough). The token page
+offers both versions side by side:
+
+```bash
+bash unifi-doku.sh        --controller https://unifi.local --user doku --unsicher
+bash microsoft365-doku.sh --tenant-id "…" --client-id "…"
+```
+
+The shell versions ask for the password rather than taking it as an argument, so it stays out of
+the process list and the shell history — or read it from `UNIFI_PASSWORD` / `M365_CLIENT_SECRET`.
+
 Those third-party credentials are **passed on the command line and never stored in DokuVault** — a
 read-only account is enough everywhere. Wi-Fi passphrases and AD passwords are never read at all.
 

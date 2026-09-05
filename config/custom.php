@@ -1274,6 +1274,12 @@ return [
     | AgentenListeTest prueft, dass zu jeder Route unter middleware('agent')
     | ein Eintrag und eine Skriptdatei existiert - und umgekehrt.
     |
+    | 'varianten': dieselbe Aufgabe, verschiedene Wege sie auszufuehren. Die
+    | Agenten, die auf dem Geraet selbst laufen, haben genau eine - Windows.
+    | Die drei, die eine fremde Schnittstelle abfragen, haben zusaetzlich eine
+    | Bash-Fassung: sie laufen ohnehin irgendwo im Netz, und wer einen Mac vor
+    | sich hat, soll dafuer nicht erst PowerShell nachinstalluieren muessen.
+    |
     | 'zugangsdaten': true bei Agenten, die eine fremde Schnittstelle abfragen
     | (vCenter, UniFi, Graph) statt auf dem Geraet selbst zu laufen. Diese
     | Zugangsdaten werden dem Skript beim Aufruf mitgegeben und NICHT in
@@ -1285,144 +1291,200 @@ return [
 
         'proxmox' => [
             'name' => 'Proxmox',
-            'skript' => 'proxmox.sh',
             'endpunkt' => 'proxmox',
-            'datei' => 'proxmox-doku.sh',
             'zugangsdaten' => false,
-            'ausfuehren_auf' => 'Ausführen auf dem Proxmox-Host (als root):',
-            'aufruf' => 'bash proxmox-doku.sh',
             'erreichbar_von' => 'Diese URL muss vom Gerät aus erreichbar sein. Falls nicht, beim Aufruf überschreiben:',
-            'ueberschreiben' => 'bash proxmox-doku.sh https://euer-server/api/agent/proxmox',
             'macht' => [
                 'Liest Host-Daten (Hersteller, Modell, Seriennummer, IP, CPU, Arbeitsspeicher, Proxmox-Version, Kernel, Storage-Pools) sowie alle laufenden VMs und LXC-Container (Name, IP, Status, Kerne, Arbeitsspeicher) – rein lesend, verändert nichts auf dem Host.',
                 'Legt den Host als Server an und jede VM bzw. jeden Container als eigenen Eintrag – oder aktualisiert sie, wenn sie schon existieren. Nichts wird gelöscht.',
                 'Dienste, Zugangsdaten und andere manuell gepflegte Angaben bleiben unangetastet.',
                 'Mehrfaches Ausführen aktualisiert dieselben Einträge, statt Duplikate anzulegen – das Script lässt sich also gefahrlos per Cronjob wiederholen.',
             ],
+            'varianten' => [
+                [
+                    'name' => 'Bash',
+                    'skript' => 'proxmox.sh',
+                    'datei' => 'proxmox-doku.sh',
+                    'ausfuehren_auf' => 'Ausführen auf dem Proxmox-Host (als root):',
+                    'aufruf' => 'bash proxmox-doku.sh',
+                    'ueberschreiben' => 'bash proxmox-doku.sh https://euer-server/api/agent/proxmox',
+                ],
+            ],
         ],
 
         'hyperv' => [
             'name' => 'Hyper-V',
-            'skript' => 'hyperv.ps1',
             'endpunkt' => 'hyperv',
-            'datei' => 'hyperv-doku.ps1',
             'zugangsdaten' => false,
-            'ausfuehren_auf' => 'Ausführen auf dem Hyper-V-Host (als Administrator):',
-            'aufruf' => '.\\hyperv-doku.ps1',
             'erreichbar_von' => 'Diese URL muss vom Host aus erreichbar sein. Falls nicht, beim Aufruf überschreiben:',
-            'ueberschreiben' => '.\\hyperv-doku.ps1 -ApiUrl "https://euer-server/api/agent/hyperv"',
             'macht' => [
                 'Liest Host-Daten (Hersteller, Modell, Seriennummer, Betriebssystem, IP, CPU, Arbeitsspeicher) über WMI/CIM sowie alle virtuellen Maschinen mit Name, Status, Kernen, Arbeitsspeicher und IP-Adresse – rein lesend, verändert nichts am Host und startet keine VM.',
                 'Legt den Host als Server an und jede VM als eigenen Eintrag – oder aktualisiert sie, wenn sie schon existieren. Nichts wird gelöscht.',
                 'Dienste, Zugangsdaten und andere manuell gepflegte Angaben bleiben unangetastet.',
                 'Mehrfaches Ausführen aktualisiert dieselben Einträge, statt Duplikate anzulegen – als geplante Aufgabe wiederholbar.',
             ],
+            'varianten' => [
+                [
+                    'name' => 'PowerShell',
+                    'skript' => 'hyperv.ps1',
+                    'datei' => 'hyperv-doku.ps1',
+                    'ausfuehren_auf' => 'Ausführen auf dem Hyper-V-Host (als Administrator):',
+                    'aufruf' => '.\\hyperv-doku.ps1',
+                    'ueberschreiben' => '.\\hyperv-doku.ps1 -ApiUrl "https://euer-server/api/agent/hyperv"',
+                ],
+            ],
         ],
 
         'windows-server' => [
             'name' => 'Windows-Server',
-            'skript' => 'windows-server.ps1',
             'endpunkt' => 'windows-server',
-            'datei' => 'windows-server-doku.ps1',
             'zugangsdaten' => false,
-            'ausfuehren_auf' => 'Ausführen auf dem Server (als Administrator):',
-            'aufruf' => '.\\windows-server-doku.ps1',
             'erreichbar_von' => 'Diese URL muss vom Server aus erreichbar sein. Falls nicht, beim Aufruf überschreiben:',
-            'ueberschreiben' => '.\\windows-server-doku.ps1 -ApiUrl "https://euer-server/api/agent/windows-server"',
             'macht' => [
                 'Liest lokale Systeminformationen (Hersteller, Modell, Seriennummer, Betriebssystem, IP, CPU, Arbeitsspeicher) über WMI/CIM sowie die installierten Serverrollen über Get-WindowsFeature – rein lesend, keine Benutzerdaten.',
                 'Legt den Rechner als Server-Eintrag an – nicht als Client. Der Windows-Client-Agent ist für Arbeitsplatzrechner gedacht; auf einem Server ausgeführt landet er unter „Clients".',
                 'Trägt die gefundenen Rollen (AD, DNS, DHCP, Dateiserver …) als Dienste ein, sofern das Feld noch leer ist. Selbst eingetragene Dienste bleiben stehen.',
                 'Mehrfaches Ausführen aktualisiert denselben Eintrag, statt Duplikate anzulegen.',
             ],
+            'varianten' => [
+                [
+                    'name' => 'PowerShell',
+                    'skript' => 'windows-server.ps1',
+                    'datei' => 'windows-server-doku.ps1',
+                    'ausfuehren_auf' => 'Ausführen auf dem Server (als Administrator):',
+                    'aufruf' => '.\\windows-server-doku.ps1',
+                    'ueberschreiben' => '.\\windows-server-doku.ps1 -ApiUrl "https://euer-server/api/agent/windows-server"',
+                ],
+            ],
         ],
 
         'windows-ad' => [
             'name' => 'Windows AD',
-            'skript' => 'windows-ad.ps1',
             'endpunkt' => 'windows-ad',
-            'datei' => 'windows-ad-doku.ps1',
             'zugangsdaten' => false,
-            'ausfuehren_auf' => 'Ausführen auf einem Domaincontroller bzw. Rechner mit RSAT-AD-Modul:',
-            'aufruf' => '.\\windows-ad-doku.ps1',
             'erreichbar_von' => 'Diese URL muss vom DC aus erreichbar sein. Falls nicht, beim Aufruf überschreiben:',
-            'ueberschreiben' => '.\\windows-ad-doku.ps1 -ApiUrl "https://euer-server/api/agent/windows-ad"',
             'macht' => [
                 'Liest alle Active-Directory-Benutzer und -Gruppen über das ActiveDirectory-Modul – rein lesend, verändert nichts im Verzeichnis.',
                 'Gemeldet werden nur „echte" Benutzer (inkl. dem eingebauten Administrator, ohne Gast/krbtgt/DefaultAccount) und selbst angelegte Gruppen – Standard-/Built-in-Gruppen werden ausgelassen.',
                 'Legt sie als AD-Benutzer bzw. AD-Gruppen an oder aktualisiert Name, Anmeldename, E-Mail-Adresse und Aktiv-Status. Passwörter werden nie ausgelesen oder gesetzt – die bleiben ausschließlich manuell gepflegt.',
                 'Mehrfaches Ausführen aktualisiert dieselben Einträge, statt Duplikate anzulegen.',
             ],
+            'varianten' => [
+                [
+                    'name' => 'PowerShell',
+                    'skript' => 'windows-ad.ps1',
+                    'datei' => 'windows-ad-doku.ps1',
+                    'ausfuehren_auf' => 'Ausführen auf einem Domaincontroller bzw. Rechner mit RSAT-AD-Modul:',
+                    'aufruf' => '.\\windows-ad-doku.ps1',
+                    'ueberschreiben' => '.\\windows-ad-doku.ps1 -ApiUrl "https://euer-server/api/agent/windows-ad"',
+                ],
+            ],
         ],
 
         'windows-client' => [
             'name' => 'Windows-Client',
-            'skript' => 'windows-client.ps1',
             'endpunkt' => 'windows-client',
-            'datei' => 'windows-client-doku.ps1',
             'zugangsdaten' => false,
-            'ausfuehren_auf' => 'Ausführen auf dem Arbeitsplatzrechner:',
-            'aufruf' => '.\\windows-client-doku.ps1',
             'erreichbar_von' => 'Diese URL muss vom Client aus erreichbar sein. Falls nicht, beim Aufruf überschreiben:',
-            'ueberschreiben' => '.\\windows-client-doku.ps1 -ApiUrl "https://euer-server/api/agent/windows-client"',
             'macht' => [
                 'Liest ausschließlich lokale Systeminformationen (Hersteller, Modell, Seriennummer, Betriebssystem, IP-Adresse) über WMI/CIM sowie die MachineGuid aus der Registry – rein lesend, keine Benutzerdaten, keine installierte Software.',
                 'Legt den Rechner als Computer-Eintrag an oder aktualisiert ihn, wenn er schon existiert.',
                 'Mehrfaches Ausführen aktualisiert denselben Eintrag, statt Duplikate anzulegen.',
             ],
+            'varianten' => [
+                [
+                    'name' => 'PowerShell',
+                    'skript' => 'windows-client.ps1',
+                    'datei' => 'windows-client-doku.ps1',
+                    'ausfuehren_auf' => 'Ausführen auf dem Arbeitsplatzrechner:',
+                    'aufruf' => '.\\windows-client-doku.ps1',
+                    'ueberschreiben' => '.\\windows-client-doku.ps1 -ApiUrl "https://euer-server/api/agent/windows-client"',
+                ],
+            ],
         ],
 
         'unifi' => [
             'name' => 'UniFi',
-            'skript' => 'unifi.ps1',
             'endpunkt' => 'unifi',
-            'datei' => 'unifi-doku.ps1',
             'zugangsdaten' => true,
-            'ausfuehren_auf' => 'Ausführen auf einem Rechner, der den UniFi-Controller erreicht:',
-            'aufruf' => '.\\unifi-doku.ps1 -Controller "https://unifi.local" -User "doku" -Password "…"',
             'erreichbar_von' => 'Diese URL muss von diesem Rechner aus erreichbar sein. Falls nicht, zusätzlich überschreiben:',
-            'ueberschreiben' => '.\\unifi-doku.ps1 -Controller "https://unifi.local" -User "doku" -Password "…" -ApiUrl "https://euer-server/api/agent/unifi"',
             'macht' => [
                 'Meldet sich am UniFi-Controller an und liest Switches, Accesspoints und WLANs (Name, Modell, Seriennummer, MAC, IP, SSID, Verschlüsselung) – rein lesend, verändert nichts am Controller.',
                 'Legt Switches, Accesspoints und WLANs als eigene Einträge an oder aktualisiert sie. Nichts wird gelöscht.',
                 'Die Zugangsdaten des Controllers werden dem Script beim Aufruf mitgegeben und nicht in DokuVault gespeichert. Ein Konto mit reinen Leserechten genügt.',
                 'Mehrfaches Ausführen aktualisiert dieselben Einträge, statt Duplikate anzulegen.',
             ],
+            'varianten' => [
+                [
+                    'name' => 'PowerShell',
+                    'skript' => 'unifi.ps1',
+                    'datei' => 'unifi-doku.ps1',
+                    'ausfuehren_auf' => 'Ausführen auf einem Windows-Rechner, der den UniFi-Controller erreicht:',
+                    'aufruf' => '.\\unifi-doku.ps1 -Controller "https://unifi.local" -User "doku" -Password "…" -ZertifikatIgnorieren',
+                    'ueberschreiben' => '.\\unifi-doku.ps1 -Controller "https://unifi.local" -User "doku" -Password "…" -ApiUrl "https://euer-server/api/agent/unifi"',
+                ],
+                [
+                    'name' => 'Bash',
+                    'skript' => 'unifi.sh',
+                    'datei' => 'unifi-doku.sh',
+                    'ausfuehren_auf' => 'Ausführen auf einem Mac oder Linux-Rechner, der den UniFi-Controller erreicht (braucht curl und jq; das Kennwort wird abgefragt):',
+                    'aufruf' => 'bash unifi-doku.sh --controller https://unifi.local --user doku --unsicher',
+                    'ueberschreiben' => 'bash unifi-doku.sh --controller https://unifi.local --user doku --api-url https://euer-server/api/agent/unifi',
+                ],
+            ],
         ],
 
         'vmware' => [
             'name' => 'VMware',
-            'skript' => 'vmware.ps1',
             'endpunkt' => 'vmware',
-            'datei' => 'vmware-doku.ps1',
             'zugangsdaten' => true,
-            'ausfuehren_auf' => 'Ausführen auf einem Rechner, der vCenter bzw. den ESXi-Host erreicht:',
-            'aufruf' => '.\\vmware-doku.ps1 -Server "vcenter.local" -User "doku@vsphere.local" -Password "…"',
             'erreichbar_von' => 'Diese URL muss von diesem Rechner aus erreichbar sein. Falls nicht, zusätzlich überschreiben:',
-            'ueberschreiben' => '.\\vmware-doku.ps1 -Server "vcenter.local" -User "doku@vsphere.local" -Password "…" -ApiUrl "https://euer-server/api/agent/vmware"',
             'macht' => [
                 'Fragt die vSphere-REST-Schnittstelle nach Hosts und virtuellen Maschinen (Name, Status, Kerne, Arbeitsspeicher) – rein lesend, kein PowerCLI nötig, verändert nichts an der Umgebung.',
                 'Legt jeden ESXi-Host als Server an und jede VM als eigenen Eintrag – oder aktualisiert sie. Nichts wird gelöscht.',
                 'Die vCenter-Zugangsdaten werden dem Script beim Aufruf mitgegeben und nicht in DokuVault gespeichert. Ein Konto mit der Rolle „Read-only" genügt.',
                 'Mehrfaches Ausführen aktualisiert dieselben Einträge, statt Duplikate anzulegen.',
             ],
+            'varianten' => [
+                [
+                    'name' => 'PowerShell',
+                    'skript' => 'vmware.ps1',
+                    'datei' => 'vmware-doku.ps1',
+                    'ausfuehren_auf' => 'Ausführen auf einem Windows-Rechner, der vCenter erreicht:',
+                    'aufruf' => '.\\vmware-doku.ps1 -Server "vcenter.local" -User "doku@vsphere.local" -Password "…" -ZertifikatIgnorieren',
+                    'ueberschreiben' => '.\\vmware-doku.ps1 -Server "vcenter.local" -User "doku@vsphere.local" -Password "…" -ApiUrl "https://euer-server/api/agent/vmware"',
+                ],
+            ],
         ],
 
         'microsoft365' => [
             'name' => 'Microsoft 365',
-            'skript' => 'microsoft365.ps1',
             'endpunkt' => 'microsoft365',
-            'datei' => 'microsoft365-doku.ps1',
             'zugangsdaten' => true,
-            'ausfuehren_auf' => 'Ausführen auf einem Rechner mit Internetzugang:',
-            'aufruf' => '.\\microsoft365-doku.ps1 -TenantId "…" -ClientId "…" -ClientSecret "…"',
             'erreichbar_von' => 'Diese URL muss von diesem Rechner aus erreichbar sein. Falls nicht, zusätzlich überschreiben:',
-            'ueberschreiben' => '.\\microsoft365-doku.ps1 -TenantId "…" -ClientId "…" -ClientSecret "…" -ApiUrl "https://euer-server/api/agent/microsoft365"',
             'macht' => [
                 'Fragt Microsoft Graph nach Postfächern, verifizierten Domains und gebuchten Lizenzen (Name, Adresse, Anzahl) – rein lesend, verändert nichts im Tenant.',
                 'Legt Postfächer, Domains und Lizenzen als eigene Einträge an oder aktualisiert sie. Nichts wird gelöscht.',
                 'Voraussetzung ist eine einmalig angelegte App-Registrierung mit ausschließlich lesenden Berechtigungen: User.Read.All, Domain.Read.All, Organization.Read.All.',
                 'Tenant-Id, Client-Id und Secret werden dem Script beim Aufruf mitgegeben und nicht in DokuVault gespeichert.',
+            ],
+            'varianten' => [
+                [
+                    'name' => 'PowerShell',
+                    'skript' => 'microsoft365.ps1',
+                    'datei' => 'microsoft365-doku.ps1',
+                    'ausfuehren_auf' => 'Ausführen auf einem Windows-Rechner mit Internetzugang:',
+                    'aufruf' => '.\\microsoft365-doku.ps1 -TenantId "…" -ClientId "…" -ClientSecret "…"',
+                    'ueberschreiben' => '.\\microsoft365-doku.ps1 -TenantId "…" -ClientId "…" -ClientSecret "…" -ApiUrl "https://euer-server/api/agent/microsoft365"',
+                ],
+                [
+                    'name' => 'Bash',
+                    'skript' => 'microsoft365.sh',
+                    'datei' => 'microsoft365-doku.sh',
+                    'ausfuehren_auf' => 'Ausführen auf einem Mac oder Linux-Rechner mit Internetzugang (braucht curl und jq; das Secret wird abgefragt):',
+                    'aufruf' => 'bash microsoft365-doku.sh --tenant-id "…" --client-id "…"',
+                    'ueberschreiben' => 'bash microsoft365-doku.sh --tenant-id "…" --client-id "…" --api-url https://euer-server/api/agent/microsoft365',
+                ],
             ],
         ],
 

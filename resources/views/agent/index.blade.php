@@ -51,29 +51,12 @@
                 </div>
 
                 @foreach ($agenten as $schluessel => $agent)
-                    @php
-                        // Bash-Scripts bekommen den passenden Typ mit, damit der
-                        // Download nicht als .txt beim Nutzer landet.
-                        $typ = str_ends_with($agent['datei'], '.sh') ? 'text/x-shellscript' : 'text/plain';
-                        $endung = pathinfo($agent['datei'], PATHINFO_EXTENSION);
-                    @endphp
-                    <div x-show="tab === @js($schluessel)" x-cloak class="mt-4" x-data="{ copied: false }">
-                        <div class="flex items-center justify-between mb-1">
-                            <label class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ __(':name-Script', ['name' => __($agent['name'])]) }} ({{ $agent['datei'] }})</label>
-                            <div class="flex gap-2">
-                                <button type="button"
-                                    @click="copyText($refs.skript.textContent); copied = true; setTimeout(() => copied = false, 1500)"
-                                    class="text-sm px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
-                                    <span x-show="!copied">{{ __('Kopieren') }}</span>
-                                    <span x-show="copied" x-cloak class="text-green-600 dark:text-green-400">{{ __('Kopiert ✓') }}</span>
-                                </button>
-                                <button type="button"
-                                    @click="const blob = new Blob([$refs.skript.textContent], {type:'{{ $typ }}'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '{{ $agent['datei'] }}'; a.click();"
-                                    class="text-sm px-3 py-1.5 rounded-lg bg-cerulean-600 text-white hover:bg-cerulean-700">
-                                    {{ __('Download') }} .{{ $endung }}
-                                </button>
-                            </div>
-                        </div>
+                    <div x-show="tab === @js($schluessel)" x-cloak class="mt-4" x-data="{ variante: 0 }">
+
+                        {{-- Was das Script tut, gilt fuer alle Varianten: die
+                             Bash- und die PowerShell-Fassung melden dasselbe an
+                             denselben Endpunkt. Deshalb steht der Kasten ueber
+                             der Variantenwahl und nicht darin. --}}
                         <div class="mb-3 rounded-lg border border-cerulean-100 bg-cerulean-50/60 p-3 dark:border-cerulean-900/60 dark:bg-cerulean-950/20">
                             <div class="text-xs font-semibold uppercase tracking-wide text-cerulean-700 dark:text-cerulean-300">{{ __('Was macht das Script?') }}</div>
                             <ul class="mt-1.5 list-inside list-disc space-y-1 text-xs text-cerulean-900 dark:text-cerulean-200">
@@ -82,26 +65,68 @@
                                 @endforeach
                             </ul>
                         </div>
-                        <pre x-ref="skript" class="overflow-x-auto rounded-lg bg-gray-900 p-4 text-xs text-gray-100 leading-relaxed">{{ session('agentSkripte')[$schluessel] ?? '' }}</pre>
-                        <div class="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
-                            <p>{{ __($agent['ausfuehren_auf']) }} <code class="break-all">{{ $agent['aufruf'] }}</code></p>
-                            <p>{{ __('Ziel-URL im Script:') }} <code class="break-all">{{ url('/api/agent/'.$agent['endpunkt']) }}</code></p>
-                            <p>
-                                {{ __($agent['erreichbar_von']) }}
-                                <code class="break-all">{{ $agent['ueberschreiben'] }}</code>
-                            </p>
-                            @if ($agent['zugangsdaten'])
-                                <p class="text-amber-600 dark:text-amber-400">
-                                    {{ __('Dieses Script fragt ein fremdes System ab. Dessen Zugangsdaten gibst du beim Aufruf mit – sie werden nicht in DokuVault gespeichert. Ein Konto mit reinen Leserechten genügt.') }}
-                                </p>
-                            @endif
-                            @if (\Illuminate\Support\Str::contains(url('/'), ['.test', 'localhost', '127.0.0.1']))
-                                <p class="text-amber-600 dark:text-amber-400">
-                                    ⚠ Die App-Adresse (APP_URL) sieht nach einer lokalen Entwicklungsumgebung aus
-                                    ({{ url('/') }}). Erzeuge den Token auf der produktiven Instanz oder überschreibe die URL beim Aufruf.
-                                </p>
-                            @endif
-                        </div>
+
+                        {{-- Nur zeigen, wo es etwas zu waehlen gibt. Die Agenten,
+                             die auf dem Geraet selbst laufen, haben genau eine
+                             Fassung - ein Umschalter mit einem Knopf waere Zierrat. --}}
+                        @if (count($agent['varianten']) > 1)
+                            <div class="mb-3 inline-flex rounded-lg border border-gray-200 p-0.5 dark:border-gray-600" role="tablist">
+                                @foreach ($agent['varianten'] as $i => $fassung)
+                                    <button type="button" @click="variante = @js($i)" role="tab"
+                                        :class="variante === @js($i) ? 'bg-cerulean-500 text-white' : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'"
+                                        class="rounded-md px-3 py-1.5 text-sm transition-colors">
+                                        {{ $fassung['name'] }}
+                                    </button>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        @foreach ($agent['varianten'] as $i => $fassung)
+                            @php
+                                // Bash-Scripts bekommen den passenden Typ mit, damit der
+                                // Download nicht als .txt beim Nutzer landet.
+                                $typ = str_ends_with($fassung['datei'], '.sh') ? 'text/x-shellscript' : 'text/plain';
+                                $endung = pathinfo($fassung['datei'], PATHINFO_EXTENSION);
+                            @endphp
+                            <div x-show="variante === @js($i)" x-data="{ copied: false }">
+                                <div class="flex items-center justify-between mb-1">
+                                    <label class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ __(':name-Script', ['name' => __($agent['name'])]) }} ({{ $fassung['datei'] }})</label>
+                                    <div class="flex gap-2">
+                                        <button type="button"
+                                            @click="copyText($refs.skript.textContent); copied = true; setTimeout(() => copied = false, 1500)"
+                                            class="text-sm px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
+                                            <span x-show="!copied">{{ __('Kopieren') }}</span>
+                                            <span x-show="copied" x-cloak class="text-green-600 dark:text-green-400">{{ __('Kopiert ✓') }}</span>
+                                        </button>
+                                        <button type="button"
+                                            @click="const blob = new Blob([$refs.skript.textContent], {type:'{{ $typ }}'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '{{ $fassung['datei'] }}'; a.click();"
+                                            class="text-sm px-3 py-1.5 rounded-lg bg-cerulean-600 text-white hover:bg-cerulean-700">
+                                            {{ __('Download') }} .{{ $endung }}
+                                        </button>
+                                    </div>
+                                </div>
+                                <pre x-ref="skript" class="overflow-x-auto rounded-lg bg-gray-900 p-4 text-xs text-gray-100 leading-relaxed">{{ session('agentSkripte')[$schluessel][$i] ?? '' }}</pre>
+                                <div class="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
+                                    <p>{{ __($fassung['ausfuehren_auf']) }} <code class="break-all">{{ $fassung['aufruf'] }}</code></p>
+                                    <p>{{ __('Ziel-URL im Script:') }} <code class="break-all">{{ url('/api/agent/'.$agent['endpunkt']) }}</code></p>
+                                    <p>
+                                        {{ __($agent['erreichbar_von']) }}
+                                        <code class="break-all">{{ $fassung['ueberschreiben'] }}</code>
+                                    </p>
+                                    @if ($agent['zugangsdaten'])
+                                        <p class="text-amber-600 dark:text-amber-400">
+                                            {{ __('Dieses Script fragt ein fremdes System ab. Dessen Zugangsdaten gibst du beim Aufruf mit – sie werden nicht in DokuVault gespeichert. Ein Konto mit reinen Leserechten genügt.') }}
+                                        </p>
+                                    @endif
+                                    @if (\Illuminate\Support\Str::contains(url('/'), ['.test', 'localhost', '127.0.0.1']))
+                                        <p class="text-amber-600 dark:text-amber-400">
+                                            ⚠ Die App-Adresse (APP_URL) sieht nach einer lokalen Entwicklungsumgebung aus
+                                            ({{ url('/') }}). Erzeuge den Token auf der produktiven Instanz oder überschreibe die URL beim Aufruf.
+                                        </p>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 @endforeach
             </div>
