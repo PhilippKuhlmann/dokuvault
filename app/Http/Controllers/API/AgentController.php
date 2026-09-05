@@ -3,17 +3,52 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Accesspoint;
 use App\Models\ADGroup;
 use App\Models\ADUser;
 use App\Models\Computer;
+use App\Models\Domain;
+use App\Models\LicenseSoftware;
+use App\Models\Mailbox;
+use App\Models\MailboxProvider;
 use App\Models\Network;
+use App\Models\NetworkSwitch;
 use App\Models\OperatingSystem;
 use App\Models\Server;
+use App\Models\Service;
 use App\Models\VM;
+use App\Models\Wifi;
 use Illuminate\Http\Request;
 
 class AgentController extends Controller
 {
+    /**
+     * Windows-Rollen und -Rollendienste, die einem Dienst aus dem Katalog
+     * entsprechen. Geprüft wird der sprachunabhängige Name, nicht der
+     * übersetzte Anzeigename.
+     *
+     * Was hier nicht steht, wird verworfen: ein Windows Server bringt gut
+     * hundert installierte Merkmale mit, von denen die meisten nichts über
+     * seine Aufgabe aussagen. Und was hier steht, wird nur übernommen, wenn
+     * der Dienstekatalog den Namen auch führt - der Agent legt keine neuen
+     * Katalogeinträge an.
+     */
+    protected const WINDOWS_ROLLEN = [
+        'AD-Domain-Services' => 'AD',
+        'AD-Certificate' => 'PKI',
+        'DNS' => 'DNS',
+        'DHCP' => 'DHCP',
+        'FS-FileServer' => 'Fileserver',
+        'FS-DFS-Namespace' => 'DFS',
+        'Print-Services' => 'Print',
+        'Remote-Desktop-Services' => 'RDS',
+        'Hyper-V' => 'Hyper-V',
+        'Web-Server' => 'IIS',
+        'UpdateServices' => 'WSUS',
+        'WDS' => 'WDS',
+        'RemoteAccess' => 'VPN',
+    ];
+
     /**
      * Nimmt die von einem Proxmox-Host gemeldeten Daten entgegen und legt
      * den Host als Server sowie seine VMs/LXC-Container als VM-Einträge an
@@ -25,13 +60,7 @@ class AgentController extends Controller
         $customer = $request->attributes->get('agentCustomer');
         $site = $request->attributes->get('agentSite');
 
-        $data = $request->validate([
-            'host.identifier' => ['required', 'string', 'max:255'],
-            'host.hostname' => ['required', 'string', 'max:255'],
-            'host.manufacturer' => ['nullable', 'string', 'max:255'],
-            'host.model' => ['nullable', 'string', 'max:255'],
-            'host.serial' => ['nullable', 'string', 'max:255'],
-            'host.ip' => ['nullable', 'string', 'max:255'],
+        $data = $request->validate(array_merge($this->hostRegeln(), $this->gastRegeln(), [
             'host.pve_version' => ['nullable', 'string', 'max:255'],
             'host.kernel' => ['nullable', 'string', 'max:255'],
             'host.cpu' => ['nullable', 'string', 'max:255'],
@@ -41,62 +70,15 @@ class AgentController extends Controller
             'host.storages.*.type' => ['nullable', 'string', 'max:255'],
             'host.storages.*.total_gb' => ['nullable', 'numeric'],
             'host.storages.*.used_gb' => ['nullable', 'numeric'],
-            'guests' => ['nullable', 'array'],
-            'guests.*.identifier' => ['required_with:guests', 'string', 'max:255'],
-            'guests.*.name' => ['nullable', 'string', 'max:255'],
-            'guests.*.vmid' => ['nullable', 'integer'],
-            'guests.*.type' => ['nullable', 'string', 'max:32'],
-            'guests.*.ostype' => ['nullable', 'string', 'max:64'],
-            'guests.*.ip' => ['nullable', 'string', 'max:255'],
-            'guests.*.status' => ['nullable', 'string', 'max:32'],
-            'guests.*.cores' => ['nullable', 'integer'],
-            'guests.*.memory_gb' => ['nullable', 'numeric'],
-        ]);
-
-        $host = $data['host'];
+        ]));
 
         // Versionsspezifisch ("Proxmox VE 8" statt nur "Proxmox VE"): Version
         // 7/8/9 haben unterschiedliche Support-Enden, ein Sammel-Eintrag
         // haette das nicht abbilden koennen.
-        $os = OperatingSystem::firstOrCreate(['name' => $this->mapPveVersion($host['pve_version'] ?? null)]);
-
-        // Hinweis: 'services' wird NICHT gesetzt – das Feld pflegt der Nutzer
-        // manuell (Rollen wie AD, FS, DNS, DHCP …). updateOrCreate lässt
-        // nicht angegebene Spalten unverändert.
-        $server = Server::updateOrCreate(
-            ['customer_id' => $customer->id, 'agent_identifier' => $host['identifier']],
-            [
-                'site_id' => $site->id,
-                'operating_system_id' => $os->id,
-                'name' => $host['hostname'],
-                'manufacturer' => $host['manufacturer'] ?? null,
-                'model' => $host['model'] ?? null,
-                'serialNumber' => $host['serial'] ?? null,
-            ]
+        [$server, $guestCount] = $this->hostUndGaeste(
+            $data['host'], $data['guests'] ?? [], $customer, $site,
+            $this->mapPveVersion($data['host']['pve_version'] ?? null)
         );
-
-        // Die IP ist keine Spalte am Geraet mehr, sondern ein Eintrag im Block
-        // "Weitere IP-Adressen".
-        $this->meldeAdresse($server, $customer->id, $site->id, $host['ip'] ?? null);
-
-        $guestCount = 0;
-        foreach ($data['guests'] ?? [] as $guest) {
-            $guestOs = OperatingSystem::firstOrCreate(['name' => $this->mapOstype($guest['ostype'] ?? null)]);
-
-            $vm = VM::updateOrCreate(
-                ['customer_id' => $customer->id, 'agent_identifier' => $guest['identifier']],
-                [
-                    'site_id' => $site->id,
-                    'server_id' => $server->id,
-                    'operating_system_id' => $guestOs->id,
-                    'name' => $guest['name'] ?? ('VM '.($guest['vmid'] ?? '')),
-                    // 'services' bleibt manuell (Rollen der VM)
-                ]
-            );
-
-            $this->meldeAdresse($vm, $customer->id, $site->id, $guest['ip'] ?? null);
-            $guestCount++;
-        }
 
         return response()->json([
             'status' => 'ok',
@@ -105,6 +87,123 @@ class AgentController extends Controller
             'server' => $server->name,
             'server_id' => $server->id,
             'guests_documented' => $guestCount,
+        ]);
+    }
+
+    /**
+     * Nimmt die von einem Hyper-V-Host gemeldeten Daten entgegen. Bis auf das
+     * Betriebssystem des Hosts - Windows statt Proxmox VE - ist es dieselbe
+     * Aufgabe wie bei proxmox(): ein Host, darunter seine Gäste.
+     */
+    public function hyperv(Request $request)
+    {
+        $customer = $request->attributes->get('agentCustomer');
+        $site = $request->attributes->get('agentSite');
+
+        $data = $request->validate(array_merge($this->hostRegeln(), $this->gastRegeln(), [
+            'host.os' => ['nullable', 'string', 'max:255'],
+            'host.cpu' => ['nullable', 'string', 'max:255'],
+            'host.memory_gb' => ['nullable', 'numeric'],
+        ]));
+
+        [$server, $guestCount] = $this->hostUndGaeste(
+            $data['host'], $data['guests'] ?? [], $customer, $site,
+            $this->osKatalogName($data['host']['os'] ?? null, 'Windows')
+        );
+
+        return response()->json([
+            'status' => 'ok',
+            'customer' => $customer->name,
+            'site' => $site->name,
+            'server' => $server->name,
+            'server_id' => $server->id,
+            'guests_documented' => $guestCount,
+        ]);
+    }
+
+    /**
+     * Nimmt die aus vCenter gemeldeten Daten entgegen - je Aufruf ein
+     * ESXi-Host mit seinen VMs. Das Script meldet jeden Host einzeln, weil die
+     * Zuordnung "welche VM läuft auf welchem Host" sonst verloren ginge.
+     *
+     * Anders als Proxmox und Hyper-V meldet vCenter weder Hersteller noch
+     * Seriennummer des Hosts: die Schnittstelle gibt sie nicht heraus. Genau
+     * dafür lässt hostUndGaeste() nicht gemeldete Felder unangetastet, statt
+     * sie mit null zu überschreiben.
+     */
+    public function vmware(Request $request)
+    {
+        $customer = $request->attributes->get('agentCustomer');
+        $site = $request->attributes->get('agentSite');
+
+        $data = $request->validate(array_merge($this->hostRegeln(), $this->gastRegeln(), [
+            'host.os' => ['nullable', 'string', 'max:255'],
+        ]));
+
+        [$server, $guestCount] = $this->hostUndGaeste(
+            $data['host'], $data['guests'] ?? [], $customer, $site,
+            $this->osKatalogName($data['host']['os'] ?? null, 'VMware ESXi')
+        );
+
+        return response()->json([
+            'status' => 'ok',
+            'customer' => $customer->name,
+            'site' => $site->name,
+            'server' => $server->name,
+            'server_id' => $server->id,
+            'guests_documented' => $guestCount,
+        ]);
+    }
+
+    /**
+     * Nimmt die von einem Windows-Server gemeldeten Daten entgegen und legt
+     * ihn als Server an - nicht als Computer. windowsClient() legt immer einen
+     * Computer an; auf einem Server ausgeführt landete der Rechner damit unter
+     * "Clients", wo ihn niemand sucht.
+     *
+     * Kennung ist wie beim Client die MachineGuid. Der Hyper-V-Agent meldet
+     * dieselbe: läuft beides auf demselben Blech, bleibt es ein Server-Eintrag.
+     */
+    public function windowsServer(Request $request)
+    {
+        $customer = $request->attributes->get('agentCustomer');
+        $site = $request->attributes->get('agentSite');
+
+        $data = $request->validate([
+            'server.identifier' => ['required', 'string', 'max:255'],
+            'server.hostname' => ['required', 'string', 'max:255'],
+            'server.manufacturer' => ['nullable', 'string', 'max:255'],
+            'server.model' => ['nullable', 'string', 'max:255'],
+            'server.serial' => ['nullable', 'string', 'max:255'],
+            'server.os' => ['nullable', 'string', 'max:255'],
+            'server.ip' => ['nullable', 'string', 'max:255'],
+            'server.cpu' => ['nullable', 'string', 'max:255'],
+            'server.memory_gb' => ['nullable', 'numeric'],
+            'server.roles' => ['nullable', 'array', 'max:500'],
+            'server.roles.*' => ['string', 'max:255'],
+        ]);
+
+        [$server] = $this->hostUndGaeste(
+            $data['server'], [], $customer, $site,
+            $this->osKatalogName($data['server']['os'] ?? null, 'Windows')
+        );
+
+        $dienste = $this->diensteAusRollen($data['server']['roles'] ?? []);
+
+        // Nur eintragen, solange das Feld leer ist. Wer die Dienste einmal von
+        // Hand gepflegt hat, weiss mehr als Get-WindowsFeature - der naechste
+        // Lauf darf das nicht ueberschreiben.
+        if ($dienste !== [] && blank($server->getRawOriginal('services'))) {
+            $server->update(['services' => implode(',', $dienste)]);
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'customer' => $customer->name,
+            'site' => $site->name,
+            'server' => $server->name,
+            'server_id' => $server->id,
+            'services_documented' => count($dienste),
         ]);
     }
 
@@ -195,13 +294,7 @@ class AgentController extends Controller
 
         $client = $data['client'];
 
-        // Win32_OperatingSystem.Caption liefert immer "Microsoft Windows ...";
-        // der Katalog fuehrt Windows-Systeme ohne dieses Praefix (siehe Seeder,
-        // z. B. "Windows Server 2012 R2 Standard"). Ohne das Kappen legte
-        // firstOrCreate bei jedem Kunden eine zweite, nie zusammengefuehrte
-        // Katalogzeile an statt die vorhandene "Windows 11 Pro" zu treffen.
-        $osName = trim(preg_replace('/^Microsoft\s+/i', '', $client['os'] ?? 'Windows'));
-        $os = OperatingSystem::firstOrCreate(['name' => $osName !== '' ? $osName : 'Windows']);
+        $os = OperatingSystem::firstOrCreate(['name' => $this->osKatalogName($client['os'] ?? null, 'Windows')]);
 
         $computer = Computer::updateOrCreate(
             ['customer_id' => $customer->id, 'agent_identifier' => $client['identifier']],
@@ -224,6 +317,309 @@ class AgentController extends Controller
             'client' => $computer->name,
             'client_id' => $computer->id,
         ]);
+    }
+
+    /**
+     * Nimmt die von einem UniFi-Controller gemeldeten Switches, Accesspoints
+     * und WLANs entgegen (Upsert über agent_identifier = MAC bzw. UniFi-Id).
+     *
+     * Das WLAN-Kennwort meldet das Script bewusst nicht - wie beim AD-Agenten
+     * bleiben Kennwörter allein manuell gepflegt. Auch das VLAN bleibt leer:
+     * welches der gepflegten Netze hinter einer SSID steht, weiß der
+     * Controller nicht.
+     */
+    public function unifi(Request $request)
+    {
+        $customer = $request->attributes->get('agentCustomer');
+        $site = $request->attributes->get('agentSite');
+
+        $data = $request->validate([
+            'site' => ['nullable', 'string', 'max:255'],
+            'switches' => ['nullable', 'array'],
+            'switches.*.identifier' => ['required_with:switches', 'string', 'max:255'],
+            'switches.*.name' => ['required_with:switches', 'string', 'max:255'],
+            'switches.*.manufacturer' => ['nullable', 'string', 'max:255'],
+            'switches.*.model' => ['nullable', 'string', 'max:255'],
+            'switches.*.serial' => ['nullable', 'string', 'max:255'],
+            'switches.*.ip' => ['nullable', 'string', 'max:255'],
+            'accesspoints' => ['nullable', 'array'],
+            'accesspoints.*.identifier' => ['required_with:accesspoints', 'string', 'max:255'],
+            'accesspoints.*.name' => ['required_with:accesspoints', 'string', 'max:255'],
+            'accesspoints.*.manufacturer' => ['nullable', 'string', 'max:255'],
+            'accesspoints.*.model' => ['nullable', 'string', 'max:255'],
+            'accesspoints.*.serial' => ['nullable', 'string', 'max:255'],
+            'accesspoints.*.ip' => ['nullable', 'string', 'max:255'],
+            'wifis' => ['nullable', 'array'],
+            'wifis.*.identifier' => ['required_with:wifis', 'string', 'max:255'],
+            'wifis.*.ssid' => ['required_with:wifis', 'string', 'max:255'],
+            'wifis.*.encryption' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $switches = 0;
+        foreach ($data['switches'] ?? [] as $g) {
+            $this->meldeNetzwerkgeraet(NetworkSwitch::class, $g, $customer, $site);
+            $switches++;
+        }
+
+        $accesspoints = 0;
+        foreach ($data['accesspoints'] ?? [] as $g) {
+            $this->meldeNetzwerkgeraet(Accesspoint::class, $g, $customer, $site);
+            $accesspoints++;
+        }
+
+        $wlans = 0;
+        foreach ($data['wifis'] ?? [] as $w) {
+            Wifi::updateOrCreate(
+                ['customer_id' => $customer->id, 'agent_identifier' => $w['identifier']],
+                [
+                    'site_id' => $site->id,
+                    'ssid' => $w['ssid'],
+                    'encryption' => $w['encryption'] ?? null,
+                    // 'password' und 'network_id' bleiben unangetastet
+                ]
+            );
+            $wlans++;
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'customer' => $customer->name,
+            'site' => $site->name,
+            'switches_documented' => $switches,
+            'accesspoints_documented' => $accesspoints,
+            'wifis_documented' => $wlans,
+        ]);
+    }
+
+    /**
+     * Nimmt die aus Microsoft Graph gemeldeten Postfächer, Domains und
+     * Lizenzen entgegen (Upsert über agent_identifier = Objekt-Id im Tenant).
+     *
+     * Ohne Standort: Postfächer, Domains und Lizenzen hängen am Kunden, nicht
+     * an einem Ort - ein Postfach steht in keinem Serverraum.
+     */
+    public function microsoft365(Request $request)
+    {
+        $customer = $request->attributes->get('agentCustomer');
+
+        $data = $request->validate([
+            'tenant' => ['nullable', 'string', 'max:255'],
+            'mailboxes' => ['nullable', 'array'],
+            'mailboxes.*.identifier' => ['required_with:mailboxes', 'string', 'max:255'],
+            'mailboxes.*.name' => ['nullable', 'string', 'max:255'],
+            'mailboxes.*.mail' => ['nullable', 'string', 'max:255'],
+            'mailboxes.*.username' => ['nullable', 'string', 'max:255'],
+            'domains' => ['nullable', 'array'],
+            'domains.*.identifier' => ['required_with:domains', 'string', 'max:255'],
+            'domains.*.name' => ['required_with:domains', 'string', 'max:255'],
+            'licences' => ['nullable', 'array'],
+            'licences.*.identifier' => ['required_with:licences', 'string', 'max:255'],
+            'licences.*.name' => ['required_with:licences', 'string', 'max:255'],
+            'licences.*.gebucht' => ['nullable', 'integer'],
+            'licences.*.belegt' => ['nullable', 'integer'],
+        ]);
+
+        $postfaecher = 0;
+        if ($data['mailboxes'] ?? false) {
+            // Wie proxmox() es mit dem Betriebssystem tut: den Anbieter einmal
+            // anlegen und danach wiederverwenden. Die Serverangaben sind bei
+            // Microsoft 365 fuer alle Tenants dieselben und in der Tabelle
+            // Pflicht; gesetzt werden sie nur beim Anlegen, ein von Hand
+            // geaenderter Eintrag bleibt also stehen.
+            $anbieter = MailboxProvider::firstOrCreate(['name' => 'Microsoft 365'], [
+                'pop3server' => 'outlook.office365.com',
+                'pop3port' => '995',
+                'imapserver' => 'outlook.office365.com',
+                'imapport' => '993',
+                'smtpserver' => 'smtp.office365.com',
+                'smtpport' => '587',
+            ]);
+
+            foreach ($data['mailboxes'] as $m) {
+                $postfach = Mailbox::firstOrNew([
+                    'customer_id' => $customer->id,
+                    'agent_identifier' => $m['identifier'],
+                ]);
+
+                // Nur beim Anlegen setzen: wer das Postfach spaeter einem
+                // anderen Anbieter zugeordnet hat, wird nicht ueberstimmt.
+                $postfach->mailbox_provider_id ??= $anbieter->id;
+
+                $postfach->fill([
+                    'name' => $m['name'] ?? null,
+                    'mailAdress' => $m['mail'] ?? null,
+                    'username' => $m['username'] ?? null,
+                    // 'password' bleibt unangetastet (manuell gepflegt)
+                ])->save();
+
+                $postfaecher++;
+            }
+        }
+
+        $domains = 0;
+        foreach ($data['domains'] ?? [] as $d) {
+            Domain::updateOrCreate(
+                ['customer_id' => $customer->id, 'agent_identifier' => $d['identifier']],
+                ['name' => $d['name']]
+            );
+            $domains++;
+        }
+
+        $lizenzen = 0;
+        foreach ($data['licences'] ?? [] as $l) {
+            LicenseSoftware::updateOrCreate(
+                ['customer_id' => $customer->id, 'agent_identifier' => $l['identifier']],
+                [
+                    'name' => $this->lizenzName($l),
+                    'abo' => true,
+                    // 'key' bleibt leer: einen Schluessel gibt es bei einem
+                    // Microsoft-365-Abonnement nicht.
+                ]
+            );
+            $lizenzen++;
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'customer' => $customer->name,
+            'tenant' => $data['tenant'] ?? null,
+            'mailboxes_documented' => $postfaecher,
+            'domains_documented' => $domains,
+            'licences_documented' => $lizenzen,
+        ]);
+    }
+
+    /**
+     * Legt einen Host als Server an und seine Gäste als VMs bzw. aktualisiert
+     * sie. Proxmox, Hyper-V, VMware und der Windows-Server-Agent tun genau
+     * das; nur die Herkunft des Betriebssystemnamens unterscheidet sie.
+     *
+     * @return array{0: Server, 1: int} Server und Zahl der gemeldeten Gäste
+     */
+    protected function hostUndGaeste(array $host, array $gaeste, $customer, $site, string $hostOs): array
+    {
+        $os = OperatingSystem::firstOrCreate(['name' => $hostOs]);
+
+        // Hinweis: 'services' wird hier NICHT gesetzt - das Feld pflegt der
+        // Nutzer manuell (Rollen wie AD, FS, DNS, DHCP ...). Allein
+        // windowsServer() traegt etwas ein, und auch nur in ein leeres Feld.
+        $attribute = [
+            'site_id' => $site->id,
+            'operating_system_id' => $os->id,
+            'name' => $host['hostname'],
+        ];
+
+        // Nur gemeldete Felder schreiben. vCenter gibt Hersteller, Modell und
+        // Seriennummer nicht heraus - wuerde hier stur null eingetragen, loeschte
+        // jeder Lauf, was jemand von Hand nachgetragen hat.
+        foreach (['manufacturer' => 'manufacturer', 'model' => 'model', 'serial' => 'serialNumber'] as $quelle => $spalte) {
+            if (array_key_exists($quelle, $host)) {
+                $attribute[$spalte] = $host[$quelle];
+            }
+        }
+
+        $server = Server::updateOrCreate(
+            ['customer_id' => $customer->id, 'agent_identifier' => $host['identifier']],
+            $attribute
+        );
+
+        // Die IP ist keine Spalte am Geraet mehr, sondern ein Eintrag im Block
+        // "Weitere IP-Adressen".
+        $this->meldeAdresse($server, $customer->id, $site->id, $host['ip'] ?? null);
+
+        $anzahl = 0;
+        foreach ($gaeste as $gast) {
+            // Proxmox meldet eine Kennung ('l26', 'win11'), die anderen einen
+            // lesbaren Namen ("Windows Server 2022"). Ein lesbarer Name sticht.
+            $gastOs = OperatingSystem::firstOrCreate([
+                'name' => array_key_exists('os', $gast) && filled($gast['os'])
+                    ? $this->osKatalogName($gast['os'], 'Unbekannt')
+                    : $this->mapOstype($gast['ostype'] ?? null),
+            ]);
+
+            $vm = VM::updateOrCreate(
+                ['customer_id' => $customer->id, 'agent_identifier' => $gast['identifier']],
+                [
+                    'site_id' => $site->id,
+                    'server_id' => $server->id,
+                    'operating_system_id' => $gastOs->id,
+                    'name' => $gast['name'] ?? ('VM '.($gast['vmid'] ?? '')),
+                    // 'services' bleibt manuell (Rollen der VM)
+                ]
+            );
+
+            $this->meldeAdresse($vm, $customer->id, $site->id, $gast['ip'] ?? null);
+            $anzahl++;
+        }
+
+        return [$server, $anzahl];
+    }
+
+    /**
+     * Legt einen Switch bzw. Accesspoint an oder aktualisiert ihn.
+     *
+     * @param  class-string  $klasse
+     */
+    protected function meldeNetzwerkgeraet(string $klasse, array $g, $customer, $site): void
+    {
+        $geraet = $klasse::updateOrCreate(
+            ['customer_id' => $customer->id, 'agent_identifier' => $g['identifier']],
+            [
+                'site_id' => $site->id,
+                'name' => $g['name'],
+                'manufacturer' => $g['manufacturer'] ?? null,
+                'model' => $g['model'] ?? null,
+                'serialNumber' => $g['serial'] ?? null,
+                // 'username'/'password' bleiben unangetastet (manuell gepflegt)
+            ]
+        );
+
+        $this->meldeAdresse($geraet, $customer->id, $site->id, $g['ip'] ?? null);
+    }
+
+    /**
+     * Übersetzt gemeldete Windows-Rollen in Dienste aus dem Katalog.
+     *
+     * Der Abgleich gegen die vorhandenen Dienste ist Absicht: der Agent legt
+     * keinen Katalogeintrag an. Sonst stünden nach dem ersten Lauf Dienste in
+     * der Auswahl, die niemand angelegt hat - und bei jedem Kunden andere.
+     *
+     * @param  array<int, string>  $rollen
+     * @return array<int, string>
+     */
+    protected function diensteAusRollen(array $rollen): array
+    {
+        $gewuenscht = collect($rollen)
+            ->map(fn ($rolle) => self::WINDOWS_ROLLEN[$rolle] ?? null)
+            ->filter()
+            ->unique();
+
+        if ($gewuenscht->isEmpty()) {
+            return [];
+        }
+
+        return $gewuenscht
+            ->intersect(Service::pluck('name'))
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Baut den Namen der Lizenz. Die Stückzahl gehört mit hinein: die Tabelle
+     * hat keine Spalte dafür, und "wie viele der gebuchten Lizenzen sind
+     * eigentlich belegt?" ist beim Kunden die erste Frage. Der Eintrag gehört
+     * dem Agenten (agent_identifier), der Name darf sich also mit jedem Lauf
+     * an die tatsächliche Zahl anpassen.
+     */
+    protected function lizenzName(array $lizenz): string
+    {
+        $name = trim($lizenz['name']);
+
+        if (! isset($lizenz['gebucht'])) {
+            return $name;
+        }
+
+        return $name.' ('.($lizenz['belegt'] ?? 0).' von '.$lizenz['gebucht'].' belegt)';
     }
 
     /**
@@ -256,6 +652,62 @@ class AgentController extends Controller
             'customer_id' => $customerId,
             'network_id' => Network::fuerAdresse($customerId, $siteId, $adresse)?->id,
         ]);
+    }
+
+    /**
+     * Die Regeln, die jeder Host-Meldung gemeinsam sind.
+     *
+     * @return array<string, array<int, string>>
+     */
+    protected function hostRegeln(): array
+    {
+        return [
+            'host.identifier' => ['required', 'string', 'max:255'],
+            'host.hostname' => ['required', 'string', 'max:255'],
+            'host.manufacturer' => ['nullable', 'string', 'max:255'],
+            'host.model' => ['nullable', 'string', 'max:255'],
+            'host.serial' => ['nullable', 'string', 'max:255'],
+            'host.ip' => ['nullable', 'string', 'max:255'],
+        ];
+    }
+
+    /**
+     * Die Regeln, die jeder Gast-Meldung gemeinsam sind.
+     *
+     * @return array<string, array<int, string>>
+     */
+    protected function gastRegeln(): array
+    {
+        return [
+            'guests' => ['nullable', 'array'],
+            'guests.*.identifier' => ['required_with:guests', 'string', 'max:255'],
+            'guests.*.name' => ['nullable', 'string', 'max:255'],
+            'guests.*.vmid' => ['nullable', 'integer'],
+            'guests.*.type' => ['nullable', 'string', 'max:32'],
+            'guests.*.ostype' => ['nullable', 'string', 'max:64'],
+            'guests.*.os' => ['nullable', 'string', 'max:255'],
+            'guests.*.ip' => ['nullable', 'string', 'max:255'],
+            'guests.*.status' => ['nullable', 'string', 'max:32'],
+            'guests.*.cores' => ['nullable', 'integer'],
+            'guests.*.memory_gb' => ['nullable', 'numeric'],
+        ];
+    }
+
+    /**
+     * Bringt einen gemeldeten Betriebssystemnamen auf die Schreibweise des
+     * Katalogs.
+     *
+     * Win32_OperatingSystem.Caption liefert immer "Microsoft Windows ...";
+     * der Katalog fuehrt Windows-Systeme ohne dieses Praefix (siehe Seeder,
+     * z. B. "Windows Server 2012 R2 Standard"). Ohne das Kappen legte
+     * firstOrCreate bei jedem Kunden eine zweite, nie zusammengefuehrte
+     * Katalogzeile an statt die vorhandene "Windows 11 Pro" zu treffen.
+     */
+    protected function osKatalogName(?string $name, string $ersatz): string
+    {
+        $sauber = trim(preg_replace('/^Microsoft\s+/i', '', (string) $name));
+
+        return $sauber !== '' ? $sauber : $ersatz;
     }
 
     protected function mapOstype(?string $ostype): string

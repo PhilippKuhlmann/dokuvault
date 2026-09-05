@@ -1,5 +1,27 @@
 # Changelog
 
+## 26.09.05
+
+### Added
+
+- **Fünf neue Agenten.** Bisher füllten drei Agenten 5 der 39 Objektarten; alles andere wurde abgetippt. Dazu kommen jetzt:
+  - **Hyper-V** — meldet den Host als Server und jede virtuelle Maschine als eigenen Eintrag, mit Name, Status, Kernen, Arbeitsspeicher und IP. Das Gastbetriebssystem kommt über die Integrationsdienste; fehlen sie, bleibt das Feld leer, statt geraten zu werden.
+  - **Windows-Server** — legt den Rechner als **Server** an, nicht als Client. Wer den Windows-Client-Agenten auf einem Server laufen ließ, fand ihn danach unter „Clients", wo ihn niemand sucht. Zusätzlich liest er die installierten Serverrollen und trägt sie als Dienste ein, **solange das Feld leer ist** — wer die Dienste einmal von Hand gepflegt hat, weiß mehr als `Get-WindowsFeature`. Gemeldet wird der sprachunabhängige Rollenname (`AD-Domain-Services`), nicht der übersetzte Anzeigename, und übernommen wird nur, was der Dienstekatalog schon führt: der Agent legt keine Katalogeinträge an.
+  - **UniFi** — ein Skript, drei Objektarten: Switches, Accesspoints und WLANs. Erkannt werden die Geräte an der MAC-Adresse, WLANs an ihrer Controller-Id; ein umbenanntes Gerät bleibt derselbe Eintrag. Das Skript spricht sowohl UniFi OS (UDM, Cloud Key Gen2+) als auch den klassischen Controller an, ohne dass man die Bauart kennen muss.
+  - **VMware** — über die vSphere-REST-Schnittstelle, ohne PowerCLI. Je ESXi-Host ein Server mit seinen VMs; die Zuordnung „welche VM läuft auf welchem Host" bleibt dabei erhalten. Voraussetzung ist vCenter — ein einzeln stehender ESXi-Host bringt diese Endpunkte nicht mit.
+  - **Microsoft 365 / Entra ID** — Postfächer, verifizierte Domains und gebuchte Lizenzen über Microsoft Graph. Die Lizenz trägt die Stückzahl im Namen („… (12 von 15 belegt)"), weil die Tabelle keine Spalte dafür hat und das beim Kunden die erste Frage ist.
+- **Zugangsdaten fremder Systeme werden nicht gespeichert.** vCenter, UniFi-Controller und die Graph-App-Registrierung braucht das jeweilige Skript, nicht DokuVault: Sie werden beim Aufruf mitgegeben. Ein Konto mit reinen Leserechten genügt überall. WLAN-Kennwörter liest der UniFi-Agent gar nicht erst aus — wie der AD-Agent nie ein Kennwort anfasst.
+
+### Changed
+
+- **Die Agent-Skripte stehen nicht mehr im Controller.** Sie liegen als Dateien unter `resources/agents/`, die Beschreibung je Agent in `config/custom.php`. Vorher trug der `AgentTokenController` 320 Zeilen Heredoc für drei Skripte und die Agent-Seite drei fest verdrahtete Blöcke à 45 Zeilen — fünf weitere Agenten wären rund 580 Zeilen Kopie in zwei Dateien gewesen. Jetzt ist die Seite eine Schleife, und ein neuer Agent ist ein Listeneintrag plus eine Datei.
+- **Ein nicht gemeldetes Feld wird nicht mehr überschrieben.** vCenter gibt Hersteller, Modell und Seriennummer eines Hosts nicht heraus. Wäre dort stur `null` eingetragen worden, hätte jeder Lauf gelöscht, was jemand von Hand nachgetragen hat.
+- **VLAN und Kennwort eines WLANs dürfen fehlen.** Beide Spalten waren `NOT NULL`. Ein am Controller gefundenes WLAN hätte sich damit nur anlegen lassen, indem der Agent etwas erfindet. Am Formular ändert sich nichts: Wer ein WLAN von Hand einträgt, wird weiter nach beidem gefragt.
+
+### Fixed
+
+- **Ein Agent ohne Download kann nicht mehr entstehen.** Ein Invariantentest prüft in beide Richtungen: zu jedem Endpunkt unter `middleware('agent')` gibt es einen Listeneintrag und eine Skriptdatei mit beiden Platzhaltern — und zu jedem Listeneintrag einen Endpunkt.
+
 ## 26.09.04
 
 ### Added

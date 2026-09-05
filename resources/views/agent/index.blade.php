@@ -5,13 +5,24 @@
         <div class="p-5 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700">
             <div class="text-2xl font-CoconPro text-chathams-blue-800 dark:text-gray-100">{{ __('Auto-Dokumentation') }}</div>
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                {{ __('Erzeuge einen Agent-Token und lade das passende Script herunter – für Proxmox-Hosts, Windows Active Directory oder Windows-Arbeitsplatzrechner. Auf dem Gerät ausgeführt, dokumentiert es sich selbst. Der Token ist an den gewählten Standort gebunden und darf ausschließlich Dokumentationsdaten melden – kein weiterer Zugriff.') }}
+                {{ __('Erzeuge einen Agent-Token und lade das passende Script herunter – für Proxmox, Hyper-V, VMware, Windows-Server und -Arbeitsplatzrechner, Active Directory, UniFi oder Microsoft 365. Einmal ausgeführt, dokumentiert sich die Umgebung selbst. Der Token ist an den gewählten Standort gebunden und darf ausschließlich Dokumentationsdaten melden – kein weiterer Zugriff.') }}
             </p>
         </div>
 
-        {{-- Frisch erzeugter Token + Scripts (nur einmalig sichtbar) --}}
+        {{-- Frisch erzeugter Token + Scripts (nur einmalig sichtbar).
+
+             Ein Block fuer alle Agenten, gespeist aus config('custom.agenten').
+             Vorher stand hier je Agent ein eigener, fast gleicher Block von
+             rund 45 Zeilen - bei acht Agenten waeren das 360 Zeilen Kopie. --}}
         @if (session('newToken'))
-            <div x-data="{ tab: 'proxmox' }" class="p-5 rounded-xl border border-green-300 bg-green-50 shadow-sm dark:bg-gray-800 dark:border-green-800">
+            {{-- Blockform, nicht @php(...): Blade sucht den Rohblock von @php
+                 bis zum naechsten @endphp. Die Kurzform hier haette den
+                 @endphp der Schleife weiter unten gekapert - alles
+                 dazwischen waere rohes PHP geworden. --}}
+            @php
+                $agenten = config('custom.agenten', []);
+            @endphp
+            <div x-data="{ tab: @js(array_key_first($agenten)) }" class="p-5 rounded-xl border border-green-300 bg-green-50 shadow-sm dark:bg-gray-800 dark:border-green-800">
                 <div class="text-lg font-CoconPro text-green-800 dark:text-green-300">
                     Token „{{ session('newTokenName') }}" erstellt
                 </div>
@@ -27,155 +38,72 @@
                     </div>
                 </div>
 
-                {{-- Script-Umschalter --}}
-                <div class="mt-4 flex gap-1 border-b border-green-200 dark:border-green-800">
-                    <button type="button" @click="tab = 'proxmox'"
-                        :class="tab === 'proxmox' ? 'border-cerulean-600 text-cerulean-700 dark:text-cerulean-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700'"
-                        class="px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors">
-                        {{ __('Proxmox') }}
-                    </button>
-                    <button type="button" @click="tab = 'windowsAd'"
-                        :class="tab === 'windowsAd' ? 'border-cerulean-600 text-cerulean-700 dark:text-cerulean-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700'"
-                        class="px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors">
-                        {{ __('Windows AD') }}
-                    </button>
-                    <button type="button" @click="tab = 'windowsClient'"
-                        :class="tab === 'windowsClient' ? 'border-cerulean-600 text-cerulean-700 dark:text-cerulean-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700'"
-                        class="px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors">
-                        {{ __('Windows-Client') }}
-                    </button>
+                {{-- Script-Umschalter. flex-wrap: acht Reiter passen nicht mehr
+                     in eine Zeile, ohne sie waeren die letzten abgeschnitten. --}}
+                <div class="mt-4 flex flex-wrap gap-1 border-b border-green-200 dark:border-green-800">
+                    @foreach ($agenten as $schluessel => $agent)
+                        <button type="button" @click="tab = @js($schluessel)"
+                            :class="tab === @js($schluessel) ? 'border-cerulean-600 text-cerulean-700 dark:text-cerulean-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700'"
+                            class="px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors">
+                            {{ __($agent['name']) }}
+                        </button>
+                    @endforeach
                 </div>
 
-                {{-- Proxmox-Script --}}
-                <div x-show="tab === 'proxmox'" x-cloak class="mt-4" x-data="{ copied: false }">
-                    <div class="flex items-center justify-between mb-1">
-                        <label class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ __('Proxmox-Script (proxmox-doku.sh)') }}</label>
-                        <div class="flex gap-2">
-                            <button type="button"
-                                @click="copyText($refs.proxmoxScript.textContent); copied = true; setTimeout(() => copied = false, 1500)"
-                                class="text-sm px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
-                                <span x-show="!copied">{{ __('Kopieren') }}</span>
-                                <span x-show="copied" x-cloak class="text-green-600 dark:text-green-400">{{ __('Kopiert ✓') }}</span>
-                            </button>
-                            <button type="button"
-                                @click="const blob = new Blob([$refs.proxmoxScript.textContent], {type:'text/x-shellscript'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'proxmox-doku.sh'; a.click();"
-                                class="text-sm px-3 py-1.5 rounded-lg bg-cerulean-600 text-white hover:bg-cerulean-700">
-                                {{ __('Download .sh') }}
-                            </button>
+                @foreach ($agenten as $schluessel => $agent)
+                    @php
+                        // Bash-Scripts bekommen den passenden Typ mit, damit der
+                        // Download nicht als .txt beim Nutzer landet.
+                        $typ = str_ends_with($agent['datei'], '.sh') ? 'text/x-shellscript' : 'text/plain';
+                        $endung = pathinfo($agent['datei'], PATHINFO_EXTENSION);
+                    @endphp
+                    <div x-show="tab === @js($schluessel)" x-cloak class="mt-4" x-data="{ copied: false }">
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ __(':name-Script', ['name' => __($agent['name'])]) }} ({{ $agent['datei'] }})</label>
+                            <div class="flex gap-2">
+                                <button type="button"
+                                    @click="copyText($refs.skript.textContent); copied = true; setTimeout(() => copied = false, 1500)"
+                                    class="text-sm px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
+                                    <span x-show="!copied">{{ __('Kopieren') }}</span>
+                                    <span x-show="copied" x-cloak class="text-green-600 dark:text-green-400">{{ __('Kopiert ✓') }}</span>
+                                </button>
+                                <button type="button"
+                                    @click="const blob = new Blob([$refs.skript.textContent], {type:'{{ $typ }}'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '{{ $agent['datei'] }}'; a.click();"
+                                    class="text-sm px-3 py-1.5 rounded-lg bg-cerulean-600 text-white hover:bg-cerulean-700">
+                                    {{ __('Download') }} .{{ $endung }}
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-3 rounded-lg border border-cerulean-100 bg-cerulean-50/60 p-3 dark:border-cerulean-900/60 dark:bg-cerulean-950/20">
+                            <div class="text-xs font-semibold uppercase tracking-wide text-cerulean-700 dark:text-cerulean-300">{{ __('Was macht das Script?') }}</div>
+                            <ul class="mt-1.5 list-inside list-disc space-y-1 text-xs text-cerulean-900 dark:text-cerulean-200">
+                                @foreach ($agent['macht'] as $punkt)
+                                    <li>{{ __($punkt) }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        <pre x-ref="skript" class="overflow-x-auto rounded-lg bg-gray-900 p-4 text-xs text-gray-100 leading-relaxed">{{ session('agentSkripte')[$schluessel] ?? '' }}</pre>
+                        <div class="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
+                            <p>{{ __($agent['ausfuehren_auf']) }} <code class="break-all">{{ $agent['aufruf'] }}</code></p>
+                            <p>{{ __('Ziel-URL im Script:') }} <code class="break-all">{{ url('/api/agent/'.$agent['endpunkt']) }}</code></p>
+                            <p>
+                                {{ __($agent['erreichbar_von']) }}
+                                <code class="break-all">{{ $agent['ueberschreiben'] }}</code>
+                            </p>
+                            @if ($agent['zugangsdaten'])
+                                <p class="text-amber-600 dark:text-amber-400">
+                                    {{ __('Dieses Script fragt ein fremdes System ab. Dessen Zugangsdaten gibst du beim Aufruf mit – sie werden nicht in DokuVault gespeichert. Ein Konto mit reinen Leserechten genügt.') }}
+                                </p>
+                            @endif
+                            @if (\Illuminate\Support\Str::contains(url('/'), ['.test', 'localhost', '127.0.0.1']))
+                                <p class="text-amber-600 dark:text-amber-400">
+                                    ⚠ Die App-Adresse (APP_URL) sieht nach einer lokalen Entwicklungsumgebung aus
+                                    ({{ url('/') }}). Erzeuge den Token auf der produktiven Instanz oder überschreibe die URL beim Aufruf.
+                                </p>
+                            @endif
                         </div>
                     </div>
-                    <div class="mb-3 rounded-lg border border-cerulean-100 bg-cerulean-50/60 p-3 dark:border-cerulean-900/60 dark:bg-cerulean-950/20">
-                        <div class="text-xs font-semibold uppercase tracking-wide text-cerulean-700 dark:text-cerulean-300">{{ __('Was macht das Script?') }}</div>
-                        <ul class="mt-1.5 list-inside list-disc space-y-1 text-xs text-cerulean-900 dark:text-cerulean-200">
-                            <li>{{ __('Liest Host-Daten (Hersteller, Modell, Seriennummer, IP, CPU, Arbeitsspeicher, Proxmox-Version, Kernel, Storage-Pools) sowie alle laufenden VMs und LXC-Container (Name, IP, Status, Kerne, Arbeitsspeicher) – rein lesend, verändert nichts auf dem Host.') }}</li>
-                            <li>{{ __('Legt den Host als Server an und jede VM bzw. jeden Container als eigenen Eintrag – oder aktualisiert sie, wenn sie schon existieren. Nichts wird gelöscht.') }}</li>
-                            <li>{{ __('Dienste, Zugangsdaten und andere manuell gepflegte Angaben bleiben unangetastet.') }}</li>
-                            <li>{{ __('Mehrfaches Ausführen aktualisiert dieselben Einträge, statt Duplikate anzulegen – das Script lässt sich also gefahrlos per Cronjob wiederholen.') }}</li>
-                        </ul>
-                    </div>
-                    <pre x-ref="proxmoxScript" class="overflow-x-auto rounded-lg bg-gray-900 p-4 text-xs text-gray-100 leading-relaxed">{{ session('proxmoxScript') }}</pre>
-                    <div class="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
-                        <p>{{ __('Ausführen auf dem Proxmox-Host (als root):') }} <code>bash proxmox-doku.sh</code></p>
-                        <p>{{ __('Ziel-URL im Script:') }} <code class="break-all">{{ url('/api/agent/proxmox') }}</code></p>
-                        <p>
-                            {{ __('Diese URL muss vom Gerät aus erreichbar sein. Falls nicht, beim Aufruf überschreiben:') }}
-                            <code class="break-all">bash proxmox-doku.sh https://euer-server/api/agent/proxmox</code>
-                        </p>
-                        @if (\Illuminate\Support\Str::contains(url('/'), ['.test', 'localhost', '127.0.0.1']))
-                            <p class="text-amber-600 dark:text-amber-400">
-                                ⚠ Die App-Adresse (APP_URL) sieht nach einer lokalen Entwicklungsumgebung aus
-                                ({{ url('/') }}). Erzeuge den Token auf der produktiven Instanz oder überschreibe die URL beim Aufruf.
-                            </p>
-                        @endif
-                    </div>
-                </div>
-
-                {{-- Windows-AD-Script --}}
-                <div x-show="tab === 'windowsAd'" x-cloak class="mt-4" x-data="{ copied: false }">
-                    <div class="flex items-center justify-between mb-1">
-                        <label class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ __('Windows-AD-Script (windows-ad-doku.ps1)') }}</label>
-                        <div class="flex gap-2">
-                            <button type="button"
-                                @click="copyText($refs.windowsAdScript.textContent); copied = true; setTimeout(() => copied = false, 1500)"
-                                class="text-sm px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
-                                <span x-show="!copied">{{ __('Kopieren') }}</span>
-                                <span x-show="copied" x-cloak class="text-green-600 dark:text-green-400">{{ __('Kopiert ✓') }}</span>
-                            </button>
-                            <button type="button"
-                                @click="const blob = new Blob([$refs.windowsAdScript.textContent], {type:'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'windows-ad-doku.ps1'; a.click();"
-                                class="text-sm px-3 py-1.5 rounded-lg bg-cerulean-600 text-white hover:bg-cerulean-700">
-                                {{ __('Download .ps1') }}
-                            </button>
-                        </div>
-                    </div>
-                    <div class="mb-3 rounded-lg border border-cerulean-100 bg-cerulean-50/60 p-3 dark:border-cerulean-900/60 dark:bg-cerulean-950/20">
-                        <div class="text-xs font-semibold uppercase tracking-wide text-cerulean-700 dark:text-cerulean-300">{{ __('Was macht das Script?') }}</div>
-                        <ul class="mt-1.5 list-inside list-disc space-y-1 text-xs text-cerulean-900 dark:text-cerulean-200">
-                            <li>{{ __('Liest alle Active-Directory-Benutzer und -Gruppen über das ActiveDirectory-Modul – rein lesend, verändert nichts im Verzeichnis.') }}</li>
-                            <li>{{ __('Gemeldet werden nur „echte" Benutzer (inkl. dem eingebauten Administrator, ohne Gast/krbtgt/DefaultAccount) und selbst angelegte Gruppen – Standard-/Built-in-Gruppen werden ausgelassen.') }}</li>
-                            <li>{{ __('Legt sie als AD-Benutzer bzw. AD-Gruppen an oder aktualisiert Name, Anmeldename, E-Mail-Adresse und Aktiv-Status. Passwörter werden nie ausgelesen oder gesetzt – die bleiben ausschließlich manuell gepflegt.') }}</li>
-                            <li>{{ __('Mehrfaches Ausführen aktualisiert dieselben Einträge, statt Duplikate anzulegen.') }}</li>
-                        </ul>
-                    </div>
-                    <pre x-ref="windowsAdScript" class="overflow-x-auto rounded-lg bg-gray-900 p-4 text-xs text-gray-100 leading-relaxed">{{ session('windowsAdScript') }}</pre>
-                    <div class="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
-                        <p>{{ __('Ausführen auf einem Domaincontroller bzw. Rechner mit RSAT-AD-Modul:') }} <code>.\windows-ad-doku.ps1</code></p>
-                        <p>{{ __('Ziel-URL im Script:') }} <code class="break-all">{{ url('/api/agent/windows-ad') }}</code></p>
-                        <p>
-                            {{ __('Diese URL muss vom DC aus erreichbar sein. Falls nicht, beim Aufruf überschreiben:') }}
-                            <code class="break-all">.\windows-ad-doku.ps1 -ApiUrl "https://euer-server/api/agent/windows-ad"</code>
-                        </p>
-                        @if (\Illuminate\Support\Str::contains(url('/'), ['.test', 'localhost', '127.0.0.1']))
-                            <p class="text-amber-600 dark:text-amber-400">
-                                ⚠ Die App-Adresse (APP_URL) sieht nach einer lokalen Entwicklungsumgebung aus
-                                ({{ url('/') }}). Erzeuge den Token auf der produktiven Instanz oder überschreibe die URL beim Aufruf.
-                            </p>
-                        @endif
-                    </div>
-                </div>
-
-                {{-- Windows-Client-Script --}}
-                <div x-show="tab === 'windowsClient'" x-cloak class="mt-4" x-data="{ copied: false }">
-                    <div class="flex items-center justify-between mb-1">
-                        <label class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ __('Windows-Client-Script (windows-client-doku.ps1)') }}</label>
-                        <div class="flex gap-2">
-                            <button type="button"
-                                @click="copyText($refs.windowsClientScript.textContent); copied = true; setTimeout(() => copied = false, 1500)"
-                                class="text-sm px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
-                                <span x-show="!copied">{{ __('Kopieren') }}</span>
-                                <span x-show="copied" x-cloak class="text-green-600 dark:text-green-400">{{ __('Kopiert ✓') }}</span>
-                            </button>
-                            <button type="button"
-                                @click="const blob = new Blob([$refs.windowsClientScript.textContent], {type:'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'windows-client-doku.ps1'; a.click();"
-                                class="text-sm px-3 py-1.5 rounded-lg bg-cerulean-600 text-white hover:bg-cerulean-700">
-                                {{ __('Download .ps1') }}
-                            </button>
-                        </div>
-                    </div>
-                    <div class="mb-3 rounded-lg border border-cerulean-100 bg-cerulean-50/60 p-3 dark:border-cerulean-900/60 dark:bg-cerulean-950/20">
-                        <div class="text-xs font-semibold uppercase tracking-wide text-cerulean-700 dark:text-cerulean-300">{{ __('Was macht das Script?') }}</div>
-                        <ul class="mt-1.5 list-inside list-disc space-y-1 text-xs text-cerulean-900 dark:text-cerulean-200">
-                            <li>{{ __('Liest ausschließlich lokale Systeminformationen (Hersteller, Modell, Seriennummer, Betriebssystem, IP-Adresse) über WMI/CIM sowie die MachineGuid aus der Registry – rein lesend, keine Benutzerdaten, keine installierte Software.') }}</li>
-                            <li>{{ __('Legt den Rechner als Computer-Eintrag an oder aktualisiert ihn, wenn er schon existiert.') }}</li>
-                            <li>{{ __('Mehrfaches Ausführen aktualisiert denselben Eintrag, statt Duplikate anzulegen.') }}</li>
-                        </ul>
-                    </div>
-                    <pre x-ref="windowsClientScript" class="overflow-x-auto rounded-lg bg-gray-900 p-4 text-xs text-gray-100 leading-relaxed">{{ session('windowsClientScript') }}</pre>
-                    <div class="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
-                        <p>{{ __('Ausführen auf dem Arbeitsplatzrechner:') }} <code>.\windows-client-doku.ps1</code></p>
-                        <p>{{ __('Ziel-URL im Script:') }} <code class="break-all">{{ url('/api/agent/windows-client') }}</code></p>
-                        <p>
-                            {{ __('Diese URL muss vom Client aus erreichbar sein. Falls nicht, beim Aufruf überschreiben:') }}
-                            <code class="break-all">.\windows-client-doku.ps1 -ApiUrl "https://euer-server/api/agent/windows-client"</code>
-                        </p>
-                        @if (\Illuminate\Support\Str::contains(url('/'), ['.test', 'localhost', '127.0.0.1']))
-                            <p class="text-amber-600 dark:text-amber-400">
-                                ⚠ Die App-Adresse (APP_URL) sieht nach einer lokalen Entwicklungsumgebung aus
-                                ({{ url('/') }}). Erzeuge den Token auf der produktiven Instanz oder überschreibe die URL beim Aufruf.
-                            </p>
-                        @endif
-                    </div>
-                </div>
+                @endforeach
             </div>
         @endif
 

@@ -26,8 +26,13 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // Self-Service-Dokumentation: Geräte melden sich per Agent-Token selbst.
 Route::middleware('agent')->prefix('agent')->group(function () {
     Route::post('/proxmox', [AgentController::class, 'proxmox']);
+    Route::post('/hyperv', [AgentController::class, 'hyperv']);
+    Route::post('/vmware', [AgentController::class, 'vmware']);
+    Route::post('/windows-server', [AgentController::class, 'windowsServer']);
     Route::post('/windows-ad', [AgentController::class, 'windowsAd']);
     Route::post('/windows-client', [AgentController::class, 'windowsClient']);
+    Route::post('/unifi', [AgentController::class, 'unifi']);
+    Route::post('/microsoft365', [AgentController::class, 'microsoft365']);
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {

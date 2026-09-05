@@ -223,6 +223,13 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
         ->merge(array_values(config('custom.server_depths', [])))
         ->merge(collect(config('custom.trashables', []))->map(fn ($t) => $t[1] ?? null))
         ->merge(collect(config('custom.rack_device_types', []))->map(fn ($t) => $t[1] ?? null))
+        // Agenten (config/custom.php): Reiterbeschriftung, Aufrufhinweise und
+        // die Punkte unter "Was macht das Script?" stehen nicht mehr in der
+        // Ansicht, sondern laufen von dort zur Laufzeit durch __().
+        ->merge(collect(config('custom.agenten', []))->flatMap(fn ($a) => array_merge(
+            [$a['name'] ?? null, $a['ausfuehren_auf'] ?? null, $a['erreichbar_von'] ?? null],
+            $a['macht'] ?? []
+        )))
         // Beschriftungen aus Model-Konstanten laufen ebenfalls erst zur
         // Laufzeit durch __() - etwa die Rackseiten.
         ->merge(array_values(Rack::SEITEN))

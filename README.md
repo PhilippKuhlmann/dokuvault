@@ -161,9 +161,28 @@ itself, while the built-in Administrator is kept. Passwords are never read or tr
 The Windows client agent reports the hostname, manufacturer, model, serial number, operating
 system and IP address of a workstation and records it as a computer. It is recognised by an
 identifier of its own rather than by name — a renamed machine stays the same entry instead of
-becoming a second one.
+becoming a second one. The Windows **server** agent does the same but files the machine as a
+server — and reads its installed roles (AD, DNS, DHCP, file server …) into the services field,
+as long as that field is still empty.
 
-Every token may **only document** — a leaked one grants no further access. More agents will follow.
+Some agents do not run on the device itself but query a system across the network:
+
+```powershell
+# Anywhere that can reach the controller, vCenter, or the internet:
+.\hyperv-doku.ps1
+.\unifi-doku.ps1     -Controller "https://unifi.local"     -User "doku" -Password "…"
+.\vmware-doku.ps1    -Server     "vcenter.local"           -User "doku@vsphere.local" -Password "…"
+.\microsoft365-doku.ps1 -TenantId "…" -ClientId "…" -ClientSecret "…"
+```
+
+**Hyper-V** records the host and every virtual machine, **VMware** does the same for each ESXi host
+under a vCenter, **UniFi** picks up switches, access points and Wi-Fi networks, and
+**Microsoft 365** reads mailboxes, verified domains and booked licences through Graph.
+
+Those third-party credentials are **passed on the command line and never stored in DokuVault** — a
+read-only account is enough everywhere. Wi-Fi passphrases and AD passwords are never read at all.
+
+Every token may **only document** — a leaked one grants no further access.
 
 ---
 
@@ -186,7 +205,8 @@ Every token may **only document** — a leaked one grants no further access. Mor
 - **Licences** — software, Windows and access licences including expiry dates & file upload
 - **Credentials** — encrypted logins, show and copy passwords, previous password stays available
   for a configurable retention period — for when someone changed it by mistake
-- **Data capture** — initial survey wizard (16 guided steps), auto-documentation via agent (Proxmox, Windows AD, Windows client), agent
+- **Data capture** — initial survey wizard (16 guided steps), auto-documentation via **eight agents**
+  (Proxmox, Hyper-V, VMware, Windows Server, Windows AD, Windows client, UniFi, Microsoft 365), agent
   tokens managed on their own page (create, one-time reveal, revoke)
 - **Operations** — global search, searchable & filterable activity log (event, object type, user,
   time range), recycle bin (restore, plus an admin-wide view across every customer), PDF export,
