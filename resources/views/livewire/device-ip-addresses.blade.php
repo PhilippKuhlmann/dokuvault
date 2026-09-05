@@ -29,18 +29,29 @@
             </thead>
             <tbody>
                 @foreach ($entries as $entry)
-                    <tr class="border-b border-gray-50 last:border-0 dark:border-gray-700/50">
-                        {{-- Bei DHCP steht hier "DHCP" statt der Adresse: Sie stimmt
-                             nur bis zum naechsten Neustart. --}}
-                        <td class="py-2 pr-4 font-mono text-gray-900 dark:text-gray-100">{{ $entry->anzeige() }}</td>
+                    <tr class="group border-b border-gray-50 last:border-0 dark:border-gray-700/50">
+                        <td class="py-2 pr-4">
+                            {{-- DHCP ist keine Adresse und steht deshalb nicht im
+                                 Adressensatz, sondern als Marke - dieselbe wie im
+                                 IP-Plan, damit man sie wiedererkennt. --}}
+                            @if ($entry->istDhcp())
+                                <span class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-DINPro-bold text-slate-600 dark:bg-slate-700/40 dark:text-slate-300">{{ __('DHCP') }}</span>
+                            @else
+                                <span class="font-mono tabular-nums text-gray-900 dark:text-gray-100">{{ $entry->address }}</span>
+                            @endif
+                        </td>
                         <td class="py-2 pr-4 text-gray-600 dark:text-gray-300">
                             {{ $entry->network?->anzeige() ?: '—' }}
                         </td>
                         <td class="py-2 pr-4 text-gray-600 dark:text-gray-300">{{ $entry->label ?: '—' }}</td>
                         <td class="py-2 text-right">
+                            {{-- Grau bis zum Ueberfahren: Entfernen ist die
+                                 Nebenhandlung dieser Zeile, nicht ihr Zweck.
+                                 Dauerhaftes Rot zieht den Blick dorthin, wo man
+                                 gerade nicht hinwill. --}}
                             <button type="button" wire:click="remove({{ $entry->id }})"
                                 wire:confirm="IP-Adresse entfernen?"
-                                class="text-red-600 hover:text-red-700 text-sm">{{ __('Entfernen') }}</button>
+                                class="text-sm text-gray-400 hover:text-red-600 dark:text-gray-500 dark:hover:text-red-400">{{ __('Entfernen') }}</button>
                         </td>
                     </tr>
                 @endforeach
@@ -50,66 +61,85 @@
         <div class="text-sm text-gray-400 dark:text-gray-500 mb-4">{{ __('Noch keine zusätzlichen IP-Adressen.') }}</div>
     @endif
 
-    <div class="flex flex-wrap items-end gap-2" x-data>
-        <div class="flex flex-col">
-            {{-- Bei DHCP verschwindet das Adressfeld: Es gaebe nichts
-                 einzutragen, was morgen noch stimmt. Was bleibt, ist das
-                 Netz - und das wird dann Pflicht. --}}
+    {{-- Der Eingabebereich abgesetzt vom Bestand: gestrichelt, weil hier etwas
+         entsteht, das noch nicht da ist. --}}
+    <div class="rounded-lg border border-dashed border-gray-200 p-3 dark:border-gray-600" x-data>
+
+        {{-- Der Umschalter steht ueber den Feldern, weil er darueber entscheidet,
+             welche es gibt: Bei DHCP faellt das Adressfeld weg. Als Checkbox
+             unter dem Feld sah das aus wie eine Nebenangabe - und machte die
+             erste Spalte hoeher als die anderen, wodurch alle Beschriftungen
+             auf verschiedenen Hoehen lagen. --}}
+        <div class="mb-3 inline-flex rounded-lg border border-gray-200 p-0.5 dark:border-gray-600" role="tablist">
+            <button type="button" wire:click="$set('dhcp', false)" role="tab" aria-selected="{{ $dhcp ? 'false' : 'true' }}"
+                @class([
+                    'rounded-md px-3 py-1 text-xs transition-colors',
+                    'bg-cerulean-500 text-white' => ! $dhcp,
+                    'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700' => $dhcp,
+                ])>{{ __('Feste Adresse') }}</button>
+            <button type="button" wire:click="$set('dhcp', true)" role="tab" aria-selected="{{ $dhcp ? 'true' : 'false' }}"
+                @class([
+                    'rounded-md px-3 py-1 text-xs transition-colors',
+                    'bg-cerulean-500 text-white' => $dhcp,
+                    'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700' => ! $dhcp,
+                ])>{{ __('Per DHCP') }}</button>
+        </div>
+
+        {{-- items-end und je Feld eine gleich hohe Beschriftung: Sonst haengen
+             die Felder auf verschiedenen Hoehen, sobald eines eine Zusatzzeile
+             traegt. --}}
+        <div class="flex flex-wrap items-end gap-3">
             @unless ($dhcp)
-                <x-input.label :value="__('IP-Adresse')" />
-                <x-input.text feld="address" wire:model.live.debounce.400ms="address" x-ref="addr" type="text" class="mt-1 w-40" placeholder="10.10.30.1" />
-                <x-input.fehler feld="address" />
-            @else
-                <span class="mt-1 inline-flex h-[38px] w-40 items-center rounded-lg border border-dashed border-gray-300 px-3 text-sm text-gray-400 dark:border-gray-600 dark:text-gray-500">{{ __('ohne feste Adresse') }}</span>
+                <div class="flex flex-col">
+                    <x-input.label :value="__('IP-Adresse')" />
+                    <x-input.text feld="address" wire:model.live.debounce.400ms="address" x-ref="addr" type="text" class="mt-1 w-40" placeholder="10.10.30.1" />
+                    <x-input.fehler feld="address" />
+                </div>
             @endunless
 
-            <label class="mt-1.5 inline-flex items-center">
-                <input type="checkbox" wire:model.live="dhcp"
-                    class="rounded border-gray-300 text-cerulean-600 shadow-sm focus:ring-cerulean-500 dark:bg-gray-700 dark:border-gray-600">
-                <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">{{ __('Kommt per DHCP') }}</span>
-            </label>
-        </div>
-        {{-- min-w-0 + max-w-full: das Select waechst sonst auf die Breite der laengsten
-             Option ("Beschreibung (10.10.30.0/24)") und schiebt die Seite auf Mobil seitlich raus --}}
-        <div class="flex flex-col min-w-0 max-w-full">
-            <div class="flex items-baseline gap-2">
-                <x-input.label :value="$dhcp ? __('VLAN') : __('VLAN (optional)')" />
+            {{-- min-w-0 + max-w-full: das Select waechst sonst auf die Breite der laengsten
+                 Option ("Beschreibung (10.10.30.0/24)") und schiebt die Seite auf Mobil seitlich raus --}}
+            <div class="flex min-w-0 max-w-full flex-col">
+                <div class="flex items-baseline gap-2">
+                    <x-input.label :value="$dhcp ? __('VLAN') : __('VLAN (optional)')" />
 
-                {{-- Fehlt das Netz, soll man es hier anlegen koennen: Sonst ist
-                     die halb ausgefuellte Zeile beim Zurueckkommen weg. Dieselbe
-                     Komponente steht ueber der VLAN-Liste. --}}
-                <livewire:network-quick-create :customer="$kunde" :site-id="$geraeteStandort" />
+                    {{-- Fehlt das Netz, soll man es hier anlegen koennen: Sonst ist
+                         die halb ausgefuellte Zeile beim Zurueckkommen weg. Dieselbe
+                         Komponente steht ueber der VLAN-Liste. --}}
+                    <livewire:network-quick-create :customer="$kunde" :site-id="$geraeteStandort" />
+                </div>
+                {{-- Bei Auswahl eines VLANs das IP-Feld mit dem Netz-Präfix (erste 3 Oktette) vorbefüllen;
+                     ein bereits eingegebenes letztes Oktett bleibt erhalten. --}}
+                <x-input.select name="network_id" wire:model.live.debounce.400ms="network_id" class="mt-1 max-w-full"
+                    x-on:change="
+                        const prefix = $event.target.selectedOptions[0]?.dataset.prefix || '';
+                        if (prefix && $refs.addr) {
+                            const parts = $refs.addr.value.split('.');
+                            const host = parts.length === 4 ? parts[3] : '';
+                            $refs.addr.value = prefix + host;
+                            $refs.addr.dispatchEvent(new Event('input'));
+                        }
+                    ">
+                    <option value="">— kein VLAN —</option>
+                    @foreach ($networks as $network)
+                        @php
+                            $octets = explode('.', (string) $network->network);
+                            $prefix = count($octets) === 4 ? $octets[0] . '.' . $octets[1] . '.' . $octets[2] . '.' : '';
+                        @endphp
+                        <option value="{{ $network->id }}" data-prefix="{{ $prefix }}">{{ $network->anzeige() }} ({{ $network->network }}/{{ $network->cidr }})</option>
+                    @endforeach
+                </x-input.select>
+                <x-input.fehler feld="network_id" />
             </div>
-            {{-- Bei Auswahl eines VLANs das IP-Feld mit dem Netz-Präfix (erste 3 Oktette) vorbefüllen;
-                 ein bereits eingegebenes letztes Oktett bleibt erhalten. --}}
-            <x-input.select name="network_id" wire:model.live.debounce.400ms="network_id" class="mt-1 max-w-full"
-                x-on:change="
-                    const prefix = $event.target.selectedOptions[0]?.dataset.prefix || '';
-                    if (prefix) {
-                        const parts = $refs.addr.value.split('.');
-                        const host = parts.length === 4 ? parts[3] : '';
-                        $refs.addr.value = prefix + host;
-                        $refs.addr.dispatchEvent(new Event('input'));
-                    }
-                ">
-                <option value="">— kein VLAN —</option>
-                @foreach ($networks as $network)
-                    @php
-                        $octets = explode('.', (string) $network->network);
-                        $prefix = count($octets) === 4 ? $octets[0] . '.' . $octets[1] . '.' . $octets[2] . '.' : '';
-                    @endphp
-                    <option value="{{ $network->id }}" data-prefix="{{ $prefix }}">{{ $network->anzeige() }} ({{ $network->network }}/{{ $network->cidr }})</option>
-                @endforeach
-            </x-input.select>
-            <x-input.fehler feld="network_id" />
-        </div>
-        <div class="flex flex-col">
-            <x-input.label :value="__('Bezeichnung (optional)')" />
-            <x-input.text wire:model.live.debounce.400ms="label" type="text" class="mt-1 w-48" :placeholder="__('z. B. Gateway')" />
-        </div>
-        <x-input.button type="button" size="feld" wire:click="add" :label="__('Hinzufügen')" />
-    </div>
 
+            <div class="flex flex-col">
+                <x-input.label :value="__('Bezeichnung (optional)')" />
+                <x-input.text wire:model.live.debounce.400ms="label" type="text" class="mt-1 w-48" :placeholder="__('z. B. Gateway')" />
+            </div>
+
+            <x-input.button type="button" size="feld" wire:click="add" :label="__('Hinzufügen')" />
+        </div>
+    </div>
 
 </div>
 </div>
