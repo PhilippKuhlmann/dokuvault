@@ -125,7 +125,7 @@
                                 {{ Zeit::anzeigen($activity->created_at) }}
                             </td>
                             <td class="px-4 py-2.5 text-gray-900 dark:text-gray-100">
-                                {{ $activity->causer?->name ?? __('System') }}
+                                {{ \App\Support\Protokoll::verursacher($activity->causer) }}
                                 {{-- Der Kunde dahinter, wenn es ein Kundenzugang
                                      war: Sonst steht dort nur ein Name, und wer
                                      das war, muesste man anderswo nachschlagen. --}}

@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\AgentToken;
 use Closure;
 use Illuminate\Http\Request;
+use Spatie\Activitylog\Facades\CauserResolver;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthenticateAgent
@@ -30,6 +31,16 @@ class AuthenticateAgent
         }
 
         $token->forceFill(['last_used_at' => now()])->saveQuietly();
+
+        /*
+         * Der Token ist der Verursacher im Protokoll.
+         *
+         * Ohne das stand dort "System": Ein Agent hat keinen angemeldeten
+         * Benutzer, und wer nachsah, wer die WLANs angelegt hat, fand
+         * niemanden. Der Token beantwortet die Frage - er traegt den Namen,
+         * den jemand ihm gegeben hat, und haengt an Kunde und Standort.
+         */
+        CauserResolver::setCauser($token);
 
         $request->attributes->set('agentToken', $token);
         $request->attributes->set('agentCustomer', $token->customer);

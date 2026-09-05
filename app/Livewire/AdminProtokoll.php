@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\AgentToken;
 use App\Models\User;
 use Carbon\Carbon;
 use Livewire\Attributes\Url;
@@ -62,7 +63,12 @@ class AdminProtokoll extends Component
         $abfrage = Activity::with('causer.customer')
             ->when($this->ereignis !== '', fn ($a) => $a->where('event', $this->ereignis))
             ->when($this->art !== '', fn ($a) => $a->where('subject_type', $this->art))
-            ->when($this->benutzer !== '', fn ($a) => $a->where('causer_id', (int) $this->benutzer))
+            // Typ UND Id: Ein Agent-Token mit der Id 5 ist nicht der Benutzer
+            // mit der Id 5. Ohne den Typ zeigte der Filter beide.
+            ->when($this->benutzer !== '', function ($a) {
+                [$typ, $id] = $this->verursacherWahl();
+                $a->where('causer_type', $typ)->where('causer_id', $id);
+            })
             ->when($this->tage > 0, fn ($a) => $a->where('created_at', '>=', $this->grenze()))
             // Volltext über die Eigenschaften: In einem Protokoll sucht man
             // nicht nach einem Feld, sondern nach dem, woran man sich erinnert -
@@ -131,20 +137,51 @@ class AdminProtokoll extends Component
      */
     protected function verursacher(): array
     {
-        $ids = Activity::whereNotNull('causer_id')->distinct()->pluck('causer_id');
+        $ids = Activity::where('causer_type', User::class)
+            ->whereNotNull('causer_id')->distinct()->pluck('causer_id');
 
         // Nach Herkunft getrennt: Ein Kundenzugang mit Schreibrecht aendert
         // Daten wie jeder Techniker, und genau dann will man nachsehen, was er
         // getan hat. In einer Liste aus lauter Namen liesse sich aber nicht
         // erkennen, wer zu wem gehoert - bei mehreren Kunden heissen die
         // Zugaenge schnell aehnlich.
-        return User::whereIn('id', $ids)
+        //
+        // Der Wert traegt die Art mit ('user:5'), weil ein Agent-Token
+        // dieselbe Id haben kann wie ein Benutzer.
+        $gruppen = User::whereIn('id', $ids)
             ->with('customer:id,name')
             ->orderBy('name')
             ->get(['id', 'name', 'customer_id'])
             ->groupBy(fn ($nutzer) => $nutzer->customer?->name ?? __('Mitarbeiter'))
             ->sortKeys()
-            ->map(fn ($gruppe) => $gruppe->pluck('name', 'id'))
+            ->map(fn ($gruppe) => $gruppe->mapWithKeys(fn ($n) => ['user:'.$n->id => $n->name]))
             ->all();
+
+        // Agenten stehen unten und getrennt: "wer hat das angelegt?" wird bei
+        // einem Agenten anders beantwortet als bei einem Menschen.
+        $tokenIds = Activity::where('causer_type', AgentToken::class)
+            ->whereNotNull('causer_id')->distinct()->pluck('causer_id');
+
+        $tokens = AgentToken::whereIn('id', $tokenIds)->orderBy('name')->get(['id', 'name']);
+
+        if ($tokens->isNotEmpty()) {
+            $gruppen[__('Agenten')] = $tokens
+                ->mapWithKeys(fn ($t) => ['agent:'.$t->id => $t->name ?: 'Token #'.$t->id])
+                ->all();
+        }
+
+        return $gruppen;
+    }
+
+    /**
+     * Die gewaehlte Verursacherart und -Id auseinandernehmen ('user:5').
+     *
+     * @return array{0: class-string, 1: int}
+     */
+    protected function verursacherWahl(): array
+    {
+        [$art, $id] = array_pad(explode(':', $this->benutzer, 2), 2, null);
+
+        return [$art === 'agent' ? AgentToken::class : User::class, (int) $id];
     }
 }

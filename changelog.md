@@ -4,6 +4,10 @@
 
 ### Added
 
+- **Im Protokoll steht jetzt, welcher Agent geschrieben hat.** Vorher stand dort „System": Ein Agent hat keinen angemeldeten Benutzer, und wer nachsah, wer die WLANs angelegt hat, fand niemanden. Verursacher ist jetzt der Agent-Token — mit dem Namen, den man ihm gegeben hat, und dem Kunden darunter: „Agent · UniFi Werkstatt".
+  - Auch Kennwortänderungen: Der Eintrag dafür wird von Hand geschrieben und nahm `auth()->user()`, was für einen Agenten null ist.
+  - Der Benutzerfilter vergleicht jetzt Art **und** Id. Ein Agent-Token mit der Id 5 ist nicht der Benutzer mit der Id 5 — ohne die Art hätte der Filter beide gezeigt. Agenten stehen in der Auswahl als eigene Gruppe.
+  - „System" bleibt für alles ohne Verursacher: Seeder, Konsolenbefehle, geplante Aufgaben. Dort gibt es wirklich niemanden, und etwas zu erfinden wäre schlimmer.
 - **Die Agent-Seite zeigt jetzt vorab, welche Agenten es gibt.** Vorher standen Name und Standort als Erstes da — und welche Scripts überhaupt zur Auswahl stehen, sah man erst nach dem Anlegen des Tokens. Eine Entscheidung zu spät. Über dem Formular steht nun je Agent, was er dokumentiert, in welchen Fassungen es ihn gibt (PowerShell, Bash) und ob er Zugangsdaten für ein fremdes System braucht.
 - **Fünf neue Agenten.** Bisher füllten drei Agenten 5 der 39 Objektarten; alles andere wurde abgetippt. Dazu kommen jetzt:
   - **Hyper-V** — meldet den Host als Server und jede virtuelle Maschine als eigenen Eintrag, mit Name, Status, Kernen, Arbeitsspeicher und IP. Das Gastbetriebssystem kommt über die Integrationsdienste; fehlen sie, bleibt das Feld leer, statt geraten zu werden.

@@ -5,6 +5,7 @@ namespace App\Models\Concerns;
 use App\Models\PasswordHistory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Spatie\Activitylog\Facades\CauserResolver;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -132,7 +133,11 @@ trait TracksChanges
 
         activity()
             ->performedOn($this)
-            ->causedBy(auth()->user())
+            // Nicht auth()->user(): Ein Agent hat keinen angemeldeten
+            // Benutzer, der Eintrag stuende sonst ohne Verursacher da. Der
+            // Resolver liefert den angemeldeten Benutzer und, wo die
+            // Agent-Middleware einen Token gesetzt hat, diesen.
+            ->causedBy(CauserResolver::resolve())
             // Der Name wird mitgeschrieben, nicht nachgeladen: Ein Eintrag
             // überlebt sein Objekt, und ein Verweis auf eine entfernte Klasse
             // bricht beim Auflösen die ganze Protokollseite.

@@ -77,7 +77,7 @@ test('der Benutzerfilter zeigt nur Eintraege dieses Verursachers', function () {
     Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'vom-anderen.de']);
 
     Livewire::test(AdminProtokoll::class)
-        ->set('benutzer', (string) $einer->id)
+        ->set('benutzer', 'user:'.$einer->id)
         ->assertSee('von-einem.de')
         ->assertDontSee('vom-anderen.de');
 });
@@ -203,8 +203,8 @@ test('die Benutzerliste trennt Mitarbeiter von Kundenzugaengen', function () {
     // gehoert.
     expect($liste)->toHaveKey('Mitarbeiter');
     expect($liste)->toHaveKey('Mustermann GmbH');
-    expect($liste['Mitarbeiter']->keys()->all())->toContain($techniker->id);
-    expect($liste['Mustermann GmbH']->keys()->all())->toContain($kundenzugang->id);
+    expect($liste['Mitarbeiter']->keys()->all())->toContain('user:'.$techniker->id);
+    expect($liste['Mustermann GmbH']->keys()->all())->toContain('user:'.$kundenzugang->id);
 });
 
 test('die Zeile nennt den Kunden eines Kundenzugangs', function () {
@@ -236,7 +236,7 @@ test('der Benutzerfilter trifft auch einen Kundenzugang', function () {
     // Genau der Fall, um den es geht: nachsehen, was ein bestimmter Zugang
     // getan hat.
     Livewire::test(AdminProtokoll::class)
-        ->set('benutzer', (string) $einer->id)
+        ->set('benutzer', 'user:'.$einer->id)
         ->assertSee('vom-kunden.de')
         ->assertDontSee('vom-techniker.de');
 });
