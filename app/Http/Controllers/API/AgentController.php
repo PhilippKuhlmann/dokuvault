@@ -23,6 +23,14 @@ use Illuminate\Http\Request;
 class AgentController extends Controller
 {
     /**
+     * Die Bezeichnung, die der Agent an eine per DHCP bezogene Adresse
+     * schreibt. Als Konstante, weil dieselbe Zeichenkette an drei Stellen
+     * gebraucht wird: beim Setzen, beim Wiedererkennen der eigenen Marke und
+     * im Test.
+     */
+    public const MARKE_DHCP = 'DHCP';
+
+    /**
      * Windows-Rollen und -Rollendienste, die einem Dienst aus dem Katalog
      * entsprechen. Geprüft wird der sprachunabhängige Name, nicht der
      * übersetzte Anzeigename.
@@ -342,6 +350,7 @@ class AgentController extends Controller
             'switches.*.model' => ['nullable', 'string', 'max:255'],
             'switches.*.serial' => ['nullable', 'string', 'max:255'],
             'switches.*.ip' => ['nullable', 'string', 'max:255'],
+            'switches.*.dhcp' => ['nullable', 'boolean'],
             'accesspoints' => ['nullable', 'array'],
             'accesspoints.*.identifier' => ['required_with:accesspoints', 'string', 'max:255'],
             'accesspoints.*.name' => ['required_with:accesspoints', 'string', 'max:255'],
@@ -349,6 +358,7 @@ class AgentController extends Controller
             'accesspoints.*.model' => ['nullable', 'string', 'max:255'],
             'accesspoints.*.serial' => ['nullable', 'string', 'max:255'],
             'accesspoints.*.ip' => ['nullable', 'string', 'max:255'],
+            'accesspoints.*.dhcp' => ['nullable', 'boolean'],
             'wifis' => ['nullable', 'array'],
             'wifis.*.identifier' => ['required_with:wifis', 'string', 'max:255'],
             'wifis.*.ssid' => ['required_with:wifis', 'string', 'max:255'],
@@ -595,7 +605,26 @@ class AgentController extends Controller
             ]
         );
 
-        $this->meldeAdresse($geraet, $customer->id, $site->id, $g['ip'] ?? null);
+        // Ob die Adresse fest steht oder vom DHCP kommt, gehoert an die
+        // Adresse und nicht an das Geraet: Ein Switch kann mehrere haben.
+        $this->meldeAdresse($geraet, $customer->id, $site->id, $g['ip'] ?? null, $this->bezugsweg($g));
+    }
+
+    /**
+     * Wie das Geraet zu seiner Adresse kommt - als Bezeichnung fuer die
+     * Adresse.
+     *
+     * null, wenn der Controller nichts dazu sagt: Dann bleibt die vorhandene
+     * Bezeichnung, wie sie ist. Ein Leerstring heisst "fest konfiguriert" und
+     * raeumt eine frueher gesetzte DHCP-Marke wieder ab.
+     */
+    protected function bezugsweg(array $geraet): ?string
+    {
+        if (! array_key_exists('dhcp', $geraet) || $geraet['dhcp'] === null) {
+            return null;
+        }
+
+        return $geraet['dhcp'] ? self::MARKE_DHCP : '';
     }
 
     /**
@@ -652,7 +681,7 @@ class AgentController extends Controller
      * Zuordnung wieder um (Ueberlappende Netze sind selten, aber moeglich).
      * Nur bei der Neuanlage wird ein passendes Netz gesucht und gesetzt.
      */
-    protected function meldeAdresse($geraet, int $customerId, ?int $siteId, ?string $adresse): void
+    protected function meldeAdresse($geraet, int $customerId, ?int $siteId, ?string $adresse, ?string $hinweis = null): void
     {
         $adresse = trim((string) $adresse);
 
@@ -664,6 +693,7 @@ class AgentController extends Controller
 
         if ($vorhanden) {
             $vorhanden->update(['customer_id' => $customerId]);
+            $this->hinweisPflegen($vorhanden, $hinweis);
 
             return;
         }
@@ -672,7 +702,38 @@ class AgentController extends Controller
             'address' => $adresse,
             'customer_id' => $customerId,
             'network_id' => Network::fuerAdresse($customerId, $siteId, $adresse)?->id,
+            'label' => $hinweis ?: null,
         ]);
+    }
+
+    /**
+     * Die Bezeichnung einer schon vorhandenen Adresse nachziehen.
+     *
+     * Angefasst wird nur die eigene Marke. Wer "Uplink" oder "Management"
+     * hingeschrieben hat, weiß mehr als der Controller - das bleibt stehen.
+     * Umgekehrt verschwindet "DHCP" wieder, sobald das Gerät eine feste
+     * Adresse bekommt: Sonst behauptet die Doku dauerhaft etwas, das nicht
+     * mehr stimmt.
+     *
+     * @param  string|null  $hinweis  null = nicht gemeldet, '' = feste Adresse
+     */
+    protected function hinweisPflegen($adresse, ?string $hinweis): void
+    {
+        if ($hinweis === null) {
+            return;
+        }
+
+        $bisher = (string) $adresse->label;
+
+        if ($bisher !== '' && $bisher !== self::MARKE_DHCP) {
+            return;
+        }
+
+        $neu = $hinweis ?: null;
+
+        if ($bisher !== (string) $neu) {
+            $adresse->update(['label' => $neu]);
+        }
     }
 
     /**

@@ -232,7 +232,7 @@ function ConvertTo-Geraet($g) {
     $name = $g.name
     if (-not $name) { $name = $g.mac }
 
-    return [PSCustomObject]@{
+    $eintrag = [ordered]@{
         identifier   = $g.mac
         name         = $name
         manufacturer = 'Ubiquiti'
@@ -240,6 +240,19 @@ function ConvertTo-Geraet($g) {
         serial       = $g.serial
         ip           = $g.ip
     }
+
+    <#
+      Bezieht das Geraet seine Adresse per DHCP oder ist sie fest eingetragen?
+      In der Doku sieht eine geliehene Adresse sonst aus wie eine feste - und
+      nach dem naechsten Stromausfall steht dort etwas Falsches. Sagt der
+      Controller nichts dazu, faellt das Feld weg und DokuVault laesst die
+      vorhandene Bezeichnung stehen.
+    #>
+    if ($g.config_network -and $g.config_network.type) {
+        $eintrag['dhcp'] = ($g.config_network.type -eq 'dhcp')
+    }
+
+    return [PSCustomObject]$eintrag
 }
 
 $switches = @($geraete | Where-Object { $_.type -eq 'usw' } | ForEach-Object { ConvertTo-Geraet $_ })

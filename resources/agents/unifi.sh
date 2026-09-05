@@ -224,7 +224,14 @@ PAYLOAD="$(jq -n --arg site "$SITE" --argjson g "$GERAETE" --argjson w "$WLANCON
     model:        .model,
     serial:       .serial,
     ip:           .ip
-  };
+  }
+  # Bezieht das Geraet seine Adresse per DHCP oder ist sie fest eingetragen?
+  # In der Doku sieht eine geliehene Adresse sonst aus wie eine feste - und
+  # nach dem naechsten Stromausfall steht dort etwas Falsches. Sagt der
+  # Controller nichts dazu, faellt das Feld weg und DokuVault laesst die
+  # vorhandene Bezeichnung stehen.
+  + (if (.config_network.type // "") == "" then {}
+     else {dhcp: (.config_network.type == "dhcp")} end);
   def verschluesselung:
     if .security == "open" then "Offen"
     elif .security == "wpaeap" then "WPA2-Enterprise"

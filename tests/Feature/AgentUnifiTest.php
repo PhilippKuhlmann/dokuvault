@@ -221,3 +221,81 @@ test('ohne gültigen Agent-Token: 401', function () {
     $this->postJson('/api/agent/unifi', [])->assertUnauthorized();
     $this->withToken('doc_falsch')->postJson('/api/agent/unifi', unifiPayload())->assertUnauthorized();
 });
+
+/**
+ * Wie das Geraet zu seiner Adresse kommt.
+ *
+ * Eine geliehene Adresse sieht in der Doku sonst aus wie eine feste - und nach
+ * dem naechsten Stromausfall steht dort etwas Falsches.
+ */
+function unifiGeraet(array $abweichend = []): array
+{
+    return ['wifis' => [], 'switches' => [], 'accesspoints' => [array_merge([
+        'identifier' => 'ap-1',
+        'name' => 'AP-Buero',
+        'manufacturer' => 'Ubiquiti',
+        'model' => 'U6PRO',
+        'ip' => '10.0.0.3',
+    ], $abweichend)]];
+}
+
+test('eine per DHCP bezogene Adresse wird als solche vermerkt', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [$token, $plain] = AgentToken::generateFor($customer, $site);
+
+    $this->withToken($plain)->postJson('/api/agent/unifi', unifiGeraet(['dhcp' => true]))->assertOk();
+
+    $adresse = Accesspoint::where('agent_identifier', 'ap-1')->first()->ipAddresses()->first();
+    expect($adresse->address)->toBe('10.0.0.3');
+    expect($adresse->label)->toBe('DHCP');
+});
+
+test('eine fest konfigurierte Adresse bekommt keine Bezeichnung', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [$token, $plain] = AgentToken::generateFor($customer, $site);
+
+    $this->withToken($plain)->postJson('/api/agent/unifi', unifiGeraet(['dhcp' => false]))->assertOk();
+
+    expect(Accesspoint::where('agent_identifier', 'ap-1')->first()->ipAddresses()->first()->label)->toBeNull();
+});
+
+test('sagt der Controller nichts dazu, bleibt die Bezeichnung leer', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [$token, $plain] = AgentToken::generateFor($customer, $site);
+
+    // Aeltere Firmware liefert kein config_network - dann faellt das Feld weg.
+    $this->withToken($plain)->postJson('/api/agent/unifi', unifiGeraet())->assertOk();
+
+    expect(Accesspoint::where('agent_identifier', 'ap-1')->first()->ipAddresses()->first()->label)->toBeNull();
+});
+
+test('wird aus DHCP eine feste Adresse, verschwindet die Marke wieder', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [$token, $plain] = AgentToken::generateFor($customer, $site);
+
+    $this->withToken($plain)->postJson('/api/agent/unifi', unifiGeraet(['dhcp' => true]))->assertOk();
+    $this->withToken($plain)->postJson('/api/agent/unifi', unifiGeraet(['dhcp' => false]))->assertOk();
+
+    // Sonst behauptet die Doku dauerhaft etwas, das nicht mehr stimmt.
+    expect(Accesspoint::where('agent_identifier', 'ap-1')->first()->ipAddresses()->first()->label)->toBeNull();
+});
+
+test('eine von Hand gesetzte Bezeichnung ueberlebt', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [$token, $plain] = AgentToken::generateFor($customer, $site);
+
+    $this->withToken($plain)->postJson('/api/agent/unifi', unifiGeraet(['dhcp' => true]))->assertOk();
+
+    $adresse = Accesspoint::where('agent_identifier', 'ap-1')->first()->ipAddresses()->first();
+    $adresse->update(['label' => 'Uplink Dachboden']);
+
+    $this->withToken($plain)->postJson('/api/agent/unifi', unifiGeraet(['dhcp' => false]))->assertOk();
+
+    // Wer "Uplink Dachboden" hingeschrieben hat, weiss mehr als der Controller.
+    expect($adresse->fresh()->label)->toBe('Uplink Dachboden');
+});

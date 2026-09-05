@@ -135,6 +135,7 @@
     "Bezeichnung": "Label",
     "Bezeichnung (optional)": "Label (optional)",
     "Bezeichnung oder Endung …": "Label or extension …",
+    "Bezieht ein Gerät seine Adresse per DHCP, steht das als Bezeichnung „DHCP\" an der Adresse – im IPAM als „AP-Büro (DHCP)\". Eine geliehene Adresse sieht sonst aus wie eine feste. Bekommt das Gerät später eine feste, verschwindet die Marke wieder; eine selbst geschriebene Bezeichnung bleibt unangetastet.": "If a device gets its address by DHCP, the address is labelled \"DHCP\" — shown in IPAM as \"AP-Office (DHCP)\". A leased address otherwise looks just like a fixed one. Give the device a fixed address later and the mark disappears again; a label you wrote yourself is left alone.",
     "Bild": "Image",
     "Bild der Frontblende": "Image of the front panel",
     "Bis": "To",
