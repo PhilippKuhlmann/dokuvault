@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\API\AgentController;
 use App\Models\Customer;
 use App\Models\IpAddress;
 use App\Models\IpRange;
@@ -61,14 +62,34 @@ class IpPlanController extends Controller
     }
 
     /**
-     * Alle im Kunden vergebenen IP-Adressen einsammeln: [ip_long => Gerätename].
+     * Alle im Kunden vergebenen IP-Adressen einsammeln.
+     *
+     * Drei Sichten auf dieselben Adressen:
+     * - 'beschriftung': [ip_long => Gerätename], was in der Zeile steht.
+     * - 'dhcp':         [ip_long => [Gerätenamen]] für Adressen, die ein Agent
+     *                   als per DHCP bezogen gemeldet hat.
+     * - 'fest':         [ip_long => true] für alles andere.
+     *
+     * Die Trennung braucht der Plan: Eine geliehene Adresse als eigene Zeile
+     * zu zeigen behauptet etwas, das morgen nicht mehr stimmt. Sie gehört an
+     * den Pool. Eine FEST vergebene Adresse mitten im DHCP-Bereich ist
+     * dagegen ein echter Konflikt und muss sichtbar bleiben - deshalb wird
+     * nur zusammengefasst, wo ausschließlich DHCP-Geräte sitzen.
      */
     protected function collectUsedIps(Customer $customer): array
     {
         $used = [];
+        $dhcp = [];
+        $fest = [];
 
-        $addLong = function (int $long, string $label) use (&$used) {
+        $addLong = function (int $long, string $label, ?string $dhcpName = null) use (&$used, &$dhcp, &$fest) {
             $used[$long] = ($used[$long] ?? '') === '' ? $label : $used[$long].' / '.$label;
+
+            if ($dhcpName !== null) {
+                $dhcp[$long][] = $dhcpName;
+            } else {
+                $fest[$long] = true;
+            }
         };
 
         foreach (self::IP_SOURCES as [$class, $columns]) {
@@ -99,10 +120,17 @@ class IpPlanController extends Controller
                 $deviceName = $ip->ipable?->getAttribute('name')
                     ?: ($ip->ipable ? class_basename($ip->ipable) : 'Gerät');
                 $label = $deviceName.($ip->label ? ' ('.$ip->label.')' : '');
-                $addLong(ip2long($ip->address) & 0xFFFFFFFF, $label);
+
+                // Am Pool steht nur der Geraetename - dass es DHCP ist, sagt
+                // dort schon der Bereich.
+                $addLong(
+                    ip2long($ip->address) & 0xFFFFFFFF,
+                    $label,
+                    $ip->label === AgentController::MARKE_DHCP ? $deviceName : null
+                );
             });
 
-        return $used;
+        return ['beschriftung' => $used, 'dhcp' => $dhcp, 'fest' => $fest];
     }
 
     /**
@@ -124,7 +152,7 @@ class IpPlanController extends Controller
         }
 
         // Nur belegte Adressen innerhalb dieses Subnetzes
-        $map = array_filter($used, fn ($k) => $k >= $first && $k <= $last, ARRAY_FILTER_USE_KEY);
+        $map = array_filter($used['beschriftung'], fn ($k) => $k >= $first && $k <= $last, ARRAY_FILTER_USE_KEY);
 
         // Gateway markieren
         $gatewayLong = null;
@@ -156,7 +184,12 @@ class IpPlanController extends Controller
 
         $runBereich = null;
 
-        $flush = function ($endLong) use (&$rows, &$runStart, &$runKind, &$runBereich) {
+        // Die Geraete, die aus diesem Pool bedient werden. Sie stehen am
+        // Bereich statt an einer Adresse: welche sie gerade haben, ist morgen
+        // eine andere.
+        $runGeraete = [];
+
+        $flush = function ($endLong) use (&$rows, &$runStart, &$runKind, &$runBereich, &$runGeraete) {
             if ($runStart === null) {
                 return;
             }
@@ -171,14 +204,27 @@ class IpPlanController extends Controller
                     default => 'frei',
                 },
                 'farbe' => $runKind === 'reserved' ? ($runBereich['farbe'] ?? []) : [],
+                'geraete' => array_values(array_unique($runGeraete)),
             ];
             $runStart = null;
             $runKind = null;
             $runBereich = null;
+            $runGeraete = [];
         };
 
         for ($ip = $first; $ip <= $last; $ip++) {
-            if (isset($map[$ip])) {
+            // Im Pool und ausschliesslich von DHCP-Geraeten belegt: Die Adresse
+            // bekommt keine eigene Zeile. Sitzt dort zusaetzlich etwas fest
+            // Vergebenes, bleibt die Zeile - das ist ein Konflikt und gehoert
+            // gesehen.
+            $imPool = $dhcp && $ip >= $dhcp[0] && $ip <= $dhcp[1];
+            $nurGeliehen = isset($used['dhcp'][$ip]) && ! isset($used['fest'][$ip]);
+
+            if ($imPool && $nurGeliehen) {
+                $runGeraete = array_merge($runGeraete, $used['dhcp'][$ip]);
+            }
+
+            if (isset($map[$ip]) && ! ($imPool && $nurGeliehen)) {
                 $flush($ip - 1);
                 $counts['device']++;
                 $rows[] = [
@@ -242,7 +288,11 @@ class IpPlanController extends Controller
             'reserviert' => array_values($jeBereich),
             'truncated' => $truncated,
             'total' => $last - $first + 1,
-            'usedCount' => count($map),
+            // Nicht count($map): Eine Adresse, die im Pool aufgegangen ist,
+            // zaehlt nicht zusaetzlich als belegt - der Pool steht schon als
+            // Ganzes in der Rechnung. Bis auf diesen Fall sind beide Zahlen
+            // dieselbe, denn jede belegte Adresse bekam eine eigene Zeile.
+            'usedCount' => $counts['device'],
         ];
     }
 

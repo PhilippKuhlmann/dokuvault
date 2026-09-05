@@ -96,6 +96,12 @@
                                             <span class="ml-1.5 align-middle {{ $row['farbe']['text'] ?? '' }}">{{ $row['label'] }}</span>
                                         @elseif ($row['kind'] === 'dhcp')
                                             <span class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-DINPro-bold text-slate-600 dark:bg-slate-700/40 dark:text-slate-300">{{ $row['label'] }}</span>
+                                            {{-- Welche Geraete aus dem Pool bedient werden, steht am
+                                                 Pool und nicht an einer Adresse: welche sie gerade
+                                                 haben, ist morgen eine andere. --}}
+                                            @if (! empty($row['geraete']))
+                                                <span class="ml-1.5 align-middle text-gray-500 dark:text-gray-400">{{ implode(', ', $row['geraete']) }}</span>
+                                            @endif
                                         @else
                                             <span class="text-gray-400 dark:text-gray-500 italic">{{ $row['label'] }}</span>
                                         @endif
