@@ -197,7 +197,12 @@ lists them and stops until one is chosen. `--site` takes the internal name or th
 `--sites` just lists them.
 
 Those third-party credentials are **passed on the command line and never stored in DokuVault** — a
-read-only account is enough everywhere. Wi-Fi passphrases and AD passwords are never read at all.
+read-only account is enough everywhere.
+
+The **Wi-Fi passphrase is the one secret that does get documented**: it sits in plain text in the
+controller's configuration, DokuVault has an encrypted column for it, and in a documentation tool it
+is exactly what people look it up for. `--ohne-kennwoerter` turns that off. AD passwords are a
+different matter — they are hashed and cannot be read at all.
 
 Every token may **only document** — a leaked one grants no further access.
 

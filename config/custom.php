@@ -1410,6 +1410,7 @@ return [
             'erreichbar_von' => 'Diese URL muss von diesem Rechner aus erreichbar sein. Falls nicht, zusätzlich überschreiben:',
             'macht' => [
                 'Meldet sich am UniFi-Controller an und liest Switches, Accesspoints und WLANs (Name, Modell, Seriennummer, MAC, IP, SSID, Verschlüsselung) – rein lesend, verändert nichts am Controller.',
+                'Die WLAN-Passphrase kommt mit und liegt verschlüsselt im WLAN-Eintrag – in einer Dokumentation ist genau sie das, was man nachschlägt. Ändert sie jemand am Controller, zieht der nächste Lauf nach. Wer das nicht will, ruft das Script mit „--ohne-kennwoerter" bzw. „-OhneKennwoerter" auf; dann bleibt eine gepflegte Passphrase unangetastet.',
                 'Legt Switches, Accesspoints und WLANs als eigene Einträge an oder aktualisiert sie. Nichts wird gelöscht.',
                 'Die Zugangsdaten des Controllers werden dem Script beim Aufruf mitgegeben und nicht in DokuVault gespeichert. Ein Konto mit reinen Leserechten genügt.',
                 'Hat der Controller mehrere Sites, muss eine gewählt werden – der Token gehört zu genau einem Kunden. Ohne Angabe zeigt das Script die vorhandenen Sites und bricht ab, statt die falsche zu dokumentieren.',

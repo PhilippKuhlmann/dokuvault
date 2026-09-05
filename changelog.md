@@ -12,6 +12,10 @@
   - **Microsoft 365 / Entra ID** — Postfächer, verifizierte Domains und gebuchte Lizenzen über Microsoft Graph. Die Lizenz trägt die Stückzahl im Namen („… (12 von 15 belegt)"), weil die Tabelle keine Spalte dafür hat und das beim Kunden die erste Frage ist.
 - **UniFi und Microsoft 365 gibt es zusätzlich als Shell-Script.** Beide Agenten sprechen ohnehin nur eine Schnittstelle im Netz an — sie müssen nicht auf Windows laufen. `unifi-doku.sh` und `microsoft365-doku.sh` brauchen nur `curl` und `jq` und laufen damit auf dem Mac und auf Linux. Auf der Token-Seite stehen beide Fassungen nebeneinander; welche man nimmt, ändert nichts daran, was gemeldet wird.
   - Die Shell-Fassungen **fragen das Kennwort ab**, statt es als Argument zu nehmen — sonst stünde es in der Prozessliste und in der Shell-Historie. Wer es doch mitgeben will, kann `UNIFI_PASSWORD` bzw. `M365_CLIENT_SECRET` setzen.
+- **Die WLAN-Passphrase wird mitdokumentiert.** Sie fehlte zunächst, weil ich sie mit dem AD-Agenten gleichgesetzt hatte — falsch: AD-Kennwörter *kann* niemand auslesen, sie sind gehasht. Die Passphrase steht dagegen im Klartext in der Controller-Konfiguration, DokuVault hat für sie eine verschlüsselte Spalte, und in einer Dokumentation ist genau sie das, was man nachschlägt.
+  - Der Controller ist die Quelle: Wird sie dort geändert, zieht der nächste Lauf nach. Ein WLAN ohne Passphrase (offen, WPA-Enterprise) bekommt keine, statt eine leere.
+  - Geschrieben wird nur bei tatsächlicher Änderung. `Crypt::encryptString` liefert jedes Mal einen anderen Chiffretext — ohne den Vergleich der Klartexte stünde nach jedem Lauf „Kennwort geändert" im Protokoll.
+  - `--ohne-kennwoerter` bzw. `-OhneKennwoerter` schaltet es ab; eine selbst gepflegte Passphrase bleibt dann stehen.
 - **Zugangsdaten fremder Systeme werden nicht gespeichert.** vCenter, UniFi-Controller und die Graph-App-Registrierung braucht das jeweilige Skript, nicht DokuVault: Sie werden beim Aufruf mitgegeben. Ein Konto mit reinen Leserechten genügt überall. WLAN-Kennwörter liest der UniFi-Agent gar nicht erst aus — wie der AD-Agent nie ein Kennwort anfasst.
 
 ### Changed

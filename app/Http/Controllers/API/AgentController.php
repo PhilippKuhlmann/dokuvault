@@ -353,6 +353,7 @@ class AgentController extends Controller
             'wifis.*.identifier' => ['required_with:wifis', 'string', 'max:255'],
             'wifis.*.ssid' => ['required_with:wifis', 'string', 'max:255'],
             'wifis.*.encryption' => ['nullable', 'string', 'max:255'],
+            'wifis.*.password' => ['nullable', 'string', 'max:255'],
         ]);
 
         $switches = 0;
@@ -369,15 +370,35 @@ class AgentController extends Controller
 
         $wlans = 0;
         foreach ($data['wifis'] ?? [] as $w) {
-            Wifi::updateOrCreate(
-                ['customer_id' => $customer->id, 'agent_identifier' => $w['identifier']],
-                [
-                    'site_id' => $site->id,
-                    'ssid' => $w['ssid'],
-                    'encryption' => $w['encryption'] ?? null,
-                    // 'password' und 'network_id' bleiben unangetastet
-                ]
-            );
+            $wlan = Wifi::firstOrNew([
+                'customer_id' => $customer->id,
+                'agent_identifier' => $w['identifier'],
+            ]);
+
+            $wlan->fill([
+                'site_id' => $site->id,
+                'ssid' => $w['ssid'],
+                'encryption' => $w['encryption'] ?? null,
+                // 'network_id' bleibt unangetastet: welches der gepflegten
+                // VLANs hinter der SSID steht, weiss der Controller nicht.
+            ]);
+
+            /*
+             * Die Passphrase nur setzen, wenn der Controller wirklich eine
+             * gemeldet hat. Ein WPA-Enterprise-WLAN hat keine - dort stuende
+             * sonst null, wo vorher etwas Richtiges stand. Und der Setter
+             * verschluesselt bedingungslos; null waere ein Typfehler.
+             *
+             * Und nur, wenn sie sich unterscheidet: Crypt::encryptString
+             * erzeugt bei jedem Aufruf einen anderen Chiffretext. Ohne den
+             * Vergleich waere die Zeile bei jedem Lauf "geaendert", obwohl
+             * sich nichts geaendert hat.
+             */
+            if (filled($w['password'] ?? null) && $wlan->password !== $w['password']) {
+                $wlan->password = $w['password'];
+            }
+
+            $wlan->save();
             $wlans++;
         }
 

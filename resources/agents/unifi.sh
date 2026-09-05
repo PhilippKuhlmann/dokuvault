@@ -22,8 +22,12 @@
 # Controller veraendert. Ein Konto mit reinen Leserechten genuegt.
 #
 # Die Zugangsdaten des Controllers bleiben hier und werden NICHT in DokuVault
-# gespeichert. Das WLAN-Kennwort wird bewusst nicht ausgelesen - wie beim
-# AD-Agenten bleiben Kennwoerter manuell gepflegt.
+# gespeichert.
+#
+# Die WLAN-Passphrase dagegen schon: sie steht im Klartext in der
+# Controller-Konfiguration, DokuVault hat dafuer eine verschluesselte Spalte,
+# und in einer Dokumentation ist genau sie das, was man nachschlaegt. Wer das
+# nicht will, gibt --ohne-kennwoerter mit.
 #
 set -euo pipefail
 
@@ -35,6 +39,7 @@ BENUTZER=""
 KENNWORT="${UNIFI_PASSWORD:-}"
 SITE=""
 NUR_SITES=""
+OHNE_KENNWOERTER=""
 UNSICHER=""
 
 hilfe() {
@@ -49,6 +54,7 @@ while [ $# -gt 0 ]; do
     --password|--kennwort) KENNWORT="$2"; shift 2 ;;
     --site|--standort) SITE="$2"; shift 2 ;;
     --sites|--standorte) NUR_SITES="1"; shift ;;
+    --ohne-kennwoerter|--ohne-passwoerter) OHNE_KENNWOERTER="1"; shift ;;
     --api-url) API_URL="$2"; shift 2 ;;
     # Ein UniFi-Controller bringt ab Werk ein selbst signiertes Zertifikat mit.
     --unsicher|--zertifikat-ignorieren|-k) UNSICHER="-k"; shift ;;
@@ -206,7 +212,11 @@ WLANCONF="$(hole "/api/s/$SITE/rest/wlanconf")"
 # in einen anderen Standort umgehaengt wird. Ein frisch adoptiertes Geraet hat
 # noch keinen Namen - dann steht die MAC da, damit der Eintrag ueberhaupt eine
 # Beschriftung bekommt.
-PAYLOAD="$(jq -n --arg site "$SITE" --argjson g "$GERAETE" --argjson w "$WLANCONF" '
+MIT_KENNWORT="true"
+[ -n "$OHNE_KENNWOERTER" ] && MIT_KENNWORT="false"
+
+PAYLOAD="$(jq -n --arg site "$SITE" --argjson g "$GERAETE" --argjson w "$WLANCONF" \
+  --argjson mitkennwort "$MIT_KENNWORT" '
   def geraet: {
     identifier:   .mac,
     name:         (if (.name // "") == "" then .mac else .name end),
@@ -227,7 +237,13 @@ PAYLOAD="$(jq -n --arg site "$SITE" --argjson g "$GERAETE" --argjson w "$WLANCON
     site:         $site,
     switches:     [ $g.data[] | select(.type == "usw") | geraet ],
     accesspoints: [ $g.data[] | select(.type == "uap") | geraet ],
-    wifis:        [ $w.data[] | {identifier: ._id, ssid: .name, encryption: verschluesselung} ]
+    wifis:        [ $w.data[]
+                    # x_passphrase gibt es nur bei WPA-PSK. Ein
+                    # Enterprise-WLAN hat keine - dann faellt das Feld weg,
+                    # statt leer uebertragen zu werden.
+                    | {identifier: ._id, ssid: .name, encryption: verschluesselung}
+                      + (if $mitkennwort and ((.x_passphrase // "") != "")
+                         then {password: .x_passphrase} else {} end) ]
   }')"
 
 echo "Sende Dokumentation an $API_URL ..."

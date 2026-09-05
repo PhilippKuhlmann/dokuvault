@@ -29,7 +29,7 @@ function unifiPayload(): array
             'ip' => '10.0.0.3',
         ]],
         'wifis' => [
-            ['identifier' => 'wlan-id-1', 'ssid' => 'Firma', 'encryption' => 'WPA2-PSK'],
+            ['identifier' => 'wlan-id-1', 'ssid' => 'Firma', 'encryption' => 'WPA2-PSK', 'password' => 'SehrGeheim123!'],
             ['identifier' => 'wlan-id-2', 'ssid' => 'Gast', 'encryption' => 'Offen'],
         ],
     ];
@@ -66,7 +66,7 @@ test('UniFi-Agent legt Switches, Accesspoints und WLANs beim Kunden des Tokens a
     expect($wlans->firstWhere('agent_identifier', 'wlan-id-1')->encryption)->toBe('WPA2-PSK');
 });
 
-test('ein gefundenes WLAN kommt ohne VLAN und ohne Kennwort aus', function () {
+test('die gemeldete WLAN-Passphrase wird uebernommen', function () {
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     [$token, $plain] = AgentToken::generateFor($customer, $site);
@@ -74,13 +74,26 @@ test('ein gefundenes WLAN kommt ohne VLAN und ohne Kennwort aus', function () {
     $this->withToken($plain)->postJson('/api/agent/unifi', unifiPayload())->assertOk();
 
     $wlan = Wifi::where('agent_identifier', 'wlan-id-1')->first();
-    // Der Controller weiss nicht, welches gepflegte VLAN hinter der SSID
-    // steht, und das Kennwort liest der Agent bewusst nicht aus.
-    expect($wlan->network_id)->toBeNull();
-    expect($wlan->getRawOriginal('password'))->toBeNull();
+    expect($wlan->password)->toBe('SehrGeheim123!');
+    // Verschluesselt in der Spalte, nicht im Klartext.
+    expect($wlan->getRawOriginal('password'))->not->toBe('SehrGeheim123!');
 });
 
-test('ein von Hand gesetztes VLAN und Kennwort ueberlebt den naechsten Lauf', function () {
+test('ein WLAN ohne Passphrase bekommt keine', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [$token, $plain] = AgentToken::generateFor($customer, $site);
+
+    $this->withToken($plain)->postJson('/api/agent/unifi', unifiPayload())->assertOk();
+
+    // 'Gast' ist offen, ein Enterprise-WLAN haette ebenfalls keine. Der
+    // Setter verschluesselt bedingungslos - ein Leerwert waere Chiffretext
+    // aus nichts.
+    $gast = Wifi::where('agent_identifier', 'wlan-id-2')->first();
+    expect($gast->getRawOriginal('password'))->toBeNull();
+});
+
+test('das VLAN bleibt leer und ein von Hand gesetztes ueberlebt', function () {
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     [$token, $plain] = AgentToken::generateFor($customer, $site);
@@ -89,12 +102,66 @@ test('ein von Hand gesetztes VLAN und Kennwort ueberlebt den naechsten Lauf', fu
     $this->withToken($plain)->postJson('/api/agent/unifi', unifiPayload())->assertOk();
 
     $wlan = Wifi::where('agent_identifier', 'wlan-id-1')->first();
-    $wlan->update(['network_id' => $vlan->id, 'password' => 'geheim123']);
+    // Welches der gepflegten VLANs hinter der SSID steht, weiss der
+    // Controller nicht - anders als die Passphrase.
+    expect($wlan->network_id)->toBeNull();
 
+    $wlan->update(['network_id' => $vlan->id]);
     $this->withToken($plain)->postJson('/api/agent/unifi', unifiPayload())->assertOk();
 
     expect($wlan->fresh()->network_id)->toBe($vlan->id);
-    expect($wlan->fresh()->password)->toBe('geheim123');
+});
+
+test('eine am Controller geaenderte Passphrase zieht nach', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [$token, $plain] = AgentToken::generateFor($customer, $site);
+
+    $this->withToken($plain)->postJson('/api/agent/unifi', unifiPayload())->assertOk();
+
+    $geaendert = unifiPayload();
+    $geaendert['wifis'][0]['password'] = 'NeuesKennwort456!';
+    $this->withToken($plain)->postJson('/api/agent/unifi', $geaendert)->assertOk();
+
+    // Der Controller ist die Quelle: wer dort die Passphrase aendert, soll sie
+    // in der Doku wiederfinden, nicht die alte.
+    expect(Wifi::where('agent_identifier', 'wlan-id-1')->first()->password)->toBe('NeuesKennwort456!');
+});
+
+test('meldet der Agent keine Passphrase, bleibt die gepflegte stehen', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [$token, $plain] = AgentToken::generateFor($customer, $site);
+
+    $this->withToken($plain)->postJson('/api/agent/unifi', unifiPayload())->assertOk();
+
+    $wlan = Wifi::where('agent_identifier', 'wlan-id-1')->first();
+    $wlan->update(['password' => 'vonHand']);
+
+    // So sieht ein Lauf mit --ohne-kennwoerter aus.
+    $ohne = unifiPayload();
+    unset($ohne['wifis'][0]['password']);
+    $this->withToken($plain)->postJson('/api/agent/unifi', $ohne)->assertOk();
+
+    expect($wlan->fresh()->password)->toBe('vonHand');
+});
+
+test('ein unveraendertes Kennwort schreibt die Zeile nicht neu', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [$token, $plain] = AgentToken::generateFor($customer, $site);
+
+    $this->withToken($plain)->postJson('/api/agent/unifi', unifiPayload())->assertOk();
+
+    $wlan = Wifi::where('agent_identifier', 'wlan-id-1')->first();
+    $chiffre = $wlan->getRawOriginal('password');
+
+    $this->withToken($plain)->postJson('/api/agent/unifi', unifiPayload())->assertOk();
+
+    // Crypt::encryptString erzeugt jedes Mal einen anderen Chiffretext. Ohne
+    // den Vergleich der Klartexte waere die Zeile bei jedem Lauf "geaendert" -
+    // und stuende jedes Mal als Kennwortaenderung im Protokoll.
+    expect($wlan->fresh()->getRawOriginal('password'))->toBe($chiffre);
 });
 
 test('erneuter Lauf aktualisiert, statt zu verdoppeln', function () {

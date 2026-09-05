@@ -14,8 +14,12 @@
   Controller veraendert. Ein Konto mit reinen Leserechten genuegt.
 
   Die Zugangsdaten des Controllers werden hier beim Aufruf mitgegeben und
-  NICHT in DokuVault gespeichert. Das WLAN-Kennwort wird bewusst nicht
-  ausgelesen - wie beim AD-Agenten bleiben Kennwoerter manuell gepflegt.
+  NICHT in DokuVault gespeichert.
+
+  Die WLAN-Passphrase dagegen schon: sie steht im Klartext in der
+  Controller-Konfiguration, DokuVault hat dafuer eine verschluesselte Spalte,
+  und in einer Dokumentation ist genau sie das, was man nachschlaegt. Wer das
+  nicht will, gibt -OhneKennwoerter mit.
 #>
 param(
     [Parameter(Mandatory = $true)][string]$Controller,
@@ -23,6 +27,7 @@ param(
     [Parameter(Mandatory = $true)][string]$Password,
     [string]$Site = "",
     [switch]$Sites,
+    [switch]$OhneKennwoerter,
     [string]$ApiUrl = "__API_URL__",
     [switch]$ZertifikatIgnorieren
 )
@@ -241,11 +246,19 @@ $switches = @($geraete | Where-Object { $_.type -eq 'usw' } | ForEach-Object { C
 $accesspoints = @($geraete | Where-Object { $_.type -eq 'uap' } | ForEach-Object { ConvertTo-Geraet $_ })
 
 $wifis = @($wlanconf | ForEach-Object {
-    [PSCustomObject]@{
+    $eintrag = [ordered]@{
         identifier = $_._id
         ssid       = $_.name
         encryption = Get-Verschluesselung $_
     }
+
+    # x_passphrase gibt es nur bei WPA-PSK. Ein Enterprise-WLAN hat keine -
+    # dann faellt das Feld weg, statt leer uebertragen zu werden.
+    if (-not $OhneKennwoerter -and $_.x_passphrase) {
+        $eintrag['password'] = $_.x_passphrase
+    }
+
+    [PSCustomObject]$eintrag
 })
 
 $payload = [PSCustomObject]@{
