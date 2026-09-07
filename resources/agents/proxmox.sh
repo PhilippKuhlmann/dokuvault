@@ -54,15 +54,35 @@ fi
 GUESTS_JSON=""
 add_guest() { GUESTS_JSON="${GUESTS_JSON:+$GUESTS_JSON,}$1"; }
 
+# Betriebssystem des Gastes: ID und VERSION_ID aus /etc/os-release.
+#
+# Nicht der ostype aus der Proxmox-Konfiguration: der sagt "l26" fuer jedes
+# Linux der letzten fuenfzehn Jahre. Debian 12 und Debian 13 haben
+# verschiedene Support-Enden - wer das nicht unterscheiden kann, meldet
+# lieber nichts.
+OS_ID=""
+OS_VERSION=""
+
+os_reset() { OS_ID=""; OS_VERSION=""; }
+
+# Wert eines JSON-Feldes aus der Antwort des QEMU-Gastagenten.
+json_feld() { printf '%s' "$2" | grep -oE "\"$1\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" | head -n1 | sed 's/.*:[[:space:]]*"//; s/"$//'; }
+
 if command -v qm >/dev/null 2>&1; then
   while read -r vmid name status; do
     [ -z "${vmid:-}" ] && continue
-    ostype="$(qm config "$vmid" 2>/dev/null | sed -n 's/^ostype:[[:space:]]*//p' | head -n1)"
     cores="$(qm config "$vmid" 2>/dev/null | sed -n 's/^cores:[[:space:]]*//p' | head -n1)"
     memmb="$(qm config "$vmid" 2>/dev/null | sed -n 's/^memory:[[:space:]]*//p' | head -n1)"
     memgb=$(( ${memmb:-0} / 1024 ))
     ip="$(qm agent "$vmid" network-get-interfaces 2>/dev/null | grep -oE '"ip-address"[[:space:]]*:[[:space:]]*"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"' | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | grep -vE '^127\.' | head -n1 || true)"
-    add_guest "{\"identifier\":$(json_str "${HOSTNAME}/qemu/${vmid}"),\"vmid\":$(num "$vmid"),\"name\":$(json_str "$name"),\"type\":\"qemu\",\"ostype\":$(json_str "$ostype"),\"ip\":$(json_str "$ip"),\"status\":$(json_str "$status"),\"cores\":$(num "$cores"),\"memory_gb\":$(num "$memgb")}"
+    # Braucht den QEMU-Gastagenten. Fehlt er, bleibt das Betriebssystem leer.
+    os_reset
+    osinfo="$(qm agent "$vmid" get-osinfo 2>/dev/null || true)"
+    if [ -n "${osinfo:-}" ]; then
+      OS_ID="$(json_feld id "$osinfo")"
+      OS_VERSION="$(json_feld version-id "$osinfo")"
+    fi
+    add_guest "{\"identifier\":$(json_str "${HOSTNAME}/qemu/${vmid}"),\"vmid\":$(num "$vmid"),\"name\":$(json_str "$name"),\"type\":\"qemu\",\"os_id\":$(json_str "$OS_ID"),\"os_version\":$(json_str "$OS_VERSION"),\"ip\":$(json_str "$ip"),\"status\":$(json_str "$status"),\"cores\":$(num "$cores"),\"memory_gb\":$(num "$memgb")}"
   done < <(qm list 2>/dev/null | awk 'NR>1{print $1" "$2" "$3}')
 fi
 
@@ -71,7 +91,6 @@ if command -v pct >/dev/null 2>&1; then
     [ -z "${vmid:-}" ] && continue
     name="$(pct config "$vmid" 2>/dev/null | sed -n 's/^hostname:[[:space:]]*//p' | head -n1)"
     status="$(pct status "$vmid" 2>/dev/null | awk '{print $2}')"
-    ostype="$(pct config "$vmid" 2>/dev/null | sed -n 's/^ostype:[[:space:]]*//p' | head -n1)"
     cores="$(pct config "$vmid" 2>/dev/null | sed -n 's/^cores:[[:space:]]*//p' | head -n1)"
     memmb="$(pct config "$vmid" 2>/dev/null | sed -n 's/^memory:[[:space:]]*//p' | head -n1)"
     memgb=$(( ${memmb:-0} / 1024 ))
@@ -79,7 +98,15 @@ if command -v pct >/dev/null 2>&1; then
     if [ -z "${ip:-}" ]; then
       ip="$(pct exec "$vmid" -- hostname -I 2>/dev/null | awk '{print $1}' || true)"
     fi
-    add_guest "{\"identifier\":$(json_str "${HOSTNAME}/lxc/${vmid}"),\"vmid\":$(num "$vmid"),\"name\":$(json_str "$name"),\"type\":\"lxc\",\"ostype\":$(json_str "$ostype"),\"ip\":$(json_str "$ip"),\"status\":$(json_str "$status"),\"cores\":$(num "$cores"),\"memory_gb\":$(num "$memgb")}"
+    # pct exec setzt einen laufenden Container voraus; ein gestoppter meldet
+    # kein Betriebssystem.
+    os_reset
+    osrelease="$(pct exec "$vmid" -- cat /etc/os-release 2>/dev/null || true)"
+    if [ -n "${osrelease:-}" ]; then
+      OS_ID="$(printf '%s\n' "$osrelease" | sed -n 's/^ID=//p' | tr -d '"' | head -n1)"
+      OS_VERSION="$(printf '%s\n' "$osrelease" | sed -n 's/^VERSION_ID=//p' | tr -d '"' | head -n1)"
+    fi
+    add_guest "{\"identifier\":$(json_str "${HOSTNAME}/lxc/${vmid}"),\"vmid\":$(num "$vmid"),\"name\":$(json_str "$name"),\"type\":\"lxc\",\"os_id\":$(json_str "$OS_ID"),\"os_version\":$(json_str "$OS_VERSION"),\"ip\":$(json_str "$ip"),\"status\":$(json_str "$status"),\"cores\":$(num "$cores"),\"memory_gb\":$(num "$memgb")}"
   done < <(pct list 2>/dev/null | awk 'NR>1{print $1}')
 fi
 

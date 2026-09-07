@@ -3,6 +3,7 @@
 use App\Models\AgentToken;
 use App\Models\Customer;
 use App\Models\Network;
+use App\Models\OperatingSystem;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\VM;
@@ -26,16 +27,30 @@ function proxmoxPayload(): array
             ],
         ],
         'guests' => [
-            ['identifier' => 'pve01/qemu/100', 'vmid' => 100, 'name' => 'web01', 'type' => 'qemu', 'ostype' => 'l26', 'ip' => '10.0.0.20', 'status' => 'running', 'cores' => 4, 'memory_gb' => 8],
-            ['identifier' => 'pve01/lxc/200', 'vmid' => 200, 'name' => 'db01', 'type' => 'lxc', 'ostype' => 'debian', 'status' => 'running'],
+            ['identifier' => 'pve01/qemu/100', 'vmid' => 100, 'name' => 'web01', 'type' => 'qemu', 'os_id' => 'debian', 'os_version' => '12', 'ip' => '10.0.0.20', 'status' => 'running', 'cores' => 4, 'memory_gb' => 8],
+            ['identifier' => 'pve01/lxc/200', 'vmid' => 200, 'name' => 'db01', 'type' => 'lxc', 'os_id' => 'debian', 'os_version' => '13', 'status' => 'running'],
         ],
     ];
+}
+
+/**
+ * Der Betriebssystem-Katalog, soweit ein Test ihn braucht.
+ *
+ * Er wird ausdruecklich angelegt: Der Proxmox-Agent ergaenzt den Katalog
+ * nicht, sondern ordnet nur zu. Was hier fehlt, bleibt am Objekt leer.
+ */
+function osKatalog(array $namen): void
+{
+    foreach ($namen as $name) {
+        OperatingSystem::firstOrCreate(['name' => $name]);
+    }
 }
 
 test('Proxmox-Agent legt Host als Server und Gäste als VMs an', function () {
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     [$token, $plain] = AgentToken::generateFor($customer, $site, 'PVE');
+    osKatalog(['Proxmox VE 8', 'Debian 12', 'Debian 13']);
 
     $this->withToken($plain)->postJson('/api/agent/proxmox', proxmoxPayload())
         ->assertOk()
@@ -55,6 +70,11 @@ test('Proxmox-Agent legt Host als Server und Gäste als VMs an', function () {
     $vm = VM::where('agent_identifier', 'pve01/qemu/100')->first();
     // Die Adresse steht im Block, nicht mehr als Spalte am Geraet.
     expect($vm->ipAddresses()->pluck('address')->all())->toBe(['10.0.0.20']);
+
+    // Der springende Punkt: 12 und 13 landen nicht beide unter "Debian" oder
+    // gar "Linux". An der Version haengt das Support-Ende.
+    expect($vm->operatingSystem->name)->toBe('Debian 12');
+    expect(VM::where('agent_identifier', 'pve01/lxc/200')->first()->operatingSystem->name)->toBe('Debian 13');
 });
 
 test('Agent überschreibt manuell gepflegte Dienste nicht', function () {
@@ -134,6 +154,7 @@ test('ordnet die gemeldete Version dem passenden Proxmox-VE-Katalogeintrag zu', 
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     [$token, $plain] = AgentToken::generateFor($customer, $site);
 
+    osKatalog(['Proxmox VE 7']);
     $payload = proxmoxPayload();
     $payload['host']['pve_version'] = '7.4-3';
     $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)->assertOk();
@@ -141,16 +162,58 @@ test('ordnet die gemeldete Version dem passenden Proxmox-VE-Katalogeintrag zu', 
     expect(Server::where('agent_identifier', 'machine-abc')->first()->operatingSystem->name)->toBe('Proxmox VE 7');
 });
 
-test('ohne auswertbare Version faellt der Katalogeintrag auf den Sammel-Namen zurück', function () {
+test('ohne auswertbare Version bleibt der Server ohne Betriebssystem', function () {
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     [$token, $plain] = AgentToken::generateFor($customer, $site);
+    osKatalog(['Proxmox VE 8']);
 
     $payload = proxmoxPayload();
     unset($payload['host']['pve_version']);
     $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)->assertOk();
 
-    expect(Server::where('agent_identifier', 'machine-abc')->first()->operatingSystem->name)->toBe('Proxmox VE');
+    // Ein unversioniertes "Proxmox VE" steht nicht im Katalog - und wird auch
+    // nicht angelegt. Lieber leer als eine geratene Version.
+    expect(Server::where('agent_identifier', 'machine-abc')->first()->operating_system_id)->toBeNull();
+});
+
+test('der Agent legt keine Betriebssysteme an', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [$token, $plain] = AgentToken::generateFor($customer, $site);
+    osKatalog(['Proxmox VE 8', 'Debian 12', 'Debian 13']);
+    $vorher = OperatingSystem::count();
+
+    $payload = proxmoxPayload();
+    // Weder das eine noch das andere steht im Katalog.
+    $payload['host']['pve_version'] = '99.0';
+    $payload['guests'][0]['os_id'] = 'alpine';
+    $payload['guests'][0]['os_version'] = '3.20';
+    $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)->assertOk();
+
+    expect(OperatingSystem::count())->toBe($vorher);
+    expect(Server::where('agent_identifier', 'machine-abc')->first()->operating_system_id)->toBeNull();
+    expect(VM::where('agent_identifier', 'pve01/qemu/100')->first()->operating_system_id)->toBeNull();
+});
+
+test('ein von Hand eingetragenes Betriebssystem übersteht einen Lauf ohne Treffer', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [$token, $plain] = AgentToken::generateFor($customer, $site);
+    osKatalog(['Proxmox VE 8']);
+
+    $payload = proxmoxPayload();
+    $payload['guests'][0]['os_id'] = 'alpine';
+    $payload['guests'][0]['os_version'] = '3.20';
+    $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)->assertOk();
+
+    $handeintrag = OperatingSystem::create(['name' => 'Alpine Linux 3.20']);
+    $vm = VM::where('agent_identifier', 'pve01/qemu/100')->first();
+    $vm->update(['operating_system_id' => $handeintrag->id]);
+
+    $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)->assertOk();
+
+    expect($vm->fresh()->operating_system_id)->toBe($handeintrag->id);
 });
 
 test('Token aktualisiert last_used_at', function () {

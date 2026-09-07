@@ -50,6 +50,26 @@ class AgentController extends Controller
     ];
 
     /**
+     * Was /etc/os-release meldet, auf den Betriebssystem-Katalog abgebildet:
+     * 'debian' + '12' wird "Debian 12".
+     *
+     * Ausgeschrieben und nicht geraten. Was hier nicht steht, bleibt ohne
+     * Betriebssystem - ein leeres Feld ist besser als ein falsches: "Debian
+     * 12" und "Debian 13" haben verschiedene Support-Enden, und genau danach
+     * wird dieses Feld gelesen.
+     *
+     * Die Zahl sagt, wie viele Stellen der Version der Katalog fuehrt -
+     * "Debian 12", aber "Ubuntu Server 24.04 LTS".
+     */
+    protected const OS_RELEASE_KATALOG = [
+        'debian' => ['Debian %s', 1],
+        'ubuntu' => ['Ubuntu Server %s LTS', 2],
+        'rocky' => ['Rocky Linux %s', 1],
+        'almalinux' => ['AlmaLinux %s', 1],
+        'opensuse-leap' => ['openSUSE Leap %s', 1],
+    ];
+
+    /**
      * Nimmt die von einem Proxmox-Host gemeldeten Daten entgegen und legt
      * den Host als Server sowie seine VMs/LXC-Container als VM-Einträge an
      * bzw. aktualisiert sie (Upsert über agent_identifier). Es wird nichts
@@ -75,9 +95,14 @@ class AgentController extends Controller
         // Versionsspezifisch ("Proxmox VE 8" statt nur "Proxmox VE"): Version
         // 7/8/9 haben unterschiedliche Support-Enden, ein Sammel-Eintrag
         // haette das nicht abbilden koennen.
+        //
+        // nurKatalog: Dieser Agent legt keine Betriebssysteme an. Er meldet
+        // Bausteine ('debian', '12'), keine fertigen Namen - was sich nicht
+        // eindeutig einem Katalogeintrag zuordnen laesst, bleibt leer.
         [$server, $guestCount] = $this->hostUndGaeste(
             $data['host'], $data['guests'] ?? [], $customer, $site,
-            $this->mapPveVersion($data['host']['pve_version'] ?? null)
+            $this->mapPveVersion($data['host']['pve_version'] ?? null),
+            nurKatalog: true
         );
 
         return response()->json([
@@ -519,18 +544,21 @@ class AgentController extends Controller
      *
      * @return array{0: Server, 1: int} Server und Zahl der gemeldeten Gäste
      */
-    protected function hostUndGaeste(array $host, array $gaeste, $customer, $site, string $hostOs): array
+    protected function hostUndGaeste(array $host, array $gaeste, $customer, $site, string $hostOs, bool $nurKatalog = false): array
     {
-        $os = OperatingSystem::firstOrCreate(['name' => $hostOs]);
-
         // Hinweis: 'services' wird hier NICHT gesetzt - das Feld pflegt der
         // Nutzer manuell (Rollen wie AD, FS, DNS, DHCP ...). Allein
         // windowsServer() traegt etwas ein, und auch nur in ein leeres Feld.
         $attribute = [
             'site_id' => $site->id,
-            'operating_system_id' => $os->id,
             'name' => $host['hostname'],
         ];
+
+        // Nur eintragen, wenn es einen Treffer gibt. Ein null loeschte sonst
+        // bei jedem Lauf, was jemand von Hand nachgetragen hat.
+        if ($osId = $this->betriebssystemId($hostOs, $nurKatalog)) {
+            $attribute['operating_system_id'] = $osId;
+        }
 
         // Nur gemeldete Felder schreiben. vCenter gibt Hersteller, Modell und
         // Seriennummer nicht heraus - wuerde hier stur null eingetragen, loeschte
@@ -552,23 +580,26 @@ class AgentController extends Controller
 
         $anzahl = 0;
         foreach ($gaeste as $gast) {
-            // Proxmox meldet eine Kennung ('l26', 'win11'), die anderen einen
-            // lesbaren Namen ("Windows Server 2022"). Ein lesbarer Name sticht.
-            $gastOs = OperatingSystem::firstOrCreate([
-                'name' => array_key_exists('os', $gast) && filled($gast['os'])
-                    ? $this->osKatalogName($gast['os'], 'Unbekannt')
-                    : $this->mapOstype($gast['ostype'] ?? null),
-            ]);
+            $vmAttribute = [
+                'site_id' => $site->id,
+                'server_id' => $server->id,
+                'name' => $gast['name'] ?? ('VM '.($gast['vmid'] ?? '')),
+                // 'services' bleibt manuell (Rollen der VM)
+            ];
+
+            // Proxmox meldet, was im Gast in /etc/os-release steht ('debian',
+            // '12'); die anderen einen fertigen Namen ("Windows Server 2022").
+            $gastOsName = $nurKatalog
+                ? $this->osReleaseKatalogName($gast['os_id'] ?? null, $gast['os_version'] ?? null)
+                : $this->osKatalogName($gast['os'] ?? null, 'Unbekannt');
+
+            if ($gastOsId = $this->betriebssystemId($gastOsName, $nurKatalog)) {
+                $vmAttribute['operating_system_id'] = $gastOsId;
+            }
 
             $vm = VM::updateOrCreate(
                 ['customer_id' => $customer->id, 'agent_identifier' => $gast['identifier']],
-                [
-                    'site_id' => $site->id,
-                    'server_id' => $server->id,
-                    'operating_system_id' => $gastOs->id,
-                    'name' => $gast['name'] ?? ('VM '.($gast['vmid'] ?? '')),
-                    // 'services' bleibt manuell (Rollen der VM)
-                ]
+                $vmAttribute
             );
 
             $this->meldeAdresse($vm, $customer->id, $site->id, $gast['ip'] ?? null);
@@ -788,7 +819,8 @@ class AgentController extends Controller
             'guests.*.name' => ['nullable', 'string', 'max:255'],
             'guests.*.vmid' => ['nullable', 'integer'],
             'guests.*.type' => ['nullable', 'string', 'max:32'],
-            'guests.*.ostype' => ['nullable', 'string', 'max:64'],
+            'guests.*.os_id' => ['nullable', 'string', 'max:64'],
+            'guests.*.os_version' => ['nullable', 'string', 'max:32'],
             'guests.*.os' => ['nullable', 'string', 'max:255'],
             'guests.*.ip' => ['nullable', 'string', 'max:255'],
             'guests.*.status' => ['nullable', 'string', 'max:32'],
@@ -814,24 +846,53 @@ class AgentController extends Controller
         return $sauber !== '' ? $sauber : $ersatz;
     }
 
-    protected function mapOstype(?string $ostype): string
+    /**
+     * Die Id des Katalogeintrags zu einem Betriebssystemnamen.
+     *
+     * $nurKatalog trennt zwei Faelle: Ein Agent, der einen fertigen,
+     * eindeutigen Namen meldet ("Windows Server 2022 Standard"), darf den
+     * Katalog ergaenzen. Der Proxmox-Agent darf das nicht - er meldet
+     * Bausteine, und aus ihnen entstuenden Sammel-Eintraege wie "Linux", die
+     * kein Support-Ende haben und die niemand mehr auseinanderdividiert.
+     */
+    protected function betriebssystemId(?string $name, bool $nurKatalog): ?int
     {
-        if (! $ostype) {
-            return 'Unbekannt';
+        $name = trim((string) $name);
+
+        if ($name === '') {
+            return null;
         }
 
-        return match (true) {
-            str_starts_with($ostype, 'l2') => 'Linux',
-            str_starts_with($ostype, 'win') => 'Windows',
-            $ostype === 'solaris' => 'Solaris',
-            default => ucfirst($ostype),
-        };
+        return $nurKatalog
+            ? OperatingSystem::where('name', $name)->value('id')
+            : OperatingSystem::firstOrCreate(['name' => $name])->id;
+    }
+
+    /**
+     * "debian" + "12" -> "Debian 12", anhand von OS_RELEASE_KATALOG.
+     *
+     * Was dort nicht steht, ergibt null - und damit kein Betriebssystem.
+     */
+    protected function osReleaseKatalogName(?string $id, ?string $version): ?string
+    {
+        $id = strtolower(trim((string) $id));
+        $version = trim((string) $version);
+
+        if ($version === '' || ! isset(self::OS_RELEASE_KATALOG[$id])) {
+            return null;
+        }
+
+        [$vorlage, $stellen] = self::OS_RELEASE_KATALOG[$id];
+
+        return sprintf($vorlage, implode('.', array_slice(explode('.', $version), 0, $stellen)));
     }
 
     /**
      * "8.2.4" -> "Proxmox VE 8". Ohne auswertbare Hauptversion (Script zu alt,
-     * pveversion nicht verfuegbar) faellt es auf den unversionierten
-     * Sammel-Eintrag zurueck statt einen falschen Wert zu raten.
+     * pveversion nicht verfuegbar) bleibt "Proxmox VE" uebrig - und weil der
+     * Katalog nur die Versionen 7/8/9 fuehrt, findet sich dazu nichts und der
+     * Server bleibt ohne Betriebssystem. Besser als eine geratene Version:
+     * daran haengt das Support-Ende.
      */
     protected function mapPveVersion(?string $pveVersion): string
     {

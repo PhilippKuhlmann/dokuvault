@@ -1298,6 +1298,7 @@ return [
             'macht' => [
                 'Liest Host-Daten (Hersteller, Modell, Seriennummer, IP, CPU, Arbeitsspeicher, Proxmox-Version, Kernel, Storage-Pools) sowie alle laufenden VMs und LXC-Container (Name, IP, Status, Kerne, Arbeitsspeicher) – rein lesend, verändert nichts auf dem Host.',
                 'Legt den Host als Server an und jede VM bzw. jeden Container als eigenen Eintrag – oder aktualisiert sie, wenn sie schon existieren. Nichts wird gelöscht.',
+                'Das Betriebssystem wird nur zugeordnet, nie angelegt: Gemeldet wird, was im Gast in /etc/os-release steht („debian 12"), und eingetragen wird nur, was der Katalog schon führt. Passt nichts, bleibt das Feld leer – „Debian 12" und „Debian 13" haben verschiedene Support-Enden, ein Sammeleintrag „Linux" hätte gar keins. Bei VMs setzt das den QEMU-Gastagenten voraus, bei Containern einen laufenden Container.',
                 'Dienste, Zugangsdaten und andere manuell gepflegte Angaben bleiben unangetastet.',
                 'Mehrfaches Ausführen aktualisiert dieselben Einträge, statt Duplikate anzulegen – das Script lässt sich also gefahrlos per Cronjob wiederholen.',
             ],
