@@ -15,7 +15,7 @@ PDF-Export, globaler Suche über alle Kunden und Geräten, die sich per Agent
 ![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php&logoColor=white)
 ![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)
 ![Livewire](https://img.shields.io/badge/Livewire-4-FB70A9)
-![Tests](https://img.shields.io/badge/Tests-1033%20grün-3fb950)
+![Tests](https://img.shields.io/badge/Tests-1131%20grün-3fb950)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
 **[▶ Live-Demo ausprobieren](https://doku.dokuvault.de)**
@@ -43,7 +43,7 @@ immer aktuell.
 | 🧭 **Erstaufnahme-Assistent** | 16 Schritte führen durch den Neukunden – Frage stellen, Antwort speichern, weiter |
 | 🔌 **Patchfelder** | Je Port die Dosennummer, den Raum und den Ziel-Switch – „wo hängt Dose A.12?" |
 | 🔎 **Globale Suche** | Server, IP, Seriennummer oder MAC über **alle** Kunden in Sekunden finden |
-| 🤖 **Auto-Dokumentation** | Ein Script auf dem Gerät – der Rest dokumentiert sich selbst (Proxmox, Windows-AD, Windows-Client) |
+| 🤖 **Auto-Dokumentation** | **Acht Agenten** – ein Script, der Rest dokumentiert sich selbst: Proxmox, Hyper-V, VMware, Windows-Server, Windows-AD, Windows-Client, UniFi, Microsoft 365 |
 | 🌐 **IPAM** | Belegte, freie & reservierte IP-Adressen je VLAN auf einen Blick, DHCP- und Gateway-Erkennung |
 | 🔐 **Verschlüsselt** | Alle Passwörter verschlüsselt gespeichert, rollenbasierte Zugriffe, Audit-Log |
 | 📄 **PDF-Export** | Komplette Kundendokumentation auf Knopfdruck als PDF |
@@ -66,7 +66,7 @@ immer aktuell.
     <td width="50%"><img src="docs/screenshots/ipam.png" alt="IPAM"><br><sub><b>IPAM</b> – belegte, freie und reservierte Adressen je VLAN, jeder Bereich in eigener Farbe</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/screenshots/autodoc.png" alt="Auto-Dokumentation"><br><sub><b>Auto-Dokumentation</b> – Agent-Token erzeugen, Script ausführen, fertig</sub></td>
+    <td width="50%"><img src="docs/screenshots/autodoc.png" alt="Auto-Dokumentation"><br><sub><b>Auto-Dokumentation</b> – ein Token, acht Scripts: erzeugen, ausführen, fertig</sub></td>
     <td width="50%"><img src="docs/screenshots/certificates.png" alt="Zertifikate"><br><sub><b>SSL/TLS-Zertifikate</b> – mit Ablauf-Warnung im Dashboard</sub></td>
   </tr>
   <tr>
@@ -132,42 +132,108 @@ Einstieg über **Sonstiges → Erstaufnahme-Assistent** oder die Karte auf dem K
 
 ---
 
-## 🤖 Auto-Dokumentation – Geräte dokumentieren sich selbst
+## 🤖 Auto-Dokumentation – die Umgebung dokumentiert sich selbst
 
-Schluss mit manuellem Abtippen. Erzeuge in der Oberfläche einen **an Kunde und Standort gebundenen
-Agent-Token**, lade das passende Script herunter und führe es auf dem Gerät aus – die Infrastruktur
-landet automatisch in der Doku. Wiederholte Läufe aktualisieren, statt zu duplizieren.
+Schluss mit Abtippen. Erzeuge in der Oberfläche einen **an Kunde und Standort gebundenen
+Agent-Token**, lade das passende Script herunter und führe es aus – der Bestand landet von selbst
+in der Doku. **Ein Token gilt für alle acht Agenten**, und wiederholte Läufe aktualisieren, statt
+zu verdoppeln: Das Script darf gefahrlos im Cronjob stehen.
+
+<img src="docs/screenshots/agenten.png" alt="Übersicht der Agenten" width="900">
+
+### Auf dem Gerät selbst
+
+Diese Agenten brauchen nichts außer ihrem Token – sie lesen die Maschine, auf der sie laufen.
 
 ```bash
-# Auf dem Proxmox-Host als root:
+# Auf dem Proxmox-Host, als root:
 bash proxmox-doku.sh
 ```
 
-Der Proxmox-Agent erfasst Host-Hardware, Seriennummer, IP und **alle VMs & LXC-Container** (inkl.
-IP über den QEMU-Gast-Agent) und legt sie als Server samt Gästen an.
+Der **Proxmox**-Agent erfasst Host-Hardware, Seriennummer, IP, CPU, Arbeitsspeicher und
+Storage-Pools sowie **alle VMs und LXC-Container** (IP über den QEMU-Gastagenten bzw. die
+Container-Konfiguration) und legt sie als Server samt Gästen an.
 
 ```powershell
-# Auf einem Domaincontroller (bzw. Rechner mit RSAT-AD-Modul):
-.\windows-ad-doku.ps1
+# Auf dem Hyper-V-Host bzw. auf einem Windows-Server (als Administrator):
+.\hyperv-doku.ps1
+.\windows-server-doku.ps1
 ```
 
-Der Windows-AD-Agent liest alle Benutzer sowie **nur selbst angelegte Gruppen** aus – Standard-/
-Built-in-Gruppen und System-Konten (Gast, krbtgt, DefaultAccount …) werden bereits am DC
-herausgefiltert, der eingebaute Administrator bleibt erhalten. Passwörter werden nie ausgelesen
-oder übertragen.
+**Hyper-V** meldet den Host und jede virtuelle Maschine. Der **Windows-Server**-Agent legt den
+Rechner als **Server** an, nicht als Client – wer früher den Client-Agenten auf einem Server
+laufen ließ, fand ihn danach unter „Clients", wo ihn niemand sucht. Zusätzlich liest er die
+installierten Rollen (AD, DNS, DHCP, Fileserver …) und trägt sie als Dienste ein, **solange das
+Feld leer ist**: Wer die Dienste einmal von Hand gepflegt hat, weiß mehr als `Get-WindowsFeature`.
 
 ```powershell
+# Auf einem Domaincontroller bzw. einem Rechner mit RSAT-AD-Modul:
+.\windows-ad-doku.ps1
+
 # Auf einem Arbeitsplatzrechner:
 .\windows-client-doku.ps1
 ```
 
-Der Windows-Client-Agent meldet Hostname, Hersteller, Modell, Seriennummer, Betriebssystem und
-IP-Adresse eines Arbeitsplatzrechners und legt ihn als Computer an. Erkannt wird er an einer
-eigenen Kennung, nicht am Namen – ein umbenannter Rechner bleibt derselbe Eintrag, statt ein
-zweiter zu werden.
+Der **Windows-AD**-Agent liest alle Benutzer sowie **nur selbst angelegte Gruppen** – Standard- und
+Built-in-Gruppen und System-Konten (Gast, krbtgt, DefaultAccount …) werden bereits am DC
+herausgefiltert, der eingebaute Administrator bleibt erhalten. Kennwörter werden nie ausgelesen;
+im AD stehen sie als Hash und sind gar nicht lesbar.
 
-Jeder Token darf **ausschließlich dokumentieren** – bei einem Leak kein weiterer Zugriff. Weitere
-Agenten folgen.
+Der **Windows-Client**-Agent meldet Hostname, Hersteller, Modell, Seriennummer, Betriebssystem und
+IP eines Arbeitsplatzrechners. Erkannt wird er an einer eigenen Kennung, nicht am Namen – ein
+umbenannter Rechner bleibt derselbe Eintrag, statt ein zweiter zu werden.
+
+### Über das Netz
+
+Diese drei laufen nicht auf dem Gerät, sondern fragen ein System über dessen Schnittstelle ab.
+
+```powershell
+.\unifi-doku.ps1        -Controller "https://unifi.local" -User "doku" -Password "…" -Site "Kunde A"
+.\vmware-doku.ps1       -Server "vcenter.local" -User "doku@vsphere.local" -Password "…"
+.\microsoft365-doku.ps1 -TenantId "…" -ClientId "…" -ClientSecret "…"
+```
+
+**UniFi** holt Switches, Accesspoints und WLANs – erkannt an der MAC-Adresse bzw. der
+Controller-Id, ein umbenanntes Gerät bleibt derselbe Eintrag. Das Script spricht sowohl UniFi OS
+(UDM, Cloud Key Gen2+) als auch den klassischen Controller an, ohne dass man die Bauart kennen
+muss. **VMware** macht dasselbe wie Hyper-V, aber je ESXi-Host unter einem vCenter, über die
+vSphere-REST-Schnittstelle und ohne PowerCLI. **Microsoft 365** liest Postfächer, verifizierte
+Domains und gebuchte Lizenzen über Microsoft Graph.
+
+Weil diese drei nur mit einer API sprechen, gibt es **UniFi und Microsoft 365 auch als
+Shell-Script** – vom Mac oder von einem Linux-Rechner aus, ganz ohne PowerShell (`curl` und `jq`
+genügen). Die Token-Seite bietet beide Fassungen nebeneinander an:
+
+```bash
+bash unifi-doku.sh        --controller https://unifi.local --user doku --site "Kunde A"
+bash microsoft365-doku.sh --tenant-id "…" --client-id "…"
+```
+
+Die Shell-Fassungen **fragen das Kennwort ab**, statt es als Argument zu nehmen – so steht es
+weder in der Prozessliste noch in der Shell-History; alternativ lesen sie es aus
+`UNIFI_PASSWORD` bzw. `M365_CLIENT_SECRET`.
+
+Ein UniFi-Controller führt oft **mehrere Sites**, ein Agent-Token gehört aber zu genau einem
+Kunden – deshalb wird die Site nie geraten. Gibt es nur eine, wird sie genommen; gibt es mehrere,
+listet das Script sie auf und hält an, bis eine gewählt ist. `--site` nimmt den internen oder den
+angezeigten Namen, `--sites` listet nur auf.
+
+### Was ein Agent nicht tut
+
+- **Fremde Zugangsdaten landen nicht in DokuVault.** vCenter, UniFi und Graph bekommen ihre
+  Anmeldung beim Aufruf mitgegeben; ein nur lesendes Konto genügt überall.
+- **Nichts wird gelöscht, nichts überschrieben, was von Hand gepflegt ist.** Dienste,
+  Zugangsdaten, korrigierte VLAN-Zuordnungen und nachgetragene Felder überstehen jeden Lauf.
+- **Der Proxmox-Agent legt keine Betriebssysteme an.** Er meldet, was im Gast in
+  `/etc/os-release` steht („debian 12"), und trägt nur ein, was der Katalog schon führt – findet
+  sich nichts, bleibt das Feld leer. „Debian 12" und „Debian 13" haben verschiedene Support-Enden;
+  ein Sammeleintrag „Linux" hätte gar keins und wäre schlimmer als eine Lücke. Genauso beim
+  Windows-Server: Übernommen wird nur eine Rolle, die der Dienstekatalog bereits führt.
+- **Jeder Token darf ausschließlich dokumentieren** – bei einem Leak kein weiterer Zugriff.
+
+Die einzige Ausnahme bei den Kennwörtern ist das **WLAN-Kennwort**: Es steht im Klartext in der
+Controller-Konfiguration, DokuVault hat eine verschlüsselte Spalte dafür, und in einer
+Dokumentation ist es genau das, was man nachschlägt. `--ohne-kennwoerter` schaltet das ab.
 
 ---
 
@@ -191,7 +257,8 @@ Agenten folgen.
 - **Lizenzen** – Software-, Windows- und Zugriffslizenzen inkl. Ablaufdaten & Datei-Upload
 - **Zugangsdaten** – verschlüsselte Logins, Passwort anzeigen & kopieren, vorheriges Passwort
   bleibt für eine einstellbare Frist nachschlagbar – für den Fall, dass jemand falsch geändert hat
-- **Erfassung** – Erstaufnahme-Assistent (16 geführte Schritte), Auto-Dokumentation per Agent (Proxmox, Windows-AD, Windows-Client),
+- **Erfassung** – Erstaufnahme-Assistent (16 geführte Schritte), Auto-Dokumentation über **acht Agenten**
+  (Proxmox, Hyper-V, VMware, Windows-Server, Windows-AD, Windows-Client, UniFi, Microsoft 365),
   Agent-Token auf eigener Seite verwaltet (anlegen, einmalig anzeigen, widerrufen)
 - **Betrieb** – globale Suche, durchsuch- und filterbares Aktivitätsprotokoll (Ereignis, Objektart,
   Benutzer, Zeitraum), Papierkorb (Wiederherstellen, dazu eine Adminansicht über alle Kunden),

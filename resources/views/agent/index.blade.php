@@ -24,15 +24,18 @@
             @endphp
             <div x-data="{ tab: @js(array_key_first($agenten)) }" class="p-5 rounded-xl border border-green-300 bg-green-50 shadow-xs dark:bg-gray-800 dark:border-green-800">
                 <div class="text-lg font-CoconPro text-green-800 dark:text-green-300">
-                    Token „{{ session('newTokenName') }}" erstellt
+                    {{ __('Token „:name" erstellt', ['name' => session('newTokenName')]) }}
                 </div>
                 <p class="mt-1 text-sm text-green-800 dark:text-green-300">
-                    {{ __('Dieser Token wird') }} <strong>nur jetzt</strong> angezeigt. Lade das passende Script herunter oder
-                    kopiere es – der Token ist darin bereits eingetragen.
+                    {{-- Drei Teile statt eines Satzes mit HTML darin: {!! !!} waere der
+                         einzige Weg, das <strong> aus der Uebersetzung kommen zu lassen -
+                         und rohes HTML aus einer Sprachdatei will hier niemand. --}}
+                    {{ __('Dieser Token wird') }} <strong>{{ __('nur jetzt') }}</strong>
+                    {{ __('angezeigt. Lade das passende Script herunter oder kopiere es – der Token ist darin bereits eingetragen.') }}
                 </p>
 
                 <div class="mt-3">
-                    <label class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ __('Token') }}</label>
+                    <label class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ __('Agent-Token') }}</label>
                     <div class="mt-1 flex items-center gap-2">
                         <code class="flex-1 break-all rounded-lg bg-white px-3 py-2 text-sm border border-gray-200 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100">{{ session('newToken') }}</code>
                     </div>

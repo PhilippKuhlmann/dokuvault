@@ -4,11 +4,14 @@
 
 ### Changed
 
+- **Die deutsche README hing fünf Tage hinterher.** Sie kannte drei Agenten, während es acht sind — wer sie las, hielt UniFi, VMware, Hyper-V, Windows-Server und Microsoft 365 für nicht vorhanden. Der Abschnitt zur Auto-Dokumentation ist neu geschrieben und in beiden Sprachen gleich gegliedert: was auf dem Gerät selbst läuft, was über das Netz abgefragt wird, und was ein Agent ausdrücklich *nicht* tut. Dazu ein Bild der Agenten-Übersicht.
+- **Der Screenshot der Auto-Dokumentation zeigte noch drei Reiter.** Neu aufgenommen, in beiden Sprachen — mit allen acht Agenten und der Übersicht darüber, die es beim letzten Bild noch nicht gab.
 - **Zwanzig Server-Felder ohne Gliederung sahen wie eine Fläche aus.** Das generische Objekt-Formular rendert die Felder aller ~38 Typen flach in einem Grid; beim Server verschwamm dadurch der Fernwartungs-Zugang mit dem Kaufdatum. Ein optionaler `gruppe`-Schlüssel je Feld setzt jetzt eine Abschnittsüberschrift mit Trennlinie (Grunddaten, System, Fernzugriff, Beschaffung, Dienste) — gesetzt ist er nur beim Server, alle anderen Typen rendern unverändert weiter.
 - **Tailwind 4, Flowbite 4 und Vite 6 übernommen.** Die Tailwind-Konfiguration liegt nicht mehr in `tailwind.config.js`, sondern als `@theme`/`@plugin`-Direktiven in `resources/css/app.css`; Flowbite 4 verlangt Tailwind 4 als Peer-Dependency und ging deshalb im selben Zug mit. Vite 6 lädt `laravel-vite-plugin` nur noch als ESM, weshalb `package.json` jetzt `"type": "module"` führt.
 
 ### Fixed
 
+- **Die englische Oberfläche fiel auf der Agent-Seite ins Deutsche.** „Token „…" erstellt" und der Satz darunter standen fest verdrahtet im Blade, nur die ersten drei Wörter liefen durch `__()`. Aufgefallen ist es beim Aufnehmen des englischen Screenshots. Auch die Beschriftung über dem Token-Wert stimmte nicht: `Token` ist auf Englisch mit „tokens" hinterlegt — richtig für die Zählung („5 Token"), falsch über einem einzelnen Wert. Der Stichpunkt zum Betriebssystem, der letzte Woche dazukam, hatte ebenfalls keine Übersetzung.
 - **Die Dienste-Kacheln warfen bei jedem Öffnen des Formulars einen JavaScript-Fehler.** Die Hover-Beschreibung sitzt in einer Blade-Komponente, und deren Attributwerte werden nicht kompiliert — sie landen wörtlich in `$attributes`. Das `@js(...)` im `x-show` der Komponente blieb dadurch als Text stehen, Alpine bekam kein gültiges JavaScript und meldete einen Syntaxfehler. Sichtbare Folge war eine Lücke in der Kachelreihe: Der Knopf verschwand beim Auswählen, sein Hover-Rahmen blieb stehen. Der Ausdruck wird jetzt in PHP gebaut und gebunden übergeben.
 
 ## 26.09.07

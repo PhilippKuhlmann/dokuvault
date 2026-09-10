@@ -15,7 +15,7 @@ PDF export, global search across every customer, and devices that
 ![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php&logoColor=white)
 ![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)
 ![Livewire](https://img.shields.io/badge/Livewire-4-FB70A9)
-![Tests](https://img.shields.io/badge/Tests-1033%20passing-3fb950)
+![Tests](https://img.shields.io/badge/Tests-1131%20passing-3fb950)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
 **[▶ Try the live demo](https://doku.dokuvault.de)**
@@ -42,7 +42,7 @@ MSPs lose time to scattered spreadsheets, stale wikis and “where did we write 
 | 🧭 **Initial survey wizard** | 16 steps through a new customer — ask, save the answer, next |
 | 🔌 **Patch panels** | Outlet number, room and target switch per port — “where does outlet A.12 go?” |
 | 🔎 **Global search** | Find a server, IP, serial number or MAC across **all** customers in seconds |
-| 🤖 **Auto-documentation** | One script on the device — the rest documents itself (Proxmox, Windows AD, Windows client) |
+| 🤖 **Auto-documentation** | **Eight agents** — one script, the rest documents itself: Proxmox, Hyper-V, VMware, Windows Server, Windows AD, Windows client, UniFi, Microsoft 365 |
 | 🌐 **IPAM** | Used, free and reserved IP addresses per VLAN at a glance, DHCP and gateway detection |
 | 🔐 **Encrypted** | Every password stored encrypted, role-based access, audit log |
 | 📄 **PDF export** | Complete customer documentation as a PDF at the push of a button |
@@ -65,7 +65,7 @@ MSPs lose time to scattered spreadsheets, stale wikis and “where did we write 
     <td width="50%"><img src="docs/screenshots/en/ipam.png" alt="IPAM"><br><sub><b>IPAM</b> – used, free and reserved addresses per VLAN, each range in its own colour</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/screenshots/en/autodoc.png" alt="Auto-documentation"><br><sub><b>Auto-documentation</b> – create an agent token, run the script, done</sub></td>
+    <td width="50%"><img src="docs/screenshots/en/autodoc.png" alt="Auto-documentation"><br><sub><b>Auto-documentation</b> – one token, eight scripts: create, run, done</sub></td>
     <td width="50%"><img src="docs/screenshots/en/certificates.png" alt="Certificates"><br><sub><b>SSL/TLS certificates</b> – with an expiry warning on the dashboard</sub></td>
   </tr>
   <tr>
@@ -130,81 +130,108 @@ Start under **Other → Initial survey wizard**, or from the card on the custome
 
 ---
 
-## 🤖 Auto-documentation — devices document themselves
+## 🤖 Auto-documentation — the environment documents itself
 
-No more typing things over. Create an **agent token bound to a customer and site** in the interface,
-download the matching script and run it on the device — the infrastructure lands in the
-documentation by itself. Repeated runs update instead of duplicating.
+No more typing things over. Create an **agent token bound to a customer and site** in the
+interface, download the matching script and run it — the inventory lands in the documentation by
+itself. **One token covers all eight agents**, and repeated runs update instead of duplicating:
+the script can safely live in a cron job.
+
+<img src="docs/screenshots/en/agenten.png" alt="The agents on offer" width="900">
+
+### On the device itself
+
+These agents need nothing but their token — they read the machine they run on.
 
 ```bash
 # On the Proxmox host, as root:
 bash proxmox-doku.sh
 ```
 
-The Proxmox agent records host hardware, serial number, IP and **all VMs & LXC containers**
-(including the IP via the QEMU guest agent) and creates them as a server with its guests.
+The **Proxmox** agent records host hardware, serial number, IP, CPU, memory and storage pools as
+well as **all VMs and LXC containers** (IP via the QEMU guest agent or the container config) and
+creates them as a server with its guests.
 
 ```powershell
-# On a domain controller (or a machine with the RSAT AD module):
-.\windows-ad-doku.ps1
+# On the Hyper-V host, or on a Windows server (as Administrator):
+.\hyperv-doku.ps1
+.\windows-server-doku.ps1
 ```
 
-The Windows AD agent reads all users plus **only self-created groups** — default and built-in groups
-and system accounts (Guest, krbtgt, DefaultAccount …) are filtered out on the domain controller
-itself, while the built-in Administrator is kept. Passwords are never read or transmitted.
+**Hyper-V** reports the host and every virtual machine. The **Windows Server** agent files the
+machine as a **server** rather than a client — anyone who used to run the client agent on a server
+found it under “Clients” afterwards, where nobody looks for it. It also reads the installed roles
+(AD, DNS, DHCP, file server …) into the services field, **as long as that field is still empty**:
+someone who has curated those services by hand knows more than `Get-WindowsFeature`.
 
 ```powershell
+# On a domain controller, or a machine with the RSAT AD module:
+.\windows-ad-doku.ps1
+
 # On a workstation:
 .\windows-client-doku.ps1
 ```
 
-The Windows client agent reports the hostname, manufacturer, model, serial number, operating
-system and IP address of a workstation and records it as a computer. It is recognised by an
-identifier of its own rather than by name — a renamed machine stays the same entry instead of
-becoming a second one. The Windows **server** agent does the same but files the machine as a
-server — and reads its installed roles (AD, DNS, DHCP, file server …) into the services field,
-as long as that field is still empty.
+The **Windows AD** agent reads all users plus **only self-created groups** — default and built-in
+groups and system accounts (Guest, krbtgt, DefaultAccount …) are filtered out on the domain
+controller itself, while the built-in Administrator is kept. Passwords are never read; in AD they
+are hashed and cannot be read at all.
 
-Some agents do not run on the device itself but query a system across the network:
+The **Windows client** agent reports the hostname, manufacturer, model, serial number, operating
+system and IP of a workstation. It is recognised by an identifier of its own rather than by name —
+a renamed machine stays the same entry instead of becoming a second one.
+
+### Across the network
+
+These three do not run on the device but query a system through its API.
 
 ```powershell
-# Anywhere that can reach the controller, vCenter, or the internet:
-.\hyperv-doku.ps1
-.\unifi-doku.ps1     -Controller "https://unifi.local"     -User "doku" -Password "…"
-.\vmware-doku.ps1    -Server     "vcenter.local"           -User "doku@vsphere.local" -Password "…"
+.\unifi-doku.ps1        -Controller "https://unifi.local" -User "doku" -Password "…" -Site "Kunde A"
+.\vmware-doku.ps1       -Server "vcenter.local" -User "doku@vsphere.local" -Password "…"
 .\microsoft365-doku.ps1 -TenantId "…" -ClientId "…" -ClientSecret "…"
 ```
 
-**Hyper-V** records the host and every virtual machine, **VMware** does the same for each ESXi host
-under a vCenter, **UniFi** picks up switches, access points and Wi-Fi networks, and
-**Microsoft 365** reads mailboxes, verified domains and booked licences through Graph.
+**UniFi** picks up switches, access points and Wi-Fi networks — recognised by MAC address or
+controller id, so a renamed device stays the same entry. The script talks to both UniFi OS (UDM,
+Cloud Key Gen2+) and the classic controller without you having to know which one it is.
+**VMware** does what Hyper-V does, but per ESXi host under a vCenter, through the vSphere REST API
+and without PowerCLI. **Microsoft 365** reads mailboxes, verified domains and booked licences
+through Microsoft Graph.
 
-Because those agents only talk to an API, UniFi and Microsoft 365 also ship as a **shell script**
-— run them from a Mac or Linux box, no PowerShell needed (curl and jq are enough). The token page
-offers both versions side by side:
+Because those three only talk to an API, **UniFi and Microsoft 365 also ship as a shell script** —
+run them from a Mac or a Linux box, no PowerShell needed (`curl` and `jq` are enough). The token
+page offers both versions side by side:
 
 ```bash
 bash unifi-doku.sh        --controller https://unifi.local --user doku --site "Kunde A"
 bash microsoft365-doku.sh --tenant-id "…" --client-id "…"
 ```
 
-The shell versions ask for the password rather than taking it as an argument, so it stays out of
-the process list and the shell history — or read it from `UNIFI_PASSWORD` / `M365_CLIENT_SECRET`.
+The shell versions **ask for the password** rather than taking it as an argument, so it stays out
+of the process list and the shell history — or read it from `UNIFI_PASSWORD` /
+`M365_CLIENT_SECRET`.
 
-A UniFi controller often holds **one site per customer**, and an agent token belongs to exactly one
+A UniFi controller often holds **several sites**, while an agent token belongs to exactly one
 customer — so the site is never guessed. With a single site it is used; with several the script
 lists them and stops until one is chosen. `--site` takes the internal name or the display name;
 `--sites` just lists them.
 
-Those third-party credentials are **passed on the command line and never stored in DokuVault** — a
-read-only account is enough everywhere.
+### What an agent does not do
 
-The **Wi-Fi passphrase is the one secret that does get documented**: it sits in plain text in the
-controller's configuration, DokuVault has an encrypted column for it, and in a documentation tool it
-is exactly what people look it up for. `--ohne-kennwoerter` turns that off. AD passwords are a
-different matter — they are hashed and cannot be read at all.
+- **Third-party credentials never land in DokuVault.** vCenter, UniFi and Graph get their login on
+  the command line; a read-only account is enough everywhere.
+- **Nothing is deleted, and nothing hand-curated is overwritten.** Services, credentials, corrected
+  VLAN assignments and manually added fields survive every run.
+- **The Proxmox agent creates no operating systems.** It reports what the guest states in
+  `/etc/os-release` (“debian 12”) and fills in only what the catalogue already holds — if nothing
+  matches, the field stays empty. “Debian 12” and “Debian 13” have different end-of-support dates;
+  a catch-all “Linux” would have none at all, which is worse than a gap. Same for Windows Server:
+  only a role the service catalogue already lists is taken over.
+- **Every token may only document** — a leaked one grants no further access.
 
-Every token may **only document** — a leaked one grants no further access.
+The one exception among the passwords is the **Wi-Fi passphrase**: it sits in plain text in the
+controller's configuration, DokuVault has an encrypted column for it, and in a documentation tool
+it is exactly what people look up. `--ohne-kennwoerter` turns that off.
 
 ---
 
