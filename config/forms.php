@@ -480,40 +480,44 @@ return [
         'bloecke' => true,
         // Zwanzig Felder untereinander waeren eine Scrollstrecke.
         'spalten' => 2,
+        // 'gruppe' teilt die zwanzig Felder in Abschnitte mit eigener
+        // Ueberschrift - ohne sie standen sie als eine ununterbrochene
+        // Flaeche im Modal, in der Fernwartungs-Zugang und Kaufdatum
+        // gleich aussahen.
         'felder' => [
-            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
-            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
-            ['name' => 'type', 'label' => 'Typ', 'type' => 'text'],
-            ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
-            ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
-            ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort', 'gruppe' => 'Grunddaten'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text', 'gruppe' => 'Grunddaten'],
+            ['name' => 'type', 'label' => 'Typ', 'type' => 'text', 'gruppe' => 'Grunddaten'],
+            ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text', 'gruppe' => 'Grunddaten'],
+            ['name' => 'model', 'label' => 'Modell', 'type' => 'text', 'gruppe' => 'Grunddaten'],
+            ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text', 'gruppe' => 'Grunddaten'],
             ['name' => 'form_factor', 'label' => 'Bauform', 'type' => 'optionen',
-                'quelle' => 'custom.server_form_factors'],
+                'quelle' => 'custom.server_form_factors', 'gruppe' => 'Grunddaten'],
             // Nur beim Rackeinbau: Ein Standserver hat keine Einbautiefe.
             ['name' => 'full_depth', 'label' => 'Einbautiefe', 'type' => 'optionen',
-                'quelle' => 'custom.server_depths', 'sichtbar_wenn' => ['form_factor' => 'rack']],
+                'quelle' => 'custom.server_depths', 'sichtbar_wenn' => ['form_factor' => 'rack'], 'gruppe' => 'Grunddaten'],
             // Vorbelegt wie im Seitenformular: Die meisten Server sind 1 HE
             // hoch, und required_if verlangt den Wert beim Rackeinbau.
             ['name' => 'height_units', 'label' => 'Höheneinheiten (HE)', 'type' => 'number',
-                'default' => 1, 'sichtbar_wenn' => ['form_factor' => 'rack']],
+                'default' => 1, 'sichtbar_wenn' => ['form_factor' => 'rack'], 'gruppe' => 'Grunddaten'],
             ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'auswahl',
-                'quelle' => OperatingSystem::class, 'anzeige' => 'name'],
+                'quelle' => OperatingSystem::class, 'anzeige' => 'name', 'gruppe' => 'System'],
             // 'auswahl' filtert selbst nach customer_id - ein fremder Cluster
             // steht damit gar nicht erst zur Wahl.
             ['name' => 'cluster_id', 'label' => 'Cluster', 'type' => 'auswahl',
-                'quelle' => Cluster::class, 'anzeige' => 'name'],
-            ['name' => 'bmcIp', 'label' => 'BMC IP', 'type' => 'text'],
-            ['name' => 'bmcUser', 'label' => 'BMC Benutzer', 'type' => 'text'],
-            ['name' => 'bmcPassword', 'label' => 'BMC Passwort', 'type' => 'text'],
-            ['name' => 'remoteID', 'label' => 'Fernwartungs-ID', 'type' => 'text'],
-            ['name' => 'remotePassword', 'label' => 'Fernwartungs-Kennwort', 'type' => 'text'],
-            ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
-            ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
-            ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
-            ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+                'quelle' => Cluster::class, 'anzeige' => 'name', 'gruppe' => 'System'],
+            ['name' => 'bmcIp', 'label' => 'BMC IP', 'type' => 'text', 'gruppe' => 'Fernzugriff'],
+            ['name' => 'bmcUser', 'label' => 'BMC Benutzer', 'type' => 'text', 'gruppe' => 'Fernzugriff'],
+            ['name' => 'bmcPassword', 'label' => 'BMC Passwort', 'type' => 'text', 'gruppe' => 'Fernzugriff'],
+            ['name' => 'remoteID', 'label' => 'Fernwartungs-ID', 'type' => 'text', 'gruppe' => 'Fernzugriff'],
+            ['name' => 'remotePassword', 'label' => 'Fernwartungs-Kennwort', 'type' => 'text', 'gruppe' => 'Fernzugriff'],
+            ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date', 'gruppe' => 'Beschaffung'],
+            ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date', 'gruppe' => 'Beschaffung'],
+            ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date', 'gruppe' => 'Beschaffung'],
+            ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text', 'gruppe' => 'Beschaffung'],
             // Die Dienste brauchen die volle Breite - Katalog und Kacheln
             // passen nicht in eine halbe Spalte.
-            ['name' => 'services', 'label' => 'Dienste', 'type' => 'dienste', 'breit' => true],
+            ['name' => 'services', 'label' => 'Dienste', 'type' => 'dienste', 'breit' => true, 'gruppe' => 'Dienste'],
         ],
     ],
     'vm' => [

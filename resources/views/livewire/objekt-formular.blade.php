@@ -51,12 +51,33 @@
                         'flex flex-col' => $spalten === 1,
                         'grid grid-cols-1 sm:grid-cols-2' => $spalten > 1,
                     ])>
+                        @php
+                            $vorherigeGruppe = null;
+                        @endphp
                         @foreach ($felder as $feld)
                             {{-- Technische Felder wie "hidden" gehoeren ins
                                  Formular, aber nicht vor die Augen: Sie werden
                                  beim Bearbeiten geladen und beim Speichern
                                  unveraendert zurueckgeschrieben. --}}
                             @continue($feld['type'] === 'versteckt')
+
+                            {{-- 'gruppe' ist optional - nur Formulare mit vielen
+                                 Feldern (etwa Server) setzen es. Ohne den Key
+                                 aendert sich am Rendering nichts, die anderen
+                                 Typen bleiben unberuehrt. --}}
+                            @if (! empty($feld['gruppe']) && $feld['gruppe'] !== $vorherigeGruppe)
+                                <div @class(['sm:col-span-2' => $spalten > 1])>
+                                    <div @class([
+                                        'text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500',
+                                        'border-t border-gray-100 pt-3 dark:border-gray-700' => $vorherigeGruppe !== null,
+                                    ])>
+                                        {{ __($feld['gruppe']) }}
+                                    </div>
+                                </div>
+                                @php
+                                    $vorherigeGruppe = $feld['gruppe'];
+                                @endphp
+                            @endif
                             <div wire:key="feld-{{ $feld['name'] }}"
                                 @class([
                                     'flex flex-col',

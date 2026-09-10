@@ -206,7 +206,7 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
         // generischen Formular zur Laufzeit hindurch.
         ->merge(collect(config('forms'))->flatMap(fn ($typ) => collect($typ['felder'] ?? [])
             ->flatMap(fn ($f) => array_merge(
-                [$f['label'] ?? null, $f['platzhalter'] ?? null],
+                [$f['label'] ?? null, $f['platzhalter'] ?? null, $f['gruppe'] ?? null],
                 array_values($f['werte'] ?? [])
             ))))
         // Sprueche der Fehlerseiten - je Statuscode eine Liste.
