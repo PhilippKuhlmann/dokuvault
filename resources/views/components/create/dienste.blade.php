@@ -90,8 +90,12 @@
             @foreach ($katalog as $dienst)
                 {{-- Die Beschreibung im Hover-Fenster: Beim Auswaehlen ist genau
                      der Moment, in dem man wissen will, was "DFS" bedeutet. --}}
-                <x-hovertext :text="$dienst['description']" x-show="! hat(@js($dienst['name']))" x-cloak>
-                    <button type="button" x-show="! hat(@js($dienst['name']))" x-cloak
+                @php($sichtbar = '! hat('.Illuminate\Support\Js::from($dienst['name']).')')
+                {{-- Gebunden (:x-show) statt @js im Attribut: In einem Component-Tag
+                     landet der Attributwert unkompiliert in $attributes - @js bliebe
+                     woertlich stehen und Alpine wuerfe einen Syntaxfehler. --}}
+                <x-hovertext :text="$dienst['description']" :x-show="$sichtbar" x-cloak>
+                    <button type="button" x-show="{!! $sichtbar !!}" x-cloak
                         x-on:click="dazu(@js($dienst['name']))"
                         @class([
                             'rounded px-3 py-1 text-sm opacity-70 transition-opacity hover:opacity-100',

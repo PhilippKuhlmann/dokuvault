@@ -1,5 +1,16 @@
 # Changelog
 
+## 26.09.10
+
+### Changed
+
+- **Zwanzig Server-Felder ohne Gliederung sahen wie eine Fläche aus.** Das generische Objekt-Formular rendert die Felder aller ~38 Typen flach in einem Grid; beim Server verschwamm dadurch der Fernwartungs-Zugang mit dem Kaufdatum. Ein optionaler `gruppe`-Schlüssel je Feld setzt jetzt eine Abschnittsüberschrift mit Trennlinie (Grunddaten, System, Fernzugriff, Beschaffung, Dienste) — gesetzt ist er nur beim Server, alle anderen Typen rendern unverändert weiter.
+- **Tailwind 4, Flowbite 4 und Vite 6 übernommen.** Die Tailwind-Konfiguration liegt nicht mehr in `tailwind.config.js`, sondern als `@theme`/`@plugin`-Direktiven in `resources/css/app.css`; Flowbite 4 verlangt Tailwind 4 als Peer-Dependency und ging deshalb im selben Zug mit. Vite 6 lädt `laravel-vite-plugin` nur noch als ESM, weshalb `package.json` jetzt `"type": "module"` führt.
+
+### Fixed
+
+- **Die Dienste-Kacheln warfen bei jedem Öffnen des Formulars einen JavaScript-Fehler.** Die Hover-Beschreibung sitzt in einer Blade-Komponente, und deren Attributwerte werden nicht kompiliert — sie landen wörtlich in `$attributes`. Das `@js(...)` im `x-show` der Komponente blieb dadurch als Text stehen, Alpine bekam kein gültiges JavaScript und meldete einen Syntaxfehler. Sichtbare Folge war eine Lücke in der Kachelreihe: Der Knopf verschwand beim Auswählen, sein Hover-Rahmen blieb stehen. Der Ausdruck wird jetzt in PHP gebaut und gebunden übergeben.
+
 ## 26.09.07
 
 ### Changed
