@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Str;
+use Pdo\Mysql;
 
 return [
 
@@ -58,8 +59,13 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
+            // PHP 8.5 hat die PDO::MYSQL_*-Konstanten in eine eigene Klasse
+            // verschoben und die alten als veraltet markiert. Ein
+            // Deprecation-Hinweis aus der Konfiguration laeuft in jeden
+            // Testlauf und in jedes Log - deshalb die neue Konstante, sobald
+            // es sie gibt. Die alte bleibt fuer PHP 8.2 bis 8.4.
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                (defined('Pdo\Mysql::ATTR_SSL_CA') ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 
