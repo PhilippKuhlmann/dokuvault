@@ -1,32 +1,33 @@
 {
-  "public/fonts/SpaceGrotesk-Semibold.woff2": {
-    "file": "assets/SpaceGrotesk-Semibold.0bdc872e.woff2",
-    "src": "public/fonts/SpaceGrotesk-Semibold.woff2"
+  "public/fonts/SpaceGrotesk-Bold.woff2": {
+    "file": "assets/SpaceGrotesk-Bold-BQnZhY3m.woff2",
+    "src": "public/fonts/SpaceGrotesk-Bold.woff2"
   },
   "public/fonts/SpaceGrotesk-Light.woff2": {
-    "file": "assets/SpaceGrotesk-Light.18faaede.woff2",
+    "file": "assets/SpaceGrotesk-Light-4ZO_JR7W.woff2",
     "src": "public/fonts/SpaceGrotesk-Light.woff2"
   },
   "public/fonts/SpaceGrotesk-Medium.woff2": {
-    "file": "assets/SpaceGrotesk-Medium.ed7e064e.woff2",
+    "file": "assets/SpaceGrotesk-Medium-DUe3BAxM.woff2",
     "src": "public/fonts/SpaceGrotesk-Medium.woff2"
   },
   "public/fonts/SpaceGrotesk-Regular.woff2": {
-    "file": "assets/SpaceGrotesk-Regular.a6658ce6.woff2",
+    "file": "assets/SpaceGrotesk-Regular-CfP_5XZW.woff2",
     "src": "public/fonts/SpaceGrotesk-Regular.woff2"
   },
-  "public/fonts/SpaceGrotesk-Bold.woff2": {
-    "file": "assets/SpaceGrotesk-Bold.7ce350b7.woff2",
-    "src": "public/fonts/SpaceGrotesk-Bold.woff2"
-  },
-  "resources/js/app.js": {
-    "file": "assets/app.3faa2050.js",
-    "src": "resources/js/app.js",
-    "isEntry": true
+  "public/fonts/SpaceGrotesk-Semibold.woff2": {
+    "file": "assets/SpaceGrotesk-Semibold-DxxdqCpr.woff2",
+    "src": "public/fonts/SpaceGrotesk-Semibold.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app.6485d4d7.css",
+    "file": "assets/app-BOuesG9P.css",
     "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-tt0YvM5s.js",
+    "name": "app",
+    "src": "resources/js/app.js",
     "isEntry": true
   }
 }
