@@ -1,6 +1,94 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@plugin '@tailwindcss/forms';
+@plugin 'flowbite/plugin';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../../node_modules/flowbite/**/*.js';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --radius-none: 0px;
+  --radius-sm: 1px;
+  --radius: 2px;
+  --radius-md: 2px;
+  --radius-lg: 3px;
+  --radius-xl: 4px;
+  --radius-2xl: 5px;
+  --radius-3xl: 6px;
+  --radius-full: 9999px;
+
+  --font-CoconPro: SpaceGrotesk-Semibold, sans-serif;
+  --font-DINPro: SpaceGrotesk-Regular, sans-serif;
+  --font-DINPro-bold: SpaceGrotesk-Bold, sans-serif;
+  --font-DINPro-light: SpaceGrotesk-Light, sans-serif;
+  --font-DINPro-medium: SpaceGrotesk-Medium, sans-serif;
+
+  --color-blau-900: #1b4176;
+  --color-blau-500: #1f73d6;
+  --color-blau-300: #59b0ff;
+  --color-blau-100: #bce0ff;
+  --color-sdarkblue: #122748;
+  --color-ssystemblue: #3391f0;
+
+  --color-cerulean-50: #eef7ff;
+  --color-cerulean-100: #d9edff;
+  --color-cerulean-200: #bce0ff;
+  --color-cerulean-300: #8ecdff;
+  --color-cerulean-400: #59b0ff;
+  --color-cerulean-500: #3391f0;
+  --color-cerulean-600: #1f73d6;
+  --color-cerulean-700: #1a5cad;
+  --color-cerulean-800: #1b4d8e;
+  --color-cerulean-900: #1b4176;
+  --color-cerulean-950: #122748;
+
+  --color-chathams-blue-50: #f1f6fc;
+  --color-chathams-blue-100: #e0ecf8;
+  --color-chathams-blue-200: #c7dbf1;
+  --color-chathams-blue-300: #9ec2e7;
+  --color-chathams-blue-400: #6fa1da;
+  --color-chathams-blue-500: #4d82cd;
+  --color-chathams-blue-600: #3967b3;
+  --color-chathams-blue-700: #305392;
+  --color-chathams-blue-800: #1f3d6e;
+  --color-chathams-blue-900: #1c3358;
+  --color-chathams-blue-950: #131f38;
+
+  --color-hawkes-blue-50: #f0f8ff;
+  --color-hawkes-blue-100: #dceffd;
+  --color-hawkes-blue-200: #bce0fb;
+  --color-hawkes-blue-300: #82cbf8;
+  --color-hawkes-blue-400: #40b1f2;
+  --color-hawkes-blue-500: #1795e3;
+  --color-hawkes-blue-600: #0877c1;
+  --color-hawkes-blue-700: #085f9c;
+  --color-hawkes-blue-800: #0b5081;
+  --color-hawkes-blue-900: #0f426b;
+  --color-hawkes-blue-950: #0a2b47;
+
+  --width-128: 32rem;
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
 
 [x-cloak] {
     display: none !important;

@@ -7,7 +7,7 @@
     'px-5 sm:px-6' => $eingebettet && ! $randlos,
 ])>
 <div @class([
-    'my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700' => ! $eingebettet,
+    'my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-xs dark:bg-gray-800 dark:border-gray-700' => ! $eingebettet,
     'border-t border-gray-100 py-5 dark:border-gray-700' => $eingebettet,
 ])>
     {{-- Der Hinweis trennt diese Karte vom Formular darueber: Dort speichert ein
@@ -35,7 +35,7 @@
         {{-- Eigener Scrollbereich: die Spalten passen auf 375 px nicht nebeneinander,
              und die ganze Seite soll deswegen nicht seitlich wandern. --}}
         <div class="overflow-x-auto mb-4">
-        <table class="w-full min-w-[26rem] text-sm">
+        <table class="w-full min-w-104 text-sm">
             <thead class="text-xs uppercase tracking-wide text-gray-400 border-b border-gray-100 dark:border-gray-700">
                 <tr>
                     <th class="py-2 pr-4 text-left font-semibold">{{ __('Name') }}</th>

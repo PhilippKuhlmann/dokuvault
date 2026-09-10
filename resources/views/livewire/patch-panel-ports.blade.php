@@ -2,7 +2,7 @@
      nicht ohne Querlauf. Bleibt wie das Formular mittig - dasselbe Muster wie
      beim Rack-Editor. --}}
 <div class="mx-auto max-w-5xl px-3">
-<div class="my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700">
+<div class="my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-xs dark:bg-gray-800 dark:border-gray-700">
 
     <div class="flex flex-wrap items-baseline justify-between gap-2 mb-1">
         <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100">{{ __('Ports') }}</div>
@@ -34,7 +34,7 @@
 
     {{-- overflow-x-auto: bei vier Spalten wird es auf dem Smartphone sonst zu schmal --}}
     <div class="overflow-x-auto">
-        <table class="w-full min-w-[44rem] text-sm">
+        <table class="w-full min-w-176 text-sm">
             <thead class="text-xs uppercase tracking-wide text-gray-400 border-b border-gray-100 dark:border-gray-700">
                 <tr>
                     <th class="py-2 pr-2 text-left font-semibold w-10">{{ __('Port') }}</th>

@@ -17,7 +17,7 @@
         @canany($wizardPermissions)
             @if ($openWizardRun || $inventoryCount <= 2)
                 <a href="{{ route('wizard.index', $customer) }}"
-                    class="flex items-center justify-between gap-3 p-4 mb-5 rounded-xl border border-cerulean-200 bg-cerulean-50 shadow-sm transition hover:border-cerulean-400 dark:bg-cerulean-900/10 dark:border-cerulean-800 dark:hover:border-cerulean-600">
+                    class="flex items-center justify-between gap-3 p-4 mb-5 rounded-xl border border-cerulean-200 bg-cerulean-50 shadow-xs transition hover:border-cerulean-400 dark:bg-cerulean-900/10 dark:border-cerulean-800 dark:hover:border-cerulean-600">
                     <div>
                         <div class="font-DINPro-bold text-cerulean-900 dark:text-cerulean-200">
                             {{ $openWizardRun ? __('Erstaufnahme fortsetzen') : __('Erstaufnahme starten') }}
@@ -45,7 +45,7 @@
             @foreach ($tiles as $tile)
                 @can($tile['can'])
                     <a href="{{ $tile['route'] }}"
-                        class="group flex items-center gap-2 px-2.5 py-2 bg-white rounded-lg border border-gray-200 shadow-sm transition hover:border-cerulean-300 hover:shadow-md dark:bg-gray-800 dark:border-gray-700 dark:hover:border-cerulean-500">
+                        class="group flex items-center gap-2 px-2.5 py-2 bg-white rounded-lg border border-gray-200 shadow-xs transition hover:border-cerulean-300 hover:shadow-md dark:bg-gray-800 dark:border-gray-700 dark:hover:border-cerulean-500">
                         <span class="flex items-center justify-center w-7 h-7 rounded-md bg-cerulean-50 text-cerulean-600 transition-colors group-hover:bg-cerulean-100 dark:bg-gray-700 dark:text-cerulean-400 shrink-0">
                             <x-dynamic-component :component="$tile['icon']" class="w-4 h-4" />
                         </span>
@@ -66,7 +66,7 @@
 
             {{-- Ablaufende Lizenzen --}}
             @can('licensesoftware_viewAny')
-                <div class="col-span-2 p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                <div class="col-span-2 p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
                     <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Ablaufende Lizenzen') }}</div>
                     <div class="divide-y divide-gray-100 dark:divide-gray-700">
                         @forelse ($expiringLicenses as $license)
@@ -96,7 +96,7 @@
 
             {{-- Ablaufende Zertifikate --}}
             @can('certificate_viewAny')
-                <div class="col-span-2 p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                <div class="col-span-2 p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
                     <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Ablaufende Zertifikate') }}</div>
                     <div class="divide-y divide-gray-100 dark:divide-gray-700">
                         @forelse ($expiringCertificates as $certificate)
@@ -128,7 +128,7 @@
 
                  Über alle Gerätearten hinweg: Die Frage "ist die Kiste noch in
                  Garantie?" stellt sich nicht je Liste, sondern beim Kunden. --}}
-            <div class="col-span-2 p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div class="col-span-2 p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
                 <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Ablaufende Garantien') }}</div>
                 <div class="divide-y divide-gray-100 dark:divide-gray-700">
                     @forelse ($expiringWarranties as $garantie)
@@ -159,7 +159,7 @@
         <div class="flex flex-wrap gap-5">
 
             {{-- Standorte --}}
-            <div class="w-full sm:w-80 p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div class="w-full sm:w-80 p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
                 <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Standorte') }}</div>
                 <div class="space-y-4">
                     @forelse ($sites as $site)
@@ -175,7 +175,7 @@
             </div>
 
             {{-- Ansprechpartner --}}
-            <div class="w-full sm:w-80 p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div class="w-full sm:w-80 p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
                 <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Ansprechpartner') }}</div>
                 <div class="space-y-4">
                     @forelse ($contactpersons as $contactperson)

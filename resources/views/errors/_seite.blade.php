@@ -62,11 +62,11 @@
              nicht bekannt, und die Startseite haengt am Kunden. --}}
         <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
             <a href="{{ url('/') }}"
-                class="inline-flex items-center rounded-lg bg-cerulean-600 px-4 py-2 text-sm font-DINPro-bold text-white shadow-sm transition-colors hover:bg-cerulean-700">
+                class="inline-flex items-center rounded-lg bg-cerulean-600 px-4 py-2 text-sm font-DINPro-bold text-white shadow-xs transition-colors hover:bg-cerulean-700">
                 {{ __('Zur Startseite') }}
             </a>
             <button type="button" onclick="history.back()"
-                class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
+                class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 shadow-xs transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
                 {{ __('Zurück') }}
             </button>
         </div>

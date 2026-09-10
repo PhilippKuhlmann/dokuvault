@@ -17,7 +17,7 @@
     <div class="relative">
         <button type="button" id="locale-switch-button" data-dropdown-toggle="dropdown-locale"
             title="{{ __('Sprache wechseln') }}" aria-label="{{ __('Sprache wechseln') }}"
-            {{ $attributes->merge(['class' => 'inline-flex items-center gap-1.5 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-gray-200 dark:focus:ring-gray-700']) }}>
+            {{ $attributes->merge(['class' => 'inline-flex items-center gap-1.5 rounded-lg p-2.5 text-sm focus:outline-hidden focus:ring-1 focus:ring-gray-200 dark:focus:ring-gray-700']) }}>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="12" cy="12" r="9" />
                 <path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18" />
@@ -26,7 +26,7 @@
         </button>
 
         <div id="dropdown-locale"
-            class="z-50 hidden my-4 min-w-[10rem] text-base list-none bg-white rounded shadow dark:bg-gray-700">
+            class="z-50 hidden my-4 min-w-40 text-base list-none bg-white rounded shadow-sm dark:bg-gray-700">
             <ul class="py-1">
                 @foreach ($sprachen as $code => $bezeichnung)
                     <li>

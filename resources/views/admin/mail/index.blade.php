@@ -22,7 +22,7 @@
         @endif
 
         <form method="POST" action="{{ route('admin.mail.update') }}"
-            class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
             @csrf
             @method('PATCH')
 
@@ -117,7 +117,7 @@
              Zugangsdaten nicht stimmen, wenn ein Benutzer auf seine Einladung
              wartet. --}}
         <form method="POST" action="{{ route('admin.mail.test') }}"
-            class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
             @csrf
 
             <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Probe') }}</div>

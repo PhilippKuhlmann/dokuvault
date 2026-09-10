@@ -1,7 +1,7 @@
 <x-admin-layout>
 
     <div class="flex w-full pl-3 pt-3 gap-3">
-        <div class="w-64 rounded-xl border border-gray-200 bg-white shadow-sm p-4 dark:bg-gray-800 dark:border-gray-700">
+        <div class="w-64 rounded-xl border border-gray-200 bg-white shadow-xs p-4 dark:bg-gray-800 dark:border-gray-700">
             <div class="h-8 text-cerulean-500 text-center font-CoconPro">
                 {{ __('Dienste Gesamt') }}
             </div>
@@ -31,7 +31,7 @@
                         <td class="py-2.5 px-4">
                             <div class="flex flex-row gap-2">
                                 <a href="{{ route('admin.service.edit', $service) }}" title="{{ __('Bearbeiten') }}"
-                                    class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-cerulean-600 shadow-sm hover:bg-cerulean-50 hover:border-cerulean-300 transition-colors dark:bg-gray-800 dark:border-gray-600 dark:text-cerulean-400 dark:hover:bg-gray-700">
+                                    class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-cerulean-600 shadow-xs hover:bg-cerulean-50 hover:border-cerulean-300 transition-colors dark:bg-gray-800 dark:border-gray-600 dark:text-cerulean-400 dark:hover:bg-gray-700">
                                     <x-svg.edit class="h-5 w-5" />
                                 </a>
                             </div>

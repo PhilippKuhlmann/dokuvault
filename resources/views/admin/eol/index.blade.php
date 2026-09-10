@@ -1,7 +1,7 @@
 <x-admin-layout>
 
     <div class="flex w-full flex-wrap pl-3 pt-3 gap-3">
-        <div class="w-64 rounded-xl border border-gray-200 bg-white shadow-sm p-4 dark:bg-gray-800 dark:border-gray-700">
+        <div class="w-64 rounded-xl border border-gray-200 bg-white shadow-xs p-4 dark:bg-gray-800 dark:border-gray-700">
             <div class="h-8 text-center font-CoconPro text-rose-600 dark:text-rose-400">
                 {{ __('Ohne Support') }}
             </div>
@@ -10,7 +10,7 @@
             </div>
         </div>
 
-        <div class="w-64 rounded-xl border border-gray-200 bg-white shadow-sm p-4 dark:bg-gray-800 dark:border-gray-700">
+        <div class="w-64 rounded-xl border border-gray-200 bg-white shadow-xs p-4 dark:bg-gray-800 dark:border-gray-700">
             <div class="h-8 text-center font-CoconPro text-amber-600 dark:text-amber-400">
                 {{ __('Läuft bald aus') }}
             </div>
@@ -46,7 +46,7 @@
                 {{-- Eigener Scrollbereich: vier Spalten passen auf schmalen
                      Bildschirmen nicht nebeneinander. --}}
                 <div class="w-full overflow-x-auto">
-                    <table class="w-full min-w-[34rem] text-sm">
+                    <table class="w-full min-w-136 text-sm">
                         <thead class="text-xs uppercase tracking-wide text-gray-400 border-b border-gray-100 dark:border-gray-700">
                             <tr>
                                 <th class="py-2 pr-4 text-left font-semibold">{{ __('Gerät') }}</th>
@@ -81,7 +81,7 @@
             </x-slot>
         </x-card>
     @empty
-        <div class="m-3 rounded-xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-500 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+        <div class="m-3 rounded-xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-500 shadow-xs dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
             {{ __('Kein Gerät läuft auf einem System, dessen Support in den nächsten sechs Monaten endet.') }}
         </div>
     @endforelse

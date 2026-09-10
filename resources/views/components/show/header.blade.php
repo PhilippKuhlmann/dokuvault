@@ -15,7 +15,7 @@
              min-w-0 laesst den Block schmaler werden als seinen Inhalt - ohne
              das schiebt ein Flex-Kind seine Nachbarn aus der Karte, statt
              umzubrechen. --}}
-        <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 break-words text-base leading-tight sm:gap-x-3 sm:text-2xl dark:text-gray-100">
+        <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 wrap-break-word text-base leading-tight sm:gap-x-3 sm:text-2xl dark:text-gray-100">
             {{ $slot }}
         </div>
 
@@ -30,7 +30,7 @@
         <div class="flex shrink-0 items-center gap-3">
             <div class="flex flex-row space-x-2">
                 @php
-                    $stiftKlassen = 'inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-cerulean-600 shadow-sm hover:bg-cerulean-50 hover:border-cerulean-300 focus:outline-none focus:ring-2 focus:ring-cerulean-500 transition-colors dark:bg-gray-800 dark:border-gray-600 dark:text-cerulean-400 dark:hover:bg-gray-700';
+                    $stiftKlassen = 'inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-cerulean-600 shadow-xs hover:bg-cerulean-50 hover:border-cerulean-300 focus:outline-hidden focus:ring-2 focus:ring-cerulean-500 transition-colors dark:bg-gray-800 dark:border-gray-600 dark:text-cerulean-400 dark:hover:bg-gray-700';
                 @endphp
 
                 @if ($editAction)

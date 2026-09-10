@@ -33,7 +33,7 @@
         <x-input.linkbutton link="{{ $link }}">
             <x-slot:label>
                 <x-dynamic-component :component="$werkzeug['icon']"
-                    class="h-6 w-6 !fill-cerulean-500 hover:!fill-cerulean-400 text-cerulean-500 hover:text-cerulean-400" />
+                    class="h-6 w-6 fill-cerulean-500! hover:fill-cerulean-400! text-cerulean-500 hover:text-cerulean-400" />
             </x-slot:label>
         </x-input.linkbutton>
     @endif

@@ -1,7 +1,7 @@
 <div class="p-3 sm:p-5 space-y-6">
     <div class="text-3xl font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Allgemein') }}</div>
 
-    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Name und Logo') }}</div>
         <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">
             {{ __('Beides steht in der Kopfzeile, auf der Anmeldeseite und im PDF-Export. Änderungen gelten sofort.') }}
@@ -41,7 +41,7 @@
                         <span class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white p-2 dark:border-gray-700"
                             style="background-image: linear-gradient(45deg, #eee 25%, transparent 25%), linear-gradient(-45deg, #eee 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #eee 75%), linear-gradient(-45deg, transparent 75%, #eee 75%); background-size: 12px 12px; background-position: 0 0, 0 6px, 6px -6px, -6px 0;">
                             <img src="{{ route('branding.logo', $s['stelle']) }}?v={{ now()->timestamp }}"
-                                alt="{{ __($s['label']) }}" class="h-10 w-auto max-w-[12rem] object-contain" />
+                                alt="{{ __($s['label']) }}" class="h-10 w-auto max-w-48 object-contain" />
                         </span>
 
                         {{-- Ein Knopf, kein Haken mit Speichern danach: Wer
@@ -50,13 +50,13 @@
                              wieder hochgeladen, und eine Rueckfrage waere
                              derselbe Zweischritt, den der Haken vorher hatte. --}}
                         <button type="button" wire:click="entfernen('{{ $s['stelle'] }}')"
-                            class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-red-600 shadow-sm transition-colors hover:border-red-300 hover:bg-red-50 dark:border-gray-600 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700">
+                            class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-red-600 shadow-xs transition-colors hover:border-red-300 hover:bg-red-50 dark:border-gray-600 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700">
                             <x-svg.trash class="h-4 w-4" />
                             {{ __('Entfernen') }}
                         </button>
                     @endif
 
-                    <label class="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-cerulean-600 px-4 py-2 text-sm font-DINPro-bold text-white shadow-sm transition-colors hover:bg-cerulean-700">
+                    <label class="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-cerulean-600 px-4 py-2 text-sm font-DINPro-bold text-white shadow-xs transition-colors hover:bg-cerulean-700">
                         {{ $s['vorhanden'] ? __('Ersetzen') : __('Logo wählen') }}
                         {{-- Ohne sichtbares Feld: Der eingebaute Datei-Knopf
                              laesst sich nicht gestalten und sieht in jedem
@@ -81,7 +81,7 @@
              Herkunft ausgeliefert waere das ausfuehrbarer Code auf jeder Seite. --}}
     </div>
 
-    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Sprache und Zeitzone') }}</div>
         <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">{{ __('Beides gilt für die ganze Installation. Die Zeitzone ändert nur die Anzeige — gespeichert wird weiterhin in UTC.') }}</p>
 
@@ -126,7 +126,7 @@
         </div>
     </div>
 
-    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Hochladen') }}</div>
         <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">{{ __('Gilt für Dateien an Lizenzen und Zertifikaten und für die Dateiablage eines Kunden.') }}</p>
 
@@ -179,7 +179,7 @@
         </div>
     </div>
 
-    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Anmeldeseite') }}</div>
         <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">{{ __('Ein Satz unter dem Anmeldeformular — etwa, wer bei Fragen zum Zugang hilft.') }}</p>
 
@@ -187,7 +187,7 @@
             <x-input.label for="anmeldeHinweis" :value="__('Hinweis')" />
             <textarea id="anmeldeHinweis" rows="2" maxlength="200"
                 wire:model.live.debounce.600ms="anmeldeHinweis"
-                class="mt-1 w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-cerulean-500 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"></textarea>
+                class="mt-1 w-full rounded-lg border-gray-300 text-sm shadow-xs focus:border-cerulean-500 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"></textarea>
 
             <div class="mt-1 flex flex-wrap items-center gap-2">
                 {{-- Ausgegeben wird der Text escaped. Die Anmeldeseite ist die
@@ -202,7 +202,7 @@
         </div>
     </div>
 
-    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Listen') }}</div>
         <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">{{ __('Wie viele Zeilen eine Seite zeigt, bevor geblättert wird.') }}</p>
 

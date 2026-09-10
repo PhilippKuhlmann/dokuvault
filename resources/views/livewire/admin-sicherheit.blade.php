@@ -1,7 +1,7 @@
 <div class="p-3 sm:p-5 space-y-6">
     <div class="text-3xl font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Sicherheit') }}</div>
 
-    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Kennwörter') }}</div>
         <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">
             {{ __('Gilt für die Kennwörter, mit denen sich Benutzer anmelden — im eigenen Profil, beim Anlegen durch einen Administrator, beim Zurücksetzen und beim Einlösen einer Einladung.') }}
@@ -55,7 +55,7 @@
         </p>
     </div>
 
-    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Anmeldung') }}</div>
         <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">
             {{ __('Die Bremse gegen das Durchprobieren von Kennwörtern. Dieselben Zahlen gelten für den Einmalcode der zweiten Stufe.') }}
@@ -92,7 +92,7 @@
         </p>
     </div>
 
-    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Sitzung') }}</div>
         <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">
             {{ __('Wie lange jemand angemeldet bleibt, ohne etwas zu tun.') }}

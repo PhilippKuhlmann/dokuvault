@@ -6,7 +6,7 @@
 ])
 
 @php
-    $base = 'inline-flex items-center justify-center gap-1.5 rounded-lg font-DINPro-bold shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50';
+    $base = 'inline-flex items-center justify-center gap-1.5 rounded-lg font-DINPro-bold shadow-xs transition-colors focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:opacity-50';
 
     // "feld" trifft die Hoehe von x-input.text und x-input.select, damit ein Knopf
     // neben Eingabefeldern nicht 6 px kleiner dasteht. Das Feld rechnet

@@ -9,7 +9,7 @@
 
     plain: für Karten, die ihren Inhalt selbst anordnen (Serverschränke).
 --}}
-<div class="flex flex-col m-3 rounded-xl border border-gray-200 bg-white shadow-sm dark:text-gray-100 dark:bg-gray-800 dark:border-gray-700">
+<div class="flex flex-col m-3 rounded-xl border border-gray-200 bg-white shadow-xs dark:text-gray-100 dark:bg-gray-800 dark:border-gray-700">
     @if (trim($head))
         <div class="border-b border-gray-100 dark:border-gray-700">
             {{ $head }}

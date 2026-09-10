@@ -39,7 +39,7 @@
                              Beschriftung lief sie in die Nachbarspalte und aus der Karte heraus
                              ("10.10.30.7Hersteller"). Umgebrochen wird nur, wenn es sonst nicht passt. --}}
                         <td class="py-1 pr-6 align-top text-gray-500 dark:text-gray-400">{{ $zeile['rolle'] }}</td>
-                        <td class="py-1 break-words align-top text-gray-900 dark:text-gray-100">
+                        <td class="py-1 wrap-break-word align-top text-gray-900 dark:text-gray-100">
                             <x-ip-anzeige :adresse="$zeile['adresse']" />
                             @if ($zeile['zusatz'])
                                 <div class="text-xs text-gray-400 dark:text-gray-500">{{ $zeile['zusatz'] }}</div>

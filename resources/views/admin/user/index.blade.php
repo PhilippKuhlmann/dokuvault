@@ -2,7 +2,7 @@
 <x-admin-layout>
 
     <div class="flex w-full pl-3 pt-3 gap-3">
-        <div class="w-64 rounded-xl border border-gray-200 bg-white shadow-sm p-4 dark:bg-gray-800 dark:border-gray-700">
+        <div class="w-64 rounded-xl border border-gray-200 bg-white shadow-xs p-4 dark:bg-gray-800 dark:border-gray-700">
             <div class="h-8 text-cerulean-500 text-center font-CoconPro">
                 {{ __('User Gesamt') }}
             </div>
@@ -11,7 +11,7 @@
             </div>
         </div>
 
-        <div class="w-64 rounded-xl border border-gray-200 bg-white shadow-sm p-4 dark:bg-gray-800 dark:border-gray-700">
+        <div class="w-64 rounded-xl border border-gray-200 bg-white shadow-xs p-4 dark:bg-gray-800 dark:border-gray-700">
             <div class="h-8 text-cerulean-500 text-center font-CoconPro">
                 {{ __('Zuletzt hinzugefügt') }}
             </div>

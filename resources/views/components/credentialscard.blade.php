@@ -30,7 +30,7 @@
                                  eine Tabelle schrumpft nicht unter ihre Mindestbreite - mit unbrechbarer
                                  Beschriftung lief sie in die Nachbarspalte und aus der Karte heraus
                                  ("10.10.30.7Hersteller"). Umgebrochen wird nur, wenn es sonst nicht passt. --}}
-                            <td class="py-1 pr-6 align-top break-words text-gray-500 dark:text-gray-400">
+                            <td class="py-1 pr-6 align-top wrap-break-word text-gray-500 dark:text-gray-400">
                                 {{ $eintrag->note ?: $eintrag->login->name }}
                                 {{-- Ohne das Merkmal sieht man der Zeile nicht an,
                                      dass darunter eine Passphrase steht. --}}

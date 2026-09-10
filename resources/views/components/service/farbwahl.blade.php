@@ -15,7 +15,7 @@
             class="h-10 w-14 cursor-pointer rounded-lg border border-gray-300 bg-white p-1 dark:border-gray-600 dark:bg-gray-700">
 
         <input type="text" name="color" x-model="hex" maxlength="7" placeholder="#3391f0" spellcheck="false"
-            class="w-32 rounded-lg border-gray-300 font-mono text-sm shadow-sm focus:border-cerulean-500 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
+            class="w-32 rounded-lg border-gray-300 font-mono text-sm shadow-xs focus:border-cerulean-500 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
 
         <span class="px-3 py-1 text-sm rounded"
             x-bind:style="(() => {

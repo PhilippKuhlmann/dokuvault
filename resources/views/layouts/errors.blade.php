@@ -4,7 +4,7 @@
     class="z-50 fixed bottom-4 right-4 flex items-center p-4 w-full max-w-xs text-gray-700 bg-white border border-gray-100 rounded-xl shadow-lg dark:text-gray-200 dark:bg-gray-800 dark:border-gray-700"
     role="alert">
     <div
-        class="inline-flex flex-shrink-0 justify-center items-center w-8 h-8 text-red-500 bg-red-100 rounded-lg dark:bg-red-800 dark:text-red-200">
+        class="inline-flex shrink-0 justify-center items-center w-8 h-8 text-red-500 bg-red-100 rounded-lg dark:bg-red-800 dark:text-red-200">
         <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
             xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd"

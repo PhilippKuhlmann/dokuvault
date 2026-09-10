@@ -65,7 +65,7 @@
                             {{-- Breiter als das Schema daneben: Die Zeichnung braucht
                                  das 10,857-fache ihrer Zeilenhoehe, sonst stauchen
                                  sich die Blenden (siehe rack/_rackview). --}}
-                            <div class="w-full sm:w-[27rem]">
+                            <div class="w-full sm:w-108">
                                 <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-2">
                                     {{ $wert === 'front' ? __('Frontansicht') : __('Rückansicht') }}
                                 </div>

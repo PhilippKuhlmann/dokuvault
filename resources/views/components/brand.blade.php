@@ -8,7 +8,7 @@
         {{-- Eigenes Logo statt des eingebauten Motivs. Ohne festen Rahmen:
              Ein fremdes Logo hat sein eigenes Seitenverhaeltnis, in ein
              Quadrat gezwungen wuerde es verzerrt oder beschnitten. --}}
-        <img src="{{ route('branding.logo', 'header') }}" alt="" class="h-8 w-auto max-w-[10rem] shrink-0 object-contain" />
+        <img src="{{ route('branding.logo', 'header') }}" alt="" class="h-8 w-auto max-w-40 shrink-0 object-contain" />
     @else
     <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-[#4ea1ff] shrink-0">
         <svg viewBox="18 12 64 76" width="22" height="22" aria-hidden="true" focusable="false">

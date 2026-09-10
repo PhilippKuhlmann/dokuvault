@@ -16,7 +16,7 @@
                 $reserviert = $plan['reserviert'] ?? [];
             @endphp
 
-            <div class="mb-6 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+            <div class="mb-6 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
                 <div class="px-5 py-3 border-b border-gray-100 bg-[#f3f6fb] dark:bg-gray-700/40 dark:border-gray-700">
                     <div class="flex flex-wrap items-baseline justify-between gap-2">
                         <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100">

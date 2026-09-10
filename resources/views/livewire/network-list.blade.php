@@ -23,7 +23,7 @@
 
         {{-- Exakt die Klassen des bisherigen "Neu" aus x-sitetopmenu. --}}
         <livewire:network-quick-create :customer="$customer" :label="__('Neu')" :mit-symbol="true" 
-            knopf-klassen="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-cerulean-600 text-white text-sm font-DINPro-bold shadow-sm hover:bg-cerulean-700 focus:outline-none focus:ring-2 focus:ring-cerulean-500 focus:ring-offset-2 transition-colors" />
+            knopf-klassen="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-cerulean-600 text-white text-sm font-DINPro-bold shadow-xs hover:bg-cerulean-700 focus:outline-hidden focus:ring-2 focus:ring-cerulean-500 focus:ring-offset-2 transition-colors" />
     </x-sitetopmenu>
 
 

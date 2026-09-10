@@ -13,7 +13,7 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             @foreach ($tiles as $tile)
                 <a href="{{ $tile['route'] }}"
-                    class="group flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 shadow-sm transition hover:border-cerulean-300 hover:shadow-md dark:bg-gray-800 dark:border-gray-700 dark:hover:border-cerulean-500">
+                    class="group flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 shadow-xs transition hover:border-cerulean-300 hover:shadow-md dark:bg-gray-800 dark:border-gray-700 dark:hover:border-cerulean-500">
                     <span class="flex items-center justify-center w-11 h-11 rounded-lg bg-cerulean-50 text-cerulean-600 transition-colors group-hover:bg-cerulean-100 dark:bg-gray-700 dark:text-cerulean-400 shrink-0">
                         <x-dynamic-component :component="$tile['icon']" class="w-6 h-6" />
                     </span>
@@ -34,7 +34,7 @@
             <div class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">{{ __('Dokumentiertes Inventar (alle Kunden)') }}</div>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 @foreach ($inventory as $item)
-                    <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                    <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
                         <span class="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-50 text-cerulean-600 dark:bg-gray-700 dark:text-cerulean-400 shrink-0">
                             <x-dynamic-component :component="$item['icon']" class="w-5 h-5" />
                         </span>
@@ -49,7 +49,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {{-- Globale Ablauf-Übersicht --}}
-            <div class="p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div class="p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
                 <div class="text-lg font-CoconPro text-gray-900 dark:text-gray-100 mb-3">{{ __('Läuft demnächst ab') }}</div>
                 <div class="divide-y divide-gray-100 dark:divide-gray-700">
                     @forelse ($expiring as $e)
@@ -84,7 +84,7 @@
             </div>
 
             {{-- Letzte Aktivitäten --}}
-            <div class="p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div class="p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
                 <div class="flex items-center justify-between mb-3">
                     <div class="text-lg font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Letzte Aktivitäten') }}</div>
                     @can('admin_activity')
@@ -110,7 +110,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {{-- Top-Kunden nach Geräten --}}
-            <div class="p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div class="p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
                 <div class="text-lg font-CoconPro text-gray-900 dark:text-gray-100 mb-3">{{ __('Top-Kunden nach Geräten') }}</div>
                 @php $topMax = collect($topCustomers)->max('count') ?: 1; @endphp
                 <div class="space-y-2.5">
@@ -131,12 +131,12 @@
             </div>
 
             {{-- Aktivitäts-Verlauf 14 Tage --}}
-            <div class="p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div class="p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
                 <div class="text-lg font-CoconPro text-gray-900 dark:text-gray-100 mb-3">{{ __('Aktivität (14 Tage)') }}</div>
                 <div class="flex items-end gap-1.5 h-28">
                     @foreach ($chart as $d)
                         <div class="flex-1 h-full flex items-end" title="{{ $d['label'] }} · {{ $d['count'] }} Aktivitäten">
-                            <div class="w-full rounded-t bg-cerulean-500/80 hover:bg-cerulean-500 transition-colors min-h-[2px]"
+                            <div class="w-full rounded-t-md bg-cerulean-500/80 hover:bg-cerulean-500 transition-colors min-h-[2px]"
                                 style="height: {{ $chartMax ? round($d['count'] / $chartMax * 100) : 0 }}%"></div>
                         </div>
                     @endforeach

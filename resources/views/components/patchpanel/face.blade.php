@@ -37,7 +37,7 @@
                         @endif>
 
                         <div @class([
-                                'flex h-6 w-6 items-center justify-center rounded-[2px] border font-mono text-[10px] tabular-nums',
+                                'flex h-6 w-6 items-center justify-center rounded-md border font-mono text-[10px] tabular-nums',
                                 'cursor-help border-cerulean-700 bg-cerulean-500 text-white' => $istBelegt,
                                 'border-gray-300 bg-white text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500' => ! $istBelegt,
                             ])>
@@ -83,11 +83,11 @@
 
     <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
         <span class="flex items-center gap-1.5">
-            <span class="h-3 w-3 rounded-[2px] border border-cerulean-700 bg-cerulean-500"></span>
+            <span class="h-3 w-3 rounded-md border border-cerulean-700 bg-cerulean-500"></span>
             {{ $belegt }} {{ __('dokumentiert') }}
         </span>
         <span class="flex items-center gap-1.5">
-            <span class="h-3 w-3 rounded-[2px] border border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-800"></span>
+            <span class="h-3 w-3 rounded-md border border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-800"></span>
             {{ $panel->port_count - $belegt }} {{ __('frei') }}
         </span>
     </div>

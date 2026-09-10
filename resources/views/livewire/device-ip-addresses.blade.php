@@ -7,7 +7,7 @@
     'px-5 sm:px-6' => $eingebettet && ! $randlos,
 ])>
 <div @class([
-    'my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700' => ! $eingebettet,
+    'my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-xs dark:bg-gray-800 dark:border-gray-700' => ! $eingebettet,
     'border-t border-gray-100 py-5 dark:border-gray-700' => $eingebettet,
 ])>
     {{-- Der Hinweis trennt diese Karte vom Formular darueber: Dort speichert ein

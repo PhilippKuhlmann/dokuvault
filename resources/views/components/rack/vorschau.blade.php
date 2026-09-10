@@ -38,7 +38,7 @@
             @for ($u = $hoehe; $u >= 1; $u--)
                 <div style="grid-column: {{ $spalte }}; grid-row: {{ $hoehe - $u + 1 }}; min-height: {{ $zeile }};"
                     class="flex items-center justify-center bg-gray-300 dark:bg-gray-800">
-                    <span class="block h-1 w-1 rounded-[1px] bg-gray-500/70 dark:bg-gray-600"></span>
+                    <span class="block h-1 w-1 rounded-sm bg-gray-500/70 dark:bg-gray-600"></span>
                 </div>
             @endfor
         @endforeach

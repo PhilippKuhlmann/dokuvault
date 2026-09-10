@@ -1,9 +1,9 @@
-<div class="min-h-[calc(100vh-4rem)] flex flex-col items-center px-4 py-10 bg-gradient-to-br from-chathams-blue-50 via-cerulean-50 to-hawkes-blue-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+<div class="min-h-[calc(100vh-4rem)] flex flex-col items-center px-4 py-10 bg-linear-to-br from-chathams-blue-50 via-cerulean-50 to-hawkes-blue-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
 
     <div class="w-full sm:max-w-2xl">
 
         <div class="flex flex-col items-center mb-8">
-            <div class="flex items-center justify-center w-16 h-16 mb-4 rounded-2xl bg-gradient-to-br from-cerulean-500 to-chathams-blue-800 shadow-lg">
+            <div class="flex items-center justify-center w-16 h-16 mb-4 rounded-2xl bg-linear-to-br from-cerulean-500 to-chathams-blue-800 shadow-lg">
                 <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.35-5.4a6.75 6.75 0 11-13.5 0 6.75 6.75 0 0113.5 0z" />
                 </svg>
@@ -24,7 +24,7 @@
                     </svg>
                 </span>
                 <input wire:model.live.debounce.300ms="search" type="search" name="search" placeholder="{{ __('z. B. 192.168.1.50, PC-07, Seriennummer …') }}"
-                    class="block w-full pl-10 pr-4 py-2.5 rounded-lg border-gray-300 shadow-sm text-gray-900 placeholder-gray-400
+                    class="block w-full pl-10 pr-4 py-2.5 rounded-lg border-gray-300 shadow-xs text-gray-900 placeholder-gray-400
                            focus:border-cerulean-500 focus:ring-cerulean-500
                            dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                     autofocus />
@@ -43,7 +43,7 @@
                                 <a href="{{ route($group['slug'] . '.index', $result->customer) }}"
                                     class="flex items-center justify-between py-2 px-3 rounded-lg text-gray-800 dark:text-gray-100
                                            hover:bg-cerulean-50 dark:hover:bg-gray-700
-                                           focus:outline-none focus:ring-2 focus:ring-cerulean-500 transition-colors">
+                                           focus:outline-hidden focus:ring-2 focus:ring-cerulean-500 transition-colors">
                                     <span>
                                         {{-- Dieselbe Quelle wie Protokoll und Papierkorb: config('custom.name_fields'),
                                              ueberschreibbar je Model. Vorher stand hier eine eigene Kette

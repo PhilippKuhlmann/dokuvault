@@ -35,7 +35,7 @@
                     class="min-w-0 flex-1 break-all rounded-lg border border-amber-200 bg-white px-3 py-2 font-mono text-xs text-gray-900 dark:border-amber-900/60 dark:bg-gray-900 dark:text-gray-100">{{ $frischerToken }}</code>
                 <button type="button"
                     x-on:click="copyText($refs.tok.textContent); kopiert = true; setTimeout(() => kopiert = false, 1500)"
-                    class="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-cerulean-600 px-3 py-2 text-sm font-DINPro-bold text-white shadow-sm transition-colors hover:bg-cerulean-700">
+                    class="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-cerulean-600 px-3 py-2 text-sm font-DINPro-bold text-white shadow-xs transition-colors hover:bg-cerulean-700">
                     <span x-show="! kopiert">{{ __('Kopieren') }}</span>
                     <span x-show="kopiert" x-cloak>{{ __('Kopiert') }}</span>
                 </button>
@@ -43,7 +43,7 @@
         </div>
     @endif
 
-    <div class="max-w-3xl rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+    <div class="max-w-3xl rounded-xl border border-gray-200 bg-white p-5 shadow-xs dark:border-gray-700 dark:bg-gray-800">
         <div class="flex flex-wrap items-end gap-3">
             <div class="min-w-0 flex-1">
                 <x-input.label :value="__('Bezeichnung')" />
@@ -59,12 +59,12 @@
     </div>
 
     @if ($tokens->isEmpty())
-        <div class="rounded-xl border border-gray-200 bg-white p-10 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-xl border border-gray-200 bg-white p-10 text-center shadow-xs dark:border-gray-700 dark:bg-gray-800">
             <div class="text-gray-500 dark:text-gray-400">{{ __('Noch kein Token angelegt') }}</div>
         </div>
     @else
-        <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <table class="w-full min-w-[32rem] text-left text-sm text-gray-500 dark:text-gray-400">
+        <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-xs dark:border-gray-700 dark:bg-gray-800">
+            <table class="w-full min-w-lg text-left text-sm text-gray-500 dark:text-gray-400">
                 <thead class="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wide text-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300">
                     <tr>
                         <th class="px-4 py-2.5 font-semibold">{{ __('Bezeichnung') }}</th>
@@ -96,7 +96,7 @@
                                 <button type="button" wire:click="widerrufen({{ $token->id }})"
                                     wire:confirm="{{ __('Diesen Token widerrufen? Was ihn benutzt, kommt danach nicht mehr herein.') }}"
                                     title="{{ __('Widerrufen') }}"
-                                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-red-600 shadow-sm transition-colors hover:border-red-300 hover:bg-red-50 dark:border-gray-600 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700">
+                                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-red-600 shadow-xs transition-colors hover:border-red-300 hover:bg-red-50 dark:border-gray-600 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700">
                                     <x-svg.trash class="h-5 w-5" />
                                 </button>
                             </td>

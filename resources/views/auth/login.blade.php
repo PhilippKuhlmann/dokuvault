@@ -1,5 +1,5 @@
 <x-guest-layout>
-    <div class="min-h-screen flex flex-col justify-center items-center px-4 py-8 bg-gradient-to-br from-chathams-blue-50 via-cerulean-50 to-hawkes-blue-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+    <div class="min-h-screen flex flex-col justify-center items-center px-4 py-8 bg-linear-to-br from-chathams-blue-50 via-cerulean-50 to-hawkes-blue-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
 
         <div class="w-full sm:max-w-md">
 
@@ -65,7 +65,7 @@
                                 autocomplete="current-password" x-bind:type="show ? 'text' : 'password'" />
                             <button type="button" @click="show = !show" tabindex="-1"
                                 x-bind:aria-label="show ? 'Passwort verbergen' : 'Passwort anzeigen'"
-                                class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-cerulean-600 focus:outline-none dark:text-gray-500 dark:hover:text-gray-300">
+                                class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-cerulean-600 focus:outline-hidden dark:text-gray-500 dark:hover:text-gray-300">
                                 <!-- Auge: anzeigen -->
                                 <svg x-show="!show" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
@@ -83,7 +83,7 @@
                     <div class="flex items-center mt-4">
                         <label for="remember_me" class="inline-flex items-center">
                             <input id="remember_me" type="checkbox"
-                                class="rounded border-gray-300 text-cerulean-600 shadow-sm focus:ring-cerulean-500"
+                                class="rounded border-gray-300 text-cerulean-600 shadow-xs focus:ring-cerulean-500"
                                 name="remember">
                             <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">{{ __('Login merken') }}</span>
                         </label>
@@ -92,7 +92,7 @@
                     <!-- Anmelden -->
                     <div class="mt-6">
                         <button type="submit"
-                            class="w-full flex justify-center items-center py-2.5 px-4 rounded-lg text-white font-DINPro-bold bg-cerulean-600 hover:bg-cerulean-700 shadow-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-cerulean-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                            class="w-full flex justify-center items-center py-2.5 px-4 rounded-lg text-white font-DINPro-bold bg-cerulean-600 hover:bg-cerulean-700 shadow-xs transition-colors duration-150 focus:outline-hidden focus:ring-2 focus:ring-cerulean-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
                             {{ __('Anmelden') }}
                         </button>
                     </div>

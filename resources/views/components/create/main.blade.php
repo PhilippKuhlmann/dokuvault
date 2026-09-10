@@ -16,7 +16,7 @@
     // Bearbeiten-Seite eine durchgehende Spalte ergibt.
     $hasRight = trim((string) $right) !== '';
     $hasNach = trim((string) $nach) !== '';
-    $rahmen = 'rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700';
+    $rahmen = 'rounded-xl border border-gray-200 bg-white shadow-xs dark:bg-gray-800 dark:border-gray-700';
 
     // Ziel von "Abbrechen": die Liste, aus der man kommt. Vorher stand hier
     // redirect()->back(), das beim Rendern der Seite auf die Seite selbst zeigte -
@@ -87,7 +87,7 @@
              vorher, weil die rechte Spalte dann leer ist. --}}
         <div class="flex flex-row justify-end gap-3 mt-6">
             <a href="{{ $abbrechen }}"
-                class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-DINPro-bold text-gray-700 bg-white border border-gray-300 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-cerulean-500 focus:ring-offset-2 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600">{{ __('Abbrechen') }}</a>
+                class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-DINPro-bold text-gray-700 bg-white border border-gray-300 shadow-xs hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-cerulean-500 focus:ring-offset-2 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600">{{ __('Abbrechen') }}</a>
             <x-input.button label="{{ $labelsubmit }}" />
         </div>
 

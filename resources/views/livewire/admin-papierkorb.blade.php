@@ -15,7 +15,7 @@
 
     {{-- Filter. Die Tage sind frei eingebbar: 21, 90 und 365 decken das
          Uebliche ab, aber nicht jede Aufbewahrungsregel haelt sich daran. --}}
-    <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+    <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-xs dark:border-gray-700 dark:bg-gray-800">
         {{-- Erst ab lg drei Spalten: Bei 839 Pixeln blieben fuer die
              Altersspalte 159 Pixel, gebraucht wurden 238 - die Knoepfe "90"
              und "365" lagen unter der Art-Auswahl. --}}
@@ -91,15 +91,15 @@
     </div>
 
     @if ($gesamt === 0)
-        <div class="rounded-xl border border-gray-200 bg-white p-10 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-xl border border-gray-200 bg-white p-10 text-center shadow-xs dark:border-gray-700 dark:bg-gray-800">
             <div class="text-gray-500 dark:text-gray-400">{{ __('Kein Eintrag passt zum Filter') }}</div>
         </div>
     @else
-        <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-xs dark:border-gray-700 dark:bg-gray-800">
             {{-- 40rem waren zu breit: Bei 839 Pixeln Fenster lag der Loeschen-Knopf
                      ausserhalb, und ausgerechnet der ist hier der Sinn der Seite.
                  Der Kundenname darf dafuer umbrechen. --}}
-            <table class="w-full min-w-[30rem] text-left text-sm text-gray-500 dark:text-gray-400">
+            <table class="w-full min-w-120 text-left text-sm text-gray-500 dark:text-gray-400">
                 <thead class="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wide text-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300">
                     <tr>
                         <th class="px-4 py-2.5 font-semibold">{{ __('Kunde') }}</th>
@@ -128,7 +128,7 @@
                                     wire:click="loeschen('{{ $zeile['slug'] }}', {{ $zeile['id'] }})"
                                     wire:confirm="{{ __('Diesen Eintrag endgültig löschen?') }}"
                                     title="{{ __('Endgültig löschen') }}"
-                                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-red-600 shadow-sm transition-colors hover:border-red-300 hover:bg-red-50 dark:border-gray-600 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700">
+                                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-red-600 shadow-xs transition-colors hover:border-red-300 hover:bg-red-50 dark:border-gray-600 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700">
                                     <x-svg.trash class="h-5 w-5" />
                                 </button>
                             </td>

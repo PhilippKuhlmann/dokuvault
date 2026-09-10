@@ -48,7 +48,7 @@
                         {{-- Sechs Spalten passen nicht in eine Kartenspalte; die Tabelle
                              scrollt fuer sich, damit die Seite nicht seitlich wandert. --}}
                         <div class="overflow-x-auto" x-show="offen" x-cloak>
-                        <table class="w-full min-w-[30rem] text-sm">
+                        <table class="w-full min-w-120 text-sm">
                             <thead class="text-xs uppercase tracking-wide text-gray-400 border-b border-gray-100 dark:border-gray-700">
                                 <tr>
                                     <th class="py-2 pr-4 text-left font-semibold">{{ __('Port') }}</th>

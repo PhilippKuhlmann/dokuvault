@@ -8,7 +8,7 @@
     </div>
 
     @if ($finished)
-        <div class="p-8 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700 mx-auto max-w-xl text-center">
+        <div class="p-8 rounded-xl border border-gray-200 bg-white shadow-xs dark:bg-gray-800 dark:border-gray-700 mx-auto max-w-xl text-center">
             <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-2">{{ __('Durchlauf abgeschlossen') }}</div>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
                 {{ count($run->completed_steps ?? []) }} {{ Str::plural('Bereich', count($run->completed_steps ?? [])) }} erfasst,
@@ -16,7 +16,7 @@
             </p>
             <div class="flex justify-center gap-3">
                 <a href="{{ route('customer.dashboard', $customer) }}"
-                    class="inline-flex items-center justify-center gap-1.5 rounded-lg font-DINPro-bold shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm bg-cerulean-600 text-white hover:bg-cerulean-700 focus:ring-cerulean-500">
+                    class="inline-flex items-center justify-center gap-1.5 rounded-lg font-DINPro-bold shadow-xs transition-colors focus:outline-hidden focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm bg-cerulean-600 text-white hover:bg-cerulean-700 focus:ring-cerulean-500">
                     {{ __('Zum Dashboard') }}
                 </a>
                 <x-input.button type="button" wire:click="restart" :label="__('Neuen Durchlauf starten')" color="gray" />
@@ -63,7 +63,7 @@
             </div>
         </div>
 
-        <div class="p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700 mx-auto max-w-2xl">
+        <div class="p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-xs dark:bg-gray-800 dark:border-gray-700 mx-auto max-w-2xl">
             <div class="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">{{ __($step['group']) }}</div>
             <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __($step['label']) }}</div>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">{{ __($step['question']) }}</p>

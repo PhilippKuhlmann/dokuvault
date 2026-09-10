@@ -3,7 +3,7 @@
         <div class="text-3xl font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Einstellungen') }}</div>
 
         <form method="POST" action="{{ route('admin.setting.update') }}"
-            class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700"
+            class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700"
             {{-- @js statt '{{ }}': Im Attribut wird der Wert vom Browser
                  entschluesselt, bevor Alpine ihn auswertet - aus &#039; wird
                  wieder ein Anfuehrungszeichen, und der Ausdruck laesst sich
@@ -27,7 +27,7 @@
                             class="mt-1 text-cerulean-600 focus:ring-cerulean-500 dark:bg-gray-700 dark:border-gray-600" />
                         <span class="min-w-0">
                             <span class="flex items-center gap-2 font-DINPro-bold text-gray-900 dark:text-gray-100">
-                                <x-dynamic-component :component="$tool['icon']" class="h-5 w-5 !fill-cerulean-600 text-cerulean-600 dark:!fill-cerulean-400 dark:text-cerulean-400" />
+                                <x-dynamic-component :component="$tool['icon']" class="h-5 w-5 fill-cerulean-600! text-cerulean-600 dark:fill-cerulean-400! dark:text-cerulean-400" />
                                 {{ $tool['label'] }}
                             </span>
 

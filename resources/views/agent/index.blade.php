@@ -2,7 +2,7 @@
 <x-app-layout :$customer>
     <div class="p-3 sm:p-5 space-y-4">
 
-        <div class="p-5 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700">
+        <div class="p-5 rounded-xl border border-gray-200 bg-white shadow-xs dark:bg-gray-800 dark:border-gray-700">
             <div class="text-2xl font-CoconPro text-chathams-blue-800 dark:text-gray-100">{{ __('Auto-Dokumentation') }}</div>
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
                 {{ __('Erzeuge einen Agent-Token und lade das passende Script herunter – für Proxmox, Hyper-V, VMware, Windows-Server und -Arbeitsplatzrechner, Active Directory, UniFi oder Microsoft 365. Einmal ausgeführt, dokumentiert sich die Umgebung selbst. Der Token ist an den gewählten Standort gebunden und darf ausschließlich Dokumentationsdaten melden – kein weiterer Zugriff.') }}
@@ -22,7 +22,7 @@
             @php
                 $agenten = config('custom.agenten', []);
             @endphp
-            <div x-data="{ tab: @js(array_key_first($agenten)) }" class="p-5 rounded-xl border border-green-300 bg-green-50 shadow-sm dark:bg-gray-800 dark:border-green-800">
+            <div x-data="{ tab: @js(array_key_first($agenten)) }" class="p-5 rounded-xl border border-green-300 bg-green-50 shadow-xs dark:bg-gray-800 dark:border-green-800">
                 <div class="text-lg font-CoconPro text-green-800 dark:text-green-300">
                     Token „{{ session('newTokenName') }}" erstellt
                 </div>
@@ -138,7 +138,7 @@
              Namen und einen Standort vergeben soll, muss vorher wissen, was
              ueberhaupt zur Auswahl steht. Vorher sah man das erst nach dem
              Anlegen des Tokens - also eine Entscheidung zu spaet. --}}
-        <div class="p-5 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700">
+        <div class="p-5 rounded-xl border border-gray-200 bg-white shadow-xs dark:bg-gray-800 dark:border-gray-700">
             <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">{{ __('Diese Agenten gibt es') }}</div>
             <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">
                 {{ __('Ein Token gilt für alle – nach dem Anlegen steht jedes Script zum Herunterladen bereit. Der Name ist nur für dich, damit du den Token später wiedererkennst.') }}
@@ -165,7 +165,7 @@
         </div>
 
         {{-- Neuen Token erzeugen --}}
-        <div class="p-5 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700">
+        <div class="p-5 rounded-xl border border-gray-200 bg-white shadow-xs dark:bg-gray-800 dark:border-gray-700">
             <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-3">{{ __('Neuen Token erzeugen') }}</div>
             @if ($sites->isEmpty())
                 <p class="text-sm text-amber-600 dark:text-amber-400">{{ __('Für diesen Kunden ist noch kein Standort angelegt. Bitte zuerst einen Standort anlegen.') }}</p>
@@ -190,7 +190,7 @@
         </div>
 
         {{-- Bestehende Token --}}
-        <div class="p-5 rounded-xl border border-gray-200 bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700">
+        <div class="p-5 rounded-xl border border-gray-200 bg-white shadow-xs dark:bg-gray-800 dark:border-gray-700">
             <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-3">{{ __('Aktive Token') }}</div>
             @forelse ($tokens as $token)
                 <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0 dark:border-gray-700">
