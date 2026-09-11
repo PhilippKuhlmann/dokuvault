@@ -27,9 +27,12 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY resources resources
-COPY vite.config.js tailwind.config.js postcss.config.js ./
+# Kein tailwind.config.js mehr: Seit Tailwind 4 steht die Konfiguration als
+# @theme/@plugin in resources/css/app.css. COPY bricht ab, wenn eine benannte
+# Datei fehlt - deshalb muss sie hier mit weg.
+COPY vite.config.js postcss.config.js ./
 # Der Frontend-Build greift an zwei Stellen nach vendor/: resources/js/app.js
-# importiert Livewires ESM-Bundle von dort, und tailwind.config.js durchsucht
+# importiert Livewires ESM-Bundle von dort, und app.css durchsucht per @source
 # die Pagination-Views des Frameworks. Deshalb das ganze Verzeichnis statt
 # einzelner Pfade - sonst bricht der Build erneut, sobald ein Bezug dazukommt.
 COPY --from=vendor /app/vendor vendor
