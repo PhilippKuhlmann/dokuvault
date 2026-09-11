@@ -1,5 +1,8 @@
 <x-app-layout :$customer>
-    <x-create.main :header="__('Patchfeld bearbeiten')" :labelsubmit="__('Speichern')"
+    {{-- breit: wie beim Rack - die Portliste darunter steht auf max-w-5xl,
+         und ein schmaleres Formular daruber laesst die mittlere Karte
+         herausragen. --}}
+    <x-create.main :breit="true" :header="__('Patchfeld bearbeiten')" :labelsubmit="__('Speichern')"
         action="{{ route('patchpanel.update', [$customer, $patchpanel]) }}">
         @method('PATCH')
 
@@ -20,7 +23,7 @@
     <livewire:patch-panel-ports :panel="$patchpanel" :customer="$customer" />
 
     @can('patchpanel_delete')
-        <x-deletecard action="{{ route('patchpanel.destroy', [$customer, $patchpanel]) }}" />
+        <x-deletecard :breit="true" action="{{ route('patchpanel.destroy', [$customer, $patchpanel]) }}" />
     @endcan
 
 </x-app-layout>

@@ -1,5 +1,13 @@
 # Changelog
 
+## 26.09.11
+
+### Fixed
+
+- **Beim Bearbeiten eines Serverschranks ragte die mittlere Karte heraus.** Der Bestückungs-Editor steht auf `max-w-5xl` – Palette, Schema und Frontansicht passen nebeneinander nicht auf die schmalere Lesebreite. Das Formular darüber und die Löschen-Karte darunter standen aber auf `max-w-3xl`, und drei gestapelte Karten, von denen die mittlere links und rechts übersteht, sehen aus wie ein Fehler. Alle drei stehen jetzt auf derselben Breite; die Felder laufen entsprechend durch.
+  - **Dasselbe beim Patchfeld.** Die Portliste hat aus demselben Grund `max-w-5xl` – die Seite hatte den gleichen Versatz.
+  - Der Schalter dafür (`:breit`) gab es an `x-create.main` und `x-deletecard` längst, benutzt hatte ihn nur niemand.
+
 ## 26.09.10
 
 ### Changed

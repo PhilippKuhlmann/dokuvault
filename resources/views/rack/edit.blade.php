@@ -1,5 +1,10 @@
 <x-app-layout :$customer>
-    <x-create.main :header="__('Serverschrank bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('rack.update', [$customer, $rack]) }}">
+    {{-- breit: Der Bestueckungs-Editor darunter braucht max-w-5xl fuer Palette,
+         Schema und Frontansicht nebeneinander. Stand das Formular auf der
+         schmaleren Lesebreite, ragte die Karte in der Mitte links und rechts
+         heraus - drei gestapelte Karten, von denen eine breiter ist, sehen aus
+         wie ein Fehler. --}}
+    <x-create.main :breit="true" :header="__('Serverschrank bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('rack.update', [$customer, $rack]) }}">
         @method('PATCH')
 
         <x-edit.select name="site_id" :value="__('Standort')" selector="{{ $rack->site_id }}" :array="$sites" />
@@ -16,7 +21,7 @@
     <livewire:rack-editor :rack="$rack" :customer="$customer" />
 
     @can('rack_delete')
-        <x-deletecard action="{{ route('rack.destroy', [$customer, $rack]) }}" />
+        <x-deletecard :breit="true" action="{{ route('rack.destroy', [$customer, $rack]) }}" />
     @endcan
 
 </x-app-layout>
