@@ -501,7 +501,8 @@ return [
             ['name' => 'height_units', 'label' => 'Höheneinheiten (HE)', 'type' => 'number',
                 'default' => 1, 'sichtbar_wenn' => ['form_factor' => 'rack'], 'gruppe' => 'Grunddaten'],
             ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'auswahl',
-                'quelle' => OperatingSystem::class, 'anzeige' => 'name', 'gruppe' => 'System'],
+                'quelle' => OperatingSystem::class, 'anzeige' => 'name', 'gruppe' => 'System',
+                'suchbar' => true],
             // 'auswahl' filtert selbst nach customer_id - ein fremder Cluster
             // steht damit gar nicht erst zur Wahl.
             ['name' => 'cluster_id', 'label' => 'Cluster', 'type' => 'auswahl',
@@ -549,7 +550,7 @@ return [
             ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
             ['name' => 'services', 'label' => 'Dienste', 'type' => 'dienste'],
             ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'auswahl',
-                'quelle' => OperatingSystem::class, 'anzeige' => 'name'],
+                'quelle' => OperatingSystem::class, 'anzeige' => 'name', 'suchbar' => true],
             ['name' => 'remoteID', 'label' => 'Fernwartungs-ID', 'type' => 'text'],
             ['name' => 'remotePassword', 'label' => 'Fernwartungs-Kennwort', 'type' => 'text'],
         ],
@@ -626,7 +627,7 @@ return [
             ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
             ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
             ['name' => 'operating_system_id', 'label' => 'Operating System Id', 'type' => 'auswahl',
-                'quelle' => OperatingSystem::class, 'anzeige' => 'name'],
+                'quelle' => OperatingSystem::class, 'anzeige' => 'name', 'suchbar' => true],
             ['name' => 'remoteID', 'label' => 'Fernwartungs-ID', 'type' => 'text'],
             ['name' => 'remotePassword', 'label' => 'Fernwartungs-Kennwort', 'type' => 'text'],
             ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],

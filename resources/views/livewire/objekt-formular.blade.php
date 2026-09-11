@@ -188,12 +188,17 @@
                                         <span class="text-sm text-gray-700 dark:text-gray-300">{{ __('Ja') }}</span>
                                     </label>
                                 @elseif ($feld['type'] === 'auswahl')
-                                    <x-input.select :name="$feld['name']" :feld="'form.'.$feld['name']" wire:model.live.debounce.400ms="form.{{ $feld['name'] }}" class="mt-1">
+                                    {{-- 'suchbar' nur dort, wo die Liste zu lang
+                                         zum Ueberfliegen ist - bei fuenf Clustern
+                                         waere ein Suchfeld ein Umweg. Beide
+                                         Varianten teilen sich die Optionsliste. --}}
+                                    @php ($auswahlmarke = ($feld['suchbar'] ?? false) ? 'input.suchauswahl' : 'input.select')
+                                    <x-dynamic-component :component="$auswahlmarke" :name="$feld['name']" :feld="'form.'.$feld['name']" wire:model.live.debounce.400ms="form.{{ $feld['name'] }}" class="mt-1">
                                         <option value="">— {{ __('bitte wählen') }} —</option>
                                         @foreach (($auswahlen[$feld['name']] ?? []) as $id => $beschriftung)
                                             <option value="{{ $id }}">{{ $beschriftung }}</option>
                                         @endforeach
-                                    </x-input.select>
+                                    </x-dynamic-component>
                                 @elseif ($feld['type'] === 'mehrzeilig')
                                     {{-- Werte, die keine Zeile sind, etwa ein
                                          SSH-Schluessel. --}}

@@ -2,6 +2,13 @@
 
 ## 26.09.11
 
+### Added
+
+- **Das Betriebssystem-Feld lässt sich jetzt durchsuchen.** Der Katalog führt über fünfzig Einträge, und das Type-Ahead eines gewöhnlichen Auswahlfelds greift nur vom Wortanfang: „Windows Server 2022 Standard" fand man nur über „Windows", nicht über „2022" — obwohl genau danach gesucht wird. Über der Liste steht nun ein Suchfeld, das an beliebiger Stelle im Namen sucht; bedienbar mit Pfeiltasten und Enter. Escape schließt erst die Liste und lässt das Formular samt Eingaben stehen.
+  - Eingeschaltet wird das pro Feld über `'suchbar' => true` in `config/forms.php` — gesetzt bei Server, VM und Computer. Die kurzen Listen (Cluster, Netz, Mailbox-Anbieter) bleiben schlichte Auswahlfelder, dort wäre eine Suche ein Umweg.
+  - Das native Auswahlfeld bleibt darunter bestehen und trägt weiterhin Wert, Prüfung und Fehlermeldung. Ohne JavaScript bleibt es benutzbar.
+  - Die Liste hängt am Viewport statt am Feld: Das Modal hat einen eigenen Scrollrahmen, der ein absolut positioniertes Fenster an der Unterkante abschneidet — dieselbe Falle wie beim Hover-Fenster der Dienste-Kacheln. Ist unten kein Platz, klappt sie nach oben.
+
 ### Fixed
 
 - **Beim Bearbeiten eines Serverschranks ragte die mittlere Karte heraus.** Der Bestückungs-Editor steht auf `max-w-5xl` – Palette, Schema und Frontansicht passen nebeneinander nicht auf die schmalere Lesebreite. Das Formular darüber und die Löschen-Karte darunter standen aber auf `max-w-3xl`, und drei gestapelte Karten, von denen die mittlere links und rechts übersteht, sehen aus wie ein Fehler. Alle drei stehen jetzt auf derselben Breite; die Felder laufen entsprechend durch.

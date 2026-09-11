@@ -997,3 +997,35 @@ test('ohne Abo wird der leere Wert zu null', function () {
 
     expect(LicenseSoftware::where('name', 'Einmallizenz')->sole()->abo)->toBeNull();
 });
+
+test('das Betriebssystem laesst sich durchsuchen, der Cluster nicht', function () {
+    // Der Betriebssystem-Katalog fuehrt ueber fuenfzig Eintraege; das
+    // Type-Ahead des Browsers matcht nur vom Wortanfang, "2022" fuehrt darin
+    // zu nichts. Bei den paar Clustern eines Kunden waere dieselbe Suche
+    // dagegen ein Umweg - deshalb steht 'suchbar' nur an einem der beiden.
+    $customer = Customer::factory()->create();
+    OperatingSystem::factory()->create(['name' => 'Windows Server 2022 Standard']);
+
+    $this->actingAs(userWithPermissions(['server_viewAny', 'server_create']));
+
+    $html = modalHtml('server', $customer);
+
+    expect($html)->toContain('operating_system_id-liste')
+        ->and($html)->not->toContain('cluster_id-liste');
+});
+
+test('die Suche laesst die Optionsliste im Markup stehen', function () {
+    // Gesucht wird im Browser, geliefert wird weiter vom Server: Die
+    // Beschriftungen muessen im HTML stehen, sonst findet die Suche nichts -
+    // und ohne JavaScript bliebe ein leeres Auswahlfeld zurueck.
+    $customer = Customer::factory()->create();
+    OperatingSystem::factory()->create(['name' => 'Windows Server 2022 Standard']);
+    OperatingSystem::factory()->create(['name' => 'Debian 12']);
+
+    $this->actingAs(userWithPermissions(['server_viewAny', 'server_create']));
+
+    $html = modalHtml('server', $customer);
+
+    expect($html)->toContain('Windows Server 2022 Standard')
+        ->and($html)->toContain('Debian 12');
+});
