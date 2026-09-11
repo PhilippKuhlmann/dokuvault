@@ -79,9 +79,13 @@ jobs:
             || { echo 'Antwort kommt nicht von nginx.'; echo "$kopf"; exit 1; }
 
           # Den Namen der gebauten CSS-Datei aus der Seite ziehen: Er traegt
-          # einen Inhalts-Hash und ist bei jedem Build ein anderer.
+          # einen Inhalts-Hash und ist bei jedem Build ein anderer. Bewusst
+          # ohne Annahme ueber die Schreibweise - bis Vite 5 hiess die Datei
+          # app.<hash>.css, seit Vite 6 app-<Hash>.css. Geprueft wird, dass die
+          # Seite ein CSS einbindet und nginx es ausliefert; wie es heisst, ist
+          # Sache des Bundlers.
           pfad=$(curl -s http://localhost:8000/login \
-            | grep -o '/build/assets/app\.[a-z0-9]*\.css' | head -1)
+            | grep -o '/build/assets/[A-Za-z0-9._-]*\.css' | head -1)
           [ -n "$pfad" ] || { echo 'Keine gebaute CSS-Datei in der Seite gefunden.'; exit 1; }
 
           kopf=$(curl -s -D - -o /dev/null "http://localhost:8000$pfad")
