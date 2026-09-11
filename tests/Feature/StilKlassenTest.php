@@ -157,10 +157,10 @@ test('jede Größen- und Abstandsklasse steht auch im gebauten CSS', function ()
 
 /**
  * Die Farbpalette der IPAM-Bereiche steht in config/custom.php, nicht in einer
- * View. Tailwind erzeugt nur, was es im Quelltext findet - die Datei steht
- * deshalb in den Quellpfaden von tailwind.config.js.
+ * View. Tailwind erzeugt nur, was es im Quelltext findet - die Datei wird ueber
+ * die automatische Quellsuche gefunden.
  *
- * Faellt dieser Pfad einmal heraus, waeren die Bereiche farblos, ohne dass
+ * Faellt sie einmal heraus, waeren die Bereiche farblos, ohne dass
  * irgendwo ein Fehler erscheint. Genau die Sorte Ausfall, die man nicht
  * bemerkt: Es fehlt keine Meldung, es fehlt eine Farbe.
  */
@@ -191,5 +191,5 @@ test('jede Farbe der IPAM-Bereiche steht im gebauten CSS', function () {
 
     expect($fehlend)->toBeEmpty(
         'Diese Klassen stehen in config/custom.php, aber nicht im gebauten CSS - '.
-        'steht die Datei noch in tailwind.config.js? '.implode(', ', $fehlend));
+        'findet Tailwinds Quellsuche die Datei noch? '.implode(', ', $fehlend));
 });

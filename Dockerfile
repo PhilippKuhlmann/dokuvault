@@ -31,6 +31,12 @@ COPY resources resources
 # @theme/@plugin in resources/css/app.css. COPY bricht ab, wenn eine benannte
 # Datei fehlt - deshalb muss sie hier mit weg.
 COPY vite.config.js postcss.config.js ./
+# Die .gitignore gehoert zum Build: Tailwind 4 sucht sich seine Quelldateien
+# selbst und laesst dabei aus, was dort steht. Ohne sie durchsucht es auch das
+# vendor/ von unten mit - das CSS wuchs im Versuch von 112 auf 159 KB. Vor
+# Tailwind 4 gab es das nicht, da standen die Quellpfade ausgeschrieben in
+# tailwind.config.js.
+COPY .gitignore ./
 # Der Frontend-Build greift an zwei Stellen nach vendor/: resources/js/app.js
 # importiert Livewires ESM-Bundle von dort, und app.css durchsucht per @source
 # die Pagination-Views des Frameworks. Deshalb das ganze Verzeichnis statt

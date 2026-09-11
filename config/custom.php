@@ -898,9 +898,9 @@ return [
     | Die Klassen stehen ausgeschrieben da und werden nicht zusammengesetzt:
     | Tailwind erzeugt nur, was es im Quelltext findet. Ein 'border-'.$farbe
     | ergaebe eine Klasse, die es im CSS nicht gibt - und einen Bereich ohne
-    | Farbe, ohne dass irgendwo ein Fehler erscheint. Diese Datei steht
-    | deshalb in den Quellpfaden von tailwind.config.js, und ein Test prueft,
-    | dass jede Klasse hier auch im gebauten CSS steht.
+    | Farbe, ohne dass irgendwo ein Fehler erscheint. Tailwind findet diese
+    | Datei ueber seine automatische Quellsuche, und ein Test prueft, dass
+    | jede Klasse hier auch im gebauten CSS steht.
     |
     | Sechs reichen: Wer in einem Netz mehr als sechs Bereiche hat, bekommt ab
     | dem siebten wieder die erste Farbe - und die liegt dann weit genug weg.

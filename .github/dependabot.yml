@@ -32,10 +32,10 @@ updates:
     ignore:
       # Der Frontend-Build haengt zusammen: vite, laravel-vite-plugin und
       # tailwindcss lassen sich nicht einzeln anheben - jeder Versuch scheitert
-      # an der Abhaengigkeit zu den anderen (npm ERESOLVE). Dazu ist Tailwind 4
-      # keine Aktualisierung, sondern eine Umstellung: Die Konfiguration wandert
-      # aus tailwind.config.js nach CSS. Das gehoert in ein eigenes Vorhaben,
-      # nicht in einen automatischen Pull Request.
+      # an der Abhaengigkeit zu den anderen (npm ERESOLVE). Ein Hauptversprung
+      # ist hier deshalb nie ein einzelner Pull Request, sondern ein Vorhaben
+      # fuer alle vier zusammen - wie zuletzt beim Umstieg auf Tailwind 4, bei
+      # dem die Konfiguration aus tailwind.config.js nach app.css wanderte.
       - dependency-name: vite
         update-types: ["version-update:semver-major"]
       - dependency-name: laravel-vite-plugin
