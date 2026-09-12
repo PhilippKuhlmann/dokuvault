@@ -1,5 +1,15 @@
 # Changelog
 
+## 26.09.12
+
+### Changed
+
+- **Jetzt sehen alle Auswahlfelder gleich aus.** Gestern bekam nur das Betriebssystem die durchsuchbare Fassung, und ein Formular mit einem neuen und drei alten Feldern sah aus wie aus zwei Bauteilen zusammengesetzt. Das neue Aussehen sitzt deshalb nicht mehr in einer Sonderkomponente, sondern in `x-input.select` selbst — alle Auswahlfelder der Anwendung erben es, vom Objekt-Formular über die Filterleisten und Tabellenzeilen bis zum Adminbereich, zum Profil und zum Standort-Filter in der Seitenleiste.
+  - **Das Suchfeld erscheint ab dreizehn Einträgen**, nicht mehr über einen Schalter in `config/forms.php`. Bei drei Rollen wäre eine Suche ein Umweg; ab dreizehn passt die Liste nicht mehr ohne Scrollen ins Bild. Gezählt wird auf dem Server, damit kurze Listen kein Suchfeld mitschleppen, das nie zu sehen ist — und damit prüfbar bleibt, welches Feld eines bekommt. Der Schlüssel `'suchbar'` ist damit überflüssig und entfällt.
+  - **Ohne JavaScript bleibt alles benutzbar.** Das native `<select>` steht weiter im Markup und trägt Name, Wert, Bindung und Fehlerzustand; es wird nur versteckt. Auch `onchange="this.form.submit()"` in der Seitenleiste funktioniert unverändert — die Auswahl löst ein echtes `change`-Ereignis aus.
+  - Die Klassen der Aufrufstellen werden aufgeteilt: Abstand und Breite an den Rahmen, Schrift und Innenabstand an den sichtbaren Auslöser. Ohne diese Trennung hätten die kompakten Zeilen der Patchfeld-Tabelle (`text-sm py-1`) ihre Maße verloren.
+  - Die Liste hängt am Viewport und wächst bei Bedarf über die Feldbreite hinaus. In der schmalen Switch-Spalte eines Patchfelds brach „sw-2og-archiv-serverschrank-lwl" sonst auf drei Zeilen um — ein natives Select-Popup wird dort ebenfalls breiter als sein Feld.
+
 ## 26.09.11
 
 ### Added

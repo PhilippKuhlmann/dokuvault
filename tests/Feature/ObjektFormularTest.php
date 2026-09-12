@@ -22,6 +22,8 @@ use App\Models\Service;
 use App\Models\Site;
 use App\Models\VM;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\ViewErrorBag;
 use Illuminate\Http\UploadedFile;
 use Livewire\Livewire;
 
@@ -998,11 +1000,26 @@ test('ohne Abo wird der leere Wert zu null', function () {
     expect(LicenseSoftware::where('name', 'Einmallizenz')->sole()->abo)->toBeNull();
 });
 
-test('das Betriebssystem laesst sich durchsuchen, der Cluster nicht', function () {
-    // Der Betriebssystem-Katalog fuehrt ueber fuenfzig Eintraege; das
-    // Type-Ahead des Browsers matcht nur vom Wortanfang, "2022" fuehrt darin
-    // zu nichts. Bei den paar Clustern eines Kunden waere dieselbe Suche
-    // dagegen ein Umweg - deshalb steht 'suchbar' nur an einem der beiden.
+test('ein langes Auswahlfeld bekommt ein Suchfeld, ein kurzes nicht', function () {
+    // Ab zwoelf Eintraegen lohnt die Suche: Das Type-Ahead des Browsers greift
+    // nur vom Wortanfang, "Windows Server 2022 Standard" war nur ueber
+    // "Windows" erreichbar. Bei drei Rollen waere sie ein Umweg - und ein
+    // Suchfeld, das nie zu sehen ist, gehoert nicht ins HTML.
+    // Ausserhalb eines Requests gibt es keinen Fehlerbeutel - im Betrieb legt
+    // ihn die Middleware bereit, hier also von Hand.
+    view()->share('errors', new ViewErrorBag);
+
+    $kurz = Blade::render('<x-input.select name="t">'.str_repeat('<option value="1">a</option>', 5).'</x-input.select>');
+    $lang = Blade::render('<x-input.select name="t">'.str_repeat('<option value="1">a</option>', 20).'</x-input.select>');
+
+    expect($kurz)->not->toContain('type="search"')
+        ->and($lang)->toContain('type="search"');
+});
+
+test('das Auswahlfeld behaelt sein natives select mit allen Optionen', function () {
+    // Gesucht wird im Browser, geliefert wird vom Server - und ohne
+    // JavaScript muss das Feld benutzbar bleiben. Beides haengt daran, dass
+    // das <select> samt Optionen stehen bleibt.
     $customer = Customer::factory()->create();
     OperatingSystem::factory()->create(['name' => 'Windows Server 2022 Standard']);
 
@@ -1010,22 +1027,8 @@ test('das Betriebssystem laesst sich durchsuchen, der Cluster nicht', function (
 
     $html = modalHtml('server', $customer);
 
-    expect($html)->toContain('operating_system_id-liste')
-        ->and($html)->not->toContain('cluster_id-liste');
+    expect($html)->toContain('<select')
+        ->and($html)->toContain('name="operating_system_id"')
+        ->and($html)->toContain('Windows Server 2022 Standard');
 });
 
-test('die Suche laesst die Optionsliste im Markup stehen', function () {
-    // Gesucht wird im Browser, geliefert wird weiter vom Server: Die
-    // Beschriftungen muessen im HTML stehen, sonst findet die Suche nichts -
-    // und ohne JavaScript bliebe ein leeres Auswahlfeld zurueck.
-    $customer = Customer::factory()->create();
-    OperatingSystem::factory()->create(['name' => 'Windows Server 2022 Standard']);
-    OperatingSystem::factory()->create(['name' => 'Debian 12']);
-
-    $this->actingAs(userWithPermissions(['server_viewAny', 'server_create']));
-
-    $html = modalHtml('server', $customer);
-
-    expect($html)->toContain('Windows Server 2022 Standard')
-        ->and($html)->toContain('Debian 12');
-});
