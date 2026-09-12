@@ -210,7 +210,11 @@
              Tabellenspalten braechen lange Namen sonst auf drei Zeilen um.
              Ein natives Select-Popup wird auch breiter als sein Feld. --}}
         x-bind:style="`left: ${x}px; min-width: ${breite}px; ` + (nachOben ? `bottom: ${y + 4}px` : `top: ${y + 4}px`)"
-        class="fixed z-50 w-max max-w-[min(24rem,calc(100vw-2rem))] rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+        {{-- Einen Ton neben der Flaeche darunter: Karten und Modale stehen auf
+             bg-white bzw. dark:bg-gray-800. Waere die Liste dieselbe Flaeche,
+             trennte sie nur der Schatten. Im Hellen also etwas gedeckter, im
+             Dunklen etwas heller - aufgehellt liest sich dort als "darueber". --}}
+        class="fixed z-50 w-max max-w-[min(24rem,calc(100vw-2rem))] rounded-lg border border-gray-200 bg-gray-50 shadow-lg dark:border-gray-600 dark:bg-gray-700">
 
         @if ($mitSuche)
         <input type="search"
@@ -232,8 +236,11 @@
                     x-bind:data-markiert="i === markiert ? '' : null"
                     x-on:click="waehle(option.wert)"
                     x-on:mouseenter="markiert = i"
+                    {{-- gray-600, nicht gray-700: Die Liste steht im Dunklen
+                         selbst auf gray-700, die Markierung waere darauf
+                         unsichtbar. --}}
                     x-bind:class="i === markiert
-                        ? 'bg-cerulean-50 text-cerulean-700 dark:bg-gray-700 dark:text-cerulean-400'
+                        ? 'bg-cerulean-50 text-cerulean-700 dark:bg-gray-600 dark:text-cerulean-400'
                         : 'text-gray-700 dark:text-gray-300'"
                     class="cursor-pointer px-3 py-1.5"
                     x-text="option.text"></li>
