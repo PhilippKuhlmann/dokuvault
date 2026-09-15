@@ -147,6 +147,42 @@
 
 
 
+/*
+  Anmeldeseite: der Netzplan im Hintergrund.
+
+  Zwei Dinge, die sich mit Tailwind-Utilities nicht ausdruecken lassen - ein
+  sich wiederholendes Raster aus zwei Verlaeufen und eine Animation auf
+  stroke-dashoffset. Beides gehoert nur dieser einen Seite, daher der Praefix.
+*/
+.netzplan-raster {
+    background-image:
+        linear-gradient(to right, currentColor 1px, transparent 1px),
+        linear-gradient(to bottom, currentColor 1px, transparent 1px);
+    background-size: 28px 28px;
+}
+
+/*
+  Ein einzelnes Paket laeuft die Stammleitung entlang. Kein Dauerfeuer: eine
+  Bewegung auf der ganzen Seite, langsam genug, dass sie beim Tippen nicht
+  stoert.
+*/
+.netzplan-paket {
+    stroke-dasharray: 26 1000;
+    animation: netzplan-paket 6s linear infinite;
+}
+
+@keyframes netzplan-paket {
+    from { stroke-dashoffset: 1026; }
+    to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .netzplan-paket {
+        animation: none;
+        opacity: 0.5;
+    }
+}
+
 .markdown h1 {
     font-size: xx-large;
     color: darkgray;

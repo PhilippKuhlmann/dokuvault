@@ -243,7 +243,10 @@ test('der Hinweis steht auf der Anmeldeseite', function () {
 });
 
 test('ohne Hinweis steht dort nichts', function () {
-    $this->get('/login')->assertOk()->assertDontSee('border-t border-gray-200 pt-4 text-center', false);
+    // Die Klassen des Hinweis-Absatzes auf der Anmeldeseite. Faellt der Block
+    // weg, faellt auch diese Zeichenkette weg - anders laesst sich seine
+    // Abwesenheit nicht pruefen, er hat keinen eigenen Text.
+    $this->get('/login')->assertOk()->assertDontSee('border-t border-chathams-blue-100 px-6 py-4', false);
 });
 
 test('der Hinweis kommt escaped heraus', function () {

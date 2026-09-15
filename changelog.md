@@ -1,5 +1,17 @@
 # Changelog
 
+## 26.09.15
+
+### Changed
+
+- **Die Anmeldeseite liegt jetzt auf einem gezeichneten Netzplan.** Vorher war es eine kleine Karte in sehr viel leerer Fläche, die nichts über das Werkzeug sagte. Hinter der Maske steht nun das, was hinter der Tür dokumentiert wird: Core-Router, Switch mit 24 Ports, drei VLANs mit Netz und Vergabeart, ein Patchfeld — gezeichnet in Haarlinien auf Millimeterpapier, mit Maßstabsleiste am unteren Rand. Ein einzelnes Paket läuft langsam die Stammleitung entlang; sonst bewegt sich nichts.
+  - **Die Maske selbst ist ein nüchternes Blatt darauf**, mit einem Schriftkopf wie auf einer technischen Zeichnung („Zugang" · Versionsnummer). Die Feldbeschriftungen stehen in Versalien auf Monospace — dieselbe Schreibweise wie in den Portlisten und im IP-Plan.
+  - **Die Ecken sind wieder so scharf wie überall sonst.** Die Seite trug `rounded-2xl` und war damit die einzige Stelle der Anwendung mit weichen Ecken; der Radius-Maßstab in `app.css` geht von 1 bis 6 px. Sie sah dadurch nach einer anderen Software aus als alles dahinter.
+  - **Plan und Maske stehen nebeneinander, nicht übereinander.** Zuerst lag der Plan als Hintergrundebene hinter der Karte und musste ihr ausweichen — das ging nur oberhalb von 1280 px auf, darunter verschwand er ganz oder wurde angeschnitten. Als eigene Rasterspalte kann er nicht mehr kollidieren und wächst mit dem Bildschirm: seine Höhe hängt an der Fensterhöhe (78 vh) statt an einem festen Wert, der ihn schon bei 1440 px deckelte. Gezeichnete Breite 418 px bei 1024, 681 px bei 1440, 876 px bei 1920, 1168 px bei 2560 — überall ohne Überlappung, ohne Querlauf und ohne dass die Seite scrollt. Unter 1024 px reicht der Platz für zwei Spalten nicht: Dort rutscht der Plan hinter die Karte — leicht vergrößert, auf 30 % Deckkraft und ohne seine Beschriftungen, weil ein halb verdecktes „RTR-CORE" nach Fehler aussieht. Übrig bleiben Linien und Kästen; dass die Karte einen Teil davon verdeckt, ist dort gewollt.
+  - **Die Karte trägt nur noch, was gebraucht wird.** Die Überschrift sagte „Anmelden" — dasselbe Wort wie der Knopf drei Zentimeter darunter — und der Satz darunter erklärte das Rechtemodell an der Stelle, an der jemand einfach hineinwill. Beides ist weg. Der Schriftkopf sagt jetzt, was das Blatt ist („Anmeldung"), der Knopf sagt, was passiert. Überschrift der Seite ist die Wortmarke.
+  - **Hinter der Karte liegt der Plan noch einmal**, blass und stark vergrößert, ohne Beschriftungen. Unter 1024 px ist das die einzige Fassung und füllt die ganze Fläche; darüber schrumpft sie auf einen Streifen links, damit die Maske nicht auf leerem Papier liegt, ohne der lesbaren Fassung in der zweiten Spalte ins Gehege zu kommen. Dieselbe Zeichnung, zweimal eingebunden — ein `$hintergrund`-Schalter entscheidet über Lage, Deckkraft und ob Beschriftungen mitkommen.
+  - Die Beschriftung des Auges am Kennwortfeld lief bisher nicht durch `__()` und war fest auf Deutsch verdrahtet.
+
 ## 26.09.12
 
 ### Changed
