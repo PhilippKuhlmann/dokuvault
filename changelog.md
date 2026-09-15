@@ -4,6 +4,10 @@
 
 ### Changed
 
+- **Die zweite Stufe und die Einladung sehen aus wie die Anmeldung.** Beide trugen bis eben eine Kopie der *alten* Anmeldeseite — wer sich mit zweiter Stufe anmeldete, sprang im zweiten Schritt in ein anderes Aussehen, und die Einladung ist überhaupt das Erste, was ein neuer Benutzer von DokuVault sieht. Der Schriftkopf sagt jeweils, was das Blatt ist: „Anmeldung", „Zweite Stufe", „Einladung".
+  - **Die Hülle steckt jetzt in `x-anmeldeblatt`.** Vorher stand derselbe Block — dreißig Zeilen Logo-Badge, Verlauf, Kartenrahmen — in vier Dateien kopiert. Vier Kopien bedeuten vier Stellen, die auseinanderlaufen, und genau das war passiert. Der Abbrechen-Knopf der zweiten Stufe sitzt im `fuss`-Slot, weil er ein eigenes Formular ist und HTML keine verschachtelten Formulare erlaubt.
+  - **Feldbeschriftungen kommen aus `x-input.feldname`.** Eine eigene Komponente statt eines zusätzlichen `class=` an `x-input.label`: Deren Klassen stünden sonst mit den neuen im selben Attribut, und welche gewinnt, entschiede die Reihenfolge im gebauten CSS statt der im Blade.
+
 - **Die Anmeldeseite liegt jetzt auf einem gezeichneten Netzplan.** Vorher war es eine kleine Karte in sehr viel leerer Fläche, die nichts über das Werkzeug sagte. Hinter der Maske steht nun das, was hinter der Tür dokumentiert wird: Core-Router, Switch mit 24 Ports, drei VLANs mit Netz und Vergabeart, ein Patchfeld — gezeichnet in Haarlinien auf Millimeterpapier, mit Maßstabsleiste am unteren Rand. Ein einzelnes Paket läuft langsam die Stammleitung entlang; sonst bewegt sich nichts.
   - **Die Maske selbst ist ein nüchternes Blatt darauf**, mit einem Schriftkopf wie auf einer technischen Zeichnung („Zugang" · Versionsnummer). Die Feldbeschriftungen stehen in Versalien auf Monospace — dieselbe Schreibweise wie in den Portlisten und im IP-Plan.
   - **Die Ecken sind wieder so scharf wie überall sonst.** Die Seite trug `rounded-2xl` und war damit die einzige Stelle der Anwendung mit weichen Ecken; der Radius-Maßstab in `app.css` geht von 1 bis 6 px. Sie sah dadurch nach einer anderen Software aus als alles dahinter.
