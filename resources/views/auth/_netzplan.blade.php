@@ -22,13 +22,21 @@
     Farben ueber currentColor statt fill-/stroke-Utilities: so haengt die ganze
     Zeichnung an einer einzigen text-Klasse je Gruppe und folgt dem
     Dunkelmodus, ohne dass jede Linie ihre eigene dark:-Variante braucht.
+
+    Aufbau von oben nach unten: Gateway, Core-Switch, Verteilerschiene, drei
+    Etagen-Switches, Zugangsschiene, vier VLANs, Patchfeld.
 --}}
 @php
     $hintergrund ??= false;
 
+    $lage = $hintergrund
+        ? 'absolute inset-0 h-full w-full scale-[1.25] opacity-30
+           lg:inset-y-0 lg:left-0 lg:right-auto lg:w-[30rem] lg:scale-[1.6] lg:opacity-25'
+        : 'hidden h-auto max-h-[78vh] w-full lg:block';
+
     /*
      * Die Wege, die ein Paket nehmen kann. Immer dieselbe Strecke leuchten zu
-     * lassen sah nach Schleife aus; fuenf Wege sehen nach Betrieb aus.
+     * lassen sah nach Schleife aus; mehrere Wege sehen nach Betrieb aus.
      *
      * Die Zeiten sind absichtlich krumm und ohne gemeinsamen Teiler: Bei 6, 8
      * und 4 Sekunden traefen sich die Pakete regelmaessig wieder am Start, und
@@ -36,48 +44,63 @@
      */
     $wege = [
         // Vom Gateway in den Core
-        ["d" => "M765 198 V248", "dauer" => "2.9s", "start" => "3.6s"],
-        // Core ueber die Sammelschiene in die drei VLANs
-        ["d" => "M835 344 V430 H660 V520", "dauer" => "6.5s", "start" => "0s"],
-        ["d" => "M835 344 V430 H915 V520", "dauer" => "8.3s", "start" => "2.3s"],
-        ["d" => "M835 344 V430 H1170 V520", "dauer" => "7.1s", "start" => "4.7s"],
+        ['d' => 'M765 198 V248', 'dauer' => '2.9s', 'start' => '3.6s'],
+        // Core ueber die Verteilerschiene auf die Etagen-Switches
+        ['d' => 'M835 344 V404 H525 V444', 'dauer' => '6.5s', 'start' => '0s'],
+        ['d' => 'M835 344 V404 H1045 V444', 'dauer' => '7.1s', 'start' => '2.3s'],
+        // Von den Etagen ueber die Zugangsschiene in die VLANs
+        ['d' => 'M785 494 V534 H400 V574', 'dauer' => '8.3s', 'start' => '1.1s'],
+        ['d' => 'M1045 494 V534 H910 V574', 'dauer' => '5.3s', 'start' => '4.7s'],
         // Vom WLAN-VLAN hinunter aufs Patchfeld
-        ["d" => "M1170 606 V708", "dauer" => "3.7s", "start" => "1.4s"],
+        ['d' => 'M1165 660 V712', 'dauer' => '3.7s', 'start' => '1.4s'],
     ];
 
-    $lage = $hintergrund
-        ? 'absolute inset-0 h-full w-full scale-[1.25] opacity-30
-           lg:inset-y-0 lg:left-0 lg:right-auto lg:w-[30rem] lg:scale-[1.6] lg:opacity-25'
-        : 'hidden h-auto max-h-[78vh] w-full lg:block';
+    /* x-Anfang der drei Etagen-Switches, damit Kasten und Ports zusammenpassen. */
+    $etagen = [435, 695, 955];
 @endphp
 
-<svg class="pointer-events-none {{ $lage }}" viewBox="530 100 880 750"
+<svg class="pointer-events-none {{ $lage }}" viewBox="270 100 1075 730"
     preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
 
     {{-- Linien und Kaesten --}}
     <g class="text-chathams-blue-200 dark:text-cerulean-900" stroke="currentColor" stroke-width="1.25" fill="none">
+        {{-- Gateway und Core --}}
         <rect x="690" y="146" width="150" height="52" />
         <path d="M765 198 V248" />
         <rect x="690" y="286" width="290" height="58" />
 
-        {{-- Stammleitung: vom Core-Switch auf die drei VLANs --}}
-        <path d="M835 344 V430" />
-        <path d="M660 430 H1170" />
-        <path d="M660 430 V520 M915 430 V520 M1170 430 V520" />
+        {{-- Verteilerschiene: vom Core auf die Etagen --}}
+        <path d="M835 344 V404" />
+        <path d="M400 404 H1165" />
+        <path d="M525 404 V444 M785 404 V444 M1045 404 V444" />
 
-        <rect x="560" y="520" width="200" height="86" />
-        <rect x="815" y="520" width="200" height="86" />
-        <rect x="1070" y="520" width="200" height="86" />
+        {{-- Die drei Etagen-Switches --}}
+        @foreach ($etagen as $x)
+            <rect x="{{ $x }}" y="444" width="180" height="50" />
+        @endforeach
 
-        <path d="M1170 606 V708" />
-        <rect x="1040" y="708" width="300" height="46" />
+        {{-- Zugangsschiene: von den Etagen in die VLANs --}}
+        <path d="M525 494 V534 M785 494 V534 M1045 494 V534" />
+        <path d="M400 534 H1165" />
+        <path d="M400 534 V574 M655 534 V574 M910 534 V574 M1165 534 V574" />
+
+        {{-- Die vier VLANs --}}
+        <rect x="300" y="574" width="200" height="86" />
+        <rect x="555" y="574" width="200" height="86" />
+        <rect x="810" y="574" width="200" height="86" />
+        <rect x="1065" y="574" width="200" height="86" />
+
+        {{-- Patchfeld unter dem WLAN-VLAN --}}
+        <path d="M1165 660 V712" />
+        <rect x="1015" y="712" width="300" height="46" />
 
         {{-- Massstabsleiste, wie sie auf einer Zeichnung unten steht --}}
-        <path d="M560 812 H740 M560 806 V818 M650 808 V816 M740 806 V818" />
+        <path d="M400 800 H580 M400 794 V806 M490 796 V804 M580 794 V806" />
     </g>
 
     {{-- Ports: gefuellte Kaestchen --}}
     <g class="text-chathams-blue-200 dark:text-cerulean-900" fill="currentColor" opacity="0.6">
+        {{-- Core-Switch: zwei Reihen --}}
         <rect x="702" y="300" width="12" height="9" /><rect x="718" y="300" width="12" height="9" />
         <rect x="734" y="300" width="12" height="9" /><rect x="750" y="300" width="12" height="9" />
         <rect x="766" y="300" width="12" height="9" /><rect x="782" y="300" width="12" height="9" />
@@ -86,12 +109,20 @@
         <rect x="734" y="313" width="12" height="9" /><rect x="750" y="313" width="12" height="9" />
         <rect x="766" y="313" width="12" height="9" /><rect x="782" y="313" width="12" height="9" />
 
-        <rect x="1052" y="722" width="15" height="18" /><rect x="1071" y="722" width="15" height="18" />
-        <rect x="1090" y="722" width="15" height="18" /><rect x="1109" y="722" width="15" height="18" />
-        <rect x="1128" y="722" width="15" height="18" /><rect x="1147" y="722" width="15" height="18" />
-        <rect x="1166" y="722" width="15" height="18" /><rect x="1185" y="722" width="15" height="18" />
-        <rect x="1204" y="722" width="15" height="18" /><rect x="1223" y="722" width="15" height="18" />
-        <rect x="1242" y="722" width="15" height="18" /><rect x="1261" y="722" width="15" height="18" />
+        {{-- Etagen-Switches: je acht und sechs Ports --}}
+        @foreach ($etagen as $x)
+            @for ($i = 0; $i < 8; $i++)
+                <rect x="{{ $x + 12 + $i * 17 }}" y="464" width="12" height="9" />
+            @endfor
+            @for ($i = 0; $i < 6; $i++)
+                <rect x="{{ $x + 12 + $i * 17 }}" y="477" width="12" height="9" />
+            @endfor
+        @endforeach
+
+        {{-- Patchfeld --}}
+        @for ($i = 0; $i < 12; $i++)
+            <rect x="{{ 1027 + $i * 19 }}" y="726" width="15" height="18" />
+        @endfor
     </g>
 
     @unless ($hintergrund)
@@ -99,36 +130,49 @@
         <g class="font-mono text-chathams-blue-400 dark:text-cerulean-800" fill="currentColor" font-size="13">
             <text x="700" y="132">RTR-CORE</text>
             <text x="700" y="272">SW-CORE</text>
-            <text x="574" y="548">VLAN 10 · SERVER</text>
-            <text x="829" y="548">VLAN 20 · CLIENTS</text>
-            <text x="1084" y="548">VLAN 40 · WLAN</text>
-            <text x="1050" y="694">PF-EG-01 · 24 PORT</text>
+
+            <text x="435" y="436">SW-EG-01</text>
+            <text x="695" y="436">SW-1OG-01</text>
+            <text x="955" y="436">SW-2OG-01</text>
+
+            <text x="314" y="602">VLAN 50 · VOICE</text>
+            <text x="569" y="602">VLAN 10 · SERVER</text>
+            <text x="824" y="602">VLAN 20 · CLIENTS</text>
+            <text x="1079" y="602">VLAN 40 · WLAN</text>
+
+            <text x="1025" y="700">PF-EG-01 · 24 PORT</text>
         </g>
 
         <g class="font-mono text-chathams-blue-300 dark:text-cerulean-900" fill="currentColor" font-size="11">
             <text x="702" y="177">10.0.0.1 · GW</text>
             <text x="1000" y="320">24 Port · PoE</text>
 
-            <text x="574" y="570">10.0.10.0/24</text>
-            <text x="574" y="590">.10 – .40 {{ __('statisch') }}</text>
+            <text x="314" y="624">10.0.50.0/24</text>
+            <text x="314" y="644">.20 – .120 DHCP</text>
 
-            <text x="829" y="570">10.0.20.0/24</text>
-            <text x="829" y="590">.100 – .200 DHCP</text>
+            <text x="569" y="624">10.0.10.0/24</text>
+            <text x="569" y="644">.10 – .40 {{ __('statisch') }}</text>
 
-            <text x="1084" y="570">10.0.40.0/24</text>
-            <text x="1084" y="590">.100 – .250 DHCP</text>
+            <text x="824" y="624">10.0.20.0/24</text>
+            <text x="824" y="644">.100 – .200 DHCP</text>
+
+            <text x="1079" y="624">10.0.40.0/24</text>
+            <text x="1079" y="644">.100 – .250 DHCP</text>
         </g>
-
     @endunless
 
     {{-- Die Pakete zuletzt, damit sie ueber den Leitungen liegen.
 
+         pathLength="100" normiert jede Strecke auf dieselbe Laenge - nur
+         deshalb genuegt eine CSS-Regel fuer alle, egal wie lang der Weg ist.
+
          In der Hintergrundfassung laufen sie nur unter lg: Darueber ist die
-         lesbare Fassung daneben zu sehen, und dann liefe jedes Paket doppelt. --}}
+         lesbare Fassung daneben zu sehen, und dann liefe jedes Paket
+         doppelt. --}}
     @foreach ($wege as $weg)
         <path class="netzplan-paket text-cerulean-600 dark:text-cerulean-500 @if ($hintergrund) lg:hidden @endif"
-            d="{{ $weg["d"] }}" pathLength="100"
-            style="animation-duration: {{ $weg["dauer"] }}; animation-delay: {{ $weg["start"] }}"
+            d="{{ $weg['d'] }}" pathLength="100"
+            style="animation-duration: {{ $weg['dauer'] }}; animation-delay: {{ $weg['start'] }}"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.85" />
     @endforeach
 </svg>

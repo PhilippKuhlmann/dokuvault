@@ -18,7 +18,7 @@
 @props(['kopf'])
 
 <div class="relative grid min-h-screen items-center gap-10 overflow-hidden px-5 py-16 sm:px-10
-            lg:grid-cols-[26rem_1fr] lg:px-12 xl:gap-16 xl:px-24
+            lg:grid-cols-[26rem_1fr] lg:px-12 xl:gap-12 xl:px-16
             bg-linear-to-b from-chathams-blue-50 to-chathams-blue-100
             dark:from-gray-900 dark:to-cerulean-950">
 
