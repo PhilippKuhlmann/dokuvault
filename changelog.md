@@ -5,6 +5,7 @@
 ### Fixed
 
 - **Auf schmalen Fenstern lief die Animation gar nicht.** Das laufende Paket steckte nur in der lesbaren Fassung des Netzplans, und die ist unter 1024 px ausgeblendet — unter Windows fällt man da schnell hinein, weil 1366 px Bildschirmbreite bei 150 % Skalierung nur 911 CSS-Pixel ergeben. Die Hintergrundfassung hat jetzt ihr eigenes Paket, das ab 1024 px verschwindet: Es läuft immer genau eines, an jeder Breite geprüft von 390 bis 1920 px.
+- **Die Animation läuft jetzt immer.** Sie hatte eine Ausnahme für abbestellte Animationen — unter Windows steht der Schalter „Animationseffekte" oft aus, auch ungewollt über „Für optimale Leistung anpassen". Genau daran lag es, dass sie auf einem Windows-Rechner stillstand, obwohl Aufbau und CSS in Ordnung waren. Die Ausnahme ist entfernt; in `app.css` steht daneben, was das bedeutet und wann sie zurückgehörte.
 - **Ohne Animation blieb ein angefangener Strich stehen.** Wer Animationen abbestellt hat — unter Windows steht der Schalter „Animationseffekte" oft aus —, sah einen kurzen blauen Stummel am Anfang der Stammleitung, was nach Fehler aussah. Ohne Strichmuster wird daraus eine durchgehend hervorgehobene Leitung.
 
 ### Changed

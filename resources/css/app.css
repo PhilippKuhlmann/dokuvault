@@ -177,18 +177,16 @@
 }
 
 /*
-  Wer Animationen abbestellt hat - unter Windows steht der Schalter
-  "Animationseffekte" oft aus -, bekommt keine Bewegung. Dann darf aber auch
-  kein angefangener Strich stehenbleiben: ohne Strichmuster wird daraus eine
-  durchgehend hervorgehobene Stammleitung.
+  Bewusst ohne prefers-reduced-motion-Ausnahme: Die Animation soll auf jedem
+  Geraet und in jeder Aufloesung laufen - so entschieden am 16.09.2026.
+
+  Was das heisst, damit es niemand versehentlich zurueckbaut: Wer den Schalter
+  gesetzt hat (unter Windows "Animationseffekte", unter macOS "Bewegung
+  reduzieren"), tut das haeufig, weil Bewegung ihm koerperlich zusetzt. Diese
+  eine Bewegung ist klein, langsam und laeuft nicht im Blickfeld der
+  Eingabefelder - deshalb ist sie vertretbar. Kaeme mehr Bewegung auf die
+  Seite, gehoerte die Ausnahme zurueck.
 */
-@media (prefers-reduced-motion: reduce) {
-    .netzplan-paket {
-        animation: none;
-        stroke-dasharray: none;
-        opacity: 0.45;
-    }
-}
 
 .markdown h1 {
     font-size: xx-large;
