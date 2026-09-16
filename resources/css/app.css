@@ -162,17 +162,21 @@
 }
 
 /*
-  Ein einzelnes Paket laeuft die Stammleitung entlang. Kein Dauerfeuer: eine
-  Bewegung auf der ganzen Seite, langsam genug, dass sie beim Tippen nicht
-  stoert.
+  Pakete laufen ueber die Leitungen des Plans.
+
+  Jede Strecke traegt pathLength="100", damit ihre Laenge fuer die Animation
+  auf 100 normiert ist. Nur deshalb genuegt eine Regel fuer alle: Ohne das
+  muesste jede Strecke ihre eigenen Zahlen tragen, und die stimmten nur so
+  lange, bis jemand eine Linie verschiebt. Dauer und Verzoegerung stehen je
+  Strecke am Element.
 */
 .netzplan-paket {
-    stroke-dasharray: 26 1000;
+    stroke-dasharray: 3 100;
     animation: netzplan-paket 6s linear infinite;
 }
 
 @keyframes netzplan-paket {
-    from { stroke-dashoffset: 1026; }
+    from { stroke-dashoffset: 103; }
     to { stroke-dashoffset: 0; }
 }
 

@@ -26,6 +26,25 @@
 @php
     $hintergrund ??= false;
 
+    /*
+     * Die Wege, die ein Paket nehmen kann. Immer dieselbe Strecke leuchten zu
+     * lassen sah nach Schleife aus; fuenf Wege sehen nach Betrieb aus.
+     *
+     * Die Zeiten sind absichtlich krumm und ohne gemeinsamen Teiler: Bei 6, 8
+     * und 4 Sekunden traefen sich die Pakete regelmaessig wieder am Start, und
+     * genau das faellt auf.
+     */
+    $wege = [
+        // Vom Gateway in den Core
+        ["d" => "M765 198 V248", "dauer" => "2.9s", "start" => "3.6s"],
+        // Core ueber die Sammelschiene in die drei VLANs
+        ["d" => "M835 344 V430 H660 V520", "dauer" => "6.5s", "start" => "0s"],
+        ["d" => "M835 344 V430 H915 V520", "dauer" => "8.3s", "start" => "2.3s"],
+        ["d" => "M835 344 V430 H1170 V520", "dauer" => "7.1s", "start" => "4.7s"],
+        // Vom WLAN-VLAN hinunter aufs Patchfeld
+        ["d" => "M1170 606 V708", "dauer" => "3.7s", "start" => "1.4s"],
+    ];
+
     $lage = $hintergrund
         ? 'absolute inset-0 h-full w-full scale-[1.25] opacity-30
            lg:inset-y-0 lg:left-0 lg:right-auto lg:w-[30rem] lg:scale-[1.6] lg:opacity-25'
@@ -75,15 +94,7 @@
         <rect x="1242" y="722" width="15" height="18" /><rect x="1261" y="722" width="15" height="18" />
     </g>
 
-    @if ($hintergrund)
-        {{-- Unter lg ist dies die einzige sichtbare Fassung, also laeuft das
-             Paket hier. Ab lg uebernimmt die lesbare Fassung, und dieses hier
-             verschwindet - zwei laufende Pakete auf einer Seite waeren
-             Unruhe. --}}
-        <path class="netzplan-paket text-cerulean-600 lg:hidden dark:text-cerulean-500"
-            d="M835 344 V430 H1170 V520" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" fill="none" opacity="0.85" />
-    @else
+    @unless ($hintergrund)
         {{-- Beschriftungen --}}
         <g class="font-mono text-chathams-blue-400 dark:text-cerulean-800" fill="currentColor" font-size="13">
             <text x="700" y="132">RTR-CORE</text>
@@ -108,8 +119,16 @@
             <text x="1084" y="590">.100 – .250 DHCP</text>
         </g>
 
-        {{-- Ein Paket laeuft die Stammleitung entlang. --}}
-        <path class="netzplan-paket text-cerulean-600 dark:text-cerulean-500" d="M835 344 V430 H1170 V520"
+    @endunless
+
+    {{-- Die Pakete zuletzt, damit sie ueber den Leitungen liegen.
+
+         In der Hintergrundfassung laufen sie nur unter lg: Darueber ist die
+         lesbare Fassung daneben zu sehen, und dann liefe jedes Paket doppelt. --}}
+    @foreach ($wege as $weg)
+        <path class="netzplan-paket text-cerulean-600 dark:text-cerulean-500 @if ($hintergrund) lg:hidden @endif"
+            d="{{ $weg["d"] }}" pathLength="100"
+            style="animation-duration: {{ $weg["dauer"] }}; animation-delay: {{ $weg["start"] }}"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.85" />
-    @endif
+    @endforeach
 </svg>
