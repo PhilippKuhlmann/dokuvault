@@ -2,6 +2,11 @@
 
 ## 26.09.15
 
+### Fixed
+
+- **Auf schmalen Fenstern lief die Animation gar nicht.** Das laufende Paket steckte nur in der lesbaren Fassung des Netzplans, und die ist unter 1024 px ausgeblendet — unter Windows fällt man da schnell hinein, weil 1366 px Bildschirmbreite bei 150 % Skalierung nur 911 CSS-Pixel ergeben. Die Hintergrundfassung hat jetzt ihr eigenes Paket, das ab 1024 px verschwindet: Es läuft immer genau eines, an jeder Breite geprüft von 390 bis 1920 px.
+- **Ohne Animation blieb ein angefangener Strich stehen.** Wer Animationen abbestellt hat — unter Windows steht der Schalter „Animationseffekte" oft aus —, sah einen kurzen blauen Stummel am Anfang der Stammleitung, was nach Fehler aussah. Ohne Strichmuster wird daraus eine durchgehend hervorgehobene Leitung.
+
 ### Changed
 
 - **Die zweite Stufe und die Einladung sehen aus wie die Anmeldung.** Beide trugen bis eben eine Kopie der *alten* Anmeldeseite — wer sich mit zweiter Stufe anmeldete, sprang im zweiten Schritt in ein anderes Aussehen, und die Einladung ist überhaupt das Erste, was ein neuer Benutzer von DokuVault sieht. Der Schriftkopf sagt jeweils, was das Blatt ist: „Anmeldung", „Zweite Stufe", „Einladung".

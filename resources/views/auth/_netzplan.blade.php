@@ -75,7 +75,15 @@
         <rect x="1242" y="722" width="15" height="18" /><rect x="1261" y="722" width="15" height="18" />
     </g>
 
-    @unless ($hintergrund)
+    @if ($hintergrund)
+        {{-- Unter lg ist dies die einzige sichtbare Fassung, also laeuft das
+             Paket hier. Ab lg uebernimmt die lesbare Fassung, und dieses hier
+             verschwindet - zwei laufende Pakete auf einer Seite waeren
+             Unruhe. --}}
+        <path class="netzplan-paket text-cerulean-600 lg:hidden dark:text-cerulean-500"
+            d="M835 344 V430 H1170 V520" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" fill="none" opacity="0.85" />
+    @else
         {{-- Beschriftungen --}}
         <g class="font-mono text-chathams-blue-400 dark:text-cerulean-800" fill="currentColor" font-size="13">
             <text x="700" y="132">RTR-CORE</text>
@@ -100,9 +108,8 @@
             <text x="1084" y="590">.100 – .250 DHCP</text>
         </g>
 
-        {{-- Ein Paket laeuft die Stammleitung entlang. Nur in der lesbaren
-             Fassung: zwei laufende Pakete auf einer Seite waeren Unruhe. --}}
+        {{-- Ein Paket laeuft die Stammleitung entlang. --}}
         <path class="netzplan-paket text-cerulean-600 dark:text-cerulean-500" d="M835 344 V430 H1170 V520"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.85" />
-    @endunless
+    @endif
 </svg>
