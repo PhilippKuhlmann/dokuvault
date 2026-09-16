@@ -30,8 +30,8 @@
     $hintergrund ??= false;
 
     $lage = $hintergrund
-        ? 'absolute inset-0 h-full w-full scale-[1.25] opacity-30
-           lg:inset-y-0 lg:left-0 lg:right-auto lg:w-[30rem] lg:scale-[1.6] lg:opacity-25'
+        ? 'absolute inset-0 h-full w-full opacity-30
+           lg:inset-y-0 lg:left-0 lg:right-auto lg:w-[30rem] lg:opacity-25'
         : 'hidden h-auto max-h-[78vh] w-full lg:block';
 
     /*
@@ -59,11 +59,15 @@
     $etagen = [435, 695, 955];
 @endphp
 
+{{-- slice fuer den Hintergrund: fuellt die Flaeche und beschneidet, statt sie
+     per CSS-scale zu vergroessern - das hatte Chrome sichtbar unscharf
+     gezeichnet. meet fuer die lesbare Fassung: dort soll nichts wegfallen. --}}
 <svg class="pointer-events-none {{ $lage }}" viewBox="270 100 1075 730"
-    preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+    preserveAspectRatio="xMidYMid {{ $hintergrund ? 'slice' : 'meet' }}"
+    aria-hidden="true" focusable="false">
 
     {{-- Linien und Kaesten --}}
-    <g class="text-chathams-blue-200 dark:text-cerulean-900" stroke="currentColor" stroke-width="1.25" fill="none">
+    <g class="text-chathams-blue-200 dark:text-cerulean-900" stroke="currentColor" stroke-width="1.7" fill="none">
         {{-- Gateway und Core --}}
         <rect x="690" y="146" width="150" height="52" />
         <path d="M765 198 V248" />
@@ -127,7 +131,7 @@
 
     @unless ($hintergrund)
         {{-- Beschriftungen --}}
-        <g class="font-mono text-chathams-blue-400 dark:text-cerulean-800" fill="currentColor" font-size="13">
+        <g class="font-mono text-chathams-blue-500 dark:text-cerulean-700" fill="currentColor" font-size="16.5">
             <text x="700" y="132">RTR-CORE</text>
             <text x="700" y="272">SW-CORE</text>
 
@@ -143,7 +147,7 @@
             <text x="1025" y="700">PF-EG-01 · 24 PORT</text>
         </g>
 
-        <g class="font-mono text-chathams-blue-300 dark:text-cerulean-900" fill="currentColor" font-size="11">
+        <g class="font-mono text-chathams-blue-400 dark:text-cerulean-800" fill="currentColor" font-size="14">
             <text x="702" y="177">10.0.0.1 · GW</text>
             <text x="1000" y="320">24 Port · PoE</text>
 
@@ -173,6 +177,6 @@
         <path class="netzplan-paket text-cerulean-600 dark:text-cerulean-500 @if ($hintergrund) lg:hidden @endif"
             d="{{ $weg['d'] }}" pathLength="100"
             style="animation-duration: {{ $weg['dauer'] }}; animation-delay: {{ $weg['start'] }}"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.85" />
+            stroke="currentColor" stroke-width="2.6" stroke-linecap="round" fill="none" opacity="0.85" />
     @endforeach
 </svg>
