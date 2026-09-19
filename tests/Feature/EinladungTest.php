@@ -3,6 +3,7 @@
 use App\Models\Role;
 use App\Models\User;
 use App\Notifications\Einladung;
+use App\Support\Zeit;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -303,8 +304,19 @@ test('die Benutzerliste zeigt offene und abgelaufene Einladungen', function () {
 
     $this->actingAs($verwalter)
         ->get(route('admin.user.index'))
-        ->assertSee('offen seit')
-        ->assertSee('abgelaufen');
+        // Am Attribut und nicht am blossen Wort: Die Spalte zeigt ein Zeichen
+        // und daneben das Datum, das Wort steht nur noch im aria-label. Ein
+        // assertSee('abgelaufen') wuerde auch von Text anderswo auf der Seite
+        // gruen und pruefte damit nichts.
+        ->assertSee('aria-label="'.__('offen seit').'"', false)
+        ->assertSee('aria-label="'.__('abgelaufen').'"', false)
+        // Das Datum ist bei einer offenen Einladung die eigentliche Auskunft -
+        // es darf nicht mit dem Wort verschwinden.
+        ->assertSee(Zeit::anzeigen($offen->invited_at, 'd.m.Y'))
+        ->assertSee(Zeit::anzeigen($abgelaufen->invited_at, 'd.m.Y'))
+        // Zwei Zustaende, zwei Farben.
+        ->assertSee('text-amber-600', false)
+        ->assertSee('text-rose-600', false);
 });
 
 test('das Verschicken erzeugt keinen Änderungseintrag im Protokoll', function () {

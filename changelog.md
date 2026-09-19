@@ -20,6 +20,7 @@
 - **Die zweite Stufe steht in der Benutzerliste als Zeichen, nicht als Wort.** „eingerichtet" und „verlangt, offen" waren die längsten Texte der Tabelle und machten die Spalte breiter als ihr Inhalt wert ist; in einer Liste mit acht Spalten erfasst man ein Zeichen ohnehin schneller. Grüner Haken, bernsteinfarbene Uhr, grauer Strich — dieselbe Sprache wie beim EOL-Abzeichen, wo Bernstein ebenfalls „steht noch an" heißt.
   - **Drei Zeichen, nicht zwei.** Bei „verlangt, offen" ist der Zugang nicht geschützt, aber jemand hat entschieden, dass er es sein soll — das ist etwas anderes als „niemand verlangt es". Die vorhandene `x-statusicon` kennt nur an, aus und unbekannt, deshalb eine eigene `x-zweitestufe` und ein eigener Tabellenschlüssel.
   - Das Wort steht im `title` und im `aria-label`: Die Bedeutung darf nicht allein an Form und Farbe hängen. Ein Test hält fest, dass die drei Zustände unterscheidbar bleiben — er prüft die Attribute, nicht die bloßen Wörter, sonst würde er auch von Text anderswo auf der Seite grün.
+- **Die Einladung ebenso — Zeichen und Datum nebeneinander.** Bernsteinfarbener Umschlag heißt „unterwegs, wartet", rotes Warndreieck „die Frist ist um, der Link trägt nicht mehr". Das Datum bleibt stehen: Bei einer offenen Einladung ist es die eigentliche Auskunft — „seit gestern" heißt warten, „seit drei Wochen" heißt nachfassen. Das Zeichen ersetzt nur das Wort davor, nicht die Zeile.
 
 ### Fixed
 
