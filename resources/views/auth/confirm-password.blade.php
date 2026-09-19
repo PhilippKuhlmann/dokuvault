@@ -1,35 +1,25 @@
 <x-guest-layout>
-    <x-auth-card>
-        <x-slot name="logo">
-            <a href="/">
-                <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
-            </a>
-        </x-slot>
-
-        <div class="mb-4 text-sm text-gray-600">
-            {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
-        </div>
+    {{-- Die letzte Seite, die noch auf dem Laravel-Breeze-Stand stand: ein
+         zweiter Satz Eingabe-Komponenten neben dem projekteigenen, und drei
+         fest verdrahtete englische Saetze. Der zweite Satz ist mit dieser
+         Seite entfallen. --}}
+    <x-anmeldeblatt :kopf="__('Bestätigung')">
 
         <form method="POST" action="{{ route('password.confirm') }}">
             @csrf
 
-            <!-- Password -->
+            <p class="mb-6 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                {{ __('Geschützter Bereich. Bitte bestätigen Sie zuerst Ihr Kennwort.') }}
+            </p>
+
             <div>
-                <x-input-label for="password" :value="__('Password')" />
-
-                <x-text-input id="password" class="block mt-1 w-full"
-                                type="password"
-                                name="password"
-                                required autocomplete="current-password" />
-
-                <x-input-error :messages="$errors->get('password')" class="mt-2" />
+                <x-input.feldname for="password" :value="__('Kennwort')" />
+                <x-input.text id="password" feld="password" name="password" type="password" required autofocus
+                    autocomplete="current-password" class="mt-1.5 block w-full" />
+                <x-input.error :messages="$errors->get('password')" class="mt-2" />
             </div>
 
-            <div class="flex justify-end mt-4">
-                <x-primary-button>
-                    {{ __('Confirm') }}
-                </x-primary-button>
-            </div>
+            <x-input.button class="mt-7" size="blatt" :label="__('Bestätigen')" />
         </form>
-    </x-auth-card>
+    </x-anmeldeblatt>
 </x-guest-layout>

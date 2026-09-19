@@ -66,67 +66,72 @@
     preserveAspectRatio="xMidYMid {{ $hintergrund ? 'slice' : 'meet' }}"
     aria-hidden="true" focusable="false">
 
-    {{-- Linien und Kaesten --}}
-    <g class="text-chathams-blue-200 dark:text-cerulean-900" stroke="currentColor" stroke-width="1.7" fill="none">
-        {{-- Gateway und Core --}}
-        <rect x="690" y="146" width="150" height="52" />
-        <path d="M765 198 V248" />
-        <rect x="690" y="286" width="290" height="58" />
+    {{-- Linien, Kaesten und Ports teilen sich eine Farbe. Sie steht einmal an
+         der aeusseren Gruppe; die inneren sagen nur noch, womit gemalt wird -
+         sonst stuende dieselbe Klasse zweimal da und koennte auseinanderlaufen. --}}
+    <g class="text-chathams-blue-200 dark:text-cerulean-900">
+        {{-- Linien und Kaesten --}}
+        <g stroke="currentColor" stroke-width="1.7" fill="none">
+            {{-- Gateway und Core --}}
+            <rect x="690" y="146" width="150" height="52" />
+            <path d="M765 198 V248" />
+            <rect x="690" y="286" width="290" height="58" />
 
-        {{-- Verteilerschiene: vom Core auf die Etagen --}}
-        <path d="M835 344 V404" />
-        <path d="M400 404 H1165" />
-        <path d="M525 404 V444 M785 404 V444 M1045 404 V444" />
+            {{-- Verteilerschiene: vom Core auf die Etagen --}}
+            <path d="M835 344 V404" />
+            <path d="M400 404 H1165" />
+            <path d="M525 404 V444 M785 404 V444 M1045 404 V444" />
 
-        {{-- Die drei Etagen-Switches --}}
-        @foreach ($etagen as $x)
-            <rect x="{{ $x }}" y="444" width="180" height="50" />
-        @endforeach
+            {{-- Die drei Etagen-Switches --}}
+            @foreach ($etagen as $x)
+                <rect x="{{ $x }}" y="444" width="180" height="50" />
+            @endforeach
 
-        {{-- Zugangsschiene: von den Etagen in die VLANs --}}
-        <path d="M525 494 V534 M785 494 V534 M1045 494 V534" />
-        <path d="M400 534 H1165" />
-        <path d="M400 534 V574 M655 534 V574 M910 534 V574 M1165 534 V574" />
+            {{-- Zugangsschiene: von den Etagen in die VLANs --}}
+            <path d="M525 494 V534 M785 494 V534 M1045 494 V534" />
+            <path d="M400 534 H1165" />
+            <path d="M400 534 V574 M655 534 V574 M910 534 V574 M1165 534 V574" />
 
-        {{-- Die vier VLANs --}}
-        <rect x="300" y="574" width="200" height="86" />
-        <rect x="555" y="574" width="200" height="86" />
-        <rect x="810" y="574" width="200" height="86" />
-        <rect x="1065" y="574" width="200" height="86" />
+            {{-- Die vier VLANs --}}
+            <rect x="300" y="574" width="200" height="86" />
+            <rect x="555" y="574" width="200" height="86" />
+            <rect x="810" y="574" width="200" height="86" />
+            <rect x="1065" y="574" width="200" height="86" />
 
-        {{-- Patchfeld unter dem WLAN-VLAN --}}
-        <path d="M1165 660 V712" />
-        <rect x="1015" y="712" width="300" height="46" />
+            {{-- Patchfeld unter dem WLAN-VLAN --}}
+            <path d="M1165 660 V712" />
+            <rect x="1015" y="712" width="300" height="46" />
 
-        {{-- Massstabsleiste, wie sie auf einer Zeichnung unten steht --}}
-        <path d="M400 800 H580 M400 794 V806 M490 796 V804 M580 794 V806" />
-    </g>
+            {{-- Massstabsleiste, wie sie auf einer Zeichnung unten steht --}}
+            <path d="M400 800 H580 M400 794 V806 M490 796 V804 M580 794 V806" />
+        </g>
 
-    {{-- Ports: gefuellte Kaestchen --}}
-    <g class="text-chathams-blue-200 dark:text-cerulean-900" fill="currentColor" opacity="0.6">
-        {{-- Core-Switch: zwei Reihen --}}
-        <rect x="702" y="300" width="12" height="9" /><rect x="718" y="300" width="12" height="9" />
-        <rect x="734" y="300" width="12" height="9" /><rect x="750" y="300" width="12" height="9" />
-        <rect x="766" y="300" width="12" height="9" /><rect x="782" y="300" width="12" height="9" />
-        <rect x="798" y="300" width="12" height="9" /><rect x="814" y="300" width="12" height="9" />
-        <rect x="702" y="313" width="12" height="9" /><rect x="718" y="313" width="12" height="9" />
-        <rect x="734" y="313" width="12" height="9" /><rect x="750" y="313" width="12" height="9" />
-        <rect x="766" y="313" width="12" height="9" /><rect x="782" y="313" width="12" height="9" />
+        {{-- Ports: gefuellte Kaestchen --}}
+        <g fill="currentColor" opacity="0.6">
+            {{-- Core-Switch: zwei Reihen --}}
+            <rect x="702" y="300" width="12" height="9" /><rect x="718" y="300" width="12" height="9" />
+            <rect x="734" y="300" width="12" height="9" /><rect x="750" y="300" width="12" height="9" />
+            <rect x="766" y="300" width="12" height="9" /><rect x="782" y="300" width="12" height="9" />
+            <rect x="798" y="300" width="12" height="9" /><rect x="814" y="300" width="12" height="9" />
+            <rect x="702" y="313" width="12" height="9" /><rect x="718" y="313" width="12" height="9" />
+            <rect x="734" y="313" width="12" height="9" /><rect x="750" y="313" width="12" height="9" />
+            <rect x="766" y="313" width="12" height="9" /><rect x="782" y="313" width="12" height="9" />
 
-        {{-- Etagen-Switches: je acht und sechs Ports --}}
-        @foreach ($etagen as $x)
-            @for ($i = 0; $i < 8; $i++)
-                <rect x="{{ $x + 12 + $i * 17 }}" y="464" width="12" height="9" />
+            {{-- Etagen-Switches: je acht und sechs Ports --}}
+            @foreach ($etagen as $x)
+                @for ($i = 0; $i < 8; $i++)
+                    <rect x="{{ $x + 12 + $i * 17 }}" y="464" width="12" height="9" />
+                @endfor
+                @for ($i = 0; $i < 6; $i++)
+                    <rect x="{{ $x + 12 + $i * 17 }}" y="477" width="12" height="9" />
+                @endfor
+            @endforeach
+
+            {{-- Patchfeld --}}
+            @for ($i = 0; $i < 12; $i++)
+                <rect x="{{ 1027 + $i * 19 }}" y="726" width="15" height="18" />
             @endfor
-            @for ($i = 0; $i < 6; $i++)
-                <rect x="{{ $x + 12 + $i * 17 }}" y="477" width="12" height="9" />
-            @endfor
-        @endforeach
-
-        {{-- Patchfeld --}}
-        @for ($i = 0; $i < 12; $i++)
-            <rect x="{{ 1027 + $i * 19 }}" y="726" width="15" height="18" />
-        @endfor
+        </g>
     </g>
 
     @unless ($hintergrund)

@@ -21,13 +21,7 @@
                 {{ __('Telefon nicht zur Hand? Hier geht auch einer der Wiederherstellungscodes.') }}
             </p>
 
-            <button type="submit"
-                class="mt-7 flex w-full items-center justify-center rounded-lg bg-cerulean-600 px-4 py-2.5
-                       font-DINPro-bold text-white shadow-xs transition-colors duration-150 hover:bg-cerulean-700
-                       focus:outline-hidden focus:ring-2 focus:ring-cerulean-500 focus:ring-offset-2
-                       dark:focus:ring-offset-gray-800">
-                {{ __('Anmelden') }}
-            </button>
+            <x-input.button class="mt-7" size="blatt" :label="__('Anmelden')" />
         </form>
 
         {{-- Eigenes Formular, deshalb im Fuss und nicht im Formular darueber -

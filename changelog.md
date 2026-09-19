@@ -1,5 +1,27 @@
 # Changelog
 
+## 26.09.19
+
+### Changed
+
+- **Jetzt sehen alle Gast-Seiten aus wie die Anmeldung.** Beim Umbau am 15. September zogen Anmeldung, zweite Stufe und Einladung auf den Netzplan — „Kennwort vergessen", „neues Kennwort" und die Kennwortabfrage blieben zurück. Wer auf einer davon landete, stand in einer anders aussehenden Software: eigene Logo-Badge mit fest verdrahteten Farben (`#4ea1ff`, `#051323`), eigener Verlauf und `rounded-2xl` — der einzige Radius-Ausreißer der Anwendung, deren Maßstab von 1 bis 6 px geht. Alle drei stehen jetzt auf `x-anmeldeblatt`, mit demselben Schriftkopf, denselben Feldbeschriftungen in Versalien und demselben Netzplan dahinter.
+  - „Kennwort vergessen" und „neues Kennwort" waren dabei untereinander wieder wörtliche Kopien — dieselben dreißig Zeilen Hülle, zweimal. Genau die Sorte Kopie, die der Umbau hatte abschaffen sollen.
+  - **Der Knopf unter den Gast-Formularen steckt jetzt in `x-input.button size="blatt"`.** Er stand dreimal wörtlich kopiert in den Blättern; mit den zwei neuen Seiten wären es fünf geworden. Die Anzeigeart (`flex`/`inline-flex`) ist dafür aus dem Sockel in die Größentabelle gewandert: Stünden beide zusammen im selben Klassenattribut, entschiede die Reihenfolge im gebauten CSS, welche gewinnt — dieselbe Falle, wegen der es `x-input.feldname` gibt.
+  - **Die Kennwortabfrage stand noch auf dem Laravel-Breeze-Stand.** Sie brachte einen zweiten Satz Eingabe-Komponenten neben dem projekteigenen mit und drei fest verdrahtete englische Sätze — die standen auch in der deutschen Oberfläche auf Englisch, weil es für sie nie eine Übersetzung gab. Jetzt deutsch, mit Einträgen in `lang/en.json`.
+  - Sechs Komponenten sind damit unbenutzt und entfernt: `auth-card`, `application-logo`, `primary-button`, `text-input`, `input-label`, `auth-session-status`. `input-error` bleibt — die Profil-Formulare benutzen es noch.
+
+### Removed
+
+- **Das E-Mail-Bestätigungsverfahren ist ganz raus.** Es war nie in Betrieb: `MustVerifyEmail` ist im Benutzermodell auskommentiert, die `verified`-Middleware kommt in keiner Route vor, und die Spalte `email_verified_at` legt keine Migration an. Übrig waren eine Seite, drei Routen, drei Controller, ein Cast auf die Spalte, die es nicht gibt, und eine unbenutzte Factory-State.
+  - Dabei kam heraus, dass im Profil-Formular ein Formular ohne Knopf stand: Sein Absende-Knopf lag in einem `@if`, das nie zutraf, das Formular selbst aber davor — und zeigte auf `route('verification.send')`. Wäre die Route gefallen und das Formular stehengeblieben, hätte die Profilseite ab dann einen 500er geworfen.
+
+### Fixed
+
+- **`changelog.md` wurde bei jedem gerenderten View von der Platte gelesen.** Die Versionsnummer im Schriftkopf kommt aus der obersten Überschrift dieser Datei, geholt hat sie ein `View::composer('*')` — und Blade-Komponenten sind Views: Eine Seite mit vierzig Komponenten las die Datei vierzigmal, samt Regex darüber. Sichtbar war davon nichts, messbar schon. Jetzt liest `App\Support\Changelog` sie einmal je Anfrage; das zweite, gleichlautende Parsing im `ChangelogController` ist mitgegangen.
+  - Absichtlich kein Cache-Eintrag: Ein gecachter Wert überlebte das Bearbeiten des Changelogs, und die angezeigte Version wäre danach still falsch — bis jemand den Cache leert.
+- **Zwei Blätter mit frisch getauschter Hülle hatte niemand auf „rendert überhaupt" geprüft.** Die Einladung hatte gar keinen Test, von der zweiten Stufe war nur der Fall abgedeckt, in dem sie zur Anmeldung zurückschickt. Beide sind jetzt drin — dazu eine Wache, die jede Gast-Seite ohne `x-anmeldeblatt` rot werden lässt. Dass die Hüllen auseinanderlaufen, ist ab jetzt ein Testfehler und keine Entdeckung in drei Monaten.
+- Im Netzplan stand dieselbe Farbklasse an zwei Gruppen. Sie steht jetzt einmal an einer äußeren Gruppe, die inneren sagen nur noch, womit gemalt wird.
+
 ## 26.09.15
 
 ### Fixed

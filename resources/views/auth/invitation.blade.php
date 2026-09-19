@@ -33,13 +33,7 @@
                     autocomplete="new-password" class="mt-1.5 block w-full" />
             </div>
 
-            <button type="submit"
-                class="mt-7 flex w-full items-center justify-center rounded-lg bg-cerulean-600 px-4 py-2.5
-                       font-DINPro-bold text-white shadow-xs transition-colors duration-150 hover:bg-cerulean-700
-                       focus:outline-hidden focus:ring-2 focus:ring-cerulean-500 focus:ring-offset-2
-                       dark:focus:ring-offset-gray-800">
-                {{ __('Kennwort festlegen') }}
-            </button>
+            <x-input.button class="mt-7" size="blatt" :label="__('Kennwort festlegen')" />
         </form>
     </x-anmeldeblatt>
 </x-guest-layout>

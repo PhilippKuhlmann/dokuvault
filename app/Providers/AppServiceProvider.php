@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\Changelog;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -93,14 +94,12 @@ class AppServiceProvider extends ServiceProvider
             return $user->customer_id !== null;
         });
 
+        // Die Versionsnummer steht im Schriftkopf der Anmeldeseite und in der
+        // Seitenleiste. Der Composer bleibt auf '*', weil beide Views sie
+        // brauchen - das Lesen der Datei kostet dank Changelog::version() nur
+        // noch einmal je Anfrage, nicht einmal je gerendertem View.
         View::composer('*', function ($view) {
-
-            $changelog = file_get_contents(base_path('changelog.md'));
-
-            preg_match('/## (\d{2}\.\d{2}\.\d{2})/', $changelog, $matches);
-            $version = $matches[1] ?? 'Unbekannt';
-
-            $view->with('version', $version);
+            $view->with('version', Changelog::version());
         });
     }
 
