@@ -1,23 +1,13 @@
 <x-admin-layout>
 
     <div class="flex w-full flex-wrap pl-3 pt-3 gap-3">
-        <div class="w-64 rounded-xl border border-gray-200 bg-white shadow-xs p-4 dark:bg-gray-800 dark:border-gray-700">
-            <div class="h-8 text-center font-CoconPro text-rose-600 dark:text-rose-400">
-                {{ __('Ohne Support') }}
-            </div>
-            <div class="h-10 text-chathams-blue-800 dark:text-gray-100 text-center font-CoconPro text-4xl">
-                {{ $anzahlAbgelaufen }}
-            </div>
-        </div>
+        <x-adminkachel :label="__('Ohne Support')" ton="fehler">
+            {{ $anzahlAbgelaufen }}
+        </x-adminkachel>
 
-        <div class="w-64 rounded-xl border border-gray-200 bg-white shadow-xs p-4 dark:bg-gray-800 dark:border-gray-700">
-            <div class="h-8 text-center font-CoconPro text-amber-600 dark:text-amber-400">
-                {{ __('Läuft bald aus') }}
-            </div>
-            <div class="h-10 text-chathams-blue-800 dark:text-gray-100 text-center font-CoconPro text-4xl">
-                {{ $anzahlBald }}
-            </div>
-        </div>
+        <x-adminkachel :label="__('Läuft bald aus')" ton="warnung">
+            {{ $anzahlBald }}
+        </x-adminkachel>
     </div>
 
     {{-- Nur Uebersicht: Der Neu-Knopf haette hier nichts anzulegen. --}}

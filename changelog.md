@@ -17,6 +17,11 @@
 
 ### Fixed
 
+- **Auf der Benutzerliste lief der Name aus seiner Kachel heraus.** „Zuletzt hinzugefügt" zeigt dort keinen Zähler, sondern einen Namen — „Anke Brinkmann (Kunde)" brauchte bei `text-2xl` zwei Zeilen, der Kasten darunter war aber fest 40 px hoch. Die zweite Zeile stand dadurch auf der Kartenkante. Dasselbe auf der Rollenliste.
+  - **Die Kacheln stecken jetzt in `x-adminkachel` und haben überall dieselbe feste Größe.** Vorher stand derselbe Block zwölfmal kopiert in neun Dateien — Karte, Beschriftung, Wert, jedes Mal von Hand. Zwölf Kopien bedeuten zwölf Stellen, die auseinanderlaufen, und genau das war passiert.
+  - Für Namen gibt es `art="name"`: eine Stufe kleiner und mit engem Zeilenabstand, sodass zwei Zeilen in dieselbe Höhe passen wie eine große Zahl. Was auch dafür zu lang ist, wird nach zwei Zeilen gekürzt statt die Kachel zu dehnen — der ganze Name steht im `title`. Ein Name aus 73 Zeichen lässt die Kachel damit unverändert bei 122 px.
+  - `ton="warnung"` und `ton="fehler"` färben die Beschriftung; die EOL-Übersicht braucht das, „ohne Support" ist etwas anderes als „Kunden Gesamt".
+
 - **`changelog.md` wurde bei jedem gerenderten View von der Platte gelesen.** Die Versionsnummer im Schriftkopf kommt aus der obersten Überschrift dieser Datei, geholt hat sie ein `View::composer('*')` — und Blade-Komponenten sind Views: Eine Seite mit vierzig Komponenten las die Datei vierzigmal, samt Regex darüber. Sichtbar war davon nichts, messbar schon. Jetzt liest `App\Support\Changelog` sie einmal je Anfrage; das zweite, gleichlautende Parsing im `ChangelogController` ist mitgegangen.
   - Absichtlich kein Cache-Eintrag: Ein gecachter Wert überlebte das Bearbeiten des Changelogs, und die angezeigte Version wäre danach still falsch — bis jemand den Cache leert.
 - **Zwei Blätter mit frisch getauschter Hülle hatte niemand auf „rendert überhaupt" geprüft.** Die Einladung hatte gar keinen Test, von der zweiten Stufe war nur der Fall abgedeckt, in dem sie zur Anmeldung zurückschickt. Beide sind jetzt drin — dazu eine Wache, die jede Gast-Seite ohne `x-anmeldeblatt` rot werden lässt. Dass die Hüllen auseinanderlaufen, ist ab jetzt ein Testfehler und keine Entdeckung in drei Monaten.
