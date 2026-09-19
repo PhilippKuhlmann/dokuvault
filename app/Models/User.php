@@ -38,6 +38,7 @@ class User extends Authenticatable
         'two_factor_required' => 'boolean',
         'last_login_at' => 'datetime',
         'invited_at' => 'datetime',
+        'invitation_accepted_at' => 'datetime',
     ];
 
     /**
@@ -112,6 +113,19 @@ class User extends Authenticatable
     public function einladungOffen(): bool
     {
         return $this->invited_at !== null;
+    }
+
+    /**
+     * Der Eingeladene hat sein Kennwort gesetzt - die Einladung ist
+     * abgeschlossen und ihr Link traegt nicht mehr.
+     *
+     * Nicht dasselbe wie "keine offene Einladung": Wer nie eingeladen wurde,
+     * hat hier ebenfalls nichts stehen. Genau diese beiden Faelle sahen in der
+     * Benutzerliste frueher gleich aus.
+     */
+    public function einladungEingeloest(): bool
+    {
+        return $this->invitation_accepted_at !== null;
     }
 
     /**

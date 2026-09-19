@@ -280,6 +280,74 @@ test('nach dem Einlösen ist sie nicht mehr offen', function () {
     expect($neu->fresh()->einladungOffen())->toBeFalse();
 });
 
+test('das Einlösen hält fest, wann es war', function () {
+    Notification::fake();
+    alsBenutzerverwaltung();
+
+    $this->post(route('admin.user.store'), einladungsdaten());
+    $neu = User::where('username', 'neue.kollegin')->first();
+    $token = Password::broker('einladung')->createToken($neu);
+
+    $this->post('/logout');
+    $this->post(route('einladung.speichern'), [
+        'token' => $token,
+        'username' => $neu->username,
+        'password' => 'Selbst-Gewaehlt-2026',
+        'password_confirmation' => 'Selbst-Gewaehlt-2026',
+    ]);
+
+    $neu = $neu->fresh();
+
+    // Ohne eigenen Zeitpunkt saehe dieser Zugang ab jetzt genauso aus wie
+    // einer, der nie eingeladen wurde: invited_at ist in beiden Faellen leer.
+    expect($neu->einladungEingeloest())->toBeTrue()
+        ->and($neu->invitation_accepted_at->isToday())->toBeTrue()
+        ->and($neu->einladungOffen())->toBeFalse();
+});
+
+test('der Einladungslink trägt nur einmal', function () {
+    Notification::fake();
+    alsBenutzerverwaltung();
+
+    $this->post(route('admin.user.store'), einladungsdaten());
+    $neu = User::where('username', 'neue.kollegin')->first();
+    $token = Password::broker('einladung')->createToken($neu);
+
+    $this->post('/logout');
+
+    $einloesen = fn (string $kennwort) => $this->post(route('einladung.speichern'), [
+        'token' => $token,
+        'username' => $neu->username,
+        'password' => $kennwort,
+        'password_confirmation' => $kennwort,
+    ]);
+
+    $einloesen('Selbst-Gewaehlt-2026');
+
+    // Der Broker loescht die Zeile beim Einloesen - genau daran haengt, dass
+    // ein weitergeleiteter Link niemandem mehr ein zweites Kennwort setzt.
+    $einloesen('Von-Jemand-Anderem-2026')->assertSessionHasErrors('username');
+
+    expect(Hash::check('Selbst-Gewaehlt-2026', $neu->fresh()->password))->toBeTrue()
+        ->and(Hash::check('Von-Jemand-Anderem-2026', $neu->fresh()->password))->toBeFalse();
+});
+
+test('die Benutzerliste zeigt eine eingelöste Einladung als Haken mit Datum', function () {
+    $eingeloest = userWithPermissions([]);
+    $eingeloest->forceFill(['invitation_accepted_at' => now()->subDays(3)])->saveQuietly();
+
+    // Nie eingeladen: derselbe leere invited_at, aber eine andere Aussage.
+    userWithPermissions([]);
+
+    $this->actingAs(userWithPermissions(['admin_user']))
+        ->get(route('admin.user.index'))
+        ->assertOk()
+        ->assertSee('aria-label="'.__('eingelöst').'"', false)
+        ->assertSee(Zeit::anzeigen($eingeloest->invitation_accepted_at, 'd.m.Y'))
+        ->assertSee('title="'.__('nie eingeladen').'"', false)
+        ->assertSee('text-green-600', false);
+});
+
 test('nach einer Woche gilt sie als abgelaufen', function () {
     // Die Frist kommt vom Broker "einladung" - hier wird sie gelesen und nicht
     // noch einmal aufgeschrieben.

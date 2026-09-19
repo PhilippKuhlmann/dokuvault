@@ -43,8 +43,13 @@ class InvitationController extends Controller
                     'password' => Hash::make($request->password),
                     'remember_token' => Str::random(60),
                     // Die Einladung ist eingeloest - sie steht ab jetzt nicht
-                    // mehr als offen in der Benutzerliste.
+                    // mehr als offen in der Benutzerliste, sondern als
+                    // abgeschlossen. Den Zeitpunkt haelt eine eigene Spalte
+                    // fest: invited_at zu leeren macht einen eingeloesten
+                    // Zugang sonst ununterscheidbar von einem, der nie eine
+                    // Einladung bekam.
                     'invited_at' => null,
+                    'invitation_accepted_at' => now(),
                 ])->save();
 
                 event(new PasswordReset($nutzer));
