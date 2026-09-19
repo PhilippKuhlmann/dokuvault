@@ -19,12 +19,13 @@
             {{ $hinweis ?? __('Der Eintrag wandert in den Papierkorb und lässt sich von dort wiederherstellen.') }}
         </div>
         <div class="flex">
-            <form method="POST" action="{{ $action }}"
-                onsubmit="return confirm('{{ $frage ?? __('Eintrag in den Papierkorb verschieben?') }}')">
-                @csrf
-                @method('delete')
-                <x-input.button color="red" :label="__('Löschen!')" />
-            </form>
+            <x-loeschdialog :url="$action"
+                :frage="$frage ?? __('Eintrag in den Papierkorb verschieben?')"
+                :hinweis="$hinweis ?? __('Der Eintrag wandert in den Papierkorb und lässt sich von dort wiederherstellen.')">
+                <x-slot:ausloeser>
+                    <x-input.button type="button" color="red" x-on:click="offen = true" :label="__('Löschen!')" />
+                </x-slot:ausloeser>
+            </x-loeschdialog>
         </div>
     </div>
 

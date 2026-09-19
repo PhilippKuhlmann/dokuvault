@@ -199,6 +199,21 @@ class Customer extends Model
     }
 
     /**
+     * Die Agent-Token dieses Kunden.
+     *
+     * Die Beziehung fehlte, obwohl AgentToken laengst zurueckzeigt. Gebraucht
+     * wird sie nicht nur zum Abfragen: Die Agent-Routen laufen in
+     * scopeBindings(), und Laravel sucht aus dem Parameter {agentToken} eine
+     * Relation "agentTokens" am Kunden. Ohne sie endete jedes Widerrufen eines
+     * Tokens in einem 500er - dieselbe Falle wie beim Ansprechpartner
+     * darunter, nur dass hier gar keine Beziehung da war.
+     */
+    public function agentTokens()
+    {
+        return $this->hasMany(AgentToken::class);
+    }
+
+    /**
      * Kind-Bindung fuer Ansprechpartner von Hand aufloesen.
      *
      * Die Routen laufen in scopeBindings(). Laravel bildet aus dem Parameter

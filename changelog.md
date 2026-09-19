@@ -17,6 +17,17 @@
 
 ### Changed
 
+- **Die Rückfrage vor dem Löschen ist ein Blatt der Anwendung, kein `confirm()` des Browsers.** Der native Kasten zeichnet das Betriebssystem, nicht die Anwendung: Er sieht auf jedem Rechner anders aus, trägt oben den Namen der Domain, kennt weder Dunkelmodus noch die Schrift der Anwendung — und beide Knöpfe sehen gleich aus, obwohl einer davon etwas löscht. Jetzt eine Karte im Aussehen der Anwendung, mit rotem Löschen-Knopf und grauem Abbrechen daneben.
+  - Der **Abbrechen**-Knopf bekommt den Fokus, nicht der rote: Wer den Dialog mit der Tastatur wegdrückt, soll dabei nichts löschen. Escape und ein Klick auf die Abdeckung tun dasselbe.
+  - `x-teleport` an den `body`: Die Tabellen stehen in `overflow-x-auto`, ein fixiertes Element darin würde am Rand des Scrollrahmens abgeschnitten — sichtbar als halber Dialog.
+  - Alle drei Stellen laufen über `x-loeschdialog`: die Tabellenzeile, die Löschen-Karte unter den Formularen und das Widerrufen eines Agent-Tokens. Der Satz beim Token lief dabei nie durch `__()` und stand fest auf Deutsch.
+
+### Fixed
+
+- **Ein Agent-Token ließ sich überhaupt nicht widerrufen.** Aufgefallen beim Ersetzen der Rückfrage — vorher hat offenbar nie jemand den Knopf bis zum Ende gedrückt: Die Agent-Routen laufen in `scopeBindings()`, Laravel sucht aus dem Parameter `{agentToken}` eine Relation `agentTokens` am Kunden, und die gab es nicht. Jeder Klick endete in einem 500er, der Token blieb stehen. Dieselbe Falle wie beim Ansprechpartner, zu der im Modell schon ein Kommentar steht — nur dass hier gar keine Beziehung da war. Zwei Tests gehen jetzt über die Route, weil genau die Auflösung der Kind-Bindung kaputt war und die nur unterwegs passiert.
+
+### Changed
+
 - **Die zweite Stufe steht in der Benutzerliste als Zeichen, nicht als Wort.** „eingerichtet" und „verlangt, offen" waren die längsten Texte der Tabelle und machten die Spalte breiter als ihr Inhalt wert ist; in einer Liste mit acht Spalten erfasst man ein Zeichen ohnehin schneller. Grüner Haken, bernsteinfarbene Uhr, grauer Strich — dieselbe Sprache wie beim EOL-Abzeichen, wo Bernstein ebenfalls „steht noch an" heißt.
   - **Drei Zeichen, nicht zwei.** Bei „verlangt, offen" ist der Zugang nicht geschützt, aber jemand hat entschieden, dass er es sein soll — das ist etwas anderes als „niemand verlangt es". Die vorhandene `x-statusicon` kennt nur an, aus und unbekannt, deshalb eine eigene `x-zweitestufe` und ein eigener Tabellenschlüssel.
   - Das Wort steht im `title` und im `aria-label`: Die Bedeutung darf nicht allein an Form und Farbe hängen. Ein Test hält fest, dass die drei Zustände unterscheidbar bleiben — er prüft die Attribute, nicht die bloßen Wörter, sonst würde er auch von Text anderswo auf der Seite grün.

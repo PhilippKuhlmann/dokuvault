@@ -171,14 +171,14 @@
                  aktuelle Adresse statt auf eine Loeschen-Route. --}}
             @if ($delUrl && $canDel)
                 @can($canDel)
-                    <form method="POST" action="{{ $delUrl }}"
-                        onsubmit="return confirm('{{ __('Objekt wirklich unwiderruflich löschen?') }}')">
-                        @csrf
-                        @method('delete')
-                        <button type="submit" title="{{ __('Löschen') }}" class="{{ $muellKlassen }}">
-                            <x-svg.trash class="h-5 w-5" />
-                        </button>
-                    </form>
+                    <x-loeschdialog :url="$delUrl">
+                        <x-slot:ausloeser>
+                            <button type="button" x-on:click="offen = true" title="{{ __('Löschen') }}"
+                                class="{{ $muellKlassen }}">
+                                <x-svg.trash class="h-5 w-5" />
+                            </button>
+                        </x-slot:ausloeser>
+                    </x-loeschdialog>
                 @endcan
             @endif
         </div>

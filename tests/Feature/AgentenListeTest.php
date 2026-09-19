@@ -122,3 +122,45 @@ test('das erzeugte Token liefert zu jedem Agenten ein fertiges Script', function
     // Der Token wurde tatsaechlich angelegt und gehoert diesem Kunden.
     expect(AgentToken::where('customer_id', $customer->id)->count())->toBe(1);
 });
+
+/*
+ * Aufgefallen beim Ersetzen der confirm()-Rueckfrage: Der Knopf "Widerrufen"
+ * hat noch nie einen Token widerrufen. Die Agent-Routen laufen in
+ * scopeBindings(); Laravel sucht aus {agentToken} eine Relation "agentTokens"
+ * am Kunden, und die gab es nicht - jeder Klick endete in einem 500er.
+ *
+ * Der Test geht ueber die Route und nicht ueber das Modell: Genau die
+ * Aufloesung der Kind-Bindung war ja kaputt, und die passiert nur unterwegs.
+ */
+test('ein Token laesst sich widerrufen', function () {
+    $this->actingAs(userWithPermissions(['see_hidden']));
+
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+
+    $this->post(route('agent.store', $customer), ['name' => 'Wird gleich widerrufen', 'site_id' => $site->id]);
+
+    $token = AgentToken::where('customer_id', $customer->id)->firstOrFail();
+
+    $this->delete(route('agent.destroy', [$customer, $token]))
+        ->assertRedirect(route('agent.index', $customer));
+
+    expect(AgentToken::find($token->id))->toBeNull();
+});
+
+test('ein fremder Token laesst sich nicht ueber den eigenen Kunden widerrufen', function () {
+    $this->actingAs(userWithPermissions(['see_hidden']));
+
+    $eigener = Customer::factory()->create();
+    $fremder = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $fremder->id]);
+
+    $this->post(route('agent.store', $fremder), ['name' => 'Fremd', 'site_id' => $site->id]);
+    $token = AgentToken::where('customer_id', $fremder->id)->firstOrFail();
+
+    // scopeBindings sorgt dafuer, dass der Token am falschen Kunden gar nicht
+    // erst gefunden wird - die Pruefung im Controller ist der zweite Riegel.
+    $this->delete(route('agent.destroy', [$eigener, $token]))->assertNotFound();
+
+    expect(AgentToken::find($token->id))->not->toBeNull();
+});

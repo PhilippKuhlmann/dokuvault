@@ -1011,5 +1011,7 @@
     "Geschützter Bereich. Bitte bestätigen Sie zuerst Ihr Kennwort.": "Protected area. Please confirm your password first.",
     "nicht eingerichtet": "not set up",
     "eingelöst": "redeemed",
-    "nie eingeladen": "never invited"
+    "nie eingeladen": "never invited",
+    "Token wirklich widerrufen?": "Really revoke this token?",
+    "Geräte mit diesem Token können sich dann nicht mehr dokumentieren.": "Devices using this token can no longer document themselves."
 }

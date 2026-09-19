@@ -204,12 +204,17 @@
                             Zuletzt genutzt: {{ Zeit::anzeigen($token->last_used_at, 'd.m.Y H:i', __('noch nie')) }}
                         </div>
                     </div>
-                    <form method="POST" action="{{ route('agent.destroy', [$customer, $token]) }}"
-                        onsubmit="return confirm('Token wirklich widerrufen? Geräte mit diesem Token können sich dann nicht mehr dokumentieren.')">
-                        @csrf
-                        @method('delete')
-                        <x-input.button color="red" size="sm" :label="__('Widerrufen')" />
-                    </form>
+                    {{-- Der Satz lief bisher nicht durch __() und stand fest auf
+                         Deutsch - aufgefallen beim Ersetzen des confirm(). --}}
+                    <x-loeschdialog :url="route('agent.destroy', [$customer, $token])"
+                        :frage="__('Token wirklich widerrufen?')"
+                        :hinweis="__('Geräte mit diesem Token können sich dann nicht mehr dokumentieren.')"
+                        :bestaetigen="__('Widerrufen')">
+                        <x-slot:ausloeser>
+                            <x-input.button type="button" color="red" size="sm"
+                                x-on:click="offen = true" :label="__('Widerrufen')" />
+                        </x-slot:ausloeser>
+                    </x-loeschdialog>
                 </div>
             @empty
                 <div class="text-sm text-gray-400 dark:text-gray-500">{{ __('Noch keine Token erzeugt.') }}</div>
