@@ -32,3 +32,6 @@ Homestead.json
 # Lokale Claude-Code-Einstellungen (Startkonfiguration der Vorschau,
 # Berechtigungen). Rechnerabhaengig - gehoert nicht ins Projekt.
 /.claude
+
+# Ausgabe von /brag: Plan, Komposition, gerendertes Video
+/brag-output*
