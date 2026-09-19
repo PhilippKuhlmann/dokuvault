@@ -90,6 +90,11 @@
         @elseif ($key == 'status')
             {{-- true/false/null als Haken, Kreuz oder Strich. --}}
             <td scope="row" class="py-2.5 px-4"><x-statusicon :value="$value" /></td>
+        @elseif ($key == 'zweitestufe')
+            {{-- Eigener Schluessel und nicht 'status': Dort gibt es nur an, aus
+                 und unbekannt - "verlangt, aber noch nicht eingerichtet" ist
+                 keins davon. --}}
+            <td scope="row" class="py-2.5 px-4"><x-zweitestufe :zustand="$value" /></td>
         @elseif ($key == 'rackface')
             {{-- $value ist der Katalogeintrag selbst: Ob eine Zeichnung oder ein
                  hochgeladenes Foto erscheint, entscheidet der Eintrag.

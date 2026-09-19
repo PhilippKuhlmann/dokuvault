@@ -21,9 +21,11 @@
 
         <x-table.body>
 
-            {{-- Drei Zustaende in der Spalte, nicht zwei: "verlangt" und
-                 "eingerichtet" sind verschiedene Dinge, und genau dazwischen
-                 sitzt der Benutzer, der noch nichts getan hat. --}}
+            {{-- Die zweite Stufe steht als Zeichen in der Spalte, nicht als
+                 Wort - siehe x-zweitestufe. Drei Zustaende, nicht zwei:
+                 "verlangt" und "eingerichtet" sind verschiedene Dinge, und
+                 genau dazwischen sitzt der Benutzer, der noch nichts getan
+                 hat. --}}
             @foreach ($users as $user)
 
                 <x-table.datarow
@@ -32,9 +34,9 @@
                         $user->username,
                         $user->role?->name ?? '—',
                         $user->customer ? $user->customer->name : '',
-                        $user->hatZweiteStufe()
-                            ? __('eingerichtet')
-                            : ($user->two_factor_required ? __('verlangt, offen') : '—'),
+                        'zweitestufe' => $user->hatZweiteStufe()
+                            ? 'eingerichtet'
+                            : ($user->two_factor_required ? 'offen' : null),
                         $user->einladungAbgelaufen()
                             ? __('abgelaufen').' '.Zeit::anzeigen($user->invited_at, 'd.m.Y')
                             : ($user->einladungOffen()

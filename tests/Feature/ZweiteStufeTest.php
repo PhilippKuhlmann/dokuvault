@@ -395,3 +395,37 @@ test('die Warnung überlebt eine Weiterleitung und wird genau einmal gezeigt', f
     // Und danach ist sie weg.
     $this->get(route('profile.edit'))->assertDontSee('Wiederherstellungscode verbraucht');
 });
+
+/*
+ * Die Spalte zeigt Zeichen statt Woerter. Der Fall, der dabei still kaputtgehen
+ * kann: "verlangt, offen" faellt mit "nicht eingerichtet" zusammen, weil beides
+ * "nicht an" ist - und dann sieht ein Administrator nicht mehr, bei wem er
+ * etwas angeordnet hat, das noch aussteht. Ein Zeichen kann das nicht selbst
+ * erzaehlen, deshalb wird hier geprueft, dass es drei verschiedene bleiben.
+ */
+test('die Benutzerliste zeigt die zweite Stufe als drei unterscheidbare Zeichen', function () {
+    [$eingerichtet] = nutzerMitZweiterStufe();
+
+    $offen = userWithPermissions([]);
+    $offen->forceFill(['two_factor_required' => true])->save();
+
+    userWithPermissions([]); // weder eingerichtet noch verlangt
+
+    $antwort = $this->actingAs(userWithPermissions(['admin_user']))
+        ->get(route('admin.user.index'));
+
+    $antwort->assertOk()
+        // Am Attribut und nicht am blossen Wort: "eingerichtet" steht auch
+        // anderswo auf der Seite, und ein Test, der davon gruen wird, prueft
+        // nichts. Die Bedeutung haengt damit zugleich nicht an Form und Farbe
+        // allein - Vorlesewerkzeuge lesen genau dieses Attribut.
+        ->assertSee('aria-label="'.__('eingerichtet').'"', false)
+        ->assertSee('aria-label="'.__('verlangt, offen').'"', false)
+        ->assertSee('title="'.__('nicht eingerichtet').'"', false)
+        // ... und die drei Zeichen sind wirklich verschieden gefaerbt.
+        ->assertSee('text-green-600', false)
+        ->assertSee('text-amber-600', false);
+
+    expect($eingerichtet->hatZweiteStufe())->toBeTrue();
+    expect($offen->fresh()->hatZweiteStufe())->toBeFalse();
+});
