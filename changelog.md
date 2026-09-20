@@ -4,6 +4,11 @@
 
 ### Changed
 
+- **Die globale Suche ebenso.** Dasselbe Blatt wie die Kundensuche daneben, die Treffer nach Objektart gruppiert: Die Art ist die Abschnittsüberschrift, wie eine Baugruppe auf einer Zeichnung. Rechts an der Zeile steht der Kunde — dieselbe IP gibt es in jedem Netz einmal, und ohne ihn weiß man nicht, wessen Gerät man gerade anklickt.
+  - **Je Objektart wurde bei zwanzig Treffern stillschweigend abgeschnitten.** Wer den einundzwanzigsten Server suchte, hielt ihn für nicht vorhanden. Die Abfrage holt jetzt einen mehr als sie zeigt — dasselbe Vorgehen wie in der Kundensuche —, und die Gruppe sagt „weitere vorhanden". Zwei Tests halten das fest: einer bei einundzwanzig Treffern, einer bei genau zwanzig, damit der Hinweis nicht auch dann erscheint.
+  - Unter zwei Zeichen wird nicht gesucht. Das steht jetzt da: Vorher sah ein einzelner Buchstabe ohne Liste aus wie „nichts gefunden".
+  - Im Schriftkopf steht rechts die Trefferzahl, wie bei der Kundensuche die Stückzahl.
+
 - **Die Kundensuche trägt jetzt dieselbe Sprache wie die Anmeldeseite.** Millimeterpapier als Untergrund, Schriftkopf mit Versalien auf Monospace, scharfe Ecken, die Treffer als technische Liste. Sie stand bis eben auf der alten Hülle — Verlaufs-Badge, `rounded-2xl`, eigener Farbverlauf. Das ist die erste Seite nach der Anmeldung; sprang sie dort ins alte Aussehen zurück, war der Umbau der Tür davor vergeblich.
   - **Bewusst ohne Netzplan dahinter.** Auf der Anmeldung sagt er etwas — das steckt hinter der Tür. Hier wäre er dieselbe Zeichnung ein zweites Mal, und über der Karte steht ohnehin schon die Navigationsleiste.
   - Im Schriftkopf steht rechts, wie viele Kunden es überhaupt gibt — wie die Stückzahl auf einer Zeichnung. Mit derselben Einschränkung wie die Suche: Ein auf einen Kunden festgelegter Nutzer zählt nur seinen eigenen, sonst verriete schon die Zahl, wie viele andere es gibt.

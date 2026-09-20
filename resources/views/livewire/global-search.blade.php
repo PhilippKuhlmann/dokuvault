@@ -1,70 +1,133 @@
-<div class="min-h-[calc(100vh-4rem)] flex flex-col items-center px-4 py-10 bg-linear-to-br from-chathams-blue-50 via-cerulean-50 to-hawkes-blue-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+{{--
+    Die globale Suche im Aussehen der Anmeldeseite, wie die Kundensuche
+    daneben: Millimeterpapier, Schriftkopf, Versalien auf Monospace, scharfe
+    Ecken. Auch ohne Netzplan - der sagt auf der Anmeldung etwas, hier waere er
+    dieselbe Zeichnung ein zweites Mal.
 
-    <div class="w-full sm:max-w-2xl">
+    Die Treffer stehen nach Objektart gruppiert. Die Art ist die
+    Abschnittsueberschrift, wie eine Baugruppe auf einer Zeichnung; rechts an
+    der Zeile steht der Kunde, denn dieselbe IP gibt es in jedem Netz einmal.
+--}}
+@php
+    $gezeigt = $groups->sum(fn ($gruppe) => $gruppe['results']->count());
+    $gekuerzt = $groups->contains(fn ($gruppe) => ($gruppe['weitere'] ?? 0) > 0);
+    $gesucht = strlen((string) $search) >= 2;
+@endphp
 
-        <div class="flex flex-col items-center mb-8">
-            <div class="flex items-center justify-center w-16 h-16 mb-4 rounded-2xl bg-linear-to-br from-cerulean-500 to-chathams-blue-800 shadow-lg">
-                <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.35-5.4a6.75 6.75 0 11-13.5 0 6.75 6.75 0 0113.5 0z" />
-                </svg>
-            </div>
-            <span class="text-3xl text-chathams-blue-800 font-CoconPro dark:text-gray-100">
-                {{ __('Globale Suche') }}
-            </span>
-            <span class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                {{ __('Name, IP, Seriennummer oder MAC über alle Geräte') }}
-            </span>
+<div class="relative min-h-[calc(100vh-4rem)] overflow-hidden px-4 py-12
+            bg-linear-to-b from-chathams-blue-50 to-chathams-blue-100
+            dark:from-gray-900 dark:to-cerulean-950">
+
+    <div class="netzplan-raster pointer-events-none absolute inset-0 opacity-60
+                text-chathams-blue-100 dark:text-cerulean-950"></div>
+
+    <div class="relative z-10 mx-auto w-full max-w-2xl rounded-lg border border-chathams-blue-200
+                bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
+
+        <div class="flex items-center justify-between gap-4 border-b border-chathams-blue-100 px-6 py-3
+                    font-mono text-[11px] uppercase tracking-[0.15em] text-gray-500
+                    dark:border-gray-700 dark:text-gray-400">
+            <span>{{ __('Globale Suche') }}</span>
+            @if ($gesucht)
+                {{-- Zwei Zeichenketten statt trans_choice: siehe
+                     TwoFactorChallengeController. --}}
+                <span>{{ $gezeigt === 1 ? __('1 Treffer') : __(':anzahl Treffer', ['anzahl' => $gezeigt]) }}</span>
+            @endif
         </div>
 
-        <div class="w-full px-4 py-4 bg-white dark:bg-gray-800 shadow-xl rounded-2xl border border-gray-100 dark:border-gray-700">
-            <div class="relative">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 pointer-events-none">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.35-5.4a6.75 6.75 0 11-13.5 0 6.75 6.75 0 0113.5 0z" />
+        <div class="px-6 py-6">
+            <x-input.feldname for="globalesuche" :value="__('Suchbegriff')" />
+
+            <div class="relative mt-1.5">
+                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"
+                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M21 21l-4.35-4.35m1.35-5.4a6.75 6.75 0 11-13.5 0 6.75 6.75 0 0113.5 0z" />
                     </svg>
                 </span>
-                <input wire:model.live.debounce.300ms="search" type="search" name="search" placeholder="{{ __('z. B. 192.168.1.50, PC-07, Seriennummer …') }}"
-                    class="block w-full pl-10 pr-4 py-2.5 rounded-lg border-gray-300 shadow-xs text-gray-900 placeholder-gray-400
-                           focus:border-cerulean-500 focus:ring-cerulean-500
-                           dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+
+                <x-input.text id="globalesuche" wire:model.live.debounce.300ms="search" type="search" name="search"
+                    class="block w-full pl-10" placeholder="{{ __('z. B. 192.168.1.50, PC-07, Seriennummer …') }}"
                     autofocus />
             </div>
+
+            <p class="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">
+                {{ __('Name, IP, Seriennummer oder MAC über alle Geräte') }}
+            </p>
         </div>
 
-        @if (strlen((string) $search) >= 2)
-            <div class="w-full px-4 py-4 mt-4 bg-white dark:bg-gray-800 shadow-xl rounded-2xl border border-gray-100 dark:border-gray-700">
-                @forelse ($groups as $group)
-                    <div class="mb-4 last:mb-0">
-                        <div class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
-                            {{ $group['label'] }}
+        <div class="border-t border-chathams-blue-100 dark:border-gray-700">
+
+            @if (! $gesucht)
+                {{-- Unter zwei Zeichen wird nicht gesucht. Das gehoert
+                     hingeschrieben: Sonst sieht ein einzelner Buchstabe ohne
+                     Liste aus wie "nichts gefunden". --}}
+                <p class="px-6 py-10 text-center text-sm text-gray-400 dark:text-gray-500">
+                    {{ __('Mindestens zwei Zeichen eintippen.') }}
+                </p>
+            @else
+                @forelse ($groups as $gruppe)
+                    <div class="border-b border-chathams-blue-100 last:border-0 dark:border-gray-700">
+                        <div class="flex items-center justify-between gap-4 bg-chathams-blue-50/60 px-6 py-2
+                                    font-mono text-[11px] uppercase tracking-[0.12em] text-gray-500
+                                    dark:bg-gray-700/40 dark:text-gray-400">
+                            <span>{{ $gruppe['label'] }}</span>
+                            @if (($gruppe['weitere'] ?? 0) > 0)
+                                <span>{{ __('weitere vorhanden') }}</span>
+                            @endif
                         </div>
-                        <div class="flex flex-col gap-1">
-                            @foreach ($group['results'] as $result)
-                                <a href="{{ route($group['slug'] . '.index', $result->customer) }}"
-                                    class="flex items-center justify-between py-2 px-3 rounded-lg text-gray-800 dark:text-gray-100
-                                           hover:bg-cerulean-50 dark:hover:bg-gray-700
-                                           focus:outline-hidden focus:ring-2 focus:ring-cerulean-500 transition-colors">
-                                    <span>
-                                        {{-- Dieselbe Quelle wie Protokoll und Papierkorb: config('custom.name_fields'),
-                                             ueberschreibbar je Model. Vorher stand hier eine eigene Kette
-                                             (name, ssid, wan_ip) - ein Telefon hat keines davon und hiess
-                                             deshalb "#14", ausgerechnet in der Suche nach seiner MAC. --}}
-                                        {{ $result->protokollName() ?? '#'.$result->id }}
-                                        <span class="text-sm text-gray-400">
-                                            {{ $result->ip ?? $result->ip1 ?? '' }}
+
+                        <ul class="divide-y divide-chathams-blue-100 dark:divide-gray-700">
+                            @foreach ($gruppe['results'] as $treffer)
+                                <li>
+                                    <a href="{{ route($gruppe['slug'] . '.index', $treffer->customer) }}"
+                                        class="flex items-center justify-between gap-4 px-6 py-3 transition-colors
+                                               hover:bg-chathams-blue-50 focus:outline-hidden focus:ring-2
+                                               focus:ring-cerulean-500 dark:hover:bg-gray-700/50">
+                                        <span class="min-w-0">
+                                            {{-- Dieselbe Quelle wie Protokoll und Papierkorb:
+                                                 config('custom.name_fields'), ueberschreibbar je Model.
+                                                 Vorher stand hier eine eigene Kette (name, ssid,
+                                                 wan_ip) - ein Telefon hat keines davon und hiess
+                                                 deshalb "#14", ausgerechnet in der Suche nach
+                                                 seiner MAC. --}}
+                                            <span class="block truncate uppercase tracking-[0.06em] text-gray-900 dark:text-gray-100">
+                                                {{ $treffer->protokollName() ?? '#'.$treffer->id }}
+                                            </span>
+                                            @if ($adresse = $treffer->ip ?? $treffer->ip1 ?? null)
+                                                <span class="block truncate font-mono text-xs text-gray-400 dark:text-gray-500">
+                                                    {{ $adresse }}
+                                                </span>
+                                            @endif
                                         </span>
-                                    </span>
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">{{ $result->customer?->name }}</span>
-                                </a>
+
+                                        {{-- Der Kunde gehoert an die Zeile: Dieselbe IP gibt es in
+                                             jedem Netz einmal, und ohne ihn weiss man nicht, wessen
+                                             Geraet man gerade anklickt. --}}
+                                        <span class="shrink-0 truncate font-mono text-xs uppercase tracking-[0.08em]
+                                                     text-gray-400 dark:text-gray-500">
+                                            {{ $treffer->customer?->name }}
+                                        </span>
+                                    </a>
+                                </li>
                             @endforeach
-                        </div>
+                        </ul>
                     </div>
                 @empty
-                    <div class="flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 py-10">
-                        <span>{{ __('Keine Treffer') }}</span>
-                    </div>
+                    <p class="px-6 py-10 text-center text-sm text-gray-400 dark:text-gray-500">
+                        {{ __('Kein Treffer.') }}
+                    </p>
                 @endforelse
-            </div>
-        @endif
+
+                @if ($gekuerzt)
+                    <p class="border-t border-chathams-blue-100 px-6 py-3 font-mono text-[11px] uppercase
+                              tracking-[0.12em] text-gray-400 dark:border-gray-700 dark:text-gray-500">
+                        {{ __('Je Objektart höchstens zwanzig gezeigt — Suchbegriff verfeinern.') }}
+                    </p>
+                @endif
+            @endif
+
+        </div>
     </div>
 </div>

@@ -93,3 +93,53 @@ test('der Suchbegriff kommt weiterhin aus der URL', function () {
         ->assertSet('search', 'PC-Suchtest')
         ->assertSee('PC-Suchtest');
 });
+
+/*
+ * Je Objektart werden hoechstens zwanzig Treffer gezeigt. Vorher wurde dort
+ * stillschweigend abgeschnitten: Wer den einundzwanzigsten Server suchte,
+ * hielt ihn fuer nicht vorhanden. Der Hinweis ist die einzige Stelle, an der
+ * das sichtbar wird - faellt er weg, faellt es niemandem auf.
+ */
+test('mehr als zwanzig Treffer einer Art sagen, dass sie gekürzt sind', function () {
+    $this->actingAs(userWithPermissions(['computer_viewAny']));
+
+    $customer = Customer::factory()->create(['name' => 'Vielkunde']);
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $os = OperatingSystem::factory()->create(['name' => 'Windows 11']);
+
+    foreach (range(1, 21) as $nummer) {
+        Computer::create([
+            'customer_id' => $customer->id,
+            'site_id' => $site->id,
+            'name' => 'PC-VIEL-'.str_pad($nummer, 2, '0', STR_PAD_LEFT),
+            'operating_system_id' => $os->id,
+        ]);
+    }
+
+    Livewire::test(GlobalSearch::class)
+        ->set('search', 'PC-VIEL')
+        ->assertSee(__('weitere vorhanden'))
+        ->assertSee(__('Je Objektart höchstens zwanzig gezeigt — Suchbegriff verfeinern.'));
+});
+
+test('genau zwanzig Treffer behaupten nicht, es gäbe mehr', function () {
+    $this->actingAs(userWithPermissions(['computer_viewAny']));
+
+    $customer = Customer::factory()->create(['name' => 'Genaukunde']);
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $os = OperatingSystem::factory()->create(['name' => 'Windows 11']);
+
+    foreach (range(1, 20) as $nummer) {
+        Computer::create([
+            'customer_id' => $customer->id,
+            'site_id' => $site->id,
+            'name' => 'PC-GENAU-'.str_pad($nummer, 2, '0', STR_PAD_LEFT),
+            'operating_system_id' => $os->id,
+        ]);
+    }
+
+    Livewire::test(GlobalSearch::class)
+        ->set('search', 'PC-GENAU')
+        ->assertSee('PC-GENAU-20')
+        ->assertDontSee(__('weitere vorhanden'));
+});

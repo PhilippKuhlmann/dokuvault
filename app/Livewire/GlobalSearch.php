@@ -83,6 +83,15 @@ class GlobalSearch extends Component
     private const MASSENHAFT = ['aduser', 'computer', 'vm', 'phone', 'camera'];
 
     /**
+     * Wie viele Treffer je Objektart hoechstens gezeigt werden.
+     *
+     * Die Suche laeuft ueber knapp vierzig Arten; ohne Deckel waere eine
+     * Anfrage nach "a" eine Liste des ganzen Bestands. Wer etwas sucht, tippt
+     * ohnehin weiter - der Hinweis unter der Gruppe sagt, dass es mehr gibt.
+     */
+    private const JE_ART = 20;
+
+    /**
      * Die Treffer, nach Typ gruppiert.
      *
      * Als computed property statt inline in render(): So laesst sich die Suche
@@ -151,13 +160,20 @@ class GlobalSearch extends Component
                     }
                 });
 
-                $results = $query->limit(20)->get();
+                // Einen mehr holen als angezeigt wird: Damit steht fest, ob
+                // es weitere gibt, ohne dafuer ein zweites Mal zu zaehlen -
+                // dasselbe Vorgehen wie in der Kundensuche. Vorher wurde bei
+                // zwanzig stillschweigend abgeschnitten, und wer den
+                // einundzwanzigsten Server suchte, hielt ihn fuer nicht
+                // vorhanden.
+                $treffer = $query->limit(self::JE_ART + 1)->get();
 
-                if ($results->isNotEmpty()) {
+                if ($treffer->isNotEmpty()) {
                     $groups->push([
                         'slug' => $routeSlug,
                         'label' => $label,
-                        'results' => $results,
+                        'results' => $treffer->take(self::JE_ART),
+                        'weitere' => max(0, $treffer->count() - self::JE_ART),
                     ]);
                 }
             }

@@ -468,7 +468,6 @@
     "Keine Datei passt zu den Filtern.": "No file matches the filters.",
     "Keine Daten.": "No data.",
     "Keine Standorte": "No sites",
-    "Keine Treffer": "No matches",
     "Keine VLANs angelegt.": "No VLANs created.",
     "Keine ablaufenden Garantien 🎉": "No expiring warranties 🎉",
     "Keine ablaufenden Lizenzen 🎉": "No expiring licences 🎉",
@@ -1022,5 +1021,11 @@
     "1 Kunde": "1 customer",
     ":anzahl Kunden": ":anzahl customers",
     "Namen eintippen — die Liste folgt beim Schreiben.": "Start typing a name — the list follows as you go.",
-    "Kein Kunde mit diesem Namen.": "No customer by that name."
+    "Kein Kunde mit diesem Namen.": "No customer by that name.",
+    "1 Treffer": "1 result",
+    ":anzahl Treffer": ":anzahl results",
+    "Mindestens zwei Zeichen eintippen.": "Type at least two characters.",
+    "Kein Treffer.": "No results.",
+    "weitere vorhanden": "more available",
+    "Je Objektart höchstens zwanzig gezeigt — Suchbegriff verfeinern.": "At most twenty shown per object type — refine the search term."
 }
