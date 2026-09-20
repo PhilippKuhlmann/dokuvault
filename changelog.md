@@ -29,6 +29,7 @@
   - Im Schriftkopf steht rechts, wie viele Kunden es überhaupt gibt — wie die Stückzahl auf einer Zeichnung. Mit derselben Einschränkung wie die Suche: Ein auf einen Kunden festgelegter Nutzer zählt nur seinen eigenen, sonst verriete schon die Zahl, wie viele andere es gibt.
   - **Vor der ersten Eingabe steht dort nicht mehr „Keine Suchergebnisse".** Es wurde ja noch nichts gesucht. Jetzt sagt die Karte, was zu tun ist; „kein Kunde mit diesem Namen" kommt erst, wenn wirklich nichts passt.
   - Der Ort steht klein und gedeckt unter dem Namen statt mit Gedankenstrich dahinter: Er unterscheidet zwei gleich heißende Kunden, ist aber nicht das, wonach jemand sucht.
+  - Alle drei Suchen — Kunden, global, Rustdesk — stehen auf derselben Breite. Die Kundensuche war schmaler; beim Wechseln sprang die Karte, obwohl es dasselbe Blatt sein soll.
 
 ### Added
 

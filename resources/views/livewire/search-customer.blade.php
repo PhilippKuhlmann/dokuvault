@@ -17,7 +17,7 @@
     <div class="netzplan-raster pointer-events-none absolute inset-0 opacity-60
                 text-chathams-blue-100 dark:text-cerulean-950"></div>
 
-    <div class="relative z-10 mx-auto w-full max-w-lg rounded-lg border border-chathams-blue-200
+    <div class="relative z-10 mx-auto w-full max-w-2xl rounded-lg border border-chathams-blue-200
                 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
 
         {{-- Schriftkopf wie auf einer technischen Zeichnung: links, was das
