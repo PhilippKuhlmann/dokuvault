@@ -8,7 +8,7 @@
     </div>
 
     @if ($finished)
-        <div class="p-8 rounded-xl border border-gray-200 bg-white shadow-xs dark:bg-gray-800 dark:border-gray-700 mx-auto max-w-xl text-center">
+        <x-panel polster="weit" class="mx-auto max-w-xl text-center">
             <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-2">{{ __('Durchlauf abgeschlossen') }}</div>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
                 {{ count($run->completed_steps ?? []) }} {{ Str::plural('Bereich', count($run->completed_steps ?? [])) }} erfasst,
@@ -21,7 +21,7 @@
                 </a>
                 <x-input.button type="button" wire:click="restart" :label="__('Neuen Durchlauf starten')" color="gray" />
             </div>
-        </div>
+        </x-panel>
     @elseif ($step)
         {{-- Fortschritt: schlanke segmentierte Leiste statt einzelner Pillen je Schritt
              (Muster aus der IPAM-Auslastungsleiste) - ein Segment je Schritt, Position in Worten. --}}
@@ -63,7 +63,7 @@
             </div>
         </div>
 
-        <div class="p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-xs dark:bg-gray-800 dark:border-gray-700 mx-auto max-w-2xl">
+        <x-panel class="sm:p-6 mx-auto max-w-2xl">
             <div class="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">{{ __($step['group']) }}</div>
             <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __($step['label']) }}</div>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">{{ __($step['question']) }}</p>
@@ -209,7 +209,7 @@
                     <x-input.button type="button" wire:click="nextStep" wire:loading.attr="disabled" wire:target="nextStep" :label="__('Weiter')" color="gray" />
                 </div>
             </div>
-        </div>
+        </x-panel>
     @endif
 
 </div>

@@ -16,7 +16,7 @@
                 <x-input.feldname for="password" :value="__('Kennwort')" />
                 <x-input.text id="password" feld="password" name="password" type="password" required autofocus
                     autocomplete="current-password" class="mt-1.5 block w-full" />
-                <x-input.error :messages="$errors->get('password')" class="mt-2" />
+                <x-input.fehler :messages="$errors->get('password')" class="mt-2" />
             </div>
 
             <x-input.button class="mt-7" size="blatt" :label="__('Bestätigen')" />

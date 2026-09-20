@@ -12,17 +12,16 @@
              Meldung - etwa die Auswahl - blieb sonst unsichtbar, und die Seite
              sah aus, als waere nichts passiert. --}}
         @if ($errors->any())
-            <div class="max-w-3xl rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/25 dark:text-red-300">
+            <x-panel class="max-w-3xl rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/25 dark:text-red-300">
                 <ul class="list-disc space-y-1 pl-5">
                     @foreach ($errors->all() as $fehler)
                         <li>{{ $fehler }}</li>
                     @endforeach
                 </ul>
-            </div>
+            </x-panel>
         @endif
 
-        <form method="POST" action="{{ route('admin.mail.update') }}"
-            class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+        <form method="POST" action="{{ route('admin.mail.update') }}" class="max-w-3xl"700">
             @csrf
             @method('PATCH')
 
@@ -36,7 +35,7 @@
                     <x-input.label for="mail_host" :value="__('Server')" />
                     <x-input.field id="mail_host" name="mail_host" class="mt-1 w-full"
                         value="{{ old('mail_host', $host) }}" placeholder="smtp.example.com" />
-                    <x-input.error :messages="$errors->get('mail_host')" class="mt-1" />
+                    <x-input.fehler :messages="$errors->get('mail_host')" class="mt-1" />
                     @unless ($host)
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                             {{ __('Zurzeit aus der Umgebung:') }} {{ $ausUmgebung['host'] ?: '—' }}:{{ $ausUmgebung['port'] ?: '—' }}
@@ -48,7 +47,7 @@
                     <x-input.label for="mail_port" :value="__('Port')" />
                     <x-input.field id="mail_port" name="mail_port" type="number" class="mt-1 w-full"
                         value="{{ old('mail_port', $port) }}" placeholder="587" />
-                    <x-input.error :messages="$errors->get('mail_port')" class="mt-1" />
+                    <x-input.fehler :messages="$errors->get('mail_port')" class="mt-1" />
                 </div>
 
                 <div>
@@ -88,7 +87,7 @@
                     <x-input.label for="mail_from_address" :value="__('Absenderadresse')" />
                     <x-input.field id="mail_from_address" name="mail_from_address" type="email" class="mt-1 w-full"
                         value="{{ old('mail_from_address', $from_address) }}" placeholder="{{ $ausUmgebung['from'] }}" />
-                    <x-input.error :messages="$errors->get('mail_from_address')" class="mt-1" />
+                    <x-input.fehler :messages="$errors->get('mail_from_address')" class="mt-1" />
                 </div>
 
                 <div>
@@ -98,9 +97,9 @@
                 </div>
             </div>
 
-            <div class="mt-6 flex items-center gap-3">
+            <x-panel class="mt-6 flex items-center gap-3">
                 <x-input.button :label="__('Speichern')" />
-            </div>
+            </x-panel>
         </form>
 
         @if ($hatKennwort)
@@ -116,8 +115,7 @@
         {{-- Ohne diese Probe erfährt ein Administrator erst dann, dass die
              Zugangsdaten nicht stimmen, wenn ein Benutzer auf seine Einladung
              wartet. --}}
-        <form method="POST" action="{{ route('admin.mail.test') }}"
-            class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+        <form method="POST" action="{{ route('admin.mail.test') }}" class="max-w-3xl"700">
             @csrf
 
             <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Probe') }}</div>
@@ -134,7 +132,7 @@
                 <x-input.button size="feld" color="gray" :label="__('Testmail senden')" />
             </div>
 
-            <x-input.error :messages="$errors->get('test_an')" class="mt-2" />
+            <x-input.fehler :messages="$errors->get('test_an')" class="mt-2" />
         </form>
     </div>
 </x-admin-layout>

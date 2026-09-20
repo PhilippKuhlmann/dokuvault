@@ -18,7 +18,7 @@
     @can('file_create')
         {{-- Der Upload bleibt ein gewoehnliches Formular: Es laedt die Seite
              neu, und die Liste zeigt die neue Datei danach von selbst. --}}
-        <div class="mx-3 mt-3 rounded-xl border border-gray-200 bg-white p-4 shadow-xs dark:border-gray-700 dark:bg-gray-800"
+        <x-panel polster="eng" class="mx-3 mt-3"
             x-data="{
                 dateiname: '',
                 groesse: null,
@@ -68,11 +68,11 @@
                     <x-input.button size="feld" :label="__('Hochladen')" class="w-full shrink-0 lg:w-auto" />
                 </div>
             </form>
-        </div>
+        </x-panel>
     @endcan
 
     {{-- Filterleiste wie im Protokoll: Suche, Einschraenkung, Zeitraum. --}}
-    <div class="m-3 rounded-xl border border-gray-200 bg-white p-4 shadow-xs dark:border-gray-700 dark:bg-gray-800">
+    <x-panel polster="eng" class="m-3">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div class="sm:col-span-2 lg:col-span-1">
                 <x-input.label :value="__('Suche')" />
@@ -124,7 +124,7 @@
                 </button>
             @endif
         </div>
-    </div>
+    </x-panel>
 
     @if ($files->isNotEmpty())
         <div class="m-3">
@@ -174,20 +174,19 @@
 
                             <td class="px-4 py-2.5">
                                 <div class="flex items-center justify-end gap-2">
-                                    <a href="/{{ $customer->slug }}/file/{{ $file->id }}" title="{{ __('Herunterladen') }}"
-                                        class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-cerulean-600 shadow-xs transition-colors hover:border-cerulean-300 hover:bg-cerulean-50 dark:border-gray-600 dark:bg-gray-800 dark:text-cerulean-400 dark:hover:bg-gray-700">
+                                    <x-input.symbolknopf :titel="__('Herunterladen')"
+                                        href="/{{ $customer->slug }}/file/{{ $file->id }}">
                                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                                         </svg>
-                                    </a>
+                                    </x-input.symbolknopf>
 
                                     @can('file_delete')
-                                        <button type="button" wire:click="loeschen({{ $file->id }})"
+                                        <x-input.symbolknopf wire:click="loeschen({{ $file->id }})"
                                             wire:confirm="{{ __('Diese Datei wirklich löschen?') }}"
-                                            title="{{ __('Löschen') }}"
-                                            class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-red-600 shadow-xs transition-colors hover:border-red-300 hover:bg-red-50 dark:border-gray-600 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700">
+                                            :titel="__('Löschen')" ton="rot">
                                             <x-svg.trash class="h-5 w-5" />
-                                        </button>
+                                        </x-input.symbolknopf>
                                     @endcan
                                 </div>
                             </td>

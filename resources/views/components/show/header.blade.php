@@ -29,18 +29,14 @@
     @can($can)
         <div class="flex shrink-0 items-center gap-3">
             <div class="flex flex-row space-x-2">
-                @php
-                    $stiftKlassen = 'inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-cerulean-600 shadow-xs hover:bg-cerulean-50 hover:border-cerulean-300 focus:outline-hidden focus:ring-2 focus:ring-cerulean-500 transition-colors dark:bg-gray-800 dark:border-gray-600 dark:text-cerulean-400 dark:hover:bg-gray-700';
-                @endphp
-
                 @if ($editAction)
-                    <button type="button" wire:click="{{ $editAction }}" title="{{ __('Bearbeiten') }}" class="{{ $stiftKlassen }}">
+                    <x-input.symbolknopf wire:click="{{ $editAction }}" :titel="__('Bearbeiten')">
                         <x-svg.edit class="h-5 w-5" />
-                    </button>
+                    </x-input.symbolknopf>
                 @else
-                    <a href="{{ $editUrl }}" title="{{ __('Bearbeiten') }}" class="{{ $stiftKlassen }}">
+                    <x-input.symbolknopf :href="$editUrl" :titel="__('Bearbeiten')">
                         <x-svg.edit class="h-5 w-5" />
-                    </a>
+                    </x-input.symbolknopf>
                 @endif
             </div>
         </div>

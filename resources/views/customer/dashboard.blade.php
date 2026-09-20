@@ -66,7 +66,7 @@
 
             {{-- Ablaufende Lizenzen --}}
             @can('licensesoftware_viewAny')
-                <div class="col-span-2 p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+                <x-panel class="col-span-2">
                     <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Ablaufende Lizenzen') }}</div>
                     <div class="divide-y divide-gray-100 dark:divide-gray-700">
                         @forelse ($expiringLicenses as $license)
@@ -91,12 +91,12 @@
                             <div class="py-3 text-sm text-gray-400 dark:text-gray-500">{{ __('Keine ablaufenden Lizenzen 🎉') }}</div>
                         @endforelse
                     </div>
-                </div>
+                </x-panel>
             @endcan
 
             {{-- Ablaufende Zertifikate --}}
             @can('certificate_viewAny')
-                <div class="col-span-2 p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+                <x-panel class="col-span-2">
                     <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Ablaufende Zertifikate') }}</div>
                     <div class="divide-y divide-gray-100 dark:divide-gray-700">
                         @forelse ($expiringCertificates as $certificate)
@@ -121,14 +121,14 @@
                             <div class="py-3 text-sm text-gray-400 dark:text-gray-500">{{ __('Keine ablaufenden Zertifikate 🎉') }}</div>
                         @endforelse
                     </div>
-                </div>
+                </x-panel>
             @endcan
 
             {{-- Ablaufende Garantien.
 
                  Über alle Gerätearten hinweg: Die Frage "ist die Kiste noch in
                  Garantie?" stellt sich nicht je Liste, sondern beim Kunden. --}}
-            <div class="col-span-2 p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+            <x-panel class="col-span-2">
                 <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Ablaufende Garantien') }}</div>
                 <div class="divide-y divide-gray-100 dark:divide-gray-700">
                     @forelse ($expiringWarranties as $garantie)
@@ -152,14 +152,14 @@
                         <div class="py-3 text-sm text-gray-400 dark:text-gray-500">{{ __('Keine ablaufenden Garantien 🎉') }}</div>
                     @endforelse
                 </div>
-            </div>
+            </x-panel>
 
         </div>
 
         <div class="flex flex-wrap gap-5">
 
             {{-- Standorte --}}
-            <div class="w-full sm:w-80 p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+            <x-panel class="w-full sm:w-80">
                 <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Standorte') }}</div>
                 <div class="space-y-4">
                     @forelse ($sites as $site)
@@ -172,10 +172,10 @@
                         <div class="text-sm text-gray-400 dark:text-gray-500">{{ __('Keine Standorte') }}</div>
                     @endforelse
                 </div>
-            </div>
+            </x-panel>
 
             {{-- Ansprechpartner --}}
-            <div class="w-full sm:w-80 p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+            <x-panel class="w-full sm:w-80">
                 <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Ansprechpartner') }}</div>
                 <div class="space-y-4">
                     @forelse ($contactpersons as $contactperson)
@@ -188,7 +188,7 @@
                         <div class="text-sm text-gray-400 dark:text-gray-500">{{ __('Keine Ansprechpartner') }}</div>
                     @endforelse
                 </div>
-            </div>
+            </x-panel>
 
         </div>
     </div>

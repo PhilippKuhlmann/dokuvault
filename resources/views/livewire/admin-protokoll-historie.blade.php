@@ -6,7 +6,7 @@
         {{ __('Wie lange Einträge im Protokoll stehen bleiben. Die bisherigen Kennwörter hängen daran und gehen mit — danach zeigt das Protokoll die Änderung weiter an, den alten Wert aber nicht mehr.') }}
     </p>
 
-    <div class="max-w-3xl rounded-xl border border-gray-200 bg-white p-5 shadow-xs dark:border-gray-700 dark:bg-gray-800">
+    <x-panel class="max-w-3xl">
         <div class="flex flex-wrap items-end gap-3">
             <div>
                 <x-input.label :value="__('Aufbewahren (Tage)')" />
@@ -58,5 +58,5 @@
                 </p>
             @endif
         </div>
-    </div>
+    </x-panel>
 </div>

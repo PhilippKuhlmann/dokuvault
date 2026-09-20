@@ -8,7 +8,7 @@
                 {{ __('Kennwort stimmt. Jetzt noch der Einmalcode aus der Authentifizierungs-App.') }}
             </p>
 
-            <x-input.error :messages="$errors->get('code')" class="mb-4 font-DINPro-bold" />
+            <x-input.fehler :messages="$errors->get('code')" art="banner" />
 
             <div>
                 <x-input.feldname for="code" :value="__('Einmalcode')" />

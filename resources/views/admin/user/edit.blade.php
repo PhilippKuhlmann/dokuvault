@@ -48,7 +48,7 @@
             {{-- Nur beim Bearbeiten: Ein Zugang, der gesperrt angelegt wird,
                  ergaebe keinen Sinn. --}}
             <x-create.gesperrt :checked="$user->istDeaktiviert()" :seit="$user->deactivated_at" />
-            <x-input.error :messages="$errors->get('deactivated')" class="mt-2" />
+            <x-input.fehler :messages="$errors->get('deactivated')" class="mt-2" />
 
         </x-create.main>
 

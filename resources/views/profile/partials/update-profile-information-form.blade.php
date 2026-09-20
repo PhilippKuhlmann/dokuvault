@@ -13,13 +13,13 @@
         <div>
             <x-input.feldname for="name" :value="__('Name')" />
             <x-input.text id="name" name="name" type="text" class="mt-1.5 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
-            <x-input.error class="mt-2" :messages="$errors->get('name')" />
+            <x-input.fehler class="mt-2" :messages="$errors->get('name')" />
         </div>
 
         <div>
             <x-input.feldname for="email" :value="__('E-Mail')" />
             <x-input.text id="email" name="email" type="email" class="mt-1.5 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
-            <x-input.error class="mt-2" :messages="$errors->get('email')" />
+            <x-input.fehler class="mt-2" :messages="$errors->get('email')" />
         </div>
 
         <div>
@@ -30,7 +30,7 @@
                     <option value="{{ $code }}" @selected(old('locale', $user->locale) === $code)>{{ $bezeichnung }}</option>
                 @endforeach
             </x-input.select>
-            <x-input.error class="mt-2" :messages="$errors->get('locale')" />
+            <x-input.fehler class="mt-2" :messages="$errors->get('locale')" />
         </div>
 
         <div class="flex items-center gap-4">

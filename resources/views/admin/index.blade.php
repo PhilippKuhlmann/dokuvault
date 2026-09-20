@@ -49,7 +49,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {{-- Globale Ablauf-Übersicht --}}
-            <div class="p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+            <x-panel>
                 <div class="text-lg font-CoconPro text-gray-900 dark:text-gray-100 mb-3">{{ __('Läuft demnächst ab') }}</div>
                 <div class="divide-y divide-gray-100 dark:divide-gray-700">
                     @forelse ($expiring as $e)
@@ -81,10 +81,10 @@
                         <div class="py-3 text-sm text-gray-400 dark:text-gray-500">{{ __('Nichts läuft in den nächsten 60 Tagen ab 🎉') }}</div>
                     @endforelse
                 </div>
-            </div>
+            </x-panel>
 
             {{-- Letzte Aktivitäten --}}
-            <div class="p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+            <x-panel>
                 <div class="flex items-center justify-between mb-3">
                     <div class="text-lg font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Letzte Aktivitäten') }}</div>
                     @can('admin_activity')
@@ -105,12 +105,12 @@
                         <div class="py-3 text-sm text-gray-400 dark:text-gray-500">{{ __('Noch keine Aktivitäten.') }}</div>
                     @endforelse
                 </div>
-            </div>
+            </x-panel>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {{-- Top-Kunden nach Geräten --}}
-            <div class="p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+            <x-panel>
                 <div class="text-lg font-CoconPro text-gray-900 dark:text-gray-100 mb-3">{{ __('Top-Kunden nach Geräten') }}</div>
                 @php $topMax = collect($topCustomers)->max('count') ?: 1; @endphp
                 <div class="space-y-2.5">
@@ -128,10 +128,10 @@
                         <div class="py-3 text-sm text-gray-400 dark:text-gray-500">{{ __('Keine Daten.') }}</div>
                     @endforelse
                 </div>
-            </div>
+            </x-panel>
 
             {{-- Aktivitäts-Verlauf 14 Tage --}}
-            <div class="p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+            <x-panel>
                 <div class="text-lg font-CoconPro text-gray-900 dark:text-gray-100 mb-3">{{ __('Aktivität (14 Tage)') }}</div>
                 <div class="flex items-end gap-1.5 h-28">
                     @foreach ($chart as $d)
@@ -145,7 +145,7 @@
                     <span>{{ $chart[0]['label'] ?? '' }}</span>
                     <span>heute</span>
                 </div>
-            </div>
+            </x-panel>
         </div>
     </div>
 </x-admin-layout>

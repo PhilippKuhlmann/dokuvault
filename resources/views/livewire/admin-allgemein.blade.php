@@ -1,7 +1,7 @@
 <div class="p-3 sm:p-5 space-y-6">
     <div class="text-3xl font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Allgemein') }}</div>
 
-    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+    <x-panel class="max-w-3xl">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Name und Logo') }}</div>
         <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">
             {{ __('Beides steht in der Kopfzeile, auf der Anmeldeseite und im PDF-Export. Änderungen gelten sofort.') }}
@@ -79,9 +79,9 @@
         </p>
         {{-- Kein SVG: Eine SVG-Datei darf Skript enthalten, und von derselben
              Herkunft ausgeliefert waere das ausfuehrbarer Code auf jeder Seite. --}}
-    </div>
+    </x-panel>
 
-    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+    <x-panel class="max-w-3xl">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Sprache und Zeitzone') }}</div>
         <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">{{ __('Beides gilt für die ganze Installation. Die Zeitzone ändert nur die Anzeige — gespeichert wird weiterhin in UTC.') }}</p>
 
@@ -124,9 +124,9 @@
 
             <x-input.fehler feld="zeitzone" />
         </div>
-    </div>
+    </x-panel>
 
-    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+    <x-panel class="max-w-3xl">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Hochladen') }}</div>
         <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">{{ __('Gilt für Dateien an Lizenzen und Zertifikaten und für die Dateiablage eines Kunden.') }}</p>
 
@@ -177,9 +177,9 @@
 
             <x-input.fehler feld="endungen" />
         </div>
-    </div>
+    </x-panel>
 
-    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+    <x-panel class="max-w-3xl">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Anmeldeseite') }}</div>
         <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">{{ __('Ein Satz unter dem Anmeldeformular — etwa, wer bei Fragen zum Zugang hilft.') }}</p>
 
@@ -200,9 +200,9 @@
 
             <x-input.fehler feld="anmeldeHinweis" />
         </div>
-    </div>
+    </x-panel>
 
-    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+    <x-panel class="max-w-3xl">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Listen') }}</div>
         <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">{{ __('Wie viele Zeilen eine Seite zeigt, bevor geblättert wird.') }}</p>
 
@@ -233,6 +233,6 @@
         <p class="mt-6 text-xs text-gray-500 dark:text-gray-400">
             {{ __('Das Protokoll bleibt bei 50 Zeilen: Dort sucht man nach einem Vorgang und überfliegt, statt zu lesen.') }}
         </p>
-    </div>
+    </x-panel>
 
 </div>

@@ -43,7 +43,7 @@
         </div>
     @endif
 
-    <div class="max-w-3xl rounded-xl border border-gray-200 bg-white p-5 shadow-xs dark:border-gray-700 dark:bg-gray-800">
+    <x-panel class="max-w-3xl">
         <div class="flex flex-wrap items-end gap-3">
             <div class="min-w-0 flex-1">
                 <x-input.label :value="__('Bezeichnung')" />
@@ -56,14 +56,14 @@
         </div>
 
         <x-input.fehler feld="name" />
-    </div>
+    </x-panel>
 
     @if ($tokens->isEmpty())
-        <div class="rounded-xl border border-gray-200 bg-white p-10 text-center shadow-xs dark:border-gray-700 dark:bg-gray-800">
+        <x-panel polster="weit" class="text-center">
             <div class="text-gray-500 dark:text-gray-400">{{ __('Noch kein Token angelegt') }}</div>
-        </div>
+        </x-panel>
     @else
-        <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-xs dark:border-gray-700 dark:bg-gray-800">
+        <x-panel polster="keins" class="overflow-x-auto">
             <table class="w-full min-w-lg text-left text-sm text-gray-500 dark:text-gray-400">
                 <thead class="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wide text-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300">
                     <tr>
@@ -93,17 +93,16 @@
                                 @endif
                             </td>
                             <td class="px-4 py-2.5 text-right">
-                                <button type="button" wire:click="widerrufen({{ $token->id }})"
+                                <x-input.symbolknopf wire:click="widerrufen({{ $token->id }})"
                                     wire:confirm="{{ __('Diesen Token widerrufen? Was ihn benutzt, kommt danach nicht mehr herein.') }}"
-                                    title="{{ __('Widerrufen') }}"
-                                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-red-600 shadow-xs transition-colors hover:border-red-300 hover:bg-red-50 dark:border-gray-600 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700">
+                                    :titel="__('Widerrufen')" ton="rot">
                                     <x-svg.trash class="h-5 w-5" />
-                                </button>
+                                </x-input.symbolknopf>
                             </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
-        </div>
+        </x-panel>
     @endif
 </div>

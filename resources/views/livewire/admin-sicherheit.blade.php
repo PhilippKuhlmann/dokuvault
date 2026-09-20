@@ -1,7 +1,7 @@
 <div class="p-3 sm:p-5 space-y-6">
     <div class="text-3xl font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Sicherheit') }}</div>
 
-    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+    <x-panel class="max-w-3xl">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Kennwörter') }}</div>
         <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">
             {{ __('Gilt für die Kennwörter, mit denen sich Benutzer anmelden — im eigenen Profil, beim Anlegen durch einen Administrator, beim Zurücksetzen und beim Einlösen einer Einladung.') }}
@@ -53,9 +53,9 @@
         <p class="mt-4 text-xs text-gray-500 dark:text-gray-400">
             {{ __('Bestehende Kennwörter bleiben gültig — die Regel greift, sobald jemand ein neues setzt. Eine Verschärfung sperrt also niemanden aus.') }}
         </p>
-    </div>
+    </x-panel>
 
-    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+    <x-panel class="max-w-3xl">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Anmeldung') }}</div>
         <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">
             {{ __('Die Bremse gegen das Durchprobieren von Kennwörtern. Dieselben Zahlen gelten für den Einmalcode der zweiten Stufe.') }}
@@ -90,9 +90,9 @@
         <p class="mt-6 text-xs text-gray-500 dark:text-gray-400">
             {{ __('Eine erfolgreiche Anmeldung setzt beide Zähler zurück. Wer sich richtig anmeldet, hat gezeigt, dass er hierher gehört.') }}
         </p>
-    </div>
+    </x-panel>
 
-    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+    <x-panel class="max-w-3xl">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Sitzung') }}</div>
         <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">
             {{ __('Wie lange jemand angemeldet bleibt, ohne etwas zu tun.') }}
@@ -134,5 +134,5 @@
                 </span>
             </span>
         </label>
-    </div>
+    </x-panel>
 </div>

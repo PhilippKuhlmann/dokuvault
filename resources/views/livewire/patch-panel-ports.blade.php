@@ -2,7 +2,7 @@
      nicht ohne Querlauf. Bleibt wie das Formular mittig - dasselbe Muster wie
      beim Rack-Editor. --}}
 <div class="mx-auto max-w-5xl px-3">
-<div class="my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-xs dark:bg-gray-800 dark:border-gray-700">
+<x-panel class="my-3 sm:p-6">
 
     <div class="flex flex-wrap items-baseline justify-between gap-2 mb-1">
         <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100">{{ __('Ports') }}</div>
@@ -107,5 +107,5 @@
         <x-input.button type="button" wire:click="save" :label="__('Ports speichern')"
             wire:loading.attr="disabled" />
     </div>
-</div>
+</x-panel>
 </div>

@@ -71,9 +71,9 @@
             </x-slot>
         </x-card>
     @empty
-        <div class="m-3 rounded-xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-500 shadow-xs dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+        <x-panel polster="weit" class="m-3 text-center text-sm text-gray-500 dark:text-gray-400">
             {{ __('Kein Gerät läuft auf einem System, dessen Support in den nächsten sechs Monaten endet.') }}
-        </div>
+        </x-panel>
     @endforelse
 
 </x-admin-layout>

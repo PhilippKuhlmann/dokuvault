@@ -1,7 +1,7 @@
 <div class="p-3 sm:p-5 space-y-6">
     <div class="text-3xl font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Fristen') }}</div>
 
-    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+    <x-panel class="max-w-3xl">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Vorwarnzeit') }}</div>
         <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">
             {{ __('Wie viele Tage vorher etwas als „läuft bald ab“ gilt. Bereits Abgelaufenes wird immer angezeigt, unabhängig von dieser Zahl.') }}
@@ -32,12 +32,12 @@
                 </div>
             @endforeach
         </div>
-    </div>
+    </x-panel>
 
     {{-- Eigene Karte, weil es keine Warnung ist, sondern eine Löschfrist. Wer
          hier eine Zahl ändert, ändert, wie lange Zugangsdaten im Klartext auf
          der Platte liegen. --}}
-    <div class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700">
+    <x-panel class="max-w-3xl">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('PDF-Ausgaben aufbewahren') }}</div>
         <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">
             {{ __('Eine fertige PDF-Ausgabe enthält alle Zugangsdaten des Kunden im Klartext. Danach wird sie gelöscht — wer sie noch braucht, gibt den Auftrag neu.') }}
@@ -57,5 +57,5 @@
         </p>
 
         <x-input.fehler feld="pdfStunden" />
-    </div>
+    </x-panel>
 </div>

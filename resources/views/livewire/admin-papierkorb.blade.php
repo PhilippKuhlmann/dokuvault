@@ -15,7 +15,7 @@
 
     {{-- Filter. Die Tage sind frei eingebbar: 21, 90 und 365 decken das
          Uebliche ab, aber nicht jede Aufbewahrungsregel haelt sich daran. --}}
-    <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-xs dark:border-gray-700 dark:bg-gray-800">
+    <x-panel polster="eng">
         {{-- Erst ab lg drei Spalten: Bei 839 Pixeln blieben fuer die
              Altersspalte 159 Pixel, gebraucht wurden 238 - die Knoepfe "90"
              und "365" lagen unter der Art-Auswahl. --}}
@@ -88,14 +88,14 @@
                 @endunless
             </div>
         @endif
-    </div>
+    </x-panel>
 
     @if ($gesamt === 0)
-        <div class="rounded-xl border border-gray-200 bg-white p-10 text-center shadow-xs dark:border-gray-700 dark:bg-gray-800">
+        <x-panel polster="weit" class="text-center">
             <div class="text-gray-500 dark:text-gray-400">{{ __('Kein Eintrag passt zum Filter') }}</div>
-        </div>
+        </x-panel>
     @else
-        <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-xs dark:border-gray-700 dark:bg-gray-800">
+        <x-panel polster="keins" class="overflow-x-auto">
             {{-- 40rem waren zu breit: Bei 839 Pixeln Fenster lag der Loeschen-Knopf
                      ausserhalb, und ausgerechnet der ist hier der Sinn der Seite.
                  Der Kundenname darf dafuer umbrechen. --}}
@@ -124,19 +124,18 @@
                                 {{ $zeile['geloescht']?->diffForHumans() }}
                             </td>
                             <td class="px-4 py-2.5 text-right">
-                                <button type="button"
+                                <x-input.symbolknopf
                                     wire:click="loeschen('{{ $zeile['slug'] }}', {{ $zeile['id'] }})"
                                     wire:confirm="{{ __('Diesen Eintrag endgültig löschen?') }}"
-                                    title="{{ __('Endgültig löschen') }}"
-                                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-red-600 shadow-xs transition-colors hover:border-red-300 hover:bg-red-50 dark:border-gray-600 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700">
+                                    :titel="__('Endgültig löschen')" ton="rot">
                                     <x-svg.trash class="h-5 w-5" />
-                                </button>
+                                </x-input.symbolknopf>
                             </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
-        </div>
+        </x-panel>
 
         @if ($seiten > 1)
             <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">

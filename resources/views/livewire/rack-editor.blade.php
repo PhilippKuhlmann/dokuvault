@@ -1,7 +1,7 @@
 {{-- Breiter als das Formular darüber (max-w-3xl): Palette, Schema und Frontansicht
      brauchen nebeneinander Platz. Bleibt wie das Formular mittig. --}}
 <div class="mx-auto max-w-5xl px-3">
-<div class="my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-xs dark:bg-gray-800 dark:border-gray-700"
+<x-panel class="my-3 sm:p-6"
     x-data="{
         drag: null,        // { kind, he, ... } - was gerade gezogen wird
         hover: null,       // unterste HE unter dem Zeiger
@@ -158,5 +158,5 @@
         </div>
 
     </div>
-</div>
+</x-panel>
 </div>

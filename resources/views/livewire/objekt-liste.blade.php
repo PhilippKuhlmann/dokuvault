@@ -26,7 +26,7 @@
          eine Laufzeit, ein Drucker nicht - eine leere Leiste ueber jeder Liste
          waere nur Rauschen. --}}
     @if ($filterDefinition || $sortierungen)
-        <div class="m-3 rounded-xl border border-gray-200 bg-white p-4 shadow-xs dark:border-gray-700 dark:bg-gray-800">
+        <x-panel polster="eng" class="m-3">
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div class="min-w-0">
                     <x-input.label :value="__('Suche')" />
@@ -71,7 +71,7 @@
                     </button>
                 </div>
             @endif
-        </div>
+        </x-panel>
     @endif
 
     {{-- Zwei Darstellungen im Bestand: Die meisten Listen zeigen Karten, einige

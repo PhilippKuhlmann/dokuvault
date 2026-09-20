@@ -14,7 +14,7 @@
                 {{ __('Benutzernamen eintragen. An die hinterlegte Adresse geht ein Link, hinter dem sich ein neues Kennwort vergeben lässt.') }}
             </p>
 
-            <x-input.error :messages="$errors->get('username')" class="mb-4 font-DINPro-bold" />
+            <x-input.fehler :messages="$errors->get('username')" art="banner" />
 
             <div>
                 <x-input.feldname for="username" :value="__('Benutzername')" />

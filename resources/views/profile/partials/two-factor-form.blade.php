@@ -16,7 +16,7 @@
         </div>
     @endif
 
-    <x-input.error :messages="$errors->zweiteStufe->get('demo')" class="mt-4" />
+    <x-input.fehler :messages="$errors->zweiteStufe->get('demo')" class="mt-4" />
 
     {{-- Frisch erzeugte Wiederherstellungscodes. Sie stehen genau einmal hier
          und danach nie wieder - sie liegen verschlüsselt, und sie noch einmal
@@ -53,7 +53,7 @@
                 <p class="text-sm text-gray-700 dark:text-gray-300">{{ __('Neue Wiederherstellungscodes') }}</p>
                 <x-input.feldname for="codes_password" :value="__('Kennwort')" />
                 <x-input.text id="codes_password" name="password" type="password" class="mt-1.5 block w-full" autocomplete="current-password" />
-                <x-input.error :messages="$errors->zweiteStufe->get('password')" />
+                <x-input.fehler :messages="$errors->zweiteStufe->get('password')" />
                 <x-input.button color="gray" :label="__('Neu erzeugen')" />
             </form>
 
@@ -69,7 +69,7 @@
                     <p class="text-sm text-gray-700 dark:text-gray-300">{{ __('Zweite Stufe abschalten') }}</p>
                     <x-input.feldname for="aus_password" :value="__('Kennwort')" />
                     <x-input.text id="aus_password" name="password" type="password" class="mt-1.5 block w-full" autocomplete="current-password" />
-                    <x-input.error :messages="$errors->zweiteStufeAus->get('password')" />
+                    <x-input.fehler :messages="$errors->zweiteStufeAus->get('password')" />
                     <x-input.button color="red" :label="__('Abschalten')" />
                 </form>
             @endif
@@ -96,7 +96,7 @@
                     <x-input.feldname for="code" :value="__('Code aus der App')" />
                     <x-input.text id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code"
                         autofocus class="mt-1.5 block w-full font-mono tracking-widest" />
-                    <x-input.error :messages="$errors->zweiteStufe->get('code')" />
+                    <x-input.fehler :messages="$errors->zweiteStufe->get('code')" />
 
                     <div class="flex items-center gap-3">
                         <x-input.button :label="__('Bestätigen und einschalten')" />

@@ -12,7 +12,7 @@
     {{-- Fehler aus einem vorangegangenen Versuch stehen hier und nicht nur im
          Dialog: Nach dem Absenden ist der Dialog wieder zu, und eine Meldung,
          die niemand sieht, ist keine. --}}
-    <x-input.error :messages="$errors->userDeletion->get('password')" />
+    <x-input.fehler :messages="$errors->userDeletion->get('password')" />
 
     {{-- Dieselbe Rueckfrage wie ueberall sonst. Hier stand als letzte Stelle
          der Anwendung noch das Modal aus dem Breeze-Bestand, dessen Karte kein

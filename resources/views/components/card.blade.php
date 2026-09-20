@@ -8,8 +8,12 @@
     direkt unter seinen Vorgänger.
 
     plain: für Karten, die ihren Inhalt selbst anordnen (Serverschränke).
+
+    Der Rahmen kommt aus x-panel - dieselbe Fläche wie überall sonst.
+    Eigen ist hier nur, was darin geschieht: der Kopf mit Trennlinie und
+    der Satz in Spalten.
 --}}
-<div class="flex flex-col m-3 rounded-xl border border-gray-200 bg-white shadow-xs dark:text-gray-100 dark:bg-gray-800 dark:border-gray-700">
+<x-panel polster="keins" class="flex flex-col m-3 dark:text-gray-100">
     @if (trim($head))
         <div class="border-b border-gray-100 dark:border-gray-700">
             {{ $head }}
@@ -30,4 +34,4 @@
     ])>
         {{ $body }}
     </div>
-</div>
+</x-panel>

@@ -1,9 +1,8 @@
 <x-admin-layout>
     <div class="p-3 sm:p-5 space-y-6">
-        <div class="text-3xl font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Einstellungen') }}</div>
+        <x-panel class="text-3xl font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Einstellungen') }}</x-panel>
 
-        <form method="POST" action="{{ route('admin.setting.update') }}"
-            class="max-w-3xl p-5 bg-white rounded-xl border border-gray-200 shadow-xs dark:bg-gray-800 dark:border-gray-700"
+        <form method="POST" action="{{ route('admin.setting.update') }}" class="max-w-3xl"700"
             {{-- @js statt '{{ }}': Im Attribut wird der Wert vom Browser
                  entschluesselt, bevor Alpine ihn auswertet - aus &#039; wird
                  wieder ein Anfuehrungszeichen, und der Ausdruck laesst sich

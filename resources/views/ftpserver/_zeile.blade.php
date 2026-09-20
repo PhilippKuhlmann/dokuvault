@@ -25,11 +25,10 @@
     <td class="py-2.5 px-4">
         <div class="flex items-center justify-end gap-2">
             @can('ftpserver_update')
-                <button type="button" wire:click="$dispatch('objekt-bearbeiten', { typ: 'ftpserver', id: {{ $eintrag->id }} })"
-                    title="{{ __('Bearbeiten') }}"
-                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-cerulean-600 shadow-xs transition-colors hover:border-cerulean-300 hover:bg-cerulean-50 dark:border-gray-600 dark:bg-gray-800 dark:text-cerulean-400 dark:hover:bg-gray-700">
+                <x-input.symbolknopf :titel="__('Bearbeiten')"
+                    wire:click="$dispatch('objekt-bearbeiten', { typ: 'ftpserver', id: {{ $eintrag->id }} })">
                     <x-svg.edit class="h-5 w-5" />
-                </button>
+                </x-input.symbolknopf>
             @endcan
         </div>
     </td>

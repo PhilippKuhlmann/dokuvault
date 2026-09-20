@@ -144,23 +144,17 @@
          stand unter dem Stift ein roter Textknopf "Löschen!", der die Zeile
          hoeher machte und aus der Reihe fiel. --}}
     <td class="py-2.5 px-4">
-        @php
-            $knopfKlassen = 'inline-flex items-center justify-center w-9 h-9 rounded-lg border shadow-xs transition-colors';
-            $stiftKlassen = $knopfKlassen.' border-gray-200 bg-white text-cerulean-600 hover:bg-cerulean-50 hover:border-cerulean-300 dark:bg-gray-800 dark:border-gray-600 dark:text-cerulean-400 dark:hover:bg-gray-700';
-            $muellKlassen = $knopfKlassen.' border-gray-200 bg-white text-red-600 hover:bg-red-50 hover:border-red-300 dark:bg-gray-800 dark:border-gray-600 dark:text-red-400 dark:hover:bg-gray-700';
-        @endphp
-
         <div class="flex items-center justify-end gap-2">
             @if ($editUrl || $editAction)
                 @can($can)
                     @if ($editAction)
-                        <button type="button" wire:click="{{ $editAction }}" title="{{ __('Bearbeiten') }}" class="{{ $stiftKlassen }}">
+                        <x-input.symbolknopf wire:click="{{ $editAction }}" :titel="__('Bearbeiten')">
                             <x-svg.edit class="h-5 w-5" />
-                        </button>
+                        </x-input.symbolknopf>
                     @else
-                        <a href="{{ $editUrl }}" title="{{ __('Bearbeiten') }}" class="{{ $stiftKlassen }}">
+                        <x-input.symbolknopf :href="$editUrl" :titel="__('Bearbeiten')">
                             <x-svg.edit class="h-5 w-5" />
-                        </a>
+                        </x-input.symbolknopf>
                     @endif
                 @endcan
             @endif
@@ -173,10 +167,9 @@
                 @can($canDel)
                     <x-loeschdialog :url="$delUrl">
                         <x-slot:ausloeser>
-                            <button type="button" x-on:click="offen = true" title="{{ __('Löschen') }}"
-                                class="{{ $muellKlassen }}">
+                            <x-input.symbolknopf x-on:click="offen = true" :titel="__('Löschen')" ton="rot">
                                 <x-svg.trash class="h-5 w-5" />
-                            </button>
+                            </x-input.symbolknopf>
                         </x-slot:ausloeser>
                     </x-loeschdialog>
                 @endcan

@@ -15,7 +15,7 @@
         </span>
     </div>
 
-    <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-xs dark:border-gray-700 dark:bg-gray-800">
+    <x-panel polster="eng">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div class="sm:col-span-2 lg:col-span-1">
                 <x-input.label :value="__('Suche')" />
@@ -86,18 +86,18 @@
                 </button>
             @endif
         </div>
-    </div>
+    </x-panel>
 
     @if ($activities->isEmpty())
-        <div class="rounded-xl border border-gray-200 bg-white p-10 text-center shadow-xs dark:border-gray-700 dark:bg-gray-800">
+        <x-panel polster="weit" class="text-center">
             <div class="text-gray-500 dark:text-gray-400">
                 {{ $gesamt === 0 ? __('Noch keine Aktivitäten') : __('Kein Eintrag passt zu den Filtern') }}
             </div>
-        </div>
+        </x-panel>
     @else
         {{-- Scrollen statt abschneiden: Mit overflow-hidden lagen bei 839 Pixeln
              25 Pixel der Details-Spalte ausserhalb des Rahmens. --}}
-        <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-xs dark:border-gray-700 dark:bg-gray-800">
+        <x-panel polster="keins" class="overflow-x-auto">
             <table class="w-full min-w-152 text-left text-sm text-gray-500 dark:text-gray-400">
                 <thead class="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wide text-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300">
                     <tr>
@@ -179,7 +179,7 @@
                     @endforeach
                 </tbody>
             </table>
-        </div>
+        </x-panel>
 
         {{-- Die Seitenzahlen stehen in einer Zeile nebeneinander: Bei vielen
              Seiten sind das mehr Pixel als das Fenster breit ist. --}}

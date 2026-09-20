@@ -32,7 +32,7 @@
     $wert = trim((string) $slot);
 @endphp
 
-<div class="w-64 rounded-xl border border-gray-200 bg-white shadow-xs p-4 dark:bg-gray-800 dark:border-gray-700">
+<x-panel polster="eng" class="w-64">
     <div class="h-8 text-center font-CoconPro {{ $toene[$ton] ?? $toene['ruhig'] }}">
         {{ $label }}
     </div>
@@ -45,4 +45,4 @@
         <span class="{{ $arten[$art] ?? $arten['zahl'] }}"
             @if ($art === 'name') title="{{ $wert }}" @endif>{{ $wert }}</span>
     </div>
-</div>
+</x-panel>

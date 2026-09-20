@@ -12,7 +12,7 @@
                 {{ __('Legen Sie ein neues Kennwort fest.') }}
             </p>
 
-            <x-input.error :messages="$errors->get('username')" class="mb-4 font-DINPro-bold" />
+            <x-input.fehler :messages="$errors->get('username')" art="banner" />
 
             <div>
                 <x-input.feldname for="username" :value="__('Benutzername')" />
@@ -25,7 +25,7 @@
                 <x-input.text id="password" feld="password" name="password" type="password" required autofocus
                     autocomplete="new-password" class="mt-1.5 block w-full" />
                 <x-kennwortregel />
-                <x-input.error :messages="$errors->get('password')" class="mt-2" />
+                <x-input.fehler :messages="$errors->get('password')" class="mt-2" />
             </div>
 
             <div class="mt-5">
