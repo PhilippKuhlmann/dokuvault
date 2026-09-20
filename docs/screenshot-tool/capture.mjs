@@ -33,6 +33,13 @@ const NUTZER = process.env.DOKUVAULT_USER;
 const PASSWORT = process.env.DOKUVAULT_PASSWORD;
 const SPRACHEN = (process.env.SPRACHEN || 'de,en').split(',').map((s) => s.trim());
 
+// NUR=search,login: einzelne Bilder nachziehen, ohne die uebrigen neu zu
+// schreiben. Ohne das aendert ein Lauf alle achtunddreissig Dateien - auch
+// die, an denen sich nichts geaendert hat, weil relative Zeitangaben
+// ("vor 1 Stunde") mitwandern.
+const NUR = process.env.NUR ? process.env.NUR.split(',').map((s) => s.trim()) : null;
+const gewuenscht = (datei) => !NUR || NUR.includes(datei);
+
 if (!NUTZER || !PASSWORT) {
   console.error('DOKUVAULT_USER und DOKUVAULT_PASSWORD muessen gesetzt sein.');
   console.error('Beispiel: DOKUVAULT_USER=admin DOKUVAULT_PASSWORD=password node docs/screenshot-tool/capture.mjs');
@@ -44,11 +51,17 @@ const VIEWPORT = { width: 1440, height: 900, deviceScaleFactor: 2 };
 
 const KUNDE = 'mustermann';
 
+const AGENT_PFAD = `/${KUNDE}/agent`;
+
 // Ziel je Screenshot: Pfad relativ zur Basis-URL, Dateiname ohne Endung.
 const SEITEN = [
   { datei: 'login', pfad: '/login', angemeldet: false },
   { datei: 'dashboard', pfad: `/${KUNDE}` },
-  { datei: 'search', pfad: '/search?search=srv' },
+  // Ein IP-Anfang statt "srv": Der trifft Server, NAS, Computer, Switches -
+  // und genau das behauptet die Bildunterschrift ("ueber alle Geraetetypen").
+  // Mit "srv" zeigte das Bild nur die Gruppe SERVER und belegte die halbe
+  // Aussage nicht.
+  { datei: 'search', pfad: '/search?search=10.' },
   { datei: 'computers', pfad: `/${KUNDE}/computer` },
   { datei: 'ipam', pfad: `/${KUNDE}/ip-plan` },
   { datei: 'certificates', pfad: `/${KUNDE}/certificate` },
@@ -67,9 +80,12 @@ const SEITEN = [
   { datei: 'eol', pfad: '/admin/eol' },
   { datei: 'protokoll', pfad: '/admin/activity' },
   { datei: 'admin-dashboard', pfad: '/admin' },
+  // Die Agenten-Uebersicht stand im README, wurde hier aber nie erzeugt - sie
+  // war seit Monaten stehengeblieben und zeigte noch das alte Logo. Vor dem
+  // autodoc-Schritt aufgenommen, damit kein "Screenshot Proxmox"-Token
+  // darauf steht.
+  { datei: 'agenten', pfad: AGENT_PFAD },
 ];
-
-const AGENT_PFAD = `/${KUNDE}/agent`;
 
 async function anmelden(page) {
   await page.goto(`${BASIS}/login`, { waitUntil: 'networkidle0' });
@@ -228,7 +244,9 @@ try {
     const loginSeite = SEITEN.find((s) => s.angemeldet === false);
     await page.goto(`${BASIS}${loginSeite.pfad}`, { waitUntil: 'networkidle0' });
     await seiteEinstellen(page, sprache);
-    await screenshot(page, loginSeite, path.join(zielOrdner, `${loginSeite.datei}.png`));
+    if (gewuenscht(loginSeite.datei)) {
+      await screenshot(page, loginSeite, path.join(zielOrdner, `${loginSeite.datei}.png`));
+    }
 
     await anmelden(page);
 
@@ -237,7 +255,7 @@ try {
     anmeldungenWegraeumen();
 
     for (const seite of SEITEN) {
-      if (seite.angemeldet === false) continue;
+      if (seite.angemeldet === false || !gewuenscht(seite.datei)) continue;
       try {
         await screenshot(page, seite, path.join(zielOrdner, `${seite.datei}.png`));
       } catch (fehler) {
@@ -246,7 +264,7 @@ try {
     }
 
     try {
-      await autodocScreenshot(page, zielOrdner);
+      if (gewuenscht('autodoc')) await autodocScreenshot(page, zielOrdner);
     } catch (fehler) {
       console.error(`  FEHLER bei autodoc: ${fehler.message}`);
     }
