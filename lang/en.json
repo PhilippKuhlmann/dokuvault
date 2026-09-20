@@ -1013,5 +1013,11 @@
     "eingelöst": "redeemed",
     "nie eingeladen": "never invited",
     "Token wirklich widerrufen?": "Really revoke this token?",
-    "Geräte mit diesem Token können sich dann nicht mehr dokumentieren.": "Devices using this token can no longer document themselves."
+    "Geräte mit diesem Token können sich dann nicht mehr dokumentieren.": "Devices using this token can no longer document themselves.",
+    "Zugang sperren": "Block access",
+    "Keine Anmeldung mehr. Eine laufende Sitzung endet beim nächsten Aufruf, API-Token werden abgewiesen. Der Benutzer bleibt mit allem, was er dokumentiert hat, erhalten.": "No more sign-in. A running session ends on the next request, API tokens are rejected. The user is kept, along with everything they documented.",
+    "gesperrt seit": "blocked since",
+    "Dieser Zugang ist deaktiviert. Wenden Sie sich an Ihre Administration.": "This account is deactivated. Please contact your administrator.",
+    "Dieser Zugang ist deaktiviert.": "This account is deactivated.",
+    "Den eigenen Zugang können Sie nicht sperren.": "You cannot block your own account."
 }

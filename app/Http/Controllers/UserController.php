@@ -128,6 +128,26 @@ class UserController extends Controller
             unset($userData['password']);
         }
 
+        // Der Haken heisst "deactivated", in der Tabelle steht ein Zeitpunkt.
+        $sperren = (bool) ($userData['deactivated'] ?? false);
+        unset($userData['deactivated']);
+
+        // Sich selbst nicht: Wer den Haken bei sich setzt, fliegt beim
+        // naechsten Aufruf aus seiner eigenen Sitzung - und kann sich nicht
+        // mehr anmelden, um ihn zurueckzunehmen. Derselbe Grund, aus dem der
+        // Loeschen-Knopf an der eigenen Zeile fehlt.
+        if ($sperren && $user->id === auth()->id()) {
+            // withInput(): Sonst sind alle uebrigen Aenderungen desselben
+            // Formulars weg, nur weil ein Haken nicht gesetzt werden darf.
+            return redirect(route('admin.user.edit', $user))
+                ->withInput()
+                ->withErrors(['deactivated' => __('Den eigenen Zugang können Sie nicht sperren.')]);
+        }
+
+        // Ein bereits gesperrter Zugang behaelt seinen Zeitpunkt: "seit wann"
+        // soll nicht bei jedem Speichern von vorne anfangen.
+        $userData['deactivated_at'] = $sperren ? ($user->deactivated_at ?? now()) : null;
+
         $user->update($userData);
 
         return redirect(route('admin.user.index', $user));

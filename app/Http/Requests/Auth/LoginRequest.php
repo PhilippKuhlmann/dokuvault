@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Auth;
 
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -61,15 +62,41 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
+        // Die Sperre wird VOR der Anmeldung geprueft, nicht danach.
+        //
+        // Vorher stand sie hinter Auth::attempt(), und das war falsch:
+        // attempt() meldet bei richtigem Kennwort an und feuert dabei
+        // Illuminate\Auth\Events\Login. Daran haengt AnmeldungProtokollieren,
+        // das last_login_at setzt und "Angemeldet" ins Protokoll schreibt. Das
+        // nachgeschobene logout() nimmt die Sitzung zurueck, den Eintrag aber
+        // nicht: Jeder abgewiesene Versuch eines Gesperrten stand als
+        // erfolgreiche Anmeldung im Protokoll, mit frischem Datum in der
+        // Spalte "Zuletzt angemeldet". Ausgerechnet dieses Protokoll ist der
+        // Grund, einen Zugang zu sperren statt ihn zu loeschen.
+        //
+        // Auth::validate() prueft dieselben Zugangsdaten, meldet aber
+        // niemanden an und feuert kein Login-Ereignis. Der zweite
+        // Hash-Durchlauf faellt nur bei gesperrten Zugaengen an - der
+        // Normalfall kommt weiterhin mit einem aus.
+        $nutzer = User::where('username', $this->input('username'))->first();
+
+        if ($nutzer?->istDeaktiviert()) {
+            // Erst bei stimmendem Kennwort den Grund nennen: Wer es kennt,
+            // weiss ohnehin, dass es den Zugang gibt - "Zugangsdaten falsch"
+            // schickte ihn nur los, ein Kennwort zu suchen, das er gar nicht
+            // verloren hat. Wer es nicht kennt, erfaehrt hier nichts.
+            if (Auth::validate($this->only('username', 'password'))) {
+                throw ValidationException::withMessages([
+                    'username' => __('Dieser Zugang ist deaktiviert. Wenden Sie sich an Ihre Administration.'),
+                ]);
+            }
+
+            // Falsches Kennwort an einem gesperrten Zugang: genau wie sonst.
+            $this->fehlversuch();
+        }
+
         if (! Auth::attempt($this->only('username', 'password'), $this->boolean('remember'))) {
-            $sperre = Setting::anmeldungSperreSekunden();
-
-            RateLimiter::hit($this->throttleKey(), $sperre);
-            RateLimiter::hit($this->herkunftKey(), $sperre);
-
-            throw ValidationException::withMessages([
-                'username' => trans('auth.failed'),
-            ]);
+            $this->fehlversuch();
         }
 
         // Auch den Herkunftszaehler leeren: sonst waere ein Buero, in dem sich
@@ -78,6 +105,27 @@ class LoginRequest extends FormRequest
         // hierher gehoert.
         RateLimiter::clear($this->throttleKey());
         RateLimiter::clear($this->herkunftKey());
+    }
+
+    /**
+     * Ein gescheiterter Versuch: Zaehler hoch, immer dieselbe Meldung.
+     *
+     * An zwei Stellen gebraucht - beim falschen Kennwort und beim falschen
+     * Kennwort an einem gesperrten Zugang. Beide muessen sich gleich
+     * verhalten, sonst verraet schon die Meldung, welcher Fall vorliegt.
+     *
+     * @throws ValidationException
+     */
+    private function fehlversuch(): void
+    {
+        $sperre = Setting::anmeldungSperreSekunden();
+
+        RateLimiter::hit($this->throttleKey(), $sperre);
+        RateLimiter::hit($this->herkunftKey(), $sperre);
+
+        throw ValidationException::withMessages([
+            'username' => trans('auth.failed'),
+        ]);
     }
 
     /**

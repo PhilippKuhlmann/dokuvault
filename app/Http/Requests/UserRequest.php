@@ -52,6 +52,7 @@ class UserRequest extends FormRequest
             // Kunden gehoert, den es gibt und der nicht im Papierkorb liegt.
             'customer_id' => ['nullable', Rule::exists('customers', 'id')->whereNull('deleted_at')],
             'two_factor_required' => 'boolean',
+            'deactivated' => 'boolean',
         ];
     }
 
@@ -64,6 +65,7 @@ class UserRequest extends FormRequest
     {
         $this->merge([
             'two_factor_required' => $this->boolean('two_factor_required'),
+            'deactivated' => $this->boolean('deactivated'),
             'einladen' => $this->boolean('einladen'),
         ]);
     }

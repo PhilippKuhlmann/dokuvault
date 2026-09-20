@@ -17,6 +17,7 @@ use App\Http\Middleware\TrustProxies;
 use App\Http\Middleware\ValidateSignature;
 use App\Http\Middleware\VerifyCsrfToken;
 use App\Http\Middleware\VerlangtZweiteStufe;
+use App\Http\Middleware\ZugangAktiv;
 use Illuminate\Auth\Middleware\AuthenticateWithBasicAuth;
 use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
@@ -85,6 +86,16 @@ class Kernel extends HttpKernel
             // Nach StartSession: braucht Session und angemeldeten Nutzer.
             SetLocale::class,
 
+            // Ein gesperrter Zugang fliegt beim naechsten Aufruf raus - auch
+            // aus einer Sitzung, die vor der Sperre begonnen hat. In der
+            // Gruppe und nicht an einzelnen Routen, sonst bliebe Livewire
+            // ueber /livewire/update offen.
+            //
+            // Nach SetLocale: Die Middleware gibt eine Meldung aus, und die
+            // soll in der Sprache des Benutzers stehen. Davor waere sie immer
+            // deutsch - auch fuer den, der die Oberflaeche auf Englisch hat.
+            ZugangAktiv::class,
+
             // Zaehlt Aufrufe, aber nur bei DEMO_MODE=true - siehe Middleware.
             RecordDemoUsage::class,
         ],
@@ -118,5 +129,6 @@ class Kernel extends HttpKernel
         'isTechniker' => isTechniker::class,
         'isCustomer' => isCustomer::class,
         'agent' => AuthenticateAgent::class,
+        'aktiv' => ZugangAktiv::class,
     ];
 }

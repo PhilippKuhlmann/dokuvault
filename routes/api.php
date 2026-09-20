@@ -19,7 +19,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+// "aktiv" hinter "auth:sanctum", nicht davor: Erst muss der Guard den Nutzer
+// aufgeloest haben, sonst sieht die Middleware niemanden und laesst alles
+// durch. Damit arbeitet das Script eines gesperrten Benutzers nicht weiter -
+// die Agent-Token oben haengen an keinem Benutzer und bleiben unberuehrt.
+Route::middleware(['auth:sanctum', 'aktiv'])->get('/user', function (Request $request) {
     return $request->user();
 });
 
@@ -35,7 +39,7 @@ Route::middleware('agent')->prefix('agent')->group(function () {
     Route::post('/microsoft365', [AgentController::class, 'microsoft365']);
 });
 
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum', 'aktiv'])->group(function () {
 
     Route::get('/customers', [CustomerController::class, 'index']);
     Route::post('/customers', [CustomerController::class, 'store']);

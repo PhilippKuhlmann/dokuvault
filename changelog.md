@@ -1,5 +1,27 @@
 # Changelog
 
+## 26.09.20
+
+### Added
+
+- **Benutzer lassen sich sperren.** Ein Haken im Bearbeiten-Formular, direkt unter „Zweite Stufe der Anmeldung verlangen". Gesperrt heißt an drei Stellen gesperrt: keine Anmeldung mehr, die laufende Sitzung endet beim nächsten Aufruf, und API-Token werden abgewiesen. Ohne den mittleren Punkt wäre es eine halbe Maßnahme — wer gerade angemeldet ist, bliebe sonst bis zum Abmelden drin, unter Umständen tagelang, und genau der Fall, in dem gesperrt wird, ist der, in dem das nicht reichen darf.
+  - **Gesperrt und nicht gelöscht:** An einem Benutzer hängen Protokolleinträge, und ein gelöschter Benutzer macht aus „Rita hat den Serverschrank geändert" ein „jemand". Wer das Haus verlässt, wird gesperrt — was er getan hat, bleibt lesbar.
+  - Ein Zeitstempel (`deactivated_at`) statt eines Schalters: „seit wann" ist die Frage, die später jemand stellt. Das Formular zeigt ihn an, ein erneutes Speichern setzt ihn nicht zurück.
+  - **Den eigenen Zugang kann niemand sperren.** Sonst fährt man sich selbst aus: Die Sitzung endet beim nächsten Aufruf, und anmelden geht dann auch nicht mehr. Derselbe Grund, aus dem der Löschen-Knopf an der eigenen Zeile fehlt.
+  - Die Benutzerliste bekommt eine Spalte „Zugang" (Haken oder Kreuz), und die Zeile eines gesperrten Zugangs tritt zurück — lesbar, aber nicht das, wonach man sucht.
+  - Die Meldung an der Anmeldemaske nennt den Grund beim Namen. Wer das richtige Kennwort hat, weiß ohnehin, dass es den Zugang gibt; „Zugangsdaten falsch" schickte ihn nur los, ein Kennwort zu suchen, das er gar nicht verloren hat. Bei falschem Kennwort bleibt es bei der gewohnten Meldung — die Sperre verrät sich dort nicht.
+
+### Fixed
+
+- **Ein abgewiesener Anmeldeversuch stand als erfolgreiche Anmeldung im Protokoll.** Die Sperrprüfung saß zuerst hinter `Auth::attempt()` — und das meldet bei richtigem Kennwort bereits an und feuert das Login-Ereignis. Daran hängt `AnmeldungProtokollieren`: `last_login_at` wurde gesetzt und „Angemeldet" ins Protokoll geschrieben. Das nachgeschobene `logout()` nahm die Sitzung zurück, den Eintrag aber nicht. Jeder Versuch eines Gesperrten hinterließ so eine Anmeldung, die nie stattgefunden hat — ausgerechnet in dem Protokoll, dessen Erhalt der einzige Grund ist, einen Zugang zu sperren statt zu löschen. Geprüft wird jetzt **vor** der Anmeldung, über `Auth::validate()`; der zweite Hash-Durchlauf fällt nur bei gesperrten Zugängen an.
+- **Die zweite Stufe ließ einen zwischenzeitlich Gesperrten herein.** Die Anwendung hat zwei Eingänge in eine angemeldete Sitzung, die Prüfung stand nur im ersten. Wer zwischen Kennwort und Einmalcode gesperrt wurde, kam durch: gültiger „angemeldet bleiben"-Cookie, ein verbrauchter Wiederherstellungscode, ein Eintrag „Angemeldet". Dass die Middleware ihn beim nächsten Aufruf wieder hinauswarf, war kein Ersatz. Die Prüfung steht jetzt in beiden Eingängen, und zwar **vor** der Codeprüfung — sonst ist der Zettel-Code schon verbraucht, wenn die Sperre auffällt.
+- Die Middleware lief vor `SetLocale`, ihre Meldung stand deshalb immer auf Deutsch — auch für den, der die Oberfläche auf Englisch hat. Sie steht jetzt dahinter.
+- Der Selbstschutz verwarf beim Abweisen alle übrigen Änderungen desselben Formulars. `withInput()` hält sie fest.
+
+### Internal
+
+- Die Sperre wurde nach dem Bau von mehreren Agenten parallel gegengeprüft — vier Blickwinkel, jeder Fund von drei Skeptikern zu widerlegen versucht. Zehn Funde haben das überstanden, acht nicht. Die vier oben stammen daher; die Testlücken ebenso: Der Weg über die zweite Stufe, die Datenrouten der API (geprüft war nur `/api/user`) und der Livewire-Weg über die eigene Update-Route hatten keinen Test. Alle vier neuen Wachen fallen gegen den vorherigen Stand durch — nachgestellt und geprüft.
+
 ## 26.09.19
 
 ### Changed

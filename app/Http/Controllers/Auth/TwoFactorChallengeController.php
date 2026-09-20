@@ -34,11 +34,43 @@ class TwoFactorChallengeController extends Controller
 
     public function create(Request $request): View|RedirectResponse
     {
-        if (! $this->wartenderNutzer($request)) {
+        $nutzer = $this->wartenderNutzer($request);
+
+        if (! $nutzer) {
             return redirect()->route('login');
         }
 
+        if ($abweisung = $this->gesperrtAbweisen($request, $nutzer)) {
+            return $abweisung;
+        }
+
         return view('auth.two-factor-challenge');
+    }
+
+    /**
+     * Ein gesperrter Zugang kommt auch durch den zweiten Eingang nicht herein.
+     *
+     * LoginRequest prueft die Sperre beim Kennwort. Wer zwischen Kennwort und
+     * Einmalcode gesperrt wird, kaeme hier aber trotzdem durch: Auth::login()
+     * weiter unten fragt nicht nach. Dass ZugangAktiv ihn beim naechsten
+     * Aufruf wieder hinauswirft, ist kein Ersatz - bis dahin haette er einen
+     * gueltigen "angemeldet bleiben"-Cookie, einen verbrauchten
+     * Wiederherstellungscode und einen Protokolleintrag "Angemeldet".
+     *
+     * Deshalb vor der Codepruefung und nicht danach: Sonst ist der Zettel-Code
+     * schon verbraucht, wenn die Sperre auffaellt.
+     */
+    private function gesperrtAbweisen(Request $request, User $nutzer): ?RedirectResponse
+    {
+        if (! $nutzer->istDeaktiviert()) {
+            return null;
+        }
+
+        $request->session()->forget([self::WARTET, self::GEMERKT]);
+
+        return redirect()->route('login')->withErrors([
+            'username' => __('Dieser Zugang ist deaktiviert. Wenden Sie sich an Ihre Administration.'),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -47,6 +79,10 @@ class TwoFactorChallengeController extends Controller
 
         if (! $nutzer) {
             return redirect()->route('login');
+        }
+
+        if ($abweisung = $this->gesperrtAbweisen($request, $nutzer)) {
+            return $abweisung;
         }
 
         $this->nichtGesperrt($nutzer);

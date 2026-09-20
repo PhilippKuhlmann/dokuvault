@@ -24,6 +24,7 @@ class User extends Authenticatable
         'role_id',
         'customer_id',
         'two_factor_required',
+        'deactivated_at',
     ];
 
     protected $hidden = [
@@ -39,6 +40,7 @@ class User extends Authenticatable
         'last_login_at' => 'datetime',
         'invited_at' => 'datetime',
         'invitation_accepted_at' => 'datetime',
+        'deactivated_at' => 'datetime',
     ];
 
     /**
@@ -113,6 +115,20 @@ class User extends Authenticatable
     public function einladungOffen(): bool
     {
         return $this->invited_at !== null;
+    }
+
+    /**
+     * Der Zugang ist gesperrt: keine Anmeldung, keine laufende Sitzung, keine
+     * API-Token.
+     *
+     * Absichtlich kein Loeschen: An einem Benutzer haengen Protokolleintraege,
+     * und ein geloeschter Benutzer macht aus "Rita hat den Serverschrank
+     * geaendert" ein "jemand". Wer das Haus verlaesst, wird gesperrt - was er
+     * getan hat, bleibt lesbar.
+     */
+    public function istDeaktiviert(): bool
+    {
+        return $this->deactivated_at !== null;
     }
 
     /**

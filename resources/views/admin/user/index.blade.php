@@ -17,7 +17,7 @@
 
 <div class="m-3">
     <x-table.main>
-        <x-table.head :labels="['Name', 'Benutzername', 'Rolle', 'Kunde', 'Zweite Stufe', 'Einladung', 'Zuletzt angemeldet', '', ]" />
+        <x-table.head :labels="['Name', 'Benutzername', 'Rolle', 'Kunde', 'Zugang', 'Zweite Stufe', 'Einladung', 'Zuletzt angemeldet', '', ]" />
 
         <x-table.body>
 
@@ -28,18 +28,32 @@
                  hat. --}}
             @foreach ($users as $user)
 
+                {{-- Der Zugang als Haken oder Kreuz ueber x-statusicon - die
+                     Komponente sagt dazu schon "Aktiv" und "Deaktiviert".
+
+                     Solche Hinweise gehoeren hierher und nicht in das
+                     :values-Attribut: Ein Anfuehrungszeichen in einem
+                     PHP-Kommentar darin beendet das Attribut, und Blade
+                     schreibt den ganzen Komponenten-Tag als Text in die Seite.
+                     Sichtbar war davon nur eine leere Tabelle. --}}
                 <x-table.datarow
                     :values="[
                         $user->name,
                         $user->username,
                         $user->role?->name ?? '—',
                         $user->customer ? $user->customer->name : '',
+                        'status' => ! $user->istDeaktiviert(),
                         'zweitestufe' => $user->hatZweiteStufe()
                             ? 'eingerichtet'
                             : ($user->two_factor_required ? 'offen' : null),
                         'einladung' => $user,
                         Zeit::anzeigen($user->last_login_at, 'd.m.Y H:i', __('noch nie')),
                     ]"
+
+                    {{-- Die Zeile bleibt lesbar, tritt aber zurueck: Ein
+                         gesperrtes Konto ist dokumentiert und trotzdem nicht
+                         das, wonach man sucht. --}}
+                    :inaktiv="$user->istDeaktiviert()"
 
                     editUrl="{{ route('admin.user.edit', $user) }}"
                     can="admin_user"
