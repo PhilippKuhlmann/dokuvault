@@ -4,6 +4,10 @@
 
 ### Changed
 
+- **Beim Bearbeiten einer Rolle tat „Alle auswählen" im Admin-Kasten nichts.** Der Haken setzte sich, die neun Rechte darunter blieben leer. Er sucht sein Ziel über `closest()` — also von sich aus nach oben —, und `data-admin-block` saß am Raster *unter* der Kopfzeile, in der er steht. Damit war es ein Geschwister und kein Vorfahre: `closest()` lieferte `null`, der Aufruf warf, und zu sehen war davon nichts. Das Attribut sitzt jetzt am ganzen Kasten.
+  - Der Haken über der Rechte-Matrix war davon nicht betroffen — der fand sein `data-perm-root` immer.
+  - Ein Test hält beide Beziehungen fest, und zwar die, auf die es ankommt: Jeder Haken muss **innerhalb** des Elements liegen, nach dem er sucht. Gegen den vorherigen Stand fällt er durch.
+
 - **Das Benutzermenü oben rechts ist kleiner und aufgeräumt.** Das Zeichen war mit 40 px so hoch wie der ganze Knopf daneben, während dessen Symbol nur 20 px misst — es wirkte doppelt so schwer wie seine Nachbarn, obwohl es dieselbe Rolle hat. Jetzt ein 32-px-Kreis mit einem 20-px-Zeichen darin: dieselbe Strichstärke wie Sprache und Erscheinungsbild, nur rund.
   - Die Klappliste trägt die Flächen der übrigen Blätter — Rahmen, Karte, kräftiger Schatten. Vorher war sie im Dunkeln `gray-700` und damit **heller** als alles, worüber sie lag. Die Einträge haben ein Zeichen vor dem Wort, und „Abmelden" steht abgesetzt und in Rot: Es ist nicht dasselbe wie irgendwohin wechseln.
   - Sie lief außerdem bis an den Fensterrand, während der Knopf 20 px davor sitzt — Flowbite zentrierte sie unter dem Knopf und klemmte sie dann an den Rand. Mit `bottom-end` endet sie bündig mit ihm.

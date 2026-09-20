@@ -64,7 +64,13 @@
          Installation: Wer sie vergibt, soll das nicht zwischen zwei
          Geraetezeilen tun. --}}
     @if (count($adminRechte))
-        <div class="mt-5 rounded-xl border border-amber-300 bg-amber-50/60 p-4 dark:border-amber-800/70 dark:bg-amber-900/10">
+        {{-- data-admin-block sitzt am ganzen Kasten, nicht nur am Raster
+             darunter: Der "Alle auswaehlen"-Haken steht in der Kopfzeile, und
+             sein closest() sucht nach oben. Lag das Attribut am Raster, war es
+             ein Geschwister und nicht ein Vorfahre - closest() lieferte null,
+             der Aufruf warf, und der Haken tat nichts. --}}
+        <div data-admin-block
+            class="mt-5 rounded-xl border border-amber-300 bg-amber-50/60 p-4 dark:border-amber-800/70 dark:bg-amber-900/10">
             <div class="flex items-start justify-between gap-3">
                 <div>
                     <div class="flex items-center gap-2 text-sm font-semibold text-amber-900 dark:text-amber-300">
@@ -83,7 +89,7 @@
                 </label>
             </div>
 
-            <div data-admin-block class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($adminRechte as $perm)
                     <label class="flex cursor-pointer items-center gap-2 text-sm text-gray-800 dark:text-gray-200">
                         <input type="checkbox" name="permissions[]" value="{{ $perm->id }}"
