@@ -40,47 +40,7 @@
                         <x-locale-switch class="dark:text-gray-400 hover:bg-cerulean-500 dark:hover:bg-gray-700" />
                         <x-theme-toggle class="dark:text-gray-400 hover:bg-cerulean-500 dark:hover:bg-gray-700" />
                     </div>
-                    <div>
-                        <button type="button"
-                            class="flex text-sm w-10 h-10 overflow-hidden relative bg-gray-800 rounded-full focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600"
-                            aria-expanded="false" data-dropdown-toggle="dropdown-user">
-                            <span class="sr-only">{{ __('Open user menu') }}</span>
-                            <svg class="w-full h-full text-gray-300" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.42 0-8 2.239-8 5v1h16v-1c0-2.761-3.58-5-8-5z"/></svg>
-                        </button>
-                    </div>
-                    <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow-sm dark:bg-gray-700 dark:divide-gray-600"
-                        id="dropdown-user">
-                        <div class="px-4 py-3" role="none">
-                            <p class="text-sm text-gray-900 dark:text-white" role="none">
-                                {{ auth()->user()->name }}
-                            </p>
-                            <p class="text-sm font-light text-gray-500 truncate dark:text-gray-300" role="none">
-                                {{ auth()->user()->email }}
-                            </p>
-                        </div>
-                        <ul class="py-1" role="none">
-                            @can('admin_bereich')
-                                <li>
-                                    <x-dropdown-link :href="route('admin.dashboard')">{{ __('Administration') }}</x-dropdown-link>
-                                </li>
-                            @endcan
-                            <li>
-                                <x-dropdown-link :href="route('profile.edit')">{{ __('Profil bearbeiten') }}</x-dropdown-link>
-                            </li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-
-                                    <x-dropdown-link :href="route('logout')"
-                                            onclick="event.preventDefault();
-                                                        this.closest('form').submit();">
-
-                                            {{ __('Abmelden') }}
-                                    </x-dropdown-link>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
+                    <x-nav.benutzermenue />
                 </div>
             </div>
         </div>

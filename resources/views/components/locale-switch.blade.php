@@ -26,7 +26,11 @@
         </button>
 
         <div id="dropdown-locale"
-            class="z-50 hidden my-4 min-w-40 text-base list-none bg-white rounded shadow-sm dark:bg-gray-700">
+            {{-- Dieselbe Flaeche wie das Benutzermenue daneben: Rahmen,
+                 Karte, kraeftiger Schatten. Vorher war sie im Dunkeln gray-700
+                 und damit heller als alles, worueber sie lag. --}}
+            class="z-50 hidden min-w-44 rounded-lg border border-chathams-blue-200 bg-white text-base
+                   list-none shadow-xl dark:border-gray-700 dark:bg-gray-800">
             <ul class="py-1">
                 @foreach ($sprachen as $code => $bezeichnung)
                     <li>
@@ -34,7 +38,7 @@
                             @csrf
                             <button type="submit"
                                 class="flex w-full items-center justify-between gap-3 px-4 py-2 text-left text-sm
-                                       text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600
+                                       text-gray-700 hover:bg-chathams-blue-50 dark:text-gray-200 dark:hover:bg-gray-700
                                        {{ $code === $aktuell ? 'font-semibold' : '' }}"
                                 @if ($code === $aktuell) aria-current="true" @endif>
                                 <span>{{ $bezeichnung }}</span>
