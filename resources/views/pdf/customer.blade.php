@@ -6,21 +6,55 @@
     <title>Dokumentation - {{ $customer->name }}</title>
 
     <style>
-        @font-face { font-family: 'CoconPro'; src: url('fonts/CoconPro.otf'); }
-        @font-face { font-family: 'DINPro-Regular'; src: url('fonts/DINPro-Regular.otf'); }
+        {{--
+            Dieselbe Schrift wie die Anwendung.
+
+            TTF und nicht die woff2 der Oberflaeche: DomPDF laedt aus einem
+            @font-face ausschliesslich Quellen im Format truetype (siehe
+            Css/Stylesheet::_parse_font_face) und ignoriert alles andere
+            stillschweigend - das Blatt saehe dann aus wie ein Serienbrief.
+
+            Die drei Dateien sind feste Schnitte aus der variablen Fassung und
+            tragen den vollen Zeichenvorrat. Die woff2 der Oberflaeche sind
+            nach Zeichenbereich geteilt, was im PDF nicht ginge: DomPDF kennt
+            kein unicode-range und nimmt je Gewicht genau eine Datei.
+
+            Auch der 700er ist angemeldet, obwohl das Blatt ihn heute nirgends
+            anfordert. Ohne ihn faende ein spaeteres <strong> in dieser
+            Familie keinen passenden Schnitt, und DomPDF fiele fuer die Stelle
+            auf seine Standardschrift zurueck.
+        --}}
+        @font-face { font-family: 'Space Grotesk'; font-weight: 400; src: url('fonts/SpaceGrotesk-Regular.ttf'); }
+        @font-face { font-family: 'Space Grotesk'; font-weight: 600; src: url('fonts/SpaceGrotesk-Semibold.ttf'); }
+        @font-face { font-family: 'Space Grotesk'; font-weight: 700; src: url('fonts/SpaceGrotesk-Bold.ttf'); }
+
+        {{--
+            Die Farben stehen als feste Werte da, weil DomPDF keine
+            CSS-Variablen aufloest. Es sind dieselben wie in der Oberflaeche,
+            hier einmal benannt, damit eine Aenderung am Token nicht
+            unbemerkt am Blatt vorbeilaeuft:
+
+              #1f3d6e  chathams-blue-800   Ueberschriften
+              #f1f6fc  chathams-blue-50    Kartenkopf
+              #3391f0  cerulean-500        Linien und Akzent
+              #111827  gray-900            Fliesstext
+              #6b7280  gray-500            Beschriftungen
+              #9ca3af  gray-400            Nebensaechliches
+              #e5e7eb  gray-200            Raender
+              #f3f4f6  gray-100            feine Trennlinien
+        --}}
 
         * { box-sizing: border-box; }
-        html { font-family: 'DINPro-Regular'; color: #111827; font-size: 12px; }
+        html { font-family: 'Space Grotesk'; color: #111827; font-size: 12px; }
         /* In DomPDF wird der body-Rand als Seitenrand auf JEDER Seite angewendet
            -> Druckränder für Drucker ohne Randlosdruck */
         body { margin: 10mm; }
-        .CoconPro { font-family: 'CoconPro'; }
 
         /* Deckblatt */
         .cover { text-align: center; padding-top: 240px; }
-        .cover-app { font-family: 'CoconPro'; font-size: 20px; color: #3391f0; margin-bottom: 14px; }
+        .cover-app { font-weight: 600; font-size: 20px; color: #3391f0; margin-bottom: 14px; }
         .cover-bar { width: 110px; height: 5px; background: #3391f0; margin: 0 auto 26px; }
-        .cover-title { font-family: 'CoconPro'; font-size: 54px; color: #1f3d6e; }
+        .cover-title { font-weight: 600; font-size: 54px; color: #1f3d6e; }
         .cover-customer { font-size: 26px; color: #6b7280; margin-top: 6px; }
         .cover-date { margin-top: 36px; font-size: 12px; color: #9ca3af; }
 
@@ -29,14 +63,16 @@
         /* Abschnitte: jeder Abschnitt beginnt auf einer neuen Seite
            -> maximal eine Überschrift pro Seite */
         .section { page-break-before: always; }
-        .heading { font-family: 'CoconPro'; font-size: 23px; color: #1f3d6e; border-bottom: 2px solid #3391f0; padding-bottom: 4px; margin-bottom: 10px; }
+        .heading { font-weight: 600; font-size: 23px; color: #1f3d6e; border-bottom: 2px solid #3391f0; padding-bottom: 4px; margin-bottom: 10px; }
 
-        .card { border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 10px; page-break-inside: avoid; }
-        .card-title { font-family: 'CoconPro'; font-size: 15px; color: #1f3d6e; background: #f3f6fb; padding: 6px 10px; border-bottom: 1px solid #e5e7eb; border-radius: 6px 6px 0 0; }
+        /* 4px: derselbe Radius wie rounded-xl in der Oberflaeche. Vorher 6px -
+           die Ecken des Blattes waren runder als jede Karte der Anwendung. */
+        .card { border: 1px solid #e5e7eb; border-radius: 4px; margin-bottom: 10px; page-break-inside: avoid; }
+        .card-title { font-weight: 600; font-size: 15px; color: #1f3d6e; background: #f1f6fc; padding: 6px 10px; border-bottom: 1px solid #e5e7eb; border-radius: 4px 4px 0 0; }
         .card-body { padding: 8px 10px; }
 
         .card-table { float: left; margin-right: 3%; margin-bottom: 6px; }
-        .card-table-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #9ca3af; margin-bottom: 3px; }
+        .card-table-title { font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #9ca3af; margin-bottom: 3px; }
         .card-table table { width: 100%; border-collapse: collapse; }
         .card-table td { padding: 2px 0; font-size: 11px; vertical-align: top; }
         .card-table td.key { color: #6b7280; width: 45%; padding-right: 8px; }
