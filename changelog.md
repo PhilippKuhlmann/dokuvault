@@ -4,6 +4,12 @@
 
 ### Changed
 
+- **Neues Logo.** Eine aufgeklappte Mappe mit Schloss, dahinter die Papiere — als Bild und nicht als Zeichnung im Quelltext, weil das Motiv ein Bild ist und eine Nachzeichnung davon eben nicht dieses Logo wäre.
+  - **Zwei Fassungen derselben Datei.** Das Navy des Logos (`#0d1e35`) ist fast genau die Farbe der dunklen Kopfleiste — dort wäre nur das Blau übrig geblieben. `logo-hell.png` ist dieselbe Zeichnung mit aufgehelltem Navy, aus dem Original erzeugt und nicht neu gezeichnet; die Seite schaltet per `dark:` um.
+  - Das Favicon liegt als `favicon.png` mit weißer Kachel: Ohne sie verschwindet das dunkle Navy auf einer dunklen Browserleiste. Das frühere `logo.svg` ist entfallen.
+  - Der blaue Badge hinter dem alten Motiv ist weg — das neue Logo bringt sein eigenes Blau mit, in einem blauen Quadrat stießen beide aufeinander.
+  - Preis der Bildfassung: rund 60 KB für die drei Dateien gegenüber 1,2 KB für das frühere SVG, und bei sehr kleinen Größen weniger scharf als ein Vektor. Der Test, der das eingebaute Motiv festhält, prüft jetzt **beide** Fassungen — fehlt die helle, sähe man im Hellen nichts davon.
+
 - **Beim Bearbeiten einer Rolle tat „Alle auswählen" im Admin-Kasten nichts.** Der Haken setzte sich, die neun Rechte darunter blieben leer. Er sucht sein Ziel über `closest()` — also von sich aus nach oben —, und `data-admin-block` saß am Raster *unter* der Kopfzeile, in der er steht. Damit war es ein Geschwister und kein Vorfahre: `closest()` lieferte `null`, der Aufruf warf, und zu sehen war davon nichts. Das Attribut sitzt jetzt am ganzen Kasten.
   - Der Haken über der Rechte-Matrix war davon nicht betroffen — der fand sein `data-perm-root` immer.
   - Ein Test hält beide Beziehungen fest, und zwar die, auf die es ankommt: Jeder Haken muss **innerhalb** des Elements liegen, nach dem er sucht. Gegen den vorherigen Stand fällt er durch.

@@ -8,5 +8,8 @@
 @if (\App\Models\Setting::logoPfad('favicon'))
     <link rel="icon" href="{{ route('branding.logo', 'favicon') }}">
 @else
-    <link rel="icon" href="{{ asset('logo.svg') }}" type="image/svg+xml">
+    {{-- PNG mit weisser Kachel statt des frueheren SVG: Das Motiv ist ein
+         Bild, und ohne Kachel verschwindet sein dunkles Navy auf einer
+         dunklen Browserleiste. --}}
+    <link rel="icon" href="{{ asset('favicon.png') }}" type="image/png">
 @endif

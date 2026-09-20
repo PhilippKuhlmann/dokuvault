@@ -56,17 +56,17 @@
                 </h1>
             @else
                 <h1 class="mb-8 flex items-center gap-3">
-                    <svg viewBox="18 12 64 76" width="26" height="31" aria-hidden="true" focusable="false">
-                        <rect x="20" y="14" width="60" height="72" rx="6" fill="#122748" />
-                        <rect x="20" y="14" width="10" height="72" rx="6" fill="#1f73d6" />
-                        <line x1="70" y1="30" x2="76" y2="30" stroke="#e6ebf2" stroke-width="2.5" stroke-linecap="round" />
-                        <line x1="70" y1="50" x2="76" y2="50" stroke="#e6ebf2" stroke-width="2.5" stroke-linecap="round" />
-                        <line x1="70" y1="70" x2="76" y2="70" stroke="#e6ebf2" stroke-width="2.5" stroke-linecap="round" />
-                        <path d="M42 45 V38 a8 8 0 0 1 16 0 V45" fill="none" stroke="#e6ebf2" stroke-width="4" stroke-linecap="round" />
-                        <rect x="37" y="44" width="26" height="22" rx="4" fill="#e6ebf2" />
-                        <circle cx="50" cy="52" r="3" fill="#122748" />
-                        <rect x="48.5" y="54" width="3" height="7" rx="1" fill="#122748" />
-                    </svg>
+                {{-- Zwei Fassungen derselben Zeichnung: Das Navy des Logos (#0d1e35) ist
+             fast die Farbe der dunklen Kopfleiste - dort bliebe nur das Blau
+             uebrig. logo-hell.png ist dieselbe Datei mit aufgehelltem Navy,
+             erzeugt aus dem Original, nicht neu gezeichnet.
+
+             Als <img> und nicht als SVG, weil das Motiv ein Bild ist; ein
+             Vektor davon waere eine Nachzeichnung und nicht dieses Logo. --}}
+        <img src="{{ asset('logo.png') }}" alt="" width="44" height="44"
+            class="h-11 w-11 shrink-0 dark:hidden" />
+        <img src="{{ asset('logo-hell.png') }}" alt="" width="44" height="44"
+            class="h-11 w-11 shrink-0 hidden dark:block" />
                     <span class="font-CoconPro text-lg uppercase tracking-[0.13em] text-chathams-blue-800 sm:text-xl dark:text-gray-100">
                         {{ \App\Models\Setting::appName() }}
                     </span>

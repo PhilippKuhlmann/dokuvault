@@ -171,10 +171,16 @@ test('das Logo geht ohne Anmeldung heraus, mit nosniff', function () {
 test('ohne eigene Logos bleibt ueberall das eingebaute Motiv stehen', function () {
     $this->actingAs(adminNutzer());
 
-    // Mit Anfuehrungszeichen vergleichen: "/logo.svg" enthaelt "/logo" und
+    // Mit Anfuehrungszeichen vergleichen: "/logo.png" enthaelt "/logo" und
     // wuerde sonst als Treffer gelten.
+    //
+    // Beide Fassungen: Das Navy des Logos ist fast die Farbe der dunklen
+    // Kopfleiste, deshalb gibt es logo-hell.png fuer den Dunkelmodus. Faellt
+    // die weg, sieht man im Hellen nichts davon - genau die Sorte Ausfall,
+    // die niemandem auffaellt.
     $this->get(route('admin.dashboard'))
-        ->assertSee('logo.svg', false)
+        ->assertSee('logo.png"', false)
+        ->assertSee('logo-hell.png"', false)
         ->assertDontSee('"'.route('branding.logo', 'header').'"', false);
 });
 
