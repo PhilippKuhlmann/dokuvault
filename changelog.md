@@ -4,6 +4,10 @@
 
 ### Changed
 
+- **33 Schriftdateien lagen unbenutzt im Quelltext.** Die Originale von DIN Pro und Cocon Pro, dazu ein ganzer DomPDF-Schriftcache in `public/fonts` — Reste aus der Zeit, als dort das Cache-Verzeichnis lag. Seit der PDF-Export auf Space Grotesk steht, verweist nichts mehr darauf: weder Code noch Konfiguration, weder `.env` noch Docker, und `font_dir` zeigt längst auf `storage/fonts`. Die einzigen Treffer einer Suche nach „CoconPro" und „DINPro" standen in den Cache-Dateien selbst. Rund 1 MB weniger im Repository; übrig bleiben die zehn `woff2` der Oberfläche und die drei `ttf` fürs PDF.
+  - Belegt statt behauptet: PDF mit vollständig geleertem Schriftcache erzeugt. Er baut sich nur noch mit Space Grotesk auf, kein Eintrag für CoconPro oder DINPro — und das Blatt sieht aus wie vorher, in derselben Zeit.
+  - Dabei ist das gebaute CSS um 2,5 KB geschrumpft. Tailwind liest `storage/framework/views` mit, und dort lagen noch übersetzte Fassungen längst gelöschter Vorlagen — vor allem das Modal aus dem Breeze-Bestand. 23 Selektoren weniger, keiner hinzugekommen; jeder einzelne nachgeprüft, ob ihn noch etwas braucht.
+
 - **Der Queue-Worker starb nach jedem einzelnen PDF.** `queue:work` hat `--memory=128` als Vorgabe, ein Export-Auftrag liegt darüber — der Beispielkunde kommt auf 164 MB. Der Worker prüft seinen Verbrauch **nach** jedem Auftrag und beendet sich mit Code 12 (`EXIT_MEMORY_LIMIT`), wenn er darüber liegt. Das erste PDF wurde also fertig, jedes weitere blieb liegen und wartete auf den nächsten Minutenlauf: Bei drei wartenden Exporten dauerte es drei Minuten statt zehn Sekunden. Der Zeitplan in `routes/console.php` gibt jetzt `--memory=512` mit.
   - Nachgemessen, zwei Aufträge in der Schlange: ohne die Angabe wird einer verarbeitet und einer bleibt liegen, mit ihr beide im selben Lauf.
   - Die 512 sind kein Bedarf, sondern Luft. Der Auftrag setzt sein eigenes `memory_limit` ohnehin auf 1G, damit auch ein Kunde mit vielen Serverschränken durchläuft; die Zahl im Worker entscheidet nur, ab wann er sich für verbraucht hält.
