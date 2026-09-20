@@ -61,6 +61,7 @@
 
 - **Das Screenshot-Werkzeug räumt seine eigenen Anmeldungen jetzt selbst weg.** Es meldet sich je Sprache einmal an, und das stand danach im Aktivitätsprotokoll — auf `protokoll.png` und in „Letzte Aktivitäten" auf dem Admin-Dashboard. Beide Bilder zeigten dann das Werkzeug statt der Anwendung. Hinterher aufzuräumen half nicht: Die Anmeldung steht am Anfang des Laufs, die beiden Bilder entstehen am Ende — löschen und neu aufnehmen hieße wieder anmelden. Jetzt passiert es direkt nach dem Anmelden, eng gefasst auf das Ereignis `anmeldung` ab dem Start des Laufs.
   - Dabei fiel eine zweite Altlast auf: Das Werkzeug nahm einen `confirm()`-Dialog entgegen, den es seit dem Umbau der Löschen-Rückfrage nicht mehr gibt. Die Zeile war wirkungslos geworden.
+- **Alle Screenshots neu aufgenommen**, in beiden Sprachen — sie zeigten noch das alte Logo, und die umgebauten Seiten (beide Suchen, Profil, Benutzerliste mit Zugang-Spalte) ihren früheren Stand.
 
 - Die Sperre wurde nach dem Bau von mehreren Agenten parallel gegengeprüft — vier Blickwinkel, jeder Fund von drei Skeptikern zu widerlegen versucht. Zehn Funde haben das überstanden, acht nicht. Die vier oben stammen daher; die Testlücken ebenso: Der Weg über die zweite Stufe, die Datenrouten der API (geprüft war nur `/api/user`) und der Livewire-Weg über die eigene Update-Route hatten keinen Test. Alle vier neuen Wachen fallen gegen den vorherigen Stand durch — nachgestellt und geprüft.
 
