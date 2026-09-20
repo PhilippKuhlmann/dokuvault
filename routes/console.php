@@ -36,7 +36,19 @@ Artisan::command('inspire', function () {
 // einem Deploy mit altem Code weiterarbeitet. Die Laufzeit bleibt unter einer
 // Minute, damit sich zwei Laeufe nicht ins Gehege kommen; withoutOverlapping
 // sichert das zusaetzlich ab, denn ein grosses PDF dauert laenger.
-Schedule::command('queue:work --stop-when-empty --max-time=55 --tries=1')
+//
+// --memory=512, weil der Vorgabewert 128 MB betraegt und ein PDF-Auftrag
+// darueber liegt: Der Export des Beispielkunden kommt auf 164 MB. Der Worker
+// prueft den Verbrauch NACH jedem Auftrag und beendet sich mit Code 12
+// (EXIT_MEMORY_LIMIT), wenn er darueber liegt - das erste PDF wird also fertig,
+// das zweite blieb liegen und wartete auf den naechsten Minutenlauf. Bei drei
+// wartenden Exporten dauerte es damit drei Minuten statt zehn Sekunden.
+//
+// Die 512 sind kein Bedarf, sondern Luft: Der Auftrag selbst setzt sein
+// memory_limit auf 1G, damit auch ein Kunde mit vielen Serverschraenken
+// durchlaeuft. Diese Zahl hier entscheidet nur, ab wann der Worker sich fuer
+// verbraucht haelt.
+Schedule::command('queue:work --stop-when-empty --max-time=55 --tries=1 --memory=512')
     ->everyMinute()
     ->withoutOverlapping(10);
 

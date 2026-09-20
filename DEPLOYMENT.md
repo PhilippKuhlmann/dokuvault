@@ -56,8 +56,12 @@ minutes instead of spinning endlessly, but nobody gets a PDF. `QUEUE_CONNECTION=
 set in `.env` as well; `.env.example` ships with it.
 
 If you prefer a permanently running worker (reacting in seconds rather than once a minute), use a
-systemd unit running `php artisan queue:work` and restart it after each deploy. The cron line is
-the smaller setup and enough for PDFs.
+systemd unit running `php artisan queue:work --memory=512` and restart it after each deploy. The
+cron line is the smaller setup and enough for PDFs.
+
+`--memory=512` is not optional here. The default is 128 MB, and a PDF job goes past it — the
+example customer's export peaks at 164 MB. The worker checks its own usage *after* each job and
+exits with code 12 when it is over, so a plain `queue:work` would die after every single PDF.
 
 ### 2. SSH key for GitHub
 
