@@ -468,7 +468,6 @@
     "Keine Datei passt zu den Filtern.": "No file matches the filters.",
     "Keine Daten.": "No data.",
     "Keine Standorte": "No sites",
-    "Keine Suchergebnisse": "No search results",
     "Keine Treffer": "No matches",
     "Keine VLANs angelegt.": "No VLANs created.",
     "Keine ablaufenden Garantien 🎉": "No expiring warranties 🎉",
@@ -496,7 +495,6 @@
     "Kopiert ✓": "Copied ✓",
     "Kunde": "Customer",
     "Kunde bearbeiten": "Edit customer",
-    "Kunde suchen und öffnen": "Find and open a customer",
     "Kunde suchen …": "Find a customer …",
     "Kunden": "Customers",
     "Kunden Gesamt": "Customers total",
@@ -1019,5 +1017,10 @@
     "gesperrt seit": "blocked since",
     "Dieser Zugang ist deaktiviert. Wenden Sie sich an Ihre Administration.": "This account is deactivated. Please contact your administrator.",
     "Dieser Zugang ist deaktiviert.": "This account is deactivated.",
-    "Den eigenen Zugang können Sie nicht sperren.": "You cannot block your own account."
+    "Den eigenen Zugang können Sie nicht sperren.": "You cannot block your own account.",
+    "Suchbegriff": "Search term",
+    "1 Kunde": "1 customer",
+    ":anzahl Kunden": ":anzahl customers",
+    "Namen eintippen — die Liste folgt beim Schreiben.": "Start typing a name — the list follows as you go.",
+    "Kein Kunde mit diesem Namen.": "No customer by that name."
 }

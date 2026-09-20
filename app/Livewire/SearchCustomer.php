@@ -53,6 +53,22 @@ class SearchCustomer extends Component
         return view('livewire.search-customer', [
             'customers' => $customers,
             'weitere' => $weitere,
+            'gesamt' => $this->gesamt(),
         ]);
+    }
+
+    /**
+     * Wie viele Kunden dieser Nutzer ueberhaupt sehen kann.
+     *
+     * Steht im Schriftkopf der Karte, wie die Stueckzahl auf einer Zeichnung.
+     * Dieselbe Einschraenkung wie bei der Suche: Ein auf einen Kunden
+     * festgelegter Nutzer zaehlt nur seinen eigenen - sonst verriete schon die
+     * Zahl, wie viele andere es gibt.
+     */
+    private function gesamt(): int
+    {
+        return Customer::query()
+            ->when(auth()->user()?->customer_id, fn ($abfrage, $eigener) => $abfrage->whereKey($eigener))
+            ->count();
     }
 }

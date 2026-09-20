@@ -2,6 +2,14 @@
 
 ## 26.09.20
 
+### Changed
+
+- **Die Kundensuche trägt jetzt dieselbe Sprache wie die Anmeldeseite.** Millimeterpapier als Untergrund, Schriftkopf mit Versalien auf Monospace, scharfe Ecken, die Treffer als technische Liste. Sie stand bis eben auf der alten Hülle — Verlaufs-Badge, `rounded-2xl`, eigener Farbverlauf. Das ist die erste Seite nach der Anmeldung; sprang sie dort ins alte Aussehen zurück, war der Umbau der Tür davor vergeblich.
+  - **Bewusst ohne Netzplan dahinter.** Auf der Anmeldung sagt er etwas — das steckt hinter der Tür. Hier wäre er dieselbe Zeichnung ein zweites Mal, und über der Karte steht ohnehin schon die Navigationsleiste.
+  - Im Schriftkopf steht rechts, wie viele Kunden es überhaupt gibt — wie die Stückzahl auf einer Zeichnung. Mit derselben Einschränkung wie die Suche: Ein auf einen Kunden festgelegter Nutzer zählt nur seinen eigenen, sonst verriete schon die Zahl, wie viele andere es gibt.
+  - **Vor der ersten Eingabe steht dort nicht mehr „Keine Suchergebnisse".** Es wurde ja noch nichts gesucht. Jetzt sagt die Karte, was zu tun ist; „kein Kunde mit diesem Namen" kommt erst, wenn wirklich nichts passt.
+  - Der Ort steht klein und gedeckt unter dem Namen statt mit Gedankenstrich dahinter: Er unterscheidet zwei gleich heißende Kunden, ist aber nicht das, wonach jemand sucht.
+
 ### Added
 
 - **Benutzer lassen sich sperren.** Ein Haken im Bearbeiten-Formular, direkt unter „Zweite Stufe der Anmeldung verlangen". Gesperrt heißt an drei Stellen gesperrt: keine Anmeldung mehr, die laufende Sitzung endet beim nächsten Aufruf, und API-Token werden abgewiesen. Ohne den mittleren Punkt wäre es eine halbe Maßnahme — wer gerade angemeldet ist, bliebe sonst bis zum Abmelden drin, unter Umständen tagelang, und genau der Fall, in dem gesperrt wird, ist der, in dem das nicht reichen darf.
