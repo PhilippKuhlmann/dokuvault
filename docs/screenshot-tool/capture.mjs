@@ -9,17 +9,24 @@
 //
 // Optional: SPRACHEN=de oder SPRACHEN=en, um nur eine Sprache zu erzeugen.
 //
-// Nachher aufraeumen: Das Skript meldet sich je Sprache einmal an, und das
-// steht danach im Aktivitaetsprotokoll - auf dem Protokoll-Screenshot selbst
-// und in "Letzte Aktivitaeten" auf dem Admin-Dashboard. Wer die Bilder fuer
-// die README erzeugt, raeumt die eigenen Anmeldungen hinterher weg, sonst
-// zeigen beide Bilder das Werkzeug statt der Anwendung:
+// Das Skript raeumt seine eigenen Anmeldungen selbst weg - siehe
+// anmeldungenWegraeumen() weiter unten. Es meldet sich je Sprache einmal an,
+// und das stuende sonst im Aktivitaetsprotokoll: auf protokoll.png und in
+// "Letzte Aktivitaeten" auf dem Admin-Dashboard. Beide Bilder zeigten dann
+// das Werkzeug statt der Anwendung.
 //
-//   php artisan tinker --execute='Spatie\Activitylog\Models\Activity::where("event","anmeldung")->where("created_at",">=",now()->subHour())->delete();'
+// Hinterher aufzuraeumen hilft dabei nicht: Die Anmeldung steht am Anfang,
+// die beiden Bilder entstehen am Ende - der Eintrag ist zum Zeitpunkt der
+// Aufnahme also laengst da. Deshalb direkt nach dem Anmelden.
 
 import puppeteer from 'puppeteer';
+import { execFileSync } from 'node:child_process';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
+
+// UTC, weil Laravel so speichert (siehe App\Support\Zeit: umgerechnet wird
+// erst beim Anzeigen). Alles ab diesem Zeitpunkt stammt aus diesem Lauf.
+const START_UTC = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
 const BASIS = process.env.DOKUVAULT_URL || 'http://localhost:8141';
 const NUTZER = process.env.DOKUVAULT_USER;
@@ -80,6 +87,26 @@ async function anmelden(page) {
   ]);
 }
 
+/**
+ * Die Anmeldungen dieses Laufs aus dem Aktivitaetsprotokoll entfernen.
+ *
+ * Eng gefasst: nur das Ereignis "anmeldung" und nur ab dem Start des Skripts.
+ * Wer waehrend eines Screenshot-Laufs zufaellig selbst eine echte Anmeldung
+ * erzeugt, verliert deren Eintrag - das Zeitfenster sind die paar Minuten des
+ * Laufs, und es ist eine Entwicklungsumgebung.
+ */
+function anmeldungenWegraeumen() {
+  try {
+    execFileSync('php', ['artisan', 'tinker', '--execute',
+      `Spatie\\Activitylog\\Models\\Activity::where('event','anmeldung')`
+      + `->where('created_at','>=','${START_UTC}')->delete();`,
+    ], { stdio: 'ignore' });
+  } catch (fehler) {
+    console.error(`  WARNUNG: Anmeldungen nicht weggeraeumt (${fehler.message}).`);
+    console.error('  protokoll.png und admin-dashboard.png zeigen dann dieses Werkzeug.');
+  }
+}
+
 async function seiteEinstellen(page, sprache) {
   // /locale/{code} ist ein POST mit CSRF-Formular (siehe locale-switch.blade.php),
   // kein Link. Das vorhandene Formular im DOM absenden statt eine eigene
@@ -131,8 +158,12 @@ async function autodocScreenshot(page, zielOrdner) {
   // Aufraeumen: den gerade erzeugten Token wieder widerrufen, damit ein
   // zweiter Lauf des Skripts nicht einen weiteren "Screenshot"-Token
   // anhaeuft. Der eben erzeugte Token steht als erster in der Liste "Aktive
-  // Token". Der Bestaetigungsdialog (confirm()) wird automatisch angenommen.
-  page.once('dialog', (dialog) => dialog.accept());
+  // Token".
+  //
+  // Frueher stand hier zusaetzlich page.once('dialog', ...): Die Rueckfrage
+  // war ein confirm() des Browsers. Sie ist jetzt ein Blatt der Anwendung
+  // (x-loeschdialog), und das Widerrufen-Formular liegt darin - per
+  // requestSubmit() abgeschickt braucht es den Dialog gar nicht erst.
   const geklickt = await page.evaluate(() => {
     const knopf = document.querySelector('form[action*="/agent/"] button[type=submit]');
     if (!knopf) return false;
@@ -200,6 +231,10 @@ try {
     await screenshot(page, loginSeite, path.join(zielOrdner, `${loginSeite.datei}.png`));
 
     await anmelden(page);
+
+    // Sofort und nicht am Ende: protokoll.png und admin-dashboard.png stehen
+    // unten in SEITEN, der Eintrag waere bei ihrer Aufnahme sonst schon da.
+    anmeldungenWegraeumen();
 
     for (const seite of SEITEN) {
       if (seite.angemeldet === false) continue;
