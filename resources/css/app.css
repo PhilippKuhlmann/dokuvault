@@ -20,11 +20,12 @@
   --radius-3xl: 6px;
   --radius-full: 9999px;
 
-  --font-CoconPro: SpaceGrotesk-Semibold, sans-serif;
-  --font-DINPro: SpaceGrotesk-Regular, sans-serif;
-  --font-DINPro-bold: SpaceGrotesk-Bold, sans-serif;
-  --font-DINPro-light: SpaceGrotesk-Light, sans-serif;
-  --font-DINPro-medium: SpaceGrotesk-Medium, sans-serif;
+  /*
+    Die Schrift der Anwendung. Steht hier und nicht nur an .font-DINPro,
+    damit auch alles ohne eigene Schriftklasse sie traegt - Tailwind setzt
+    --font-sans auf <html>.
+  */
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
 
   --color-blau-900: #1b4176;
   --color-blau-500: #1f73d6;
@@ -94,54 +95,147 @@
     display: none !important;
 }
 
+/*
+  Eine Familie mit fuenf Schnitten - nicht fuenf Familien mit je einem.
+
+  Vorher trug jede Datei ihren eigenen Familiennamen ("SpaceGrotesk-Bold" und
+  so fort) und keine von ihnen einen font-weight. Damit stand in jeder Familie
+  genau ein Schnitt, und der galt als der normale. Ein font-semibold traf
+  deshalb nichts: Der Browser fand in der Familie keinen 600er, nahm den
+  einzigen vorhandenen und rechnete sich das Fett selbst aus. So liefen 131
+  Stellen im Projekt - font-semibold 88-mal, font-medium 43-mal. Die
+  gezeichneten Schnitte lagen die ganze Zeit daneben und waren nur ueber
+  font-CoconPro und font-DINPro-bold zu erreichen.
+
+  Jetzt heissen alle fuenf "Space Grotesk" und unterscheiden sich im Gewicht.
+  Damit waehlt font-medium/semibold/bold den Schnitt, den ein Schriftgestalter
+  gezeichnet hat, statt einen vom Browser verdickten Regular.
+
+  Je Schnitt zwei Dateien, getrennt nach Zeichenvorrat.
+
+  Das ist nicht nur eine Sparmassnahme: Die urspruenglich eingecheckten
+  Dateien waren ausschliesslich der Ausschnitt "latin-ext" - 333 Zeichen wie
+  Ā, Ș und ₽, aber kein A, kein a, keine Ziffer und kein Umlaut. Die
+  Anwendung lief seit Juli in der Systemschrift des jeweiligen Rechners, und
+  zu sehen war das nicht, weil eine Systemschrift eben auch nach Schrift
+  aussieht. Der Ausschnitt "latin" fehlte schlicht.
+
+  Der Browser laedt nach unicode-range nur, was die Seite braucht: Steht auf
+  ihr kein osteuropaeischer Name, bleibt die zweite Datei ungeladen.
+*/
+
 @font-face {
-    font-family: "SpaceGrotesk-Light";
+    font-family: "Space Grotesk";
+    font-weight: 300;
+    font-display: swap;
     src: url("/public/fonts/SpaceGrotesk-Light.woff2") format('woff2');
-    font-display: swap;
+    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
 
 @font-face {
-    font-family: "SpaceGrotesk-Regular";
+    font-family: "Space Grotesk";
+    font-weight: 300;
+    font-display: swap;
+    src: url("/public/fonts/SpaceGrotesk-Light-ext.woff2") format('woff2');
+    unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+@font-face {
+    font-family: "Space Grotesk";
+    font-weight: 400;
+    font-display: swap;
     src: url("/public/fonts/SpaceGrotesk-Regular.woff2") format('woff2');
-    font-display: swap;
+    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
 
 @font-face {
-    font-family: "SpaceGrotesk-Medium";
+    font-family: "Space Grotesk";
+    font-weight: 400;
+    font-display: swap;
+    src: url("/public/fonts/SpaceGrotesk-Regular-ext.woff2") format('woff2');
+    unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+@font-face {
+    font-family: "Space Grotesk";
+    font-weight: 500;
+    font-display: swap;
     src: url("/public/fonts/SpaceGrotesk-Medium.woff2") format('woff2');
-    font-display: swap;
+    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
 
 @font-face {
-    font-family: "SpaceGrotesk-Semibold";
+    font-family: "Space Grotesk";
+    font-weight: 500;
+    font-display: swap;
+    src: url("/public/fonts/SpaceGrotesk-Medium-ext.woff2") format('woff2');
+    unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+@font-face {
+    font-family: "Space Grotesk";
+    font-weight: 600;
+    font-display: swap;
     src: url("/public/fonts/SpaceGrotesk-Semibold.woff2") format('woff2');
-    font-display: swap;
+    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
 
 @font-face {
-    font-family: "SpaceGrotesk-Bold";
-    src: url("/public/fonts/SpaceGrotesk-Bold.woff2") format('woff2');
+    font-family: "Space Grotesk";
+    font-weight: 600;
     font-display: swap;
+    src: url("/public/fonts/SpaceGrotesk-Semibold-ext.woff2") format('woff2');
+    unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
 }
 
+@font-face {
+    font-family: "Space Grotesk";
+    font-weight: 700;
+    font-display: swap;
+    src: url("/public/fonts/SpaceGrotesk-Bold.woff2") format('woff2');
+    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+    font-family: "Space Grotesk";
+    font-weight: 700;
+    font-display: swap;
+    src: url("/public/fonts/SpaceGrotesk-Bold-ext.woff2") format('woff2');
+    unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+/*
+  Die Klassennamen stammen aus der Zeit von DIN Pro und Cocon Pro und stehen
+  an rund neunzig Stellen. Sie bleiben deshalb - sie benennen jetzt aber einen
+  Schnitt und keine eigene Familie mehr.
+
+  Kein Element im Projekt traegt eine dieser Klassen zusammen mit einem
+  font-semibold o.ae. Sollte das einmal vorkommen: Diese Regeln stehen
+  ausserhalb der Tailwind-Ebenen und gewinnen dann.
+*/
 .font-CoconPro {
-    font-family: 'SpaceGrotesk-Semibold', sans-serif;
+    font-family: "Space Grotesk";
+    font-weight: 600;
 }
 
 .font-DINPro {
-    font-family: 'SpaceGrotesk-Regular', sans-serif;
+    font-family: "Space Grotesk";
+    font-weight: 400;
 }
 
 .font-DINPro-light {
-    font-family: 'SpaceGrotesk-Light', sans-serif;
+    font-family: "Space Grotesk";
+    font-weight: 300;
 }
 
 .font-DINPro-medium {
-    font-family: 'SpaceGrotesk-Medium', sans-serif;
+    font-family: "Space Grotesk";
+    font-weight: 500;
 }
 
 .font-DINPro-bold {
-    font-family: 'SpaceGrotesk-Bold', sans-serif;
+    font-family: "Space Grotesk";
+    font-weight: 700;
 }
 
 

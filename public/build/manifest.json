@@ -1,26 +1,46 @@
 {
+  "public/fonts/SpaceGrotesk-Bold-ext.woff2": {
+    "file": "assets/SpaceGrotesk-Bold-ext-BQnZhY3m.woff2",
+    "src": "public/fonts/SpaceGrotesk-Bold-ext.woff2"
+  },
   "public/fonts/SpaceGrotesk-Bold.woff2": {
-    "file": "assets/SpaceGrotesk-Bold-BQnZhY3m.woff2",
+    "file": "assets/SpaceGrotesk-Bold-RjhwGPKo.woff2",
     "src": "public/fonts/SpaceGrotesk-Bold.woff2"
   },
+  "public/fonts/SpaceGrotesk-Light-ext.woff2": {
+    "file": "assets/SpaceGrotesk-Light-ext-4ZO_JR7W.woff2",
+    "src": "public/fonts/SpaceGrotesk-Light-ext.woff2"
+  },
   "public/fonts/SpaceGrotesk-Light.woff2": {
-    "file": "assets/SpaceGrotesk-Light-4ZO_JR7W.woff2",
+    "file": "assets/SpaceGrotesk-Light-DiSf0yqz.woff2",
     "src": "public/fonts/SpaceGrotesk-Light.woff2"
   },
+  "public/fonts/SpaceGrotesk-Medium-ext.woff2": {
+    "file": "assets/SpaceGrotesk-Medium-ext-DUe3BAxM.woff2",
+    "src": "public/fonts/SpaceGrotesk-Medium-ext.woff2"
+  },
   "public/fonts/SpaceGrotesk-Medium.woff2": {
-    "file": "assets/SpaceGrotesk-Medium-DUe3BAxM.woff2",
+    "file": "assets/SpaceGrotesk-Medium-lFbtlQH6.woff2",
     "src": "public/fonts/SpaceGrotesk-Medium.woff2"
   },
+  "public/fonts/SpaceGrotesk-Regular-ext.woff2": {
+    "file": "assets/SpaceGrotesk-Regular-ext-CfP_5XZW.woff2",
+    "src": "public/fonts/SpaceGrotesk-Regular-ext.woff2"
+  },
   "public/fonts/SpaceGrotesk-Regular.woff2": {
-    "file": "assets/SpaceGrotesk-Regular-CfP_5XZW.woff2",
+    "file": "assets/SpaceGrotesk-Regular-CJ-V5oYT.woff2",
     "src": "public/fonts/SpaceGrotesk-Regular.woff2"
   },
+  "public/fonts/SpaceGrotesk-Semibold-ext.woff2": {
+    "file": "assets/SpaceGrotesk-Semibold-ext-DxxdqCpr.woff2",
+    "src": "public/fonts/SpaceGrotesk-Semibold-ext.woff2"
+  },
   "public/fonts/SpaceGrotesk-Semibold.woff2": {
-    "file": "assets/SpaceGrotesk-Semibold-DxxdqCpr.woff2",
+    "file": "assets/SpaceGrotesk-Semibold-DjKNqYRj.woff2",
     "src": "public/fonts/SpaceGrotesk-Semibold.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-CQ-811-_.css",
+    "file": "assets/app-B361nc_g.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
