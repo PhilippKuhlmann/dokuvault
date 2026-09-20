@@ -1,10 +1,10 @@
 <section id="zweite-stufe">
     <header>
-        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+        <h2 class="font-mono text-[11px] uppercase tracking-[0.12em] text-cerulean-600 dark:text-cerulean-400">
             {{ __('Zweite Stufe der Anmeldung') }}
         </h2>
 
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+        <p class="mt-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
             {{ __('Zusätzlich zum Kennwort ein Einmalcode aus einer Authentifizierungs-App. Wer nur das Kennwort kennt, kommt damit nicht mehr herein.') }}
         </p>
     </header>
@@ -16,7 +16,7 @@
         </div>
     @endif
 
-    <x-input-error :messages="$errors->zweiteStufe->get('demo')" class="mt-4" />
+    <x-input.error :messages="$errors->zweiteStufe->get('demo')" class="mt-4" />
 
     {{-- Frisch erzeugte Wiederherstellungscodes. Sie stehen genau einmal hier
          und danach nie wieder - sie liegen verschlüsselt, und sie noch einmal
@@ -51,9 +51,9 @@
             <form method="post" action="{{ route('two-factor.codes') }}" class="space-y-3">
                 @csrf
                 <p class="text-sm text-gray-700 dark:text-gray-300">{{ __('Neue Wiederherstellungscodes') }}</p>
-                <x-input.label for="codes_password" :value="__('Kennwort')" class="text-gray-900" />
-                <x-input.text id="codes_password" name="password" type="password" class="mt-1 block w-full" autocomplete="current-password" />
-                <x-input-error :messages="$errors->zweiteStufe->get('password')" />
+                <x-input.feldname for="codes_password" :value="__('Kennwort')" />
+                <x-input.text id="codes_password" name="password" type="password" class="mt-1.5 block w-full" autocomplete="current-password" />
+                <x-input.error :messages="$errors->zweiteStufe->get('password')" />
                 <x-input.button color="gray" :label="__('Neu erzeugen')" />
             </form>
 
@@ -67,9 +67,9 @@
                     @csrf
                     @method('delete')
                     <p class="text-sm text-gray-700 dark:text-gray-300">{{ __('Zweite Stufe abschalten') }}</p>
-                    <x-input.label for="aus_password" :value="__('Kennwort')" class="text-gray-900" />
-                    <x-input.text id="aus_password" name="password" type="password" class="mt-1 block w-full" autocomplete="current-password" />
-                    <x-input-error :messages="$errors->zweiteStufeAus->get('password')" />
+                    <x-input.feldname for="aus_password" :value="__('Kennwort')" />
+                    <x-input.text id="aus_password" name="password" type="password" class="mt-1.5 block w-full" autocomplete="current-password" />
+                    <x-input.error :messages="$errors->zweiteStufeAus->get('password')" />
                     <x-input.button color="red" :label="__('Abschalten')" />
                 </form>
             @endif
@@ -93,10 +93,10 @@
 
                 <form method="post" action="{{ route('two-factor.confirm') }}" class="space-y-3">
                     @csrf
-                    <x-input.label for="code" :value="__('Code aus der App')" class="text-gray-900" />
+                    <x-input.feldname for="code" :value="__('Code aus der App')" />
                     <x-input.text id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code"
-                        autofocus class="mt-1 block w-full font-mono tracking-widest" />
-                    <x-input-error :messages="$errors->zweiteStufe->get('code')" />
+                        autofocus class="mt-1.5 block w-full font-mono tracking-widest" />
+                    <x-input.error :messages="$errors->zweiteStufe->get('code')" />
 
                     <div class="flex items-center gap-3">
                         <x-input.button :label="__('Bestätigen und einschalten')" />

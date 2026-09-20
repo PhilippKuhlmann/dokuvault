@@ -192,25 +192,86 @@
   Seite, gehoerte die Ausnahme zurueck.
 */
 
+/*
+  Der Changelog als Markdown.
+
+  Vorher standen hier die CSS-Farbwoerter "darkgray" und "gray" - feste Werte,
+  die in beiden Modi dasselbe Grau ergaben: im Hellen zu blass, im Dunkeln zu
+  dunkel. Ausgerechnet die Ueberschriften, die die Eintraege gliedern, waren
+  dadurch schwaecher als der Text darunter.
+
+  Jetzt dieselben Tokens wie im Rest der Anwendung, je mit Dunkelfassung. Die
+  Datumsueberschrift (h2) traegt Versalien auf Monospace - dieselbe
+  Schreibweise wie die Schriftkoepfe der Blaetter, und sie liest sich als das,
+  was sie ist: eine Datumsmarke.
+*/
+.markdown {
+    color: var(--color-gray-700);
+}
+
 .markdown h1 {
     font-size: xx-large;
-    color: darkgray;
+    color: var(--color-chathams-blue-800);
+}
+
+/*
+  Die erste Ueberschrift der Datei ist "# Changelog" - und genau das steht
+  schon im Schriftkopf des Blattes. Zweimal derselbe Titel untereinander liest
+  sich wie ein Fehler. Nur die erste: Ueberschriften weiter unten bleiben.
+*/
+.markdown > h1:first-child {
+    display: none;
+}
+
+/*
+  Der erste Abschnitt steht dann ganz oben und braucht seinen Vorlauf nicht -
+  sonst klafft ueber der ersten Datumsmarke eine Luecke, in der vorher der
+  Titel stand.
+*/
+.markdown > h1:first-child + h2 {
+    margin-top: 0;
 }
 
 .markdown h2 {
-    font-size: x-large;
-    color: darkgray;
-    margin-top: 50px
+    margin-top: 2.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-cerulean-600);
 }
 
 .markdown h3 {
+    margin-top: 1.5rem;
     font-size: larger;
-    color: darkgray;
+    color: var(--color-chathams-blue-800);
 }
 
 .markdown ul {
-    color: gray;
     margin-bottom: 20px;
     list-style: disc;
     margin-left: 20px;
+}
+
+.markdown li {
+    margin-top: 0.4rem;
+}
+
+.markdown code {
+    font-size: 0.875em;
+    color: var(--color-chathams-blue-800);
+}
+
+.dark .markdown {
+    color: var(--color-gray-300);
+}
+
+.dark .markdown h1,
+.dark .markdown h3,
+.dark .markdown code {
+    color: var(--color-gray-100);
+}
+
+.dark .markdown h2 {
+    color: var(--color-cerulean-400);
 }

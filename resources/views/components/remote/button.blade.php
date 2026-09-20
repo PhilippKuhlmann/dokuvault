@@ -25,7 +25,7 @@
 
 @if ($link)
     @if ($stil === 'label')
-        <x-input.linkbutton :label="__('Verbinden')" link="{{ $link }}" />
+        <x-input.linkbutton :label="__('Verbinden')" link="{{ $link }}" color="knopf" />
     @elseif ($stil === 'text')
         <a href="{{ $link }}"
             class="bg-cerulean-600 text-white rounded-lg px-4 py-2 text-sm mr-5 hover:bg-cerulean-700">{{ __('Verbinden') }}</a>

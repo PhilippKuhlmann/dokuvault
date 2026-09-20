@@ -1,7 +1,7 @@
 <section>
     <header>
-        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-            {{ __('Profile Information') }}
+        <h2 class="font-mono text-[11px] uppercase tracking-[0.12em] text-cerulean-600 dark:text-cerulean-400">
+            {{ __('Angaben zum Zugang') }}
         </h2>
 
     </header>
@@ -11,26 +11,26 @@
         @method('patch')
 
         <div>
-            <x-input.label for="name" :value="__('Name')" class="text-gray-900" />
-            <x-input.text id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
-            <x-input-error class="mt-2" :messages="$errors->get('name')" />
+            <x-input.feldname for="name" :value="__('Name')" />
+            <x-input.text id="name" name="name" type="text" class="mt-1.5 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
+            <x-input.error class="mt-2" :messages="$errors->get('name')" />
         </div>
 
         <div>
-            <x-input.label for="email" :value="__('Email')" class="text-gray-900" />
-            <x-input.text id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
-            <x-input-error class="mt-2" :messages="$errors->get('email')" />
+            <x-input.feldname for="email" :value="__('E-Mail')" />
+            <x-input.text id="email" name="email" type="email" class="mt-1.5 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
+            <x-input.error class="mt-2" :messages="$errors->get('email')" />
         </div>
 
         <div>
-            <x-input.label for="locale" :value="__('Sprache')" class="text-gray-900" />
-            <x-input.select id="locale" name="locale" class="mt-1 block w-full">
+            <x-input.feldname for="locale" :value="__('Sprache')" />
+            <x-input.select id="locale" name="locale" class="mt-1.5 block w-full">
                 <option value="">{{ __('Automatisch (Browsersprache)') }}</option>
                 @foreach (config('custom.locales') as $code => $bezeichnung)
                     <option value="{{ $code }}" @selected(old('locale', $user->locale) === $code)>{{ $bezeichnung }}</option>
                 @endforeach
             </x-input.select>
-            <x-input-error class="mt-2" :messages="$errors->get('locale')" />
+            <x-input.error class="mt-2" :messages="$errors->get('locale')" />
         </div>
 
         <div class="flex items-center gap-4">

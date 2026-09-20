@@ -21,7 +21,12 @@ class RemoteSearch extends Component
                 ->with('customer')
                 ->join('customers', 'servers.customer_id', '=', 'customers.id')
                 ->select('servers.*', 'customers.name as customerName')
-                ->whereEnthaelt('customers.name', $search)
+                // Kundenname oder Geraetename: Wer einen bestimmten Server
+                // fernwarten will, kennt meist dessen Namen und nicht den des
+                // Kunden. Vorher traf die Suche nur den Kunden - wer
+                // "SRV-DC01" eintippte, bekam nichts und hielt das Geraet fuer
+                // nicht eingerichtet.
+                ->whereEnthaelt(['customers.name', 'servers.name'], $search)
                 ->orderBy('customers.name')
                 ->get();
 
@@ -29,7 +34,7 @@ class RemoteSearch extends Component
                 ->with('customer')
                 ->join('customers', 'vms.customer_id', '=', 'customers.id')
                 ->select('vms.*', 'customers.name as customerName')
-                ->whereEnthaelt('customers.name', $search)
+                ->whereEnthaelt(['customers.name', 'vms.name'], $search)
                 ->orderBy('customers.name')
                 ->get();
 

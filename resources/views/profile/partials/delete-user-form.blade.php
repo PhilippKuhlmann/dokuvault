@@ -1,49 +1,35 @@
-<section class="space-y-6">
+<section class="space-y-4">
     <header>
-        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-            {{ __('Konto Löschen') }}
+        <h2 class="font-mono text-[11px] uppercase tracking-[0.12em] text-cerulean-600 dark:text-cerulean-400">
+            {{ __('Konto löschen') }}
         </h2>
 
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __('Nach dem Löschen des Kontos hast du keinen Zugriff mehr auf deine Daten!') }}
+        <p class="mt-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+            {{ __('Nach dem Löschen des Kontos haben Sie keinen Zugriff mehr auf Ihre Daten.') }}
         </p>
     </header>
 
-    <x-input.button :label="__('Konto Löschen!')" color="red" x-data="" x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')" />
+    {{-- Fehler aus einem vorangegangenen Versuch stehen hier und nicht nur im
+         Dialog: Nach dem Absenden ist der Dialog wieder zu, und eine Meldung,
+         die niemand sieht, ist keine. --}}
+    <x-input.error :messages="$errors->userDeletion->get('password')" />
 
+    {{-- Dieselbe Rueckfrage wie ueberall sonst. Hier stand als letzte Stelle
+         der Anwendung noch das Modal aus dem Breeze-Bestand, dessen Karte kein
+         dark:bg trug und im Dunkelmodus weiss blieb. --}}
+    <x-loeschdialog :url="route('profile.destroy')"
+        :frage="__('Konto wirklich löschen?')"
+        :hinweis="__('Der Zugang wird endgültig entfernt. Zur Sicherheit bitte das eigene Kennwort eingeben.')"
+        :bestaetigen="__('Konto löschen')">
 
-    <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
-        <form method="post" action="{{ route('profile.destroy') }}" class="p-6 dark:bg-gray-800">
-            @csrf
-            @method('delete')
+        <x-slot:ausloeser>
+            <x-input.button type="button" color="red" x-on:click="offen = true" :label="__('Konto löschen')" />
+        </x-slot:ausloeser>
 
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                {{ __('Bist du sicher?') }}
-            </h2>
-
-            <p class="mt-1 text-sm text-gray-600">
-                {{ __('Nach dem Löschen des Kontos hast du keinen Zugriff mehr auf deine Daten!') }}
-            </p>
-
-            <div class="mt-6">
-                <x-input.label for="password" value="{{ __('Password') }}" class="sr-only" />
-
-                <x-input.text
-                    id="password"
-                    name="password"
-                    type="password"
-                    class="mt-1 block w-3/4"
-                    placeholder="{{ __('Password') }}"
-                />
-
-                <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
-            </div>
-
-            <div class="mt-6 flex justify-end">
-                <x-input.button :label="__('Abbrechen')" color="gray" type="button" x-on:click="$dispatch('close')" />
-
-                <x-input.button :label="__('Konto Löschen!')" color="red" />
-            </div>
-        </form>
-    </x-modal>
+        <x-slot:felder>
+            <x-input.feldname for="konto_loeschen_kennwort" :value="__('Kennwort')" />
+            <x-input.text id="konto_loeschen_kennwort" name="password" type="password"
+                autocomplete="current-password" class="mt-1.5 block w-full" />
+        </x-slot:felder>
+    </x-loeschdialog>
 </section>
