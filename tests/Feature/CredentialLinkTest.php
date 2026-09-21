@@ -190,10 +190,13 @@ test('die Geräteliste zeigt die Zugangsdaten ohne Umweg über das Formular', fu
     [$customer, $site, $vm, $login] = zugangsUmgebung();
     $vm->credentialLinks()->create(['customer_id' => $customer->id, 'login_general_id' => $login->id]);
 
+    // Der Zugang steht inline in der Liste - Name und Feld, aber nicht der
+    // Klartext. Der kommt erst auf Klick über den Server (KennwortFeld);
+    // vorher lag er im ausgelieferten HTML und war nur per CSS verdeckt.
     $this->actingAs($nutzer)->get("/{$customer->slug}/vm")
         ->assertSee('Zugangsdaten')
         ->assertSee('Linux root')
-        ->assertSee('geheim123');
+        ->assertDontSee('geheim123');
 });
 
 test('in der Geräteliste tritt die Notiz an die Stelle des Namens', function () {

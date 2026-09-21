@@ -6,6 +6,7 @@ use App\Models\AgentToken;
 use App\Models\Customer;
 use App\Models\Site;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
@@ -32,15 +33,59 @@ class AgentTokenController extends Controller
         $validated = $request->validate([
             'name' => ['nullable', 'string', 'max:255'],
             'site_id' => ['required', Rule::exists('sites', 'id')->where('customer_id', $customer->id)],
+            // Pflicht und in der Zukunft: Ein Token ohne Ablauf ist ein
+            // Dauerzugang, der auf jedem dokumentierten Rechner liegt.
+            'expires_at' => ['required', 'date', 'after:today'],
         ]);
 
         $site = Site::where('customer_id', $customer->id)->findOrFail($validated['site_id']);
 
-        [$token, $plain] = AgentToken::generateFor($customer, $site, $validated['name'] ?? null);
+        [$token, $plain] = AgentToken::generateFor(
+            $customer,
+            $site,
+            $validated['name'] ?? null,
+            Carbon::parse($validated['expires_at'])->endOfDay(),
+        );
 
-        // Ein Sessionschluessel fuer alle Agenten statt einer je Agent: sonst
-        // muesste jeder neue Agent hier, in der Weiterleitung und in der
-        // Ansicht einzeln nachgetragen werden.
+        return $this->mitNeuemToken($customer, $token, $plain);
+    }
+
+    public function destroy(Customer $customer, AgentToken $agentToken)
+    {
+        Gate::authorize('see_hidden');
+        abort_if($agentToken->customer_id !== $customer->id, 403);
+
+        $agentToken->delete();
+
+        return redirect(route('agent.index', $customer));
+    }
+
+    /**
+     * Erneuert einen Token: neuer Klartext, neue Frist, der alte Wert ist ab
+     * sofort ungültig. Der Weg für einen verbrannten oder ablaufenden Token,
+     * ohne die Zuordnung zu Kunde und Standort neu einrichten zu müssen.
+     */
+    public function erneuern(Customer $customer, AgentToken $agentToken)
+    {
+        Gate::authorize('see_hidden');
+        abort_if($agentToken->customer_id !== $customer->id, 403);
+
+        $frist = now()->addDays(config('custom.agenten_token.gueltigkeit_tage_standard'))->endOfDay();
+        $plain = $agentToken->erneuern($frist);
+
+        return $this->mitNeuemToken($customer, $agentToken, $plain);
+    }
+
+    /**
+     * Weiterleitung nach dem Anlegen oder Erneuern: zeigt den Klartext-Token
+     * einmalig und baut die fertigen Skripte dazu.
+     *
+     * Ein Sessionschluessel fuer alle Agenten statt einer je Agent: sonst
+     * muesste jeder neue Agent hier, in der Weiterleitung und in der Ansicht
+     * einzeln nachgetragen werden.
+     */
+    protected function mitNeuemToken(Customer $customer, AgentToken $token, string $plain)
+    {
         $skripte = [];
         foreach (config('custom.agenten', []) as $schluessel => $agent) {
             foreach ($agent['varianten'] as $i => $variante) {
@@ -52,16 +97,6 @@ class AgentTokenController extends Controller
             ->with('newToken', $plain)
             ->with('newTokenName', $token->name ?: ('Token #'.$token->id))
             ->with('agentSkripte', $skripte);
-    }
-
-    public function destroy(Customer $customer, AgentToken $agentToken)
-    {
-        Gate::authorize('see_hidden');
-        abort_if($agentToken->customer_id !== $customer->id, 403);
-
-        $agentToken->delete();
-
-        return redirect(route('agent.index', $customer));
     }
 
     /**

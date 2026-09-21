@@ -298,6 +298,7 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::get('agent', [AgentTokenController::class, 'index'])->name('agent.index');
             Route::post('agent', [AgentTokenController::class, 'store'])->name('agent.store');
             Route::delete('agent/{agentToken}', [AgentTokenController::class, 'destroy'])->name('agent.destroy');
+            Route::post('agent/{agentToken}/erneuern', [AgentTokenController::class, 'erneuern'])->name('agent.erneuern');
 
             // Dokumentations-Assistent (geführte Erstaufnahme)
             Route::get('wizard', [WizardController::class, 'index'])->name('wizard.index');

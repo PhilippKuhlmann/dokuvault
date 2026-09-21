@@ -98,7 +98,7 @@ test('das erzeugte Token liefert zu jedem Agenten ein fertiges Script', function
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
 
-    $this->post(route('agent.store', $customer), ['name' => 'Prüflauf', 'site_id' => $site->id])
+    $this->post(route('agent.store', $customer), ['name' => 'Prüflauf', 'site_id' => $site->id, 'expires_at' => now()->addMonth()->format('Y-m-d')])
         ->assertRedirect(route('agent.index', $customer));
 
     $token = session('newToken');
@@ -138,7 +138,7 @@ test('ein Token laesst sich widerrufen', function () {
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
 
-    $this->post(route('agent.store', $customer), ['name' => 'Wird gleich widerrufen', 'site_id' => $site->id]);
+    $this->post(route('agent.store', $customer), ['name' => 'Wird gleich widerrufen', 'site_id' => $site->id, 'expires_at' => now()->addMonth()->format('Y-m-d')]);
 
     $token = AgentToken::where('customer_id', $customer->id)->firstOrFail();
 
@@ -155,7 +155,7 @@ test('ein fremder Token laesst sich nicht ueber den eigenen Kunden widerrufen', 
     $fremder = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $fremder->id]);
 
-    $this->post(route('agent.store', $fremder), ['name' => 'Fremd', 'site_id' => $site->id]);
+    $this->post(route('agent.store', $fremder), ['name' => 'Fremd', 'site_id' => $site->id, 'expires_at' => now()->addMonth()->format('Y-m-d')]);
     $token = AgentToken::where('customer_id', $fremder->id)->firstOrFail();
 
     // scopeBindings sorgt dafuer, dass der Token am falschen Kunden gar nicht

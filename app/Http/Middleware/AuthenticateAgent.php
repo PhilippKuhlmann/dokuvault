@@ -26,7 +26,10 @@ class AuthenticateAgent
             ->where('token', AgentToken::hashToken($plain))
             ->first();
 
-        if (! $token || ! $token->customer || ! $token->site) {
+        // Abgelaufen wird wie ungültig behandelt - dieselbe Meldung, damit von
+        // außen nicht unterscheidbar ist, ob ein Token nie existierte oder nur
+        // seine Frist vorbei ist.
+        if (! $token || ! $token->customer || ! $token->site || $token->istAbgelaufen()) {
             abort(401, __('Ungültiger Agent-Token.'));
         }
 

@@ -168,7 +168,13 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE', env('APP_ENV') === 'production'),
+    // Standardmaessig sicher, sobald die Anwendung ueber HTTPS laeuft - nicht
+    // erst bei APP_ENV=production. Eine Installation unter einer https-Adresse
+    // ist oeffentlich erreichbar, auch wenn sie sich "staging" nennt; ohne das
+    // wanderte das Sitzungs-Cookie dort ungesichert. Wer es ausdruecklich
+    // anders will, setzt SESSION_SECURE_COOKIE.
+    'secure' => env('SESSION_SECURE_COOKIE', env('APP_ENV') === 'production'
+        || str_starts_with((string) env('APP_URL'), 'https://')),
 
     /*
     |--------------------------------------------------------------------------

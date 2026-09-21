@@ -40,6 +40,17 @@ return [
                 'exclude' => [
                     base_path('vendor'),
                     base_path('node_modules'),
+
+                    /*
+                     * Nicht ins Archiv: die .env traegt den APP_KEY, mit dem
+                     * die Kennwoerter in der Datenbank verschluesselt sind.
+                     * Laege sie neben dem Datenbank-Abzug, haette wer das
+                     * Backup hat den Schluessel UND die damit geschuetzten
+                     * Daten - die Verschluesselung waere umsonst. Der APP_KEY
+                     * gehoert getrennt gesichert (siehe SECURITY.md).
+                     */
+                    base_path('.env'),
+                    base_path('auth.json'),
                 ],
 
                 /*

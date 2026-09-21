@@ -1013,6 +1013,36 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Kennwörter ansehen
+    |--------------------------------------------------------------------------
+    |
+    | Ein Kennwort in einer Liste steht verdeckt; erst der Klick holt es über
+    | den Server (App\Livewire\KennwortFeld). Wie oft je Minute und Benutzer,
+    | begrenzt dieser Wert. Ein paar nachzusehen ist normal - hundert in einer
+    | Minute ist ein Skript, das die Liste leerräumt.
+    |
+    */
+    'kennwort' => [
+        'ansehen_je_minute' => 30,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Agent-Token
+    |--------------------------------------------------------------------------
+    |
+    | Ein Agent-Token braucht eine Frist - unbegrenzte Token, die auf jedem
+    | dokumentierten Rechner im Klartext liegen, sind ein Dauerzugang. Dieser
+    | Wert füllt das Ablauffeld beim Anlegen vor und ist die Frist, die ein
+    | Erneuern setzt.
+    |
+    */
+    'agenten_token' => [
+        'gueltigkeit_tage_standard' => 365,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Fristen: wie lange vorher gewarnt wird
     |--------------------------------------------------------------------------
     |
@@ -1147,6 +1177,7 @@ return [
         'deleted' => ['Gelöscht', 'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-900/30'],
         'restored' => ['Wiederhergestellt', 'text-amber-700 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/30'],
         'password_changed' => ['Kennwort geändert', 'text-purple-700 bg-purple-50 dark:text-purple-300 dark:bg-purple-900/30'],
+        'kennwort_angesehen' => ['Kennwort angesehen', 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-900/30'],
         'anmeldung' => ['Angemeldet', 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-700'],
         'anmeldung_gescheitert' => ['Anmeldung gescheitert', 'text-amber-700 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/30'],
         'anmeldung_gesperrt' => ['Anmeldung gesperrt', 'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-900/30'],

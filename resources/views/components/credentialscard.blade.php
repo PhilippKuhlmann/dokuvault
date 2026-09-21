@@ -43,7 +43,7 @@
                                     <div class="font-mono">{{ $eintrag->login->username }}</div>
                                 @endif
                                 @if ($eintrag->login->password)
-                                    <x-password :value="$eintrag->login->password" width="w-24" />
+                                    <livewire:kennwort-feld :link-id="$eintrag->id" width="w-24" :key="'kw-'.$eintrag->id" />
                                 @endif
                                 {{-- Der Fingerprint ist das, was man auf dem Server
                                      vergleicht - ohne ihn steht hier nur, dass ein

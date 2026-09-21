@@ -1,5 +1,25 @@
 # Changelog
 
+## 26.09.21
+
+### Security
+
+- **Die Sicherung hob die Verschlüsselung der Zugangsdaten wieder auf.** `config/backup.php` sicherte das ganze Projektverzeichnis, also auch die `.env` mit dem `APP_KEY` — und der ist der Schlüssel, mit dem die Kennwörter in der Datenbank verschlüsselt sind. Datenbank-Abzug und Schlüssel lagen damit im selben Archiv: Wer die Sicherung hatte, hatte den Tresor offen. Die `.env` (und `auth.json`) sind jetzt aus dem Backup ausgeschlossen; der `APP_KEY` gehört getrennt gesichert.
+  - Der Datenbank-Abzug selbst enthält weiterhin alle Kundendaten. Deshalb weist der Kommentar an `BACKUP_ARCHIVE_PASSWORD` in `.env.example` jetzt darauf hin, dass ein Archivkennwort trotz des Ausschlusses gesetzt gehört — es ist die zweite Verteidigungslinie, nicht die einzige.
+
+- **Kennwörter standen im Klartext im ausgelieferten HTML jeder Geräteliste.** Das „Auge" an einem Kennwortfeld war reines JavaScript — der Wert lag längst im DOM. Wer eine Liste öffnete, hatte damit alle darin gezeigten Kennwörter, ohne einen Klick, ohne dass es irgendwo stand; ein Nur-Lese-Kunde ebenso. Auf einer einzigen Serverliste waren das dreißig Kennwörter auf einmal. Jetzt trägt das Feld nur noch die Verknüpfung: Ein neuer Livewire-Baustein (`App\Livewire\KennwortFeld`) holt den Wert erst auf Klick über den Server.
+  - Der Abruf prüft dasselbe Recht wie die Liste (`logingeneral_viewAny` bzw. `sshkey_viewAny`), schreibt einen Protokolleintrag (`kennwort_angesehen`, den Wert enthält er nie) und läuft gegen eine Bremse von `custom.kennwort.ansehen_je_minute` (30) je Benutzer — hundert Kennwörter in einer Minute ist ein Skript, keine Arbeit.
+  - Die Verknüpfungs-Id ist `#[Locked]`: Der Browser kann sie nicht gegen eine fremde austauschen, es kommt nur heraus, was ohnehin auf der Seite stand. Das Bearbeiten-Formular holte seinen Kennwortverlauf schon vorher auf Klick — nur die Listen taten es nicht.
+  - Ein bestehender Test verlangte ausdrücklich den Klartext in der Liste; er verlangt jetzt dessen Abwesenheit. Sechs neue Tests decken Anzeige, Recht, Protokoll und Bremse ab.
+
+- **Den Antworten fehlten die Schutz-Header, und das Sitzungs-Cookie war nicht als „nur über HTTPS" markiert.** Eine neue Middleware (`App\Http\Middleware\SicherheitsHeader`) setzt auf jede Antwort `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy` und eine Content-Security-Policy. Die vier ersten sind ohne Risiko; die CSP ist bewusst keine strenge Skript-Positivliste, weil Alpine `unsafe-eval` und Livewire wie Alpine Inline-Handler brauchen — ihr Wert liegt im Verbot fremder Herkünfte (`default-src 'self'`, `frame-ancestors 'none'`, `form-action 'self'`, `base-uri 'self'`, `object-src 'none'`). Eingeschleustes HTML kann damit keine Daten an einen fremden Server schicken und niemand die Seite einrahmen.
+  - Gegen die laufende Oberfläche geprüft: Login-Seite lädt unter aktiver CSP ohne einen einzigen Konsolenfehler, Alpine und die Livewire-Runtime laufen. Im lokalen Betrieb nimmt die CSP zusätzlich den Vite-Entwicklungsserver auf, sonst bräche der Live-Reload.
+  - Das `Secure`-Flag am Sitzungs-Cookie greift jetzt schon, sobald `APP_URL` auf `https://` steht — nicht erst bei `APP_ENV=production`. Eine Installation unter einer https-Adresse ist öffentlich erreichbar, auch wenn sie sich „staging" nennt; vorher wanderte das Cookie dort ungesichert. Drei neue Tests sichern die Header und die CSP ab.
+
+- **Agent-Token liefen nie ab.** Ein Token, der auf jedem dokumentierten Rechner im Klartext liegt, war ein Dauerzugang — nur ein Löschen von Hand beendete ihn. Neue Token brauchen jetzt eine Frist (`expires_at`), die Anmeldung weist einen abgelaufenen Token ab. Bestehende Token bleiben als Altbestand gültig, sonst wären mit der Migration alle laufenden Agenten schlagartig ausgefallen; in der Liste sind sie als „unbegrenzt (Altbestand)" gekennzeichnet.
+  - Ein **Erneuern**-Knopf wechselt den Klartext an Ort und Stelle: neuer Wert, neue Frist, der alte ab sofort ungültig — Kunde, Standort und Name bleiben. Der Weg für einen verbrannten oder ablaufenden Token, ohne die Zuordnung neu einzurichten. Die Token-Liste zeigt jetzt auch Ablaufdatum und ob ein Token abgelaufen ist.
+  - Vorgabefrist über `custom.agenten_token.gueltigkeit_tage_standard` (365 Tage). Acht neue Tests decken Abweisung, Altbestand, Pflicht-Validierung, Erneuern und die Anzeige ab; datenbanknah zusätzlich per tinker gegen MySQL geprüft (Cast und `istAbgelaufen`).
+
 ## 26.09.20
 
 ### Changed

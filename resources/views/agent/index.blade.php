@@ -187,6 +187,14 @@
                             @endforeach
                         </x-input.select>
                     </div>
+                    {{-- Pflicht und vorbelegt: Ein Token ohne Ablauf ist ein
+                         Dauerzugang. Die Vorgabe kommt aus der Konfiguration. --}}
+                    <div class="flex flex-col">
+                        <x-input.label :value="__('Läuft ab am')" />
+                        <x-input.text type="date" name="expires_at" feld="expires_at" class="mt-1 w-44"
+                            min="{{ now()->addDay()->format('Y-m-d') }}"
+                            :value="old('expires_at', now()->addDays(config('custom.agenten_token.gueltigkeit_tage_standard'))->format('Y-m-d'))" />
+                    </div>
                     <x-input.button :label="__('Token erzeugen')" />
                 </form>
             @endif
@@ -196,25 +204,44 @@
         <x-panel>
             <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-3">{{ __('Aktive Token') }}</div>
             @forelse ($tokens as $token)
-                <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0 dark:border-gray-700">
+                <div class="flex items-center justify-between gap-3 py-2 border-b border-gray-100 last:border-0 dark:border-gray-700">
                     <div>
-                        <div class="text-sm text-gray-900 dark:text-gray-100">{{ $token->name ?: 'Token #'.$token->id }}</div>
+                        <div class="text-sm text-gray-900 dark:text-gray-100">
+                            {{ $token->name ?: 'Token #'.$token->id }}
+                            {{-- Sofort sichtbar, welcher Token tot ist und welcher
+                                 noch aus der Zeit ohne Ablauf stammt. --}}
+                            @if ($token->istAbgelaufen())
+                                <span class="ml-1 rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-700 dark:bg-red-900/30 dark:text-red-400">{{ __('abgelaufen') }}</span>
+                            @elseif ($token->expires_at === null)
+                                <span class="ml-1 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">{{ __('unbegrenzt (Altbestand)') }}</span>
+                            @endif
+                        </div>
                         <div class="text-xs text-gray-500 dark:text-gray-400">
-                            Standort: {{ $token->site?->name ?? '—' }} ·
-                            Zuletzt genutzt: {{ Zeit::anzeigen($token->last_used_at, 'd.m.Y H:i', __('noch nie')) }}
+                            {{ __('Standort') }}: {{ $token->site?->name ?? '—' }} ·
+                            {{ __('Zuletzt genutzt') }}: {{ Zeit::anzeigen($token->last_used_at, 'd.m.Y H:i', __('noch nie')) }} ·
+                            {{ __('Läuft ab') }}: {{ Zeit::anzeigen($token->expires_at, 'd.m.Y', __('unbegrenzt')) }}
                         </div>
                     </div>
-                    {{-- Der Satz lief bisher nicht durch __() und stand fest auf
-                         Deutsch - aufgefallen beim Ersetzen des confirm(). --}}
-                    <x-loeschdialog :url="route('agent.destroy', [$customer, $token])"
-                        :frage="__('Token wirklich widerrufen?')"
-                        :hinweis="__('Geräte mit diesem Token können sich dann nicht mehr dokumentieren.')"
-                        :bestaetigen="__('Widerrufen')">
-                        <x-slot:ausloeser>
-                            <x-input.button type="button" color="red" size="sm"
-                                x-on:click="offen = true" :label="__('Widerrufen')" />
-                        </x-slot:ausloeser>
-                    </x-loeschdialog>
+                    <div class="flex items-center gap-2">
+                        {{-- Erneuern: neuer Klartext, alter sofort ungültig -
+                             der Weg, einen verbrannten oder ablaufenden Token zu
+                             wechseln, ohne Kunde und Standort neu einzurichten. --}}
+                        <form method="POST" action="{{ route('agent.erneuern', [$customer, $token]) }}">
+                            @csrf
+                            <x-input.button type="submit" size="sm" :label="__('Erneuern')" />
+                        </form>
+                        {{-- Der Satz lief bisher nicht durch __() und stand fest auf
+                             Deutsch - aufgefallen beim Ersetzen des confirm(). --}}
+                        <x-loeschdialog :url="route('agent.destroy', [$customer, $token])"
+                            :frage="__('Token wirklich widerrufen?')"
+                            :hinweis="__('Geräte mit diesem Token können sich dann nicht mehr dokumentieren.')"
+                            :bestaetigen="__('Widerrufen')">
+                            <x-slot:ausloeser>
+                                <x-input.button type="button" color="red" size="sm"
+                                    x-on:click="offen = true" :label="__('Widerrufen')" />
+                            </x-slot:ausloeser>
+                        </x-loeschdialog>
+                    </div>
                 </div>
             @empty
                 <div class="text-sm text-gray-400 dark:text-gray-500">{{ __('Noch keine Token erzeugt.') }}</div>
