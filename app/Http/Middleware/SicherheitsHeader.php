@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Vite;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -26,6 +27,14 @@ class SicherheitsHeader
 {
     public function handle(Request $request, Closure $next): Response
     {
+        // Eine Nonce je Anfrage: Sie steht in der CSP und an unseren eigenen
+        // Inline-Skripten (Theme-Umschalter) sowie - ueber Vite - an dessen
+        // Tags. Eingeschleustes <script> traegt sie nicht und wird geblockt.
+        // useCspNonce() legt sie zugleich in Vite ab; view()->share reicht sie
+        // an die Blades (auch an die assetfreie Fehlerseite).
+        $nonce = Vite::useCspNonce();
+        view()->share('cspNonce', $nonce);
+
         $response = $next($request);
 
         // set(..., replace: false): Setzt etwa ein Controller schon bewusst
@@ -35,7 +44,7 @@ class SicherheitsHeader
         $response->headers->set('X-Frame-Options', 'DENY', false);
         $response->headers->set('Referrer-Policy', 'same-origin', false);
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()', false);
-        $response->headers->set('Content-Security-Policy', $this->csp(), false);
+        $response->headers->set('Content-Security-Policy', $this->csp($nonce), false);
 
         return $response;
     }
@@ -45,9 +54,13 @@ class SicherheitsHeader
      * Betrieb zusaetzlich der Vite-Entwicklungsserver, sonst laedt dort weder
      * das Skript noch der Live-Reload.
      */
-    private function csp(): string
+    private function csp(string $nonce): string
     {
-        $skript = "'self' 'unsafe-inline' 'unsafe-eval'";
+        // 'unsafe-eval' bleibt: Alpine wertet seine Ausdruecke zur Laufzeit
+        // aus (new Function). 'unsafe-inline' ist raus - an seine Stelle tritt
+        // die Nonce, damit nur unsere eigenen Inline-Skripte laufen und kein
+        // eingeschleustes. Alpines @click sind echte Listener, kein Inline-JS.
+        $skript = "'self' 'unsafe-eval' 'nonce-{$nonce}'";
         $stil = "'self' 'unsafe-inline'";
         $verbindung = "'self'";
 

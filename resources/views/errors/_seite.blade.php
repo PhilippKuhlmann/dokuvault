@@ -29,7 +29,7 @@
 
     <title>{{ $code }} · {{ $anwendung }}</title>
 
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         // Wie in den Layouts: erst die eigene Wahl, sonst das System.
         if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia(
                 '(prefers-color-scheme: dark)').matches)) {
@@ -37,6 +37,15 @@
         } else {
             document.documentElement.classList.remove('dark')
         }
+
+        // Zurueck-Taste per Listener statt Inline-onclick: Die Seite laedt kein
+        // Alpine, und unter der Nonce-CSP laeuft kein onclick=-Handler mehr.
+        document.addEventListener('DOMContentLoaded', function () {
+            var zurueck = document.querySelector('[data-zurueck]');
+            if (zurueck) {
+                zurueck.addEventListener('click', function () { history.back(); });
+            }
+        });
     </script>
 
     @vite(['resources/css/app.css'])
@@ -65,7 +74,7 @@
                 class="inline-flex items-center rounded-lg bg-cerulean-600 px-4 py-2 text-sm font-DINPro-bold text-white shadow-xs transition-colors hover:bg-cerulean-700">
                 {{ __('Zur Startseite') }}
             </a>
-            <button type="button" onclick="history.back()"
+            <button type="button" data-zurueck
                 class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 shadow-xs transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
                 {{ __('Zurück') }}
             </button>

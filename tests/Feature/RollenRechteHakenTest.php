@@ -22,10 +22,11 @@ function hakenLiegtInSeinemZiel(string $html, string $attribut): bool
 
     $pfade = new DOMXPath($dom);
 
-    // Ein input, dessen onchange nach $attribut sucht - und das innerhalb
-    // eines Elements mit genau diesem Attribut steht.
+    // Ein input, dessen x-on:change nach $attribut sucht - und das innerhalb
+    // eines Elements mit genau diesem Attribut steht. Das Attribut heisst
+    // "x-on:change" (mit Doppelpunkt), deshalb ueber name() statt @x-on:change.
     $treffer = $pfade->query(
-        sprintf('//*[@%s]//input[contains(@onchange, "%s")]', $attribut, $attribut)
+        sprintf('//*[@%s]//input[@*[name()="x-on:change" and contains(., "%s")]]', $attribut, $attribut)
     );
 
     return $treffer !== false && $treffer->length === 1;

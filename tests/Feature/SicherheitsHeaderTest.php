@@ -26,6 +26,30 @@ test('die CSP verbietet fremde Herkünfte und das Einrahmen', function () {
         ->toContain("object-src 'none'");
 });
 
+test('script-src trägt eine Nonce statt unsafe-inline', function () {
+    $csp = $this->get('/login')->headers->get('Content-Security-Policy');
+
+    preg_match('/script-src ([^;]+)/', $csp, $treffer);
+    $scriptSrc = $treffer[1] ?? '';
+
+    expect($scriptSrc)->toContain("'nonce-")
+        ->and($scriptSrc)->toContain("'unsafe-eval'")        // Alpine wertet zur Laufzeit aus
+        ->and($scriptSrc)->not->toContain("'unsafe-inline'"); // eingeschleustes Inline-JS bleibt draußen
+});
+
+test('das Inline-Skript der Seite trägt dieselbe Nonce wie die CSP', function () {
+    $antwort = $this->get('/login');
+    $csp = $antwort->headers->get('Content-Security-Policy');
+
+    preg_match("/'nonce-([^']+)'/", $csp, $treffer);
+    $nonce = $treffer[1] ?? null;
+
+    // Die Nonce aus dem Header muss am Inline-Skript stehen, sonst liefe es
+    // nicht - der Beleg, dass Header und Seite dieselbe tragen.
+    expect($nonce)->not->toBeNull();
+    $antwort->assertSee('nonce="'.$nonce.'"', false);
+});
+
 test('ausserhalb der lokalen Umgebung steht kein Entwicklungsserver in der CSP', function () {
     // Die Testumgebung ist nicht "local" - die Vite-Ausnahme darf hier fehlen,
     // sonst stünde sie auch in Produktion.

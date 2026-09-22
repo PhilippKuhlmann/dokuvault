@@ -107,7 +107,7 @@
                 @csrf
                 <x-dropdown-link :href="route('logout')"
                     class="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/30 dark:hover:text-red-300"
-                    onclick="event.preventDefault(); this.closest('form').submit();">
+                    x-data x-on:click.prevent="$el.closest('form').submit()">
                     <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                         stroke-width="1.8" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round"

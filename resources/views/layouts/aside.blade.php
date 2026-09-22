@@ -24,7 +24,7 @@
                 @csrf
                 <div class="flex flex-col">
                     <x-input.label :value="__('Standort')" />
-                    <x-input.select name="site" class="w-full mt-1" onchange="this.form.submit()">
+                    <x-input.select name="site" class="w-full mt-1" x-data x-on:change="$el.form.submit()">
                         <option value="all">{{ __('Alle') }}</option>
                         @foreach ($customer->sites as $site)
                             <option value="{{ $site->id }}"
