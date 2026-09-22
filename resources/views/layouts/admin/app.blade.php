@@ -38,6 +38,8 @@
 
     @include('layouts.success')
     @include('layouts.warnung')
+
+    <x-befehlspalette />
 </body>
 
 </html>

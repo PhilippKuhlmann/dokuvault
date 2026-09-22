@@ -1,4 +1,4 @@
-<aside id="logo-sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full text-gray-900 bg-white border-r border-gray-200 lg:translate-x-0 dark:bg-gray-900 dark:border-gray-700" aria-label="Sidebar">
+<aside id="logo-sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full text-gray-900 bg-white border-r border-gray-200 lg:translate-x-0 dark:bg-gray-900 dark:border-gray-700" x-bind:class="{ 'lg:-translate-x-full!': menuEin }" aria-label="Sidebar">
     <div class="flex justify-between flex-col h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-gray-900">
         <ul class="space-y-1">
 
@@ -24,7 +24,11 @@
                 @csrf
                 <div class="flex flex-col">
                     <x-input.label :value="__('Standort')" />
-                    <x-input.select name="site" class="w-full mt-1" x-data x-on:change="$el.form.submit()">
+                    {{-- Kein eigenes x-data: x-input.select bringt seine eigene
+                         Alpine-Instanz mit (liest darin die Optionen). Ein
+                         zweites x-data hier stahl deren x-ref und brach lesen().
+                         x-on:change läuft ohnehin in deren Scope. --}}
+                    <x-input.select name="site" class="w-full mt-1" x-on:change="$el.form.submit()">
                         <option value="all">{{ __('Alle') }}</option>
                         @foreach ($customer->sites as $site)
                             <option value="{{ $site->id }}"

@@ -26,22 +26,33 @@
 
 </head>
 
-<body class="antialiased font-DINPro bg-gray-100 dark:bg-gray-900">
+<body class="antialiased font-DINPro bg-gray-100 dark:bg-gray-900"
+    x-data="{
+        menuEin: (() => { try { return localStorage.getItem('menu-eingeklappt') === '1'; } catch (e) { return false; } })(),
+        menuUmschalten() {
+            this.menuEin = ! this.menuEin;
+            try { localStorage.setItem('menu-eingeklappt', this.menuEin ? '1' : '0'); } catch (e) {}
+        },
+    }">
 
     @include('layouts.navigation')
     @include('layouts.aside')
 
-    <div class="mt-16 lg:ml-64">
+    {{-- lg:ml-64 ist der Standard (ausgeklappt) - so steht schon vor Alpine
+         das Richtige da, kein Flackern. Eingeklappt überschreibt es lg:ml-0!. --}}
+    <div class="mt-16 lg:ml-64" x-bind:class="{ 'lg:ml-0!': menuEin }">
         <x-demobanner />
     </div>
 
-    <main class="lg:ml-64">
+    <main class="lg:ml-64" x-bind:class="{ 'lg:ml-0!': menuEin }">
         {{ $slot }}
     </main>
 
     @include('layouts.success')
     @include('layouts.warnung')
     @include('layouts.errors')
+
+    <x-befehlspalette :customer="$customer ?? null" />
 
     @livewireScriptConfig
 </body>

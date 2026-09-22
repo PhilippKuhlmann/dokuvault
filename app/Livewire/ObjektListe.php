@@ -7,7 +7,9 @@ use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
 use App\Models\Setting;
+use App\Models\Site;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
@@ -114,6 +116,16 @@ class ObjektListe extends Component
         return config('forms.'.$this->typ.'.sortierungen', []);
     }
 
+    /** Ob das Model eine site_id-Spalte führt - einmal je Tabelle geprüft. */
+    private function tabelleHatStandort(string $klasse): bool
+    {
+        static $cache = [];
+
+        $tabelle = (new $klasse)->getTable();
+
+        return $cache[$tabelle] ??= Schema::hasColumn($tabelle, 'site_id');
+    }
+
     /** Wahr, sobald etwas eingeschraenkt ist - fuer den Zuruecksetzen-Knopf. */
     public function gefiltert(): bool
     {
@@ -146,6 +158,19 @@ class ObjektListe extends Component
         $klasse = $einstellung['model'];
 
         $abfrage = $klasse::where('customer_id', $this->customerId);
+
+        // Standortfilter - dieselbe Regel wie Controller::getFilteredQuery, nur
+        // fehlte sie hier: Seit die Listen über diese Livewire-Komponente laufen,
+        // wurde der in der Seitenleiste gewählte Standort nicht mehr angewandt,
+        // die Liste zeigte alle Geräte des Kunden. Nur greifen, wenn ein gültiger
+        // Standort dieses Kunden gewählt ist und das Model überhaupt einen führt.
+        $site = session()->get('site');
+
+        if ($site && $site !== 'all'
+            && $this->tabelleHatStandort($klasse)
+            && Site::where('customer_id', $this->customerId)->whereKey($site)->exists()) {
+            $abfrage->where('site_id', $site);
+        }
 
         // Dasselbe Vorladen wie in den Controllern (siehe
         // Controller::zugangsdatenVorladen): Ohne das kostet eine Seite mit 25

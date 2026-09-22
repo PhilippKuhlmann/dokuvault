@@ -2,6 +2,18 @@
 
 ## 26.09.22
 
+### Added
+
+- **Befehlspalette: mit `Cmd`/`Strg`+`K` (oder `/`) zu jeder Seite springen.** Ein Suchfeld öffnet sich über der Seite; ein paar Buchstaben genügen ("ser" → Server), Pfeiltasten wählen, Enter wechselt. Die Ziele werden serverseitig nach Rechten gefiltert – es taucht nur auf, wozu der Nutzer Zugriff hat – und stehen als fertige Liste im Alpine-Component, also ohne Server-Roundtrip beim Tippen. Umfasst die Bereiche des aktuellen Kunden, die globalen Seiten (Kundensuche, globale Suche) und – für Berechtigte – die Admin-Seiten. `Route::has` schützt vor einem Tippfehler im Routennamen; die Labels sind aus übersetzbaren Teilen zusammengesetzt, damit die Palette auf Englisch mitübersetzt. Gegen die laufende App geprüft (öffnen, filtern, Enter wechselt die Seite).
+
+- **Die Seitenleiste lässt sich jetzt auch am Desktop einklappen.** Ein Knopf in der Kopfzeile schiebt sie weg, der Inhalt nutzt dann die volle Breite; die Wahl bleibt gemerkt (localStorage) und übersteht den Seitenwechsel. Ausgeklappt ist der Standard, damit vor dem Start von Alpine kein Flackern entsteht; eingeklappt überschreibt es per `important`-Modifier. Am Handy bleibt der bisherige Drawer-Knopf. Gegen die laufende App geprüft (ein-/ausklappen, Persistenz über Neuladen).
+
+### Fixed
+
+- **Der Standortfilter wirkte nicht mehr auf die Gerätelisten.** Seit die Listen über `App\Livewire\ObjektListe` laufen, wurde der in der Seitenleiste gewählte Standort dort nie angewandt (nur die alten Controller mit `getFilteredQuery` taten das) – die Liste zeigte alle Geräte des Kunden, egal welcher Standort gewählt war. `ObjektListe` filtert jetzt mit derselben Regel: nur bei einem gültigen Standort dieses Kunden und nur, wenn das Model eine `site_id`-Spalte führt. Gegen die laufende App geprüft (München → leer, Hamburg → Server da); zwei Tests dafür, inkl. Wächter, dass ein fremder Standort die Liste nicht leerfiltert.
+
+- **Der Standort-Umschalter in der Seitenleiste warf einen Alpine-Fehler.** Beim CSP-Umbau war dem `x-input.select` ein eigenes `x-data` mitgegeben worden – das stahl der Komponente ihren `x-ref` auf das native `<select>`, sodass deren `lesen()` ins Leere griff (`Cannot read properties of undefined (reading 'options')`). Das `x-data` ist wieder entfernt; `x-on:change` läuft in der vorhandenen Instanz der Komponente. In der Testsuite unsichtbar, weil sie kein Alpine ausführt – in der Konsole der laufenden App gefunden.
+
 ### Security
 
 - **Die CSP erlaubte beliebiges Inline-JavaScript.** `script-src` trug `'unsafe-inline'` — eingeschleustes `<script>` oder ein `onclick=`-Handler wäre durchgelaufen. Jetzt trägt jede Antwort eine Nonce (`SicherheitsHeader` erzeugt sie je Anfrage, gibt sie an Vite und die Blades), und `script-src` steht auf `'self' 'unsafe-eval' 'nonce-…'` ohne `'unsafe-inline'`: Nur noch unsere eigenen, mit der Nonce versehenen Skripte laufen, kein eingeschleustes.
