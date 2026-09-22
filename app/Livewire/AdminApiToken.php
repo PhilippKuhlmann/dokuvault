@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
@@ -25,6 +26,15 @@ class AdminApiToken extends Component
     public string $name = '';
 
     /**
+     * Ablaufdatum des neuen Tokens - Pflicht.
+     *
+     * Ein Token ohne Frist ist ein Dauerzugang mit den Rechten seines
+     * Benutzers, der im Skript liegt, das ihn nutzt. Vorgefuellt aus der
+     * Konfiguration, aenderbar.
+     */
+    public string $expiresAt = '';
+
+    /**
      * Der Klartext, genau einmal.
      *
      * Gespeichert wird nur der Hash; wer ihn jetzt nicht mitnimmt, muss einen
@@ -36,17 +46,23 @@ class AdminApiToken extends Component
     /** Eine Quelle fuer das Anlegen und fuer die Pruefung waehrend der Eingabe. */
     protected function regeln(): array
     {
-        return ['name' => ['required', 'string', 'max:100']];
+        return [
+            'name' => ['required', 'string', 'max:100'],
+            // Pflicht und in der Zukunft: kein unbegrenzter Token.
+            'expiresAt' => ['required', 'date', 'after:today'],
+        ];
     }
 
     protected function feldnamen(): array
     {
-        return ['name' => __('Bezeichnung')];
+        return ['name' => __('Bezeichnung'), 'expiresAt' => __('Läuft ab am')];
     }
 
     public function mount(): void
     {
         Gate::authorize('admin_apitoken');
+
+        $this->expiresAt = $this->standardFrist();
     }
 
     public function anlegen(): void
@@ -57,8 +73,20 @@ class AdminApiToken extends Component
 
         $this->validate($this->regeln(), [], $this->feldnamen());
 
-        $this->frischerToken = auth()->user()->createToken($this->name)->plainTextToken;
+        // Dritter Parameter von createToken ist der Ablauf - Sanctum weist einen
+        // abgelaufenen Token danach von selbst ab.
+        $this->frischerToken = auth()->user()
+            ->createToken($this->name, ['*'], Carbon::parse($this->expiresAt)->endOfDay())
+            ->plainTextToken;
+
         $this->name = '';
+        $this->expiresAt = $this->standardFrist();
+    }
+
+    /** Die vorgefüllte Frist: heute plus die Vorgabe aus der Konfiguration. */
+    private function standardFrist(): string
+    {
+        return now()->addDays(config('custom.api_token.gueltigkeit_tage_standard'))->format('Y-m-d');
     }
 
     public function widerrufen(int $id): void

@@ -52,10 +52,17 @@
                 <x-input.field wire:model.live.debounce.400ms="name" class="mt-1 w-full"
                     placeholder="{{ __('z. B. Agent Standort Hamburg') }}" />
             </div>
+            {{-- Pflicht und vorbelegt: kein unbegrenzter Token. --}}
+            <div>
+                <x-input.label :value="__('Läuft ab am')" />
+                <x-input.text type="date" wire:model="expiresAt" feld="expiresAt" class="mt-1"
+                    min="{{ now()->addDay()->format('Y-m-d') }}" />
+            </div>
             <x-input.button type="button" size="feld" wire:click="anlegen" :label="__('Token anlegen')" />
         </div>
 
         <x-input.fehler feld="name" />
+        <x-input.fehler feld="expiresAt" />
     </x-panel>
 
     @if ($tokens->isEmpty())
@@ -70,6 +77,7 @@
                         <th class="px-4 py-2.5 font-semibold">{{ __('Bezeichnung') }}</th>
                         <th class="px-4 py-2.5 font-semibold">{{ __('Angelegt') }}</th>
                         <th class="px-4 py-2.5 font-semibold">{{ __('Zuletzt benutzt') }}</th>
+                        <th class="px-4 py-2.5 font-semibold">{{ __('Läuft ab') }}</th>
                         <th class="px-4 py-2.5"></th>
                     </tr>
                 </thead>
@@ -90,6 +98,17 @@
                                     {{-- Ein Token, der nie benutzt wurde, ist ein
                                          Kandidat zum Widerrufen. --}}
                                     <span class="text-gray-400 dark:text-gray-500">{{ __('nie') }}</span>
+                                @endif
+                            </td>
+                            <td class="whitespace-nowrap px-4 py-2.5">
+                                @if ($token->expires_at)
+                                    <span title="{{ Zeit::anzeigen($token->expires_at) }}"
+                                        class="{{ $token->expires_at->isPast() ? 'font-semibold text-red-600 dark:text-red-400' : '' }}">
+                                        {{ $token->expires_at->isPast() ? __('abgelaufen') : $token->expires_at->format('d.m.Y') }}
+                                    </span>
+                                @else
+                                    {{-- Vor Einfuehrung der Pflicht angelegt: laeuft weiter, bis er widerrufen wird. --}}
+                                    <span class="text-amber-600 dark:text-amber-400">{{ __('unbegrenzt (Altbestand)') }}</span>
                                 @endif
                             </td>
                             <td class="px-4 py-2.5 text-right">

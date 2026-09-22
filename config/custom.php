@@ -1043,6 +1043,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | API-Token (persönliche Zugriffstoken)
+    |--------------------------------------------------------------------------
+    |
+    | Wie das Agent-Token braucht auch ein persönliches Zugriffstoken eine
+    | Frist - es spricht mit den Rechten seines Benutzers und liegt im Skript,
+    | das es nutzt. Dieser Wert füllt das Ablauffeld beim Anlegen vor.
+    |
+    */
+    'api_token' => [
+        'gueltigkeit_tage_standard' => 365,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Fristen: wie lange vorher gewarnt wird
     |--------------------------------------------------------------------------
     |

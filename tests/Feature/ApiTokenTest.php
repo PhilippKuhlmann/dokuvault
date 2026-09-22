@@ -3,6 +3,56 @@
 use App\Livewire\AdminApiToken;
 use Livewire\Livewire;
 
+test('ein neuer Token bekommt eine Frist', function () {
+    $nutzer = userWithPermissions(['admin_apitoken']);
+    $this->actingAs($nutzer);
+
+    Livewire::test(AdminApiToken::class)
+        ->set('name', 'Mit Frist')
+        ->set('expiresAt', now()->addMonth()->format('Y-m-d'))
+        ->call('anlegen');
+
+    $token = $nutzer->tokens()->first();
+    expect($token->expires_at)->not->toBeNull()
+        ->and($token->expires_at->isFuture())->toBeTrue();
+});
+
+test('ohne Ablaufdatum entsteht kein Token', function () {
+    $nutzer = userWithPermissions(['admin_apitoken']);
+    $this->actingAs($nutzer);
+
+    Livewire::test(AdminApiToken::class)
+        ->set('name', 'Ohne Frist')
+        ->set('expiresAt', '')
+        ->call('anlegen')
+        ->assertHasErrors('expiresAt');
+
+    expect($nutzer->tokens()->count())->toBe(0);
+});
+
+test('ein Ablaufdatum in der Vergangenheit wird abgelehnt', function () {
+    $nutzer = userWithPermissions(['admin_apitoken']);
+    $this->actingAs($nutzer);
+
+    Livewire::test(AdminApiToken::class)
+        ->set('name', 'Rückdatiert')
+        ->set('expiresAt', now()->subDay()->format('Y-m-d'))
+        ->call('anlegen')
+        ->assertHasErrors('expiresAt');
+
+    expect($nutzer->tokens()->count())->toBe(0);
+});
+
+test('die API weist einen abgelaufenen Token ab, einen gültigen nicht', function () {
+    $nutzer = userWithPermissions(['admin_apitoken']);
+
+    $abgelaufen = $nutzer->createToken('alt', ['*'], now()->subDay())->plainTextToken;
+    $gueltig = $nutzer->createToken('frisch', ['*'], now()->addDay())->plainTextToken;
+
+    $this->withToken($abgelaufen)->getJson('/api/user')->assertStatus(401);
+    $this->withToken($gueltig)->getJson('/api/user')->assertOk();
+});
+
 test('ein Token laesst sich anlegen und wird genau einmal gezeigt', function () {
     $nutzer = userWithPermissions(['admin_apitoken']);
     $this->actingAs($nutzer);
