@@ -4,7 +4,7 @@
                             $eintrag->ssid,
                             $eintrag->network ? ($eintrag->network->vlanId . ' - ' . $eintrag->network->description) : '—',
                             $eintrag->encryption,
-                            'password' => $eintrag->password,
+                            'geheim' => [$eintrag, 'password'],
                         ]"
 
                         editAction="$dispatch('objekt-bearbeiten', { typ: 'wifi', id: {{ $eintrag->id }} })"

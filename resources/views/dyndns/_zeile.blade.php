@@ -6,7 +6,7 @@
                             $eintrag->providor,
                             $eintrag->host,
                             $eintrag->username,
-                            'password' => $eintrag->password,
+                            'geheim' => [$eintrag, 'password'],
                         ]"
 
                         editAction="$dispatch('objekt-bearbeiten', { typ: 'dyndns', id: {{ $eintrag->id }} })"

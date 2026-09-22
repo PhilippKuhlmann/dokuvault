@@ -1,5 +1,17 @@
 # Changelog
 
+## 26.09.22
+
+### Security
+
+- **Auch BMC-, DSRM- und die übrigen Gerätegeheimnisse standen im Klartext im DOM.** Der Kennwort-Fix vom Vortag deckte nur die Zugangsdaten-Kacheln ab; dieselbe Lücke bestand über die geteilten Bausteine `x-table.datarow` (alle Login-/Kennwortlisten: `logingeneral`, `loginwebsite`, `wifi`, `aduser`, `dyndns`, dazu die DSRM-Passwörter der AD-Domänen) und `x-minitablecard` (BMC-Passwort am Server, USC-PIN und Cloud-Backup-Passwort an der Firewall, Verschlüsselungscode an der SecurepointUMA). In den Listen lagen damit reihenweise alle Werte auf einmal im ausgelieferten HTML, nur per JavaScript verdeckt.
+  - Ein neuer, allgemeiner Baustein `App\Livewire\GeheimFeld` holt diese Werte erst auf Klick über den Server - dieselbe Ansicht, dasselbe Recht (`viewAny` des jeweiligen Modells), derselbe Protokolleintrag (`kennwort_angesehen`, ohne den Wert) und dieselbe Bremse wie das Zugangsdaten-Kennwort. Modell, Id und Feld sind `#[Locked]`, das Feld wird gegen `secret_columns` geprüft.
+  - `datarow` bekam dafür einen `geheim`-Schlüssel (`[Modell, Feldname]`), `minitablecard` eine optionale `modell`-Prop mit einer Karte der eindeutigen Geheim-Labels. Aufrufer ohne Modell (z. B. der PDF-Export) bleiben unberührt.
+  - Auch das SecurepointUMA-Gerätepasswort (Label „Passwort") läuft on-demand. Das Label ist mehrdeutig - es steht anderswo für die Fernwartung -, greift hier aber nur, weil die Fernwartungs-Karten bewusst kein Modell an die Komponente reichen.
+  - **Fernwartung bewusst ausgenommen:** Deren Kennwort steckt ohnehin im „Verbinden"-Link auf derselben Seite - es dort zu maskieren wäre Theater, solange der Link es trägt. Das gehört zu einem eigenen Schritt.
+  - Sieben neue Tests decken Recht, Feld-Whitelist, Protokoll, Bremse und den Listen-Render (Firewall und SecurepointUMA) ab.
+  - Beim Aufdecken sprang die Spalte, weil offen ein zweiter Knopf (Kopieren) dazukam und das Feld inhaltsbezogen breit war. Jetzt stehen in beiden Zuständen dasselbe Feld in fester Breite und dieselben zwei Knöpfe. Kopieren geht dabei **ohne Aufdecken**: Zugeklappt holt der Server den Wert einmalig in die Zwischenablage (protokolliert und gebremst wie das Anzeigen), er landet nie sichtbar im DOM. Drei weitere Tests dafür.
+
 ## 26.09.21
 
 ### Security

@@ -6,7 +6,7 @@
                             $eintrag->username,
                             $eintrag->email,
                             'status' => $eintrag->enabled,
-                            'password' => $eintrag->password,
+                            'geheim' => [$eintrag, 'password'],
                         ]"
 
                         :inaktiv="$eintrag->enabled === false"

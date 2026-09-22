@@ -1,10 +1,29 @@
-@props(['title', 'array' => []])
+@props(['title', 'array' => [], 'modell' => null])
 
 {{-- Leere Felder weglassen und den Block ganz auslassen, wenn nichts uebrig
      bleibt: Beim Standserver sind Einbautiefe und Hoeheneinheiten leer, bei den
      meisten Geraeten die zweite IP - als leere Zeilen sah die Karte
      lueckenhaft aus. Dieselbe Regel wie in der Schrankliste. --}}
-@php ($gefuellt = array_filter($array, fn ($v) => filled($v)))
+@php
+    $gefuellt = array_filter($array, fn ($v) => filled($v));
+
+    // Diese Beschriftungen tragen ein Geheimnis, das direkt am Modell haengt.
+    // Ist ein Modell uebergeben, holt GeheimFeld den Wert erst auf Klick, statt
+    // ihn in den DOM zu legen.
+    //
+    // 'Passwort' ist mehrdeutig - mal das Geraetekennwort, mal das der
+    // Fernwartung. Es greift hier nur, weil die Fernwartungs-Karten bewusst
+    // KEIN Modell uebergeben; dort bleibt 'Passwort' das einfache Feld. Wo ein
+    // Modell da ist (SecurepointUMA), meint 'Passwort' das Feld 'password'.
+    $geheimFelder = [
+        'Passwort' => 'password',
+        'BMC Passwort' => 'bmcPassword',
+        'DSRM Passwort' => 'dsrmpassword',
+        'Cloud Backup Passwort' => 'cloud_backup_password',
+        'Verschlüsselungscode' => 'encryptionkey',
+        'USC-PIN' => 'usc_pin',
+    ];
+@endphp
 
 @if (count($gefuellt))
 <div class="w-full mb-5 break-inside-avoid">
@@ -21,7 +40,14 @@
                          Beschriftung lief sie in die Nachbarspalte und aus der Karte heraus
                          ("10.10.30.7Hersteller"). Umgebrochen wird nur, wenn es sonst nicht passt. --}}
                     <td class="py-1 pr-6 align-top text-gray-500 dark:text-gray-400">{{ __($key) }}</td>
-                    @if ($key == 'Passwort' || $key == 'BMC Passwort' || $key == 'DSRM Passwort' || $key == 'Cloud Backup Passwort' || $key == 'Verschlüsselungscode' || $key == 'USC-PIN')
+                    @if ($modell && array_key_exists($key, $geheimFelder))
+                        {{-- Geheimnis am Modell: erst auf Klick ueber den Server
+                             (App\Livewire\GeheimFeld), nicht als Klartext im HTML. --}}
+                        <td scope="row">
+                            <livewire:geheim-feld :modell="get_class($modell)" :id="$modell->id" :feld="$geheimFelder[$key]"
+                                width="w-full" :key="'gf-'.class_basename($modell).'-'.$modell->id.'-'.$geheimFelder[$key]" />
+                        </td>
+                    @elseif ($key == 'Passwort' || $key == 'BMC Passwort' || $key == 'DSRM Passwort' || $key == 'Cloud Backup Passwort' || $key == 'Verschlüsselungscode' || $key == 'USC-PIN')
                         <td scope="row">
                             <div class="" x-data="{ show: true, copied: false }">
 

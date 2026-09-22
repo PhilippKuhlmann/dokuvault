@@ -36,7 +36,7 @@
 
                 <x-credentialscard :device="$eintrag" />
 
-                <x-minitablecard :title="__('Login')" :array="[
+                <x-minitablecard :title="__('Login')" :modell="$eintrag" :array="[
                     'Benutzername' => $eintrag->username,
                     'Passwort' => $eintrag->password,
                     'Verschlüsselungscode' => $eintrag->encryptionkey,

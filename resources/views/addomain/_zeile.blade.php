@@ -4,7 +4,7 @@
                         :values="[
                             $eintrag->domain,
                             $eintrag->netbios,
-                            'password' => $eintrag->dsrmpassword,
+                            'geheim' => [$eintrag, 'dsrmpassword'],
                         ]"
 
                         editAction="$dispatch('objekt-bearbeiten', { typ: 'addomain', id: {{ $eintrag->id }} })"

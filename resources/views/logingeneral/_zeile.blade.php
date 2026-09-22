@@ -3,7 +3,7 @@
                         :values="[
                             $eintrag->name,
                             $eintrag->username,
-                            'password' => $eintrag->password,
+                            'geheim' => [$eintrag, 'password'],
                             $eintrag->description,
                             $eintrag->verwendetBei() ?: '—',
 

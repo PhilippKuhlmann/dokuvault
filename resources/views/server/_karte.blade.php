@@ -44,7 +44,7 @@
 
                 <x-credentialscard :device="$eintrag" />
 
-                <x-minitablecard :title="__('BMC')" :array="[
+                <x-minitablecard :title="__('BMC')" :modell="$eintrag" :array="[
                     'BMC IP-Adresse' => $eintrag->bmcIp,
                     'BMC Benutzer' => $eintrag->bmcUser,
                     'BMC Passwort' => $eintrag->bmcPassword,

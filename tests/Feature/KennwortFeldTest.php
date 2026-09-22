@@ -93,6 +93,16 @@ test('die Einsicht steht im Protokoll - ohne den Wert', function () {
         ->not->toContain('Nie-Ins-Protokoll-2026');
 });
 
+test('kopieren gibt den Wert heraus, ohne aufzudecken', function () {
+    $this->actingAs(userWithPermissions(['logingeneral_viewAny']));
+    $link = eineVerknuepfung('Kopiert-2026');
+
+    Livewire::test(KennwortFeld::class, ['linkId' => $link->id])
+        ->call('kopieren')
+        ->assertSet('offen', false)
+        ->assertDispatched('kennwort-bereit', wert: 'Kopiert-2026');
+});
+
 test('die Bremse stoppt das reihenweise Abgreifen', function () {
     config(['custom.kennwort.ansehen_je_minute' => 1]);
     $this->actingAs(userWithPermissions(['logingeneral_viewAny']));

@@ -43,10 +43,43 @@ class KennwortFeld extends Component
 
     public function zeigen(): void
     {
+        $wert = $this->wertHolen();
+
+        if ($wert === null) {
+            return;
+        }
+
+        $this->wert = $wert;
+        $this->offen = true;
+    }
+
+    /**
+     * Kopiert das Kennwort, ohne es aufzudecken: Der Wert geht einmalig an den
+     * Browser (in die Zwischenablage) und steht danach nirgends im DOM. So lässt
+     * er sich übernehmen, ohne dass er auf dem Schirm erscheint.
+     */
+    public function kopieren(): void
+    {
+        $wert = $this->wertHolen();
+
+        if ($wert === null) {
+            return;
+        }
+
+        $this->dispatch('kennwort-bereit', wert: $wert)->self();
+    }
+
+    /**
+     * Holt den Klartext - mit Rechteprüfung, Bremse und Protokolleintrag.
+     * Gemeinsamer Kern von zeigen() und kopieren(); der Wert verlässt den Server
+     * nur hierüber, und jeder Abruf steht danach im Protokoll.
+     */
+    private function wertHolen(): ?string
+    {
         $link = CredentialLink::with('login')->find($this->linkId);
 
         if (! $link || ! $link->login) {
-            return;
+            return null;
         }
 
         // Dasselbe Recht wie die Liste, auf der das Feld steht: Kennwort und
@@ -60,7 +93,7 @@ class KennwortFeld extends Component
         if (RateLimiter::tooManyAttempts($schluessel, config('custom.kennwort.ansehen_je_minute'))) {
             $this->addError('kennwort', __('Zu viele Kennwortabrufe in kurzer Zeit. Bitte einen Moment warten.'));
 
-            return;
+            return null;
         }
 
         RateLimiter::hit($schluessel, 60);
@@ -81,8 +114,7 @@ class KennwortFeld extends Component
             ])
             ->log('Kennwort angesehen');
 
-        $this->wert = $link->login->password;
-        $this->offen = true;
+        return $link->login->password;
     }
 
     public function verbergen(): void

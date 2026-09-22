@@ -4,7 +4,7 @@
                         :values="[
                             $eintrag->name,
                             $eintrag->username,
-                            'password' => $eintrag->password,
+                            'geheim' => [$eintrag, 'password'],
                             'url' => $eintrag->url,
                         ]"
 

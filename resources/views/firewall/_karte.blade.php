@@ -54,7 +54,7 @@
                      bei einer Sophos bleiben diese vier Felder leer. Die
                      Beschriftungen sind so gewaehlt, dass minitablecard die
                      Geheimnisse maskiert. --}}
-                <x-minitablecard :title="__('Securepoint')" :array="[
+                <x-minitablecard :title="__('Securepoint')" :modell="$eintrag" :array="[
                     'USC-PIN' => $eintrag->usc_pin,
                     'Cloud Backup Passwort' => $eintrag->cloud_backup_password,
                     'User URL' => $eintrag->url_user,
