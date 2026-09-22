@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Role;
 use App\Providers\RouteServiceProvider;
 use Closure;
 use Illuminate\Http\RedirectResponse;
@@ -24,6 +25,14 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
+                // Admins direkt ins Admin-Dashboard. Früher übernahm das die
+                // Kundensuche (sie warf Admins auf /admin) - seit die auch für
+                // Admins offen ist, muss die Weiche hier stehen, sonst landete
+                // ein Admin nach dem Login auf der Kundensuche.
+                if (Auth::guard($guard)->user()->role_id === Role::IS_ADMIN) {
+                    return redirect()->route('admin.dashboard');
+                }
+
                 return redirect(RouteServiceProvider::HOME);
             }
         }

@@ -167,6 +167,18 @@ test('ohne Admin-Rechte gibt es den Weg nicht', function () {
     $this->get(route('customer.search'))->assertDontSee(route('admin.dashboard'));
 });
 
+test('ein Admin kann die Kundensuche direkt öffnen', function () {
+    $rolle = Role::find(Role::IS_ADMIN) ?? Role::factory()->create(['id' => Role::IS_ADMIN]);
+    $this->actingAs(User::factory()->create(['role_id' => $rolle->id]));
+
+    // Früher wurde ein Admin hier hart auf /admin geworfen; jetzt darf er die
+    // Kundensuche öffnen (die Login-Weiche schickt ihn weiterhin ins
+    // Admin-Dashboard, siehe RedirectIfAuthenticated).
+    $this->get(route('customer.search'))
+        ->assertOk()
+        ->assertViewIs('customer.search');
+});
+
 test('das Admin-Dashboard zeigt nur erreichbare Kacheln', function () {
     $this->actingAs(userWithPermissions(['admin_trash', 'admin_activity']));
 

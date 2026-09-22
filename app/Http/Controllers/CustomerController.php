@@ -11,7 +11,6 @@ use App\Models\Customer;
 use App\Models\DocumentationRun;
 use App\Models\LicenseSoftware;
 use App\Models\PdfExport;
-use App\Models\Role;
 use App\Models\Setting;
 use App\Models\Site;
 use Illuminate\Support\Collection;
@@ -28,11 +27,8 @@ class CustomerController extends Controller
 
     public function search()
     {
-
-        if (auth()->user()->role_id === Role::IS_ADMIN) {
-            return redirect('/admin');
-        }
-
+        // Auch Admins dürfen hier suchen und in die Dokumentation eines Kunden
+        // springen - früher landeten sie stattdessen hart auf /admin.
         session()->put('site', 'all');
 
         $customers = null;
