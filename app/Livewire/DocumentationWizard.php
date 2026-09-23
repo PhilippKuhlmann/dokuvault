@@ -537,12 +537,14 @@ class DocumentationWizard extends Component
     // --- Anzeige -----------------------------------------------------------
 
     /**
-     * Ein Eintrag wurde im eingebetteten Bearbeiten-Modal (ObjektFormular)
-     * gespeichert. Der leere Rumpf genuegt: allein dass Livewire diesen Hook
-     * aufruft, laesst die Komponente neu rendern, und render() zieht die
-     * "Schon erfasst"-Liste ohnehin frisch aus der Datenbank.
+     * Ein Eintrag wurde im eingebetteten Bearbeiten-Modal gespeichert
+     * (ObjektFormular meldet objekt-gespeichert, das Netzwerk-Modal
+     * NetworkQuickCreate meldet vlan-angelegt). Der leere Rumpf genuegt: allein
+     * dass Livewire diesen Hook aufruft, laesst die Komponente neu rendern, und
+     * render() zieht die "Schon erfasst"-Liste ohnehin frisch aus der Datenbank.
      */
     #[On('objekt-gespeichert')]
+    #[On('vlan-angelegt')]
     public function objektGespeichert(): void
     {
         //

@@ -74,7 +74,16 @@ class NetworkQuickCreate extends Component
 
     public bool $mitSymbol = false;
 
-    public function mount($customer, ?int $siteId = null, string $knopfKlassen = '', string $label = '', bool $mitSymbol = false): void
+    /**
+     * Ob der eigene Ausloese-Knopf gezeigt wird. Im Dokumentations-Assistenten
+     * wird nur das Bearbeiten-Modal eingebettet (geoeffnet ueber das Event
+     * vlan-bearbeiten) - dort legt der Assistent selbst an, ein zweiter
+     * "+ Neues VLAN"-Knopf waere doppelt.
+     */
+    #[Locked]
+    public bool $mitKnopf = true;
+
+    public function mount($customer, ?int $siteId = null, string $knopfKlassen = '', string $label = '', bool $mitSymbol = false, bool $mitKnopf = true): void
     {
         $this->nurEigenerKunde($customer->id);
 
@@ -83,6 +92,7 @@ class NetworkQuickCreate extends Component
         $this->knopfKlassen = $knopfKlassen;
         $this->label = $label;
         $this->mitSymbol = $mitSymbol;
+        $this->mitKnopf = $mitKnopf;
     }
 
     /**

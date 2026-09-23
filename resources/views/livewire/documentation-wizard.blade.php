@@ -142,12 +142,14 @@
                  Auswahl "Vorhandenen Standort verwenden" - zweimal dieselbe Liste
                  untereinander sagt nichts Zusaetzliches. --}}
             @if ($entries->isNotEmpty() && $step['key'] !== 'site')
-                {{-- Bearbeiten direkt hier im Modal (dieselbe config-getriebene
-                     ObjektFormular-Komponente wie in den Listen), sofern es fuer
-                     den Schritt einen forms.php-Typ gibt und der Nutzer aendern
-                     darf. Nur 'network' hat keinen Typ - dort (und ohne
-                     Aenderungsrecht) fuehrt der Eintrag weiter in seine Liste. --}}
+                {{-- Bearbeiten direkt hier im Modal, sofern der Nutzer aendern darf:
+                     die meisten Schritte ueber die config-getriebene ObjektFormular-
+                     Komponente ($imModal, Event objekt-bearbeiten), 'network' ueber
+                     sein eigenes VLAN-Modal NetworkQuickCreate ($netzModal, Event
+                     vlan-bearbeiten). Ohne Aenderungsrecht fuehrt der Eintrag weiter
+                     in seine Liste (neuer Tab). --}}
                 @php($imModal = array_key_exists($step['key'], config('forms')) && auth()->user()?->can($step['key'].'_update'))
+                @php($netzModal = $step['key'] === 'network' && auth()->user()?->can('network_update'))
                 @php($ziel = Route::has($step['key'].'.edit') ? $step['key'].'.edit' : ($step['key'].'.index'))
                 @php($bearbeitbar = Route::has($ziel))
 
@@ -158,7 +160,7 @@
                     <div class="mb-2 flex flex-wrap items-baseline gap-x-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         {{ __('Schon erfasst') }} ({{ $entries->count() }})
 
-                        @if ($imModal)
+                        @if ($imModal || $netzModal)
                             <span class="font-normal normal-case tracking-normal text-gray-400 dark:text-gray-500">
                                 {{ __('zum Bearbeiten anklicken') }}
                             </span>
@@ -176,6 +178,12 @@
                             @if ($imModal)
                                 <button type="button" wire:key="entry-{{ $step['key'] }}-{{ $entry->id }}"
                                     wire:click="$dispatch('objekt-bearbeiten', { typ: '{{ $step['key'] }}', id: {{ $entry->id }} })"
+                                    class="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 transition-colors hover:border-cerulean-400 hover:text-cerulean-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-cerulean-500 dark:hover:text-cerulean-300">
+                                    {{ $entry->{$step['label_field']} ?: '—' }}
+                                </button>
+                            @elseif ($netzModal)
+                                <button type="button" wire:key="entry-{{ $step['key'] }}-{{ $entry->id }}"
+                                    wire:click="$dispatch('vlan-bearbeiten', { id: {{ $entry->id }} })"
                                     class="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 transition-colors hover:border-cerulean-400 hover:text-cerulean-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-cerulean-500 dark:hover:text-cerulean-300">
                                     {{ $entry->{$step['label_field']} ?: '—' }}
                                 </button>
@@ -200,6 +208,12 @@
                          Assistent neu und die "Schon erfasst"-Liste ist aktuell. --}}
                     <livewire:objekt-formular :typ="$step['key']" :customer="$customer" :mitKnopf="false"
                         wire:key="wizard-objektformular-{{ $step['key'] }}" />
+                @elseif ($netzModal)
+                    {{-- Netzwerk hat sein eigenes VLAN-Modal. Faengt vlan-bearbeiten und
+                         meldet nach dem Speichern vlan-angelegt (darauf rendert der
+                         Assistent neu, siehe objektGespeichert()). --}}
+                    <livewire:network-quick-create :customer="$customer" :mitKnopf="false"
+                        wire:key="wizard-netzformular" />
                 @endif
             @endif
 

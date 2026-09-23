@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\DocumentationWizard;
+use App\Livewire\NetworkQuickCreate;
 use App\Livewire\ObjektFormular;
 use App\Models\ADDomain;
 use App\Models\ContactPerson;
@@ -627,4 +628,38 @@ test('ObjektFormular ohne Knopf zeigt den eigenen Neu-Button nicht', function ()
 
     Livewire::test(ObjektFormular::class, ['typ' => 'contactperson', 'customer' => $customer, 'mitKnopf' => false])
         ->assertDontSee('Neu');
+});
+
+test('Netzwerk-Einträge öffnen im Assistenten das VLAN-Modal, wenn man ändern darf', function () {
+    // 'network' hat keinen forms.php-Typ, sondern sein eigenes Modal
+    // (NetworkQuickCreate). Der Chip loest deshalb vlan-bearbeiten aus und das
+    // eingebettete VLAN-Modal oeffnet mit dem Datensatz.
+    $this->actingAs(userWithPermissions(['network_create', 'network_update']));
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    Network::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id]);
+
+    DocumentationRun::create([
+        'customer_id' => $customer->id,
+        'user_id' => auth()->id(),
+        'site_id' => $site->id,
+        'current_step' => 'network',
+        'completed_steps' => [],
+        'skipped_steps' => [],
+    ]);
+
+    Livewire::test(DocumentationWizard::class, ['customer' => $customer])
+        ->assertSee('vlan-bearbeiten', false)
+        ->assertSeeLivewire('network-quick-create');
+});
+
+test('NetworkQuickCreate ohne Knopf zeigt den eigenen VLAN-Knopf nicht', function () {
+    $this->actingAs(userWithPermissions(['network_create']));
+    $customer = Customer::factory()->create();
+
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $customer, 'mitKnopf' => true])
+        ->assertSee('Neues VLAN');
+
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $customer, 'mitKnopf' => false])
+        ->assertDontSee('Neues VLAN');
 });
