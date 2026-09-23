@@ -48,3 +48,17 @@ test('bei wenigen Treffern erscheint kein Hinweis', function () {
         ->assertViewHas('weitere', 0)
         ->assertDontSee('Weitere Treffer vorhanden');
 });
+
+test('Treffer der Kundensuche sind für die Tastatursteuerung verdrahtet', function () {
+    // Pfeiltasten/Enter laufen über Alpine im Browser; hier wird nur geprüft,
+    // dass die Verdrahtung gerendert wird (Treffer als [data-result], Tasten-
+    // handler am Suchfeld).
+    $this->actingAs(userWithPermissions([]));
+    Customer::factory()->create(['name' => 'Tastatur-Testkunde']);
+
+    Livewire::test(SearchCustomer::class)
+        ->set('search', 'Tastatur-Testkunde')
+        ->assertSee('data-result', false)
+        ->assertSee('keydown.arrow-down', false)
+        ->assertSee('keydown.enter', false);
+});
