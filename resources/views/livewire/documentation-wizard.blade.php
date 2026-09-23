@@ -231,7 +231,12 @@
                  legte denselben Eintrag noch einmal an. Siehe resetForm(). --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6"
                 x-data
-                @assistent-formular-geleert.window="$el.querySelectorAll('input, textarea, select').forEach(feld => feld.value = '')"
+                {{-- $nextTick ist Pflicht, nicht Kosmetik: Livewire feuert dieses
+                     Event, morpht das DOM aber gleich danach und stellt die als
+                     "dirty" geschuetzten (gerade getippten) Eingaben wieder her -
+                     sofort geleert waeren sie danach wieder voll. Erst nach dem
+                     Morph leeren. --}}
+                @assistent-formular-geleert.window="$nextTick(() => $el.querySelectorAll('input, textarea, select').forEach(feld => feld.value = ''))"
                 {{-- Enter in einem Textfeld fügt hinzu (kein Mausklick nötig); in
                      select/textarea bleibt Enter, was es ist. --}}
                 x-on:keydown.enter.prevent="if ($event.target.matches('input')) $wire.save()"
