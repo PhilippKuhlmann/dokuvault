@@ -539,3 +539,18 @@ test('die Abschluss-Übersicht listet, was der Durchlauf erfasst hat', function 
         ->assertSee('In diesem Durchlauf erfasst')
         ->assertSee('Domänen-Admin');
 });
+
+test('ein gebündeltes form-Update mit null-Key wirft keine Exception', function () {
+    // Regression: Livewire ruft updatedForm() beim Aktualisieren des ganzen form-Arrays
+    // mit dem kompletten Array und $schluessel === null auf (nicht nur mit einem
+    // Unterschlüssel). Die früher nicht-nullbare Signatur warf dort eine TypeError-
+    // Exception (500) - reproduzierbar z. B. bei Vorname, Tab, Nachname, wenn zwei
+    // Felder in einem Commit landen.
+    $this->actingAs(userWithPermissions(['site_create']));
+    $customer = Customer::factory()->create();
+
+    Livewire::test(DocumentationWizard::class, ['customer' => $customer])
+        ->set('form', ['name' => 'Zentrale Hamburg', 'city' => 'Hamburg'])
+        ->assertHasNoErrors()
+        ->assertOk();
+});

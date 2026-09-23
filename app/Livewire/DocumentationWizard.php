@@ -71,8 +71,19 @@ class DocumentationWizard extends Component
      * nicht angefasst: Eine geleerte Angabe waere schlimmer als eine, die
      * noch nicht passt.
      */
-    public function updatedForm(mixed $wert, string $schluessel): void
+    public function updatedForm(mixed $wert, ?string $schluessel = null): void
     {
+        // Livewire ruft diesen Hook nicht nur beim Aendern eines einzelnen
+        // Unterschluessels (dann ist $schluessel z. B. 'nachname'), sondern auch
+        // bei einem gebuendelten Update des ganzen form-Arrays - dann ist $wert das
+        // komplette Array und $schluessel null. Frueher warf die nicht-nullbare
+        // Signatur hier eine TypeError-Exception (500), sobald zwei Felder in einem
+        // Commit landeten (z. B. Vorname, Tab, Nachname). Ein Ganz-Array-Update
+        // braucht die Masken/CIDR-Synchronisation nicht - also einfach aussteigen.
+        if ($schluessel === null) {
+            return;
+        }
+
         if ($schluessel === 'subnetmask') {
             $cidr = Network::cidrAusMaske(is_string($wert) ? $wert : null);
 

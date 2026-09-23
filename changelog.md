@@ -14,6 +14,7 @@
 
 ### Fixed
 
+- **Assistent stürzte bei der Namenseingabe ab (500).** Wer im Ansprechpartner-Schritt Vorname → Tab → Nachname eintippte, landete zuverlässig im Livewire-Fehler und einem geleerten Formular. Ursache: Livewire ruft den Hook `updatedForm()` nicht nur beim Ändern eines einzelnen Feldes auf (Schlüssel z. B. `nachname`), sondern bei einem gebündelten Update des ganzen `form`-Arrays mit dem kompletten Array und `null` als Schlüssel – die nicht-nullbare Signatur `string $schluessel` warf dort eine `TypeError`. Der Schlüssel ist jetzt nullbar; ein Ganz-Array-Update, das die Masken/CIDR-Synchronisation nicht braucht, steigt sofort aus. Ein Regressionstest setzt das ganze `form`-Array und reproduziert exakt den vorherigen Absturz.
 - **„This page has expired" (419) im Assistenten fängt sich jetzt selbst.** Eine länger offene Seite schickt ihren ersten Livewire-Aufruf – etwa das `wire:model.live` während der Namenseingabe – mit veraltetem CSRF-Token ab; Livewire zeigte darauf einen blockierenden `confirm()`-Dialog, der den Assistenten in eine Sackgasse laufen ließ. Ein Request-Hook in `app.js` lädt die Seite bei einem 419 stattdessen einmal neu und holt so ein frisches Token samt gültiger Session. Der Fortschritt liegt serverseitig im `DocumentationRun`, verloren geht höchstens ein gerade halb getipptes Feld. Ein Schleifenschutz (zweimal 419 binnen 10 s → wieder Livewires Dialog) verhindert, dass eine gar nicht bestehende Session in Endlos-Reloads fängt. Gegen die laufende App mit erzwungenem 419 geprüft: Reload statt Dialog.
 
 ## 26.09.22
