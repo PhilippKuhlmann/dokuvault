@@ -7,6 +7,7 @@ use App\Http\Requests\ComputerRequest;
 use App\Http\Requests\ContactPersonRequest;
 use App\Http\Requests\FirewallRequest;
 use App\Http\Requests\InternetConnectionRequest;
+use App\Http\Requests\LoginGeneralRequest;
 use App\Http\Requests\NASRequest;
 use App\Http\Requests\NetworkRequest;
 use App\Http\Requests\NetworkSwitchRequest;
@@ -552,6 +553,22 @@ return [
                 ['name' => 'source', 'label' => 'Quelle', 'type' => 'text'],
                 ['name' => 'retention', 'label' => 'Aufbewahrung', 'type' => 'text'],
                 ['name' => 'last_success', 'label' => 'Letzter Erfolg', 'type' => 'text'],
+            ],
+        ],
+        [
+            'key' => 'logingeneral', 'group' => 'Zugangsdaten', 'label' => 'Zugangsdaten',
+            'question' => 'Welche Kennwörter sollen erfasst werden? (Die Verknüpfung mit einem Gerät erfolgt später in dessen Liste.)',
+            'model' => LoginGeneral::class, 'relation' => 'logingenerals',
+            'request' => LoginGeneralRequest::class, 'permission' => 'logingeneral_create',
+            'scope' => 'customer', 'label_field' => 'name',
+            // LoginGeneral setzt kind nicht selbst; ohne das versteckt der
+            // Global-Scope (kind = 'password') den Eintrag.
+            'defaults' => ['kind' => LoginGeneral::KIND],
+            'fields' => [
+                ['name' => 'name', 'label' => 'Bezeichnung', 'type' => 'text'],
+                ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
+                ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
+                ['name' => 'description', 'label' => 'Beschreibung', 'type' => 'text'],
             ],
         ],
     ],

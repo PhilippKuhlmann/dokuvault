@@ -15,6 +15,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
@@ -329,6 +330,11 @@ class DocumentationWizard extends Component
         // (Router::password etc.) machen sonst Chiffretext aus einem Leerstring.
         $data = array_filter($data, fn ($v) => $v !== '' && $v !== null);
 
+        // Feste Vorgaben aus der Config (nicht aus dem Formular): etwa kind =
+        // 'password' beim Zugangsdaten-Schritt - LoginGeneral setzt das nicht
+        // selbst, ohne kind versteckt der Global-Scope den Eintrag.
+        $data = array_merge($step['defaults'] ?? [], $data);
+
         if (($step['scope'] ?? 'site') === 'site') {
             $data['site_id'] = $run->site_id;
         }
@@ -404,6 +410,7 @@ class DocumentationWizard extends Component
 
         $run->update(['current_step' => $key]);
         $this->resetForm();
+        $this->dispatch('assistent-schritt');
     }
 
     public function skipStep(): void
@@ -429,6 +436,7 @@ class DocumentationWizard extends Component
         }
 
         $this->resetForm();
+        $this->dispatch('assistent-schritt');
     }
 
     protected function advance(DocumentationRun $run): void
@@ -444,6 +452,49 @@ class DocumentationWizard extends Component
         }
 
         $this->resetForm();
+        $this->dispatch('assistent-schritt');
+    }
+
+    /**
+     * Die ganze Gruppe des aktuellen Schritts überspringen (z. B. "keine
+     * Telefonie"): alle noch offenen Schritte dieser Gruppe als übersprungen
+     * vermerken und zum ersten Schritt danach springen.
+     */
+    public function skipGroup(): void
+    {
+        [, $run] = $this->guard();
+        $steps = $this->allowedSteps();
+        $current = $this->currentStep($run);
+
+        if (! $current) {
+            return;
+        }
+
+        $keys = array_column($steps, 'key');
+        $index = array_search($run->current_step, $keys, true);
+
+        if ($index === false) {
+            return;
+        }
+
+        $nextKey = null;
+
+        foreach (array_slice($steps, $index) as $s) {
+            if ($s['group'] !== $current['group']) {
+                $nextKey = $s['key'];
+                break;
+            }
+            $run->markStepSkipped($s['key']);
+        }
+
+        $run->update(['current_step' => $nextKey]);
+
+        if ($nextKey === null) {
+            $run->update(['completed_at' => now()]);
+        }
+
+        $this->resetForm();
+        $this->dispatch('assistent-schritt');
     }
 
     public function finish(): void
@@ -510,6 +561,35 @@ class DocumentationWizard extends Component
             ? Site::where('customer_id', $customer->id)->orderBy('name')->get()
             : collect();
 
+        // Abschlussübersicht: was dieser Durchlauf angelegt hat, je Bereich mit
+        // den Namen und einem Absprung in die Liste. Die IDs stehen in
+        // created_records (siehe DocumentationRun::recordCreated).
+        $zusammenfassung = [];
+
+        if ($run->completed_at !== null && ! empty($run->created_records)) {
+            $alleSchritte = collect(config('custom.wizard_steps'))->keyBy('key');
+
+            foreach ($run->created_records as $key => $ids) {
+                $def = $alleSchritte->get($key);
+
+                if (! $def) {
+                    continue;
+                }
+
+                $modelle = $def['model']::where('customer_id', $customer->id)->whereIn('id', $ids)->get();
+
+                if ($modelle->isEmpty()) {
+                    continue;
+                }
+
+                $zusammenfassung[] = [
+                    'label' => __($def['label']),
+                    'route' => Route::has($key.'.index') ? $key.'.index' : null,
+                    'namen' => $modelle->map(fn ($m) => $m->{$def['label_field']} ?: '—')->all(),
+                ];
+            }
+        }
+
         return view('livewire.documentation-wizard', [
             'customer' => $customer,
             'run' => $run,
@@ -519,6 +599,7 @@ class DocumentationWizard extends Component
             'selectOptions' => $selectOptions,
             'existingSites' => $existingSites,
             'finished' => $run->completed_at !== null,
+            'zusammenfassung' => $zusammenfassung,
         ]);
     }
 

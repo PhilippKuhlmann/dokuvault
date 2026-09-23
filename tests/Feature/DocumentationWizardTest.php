@@ -4,6 +4,7 @@ use App\Livewire\DocumentationWizard;
 use App\Models\ADDomain;
 use App\Models\Customer;
 use App\Models\DocumentationRun;
+use App\Models\LoginGeneral;
 use App\Models\Network;
 use App\Models\OperatingSystem;
 use App\Models\Router;
@@ -485,4 +486,56 @@ test('nach dem Hinzufügen sagt der Assistent dem Browser, dass er leeren soll',
         ->assertDispatched('assistent-formular-geleert');
 
     expect(Site::where('name', 'Zentrale')->count())->toBe(1);
+});
+
+test('der Zugangsdaten-Schritt legt ein Kennwort an und setzt kind', function () {
+    $this->actingAs(userWithPermissions(['logingeneral_create']));
+    $customer = Customer::factory()->create();
+
+    Livewire::test(DocumentationWizard::class, ['customer' => $customer])
+        ->call('gotoStep', 'logingeneral')
+        ->set('form.name', 'Domänen-Admin')
+        ->set('form.username', 'administrator')
+        ->set('form.password', 'S3hr-Geheim!2026')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $login = $customer->logingenerals()->first();
+
+    expect($login)->not->toBeNull();
+    expect($login->name)->toBe('Domänen-Admin');
+    // Ohne kind würde der Global-Scope den Eintrag verstecken.
+    expect($login->kind)->toBe(LoginGeneral::KIND);
+    // Der Accessor entschlüsselt - das Kennwort kommt im Klartext zurück.
+    expect($login->password)->toBe('S3hr-Geheim!2026');
+});
+
+test('Gruppe überspringen überspringt alle Schritte der Gruppe auf einmal', function () {
+    $this->actingAs(userWithPermissions(['firewall_create', 'router_create', 'server_create']));
+    $customer = Customer::factory()->create();
+
+    Livewire::test(DocumentationWizard::class, ['customer' => $customer])
+        ->call('gotoStep', 'firewall')
+        ->call('skipGroup');
+
+    $run = DocumentationRun::where('customer_id', $customer->id)->first();
+
+    // firewall + router (Gruppe Netzwerk) übersprungen, weiter beim Server.
+    expect($run->skipped_steps)->toContain('firewall')->toContain('router');
+    expect($run->current_step)->toBe('server');
+});
+
+test('die Abschluss-Übersicht listet, was der Durchlauf erfasst hat', function () {
+    $this->actingAs(userWithPermissions(['logingeneral_create']));
+    $customer = Customer::factory()->create();
+
+    // Einziges erlaubtes: der Zugangsdaten-Schritt. Nach dem Weiter ist der
+    // Durchlauf abgeschlossen und die Übersicht erscheint.
+    Livewire::test(DocumentationWizard::class, ['customer' => $customer])
+        ->set('form.name', 'Domänen-Admin')
+        ->set('form.password', 'x')
+        ->call('save')
+        ->call('nextStep')
+        ->assertSee('In diesem Durchlauf erfasst')
+        ->assertSee('Domänen-Admin');
 });

@@ -1,5 +1,21 @@
 # Changelog
 
+## 26.09.23
+
+### Added
+
+- **Der Dokumentations-Assistent erfasst jetzt auch Zugangsdaten.** Bisher fragte er Geräte ab, aber keine Kennwörter – die eigentliche Kernaufgabe der Anwendung. Ein neuer Schritt „Zugangsdaten" legt Logins (Bezeichnung, Benutzername, Passwort, Beschreibung) an; die Verknüpfung mit einem Gerät geschieht wie gewohnt später in dessen Liste. (Die Config bekam dafür einen `defaults`-Mechanismus, weil `LoginGeneral` sein `kind` nicht selbst setzt und der Eintrag sonst vom Global-Scope versteckt würde.)
+- **Ganze Gruppe überspringen.** Neben „Überspringen" gibt es jetzt „Gruppe überspringen" – z. B. „keine Telefonie" lässt alle offenen Schritte der Gruppe auf einmal aus und springt zum nächsten Bereich.
+- **Abschluss-Übersicht.** Die Fertig-Seite listet jetzt auf, was der Durchlauf angelegt hat – je Bereich mit den Namen und einem Absprung in die Liste (neuer Tab) –, statt nur Zahlen zu nennen. (Die IDs lagen längst in `documentation_runs.created_records`, wurden aber nicht gezeigt.)
+
+### Changed
+
+- **Assistent bedient sich flüssiger.** Enter in einem Textfeld fügt hinzu (kein Mausklick nötig); beim Schrittwechsel springt der Fokus aufs erste Feld und die Seite nach oben. Drei neue Tests decken Zugangsdaten-Schritt, Gruppe-überspringen und Abschluss-Übersicht ab.
+
+### Fixed
+
+- **„This page has expired" (419) im Assistenten fängt sich jetzt selbst.** Eine länger offene Seite schickt ihren ersten Livewire-Aufruf – etwa das `wire:model.live` während der Namenseingabe – mit veraltetem CSRF-Token ab; Livewire zeigte darauf einen blockierenden `confirm()`-Dialog, der den Assistenten in eine Sackgasse laufen ließ. Ein Request-Hook in `app.js` lädt die Seite bei einem 419 stattdessen einmal neu und holt so ein frisches Token samt gültiger Session. Der Fortschritt liegt serverseitig im `DocumentationRun`, verloren geht höchstens ein gerade halb getipptes Feld. Ein Schleifenschutz (zweimal 419 binnen 10 s → wieder Livewires Dialog) verhindert, dass eine gar nicht bestehende Session in Endlos-Reloads fängt. Gegen die laufende App mit erzwungenem 419 geprüft: Reload statt Dialog.
+
 ## 26.09.22
 
 ### Added

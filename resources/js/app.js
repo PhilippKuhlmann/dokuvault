@@ -29,6 +29,38 @@ import { Livewire, Alpine } from '../../vendor/livewire/livewire/dist/livewire.e
 
 window.Alpine = Alpine;
 
+// Abgelaufene Seite abfangen (HTTP 419). Livewire zeigt sonst einen blockierenden
+// confirm()-Dialog "This page has expired." - ein Sackgassen-Erlebnis, das besonders
+// im Assistenten auftrat, wenn eine laenger offene Seite ihren ersten Livewire-Aufruf
+// (z. B. ein wire:model.live waehrend der Eingabe) mit veraltetem CSRF-Token abschickt.
+//
+// Statt des Dialogs laden wir die Seite einmal neu und holen so ein frisches Token und
+// eine gueltige Session. Der Fortschritt des Assistenten liegt serverseitig im
+// DocumentationRun, es geht also hoechstens ein gerade halb getipptes Feld verloren.
+//
+// Schutz gegen Endlosschleife: Kann die Session gar nicht bestehen (z. B. blockierte
+// Cookies), wuerde ein Reload sofort wieder 419 liefern. Passiert das zweimal in kurzer
+// Folge, ueberlassen wir Livewire wieder seinen Dialog, statt den Nutzer in Reloads zu fangen.
+Livewire.hook('request', ({ fail }) => {
+    fail(({ status, preventDefault }) => {
+        if (status !== 419) {
+            return;
+        }
+
+        const jetzt = Date.now();
+        let letzter = 0;
+        try { letzter = parseInt(sessionStorage.getItem('seiteAbgelaufenReload') || '0', 10); } catch (e) { /* ignore */ }
+
+        if (jetzt - letzter < 10000) {
+            return; // gerade erst neu geladen und schon wieder 419 - Livewire uebernimmt
+        }
+
+        preventDefault();
+        try { sessionStorage.setItem('seiteAbgelaufenReload', String(jetzt)); } catch (e) { /* ignore */ }
+        window.location.reload();
+    });
+});
+
 // Das Semikolon ist Pflicht, nicht Geschmack: Ohne es wuerde eine folgende
 // Zeile, die mit ( oder [ beginnt, als Fortsetzung dieses Ausdrucks gelesen -
 // aus Livewire.start() gefolgt von (function(){...})() wird dann
