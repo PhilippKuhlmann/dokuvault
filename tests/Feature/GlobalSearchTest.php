@@ -152,3 +152,17 @@ test('Treffer verlinkt mit ?highlight= zum Anspringen in der Liste', function ()
         ->set('search', 'PC-Suchtest')
         ->assertSee('highlight='.$computer->id, false);
 });
+
+test('Treffer sind für die Tastatursteuerung verdrahtet', function () {
+    // Pfeiltasten/Enter laufen über Alpine im Browser; hier wird nur geprüft,
+    // dass die dafür nötige Verdrahtung gerendert wird (Treffer als [data-result],
+    // Tastenhandler am Suchfeld).
+    $this->actingAs(userWithPermissions(['computer_viewAny']));
+    searchFixture();
+
+    Livewire::test(GlobalSearch::class)
+        ->set('search', 'PC-Suchtest')
+        ->assertSee('data-result', false)
+        ->assertSee('keydown.arrow-down', false)
+        ->assertSee('keydown.enter', false);
+});

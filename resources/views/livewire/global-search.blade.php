@@ -21,7 +21,22 @@
     <div class="netzplan-raster pointer-events-none absolute inset-0 opacity-60
                 text-chathams-blue-100 dark:text-cerulean-950"></div>
 
-    <div class="relative z-10 mx-auto w-full max-w-2xl rounded-lg border border-chathams-blue-200
+    {{-- Keyboard navigation: arrow keys move the active result across all
+         groups (flat DOM order via [data-result]), Enter opens it. The active
+         index survives Livewire re-renders on the persistent Alpine root and is
+         reset to the first hit whenever the query changes (x-on:input). --}}
+    <div x-data="{
+            active: 0,
+            items() { return [...$root.querySelectorAll('[data-result]')] },
+            move(step) {
+                const list = this.items()
+                if (! list.length) return
+                this.active = Math.max(0, Math.min(this.active + step, list.length - 1))
+                list[this.active]?.scrollIntoView({ block: 'nearest' })
+            },
+            choose() { this.items()[this.active]?.click() },
+        }"
+        class="relative z-10 mx-auto w-full max-w-2xl rounded-lg border border-chathams-blue-200
                 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
 
         <div class="flex items-center justify-between gap-4 border-b border-chathams-blue-100 px-6 py-3
@@ -49,7 +64,11 @@
 
                 <x-input.text id="globalesuche" wire:model.live.debounce.300ms="search" type="search" name="search"
                     class="block w-full pl-10" placeholder="{{ __('z. B. 192.168.1.50, PC-07, Seriennummer …') }}"
-                    autofocus />
+                    autofocus
+                    x-on:keydown.arrow-down.prevent="move(1)"
+                    x-on:keydown.arrow-up.prevent="move(-1)"
+                    x-on:keydown.enter.prevent="choose()"
+                    x-on:input="active = 0" />
             </div>
 
             <p class="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">
@@ -67,6 +86,7 @@
                     {{ __('Mindestens zwei Zeichen eintippen.') }}
                 </p>
             @else
+                @php($i = 0)
                 @forelse ($groups as $gruppe)
                     <div class="border-b border-chathams-blue-100 last:border-0 dark:border-gray-700">
                         <div class="flex items-center justify-between gap-4 bg-chathams-blue-50/60 px-6 py-2
@@ -80,8 +100,12 @@
 
                         <ul class="divide-y divide-chathams-blue-100 dark:divide-gray-700">
                             @foreach ($gruppe['results'] as $treffer)
+                                @php($idx = $i++)
                                 <li>
                                     <a href="{{ route($gruppe['slug'] . '.index', ($gruppe['highlightable'] ?? false) ? [$treffer->customer, 'highlight' => $treffer->id] : [$treffer->customer]) }}"
+                                        data-result
+                                        x-on:mouseenter="active = {{ $idx }}"
+                                        x-bind:class="active === {{ $idx }} && 'bg-chathams-blue-50 ring-2 ring-inset ring-cerulean-500 dark:bg-gray-700/50'"
                                         class="flex items-center justify-between gap-4 px-6 py-3 transition-colors
                                                hover:bg-chathams-blue-50 focus:outline-hidden focus:ring-2
                                                focus:ring-cerulean-500 dark:hover:bg-gray-700/50">
