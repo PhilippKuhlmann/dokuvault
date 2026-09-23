@@ -663,3 +663,43 @@ test('NetworkQuickCreate ohne Knopf zeigt den eigenen VLAN-Knopf nicht', functio
     Livewire::test(NetworkQuickCreate::class, ['customer' => $customer, 'mitKnopf' => false])
         ->assertDontSee('Neues VLAN');
 });
+
+test('ein Schritt mit angelegtem Eintrag zählt als erfasst, auch beim Überspringen', function () {
+    // "Überspringen" nach dem Anlegen soll den Schritt nicht als übersprungen
+    // führen - man hat ja etwas eingetragen.
+    $this->actingAs(userWithPermissions(['contactperson_create']));
+    $customer = Customer::factory()->create();
+
+    Livewire::test(DocumentationWizard::class, ['customer' => $customer])
+        ->set('form.first_name', 'Max')
+        ->set('form.last_name', 'Muster')
+        ->call('save')
+        ->call('skipStep');
+
+    $run = DocumentationRun::where('customer_id', $customer->id)->first();
+    expect($run->completed_steps)->toContain('contactperson');
+    expect($run->skipped_steps ?? [])->not->toContain('contactperson');
+});
+
+test('erfasst und übersprungen schließen sich aus', function () {
+    $this->actingAs(userWithPermissions(['contactperson_create']));
+    $customer = Customer::factory()->create();
+    $run = DocumentationRun::create([
+        'customer_id' => $customer->id,
+        'user_id' => auth()->id(),
+        'current_step' => 'contactperson',
+        'completed_steps' => [],
+        'skipped_steps' => [],
+    ]);
+
+    $run->markStepSkipped('server');
+    $run->markStepCompleted('server');
+    $run->refresh();
+    expect($run->completed_steps)->toContain('server');
+    expect($run->skipped_steps)->not->toContain('server');
+
+    $run->markStepSkipped('server');
+    $run->refresh();
+    expect($run->skipped_steps)->toContain('server');
+    expect($run->completed_steps)->not->toContain('server');
+});

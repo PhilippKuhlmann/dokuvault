@@ -51,6 +51,12 @@ class DocumentationRun extends Model
         $this->update(['created_records' => $records]);
     }
 
+    /**
+     * Erfasst und übersprungen schließen sich aus: Wird ein Schritt erfasst,
+     * fällt er aus der Übersprungen-Liste (und umgekehrt in markStepSkipped).
+     * Sonst könnte ein Schritt nach Zurückspringen in beiden Listen stehen und
+     * die Abschluss-Zählung ihn doppelt zählen.
+     */
     public function markStepCompleted(string $stepKey): void
     {
         $completed = $this->completed_steps ?? [];
@@ -58,7 +64,10 @@ class DocumentationRun extends Model
             $completed[] = $stepKey;
         }
 
-        $this->update(['completed_steps' => $completed]);
+        $this->update([
+            'completed_steps' => $completed,
+            'skipped_steps' => array_values(array_diff($this->skipped_steps ?? [], [$stepKey])),
+        ]);
     }
 
     public function markStepSkipped(string $stepKey): void
@@ -68,6 +77,9 @@ class DocumentationRun extends Model
             $skipped[] = $stepKey;
         }
 
-        $this->update(['skipped_steps' => $skipped]);
+        $this->update([
+            'skipped_steps' => $skipped,
+            'completed_steps' => array_values(array_diff($this->completed_steps ?? [], [$stepKey])),
+        ]);
     }
 }

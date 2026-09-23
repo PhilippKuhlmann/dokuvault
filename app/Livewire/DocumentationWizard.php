@@ -431,10 +431,25 @@ class DocumentationWizard extends Component
         $step = $this->currentStep($run);
 
         if ($step) {
-            $run->markStepSkipped($step['key']);
+            $this->schrittVerlassen($run, $step['key']);
         }
 
         $this->advance($run);
+    }
+
+    /**
+     * Einen Schritt verlassen, ohne "Weiter" zu klicken. Wurde in diesem
+     * Durchlauf darin etwas angelegt, zählt er trotzdem als erfasst - nur ein
+     * wirklich leer gelassener Schritt gilt als übersprungen. So steht am Ende
+     * nicht "übersprungen" an einem Schritt, in dem man gerade etwas eingetragen hat.
+     */
+    protected function schrittVerlassen(DocumentationRun $run, string $key): void
+    {
+        if (! empty($run->created_records[$key] ?? [])) {
+            $run->markStepCompleted($key);
+        } else {
+            $run->markStepSkipped($key);
+        }
     }
 
     public function previousStep(): void
@@ -496,7 +511,7 @@ class DocumentationWizard extends Component
                 $nextKey = $s['key'];
                 break;
             }
-            $run->markStepSkipped($s['key']);
+            $this->schrittVerlassen($run, $s['key']);
         }
 
         $run->update(['current_step' => $nextKey]);

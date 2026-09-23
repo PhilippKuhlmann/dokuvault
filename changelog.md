@@ -12,6 +12,7 @@
 ### Changed
 
 - **Assistent bedient sich flüssiger.** Enter in einem Textfeld fügt hinzu (kein Mausklick nötig); beim Schrittwechsel springt der Fokus aufs erste Feld und die Seite nach oben. Drei neue Tests decken Zugangsdaten-Schritt, Gruppe-überspringen und Abschluss-Übersicht ab.
+- **Angelegte Schritte zählen als „erfasst", nicht als „übersprungen".** Wer in einem Schritt etwas anlegt und dann „Überspringen" (oder „Gruppe überspringen") klickt, dessen Schritt gilt jetzt als erfasst – nur ein wirklich leer gelassener Schritt zählt als übersprungen. Die Abschluss-Zählung stimmt damit mit dem überein, was man tatsächlich getan hat. „Erfasst" und „übersprungen" schließen sich zudem gegenseitig aus (ein Schritt kann nach Zurückspringen nicht mehr in beiden Listen landen und doppelt gezählt werden).
 - **Fortschrittsanzeige des Assistenten entwirrt.** Unter der Bereichskette (1–6) stand bisher ein Strich je Schritt der aktuellen Gruppe; über die volle Breite gezogen wirkte das neben der Kette und dem Zähler „2/18" wie eine zweite, halb gefüllte Leiste mit widersprüchlicher Aussage. Jetzt zeigt genau ein Gesamtbalken den Stand über alle Schritte – dieselbe Aussage wie der Zähler daneben, der ausgeschrieben „Schritt 2 von 18" lautet. Zwischen Bereichen wechselt man weiterhin über die anklickbaren Knoten der Kette.
 
 ### Fixed
