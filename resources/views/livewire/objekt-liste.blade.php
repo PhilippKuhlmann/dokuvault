@@ -8,11 +8,13 @@
     x-init="$nextTick(() => {
         const w = $el.querySelector('[data-highlight]');
         if (! w) return;
-        const target = w.matches('.contents') ? w.firstElementChild : w;
-        if (! target) return;
+        // The wrapper div has no box of its own - the visible card is the inner
+        // panel (with its own margin and rounding), a table row likewise sits
+        // inside the contents wrapper. Ring the inner element so the frame hugs
+        // the card and follows its corner radius instead of the wrapper's edge.
+        const target = w.firstElementChild || w;
         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
         target.style.transition = 'box-shadow .3s';
-        target.style.borderRadius = '0.75rem';
         target.style.boxShadow = '0 0 0 3px rgb(56 152 236)';
         setTimeout(() => { target.style.boxShadow = ''; }, 2200);
     })">
