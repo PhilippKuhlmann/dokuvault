@@ -100,31 +100,16 @@
                 @endforeach
             </ol>
 
-            {{-- Feinfortschritt im aktuellen Bereich: ein anklickbarer Strich je
-                 Schritt, der aktuelle höher. --}}
+            {{-- Ein Gesamtbalken über alle Schritte - dieselbe Aussage wie der Zähler
+                 daneben. Vorher stand hier ein Strich je Schritt der aktuellen Gruppe;
+                 über die volle Breite gezogen sah das neben der Bereichskette darüber
+                 wie eine zweite, widersprüchliche Leiste aus (halb gefüllt, aber "2/18"). --}}
             <div class="mt-3 flex items-center gap-3">
-                <div class="flex flex-1 items-end gap-0.5">
-                    @foreach ($gruppen[$step['group']] as $s)
-                        @php
-                            $erledigt = in_array($s['key'], $done, true);
-                            $uebersprungen = in_array($s['key'], $skip, true);
-                            $stand = $erledigt ? __('erfasst') : ($uebersprungen ? __('übersprungen') : __('offen'));
-                        @endphp
-                        <x-hovertext :text="__($s['label']).' — '.$stand" class="flex-1" wire:key="progress-{{ $s['key'] }}">
-                            <button type="button" wire:click="gotoStep('{{ $s['key'] }}')"
-                                aria-label="{{ __($s['label']) }}" @class([
-                                    'block w-full rounded-full transition-all hover:opacity-80',
-                                    'h-2.5' => $s['key'] === $step['key'],
-                                    'h-1.5 hover:h-2.5' => $s['key'] !== $step['key'],
-                                    'bg-cerulean-600' => $s['key'] === $step['key'],
-                                    'bg-cerulean-300 dark:bg-cerulean-700' => $s['key'] !== $step['key'] && $erledigt,
-                                    'bg-gray-300 dark:bg-gray-600' => $s['key'] !== $step['key'] && $uebersprungen,
-                                    'bg-gray-200 dark:bg-gray-700' => $s['key'] !== $step['key'] && ! $erledigt && ! $uebersprungen,
-                                ])></button>
-                        </x-hovertext>
-                    @endforeach
+                <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                    <div class="h-full rounded-full bg-cerulean-600 transition-all"
+                        style="width: {{ round(($currentIndex + 1) / max(count($steps), 1) * 100) }}%"></div>
                 </div>
-                <span class="shrink-0 font-mono text-xs tabular-nums text-gray-400 dark:text-gray-500">{{ $currentIndex + 1 }}/{{ count($steps) }}</span>
+                <span class="shrink-0 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">{{ __('Schritt :n von :total', ['n' => $currentIndex + 1, 'total' => count($steps)]) }}</span>
             </div>
         </div>
 

@@ -11,6 +11,7 @@
 ### Changed
 
 - **Assistent bedient sich flüssiger.** Enter in einem Textfeld fügt hinzu (kein Mausklick nötig); beim Schrittwechsel springt der Fokus aufs erste Feld und die Seite nach oben. Drei neue Tests decken Zugangsdaten-Schritt, Gruppe-überspringen und Abschluss-Übersicht ab.
+- **Fortschrittsanzeige des Assistenten entwirrt.** Unter der Bereichskette (1–6) stand bisher ein Strich je Schritt der aktuellen Gruppe; über die volle Breite gezogen wirkte das neben der Kette und dem Zähler „2/18" wie eine zweite, halb gefüllte Leiste mit widersprüchlicher Aussage. Jetzt zeigt genau ein Gesamtbalken den Stand über alle Schritte – dieselbe Aussage wie der Zähler daneben, der ausgeschrieben „Schritt 2 von 18" lautet. Zwischen Bereichen wechselt man weiterhin über die anklickbaren Knoten der Kette.
 
 ### Fixed
 
