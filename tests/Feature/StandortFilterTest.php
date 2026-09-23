@@ -56,3 +56,31 @@ test('ein fremder Standort filtert nicht (fällt auf alle zurück)', function ()
     $this->withSession(['site' => $fremderStandort->id])->get("/{$customer->slug}/server")
         ->assertSee('SRV-EIGEN');
 });
+
+test('ein aus der globalen Suche markierter Eintrag erscheint trotz anderem Standortfilter', function () {
+    // Der Treffer der globalen Suche soll unabhängig vom in der Seitenleiste
+    // gewählten Standort angesprungen werden - sonst versteckt der Filter genau
+    // das Gerät, zu dem man springen wollte.
+    $customer = Customer::factory()->create();
+    $hamburg = Site::factory()->create(['customer_id' => $customer->id]);
+    $muenchen = Site::factory()->create(['customer_id' => $customer->id]);
+    $os = OperatingSystem::factory()->create(['name' => 'Debian 13']);
+
+    $srvHamburg = Server::create([
+        'customer_id' => $customer->id, 'site_id' => $hamburg->id,
+        'name' => 'SRV-HAMBURG', 'operating_system_id' => $os->id,
+    ]);
+
+    $this->actingAs(userWithPermissions(['server_viewAny']));
+
+    // München gewählt, aber der Hamburger Server ist der Treffer.
+    $this->withSession(['site' => $muenchen->id])
+        ->get("/{$customer->slug}/server?highlight={$srvHamburg->id}")
+        ->assertSee('SRV-HAMBURG')
+        ->assertSee('data-highlight', false);
+
+    // Without highlight the site filter applies as before: Munich hides Hamburg.
+    $this->withSession(['site' => $muenchen->id])
+        ->get("/{$customer->slug}/server")
+        ->assertDontSee('SRV-HAMBURG');
+});

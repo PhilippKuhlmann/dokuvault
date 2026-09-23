@@ -1,6 +1,21 @@
 {{-- Kopfzeile mit Suche und Anlegen-Knopf, darunter die Karten des Typs.
      Suchfeld wie in der VLAN-Liste: Lupe im Feld, sucht waehrend des Tippens. --}}
-<div>
+<div x-data
+    {{-- Jumped in from the global search: scroll to the highlighted entry and
+         flash it briefly. Runs once on load (x-init); the inline style is allowed
+         under the CSP. In tables the contents wrapper has no box of its own, so
+         target its first real child. --}}
+    x-init="$nextTick(() => {
+        const w = $el.querySelector('[data-highlight]');
+        if (! w) return;
+        const target = w.matches('.contents') ? w.firstElementChild : w;
+        if (! target) return;
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target.style.transition = 'box-shadow .3s';
+        target.style.borderRadius = '0.75rem';
+        target.style.boxShadow = '0 0 0 3px rgb(56 152 236)';
+        setTimeout(() => { target.style.boxShadow = ''; }, 2200);
+    })">
     <x-sitetopmenu :neu="false" :titel="__(config('custom.trashables')[$typ][1] ?? $einzahl)">
         {{-- Ohne Filterleiste steht die Suche hier oben. Gibt es eine, zieht
              sie dort hinein: Suche und Filter engen dasselbe ein und gehoeren
@@ -85,7 +100,7 @@
                 @include($typ.'._spalten')
                 <x-table.body>
                     @foreach ($eintraege as $eintrag)
-                        <div wire:key="{{ $typ }}-{{ $eintrag->id }}" class="contents">
+                        <div wire:key="{{ $typ }}-{{ $eintrag->id }}" class="contents" @if (($highlight ?? null) === $eintrag->id) data-highlight @endif>
                             @include($typ.'._zeile', ['eintrag' => $eintrag, 'customer' => $customer])
                         </div>
                     @endforeach
@@ -96,7 +111,7 @@
 
     @forelse ($eintraege as $eintrag)
         @unless ($alsTabelle)
-            <div wire:key="{{ $typ }}-{{ $eintrag->id }}">
+            <div wire:key="{{ $typ }}-{{ $eintrag->id }}" @if (($highlight ?? null) === $eintrag->id) data-highlight @endif>
                 @include($typ.'._karte', ['eintrag' => $eintrag, 'customer' => $customer])
             </div>
         @endunless

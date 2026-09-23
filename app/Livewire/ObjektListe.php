@@ -51,6 +51,14 @@ class ObjektListe extends Component
     #[Url(except: '')]
     public string $sortierung = '';
 
+    /**
+     * An entry jumped to from the global search: its card gets highlighted and
+     * scrolled into view. Not a #[Url] - the value arrives once via ?highlight=
+     * from the search and should not stick in the address bar. Any own
+     * interaction (search/filter/sort) clears it.
+     */
+    public ?int $highlight = null;
+
     public function mount(string $typ, Customer $customer): void
     {
         abort_unless(array_key_exists($typ, config('forms')), 404);
@@ -60,26 +68,59 @@ class ObjektListe extends Component
 
         $this->typ = $typ;
         $this->customerId = $customer->id;
+
+        // From the global search: jump to the matched entry. The page is computed
+        // once here (not in render()) so later pagination clicks don't keep
+        // throwing the user back onto the match's page.
+        $ziel = request()->integer('highlight');
+        if ($ziel) {
+            $this->highlight = $ziel;
+            $this->jumpToEntryPage($ziel);
+        }
+    }
+
+    /**
+     * Set the pagination page so the searched entry is on it.
+     *
+     * Deliberately without the site filter, search and filters: the match comes
+     * from the global search and should be found regardless of the site chosen
+     * in the sidebar - just as render() then also shows it.
+     */
+    protected function jumpToEntryPage(int $id): void
+    {
+        $klasse = config('forms.'.$this->typ.'.model');
+
+        $abfrage = $klasse::where('customer_id', $this->customerId);
+        $this->sortierungAnwenden($abfrage);
+
+        $position = $abfrage->pluck('id')->search($id);
+
+        if ($position !== false) {
+            $this->setPage(intdiv($position, Setting::seiteListe()) + 1);
+        }
     }
 
     public function updatedSearch(): void
     {
+        $this->highlight = null;
         $this->resetPage();
     }
 
     public function updatedFilter(): void
     {
+        $this->highlight = null;
         $this->resetPage();
     }
 
     public function updatedSortierung(): void
     {
+        $this->highlight = null;
         $this->resetPage();
     }
 
     public function zuruecksetzen(): void
     {
-        $this->reset(['search', 'filter', 'sortierung']);
+        $this->reset(['search', 'filter', 'sortierung', 'highlight']);
         $this->resetPage();
     }
 
@@ -164,9 +205,12 @@ class ObjektListe extends Component
         // wurde der in der Seitenleiste gewählte Standort nicht mehr angewandt,
         // die Liste zeigte alle Geräte des Kunden. Nur greifen, wenn ein gültiger
         // Standort dieses Kunden gewählt ist und das Model überhaupt einen führt.
+        // When jumping in from the global search, suspend the site filter:
+        // otherwise a different site chosen in the sidebar would hide the very
+        // entry we wanted to jump to.
         $site = session()->get('site');
 
-        if ($site && $site !== 'all'
+        if (! $this->highlight && $site && $site !== 'all'
             && $this->tabelleHatStandort($klasse)
             && Site::where('customer_id', $this->customerId)->whereKey($site)->exists()) {
             $abfrage->where('site_id', $site);
@@ -214,6 +258,7 @@ class ObjektListe extends Component
             'gefiltert' => $this->gefiltert(),
             'customer' => Customer::findOrFail($this->customerId),
             'einzahl' => $einstellung['einzahl'],
+            'highlight' => $this->highlight,
         ]);
     }
 

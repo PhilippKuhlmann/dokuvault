@@ -143,3 +143,12 @@ test('genau zwanzig Treffer behaupten nicht, es gäbe mehr', function () {
         ->assertSee('PC-GENAU-20')
         ->assertDontSee(__('weitere vorhanden'));
 });
+
+test('Treffer verlinkt mit ?highlight= zum Anspringen in der Liste', function () {
+    $this->actingAs(userWithPermissions(['computer_viewAny']));
+    [, $computer] = searchFixture();
+
+    Livewire::test(GlobalSearch::class)
+        ->set('search', 'PC-Suchtest')
+        ->assertSee('highlight='.$computer->id, false);
+});

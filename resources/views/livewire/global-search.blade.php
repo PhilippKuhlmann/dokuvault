@@ -81,7 +81,7 @@
                         <ul class="divide-y divide-chathams-blue-100 dark:divide-gray-700">
                             @foreach ($gruppe['results'] as $treffer)
                                 <li>
-                                    <a href="{{ route($gruppe['slug'] . '.index', $treffer->customer) }}"
+                                    <a href="{{ route($gruppe['slug'] . '.index', ($gruppe['highlightable'] ?? false) ? [$treffer->customer, 'highlight' => $treffer->id] : [$treffer->customer]) }}"
                                         class="flex items-center justify-between gap-4 px-6 py-3 transition-colors
                                                hover:bg-chathams-blue-50 focus:outline-hidden focus:ring-2
                                                focus:ring-cerulean-500 dark:hover:bg-gray-700/50">

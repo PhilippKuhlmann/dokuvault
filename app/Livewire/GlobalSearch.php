@@ -174,6 +174,10 @@ class GlobalSearch extends Component
                         'label' => $label,
                         'results' => $treffer->take(self::JE_ART),
                         'weitere' => max(0, $treffer->count() - self::JE_ART),
+                        // Only highlightable when the match points at its own list.
+                        // Patch-panel ports land on the patch-panel list - there their
+                        // id matches no row, so a ?highlight would point nowhere.
+                        'highlightable' => $routeSlug === $slug,
                     ]);
                 }
             }
