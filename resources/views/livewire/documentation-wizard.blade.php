@@ -142,23 +142,27 @@
                  Auswahl "Vorhandenen Standort verwenden" - zweimal dieselbe Liste
                  untereinander sagt nichts Zusaetzliches. --}}
             @if ($entries->isNotEmpty() && $step['key'] !== 'site')
+                {{-- Bearbeiten direkt hier im Modal (dieselbe config-getriebene
+                     ObjektFormular-Komponente wie in den Listen), sofern es fuer
+                     den Schritt einen forms.php-Typ gibt und der Nutzer aendern
+                     darf. Nur 'network' hat keinen Typ - dort (und ohne
+                     Aenderungsrecht) fuehrt der Eintrag weiter in seine Liste. --}}
+                @php($imModal = array_key_exists($step['key'], config('forms')) && auth()->user()?->can($step['key'].'_update'))
+                @php($ziel = Route::has($step['key'].'.edit') ? $step['key'].'.edit' : ($step['key'].'.index'))
+                @php($bearbeitbar = Route::has($ziel))
+
                 {{-- Abgesetzte Flaeche mit Kacheln statt einer Zeilenliste: Was
                      schon erfasst ist, soll man ueberfliegen und nicht Zeile fuer
                      Zeile lesen. --}}
                 <div class="mb-5 rounded-lg bg-gray-50 p-3 dark:bg-gray-700/40" wire:key="entries-{{ $step['key'] }}">
-                    {{-- Kurzform ohne Leerzeichen: "@php (" liest Blade als
-                         Blockanfang und schluckt alles bis zum naechsten
-                         @endphp. --}}
-                    {{-- Bearbeiten laeuft im Modal der Liste, eigene
-                         /edit-Seiten gibt es nicht mehr. Der Eintrag fuehrt
-                         deshalb in seine Liste - dort steht er samt Stift. --}}
-                    @php($ziel = Route::has($step['key'].'.edit') ? $step['key'].'.edit' : ($step['key'].'.index'))
-                    @php($bearbeitbar = Route::has($ziel))
-
                     <div class="mb-2 flex flex-wrap items-baseline gap-x-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         {{ __('Schon erfasst') }} ({{ $entries->count() }})
 
-                        @if ($bearbeitbar)
+                        @if ($imModal)
+                            <span class="font-normal normal-case tracking-normal text-gray-400 dark:text-gray-500">
+                                {{ __('zum Bearbeiten anklicken') }}
+                            </span>
+                        @elseif ($bearbeitbar)
                             {{-- Der Durchlauf soll nicht verloren gehen, wenn man
                                  etwas nachtraegt - deshalb ein neuer Tab. --}}
                             <span class="font-normal normal-case tracking-normal text-gray-400 dark:text-gray-500">
@@ -169,7 +173,13 @@
 
                     <div class="flex max-h-40 flex-wrap gap-1.5 overflow-y-auto">
                         @foreach ($entries as $entry)
-                            @if ($bearbeitbar)
+                            @if ($imModal)
+                                <button type="button" wire:key="entry-{{ $step['key'] }}-{{ $entry->id }}"
+                                    wire:click="$dispatch('objekt-bearbeiten', { typ: '{{ $step['key'] }}', id: {{ $entry->id }} })"
+                                    class="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 transition-colors hover:border-cerulean-400 hover:text-cerulean-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-cerulean-500 dark:hover:text-cerulean-300">
+                                    {{ $entry->{$step['label_field']} ?: '—' }}
+                                </button>
+                            @elseif ($bearbeitbar)
                                 <a href="{{ $ziel === $step['key'].'.edit' ? route($ziel, [$customer, $entry]) : route($ziel, $customer) }}" target="_blank" rel="noopener"
                                     class="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 transition-colors hover:border-cerulean-400 hover:text-cerulean-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-cerulean-500 dark:hover:text-cerulean-300">
                                     {{ $entry->{$step['label_field']} ?: '—' }}
@@ -182,6 +192,15 @@
                         @endforeach
                     </div>
                 </div>
+
+                @if ($imModal)
+                    {{-- Nur das Bearbeiten-Modal, ohne eigenen "Neu"-Knopf (der Assistent
+                         legt selbst an). Faengt das oben ausgeloeste objekt-bearbeiten und
+                         meldet nach dem Speichern objekt-gespeichert; darauf rendert der
+                         Assistent neu und die "Schon erfasst"-Liste ist aktuell. --}}
+                    <livewire:objekt-formular :typ="$step['key']" :customer="$customer" :mitKnopf="false"
+                        wire:key="wizard-objektformular-{{ $step['key'] }}" />
+                @endif
             @endif
 
             @if (($step['requires'] ?? null) === 'operatingsystems' && empty($selectOptions['operating_system_id'] ?? null) && \App\Models\OperatingSystem::count() === 0)

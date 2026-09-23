@@ -17,6 +17,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 /**
@@ -534,6 +535,18 @@ class DocumentationWizard extends Component
     }
 
     // --- Anzeige -----------------------------------------------------------
+
+    /**
+     * Ein Eintrag wurde im eingebetteten Bearbeiten-Modal (ObjektFormular)
+     * gespeichert. Der leere Rumpf genuegt: allein dass Livewire diesen Hook
+     * aufruft, laesst die Komponente neu rendern, und render() zieht die
+     * "Schon erfasst"-Liste ohnehin frisch aus der Datenbank.
+     */
+    #[On('objekt-gespeichert')]
+    public function objektGespeichert(): void
+    {
+        //
+    }
 
     public function render()
     {

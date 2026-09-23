@@ -47,6 +47,15 @@ class ObjektFormular extends Component
     #[Locked]
     public int $customerId;
 
+    /**
+     * Ob der eigene "Neu"-Knopf gezeigt wird. Im Dokumentations-Assistenten
+     * wird nur das Bearbeiten-Modal eingebettet (geoeffnet ueber das Event
+     * objekt-bearbeiten) - dort legt der Assistent selbst an, ein zweiter
+     * gruener "Neu"-Knopf waere doppelt.
+     */
+    #[Locked]
+    public bool $mitKnopf = true;
+
     public bool $offen = false;
 
     #[Locked]
@@ -83,13 +92,14 @@ class ObjektFormular extends Component
      */
     public $modellbild;
 
-    public function mount(string $typ, Customer $customer): void
+    public function mount(string $typ, Customer $customer, bool $mitKnopf = true): void
     {
         abort_unless(array_key_exists($typ, config('forms')), 404);
         $this->nurEigenerKunde($customer->id);
 
         $this->typ = $typ;
         $this->customerId = $customer->id;
+        $this->mitKnopf = $mitKnopf;
         $this->formularLeeren();
     }
 

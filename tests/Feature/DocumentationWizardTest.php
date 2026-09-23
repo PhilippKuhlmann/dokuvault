@@ -1,7 +1,9 @@
 <?php
 
 use App\Livewire\DocumentationWizard;
+use App\Livewire\ObjektFormular;
 use App\Models\ADDomain;
+use App\Models\ContactPerson;
 use App\Models\Customer;
 use App\Models\DocumentationRun;
 use App\Models\LoginGeneral;
@@ -374,14 +376,14 @@ test('AD-Domäne und Backup werden ohne site_id angelegt (Modelle haben keine Sp
     expect(ADDomain::where('customer_id', $customer->id)->count())->toBe(1);
 });
 
-test('schon erfasste Eintraege verlinken auf ihre Liste', function () {
+test('schon erfasste Eintraege öffnen mit Änderungsrecht das Bearbeiten-Modal', function () {
     $this->actingAs(userWithPermissions(['site_create', 'router_create', 'router_update']));
     $customer = Customer::factory()->create();
 
     $inhalt = Livewire::test(DocumentationWizard::class, ['customer' => $customer])
         ->set('form.name', 'Zentrale')
         ->call('save')
-        // Der Nutzer hat nur site_ und router_create - die Schritte dazwischen
+        // Der Nutzer hat nur site_ und router_-Rechte - die Schritte dazwischen
         // zeigt der Assistent gar nicht erst an.
         ->call('nextStep')
         ->set('form.name', 'RTR-Core')
@@ -393,12 +395,12 @@ test('schon erfasste Eintraege verlinken auf ihre Liste', function () {
 
     $router = Router::where('customer_id', $customer->id)->firstOrFail();
 
-    // Bearbeitet wird im Modal der Liste, eigene /edit-Seiten gibt es nicht
-    // mehr - der Eintrag fuehrt deshalb dorthin. Neuer Tab, damit der
-    // angefangene Durchlauf nicht verloren geht.
+    // Mit _update-Recht wird direkt hier im eingebetteten Modal bearbeitet
+    // (objekt-bearbeiten mit der ID), nicht mehr in einem neuen Tab auf der Liste.
     expect($router->exists)->toBeTrue();
-    expect($inhalt)->toContain(route('router.index', $customer, false));
-    expect($inhalt)->toContain('target="_blank"');
+    expect($inhalt)->toContain('objekt-bearbeiten');
+    expect($inhalt)->toContain("id: {$router->id}");
+    expect($inhalt)->not->toContain(route('router.index', $customer, false));
 });
 
 test('man kann zwischen den Schritten hin und her springen', function () {
@@ -553,4 +555,76 @@ test('ein gebündeltes form-Update mit null-Key wirft keine Exception', function
         ->set('form', ['name' => 'Zentrale Hamburg', 'city' => 'Hamburg'])
         ->assertHasNoErrors()
         ->assertOk();
+});
+
+test('vorhandene Einträge öffnen im Assistenten das Bearbeiten-Modal, wenn man ändern darf', function () {
+    // "Schon erfasst"-Chips sind jetzt Bearbeiten-Auslöser: statt in einem neuen Tab
+    // die Liste zu öffnen, lösen sie objekt-bearbeiten aus und das eingebettete
+    // ObjektFormular-Modal (dieselbe config-getriebene Komponente wie in den Listen)
+    // öffnet mit dem Datensatz - sofern der Nutzer das _update-Recht hat.
+    $this->actingAs(userWithPermissions(['contactperson_create', 'contactperson_update']));
+    $customer = Customer::factory()->create();
+    ContactPerson::factory()->create(['customer_id' => $customer->id, 'last_name' => 'Musterfrau']);
+
+    DocumentationRun::create([
+        'customer_id' => $customer->id,
+        'user_id' => auth()->id(),
+        'current_step' => 'contactperson',
+        'completed_steps' => [],
+        'skipped_steps' => [],
+    ]);
+
+    Livewire::test(DocumentationWizard::class, ['customer' => $customer])
+        ->assertSee('Musterfrau')
+        ->assertSee('objekt-bearbeiten', false)   // der Chip löst das Bearbeiten-Event aus
+        ->assertSeeLivewire('objekt-formular');    // Modal ist eingebettet
+});
+
+test('ohne Änderungsrecht bettet der Assistent kein Bearbeiten-Modal ein', function () {
+    $this->actingAs(userWithPermissions(['contactperson_create'])); // nur anlegen, nicht ändern
+    $customer = Customer::factory()->create();
+    ContactPerson::factory()->create(['customer_id' => $customer->id, 'last_name' => 'Musterfrau']);
+
+    DocumentationRun::create([
+        'customer_id' => $customer->id,
+        'user_id' => auth()->id(),
+        'current_step' => 'contactperson',
+        'completed_steps' => [],
+        'skipped_steps' => [],
+    ]);
+
+    Livewire::test(DocumentationWizard::class, ['customer' => $customer])
+        ->assertSee('Musterfrau')
+        ->assertDontSee('objekt-bearbeiten', false)
+        ->assertDontSeeLivewire('objekt-formular');
+});
+
+test('nach dem Speichern im Modal rendert der Assistent neu (Liste aktuell)', function () {
+    $this->actingAs(userWithPermissions(['contactperson_create', 'contactperson_update']));
+    $customer = Customer::factory()->create();
+
+    DocumentationRun::create([
+        'customer_id' => $customer->id,
+        'user_id' => auth()->id(),
+        'current_step' => 'contactperson',
+        'completed_steps' => [],
+        'skipped_steps' => [],
+    ]);
+
+    Livewire::test(DocumentationWizard::class, ['customer' => $customer])
+        ->dispatch('objekt-gespeichert', typ: 'contactperson')
+        ->assertOk();
+});
+
+test('ObjektFormular ohne Knopf zeigt den eigenen Neu-Button nicht', function () {
+    // Im Assistenten wird nur das Bearbeiten-Modal eingebettet - der eigene grüne
+    // "Neu"-Knopf der Komponente wäre neben dem "Hinzufügen" des Assistenten doppelt.
+    $this->actingAs(userWithPermissions(['contactperson_create']));
+    $customer = Customer::factory()->create();
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'contactperson', 'customer' => $customer, 'mitKnopf' => true])
+        ->assertSee('Neu');
+
+    Livewire::test(ObjektFormular::class, ['typ' => 'contactperson', 'customer' => $customer, 'mitKnopf' => false])
+        ->assertDontSee('Neu');
 });
