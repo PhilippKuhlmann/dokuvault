@@ -60,5 +60,6 @@ test('Treffer der Kundensuche sind für die Tastatursteuerung verdrahtet', funct
         ->set('search', 'Tastatur-Testkunde')
         ->assertSee('data-result', false)
         ->assertSee('keydown.arrow-down', false)
-        ->assertSee('keydown.enter', false);
+        ->assertSee('keydown.enter', false)
+        ->assertSee('keydown.escape', false);
 });

@@ -164,5 +164,6 @@ test('Treffer sind für die Tastatursteuerung verdrahtet', function () {
         ->set('search', 'PC-Suchtest')
         ->assertSee('data-result', false)
         ->assertSee('keydown.arrow-down', false)
-        ->assertSee('keydown.enter', false);
+        ->assertSee('keydown.enter', false)
+        ->assertSee('keydown.escape', false);
 });

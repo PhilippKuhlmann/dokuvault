@@ -68,11 +68,17 @@
                     x-on:keydown.arrow-down.prevent="move(1)"
                     x-on:keydown.arrow-up.prevent="move(-1)"
                     x-on:keydown.enter.prevent="choose()"
+                    x-on:keydown.escape.prevent="window.history.length > 1 ? window.history.back() : window.location.assign('/')"
                     x-on:input="active = 0" />
             </div>
 
             <p class="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">
                 {{ __('Name, IP, Seriennummer oder MAC über alle Geräte') }}
+            </p>
+
+            {{-- Tastaturhinweis: dieselbe Steuerung wie in der Befehlspalette. --}}
+            <p class="mt-1 font-mono text-[11px] uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">
+                {{ __('↑↓ wählen · ↵ öffnen · Esc schließen') }}
             </p>
         </div>
 

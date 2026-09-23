@@ -63,8 +63,14 @@
                     x-on:keydown.arrow-down.prevent="move(1)"
                     x-on:keydown.arrow-up.prevent="move(-1)"
                     x-on:keydown.enter.prevent="choose()"
+                    x-on:keydown.escape.prevent="window.history.length > 1 ? window.history.back() : window.location.assign('/')"
                     x-on:input="active = 0" />
             </div>
+
+            {{-- Tastaturhinweis: dieselbe Steuerung wie in der globalen Suche. --}}
+            <p class="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">
+                {{ __('↑↓ wählen · ↵ öffnen · Esc schließen') }}
+            </p>
         </div>
 
         <div class="border-t border-chathams-blue-100 dark:border-gray-700">
