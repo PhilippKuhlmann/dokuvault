@@ -1,8 +1,8 @@
 {{--
-    "?" öffnet die Übersicht aller Tastenkürzel. Greift nur, wenn man nicht
-    gerade in einem Eingabefeld tippt - sonst landete das Zeichen im Feld.
-    ("/" und Cmd/Strg+K öffnen die Befehlspalette; das erledigt die Palette
-    selbst, siehe components/befehlspalette.blade.php.)
+    "/" springt in die Suche der aktuellen Seite (fehlt eine, öffnet ersatzweise
+    die Befehlspalette). "?" öffnet die Übersicht aller Tastenkürzel. Beides
+    greift nur, wenn man nicht gerade in einem Eingabefeld tippt - sonst landete
+    das Zeichen im Feld.
 
     Rein clientseitig (Alpine), kein Livewire. Neuer Code englisch, sichtbare
     Texte deutsch mit en.json-Übersetzung.
@@ -14,10 +14,18 @@
             return t instanceof Element && (t.closest('input, textarea, select') !== null || t.isContentEditable);
         },
         onKey(e) {
-            // "/" und Cmd/Strg+K öffnen die Befehlspalette - das macht die Palette
-            // selbst. Hier nur "?" für die Kürzel-Übersicht.
             if (e.metaKey || e.ctrlKey || e.altKey || this.typing(e)) return;
-            if (e.key === '?') { e.preventDefault(); this.helpOpen = true; }
+            if (e.key === '/') {
+                // In die Suche der aktuellen Seite springen; hat die Seite keine
+                // (z. B. Dashboard), ersatzweise die Befehlspalette öffnen.
+                e.preventDefault();
+                const feld = document.querySelector('input[type=search]');
+                if (feld) { feld.focus(); }
+                else { window.dispatchEvent(new CustomEvent('palette-open')); }
+            } else if (e.key === '?') {
+                e.preventDefault();
+                this.helpOpen = true;
+            }
         },
     }"
     x-on:keydown.window="onKey($event)">
@@ -27,7 +35,7 @@
         // sind; nur die Beschreibung wird übersetzt.
         $kuerzel = [
             ['Cmd / Strg + K', __('Befehlspalette öffnen')],
-            ['/', __('Suche öffnen')],
+            ['/', __('In die Suche springen')],
             ['↑ ↓', __('Auswählen')],
             ['↵', __('Öffnen / Hinzufügen')],
             ['Cmd / Strg + ↵', __('Speichern')],

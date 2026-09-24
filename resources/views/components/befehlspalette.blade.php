@@ -140,12 +140,16 @@
         hoch() { const n = this.gefiltert().length; if (n) this.aktiv = (this.aktiv - 1 + n) % n; },
         waehlen() { const z = this.gefiltert()[this.aktiv]; if (z) window.location = z.url; },
         taste(e) {
+            // "/" oeffnet nicht mehr direkt die Palette - das uebernimmt die
+            // Komponente x-keyboard und springt zuerst in die Suche der Seite;
+            // nur ohne Suchfeld faellt es per palette-open-Event hierher zurueck.
+            // Cmd/Strg+K bleibt.
             if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); this.oeffnen(); return; }
-            if (e.key === '/' && ! this.offen && ! this.tippt(e)) { e.preventDefault(); this.oeffnen(); }
         },
     }"
     x-on:keydown.window="taste($event)"
     x-on:keydown.escape.window="schliessen()"
+    x-on:palette-open.window="oeffnen()"
 >
     <template x-if="offen">
         <div class="fixed inset-0 z-[60] flex items-start justify-center px-4 pt-24">
