@@ -4,7 +4,7 @@
 
 ### Added
 
-- **Mehr Tastaturbedienung.** Die Bearbeiten-/Anlegen-Modals setzen den Cursor beim Öffnen ins erste Feld, und `Cmd`/`Strg`+`Enter` speichert – in den Modals wie auch in den Bearbeiten-Formularen, ohne zur Maus zu greifen. Global springt `/` ins Suchfeld der aktuellen Liste, und `?` öffnet eine kleine Übersicht aller Tastenkürzel (beides greift nur, wenn man nicht gerade in einem Feld tippt).
+- **Mehr Tastaturbedienung.** Die Bearbeiten-/Anlegen-Modals setzen den Cursor beim Öffnen ins erste Feld, und `Cmd`/`Strg`+`Enter` speichert – in den Modals wie auch in den Bearbeiten-Formularen, ohne zur Maus zu greifen. Neu ist außerdem `?`: eine kleine Übersicht aller Tastenkürzel (u. a. `Cmd`/`Strg`+`K` bzw. `/` zum Öffnen der Suche). Greift nur, wenn man nicht gerade in einem Feld tippt.
 
 ### Fixed
 
