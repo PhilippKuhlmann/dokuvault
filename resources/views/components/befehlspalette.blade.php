@@ -1,7 +1,10 @@
 @props(['customer' => null])
 
-{{-- Befehls-/Suchpalette: Cmd/Strg+K (oder "/") öffnet ein Feld, in dem man
-     Seiten per Tippen findet und mit Enter dorthin springt.
+{{-- Befehls-/Suchpalette: Cmd/Strg+K öffnet ein Feld, in dem man Seiten per
+     Tippen findet und mit Enter dorthin springt. "/" wird von der
+     Tastatur-Komponente (keyboard.blade.php) behandelt und öffnet die Palette
+     nur ersatzweise (per palette-open-Event), wenn die Seite kein Suchfeld hat.--}}
+{{--
 
      Die Ziele werden hier serverseitig gesammelt und nach Rechten gefiltert -
      so taucht in der Palette nur auf, was der Nutzer auch sehen darf, und die
@@ -140,10 +143,6 @@
         hoch() { const n = this.gefiltert().length; if (n) this.aktiv = (this.aktiv - 1 + n) % n; },
         waehlen() { const z = this.gefiltert()[this.aktiv]; if (z) window.location = z.url; },
         taste(e) {
-            // "/" oeffnet nicht mehr direkt die Palette - das uebernimmt die
-            // Komponente x-keyboard und springt zuerst in die Suche der Seite;
-            // nur ohne Suchfeld faellt es per palette-open-Event hierher zurueck.
-            // Cmd/Strg+K bleibt.
             if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); this.oeffnen(); return; }
         },
     }"

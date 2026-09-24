@@ -16,8 +16,6 @@
         onKey(e) {
             if (e.metaKey || e.ctrlKey || e.altKey || this.typing(e)) return;
             if (e.key === '/') {
-                // In die Suche der aktuellen Seite springen; hat die Seite keine
-                // (z. B. Dashboard), ersatzweise die Befehlspalette öffnen.
                 e.preventDefault();
                 const feld = document.querySelector('input[type=search]');
                 if (feld) { feld.focus(); }
