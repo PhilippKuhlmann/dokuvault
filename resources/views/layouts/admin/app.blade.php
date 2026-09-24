@@ -40,6 +40,7 @@
     @include('layouts.warnung')
 
     <x-befehlspalette />
+    <x-keyboard />
 </body>
 
 </html>

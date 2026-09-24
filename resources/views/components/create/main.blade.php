@@ -46,7 +46,11 @@
 @if ($hasNach)
 <div class="{{ $rahmen }} my-3 w-full">
 @endif
-    <form method="post" action="{{ $action }}" @class([
+    {{-- Cmd/Strg+Enter speichert das Formular (native Absendung inkl. Validierung). --}}
+    <form method="post" action="{{ $action }}"
+        x-on:keydown.meta.enter.prevent="$el.requestSubmit()"
+        x-on:keydown.ctrl.enter.prevent="$el.requestSubmit()"
+        @class([
         'p-5 sm:p-6',
         $rahmen => ! $hasNach,
         'm-3' => $hasRight && ! $hasNach,

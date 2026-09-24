@@ -2,6 +2,10 @@
 
 ## 26.09.24
 
+### Added
+
+- **Mehr Tastaturbedienung.** Die Bearbeiten-/Anlegen-Modals setzen den Cursor beim Öffnen ins erste Feld, und `Cmd`/`Strg`+`Enter` speichert – in den Modals wie auch in den Bearbeiten-Formularen, ohne zur Maus zu greifen. Global springt `/` ins Suchfeld der aktuellen Liste, und `?` öffnet eine kleine Übersicht aller Tastenkürzel (beides greift nur, wenn man nicht gerade in einem Feld tippt).
+
 ### Fixed
 
 - **Passwortmanager tauchte in den Suchfeldern auf.** In der Befehlspalette (`Cmd`/`Strg`+`K`), der globalen Suche und der Kundensuche blendeten Passwortmanager (1Password, LastPass, Bitwarden) ihr Menü ein, weil sie das Suchfeld für ein Login-Feld hielten. Die Felder sind jetzt als Suchfelder (`type="search"`) ausgewiesen und tragen die Ignorier-Attribute der gängigen Manager, sodass nichts mehr aufpoppt.

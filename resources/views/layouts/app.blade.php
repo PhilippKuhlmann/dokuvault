@@ -53,6 +53,7 @@
     @include('layouts.errors')
 
     <x-befehlspalette :customer="$customer ?? null" />
+    <x-keyboard />
 
     @livewireScriptConfig
 </body>

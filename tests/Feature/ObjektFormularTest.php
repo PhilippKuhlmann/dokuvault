@@ -1031,3 +1031,27 @@ test('das Auswahlfeld behaelt sein natives select mit allen Optionen', function 
         ->and($html)->toContain('name="operating_system_id"')
         ->and($html)->toContain('Windows Server 2022 Standard');
 });
+
+test('das Modal ist per Tastatur bedienbar (Autofokus, Cmd/Strg+Enter)', function () {
+    // Verdrahtung, nicht Verhalten: Autofokus und Speichern-Kürzel laufen über
+    // Alpine im Browser; hier wird nur geprüft, dass die Attribute gerendert werden.
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['domain_viewAny', 'domain_create']));
+
+    $html = Livewire::test(ObjektFormular::class, ['typ' => 'domain', 'customer' => $customer])
+        ->call('neu')
+        ->assertSet('offen', true)
+        ->html();
+
+    expect($html)->toContain('keydown.meta.enter');
+    expect($html)->toContain('keydown.ctrl.enter');
+    expect($html)->toContain('.focus()'); // Autofokus-x-init aufs erste Feld
+});
+
+test('die Tastaturkürzel-Hilfe rendert Handler und Kürzelliste', function () {
+    $html = Blade::render('<x-keyboard />');
+
+    expect($html)->toContain('onKey($event)');   // globaler Tastenhandler (/ und ?)
+    expect($html)->toContain('helpOpen');         // Overlay-Schalter
+    expect($html)->toContain('Befehlspalette');   // ein Kürzel-Eintrag
+});

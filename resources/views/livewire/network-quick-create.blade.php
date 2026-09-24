@@ -21,8 +21,12 @@
     @if ($offen)
         {{-- max-h/overflow: zehn Felder passen auf kleinen Bildschirmen sonst
              nicht ins Bild. --}}
+        {{-- Beim Oeffnen ins erste Feld springen; Cmd/Strg+Enter speichert. --}}
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-            x-on:keydown.escape.window="$wire.abbrechen()">
+            x-init="$nextTick(() => $el.querySelector('input:not([type=hidden]):not([type=search]), select, textarea')?.focus())"
+            x-on:keydown.escape.window="$wire.abbrechen()"
+            x-on:keydown.meta.enter.prevent="$wire.speichern()"
+            x-on:keydown.ctrl.enter.prevent="$wire.speichern()">
 
             <div class="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-gray-200 bg-white px-5 pt-5 text-left shadow-lg dark:border-gray-700 dark:bg-gray-800">
                 {{-- Bei der Rueckfrage keine Ueberschrift: Der rote Kasten stellt
