@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.09.24
+
+### Fixed
+
+- **Passwortmanager tauchte in den Suchfeldern auf.** In der Befehlspalette (`Cmd`/`Strg`+`K`), der globalen Suche und der Kundensuche blendeten Passwortmanager (1Password, LastPass, Bitwarden) ihr Menü ein, weil sie das Suchfeld für ein Login-Feld hielten. Die Felder sind jetzt als Suchfelder (`type="search"`) ausgewiesen und tragen die Ignorier-Attribute der gängigen Manager, sodass nichts mehr aufpoppt.
+
 ## 26.09.23
 
 ### Added

@@ -153,7 +153,11 @@
             <div class="fixed inset-0 bg-black/40" x-on:click="schliessen()"></div>
 
             <div class="relative w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/10">
-                <input x-ref="feld" type="text" x-model="suche" autocomplete="off"
+                {{-- type="search" und die ignore-Attribute halten Passwortmanager
+                     (1Password, LastPass, Bitwarden) vom Suchfeld fern - sonst
+                     hielten sie es fuer ein Login-Feld und blendeten ihr Menue ein. --}}
+                <input x-ref="feld" type="search" x-model="suche" autocomplete="off"
+                    data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other"
                     x-on:input="aktiv = 0"
                     x-on:keydown.arrow-down.prevent="runter()"
                     x-on:keydown.arrow-up.prevent="hoch()"

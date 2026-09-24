@@ -59,7 +59,8 @@
                 </span>
 
                 <x-input.text id="kundensuche" wire:model.live.debounce.300ms="search" type="search" name="search"
-                    class="block w-full pl-10" placeholder="{{ __('Kunde suchen …') }}" autofocus
+                    class="block w-full pl-10" placeholder="{{ __('Kunde suchen …') }}" autofocus autocomplete="off"
+                    data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other"
                     x-on:keydown.arrow-down.prevent="move(1)"
                     x-on:keydown.arrow-up.prevent="move(-1)"
                     x-on:keydown.enter.prevent="choose()"

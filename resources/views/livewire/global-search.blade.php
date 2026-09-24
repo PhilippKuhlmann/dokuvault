@@ -64,7 +64,8 @@
 
                 <x-input.text id="globalesuche" wire:model.live.debounce.300ms="search" type="search" name="search"
                     class="block w-full pl-10" placeholder="{{ __('z. B. 192.168.1.50, PC-07, Seriennummer …') }}"
-                    autofocus
+                    autofocus autocomplete="off"
+                    data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other"
                     x-on:keydown.arrow-down.prevent="move(1)"
                     x-on:keydown.arrow-up.prevent="move(-1)"
                     x-on:keydown.enter.prevent="choose()"
