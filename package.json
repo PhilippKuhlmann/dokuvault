@@ -28,6 +28,6 @@
   "author": "Philipp Kuhlmann",
   "license": "MIT",
   "dependencies": {
-    "puppeteer": "^25.11.0"
+    "puppeteer": "^25.12.0"
   }
 }
