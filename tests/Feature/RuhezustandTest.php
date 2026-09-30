@@ -2,8 +2,8 @@
 
 use App\Models\Customer;
 use App\Models\LicenseWindows;
+use App\Models\LoginGeneral;
 use App\Models\OperatingSystem;
-use App\Models\Printer;
 use App\Models\Site;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -137,18 +137,18 @@ test('ein Lizenzschlüssel bleibt durchsuchbar', function () {
     expect(LicenseWindows::where('key', 'like', '%CCCCC%')->pluck('id'))->toContain($lizenz->id);
 });
 
-test('ein Druckerkennwort geht verschlüsselt in die Datenbank und kommt lesbar zurück', function () {
+test('ein Login-Kennwort geht verschlüsselt in die Datenbank und kommt lesbar zurück', function () {
     $kunde = Customer::factory()->create();
 
-    $drucker = Printer::create([
+    $login = LoginGeneral::create([
         'customer_id' => $kunde->id,
-        'site_id' => Site::factory()->create(['customer_id' => $kunde->id])->id,
+        'kind' => LoginGeneral::KIND,
         'name' => 'Kopierer EG',
         'password' => 'Geheim-2026',
     ]);
 
-    $roh = DB::table('printers')->where('id', $drucker->id)->value('password');
+    $roh = DB::table('login_generals')->where('id', $login->id)->value('password');
 
     expect($roh)->not->toBe('Geheim-2026')
-        ->and($drucker->fresh()->password)->toBe('Geheim-2026');
+        ->and($login->fresh()->password)->toBe('Geheim-2026');
 });

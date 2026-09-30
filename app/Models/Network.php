@@ -115,6 +115,93 @@ class Network extends Model
     }
 
     /**
+     * Die erste Adresse dieses Netzes, die man einem Gerät fest geben kann:
+     * weder Netz- noch Broadcast-Adresse, nicht das Gateway, nicht im
+     * DHCP-Bereich, nicht reserviert und beim Kunden noch nicht vergeben.
+     * null, wenn das Netz voll ist oder sich nicht auswerten lässt.
+     *
+     * Ein Vorschlag, keine Zusage - wer die Adresse zwischen Vorschlag und
+     * Speichern vergibt, fällt an der Eindeutigkeitsprüfung auf.
+     */
+    public function naechsteFreieAdresse(): ?string
+    {
+        $bereich = $this->bereich();
+
+        if (! $bereich) {
+            return null;
+        }
+
+        [$netz, $broadcast] = $bereich;
+        // /31 und /32 haben keine eigene Netz- und Broadcast-Adresse.
+        [$erste, $letzte] = $broadcast - $netz >= 3 ? [$netz + 1, $broadcast - 1] : [$netz, $broadcast];
+
+        $belegt = IpAddress::where('customer_id', $this->customer_id)
+            ->whereNotNull('address')
+            ->pluck('address')
+            ->merge(Server::where('customer_id', $this->customer_id)->whereNotNull('bmcIp')->pluck('bmcIp'))
+            ->push($this->gateway)
+            ->filter(fn ($adresse) => filter_var($adresse, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4))
+            ->mapWithKeys(fn ($adresse) => [ip2long($adresse) & 0xFFFFFFFF => true])
+            ->all();
+
+        $gesperrt = IpRange::where('network_id', $this->id)->get()
+            ->map(fn (IpRange $r) => [$r->vonLong(), $r->bisLong()])
+            ->push($this->dhcpBereich())
+            ->filter(fn ($b) => $b && $b[0] !== null && $b[1] !== null)
+            ->all();
+
+        for ($ip = $erste; $ip <= $letzte; $ip++) {
+            if (isset($belegt[$ip])) {
+                continue;
+            }
+
+            foreach ($gesperrt as [$von, $bis]) {
+                if ($ip >= $von && $ip <= $bis) {
+                    // Gleich ans Ende des Blocks springen statt ihn Adresse
+                    // fuer Adresse abzulaufen - bei einem /16 ein Unterschied.
+                    $ip = $bis;
+
+                    continue 2;
+                }
+            }
+
+            return long2ip($ip);
+        }
+
+        return null;
+    }
+
+    /**
+     * Der DHCP-Bereich als [Anfang, Ende] in long-Schreibweise, oder null.
+     * dhcpStart/dhcpEnd sind entweder volle Adressen oder ein Host-Anteil
+     * ("100"), der ins Netz eingesetzt wird.
+     */
+    public function dhcpBereich(): ?array
+    {
+        $netz = $this->bereich()[0] ?? null;
+
+        if ($netz === null) {
+            return null;
+        }
+
+        $aufloesen = function ($wert) use ($netz): ?int {
+            $wert = trim((string) $wert);
+
+            return match (true) {
+                $wert === '' => null,
+                (bool) filter_var($wert, FILTER_VALIDATE_IP) => ip2long($wert) & 0xFFFFFFFF,
+                ctype_digit($wert) => $netz + (int) $wert,
+                default => null,
+            };
+        };
+
+        $start = $aufloesen($this->dhcpStart);
+        $ende = $aufloesen($this->dhcpEnd);
+
+        return $start !== null && $ende !== null && $start <= $ende ? [$start, $ende] : null;
+    }
+
+    /**
      * Prüft, ob eine IPv4-Adresse in den Adressbereich dieses Netzes fällt.
      */
     public function enthaeltAdresse(string $adresse): bool

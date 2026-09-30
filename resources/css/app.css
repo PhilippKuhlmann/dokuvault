@@ -98,6 +98,21 @@
   }
 }
 
+/* Platzhalter sind Beispiele, keine Werte. Das Forms-Plugin faerbt sie
+   gray-500 - fast so dunkel wie echter Text, und "10.10.30.1" sah aus wie
+   schon eingetragen. Ausserhalb der Layer, damit es die Plugin-Regel sicher
+   schlaegt. */
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-gray-400);
+  opacity: 1;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--color-gray-500);
+}
+
 [x-cloak] {
     display: none !important;
 }

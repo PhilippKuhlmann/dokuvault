@@ -1,14 +1,15 @@
 {{-- Eigenstaendig: Wrapper haelt dieselbe zentrierte Spaltenbreite wie das
      Formular darueber (x-create.main), plus eigener Kartenrahmen.
      Eingebettet: beides faellt weg, der Block sitzt in der Karte des Formulars
-     und bekommt statt des Rahmens nur eine Trennlinie nach oben. --}}
+     und bekommt statt des Rahmens nur Abstand - keine Trennlinie, die
+     Ueberschrift trennt die Abschnitte schon. --}}
 <div @class([
     'mx-auto max-w-3xl px-3' => ! $eingebettet,
     'px-5 sm:px-6' => $eingebettet && ! $randlos,
 ])>
 <div @class([
     'my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-xs dark:bg-gray-800 dark:border-gray-700' => ! $eingebettet,
-    'border-t border-gray-100 py-5 dark:border-gray-700' => $eingebettet,
+    'py-5' => $eingebettet,
 ])>
     {{-- Der Hinweis trennt diese Karte vom Formular darueber: Dort speichert ein
          Knopf am Ende, hier wirkt jede Verknuepfung sofort. --}}
@@ -133,65 +134,83 @@
         <div class="text-sm text-gray-400 dark:text-gray-500 mb-4">{{ __('Noch keine Zugangsdaten verknüpft.') }}</div>
     @endif
 
-    {{-- Vorhandenes Login anhaengen. Der haeufige Fall: das root-Passwort gibt es schon. --}}
-    {{-- wire:key auf beiden Bloecken: sonst verwendet Livewire beim Umschalten
-         dieselben Input-Elemente weiter und haengt sie an ein anderes wire:model. --}}
-    @unless ($neu)
-    <div class="flex flex-wrap items-end gap-2" wire:key="anhaengen">
-        <div class="flex flex-col min-w-0 max-w-full">
-            <x-input.label :value="__('Vorhandenes Login')" />
-            <x-input.select name="login_id" wire:model.live.debounce.400ms="login_id" class="mt-1 max-w-full">
-                <option value="">{{ __('— bitte wählen —') }}</option>
-                {{-- Benutzername nur anhaengen, wenn der Name ihn nicht schon nennt:
-                     umgezogene Geraete-Logins heissen bereits "NAS-01 (admin)". --}}
-                @foreach (['password' => __('Kennwörter'), 'sshkey' => __('SSH-Schlüssel')] as $art => $ueberschrift)
-                    @if (($logins[$art] ?? collect())->isNotEmpty())
-                        <optgroup label="{{ $ueberschrift }}">
-                            @foreach ($logins[$art] as $login)
-                                <option value="{{ $login->id }}">{{ $login->name }}{{ $login->username && ! str_contains($login->name, $login->username) ? ' ('.$login->username.')' : '' }}</option>
-                            @endforeach
-                        </optgroup>
-                    @endif
-                @endforeach
-            </x-input.select>
-            <x-input.fehler feld="login_id" />
+    {{-- Eingabebereich wie bei "Weitere IP-Adressen" und "Scan-Ziele":
+         gestrichelt abgesetzt, oben der Umschalter, darunter ein Raster. Vorher
+         stand alles in einer Zeile mit einem Textlink "oder neu anlegen" - im
+         Modal brachen die Felder unregelmaessig um. --}}
+    <div class="rounded-lg border border-dashed border-gray-200 p-3 dark:border-gray-600">
+        <div class="mb-3 inline-flex rounded-lg border border-gray-200 p-0.5 dark:border-gray-600" role="tablist">
+            <button type="button" wire:click="$set('neu', false)" role="tab" aria-selected="{{ $neu ? 'false' : 'true' }}"
+                @class([
+                    'rounded-md px-3 py-1 text-xs transition-colors',
+                    'bg-cerulean-500 text-white' => ! $neu,
+                    'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700' => $neu,
+                ])>{{ __('Vorhandenes verknüpfen') }}</button>
+            <button type="button" wire:click="$set('neu', true)" role="tab" aria-selected="{{ $neu ? 'true' : 'false' }}"
+                @class([
+                    'rounded-md px-3 py-1 text-xs transition-colors',
+                    'bg-cerulean-500 text-white' => $neu,
+                    'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700' => ! $neu,
+                ])>{{ __('Neues anlegen') }}</button>
         </div>
-        <div class="flex flex-col">
-            <x-input.label :value="__('Abweichende Verwendung')" />
-            <x-input.text wire:model.live.debounce.400ms="note" type="text" class="mt-1 w-48" :placeholder="__('nur wenn abweichend')" />
-        </div>
-        <x-input.button type="button" size="feld" wire:click="attach" :label="__('Verknüpfen')" />
-        {{-- Textknopf ohne Flaeche, aber auf derselben Hoehe wie die Felder daneben --}}
-        <button type="button" wire:click="$set('neu', true)"
-            class="inline-flex items-center border border-transparent px-2 py-2 text-sm leading-6 text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400">{{ __('oder neu anlegen') }}</button>
-    </div>
-    @else
 
-    {{-- Neues Login anlegen und in einem Rutsch anhaengen, damit man fuer den
-         ersten Eintrag nicht die Seite verlassen muss. --}}
-    <div class="flex flex-wrap items-end gap-2" wire:key="neu-anlegen">
-        <div class="flex flex-col">
-            <x-input.label :value="__('Name')" />
-            <x-input.text feld="name" wire:model.live.debounce.400ms="name" type="text" class="mt-1 w-44" :placeholder="__('z. B. Linux root')" />
-            <x-input.fehler feld="name" />
-        </div>
-        <div class="flex flex-col">
-            <x-input.label :value="__('Benutzername')" />
-            <x-input.text wire:model.live.debounce.400ms="username" type="text" class="mt-1 w-32" placeholder="root" />
-        </div>
-        <div class="flex flex-col">
-            <x-input.label :value="__('Passwort')" />
-            <x-input.text wire:model.live.debounce.400ms="password" type="text" class="mt-1 w-40" />
-        </div>
-        <div class="flex flex-col">
-            <x-input.label :value="__('Abweichende Verwendung')" />
-            <x-input.text wire:model.live.debounce.400ms="note" type="text" class="mt-1 w-40" :placeholder="__('nur wenn abweichend')" />
-        </div>
-        <x-input.button type="button" size="feld" wire:click="create" :label="__('Anlegen und verknüpfen')" />
-        {{-- Textknopf ohne Flaeche, aber auf derselben Hoehe wie die Felder daneben --}}
-        <button type="button" wire:click="$set('neu', false)"
-            class="inline-flex items-center border border-transparent px-2 py-2 text-sm leading-6 text-gray-500 hover:text-gray-700 dark:text-gray-400">{{ __('Abbrechen') }}</button>
+        {{-- wire:key auf beiden Rastern: sonst verwendet Livewire beim Umschalten
+             dieselben Input-Elemente weiter und haengt sie an ein anderes wire:model. --}}
+        @unless ($neu)
+            {{-- Vorhandenes Login anhaengen. Der haeufige Fall: das root-Passwort gibt es schon. --}}
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2" wire:key="anhaengen">
+                <div class="flex min-w-0 flex-col">
+                    <x-input.label :value="__('Vorhandenes Login')" />
+                    <x-input.select name="login_id" wire:model.live.debounce.400ms="login_id" class="mt-1 w-full">
+                        <option value="">{{ __('— bitte wählen —') }}</option>
+                        {{-- Benutzername nur anhaengen, wenn der Name ihn nicht schon nennt:
+                             umgezogene Geraete-Logins heissen bereits "NAS-01 (admin)". --}}
+                        @foreach (['password' => __('Kennwörter'), 'sshkey' => __('SSH-Schlüssel')] as $art => $ueberschrift)
+                            @if (($logins[$art] ?? collect())->isNotEmpty())
+                                <optgroup label="{{ $ueberschrift }}">
+                                    @foreach ($logins[$art] as $login)
+                                        <option value="{{ $login->id }}">{{ $login->name }}{{ $login->username && ! str_contains($login->name, $login->username) ? ' ('.$login->username.')' : '' }}</option>
+                                    @endforeach
+                                </optgroup>
+                            @endif
+                        @endforeach
+                    </x-input.select>
+                    <x-input.fehler feld="login_id" />
+                </div>
+                <div class="flex min-w-0 flex-col">
+                    <x-input.label :value="__('Abweichende Verwendung (optional)')" />
+                    <x-input.text wire:model.live.debounce.400ms="note" type="text" class="mt-1 w-full" :placeholder="__('z. B. Serielle Konsole')" />
+                </div>
+                <div class="flex justify-end sm:col-span-2">
+                    <x-input.button type="button" size="feld" wire:click="attach" :label="__('Verknüpfen')" />
+                </div>
+            </div>
+        @else
+            {{-- Neues Login anlegen und in einem Rutsch anhaengen, damit man fuer den
+                 ersten Eintrag nicht die Seite verlassen muss. --}}
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2" wire:key="neu-anlegen">
+                <div class="flex min-w-0 flex-col">
+                    <x-input.label :value="__('Name')" />
+                    <x-input.text feld="name" wire:model.live.debounce.400ms="name" type="text" class="mt-1 w-full" :placeholder="__('z. B. Linux root')" />
+                    <x-input.fehler feld="name" />
+                </div>
+                <div class="flex min-w-0 flex-col">
+                    <x-input.label :value="__('Abweichende Verwendung (optional)')" />
+                    <x-input.text wire:model.live.debounce.400ms="note" type="text" class="mt-1 w-full" :placeholder="__('z. B. Serielle Konsole')" />
+                </div>
+                <div class="flex min-w-0 flex-col">
+                    <x-input.label :value="__('Benutzername')" />
+                    <x-input.text wire:model.live.debounce.400ms="username" type="text" class="mt-1 w-full" placeholder="root" />
+                </div>
+                <div class="flex min-w-0 flex-col">
+                    <x-input.label :value="__('Passwort')" />
+                    <x-input.text wire:model.live.debounce.400ms="password" type="text" class="mt-1 w-full font-mono" />
+                </div>
+                <div class="flex justify-end sm:col-span-2">
+                    <x-input.button type="button" size="feld" wire:click="create" :label="__('Anlegen und verknüpfen')" />
+                </div>
+            </div>
+        @endunless
     </div>
-    @endunless
 </div>
 </div>

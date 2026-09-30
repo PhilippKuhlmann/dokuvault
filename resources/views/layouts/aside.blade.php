@@ -106,7 +106,7 @@
                 </x-aside.dropdown>
             @endcanany
 
-            @canany(['computer_viewAny', 'printer_viewAny', 'iotdevice_viewAny', 'machine_viewAny', 'otherclient_viewAny'])
+            @canany(['computer_viewAny', 'printer_viewAny', 'scanner_viewAny', 'iotdevice_viewAny', 'machine_viewAny', 'otherclient_viewAny'])
                 <x-aside.dropdown :label="__('Clients')" svg="svg.computer">
                     <x-slot:links>
                         @can('computer_viewAny')
@@ -114,6 +114,9 @@
                         @endcan
                         @can('printer_viewAny')
                             <x-aside.dropdownlink :label="__('Drucker')" href="{{ route('printer.index', $customer) }}" />
+                        @endcan
+                        @can('scanner_viewAny')
+                            <x-aside.dropdownlink :label="__('Scanner')" href="{{ route('scanner.index', $customer) }}" />
                         @endcan
                         @can('iotdevice_viewAny')
                             <x-aside.dropdownlink :label="__('IoT-Gerät')" href="{{ route('iotdevice.index', $customer) }}" />

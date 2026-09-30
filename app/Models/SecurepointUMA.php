@@ -24,14 +24,6 @@ class SecurepointUMA extends Model
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
-    protected function password(): Attribute
-    {
-        return new Attribute(
-            get: fn ($value) => ! empty($value) ? Crypt::decryptString($value) : null,
-            set: fn ($value) => Crypt::encryptString($value),
-        );
-    }
-
     protected function encryptionkey(): Attribute
     {
         return new Attribute(

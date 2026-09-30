@@ -2,12 +2,37 @@
 
 ## 26.09.30
 
+### Changed
+
+- **Ein gewähltes VLAN füllt die nächste freie IP-Adresse vor.** Unter „Weitere IP-Adressen“ steht nach der Auswahl eines VLANs sofort eine Adresse im Feld, die sich vergeben lässt: nicht Netz-, Broadcast- oder Gateway-Adresse, nicht im DHCP-Bereich, nicht in einem reservierten Bereich und beim Kunden noch nicht vergeben. Eine schon getippte Adresse, die ins gewählte Netz passt, bleibt stehen; eine, die nicht passt, wird ersetzt. Das gilt auch für ein VLAN, das gerade über „+ Neu“ angelegt wurde.
+
+- **Im IPAM führt ein Klick auf ein Gerät zu seiner Karte.** Die Gerätenamen im IP-Plan sind jetzt Links – bei fest vergebenen Adressen, am DHCP-Bereich und in der Zeile „Per DHCP versorgt“. Der Klick öffnet die Liste des Geräts, scrollt zur Karte und hebt sie kurz hervor, genau wie aus der globalen Suche (`?highlight=`). Wer die Liste nicht sehen darf, bekommt keinen Link, sondern wie bisher nur den Namen.
+
+- **Geräte haben kein eigenes Benutzername/Passwort-Feld mehr.** Firewall, Router, Switch, Accesspoint, NAS, Drucker, Kamera, Telefon, TK-Anlage, DECT, Rekorder, IoT-Gerät, sonstiger Client und SecurepointUMA trugen je ein eigenes Paar – zusätzlich zum Bereich „Zugangsdaten", mit dem sich dasselbe am Gerät verknüpfen lässt. Zwei Orte für dasselbe Kennwort heißen, beim Wechsel einen davon zu vergessen. Jetzt gilt für alle Geräte, was für Server und Computer schon galt: Zugangsdaten werden unter „Zugangsdaten" angelegt und im Bearbeiten-Formular des Geräts verknüpft; die Gerätekarte zeigt sie wie gewohnt an.
+  - Die Felder sind aus Formularen, Gerätekarten, PDF-Export und den Assistenten-Schritten (Firewall, Router, Switches, Accesspoints, NAS, Drucker, TK-Anlagen) entfernt. Im PDF stehen die Zugangsdaten weiter im Abschnitt „Logins – Allgemein".
+  - Eine Migration entfernt die Spalten `username` und `password` aus den 14 Gerätetabellen. **Vorhandene Werte werden nicht übernommen** – es gab noch keine produktive Installation.
+  - Bei der SecurepointUMA bleibt der Verschlüsselungscode am Gerät; seine Gruppe heißt jetzt „Verschlüsselung" statt „Login".
+
 ### Added
 
+- **Scanner als eigene Objektart unter „Clients“.** Neben den Druckern lassen sich jetzt Scanner dokumentieren: Name, Hersteller, Modell, Seriennummer, dazu wie bei jedem Gerät IP-Adressen, verknüpfte Zugangsdaten und Beschaffung (Kaufdatum, Garantie, Support-Ende, Lieferant).
+  - **Scan-Ziele als eigene Liste.** Ein Scanner hat selten nur ein Ziel, oft Dutzende – je Abteilung ein Ordner, je Mitarbeiter eine E-Mail-Kurzwahl –, und dasselbe Ziel ist meist auf mehreren Scannern eingerichtet. Deshalb sind Scan-Ziele eigene Einträge unter „Clients → Scan-Ziele“ (Bezeichnung, Art, Ziel, Beschreibung), genau wie die Zugangsdaten: einmal gepflegt, auf beliebig vielen Scannern verknüpft. Ändert sich ein Pfad, ändert man ihn an einer Stelle.
+  - **Anmeldung am Ziel.** FTP-Konten und Freigaben brauchen meist Benutzername und Kennwort. Das Ziel verknüpft dafür einen Eintrag aus „Zugangsdaten“, statt die Daten noch einmal zu speichern. Die Karte des Ziels zeigt Benutzername und Kennwort – das Kennwort erst auf Klick, mit demselben Recht, Protokoll und derselben Bremse wie bei den Zugangsdaten.
+  - **Am Scanner** verknüpft ein Block im Bearbeiten-Formular vorhandene Ziele oder legt ein neues an und verknüpft es gleich (speichert sofort, wie „Weitere IP-Adressen“). „Lösen“ nimmt nur die Verknüpfung weg – das Ziel bleibt in der Liste und an anderen Scannern. Die Art bleibt nach dem Anlegen stehen: Wer zwanzig Ordner einträgt, wählt sie nur einmal.
+  - Die Karte des Ziels nennt die Scanner, auf denen es eingerichtet ist, mit Sprung zur Scanner-Karte. Der PDF-Export hat einen eigenen Abschnitt „Scan-Ziele“.
+  - Scanner stehen unter „Clients“ in der Seitenleiste. **Scan-Ziele haben keinen eigenen Menüpunkt** – sie sind kein Gerät. Man erreicht sie über einen Link oben auf der Scanner-Seite (neben „Neu“), von dort führt einer zurück; dazu Befehlspalette und globale Suche. Beide stehen außerdem im Papierkorb und im PDF-Export, Scanner zusätzlich im IPAM. Der Link kommt aus einem neuen, allgemeinen Schlüssel `verweise` in `config/forms.php`.
+  - **Rechte:** Eine Migration legt `scanner_*` und `scantarget_*` (je viewAny/create/update/delete) an und gibt jeder Rolle diese Rechte, die das entsprechende Drucker-Recht hat. Wer Drucker pflegen darf, darf also auch Scanner und Scan-Ziele pflegen, ohne dass jemand die Rollen nachziehen muss.
+  - Einfache Textfelder im Objekt-Formular können jetzt ebenfalls einen Platzhalter tragen (`platzhalter` in `config/forms.php`) – bisher ging das nur bei mehrzeiligen Feldern.
+  - Neue Tabellen `scanners`, `scan_targets` und `scan_target_scanner`.
 - **Dokumentations-Assistent als erledigt markieren.** Im Assistenten unter jedem Schritt (mit Rückfrage) und auf dem Dashboard direkt neben „Starten“/„Fortsetzen“ gibt es jetzt „Als erledigt markieren“. Der Durchlauf gilt dann als abgeschlossen, und das Kunden-Dashboard bietet „Erstaufnahme starten“ nicht mehr an – auch wenn der Kunde noch kaum Inventar hat. Das gilt ebenso, wenn ein Durchlauf regulär bis zum Ende durchlaufen wurde. Über die Seitenleiste lässt sich der Assistent weiterhin jederzeit aufrufen.
 
 ### Fixed
 
+- **Listen trugen oben die Einzahl.** Der Kopf der Objektlisten nahm das Papierkorb-Label („Maschine“, „Sonstiger Client“) statt des Listentitels aus der Seitenleiste („Maschinen“, „Sonstige Clients“) – obwohl es `list_titles` genau dafür gibt. Er nimmt jetzt den Listentitel.
+- **Der Zugangsdaten-Block im Bearbeiten-Formular brach unregelmäßig um.** Alle Felder standen in einer Zeile, dahinter der Textlink „oder neu anlegen“ – im Modal rutschten Felder und Knöpfe durcheinander. Er sieht jetzt aus wie „Weitere IP-Adressen“ und „Scan-Ziele“: gestrichelt abgesetzter Eingabebereich, oben der Umschalter „Vorhandenes verknüpfen / Neues anlegen“, darunter ein zweispaltiges Raster, der Knopf unten rechts. Die Trennlinien zwischen den Blöcken sind entfallen – jeder trägt eine Überschrift, das trennt genug. „Weitere IP-Adressen“ folgt demselben Raster; dort steht das VLAN jetzt vor der IP-Adresse, weil es sie vorausfüllt.
+- **Das Vorbefüllen beim VLAN-Wechsel tat nichts mehr.** Es sollte die ersten drei Oktette ins Adressfeld schreiben, griff dafür aber über `$refs` auf das Feld zu – seit das Auswahlfeld eine eigene Komponente mit eigenem `x-data` ist, zeigte das ins Leere. Der Vorschlag kommt jetzt vom Server (siehe oben). Den DHCP-Bereich rechnet dafür `Network::dhcpBereich()` aus, auch für den IP-Plan, der bisher eine eigene Fassung davon hatte.
+
+- **Platzhalter sahen aus wie eingetragene Werte.** Beispiele wie „10.10.30.1“ oder „z. B. Gateway“ standen fast so dunkel im Feld wie echter Text. Sie sind jetzt deutlich heller (Grau-400, im Dunkelmodus Grau-500) – überall, weil die Regel zentral in `app.css` steht und die Vorgaben von Forms-Plugin und Flowbite übersteuert.
 - **Mauszeiger über Buttons.** Seit Tailwind v4 zeigten Buttons ohne eigene Angabe den normalen Pfeil statt der Hand. Jetzt zeigen alle aktiven Buttons wieder die Hand.
 
 ## 26.09.24

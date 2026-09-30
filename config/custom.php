@@ -53,6 +53,8 @@ use App\Models\Printer;
 use App\Models\Rack;
 use App\Models\Recorder;
 use App\Models\Router;
+use App\Models\Scanner;
+use App\Models\ScanTarget;
 use App\Models\SecurepointUMA;
 use App\Models\Server;
 use App\Models\Site;
@@ -101,6 +103,8 @@ return [
         'Machine',
         'OtherClient',
         'Printer',
+        'Scanner',
+        'ScanTarget',
         'ADDomain',
         'ADUser',
         'ADGroup',
@@ -155,6 +159,8 @@ return [
         'machine' => [Machine::class, 'Maschine'],
         'otherclient' => [OtherClient::class, 'Sonstiger Client'],
         'printer' => [Printer::class, 'Drucker'],
+        'scanner' => [Scanner::class, 'Scanner'],
+        'scantarget' => [ScanTarget::class, 'Scan-Ziel'],
         'addomain' => [ADDomain::class, 'AD-Domäne'],
         'aduser' => [ADUser::class, 'AD-Benutzer'],
         'adgroup' => [ADGroup::class, 'AD-Gruppe'],
@@ -194,6 +200,8 @@ return [
         'machine' => 'Maschinen',
         'otherclient' => 'Sonstige Clients',
         'printer' => 'Drucker',
+        'scanner' => 'Scanner',
+        'scantarget' => 'Scan-Ziele',
         'addomain' => 'AD-Domänen',
         'aduser' => 'AD-Benutzer',
         'adgroup' => 'AD-Gruppen',
@@ -324,8 +332,6 @@ return [
                 ['name' => 'firmware', 'label' => 'Firmware', 'type' => 'text'],
                 ['name' => 'ip_address', 'label' => 'IP-Adresse', 'type' => 'text'],
                 ['name' => 'management_url', 'label' => 'Verwaltungsoberfläche', 'type' => 'text'],
-                ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
-                ['name' => 'password', 'label' => 'Passwort', 'type' => 'password'],
                 ['name' => 'subscription_until', 'label' => 'Subscription bis', 'type' => 'date'],
                 ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
             ],
@@ -340,8 +346,6 @@ return [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
                 ['name' => 'ip_address', 'label' => 'IP-Adresse', 'type' => 'text'],
                 ['name' => 'port', 'label' => 'Port', 'type' => 'number', 'default' => '443'],
-                ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
-                ['name' => 'password', 'label' => 'Passwort', 'type' => 'password'],
                 ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
                 ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
                 ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
@@ -397,8 +401,6 @@ return [
                 ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
                 ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
                 ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
-                ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
-                ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
                 ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
             ],
         ],
@@ -414,8 +416,6 @@ return [
                 ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
                 ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
                 ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
-                ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
-                ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
                 ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
             ],
         ],
@@ -468,8 +468,6 @@ return [
             'fields' => [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
                 ['name' => 'ip_address', 'label' => 'IP-Adresse', 'type' => 'text'],
-                ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
-                ['name' => 'password', 'label' => 'Passwort', 'type' => 'password'],
                 ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
                 ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
                 ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
@@ -502,11 +500,9 @@ return [
             'fields' => [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
                 ['name' => 'ip_address', 'label' => 'IP-Adresse', 'type' => 'text'],
-                ['name' => 'password', 'label' => 'Passwort', 'type' => 'password'],
                 ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
                 ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
                 ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
-                ['name' => 'username', 'label' => 'Benutzer', 'type' => 'text'],
             ],
         ],
         [
@@ -533,8 +529,6 @@ return [
                 ['name' => 'ip_address', 'label' => 'IP-Adresse', 'type' => 'text'],
                 ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
                 ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
-                ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
-                ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
             ],
         ],
         [

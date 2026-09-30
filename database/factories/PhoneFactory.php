@@ -19,8 +19,6 @@ class PhoneFactory extends Factory
             'serialNumber' => strtoupper(fake()->bothify('??########')),
             'mac' => fake()->macAddress(),
             'port' => '443',
-            'username' => fake()->userName(),
-            'password' => fake()->password(6, 12),
         ];
     }
 }

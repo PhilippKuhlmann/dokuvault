@@ -2,6 +2,7 @@
 
 use App\Livewire\DeviceIpAddresses;
 use App\Models\Customer;
+use App\Models\IpRange;
 use App\Models\Network;
 use App\Models\Router;
 use App\Models\Site;
@@ -29,7 +30,6 @@ function routerWithNetworks(): array
     $router = Router::create([
         'customer_id' => $customer->id, 'site_id' => $site->id,
         'name' => 'RTR-Core', 'ip' => '10.10.30.1', 'port' => '443',
-        'username' => 'admin', 'password' => 'x',
     ]);
 
     return [$customer, $router, $clients];
@@ -74,14 +74,73 @@ test('IP über die Livewire-Komponente hinzufügen und entfernen', function () {
     expect($router->ipAddresses()->count())->toBe(0);
 });
 
-test('VLAN-Option liefert das Netz-Präfix fürs clientseitige Vorbefüllen', function () {
+test('ein gewähltes VLAN füllt die nächste freie Adresse vor', function () {
     $this->actingAs(userWithPermissions(['router_update']));
     [$customer, $router, $clients] = routerWithNetworks();
 
-    // Das data-prefix-Attribut (erste 3 Oktette) treibt das Alpine-Vorbefüllen des IP-Feldes
+    // .1 ist das Gateway, .0 die Netzadresse - also .2.
     Livewire::test(DeviceIpAddresses::class, ['model' => $router, 'customer' => $customer])
-        ->assertSee('data-prefix="10.10.20."', false)
-        ->assertSee('data-prefix="10.10.30."', false);
+        ->set('network_id', $clients->id)
+        ->assertSet('address', '10.10.20.2');
+});
+
+test('der Vorschlag überspringt vergebene, reservierte und DHCP-Adressen', function () {
+    $this->actingAs(userWithPermissions(['router_update']));
+    [$customer, $router, $clients] = routerWithNetworks();
+
+    $router->ipAddresses()->create(['customer_id' => $customer->id, 'address' => '10.10.20.2']);
+    IpRange::create([
+        'customer_id' => $customer->id, 'network_id' => $clients->id,
+        'from_ip' => '10.10.20.3', 'to_ip' => '10.10.20.9', 'label' => 'Drucker',
+    ]);
+
+    Livewire::test(DeviceIpAddresses::class, ['model' => $router, 'customer' => $customer])
+        ->set('network_id', $clients->id)
+        ->assertSet('address', '10.10.20.10');
+
+    // Ein Netz, dessen Rest im DHCP-Bereich liegt: dahinter geht es weiter.
+    $voll = Network::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $clients->site_id,
+        'network' => '10.10.40.0', 'cidr' => '24', 'subnetmask' => '255.255.255.0',
+        'gateway' => '10.10.40.1', 'dhcpStart' => '2', 'dhcpEnd' => '250',
+    ]);
+
+    Livewire::test(DeviceIpAddresses::class, ['model' => $router, 'customer' => $customer])
+        ->set('network_id', $voll->id)
+        ->assertSet('address', '10.10.40.251');
+});
+
+test('eine passende getippte Adresse bleibt, eine unpassende wird ersetzt', function () {
+    $this->actingAs(userWithPermissions(['router_update']));
+    [$customer, $router, $clients] = routerWithNetworks();
+
+    Livewire::test(DeviceIpAddresses::class, ['model' => $router, 'customer' => $customer])
+        ->set('address', '10.10.20.77')
+        ->set('network_id', $clients->id)
+        ->assertSet('address', '10.10.20.77')
+        ->set('address', '192.168.1.5')
+        ->set('network_id', $clients->id)
+        ->assertSet('address', '10.10.20.2');
+});
+
+test('bei DHCP und bei einem fremden Netz wird nichts vorgefüllt', function () {
+    $this->actingAs(userWithPermissions(['router_update']));
+    [$customer, $router, $clients] = routerWithNetworks();
+
+    $fremderKunde = Customer::factory()->create();
+    $fremd = Network::factory()->create([
+        'customer_id' => $fremderKunde->id,
+        'site_id' => Site::factory()->create(['customer_id' => $fremderKunde->id])->id,
+        'network' => '10.99.0.0', 'cidr' => '24', 'subnetmask' => '255.255.255.0',
+    ]);
+
+    Livewire::test(DeviceIpAddresses::class, ['model' => $router, 'customer' => $customer])
+        ->set('dhcp', true)
+        ->set('network_id', $clients->id)
+        ->assertSet('address', '')
+        ->set('dhcp', false)
+        ->set('network_id', $fremd->id)
+        ->assertSet('address', '');
 });
 
 test('ohne Bearbeiten-Recht kann keine IP hinzugefügt werden', function () {

@@ -32,6 +32,8 @@ use App\Http\Requests\PhoneSystemRequest;
 use App\Http\Requests\PrinterRequest;
 use App\Http\Requests\RecorderRequest;
 use App\Http\Requests\RouterRequest;
+use App\Http\Requests\ScannerRequest;
+use App\Http\Requests\ScanTargetRequest;
 use App\Http\Requests\SecurepointUMARequest;
 use App\Http\Requests\ServerRequest;
 use App\Http\Requests\SiteRequest;
@@ -74,6 +76,8 @@ use App\Models\PhoneSystem;
 use App\Models\Printer;
 use App\Models\Recorder;
 use App\Models\Router;
+use App\Models\Scanner;
+use App\Models\ScanTarget;
 use App\Models\SecurepointUMA;
 use App\Models\Server;
 use App\Models\Site;
@@ -185,8 +189,6 @@ return [
             ['name' => 'form_factor', 'label' => 'Bauform', 'type' => 'optionen',
                 'quelle' => 'custom.firewall_form_factors'],
             ['name' => 'management_url', 'label' => 'Verwaltungsoberfläche', 'type' => 'text'],
-            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
-            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
             ['name' => 'port', 'label' => 'Port', 'type' => 'number'],
             ['name' => 'subscription_until', 'label' => 'Subscription bis', 'type' => 'date'],
             // Nur bei Securepoint. Der Hersteller ist Freitext, deshalb wird
@@ -438,8 +440,6 @@ return [
             ['name' => 'type', 'label' => 'Typ', 'type' => 'text'],
             ['name' => 'urlAdmin', 'label' => 'Admin URL', 'type' => 'text'],
             ['name' => 'urlUser', 'label' => 'User URL', 'type' => 'text'],
-            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
-            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
             // Ein Verschluesselungscode ist lang und wird am Stueck kopiert -
             // er braucht die volle Breite.
             ['name' => 'encryptionkey', 'label' => 'Verschlüsselungscode', 'type' => 'text', 'breit' => true],
@@ -587,8 +587,6 @@ return [
             ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
             ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
             ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
-            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
-            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
             ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
             ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
             ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
@@ -607,8 +605,6 @@ return [
             ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
             ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
             ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
-            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
-            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
             ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
             ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
             ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
@@ -647,8 +643,6 @@ return [
             ['name' => 'serialNumber', 'label' => 'Seriennmmer', 'type' => 'text'],
             ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
             ['name' => 'mac', 'label' => 'MAC-Adresse', 'type' => 'text'],
-            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
-            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
             ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
             ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
             ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
@@ -667,8 +661,6 @@ return [
             ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
             ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
             ['name' => 'url', 'label' => 'URL', 'type' => 'text'],
-            ['name' => 'username', 'label' => 'Benutzer', 'type' => 'text'],
-            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
             ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
             ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
             ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
@@ -686,8 +678,6 @@ return [
             ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
             ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
             ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
-            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
-            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
             ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
             ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
             ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
@@ -704,8 +694,6 @@ return [
             ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
             ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
             ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
-            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
-            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
             ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
             ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
             ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
@@ -724,8 +712,6 @@ return [
             ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
             ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
             ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
-            ['name' => 'username', 'label' => 'Benutzer', 'type' => 'text'],
-            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
             ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
             ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
             ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
@@ -744,8 +730,6 @@ return [
             ['name' => 'serialNumber', 'label' => 'Seriennmmer', 'type' => 'text'],
             ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
             ['name' => 'mac', 'label' => 'MAC-Adresse', 'type' => 'text'],
-            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
-            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
             ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
             ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
             ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
@@ -763,12 +747,46 @@ return [
             ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
             ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
             ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
-            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
-            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
             ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
             ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
             ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
             ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+        ],
+    ],
+    'scanner' => [
+        'model' => Scanner::class, 'request' => ScannerRequest::class,
+        'relation' => 'scanners', 'einzahl' => 'Scanner', 'suchfelder' => ['name', 'model', 'serialNumber'],
+        'mitladen' => ['scanTargets.login'],
+        // Scan-Ziele haben keinen eigenen Menuepunkt - sie sind kein Geraet.
+        'verweise' => [['route' => 'scantarget.index', 'label' => 'Scan-Ziele', 'recht' => 'scantarget_viewAny']],
+        'bloecke' => true,
+        'felder' => [
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
+            ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
+            ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
+            ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
+            ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
+            ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
+            ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+        ],
+    ],
+    'scantarget' => [
+        'model' => ScanTarget::class, 'request' => ScanTargetRequest::class,
+        'relation' => 'scantargets', 'einzahl' => 'Scan-Ziel', 'suchfelder' => ['name', 'target', 'description'],
+        // Die Karte zeigt, auf welchen Scannern das Ziel eingerichtet ist.
+        'mitladen' => ['scanners', 'login'],
+        'verweise' => [['route' => 'scanner.index', 'label' => 'Scanner', 'recht' => 'scanner_viewAny']],
+        'felder' => [
+            ['name' => 'name', 'label' => 'Bezeichnung', 'type' => 'text', 'platzhalter' => 'z. B. Buchhaltung'],
+            ['name' => 'kind', 'label' => 'Art', 'type' => 'optionen', 'werte' => ScanTarget::ARTEN],
+            ['name' => 'target', 'label' => 'Ziel', 'type' => 'text', 'platzhalter' => '\\\\srv-file01\\scans'],
+            // Nur die Kennwoerter aus "Zugangsdaten" (Global-Scope von
+            // LoginGeneral), auf den Kunden eingeschraenkt.
+            ['name' => 'login_general_id', 'label' => 'Zugangsdaten', 'type' => 'auswahl',
+                'quelle' => LoginGeneral::class, 'anzeige' => '{name} ({username})'],
+            ['name' => 'description', 'label' => 'Beschreibung', 'type' => 'text'],
         ],
     ],
     'printer' => [
@@ -782,8 +800,6 @@ return [
             ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
             ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
             ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
-            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
-            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
             ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
             ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
             ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
@@ -801,8 +817,6 @@ return [
             ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
             ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
             ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
-            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
-            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
             ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
             ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
             ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
@@ -819,8 +833,6 @@ return [
             ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
             ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
             ['name' => 'serialNumber', 'label' => 'Seriennummer', 'type' => 'text'],
-            ['name' => 'username', 'label' => 'Benutzername', 'type' => 'text'],
-            ['name' => 'password', 'label' => 'Passwort', 'type' => 'text'],
             ['name' => 'port', 'label' => 'Port', 'type' => 'text'],
             ['name' => 'purchase_date', 'label' => 'Kaufdatum', 'type' => 'date'],
             ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],

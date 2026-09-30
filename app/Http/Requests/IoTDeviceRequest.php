@@ -34,8 +34,6 @@ class IoTDeviceRequest extends FormRequest
             'serialNumber' => 'max:255',
             'port' => 'max:255',
             'url' => 'nullable|url',
-            'username' => 'nullable',
-            'password' => 'nullable|max:255',
             ...$this->beschaffungRegeln(),
         ];
     }
@@ -50,8 +48,6 @@ class IoTDeviceRequest extends FormRequest
             'serialNumber' => 'Seriennummer',
             'port' => 'Port',
             'url' => 'URL',
-            'username' => 'Benutzer',
-            'password' => 'Passwort',
             ...$this->beschaffungBezeichnungen(),
         ];
     }

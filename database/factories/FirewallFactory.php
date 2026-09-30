@@ -29,8 +29,6 @@ class FirewallFactory extends Factory
             'firmware' => $hardware[2],
             'serialNumber' => strtoupper(fake()->bothify('??######')),
             'management_url' => 'https://192.168.'.fake()->numberBetween(1, 250).'.1:4444',
-            'username' => 'admin',
-            'password' => fake()->password(8, 14),
             'port' => '4444',
             // Die Subscription laeuft demnaechst ab - genau der Fall, den das
             // Dashboard zeigen soll.

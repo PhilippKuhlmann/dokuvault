@@ -1,14 +1,15 @@
 {{-- Eigenstaendig: Wrapper haelt dieselbe zentrierte Spaltenbreite wie das
      Formular darueber (x-create.main), plus eigener Kartenrahmen.
      Eingebettet: beides faellt weg, der Block sitzt in der Karte des Formulars
-     und bekommt statt des Rahmens nur eine Trennlinie nach oben. --}}
+     und bekommt statt des Rahmens nur Abstand - keine Trennlinie, die
+     Ueberschrift trennt die Abschnitte schon. --}}
 <div @class([
     'mx-auto max-w-3xl px-3' => ! $eingebettet,
     'px-5 sm:px-6' => $eingebettet && ! $randlos,
 ])>
 <div @class([
     'my-3 p-5 sm:p-6 rounded-xl border border-gray-200 bg-white shadow-xs dark:bg-gray-800 dark:border-gray-700' => ! $eingebettet,
-    'border-t border-gray-100 py-5 dark:border-gray-700' => $eingebettet,
+    'py-5' => $eingebettet,
 ])>
     {{-- Der Hinweis trennt diese Karte vom Formular darueber: Dort speichert ein
          Knopf am Ende, hier wirkt jede Zeile sofort. --}}
@@ -85,21 +86,13 @@
                 ])>{{ __('Per DHCP') }}</button>
         </div>
 
-        {{-- items-end und je Feld eine gleich hohe Beschriftung: Sonst haengen
-             die Felder auf verschiedenen Hoehen, sobald eines eine Zusatzzeile
-             traegt. --}}
-        <div class="flex flex-wrap items-end gap-3">
-            @unless ($dhcp)
-                <div class="flex flex-col">
-                    <x-input.label :value="__('IP-Adresse')" />
-                    <x-input.text feld="address" wire:model.live.debounce.400ms="address" x-ref="addr" type="text" class="mt-1 w-40" placeholder="10.10.30.1" />
-                    <x-input.fehler feld="address" />
-                </div>
-            @endunless
-
-            {{-- min-w-0 + max-w-full: das Select waechst sonst auf die Breite der laengsten
+        {{-- Raster wie bei "Zugangsdaten" und "Scan-Ziele", der Knopf unten
+             rechts. VLAN steht vorn: Es fuellt die naechste freie Adresse vor
+             (DeviceIpAddresses::updatedNetworkId), also waehlt man es zuerst. --}}
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {{-- min-w-0: das Select waechst sonst auf die Breite der laengsten
                  Option ("Beschreibung (10.10.30.0/24)") und schiebt die Seite auf Mobil seitlich raus --}}
-            <div class="flex min-w-0 max-w-full flex-col">
+            <div class="flex min-w-0 flex-col">
                 <div class="flex items-baseline gap-2">
                     <x-input.label :value="$dhcp ? __('VLAN') : __('VLAN (optional)')" />
 
@@ -108,36 +101,33 @@
                          Komponente steht ueber der VLAN-Liste. --}}
                     <livewire:network-quick-create :customer="$kunde" :site-id="$geraeteStandort" />
                 </div>
-                {{-- Bei Auswahl eines VLANs das IP-Feld mit dem Netz-Präfix (erste 3 Oktette) vorbefüllen;
-                     ein bereits eingegebenes letztes Oktett bleibt erhalten. --}}
-                <x-input.select name="network_id" wire:model.live.debounce.400ms="network_id" class="mt-1 max-w-full"
-                    x-on:change="
-                        const prefix = $event.target.selectedOptions[0]?.dataset.prefix || '';
-                        if (prefix && $refs.addr) {
-                            const parts = $refs.addr.value.split('.');
-                            const host = parts.length === 4 ? parts[3] : '';
-                            $refs.addr.value = prefix + host;
-                            $refs.addr.dispatchEvent(new Event('input'));
-                        }
-                    ">
+                <x-input.select name="network_id" wire:model.live="network_id" class="mt-1 w-full">
                     <option value="">— kein VLAN —</option>
                     @foreach ($networks as $network)
-                        @php
-                            $octets = explode('.', (string) $network->network);
-                            $prefix = count($octets) === 4 ? $octets[0] . '.' . $octets[1] . '.' . $octets[2] . '.' : '';
-                        @endphp
-                        <option value="{{ $network->id }}" data-prefix="{{ $prefix }}">{{ $network->anzeige() }} ({{ $network->network }}/{{ $network->cidr }})</option>
+                        <option value="{{ $network->id }}">{{ $network->anzeige() }} ({{ $network->network }}/{{ $network->cidr }})</option>
                     @endforeach
                 </x-input.select>
                 <x-input.fehler feld="network_id" />
             </div>
 
-            <div class="flex flex-col">
+            @unless ($dhcp)
+                <div class="flex min-w-0 flex-col">
+                    <x-input.label :value="__('IP-Adresse')" />
+                    <x-input.text feld="address" wire:model.live.debounce.400ms="address" type="text" class="mt-1 w-full font-mono" placeholder="10.10.30.1" />
+                    <x-input.fehler feld="address" />
+                </div>
+            @endunless
+
+            <div class="flex min-w-0 flex-col">
                 <x-input.label :value="__('Bezeichnung (optional)')" />
-                <x-input.text wire:model.live.debounce.400ms="label" type="text" class="mt-1 w-48" :placeholder="__('z. B. Gateway')" />
+                <x-input.text wire:model.live.debounce.400ms="label" type="text" class="mt-1 w-full" :placeholder="__('z. B. Gateway')" />
             </div>
 
-            <x-input.button type="button" size="feld" wire:click="add" :label="__('Hinzufügen')" />
+            {{-- Ohne Adressfeld (DHCP) steht die Bezeichnung neben dem VLAN,
+                 der Knopf bekommt dann eine eigene Zeile. --}}
+            <div @class(['flex items-end justify-end', 'sm:col-span-2' => $dhcp])>
+                <x-input.button type="button" size="feld" wire:click="add" :label="__('Hinzufügen')" />
+            </div>
         </div>
     </div>
 

@@ -21,8 +21,6 @@ class SecurepointUMAFactory extends Factory
             'name' => 'mailsec.'.fake()->domainName(),
             'manufacturer' => 'Reddoxx',
             'type' => 'Appliance',
-            'username' => 'admin',
-            'password' => fake()->password($minLength = 6, $maxLength = 12),
             'encryptionkey' => fake()->password($minLength = 10, $maxLength = 20),
             'urlAdmin' => 'https://192.168.175.254:11115',
             'urlUser' => 'https://192.168.175.254',

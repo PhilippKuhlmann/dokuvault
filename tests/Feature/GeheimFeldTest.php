@@ -121,19 +121,17 @@ test('die Firewall-Liste trägt den Klartext nicht mehr im HTML', function () {
         ->assertDontSee('Wolke-Nicht-Im-Dom-2026');
 });
 
-test('die SecurepointUMA-Liste trägt Gerätepasswort und Code nicht mehr im HTML', function () {
+test('die SecurepointUMA-Liste trägt den Verschlüsselungscode nicht mehr im HTML', function () {
     $nutzer = userWithPermissions(['securepointuma_viewAny']);
     $customer = Customer::factory()->create();
     SecurepointUMA::factory()->create([
         'customer_id' => $customer->id,
         'name' => 'UMA-Listentest',
-        'password' => 'Geraet-Nicht-Im-Dom-2026',
         'encryptionkey' => 'Code-Nicht-Im-Dom-2026',
     ]);
 
     $this->actingAs($nutzer)->get("/{$customer->slug}/securepointuma")
         ->assertOk()
         ->assertSee('UMA-Listentest')
-        ->assertDontSee('Geraet-Nicht-Im-Dom-2026')
         ->assertDontSee('Code-Nicht-Im-Dom-2026');
 });

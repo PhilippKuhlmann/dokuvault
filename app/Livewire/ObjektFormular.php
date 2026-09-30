@@ -698,6 +698,8 @@ class ObjektFormular extends Component
             // ipAddresses() auf einem Model auf, das die Relation nicht hat.
             'mitIpAdressen' => in_array(HasIpAddresses::class, class_uses_recursive($einstellung['model']), true),
             'mitZugangsdaten' => in_array(HasCredentials::class, class_uses_recursive($einstellung['model']), true),
+            // Nur der Scanner hat Scan-Ziele.
+            'mitScanZielen' => method_exists($einstellung['model'], 'scanTargets'),
             // Foto der Frontblende, das fuer alle Kunden gilt (device_models).
             'mitModellbild' => $this->zeigtModellbild(),
             'modell' => $this->zeigtModellbild() ? $this->modell() : null,

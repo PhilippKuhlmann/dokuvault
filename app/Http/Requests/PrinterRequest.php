@@ -34,8 +34,6 @@ class PrinterRequest extends FormRequest
             'model' => 'max:255',
             'serialNumber' => 'max:255',
             'port' => 'max:255',
-            'username' => 'max:255',
-            'password' => 'nullable|max:255',
             ...$this->beschaffungRegeln(),
         ];
     }
@@ -49,8 +47,6 @@ class PrinterRequest extends FormRequest
             'model' => 'Model',
             'serialNumber' => 'Seriennummer',
             'port' => 'Port',
-            'username' => 'Benutzername',
-            'password' => 'Passwort',
             ...$this->beschaffungBezeichnungen(),
         ];
     }

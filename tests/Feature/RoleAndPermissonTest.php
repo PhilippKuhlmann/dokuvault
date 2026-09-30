@@ -23,6 +23,7 @@ $models = [
     'Machine',
     'OtherClient',
     'Printer',
+    'Scanner',
     'ADDomain',
     'ADUser',
     'ADGroup',
@@ -47,7 +48,10 @@ foreach ($models as $model) {
     $model = strtolower($model);
 
     test('user with permission '.$model.'_viewAny can acceess the page', function () use ($model) {
-        $permission = Permission::factory()->create(['name' => $model.'_viewAny']);
+        // Vorhandene wiederverwenden: Rechte neuerer Modelle (Scanner) legt
+        // eine Migration an, die gibt es also schon.
+        $permission = Permission::where('name', $model.'_viewAny')->first()
+            ?? Permission::factory()->create(['name' => $model.'_viewAny']);
         $role = Role::factory()->create();
         $role->assignPermission($permission);
 

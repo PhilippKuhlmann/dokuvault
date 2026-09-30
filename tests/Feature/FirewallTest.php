@@ -62,14 +62,14 @@ test('das Kennwort liegt verschluesselt in der Tabelle', function () {
     $firewall = Firewall::factory()->create([
         'customer_id' => $customer->id,
         'site_id' => $site->id,
-        'password' => 'Klartext!2026',
+        'cloud_backup_password' => 'Klartext!2026',
     ]);
 
-    $roh = DB::table('firewalls')->where('id', $firewall->id)->value('password');
+    $roh = DB::table('firewalls')->where('id', $firewall->id)->value('cloud_backup_password');
 
     expect($roh)->not->toBe('Klartext!2026');
     expect(Crypt::decryptString($roh))->toBe('Klartext!2026');
-    expect($firewall->fresh()->password)->toBe('Klartext!2026');
+    expect($firewall->fresh()->cloud_backup_password)->toBe('Klartext!2026');
 });
 
 test('ohne Berechtigung ist die Firewall nicht erreichbar', function () {

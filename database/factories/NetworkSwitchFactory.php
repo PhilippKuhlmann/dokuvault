@@ -20,7 +20,6 @@ class NetworkSwitchFactory extends Factory
             'name' => 'SW-'.fake()->randomElement(['Core', 'Access-01', 'Access-02', 'Server', 'Etage-1', 'Etage-2']),
             'manufacturer' => $m, 'model' => $mo,
             'serialNumber' => strtoupper(fake()->bothify('??####-######')),
-            'username' => 'admin', 'password' => fake()->password(8, 14),
         ];
     }
 }

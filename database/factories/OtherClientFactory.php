@@ -21,7 +21,6 @@ class OtherClientFactory extends Factory
         return [
             'name' => $name, 'manufacturer' => $m, 'model' => $mo,
             'serialNumber' => strtoupper(fake()->bothify('??####-######')),
-            'username' => 'admin', 'password' => fake()->password(8, 14),
         ];
     }
 }

@@ -17,8 +17,6 @@ class PhoneSystemFactory extends Factory
             'manufacturer' => $m, 'model' => $mo,
             'serialNumber' => strtoupper(fake()->bothify('??########')),
             'port' => '443',
-            'username' => fake()->userName(),
-            'password' => fake()->password(6, 12),
         ];
     }
 }

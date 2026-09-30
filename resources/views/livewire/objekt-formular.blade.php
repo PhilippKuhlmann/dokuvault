@@ -222,7 +222,7 @@
                                             type="{{ $feld['type'] }}" class="mt-1" />
                                     @else
                                         <x-input.text :feld="'form.'.$feld['name']" wire:model.live.debounce.400ms="form.{{ $feld['name'] }}"
-                                            type="{{ $feld['type'] }}" class="mt-1" />
+                                            type="{{ $feld['type'] }}" :placeholder="$feld['platzhalter'] ?? ''" class="mt-1" />
                                     @endif
                                 @endif
 
@@ -344,9 +344,8 @@
                         @if ($bearbeiteId)
                             {{-- Eigene Livewire-Bloecke mit eigenem Speichern -
                                  deshalb ausserhalb der Felder darueber. --}}
-                            {{-- Keine eigene Trennlinie: Der Block bringt im
-                                 eingebetteten Zustand selbst eine mit, zwei
-                                 uebereinander sahen aus wie ein Fehler. --}}
+                            {{-- Keine Trennlinien zwischen den Bloecken: Jeder
+                                 traegt eine Ueberschrift, das trennt genug. --}}
                             <div class="mt-1">
                                 @if ($mitIpAdressen)
                                     <livewire:device-ip-addresses :model="$objekt" :customer="$kunde" eingebettet randlos
@@ -356,13 +355,19 @@
                                     <livewire:device-credentials :model="$objekt" :customer="$kunde" eingebettet randlos
                                         :key="'zug-'.$typ.'-'.$objekt->id" />
                                 @endif
+                                @if ($mitScanZielen)
+                                    <livewire:scan-targets :model="$objekt" :customer="$kunde" eingebettet randlos
+                                        :key="'scan-'.$typ.'-'.$objekt->id" />
+                                @endif
                             </div>
                         @else
                             {{-- Beim Anlegen haengt noch nichts am Objekt. Der Hinweis
                                  stand auch im alten Formular, damit das Fehlen nicht
                                  wie ein Mangel aussieht. --}}
                             <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                                @if ($mitIpAdressen && $mitZugangsdaten)
+                                @if ($mitScanZielen)
+                                    {{ __('IP-Adressen, Zugangsdaten und Scan-Ziele lassen sich eintragen, sobald der Eintrag angelegt ist.') }}
+                                @elseif ($mitIpAdressen && $mitZugangsdaten)
                                     {{ __('IP-Adressen und Zugangsdaten lassen sich eintragen, sobald der Eintrag angelegt ist.') }}
                                 @elseif ($mitIpAdressen)
                                     {{ __('IP-Adressen lassen sich eintragen, sobald der Eintrag angelegt ist.') }}

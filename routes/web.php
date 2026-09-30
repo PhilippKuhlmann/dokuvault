@@ -51,6 +51,8 @@ use App\Http\Controllers\RackController;
 use App\Http\Controllers\RecorderController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RouterController;
+use App\Http\Controllers\ScannerController;
+use App\Http\Controllers\ScanTargetController;
 use App\Http\Controllers\SecurepointUMAController;
 use App\Http\Controllers\ServerController;
 use App\Http\Controllers\ServiceController;
@@ -336,6 +338,8 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::resource('machine', MachineController::class)->only(['index']);
             Route::resource('otherclient', OtherClientController::class)->only(['index']);
             Route::resource('printer', PrinterController::class)->only(['index']);
+            Route::resource('scanner', ScannerController::class)->only(['index']);
+            Route::resource('scantarget', ScanTargetController::class)->only(['index']);
             Route::resource('ftpserver', FTPServerController::class)->only(['index']);
             Route::resource('recorder', RecorderController::class)->only(['index']);
             Route::resource('camera', CameraController::class)->only(['index']);

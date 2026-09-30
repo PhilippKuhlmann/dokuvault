@@ -18,7 +18,9 @@
         target.style.boxShadow = '0 0 0 3px rgb(56 152 236)';
         setTimeout(() => { target.style.boxShadow = ''; }, 2200);
     })">
-    <x-sitetopmenu :neu="false" :titel="__(config('custom.trashables')[$typ][1] ?? $einzahl)">
+    {{-- Titel wie in der Seitenleiste (list_titles, Mehrzahl) - vorher stand
+         hier das Papierkorb-Label in der Einzahl: "Maschine" statt "Maschinen". --}}
+    <x-sitetopmenu :neu="false" :titel="__(config('custom.list_titles')[$typ] ?? config('custom.trashables')[$typ][1] ?? $einzahl)">
         {{-- Ohne Filterleiste steht die Suche hier oben. Gibt es eine, zieht
              sie dort hinein: Suche und Filter engen dasselbe ein und gehoeren
              nebeneinander - getrennt sah es aus wie zwei Bedienfelder. --}}
@@ -35,6 +37,17 @@
                     :placeholder="__('Suche')" class="w-56 pl-9 pr-3 py-2 text-sm" />
             </label>
         @endunless
+
+        {{-- Verwandte Listen ohne eigenen Menuepunkt (config/forms.php,
+             'verweise'): Die Scan-Ziele erreicht man ueber die Scanner. --}}
+        @foreach (config('forms.'.$typ.'.verweise', []) as $verweis)
+            @can($verweis['recht'])
+                <a href="{{ route($verweis['route'], $customer) }}"
+                    class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-4 py-2 text-sm font-DINPro-bold text-gray-700 shadow-xs transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                    {{ __($verweis['label']) }}
+                </a>
+            @endcan
+        @endforeach
 
         <livewire:objekt-formular :typ="$typ" :customer="$customer" :key="'formular-'.$typ" />
     </x-sitetopmenu>

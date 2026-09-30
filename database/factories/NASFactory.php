@@ -25,8 +25,6 @@ class NASFactory extends Factory
             'model' => $model,
             'serialNumber' => strtoupper(fake()->bothify('????########')),
             'port' => '5001',
-            'username' => 'admin',
-            'password' => fake()->password(8, 14),
         ];
     }
 }

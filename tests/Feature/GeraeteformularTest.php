@@ -18,6 +18,7 @@ use App\Models\PhoneSystem;
 use App\Models\Printer;
 use App\Models\Recorder;
 use App\Models\Router;
+use App\Models\Scanner;
 use App\Models\SecurepointUMA;
 use App\Models\Server;
 use App\Models\Site;
@@ -46,6 +47,7 @@ const GERAETE = [
     'phone' => Phone::class,
     'phonesystem' => PhoneSystem::class,
     'printer' => Printer::class,
+    'scanner' => Scanner::class,
     'recorder' => Recorder::class,
     'router' => Router::class,
     'securepointuma' => SecurepointUMA::class,

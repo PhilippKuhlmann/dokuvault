@@ -624,7 +624,6 @@ class AgentController extends Controller
                 'manufacturer' => $g['manufacturer'] ?? null,
                 'model' => $g['model'] ?? null,
                 'serialNumber' => $g['serial'] ?? null,
-                // 'username'/'password' bleiben unangetastet (manuell gepflegt)
             ]
         );
 

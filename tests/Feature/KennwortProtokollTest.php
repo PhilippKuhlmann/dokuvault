@@ -40,21 +40,21 @@ test('eine Kennwortaenderung steht im Protokoll', function () {
     $nutzer = userWithPermissions(['firewall_update']);
     $this->actingAs($nutzer);
 
-    $firewall = eineFirewall(['password' => 'Alt!2026']);
-    $firewall->update(['password' => 'Neu!2026']);
+    $firewall = eineFirewall(['cloud_backup_password' => 'Alt!2026']);
+    $firewall->update(['cloud_backup_password' => 'Neu!2026']);
 
     $eintrag = letzterEintrag($firewall, 'password_changed');
 
     expect($eintrag->event)->toBe('password_changed');
-    expect($eintrag->properties['felder'])->toBe(['password']);
+    expect($eintrag->properties['felder'])->toBe(['cloud_backup_password']);
     expect($eintrag->causer_id)->toBe($nutzer->id);
 });
 
 test('der Wert steht nirgends im Eintrag', function () {
     $this->actingAs(userWithPermissions(['firewall_update']));
 
-    $firewall = eineFirewall(['password' => 'Alt!2026']);
-    $firewall->update(['password' => 'Streng-Geheim-2026']);
+    $firewall = eineFirewall(['cloud_backup_password' => 'Alt!2026']);
+    $firewall->update(['cloud_backup_password' => 'Streng-Geheim-2026']);
 
     // Der ganze Eintrag als Text - damit faellt auch auf, wenn der Wert an
     // einer Stelle landet, an die hier niemand denkt.
@@ -67,11 +67,11 @@ test('der Wert steht nirgends im Eintrag', function () {
 test('das gleiche Kennwort noch einmal gespeichert ist keine Aenderung', function () {
     $this->actingAs(userWithPermissions(['firewall_update']));
 
-    $firewall = eineFirewall(['password' => 'Gleich!2026']);
+    $firewall = eineFirewall(['cloud_backup_password' => 'Gleich!2026']);
     // Das Formular schickt den unveraenderten Wert mit. Die Verschluesselung
     // erzeugt dabei einen anderen Chiffretext - ohne Klartext-Vergleich haette
     // jedes Speichern eine Kennwortaenderung gemeldet.
-    $firewall->update(['password' => 'Gleich!2026', 'name' => 'FW-Neuer-Name']);
+    $firewall->update(['cloud_backup_password' => 'Gleich!2026', 'name' => 'FW-Neuer-Name']);
 
     expect(Activity::where('event', 'password_changed')->count())->toBe(0);
     // Der Namenswechsel wird aber sehr wohl protokolliert.
@@ -82,11 +82,11 @@ test('das gleiche Kennwort noch einmal gespeichert ist keine Aenderung', functio
 test('mehrere Kennwortfelder werden einzeln benannt', function () {
     $this->actingAs(userWithPermissions(['firewall_update']));
 
-    $firewall = eineFirewall(['password' => 'A!2026', 'usc_pin' => '111111']);
-    $firewall->update(['password' => 'B!2026', 'usc_pin' => '222222']);
+    $firewall = eineFirewall(['cloud_backup_password' => 'A!2026', 'usc_pin' => '111111']);
+    $firewall->update(['cloud_backup_password' => 'B!2026', 'usc_pin' => '222222']);
 
     expect(letzterEintrag($firewall, 'password_changed')->properties['felder'])
-        ->toBe(['password', 'usc_pin']);
+        ->toBe(['cloud_backup_password', 'usc_pin']);
 });
 
 test('auch das Anmeldekennwort eines Benutzers wird protokolliert', function () {
@@ -133,8 +133,8 @@ test('die Protokollseite zeigt die Kennwortaenderung', function () {
     $rolle = Role::find(Role::IS_ADMIN) ?? Role::factory()->create(['id' => Role::IS_ADMIN]);
     $this->actingAs(User::factory()->create(['role_id' => $rolle->id]));
 
-    $firewall = eineFirewall(['name' => 'FW-Protokolltest', 'password' => 'Alt!2026']);
-    $firewall->update(['password' => 'Neu!2026']);
+    $firewall = eineFirewall(['name' => 'FW-Protokolltest', 'cloud_backup_password' => 'Alt!2026']);
+    $firewall->update(['cloud_backup_password' => 'Neu!2026']);
 
     $antwort = $this->get(route('admin.activity.index'));
 
@@ -148,8 +148,8 @@ test('die Protokollseite zeigt die Kennwortaenderung', function () {
 test('das Protokoll zeigt das bisherige Kennwort auf Klick', function () {
     $this->actingAs(userWithPermissions(['admin_activity', 'firewall_update']));
 
-    $firewall = eineFirewall(['password' => 'Das-Alte-2026']);
-    $firewall->update(['password' => 'Das-Neue-2026']);
+    $firewall = eineFirewall(['cloud_backup_password' => 'Das-Alte-2026']);
+    $firewall->update(['cloud_backup_password' => 'Das-Neue-2026']);
 
     $eintrag = letzterEintrag($firewall, 'password_changed');
     $ids = $eintrag->properties['verlauf_ids'];
@@ -158,7 +158,7 @@ test('das Protokoll zeigt das bisherige Kennwort auf Klick', function () {
     // Im Eintrag stehen Verweise, keine Werte.
     expect(json_encode($eintrag->properties->toArray()))->not->toContain('Das-Alte-2026');
 
-    $test = Livewire::test(ProtokollKennwort::class, ['ids' => $ids, 'felder' => ['password']]);
+    $test = Livewire::test(ProtokollKennwort::class, ['ids' => $ids, 'felder' => ['cloud_backup_password']]);
 
     $test->assertDontSee('Das-Alte-2026');
     $test->call('zeigen')->assertSee('Das-Alte-2026');
@@ -168,12 +168,12 @@ test('das Protokoll zeigt das bisherige Kennwort auf Klick', function () {
 test('ohne admin_activity bleibt das Kennwort im Protokoll verborgen', function () {
     $this->actingAs(userWithPermissions(['firewall_update']));
 
-    $firewall = eineFirewall(['password' => 'Geheim-2026']);
-    $firewall->update(['password' => 'Neu-2026']);
+    $firewall = eineFirewall(['cloud_backup_password' => 'Geheim-2026']);
+    $firewall->update(['cloud_backup_password' => 'Neu-2026']);
 
     $ids = letzterEintrag($firewall, 'password_changed')->properties['verlauf_ids'];
 
-    Livewire::test(ProtokollKennwort::class, ['ids' => $ids, 'felder' => ['password']])
+    Livewire::test(ProtokollKennwort::class, ['ids' => $ids, 'felder' => ['cloud_backup_password']])
         ->call('zeigen')
         ->assertForbidden();
 });
@@ -181,15 +181,15 @@ test('ohne admin_activity bleibt das Kennwort im Protokoll verborgen', function 
 test('nach Ablauf der Frist sagt das Protokoll es ehrlich', function () {
     $this->actingAs(userWithPermissions(['admin_activity', 'firewall_update']));
 
-    $firewall = eineFirewall(['password' => 'Weg-2026']);
-    $firewall->update(['password' => 'Neu-2026']);
+    $firewall = eineFirewall(['cloud_backup_password' => 'Weg-2026']);
+    $firewall->update(['cloud_backup_password' => 'Neu-2026']);
 
     $ids = letzterEintrag($firewall, 'password_changed')->properties['verlauf_ids'];
     PasswordHistory::whereIn('id', $ids)->delete();
 
     // Dass die Aenderung stattfand, bleibt im Protokoll - nur der Wert ist weg.
     // Geprueft wird der Zustand, nicht der Wortlaut: Der Hinweis ist uebersetzt.
-    Livewire::test(ProtokollKennwort::class, ['ids' => $ids, 'felder' => ['password']])
+    Livewire::test(ProtokollKennwort::class, ['ids' => $ids, 'felder' => ['cloud_backup_password']])
         ->call('zeigen')
         ->assertSet('offen', true)
         ->assertSet('werte', []);

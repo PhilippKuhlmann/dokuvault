@@ -35,14 +35,6 @@ class Firewall extends Model
         'subscription_until' => 'date',
     ];
 
-    protected function password(): Attribute
-    {
-        return new Attribute(
-            get: fn ($value) => ! empty($value) ? Crypt::decryptString($value) : null,
-            set: fn ($value) => ! empty($value) ? Crypt::encryptString($value) : null,
-        );
-    }
-
     /**
      * Die USC-PIN entsperrt die Konsole, das Cloud-Backup-Kennwort die
      * Sicherung - beides gehoert verschluesselt in die Tabelle.

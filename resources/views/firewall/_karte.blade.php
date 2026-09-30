@@ -45,8 +45,6 @@
 
                 <x-minitablecard :title="__('Zugang')" :array="[
                     'Oberfläche' => $eintrag->management_url,
-                    'Benutzername' => $eintrag->username,
-                    'Passwort' => $eintrag->password,
                     'Port' => $eintrag->port,
                 ]" />
 

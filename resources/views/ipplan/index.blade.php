@@ -83,7 +83,7 @@
                                             @if ($row['isGateway'] ?? false)
                                                 <span class="inline-flex items-center rounded bg-cerulean-50 px-1.5 py-0.5 text-[10px] font-DINPro-bold text-cerulean-700 dark:bg-cerulean-900/30 dark:text-cerulean-300 mr-1.5 align-middle">{{ __('Gateway') }}</span>
                                             @endif
-                                            <span class="text-gray-900 dark:text-gray-100 align-middle">{{ $row['label'] }}</span>
+                                            <span class="text-gray-900 dark:text-gray-100 align-middle">@include('ipplan._geraete', ['geraete' => $row['geraete'], 'trenner' => ' / '])</span>
                                             {{-- Eine belegte Adresse innerhalb einer Reservierung bleibt
                                                  belegt - sie zeigt zusaetzlich, wozu der Block gehoert.
                                                  Ohne das saehe der Block loechrig aus, sobald jemand
@@ -100,7 +100,7 @@
                                                  Pool und nicht an einer Adresse: welche sie gerade
                                                  haben, ist morgen eine andere. --}}
                                             @if (! empty($row['geraete']))
-                                                <span class="ml-1.5 align-middle text-gray-500 dark:text-gray-400">{{ implode(', ', $row['geraete']) }}</span>
+                                                <span class="ml-1.5 align-middle text-gray-500 dark:text-gray-400">@include('ipplan._geraete', ['geraete' => $row['geraete'], 'trenner' => ', '])</span>
                                             @endif
                                         @else
                                             <span class="text-gray-400 dark:text-gray-500 italic">{{ $row['label'] }}</span>
@@ -118,7 +118,7 @@
                     @if (! empty($plan['dhcpOhneBereich']))
                         <div class="px-5 py-2 text-xs text-gray-500 dark:text-gray-400">
                             {{ __('Per DHCP versorgt (kein DHCP-Bereich gepflegt):') }}
-                            <span class="text-gray-700 dark:text-gray-300">{{ implode(', ', $plan['dhcpOhneBereich']) }}</span>
+                            <span class="text-gray-700 dark:text-gray-300">@include('ipplan._geraete', ['geraete' => $plan['dhcpOhneBereich'], 'trenner' => ', '])</span>
                         </div>
                     @endif
 

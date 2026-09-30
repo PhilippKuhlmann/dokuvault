@@ -30,8 +30,6 @@ class RouterFactory extends Factory
             'name' => 'RTR-'.fake()->numberBetween(1, 99),
             'manufacturer' => $hardware[0],
             'model' => $hardware[1],
-            'username' => 'admin',
-            'password' => fake()->password($minLength = 6, $maxLength = 12),
             'port' => '443',
         ];
     }

@@ -22,8 +22,6 @@ class CameraFactory extends Factory
             'model' => $model,
             'serialNumber' => strtoupper(fake()->bothify('??########')),
             'port' => '80',
-            'username' => 'admin',
-            'password' => fake()->password(8, 12),
         ];
     }
 }

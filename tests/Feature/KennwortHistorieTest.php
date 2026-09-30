@@ -20,7 +20,7 @@ function firewallMitKennwort(string $kennwort = 'Alt!2026'): Firewall
     return Firewall::factory()->create([
         'customer_id' => $customer->id,
         'site_id' => Site::factory()->create(['customer_id' => $customer->id])->id,
-        'password' => $kennwort,
+        'cloud_backup_password' => $kennwort,
     ]);
 }
 
@@ -29,11 +29,11 @@ test('das bisherige Kennwort bleibt nachschlagbar', function () {
     $this->actingAs($nutzer);
 
     $firewall = firewallMitKennwort('Richtig!2026');
-    $firewall->update(['password' => 'Versehen!2026']);
+    $firewall->update(['cloud_backup_password' => 'Versehen!2026']);
 
     $eintrag = $firewall->kennwortVerlauf()->sole();
 
-    expect($eintrag->field)->toBe('password');
+    expect($eintrag->field)->toBe('cloud_backup_password');
     expect($eintrag->value)->toBe('Richtig!2026');
     expect($eintrag->user_id)->toBe($nutzer->id);
     expect($eintrag->customer_id)->toBe($firewall->customer_id);
@@ -43,7 +43,7 @@ test('der alte Wert liegt verschluesselt in der Tabelle', function () {
     $this->actingAs(userWithPermissions(['firewall_update']));
 
     $firewall = firewallMitKennwort('Klartext!2026');
-    $firewall->update(['password' => 'Neu!2026']);
+    $firewall->update(['cloud_backup_password' => 'Neu!2026']);
 
     $roh = DB::table('password_histories')->value('value');
 
@@ -55,7 +55,7 @@ test('beim ersten Setzen gibt es nichts aufzuheben', function () {
     $this->actingAs(userWithPermissions(['firewall_create', 'firewall_update']));
 
     $firewall = firewallMitKennwort('');
-    $firewall->update(['password' => 'Erstes!2026']);
+    $firewall->update(['cloud_backup_password' => 'Erstes!2026']);
 
     expect(PasswordHistory::count())->toBe(0);
 });
@@ -64,7 +64,7 @@ test('das gleiche Kennwort noch einmal legt keinen Eintrag an', function () {
     $this->actingAs(userWithPermissions(['firewall_update']));
 
     $firewall = firewallMitKennwort('Gleich!2026');
-    $firewall->update(['password' => 'Gleich!2026', 'name' => 'FW-Umbenannt']);
+    $firewall->update(['cloud_backup_password' => 'Gleich!2026', 'name' => 'FW-Umbenannt']);
 
     expect(PasswordHistory::count())->toBe(0);
 });
@@ -73,7 +73,7 @@ test('das Modal zeigt den Verlauf erst auf Klick', function () {
     $this->actingAs(userWithPermissions(['firewall_viewAny', 'firewall_update']));
 
     $firewall = firewallMitKennwort('Vorher!2026');
-    $firewall->update(['password' => 'Nachher!2026']);
+    $firewall->update(['cloud_backup_password' => 'Nachher!2026']);
 
     $test = Livewire::test(ObjektFormular::class, ['typ' => 'firewall', 'customer' => $firewall->customer])
         ->call('bearbeiten', 'firewall', $firewall->id);
@@ -84,10 +84,10 @@ test('das Modal zeigt den Verlauf erst auf Klick', function () {
     $test->assertDontSee('Vorher!2026')
         ->assertSee('verlaufZeigen');
 
-    $test->call('verlaufZeigen', 'password')
+    $test->call('verlaufZeigen', 'cloud_backup_password')
         ->assertSee('Vorher!2026');
 
-    $test->call('verlaufVerbergen', 'password')
+    $test->call('verlaufVerbergen', 'cloud_backup_password')
         ->assertDontSee('Vorher!2026');
 });
 
@@ -95,10 +95,10 @@ test('ohne Bearbeitungsrecht kein Verlauf', function () {
     $this->actingAs(userWithPermissions(['firewall_viewAny']));
 
     $firewall = firewallMitKennwort('Geheim!2026');
-    $firewall->updateQuietly(['password' => 'Neu!2026']);
+    $firewall->updateQuietly(['cloud_backup_password' => 'Neu!2026']);
 
     Livewire::test(ObjektFormular::class, ['typ' => 'firewall', 'customer' => $firewall->customer])
-        ->call('verlaufZeigen', 'password')
+        ->call('verlaufZeigen', 'cloud_backup_password')
         ->assertForbidden();
 });
 
@@ -121,7 +121,7 @@ test('endgueltiges Loeschen nimmt die alten Kennwoerter mit', function () {
     $this->actingAs(userWithPermissions(['firewall_update', 'admin_trash']));
 
     $firewall = firewallMitKennwort('Alt!2026');
-    $firewall->update(['password' => 'Neu!2026']);
+    $firewall->update(['cloud_backup_password' => 'Neu!2026']);
     expect(PasswordHistory::count())->toBe(1);
 
     $firewall->delete();
@@ -137,7 +137,7 @@ test('der Geraetename steht im Eintrag, nicht in einer Nachfrage', function () {
     $this->actingAs(userWithPermissions(['firewall_update']));
 
     $firewall = firewallMitKennwort('Alt!2026');
-    $firewall->update(['password' => 'Neu!2026']);
+    $firewall->update(['cloud_backup_password' => 'Neu!2026']);
 
     // Ein Eintrag soll lesbar bleiben, wenn das Geraet laengst weg ist - und
     // ein Verweis auf eine entfernte Klasse braeche beim Aufloesen die Seite.
@@ -149,7 +149,7 @@ test('die Frist gilt fuer Protokoll und Kennwoerter zusammen', function () {
     Setting::setzen(Setting::PROTOKOLL_TAGE, 90);
 
     $firewall = firewallMitKennwort('Alt!2026');
-    $firewall->update(['password' => 'Neu!2026']);
+    $firewall->update(['cloud_backup_password' => 'Neu!2026']);
 
     $alt = PasswordHistory::sole();
     DB::table('password_histories')->where('id', $alt->id)->update(['created_at' => now()->subDays(100)]);
@@ -168,7 +168,7 @@ test('ohne Frist bleibt das Protokoll unangetastet', function () {
     Setting::setzen(Setting::PROTOKOLL_TAGE, 0);
 
     $firewall = firewallMitKennwort('Alt!2026');
-    $firewall->update(['password' => 'Neu!2026']);
+    $firewall->update(['cloud_backup_password' => 'Neu!2026']);
     DB::table('activity_log')->update(['created_at' => now()->subYears(5)]);
     DB::table('password_histories')->update(['created_at' => now()->subYears(5)]);
 
@@ -206,7 +206,7 @@ test('die Einstellseite zeigt keine Kennwoerter', function () {
     $this->actingAs(userWithPermissions(['admin_activity', 'firewall_update']));
 
     $firewall = firewallMitKennwort('Streng-Geheim-2026');
-    $firewall->update(['password' => 'Neu!2026']);
+    $firewall->update(['cloud_backup_password' => 'Neu!2026']);
 
     // Hier wird eine Frist eingestellt, nicht nachgeschlagen - die Werte stehen
     // im Protokoll, wo sie hingehoeren.

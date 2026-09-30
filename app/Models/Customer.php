@@ -178,6 +178,16 @@ class Customer extends Model
         return $this->hasMany(Printer::class);
     }
 
+    public function scanners()
+    {
+        return $this->hasMany(Scanner::class);
+    }
+
+    public function scantargets()
+    {
+        return $this->hasMany(ScanTarget::class);
+    }
+
     public function ftpservers()
     {
         return $this->hasMany(FTPServer::class);

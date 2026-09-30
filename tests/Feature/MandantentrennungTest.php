@@ -247,7 +247,6 @@ test('ein fremdes Objekt lässt sich nicht aus dem Papierkorb zurückholen', fun
 
     $fremdeKamera = Camera::create([
         'customer_id' => $fremd->id, 'site_id' => $fremderStandort->id, 'name' => 'CAM-FREMD',
-        'username' => 'admin', 'password' => 'geheim',
     ]);
     $fremdeKamera->delete();
 
@@ -270,13 +269,13 @@ test('keine Komponente gibt einem fremden Kundennutzer Inhalte heraus', function
 
     NetworkSwitch::create([
         'customer_id' => $fremd->id, 'site_id' => $fremderStandort->id,
-        'name' => 'SW-GEHEIM', 'username' => 'geheim-user', 'password' => 'streng-geheim',
+        'name' => 'SW-GEHEIM',
         'serialNumber' => 'SN-GEHEIM-1',
     ]);
 
     $this->actingAs(kundenNutzerMitAllenRechten($meins));
 
-    $geheim = ['SW-GEHEIM', 'geheim-user', 'streng-geheim', 'SN-GEHEIM-1', 'STANDORT-GEHEIM', 'Kunde B'];
+    $geheim = ['SW-GEHEIM', 'SN-GEHEIM-1', 'STANDORT-GEHEIM', 'Kunde B'];
 
     $ohneGeheimnis = function (string $was, callable $ruf) use ($geheim) {
         try {

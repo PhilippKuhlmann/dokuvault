@@ -24,6 +24,8 @@ use App\Models\Printer;
 use App\Models\Rack;
 use App\Models\Recorder;
 use App\Models\Router;
+use App\Models\Scanner;
+use App\Models\ScanTarget;
 use App\Models\Server;
 use App\Models\Ups;
 use App\Models\VM;
@@ -50,6 +52,8 @@ class GlobalSearch extends Component
         'nas' => [NAS::class, 'NAS', 'nas', ['name', 'serialNumber']],
         'computer' => [Computer::class, 'Computer', 'computer', ['name', 'serialNumber']],
         'printer' => [Printer::class, 'Drucker', 'printer', ['name', 'serialNumber']],
+        'scanner' => [Scanner::class, 'Scanner', 'scanner', ['name', 'serialNumber']],
+        'scantarget' => [ScanTarget::class, 'Scan-Ziele', 'scantarget', ['name', 'target']],
         'camera' => [Camera::class, 'Kameras', 'camera', ['name', 'serialNumber']],
         'recorder' => [Recorder::class, 'Recorder', 'recorder', ['name', 'serialNumber']],
         'phone' => [Phone::class, 'Telefone', 'phone', ['serialNumber', 'mac']],

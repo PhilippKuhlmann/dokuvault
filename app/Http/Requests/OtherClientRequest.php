@@ -33,8 +33,6 @@ class OtherClientRequest extends FormRequest
             'model' => 'max:255',
             'serialNumber' => 'max:255',
             'port' => 'max:255',
-            'username' => 'nullable',
-            'password' => 'nullable|max:255',
             ...$this->beschaffungRegeln(),
         ];
     }
@@ -48,8 +46,6 @@ class OtherClientRequest extends FormRequest
             'model' => 'Model',
             'serialNumber' => 'Seriennummer',
             'port' => 'Port',
-            'username' => 'Benutzer',
-            'password' => 'Passwort',
             ...$this->beschaffungBezeichnungen(),
         ];
     }

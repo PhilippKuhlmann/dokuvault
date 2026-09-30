@@ -7,6 +7,9 @@ use App\Models\IpAddress;
 use App\Models\IpRange;
 use App\Models\Network;
 use App\Models\Server;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 
 class IpPlanController extends Controller
 {
@@ -23,9 +26,15 @@ class IpPlanController extends Controller
     // Obergrenze an Host-Adressen, die vollständig aufgelistet werden (schützt vor riesigen Subnetzen).
     protected const MAX_HOSTS = 8192;
 
+    /** Modellklasse => Listen-URL-Baustein oder null, je Anfrage einmal ermittelt. */
+    protected array $listen = [];
+
+    protected Customer $kunde;
+
     public function index(Customer $customer)
     {
         $this->authorize('viewAny', Network::class);
+        $this->kunde = $customer;
 
         // Nur die VLANs des gewählten Standorts anzeigen.
         $networks = $this->getFilteredQuery(Network::class, $customer)
@@ -68,39 +77,28 @@ class IpPlanController extends Controller
     /**
      * Alle im Kunden vergebenen IP-Adressen einsammeln.
      *
-     * Drei Sichten auf dieselben Adressen:
-     * - 'beschriftung': [ip_long => Gerätename], was in der Zeile steht.
-     * - 'dhcp':         [ip_long => [Gerätenamen]] für Adressen, die ein Agent
-     *                   als per DHCP bezogen gemeldet hat.
-     * - 'fest':         [ip_long => true] für alles andere.
-     *
-     * Die Trennung braucht der Plan: Eine geliehene Adresse als eigene Zeile
-     * zu zeigen behauptet etwas, das morgen nicht mehr stimmt. Sie gehört an
-     * den Pool. Eine FEST vergebene Adresse mitten im DHCP-Bereich ist
-     * dagegen ein echter Konflikt und muss sichtbar bleiben - deshalb wird
-     * nur zusammengefasst, wo ausschließlich DHCP-Geräte sitzen.
+     * [ip_long => [Eintrag, ...]], ein Eintrag je Gerät auf dieser Adresse
+     * (siehe geraetEintrag). Mehrere Einträge auf einer Adresse sind ein
+     * Konflikt und bleiben deshalb alle sichtbar.
      */
     protected function collectUsedIps(Customer $customer): array
     {
         $used = [];
 
-        $addLong = function (int $long, string $label) use (&$used) {
-            $used[$long] = ($used[$long] ?? '') === '' ? $label : $used[$long].' / '.$label;
+        $addLong = function (int $long, array $eintrag) use (&$used) {
+            $used[$long][] = $eintrag;
         };
 
         foreach (self::IP_SOURCES as [$class, $columns]) {
             $rows = $class::where('customer_id', $customer->id)->get();
 
             foreach ($rows as $row) {
-                $name = $row->getAttribute('name')
-                    ?: trim(($row->getAttribute('manufacturer') ?? '').' '.($row->getAttribute('model') ?? ''))
-                    ?: ('#'.$row->id);
                 foreach ($columns as $column => $suffix) {
                     $value = $row->getAttribute($column);
                     if (! $value || ! filter_var($value, FILTER_VALIDATE_IP)) {
                         continue;
                     }
-                    $addLong(ip2long($value) & 0xFFFFFFFF, $name.$suffix);
+                    $addLong(ip2long($value) & 0xFFFFFFFF, $this->geraetEintrag($row, $suffix));
                 }
             }
         }
@@ -113,17 +111,15 @@ class IpPlanController extends Controller
                 if (! filter_var($ip->address, FILTER_VALIDATE_IP)) {
                     return;
                 }
-                $deviceName = $ip->ipable?->getAttribute('name')
-                    ?: ($ip->ipable ? class_basename($ip->ipable) : 'Gerät');
-                $label = $deviceName.($ip->label ? ' ('.$ip->label.')' : '');
-                $addLong(ip2long($ip->address) & 0xFFFFFFFF, $label);
+                $addLong(ip2long($ip->address) & 0xFFFFFFFF,
+                    $this->geraetEintrag($ip->ipable, $ip->label ? ' ('.$ip->label.')' : ''));
             });
 
         return $used;
     }
 
     /**
-     * Die per DHCP versorgten Geräte, je Netz: [network_id => [Name, ...]].
+     * Die per DHCP versorgten Geräte, je Netz: [network_id => [Eintrag, ...]].
      *
      * Sie haben keine Adresse - was zählt, ist das Netz. Im Plan stehen sie
      * deshalb am DHCP-Bereich und nicht auf einer Zeile, die morgen eine
@@ -139,11 +135,55 @@ class IpPlanController extends Controller
             ->with('ipable')
             ->get()
             ->each(function ($ip) use (&$je) {
-                $je[$ip->network_id][] = $ip->ipable?->getAttribute('name')
-                    ?: ($ip->ipable ? class_basename($ip->ipable) : 'Gerät');
+                $je[$ip->network_id][] = $this->geraetEintrag($ip->ipable);
             });
 
         return $je;
+    }
+
+    /**
+     * Ein Gerät, wie es im Plan steht: Name und - wo der Nutzer die Liste
+     * sehen darf - der Sprung dorthin, direkt auf die Karte des Geräts
+     * (?highlight=, derselbe Weg wie aus der globalen Suche).
+     *
+     * @return array{name: string, url: ?string}
+     */
+    protected function geraetEintrag(?Model $geraet, string $zusatz = ''): array
+    {
+        if (! $geraet) {
+            return ['name' => 'Gerät'.$zusatz, 'url' => null];
+        }
+
+        $name = $geraet->getAttribute('name')
+            ?: trim(($geraet->getAttribute('manufacturer') ?? '').' '.($geraet->getAttribute('model') ?? ''))
+            ?: class_basename($geraet);
+
+        $typ = $this->listenTyp($geraet::class);
+
+        return [
+            'name' => $name.$zusatz,
+            'url' => $typ
+                ? route($typ.'.index', [$this->kunde, 'highlight' => $geraet->id])
+                : null,
+        ];
+    }
+
+    /**
+     * Der Objekttyp aus config('forms'), dessen Liste dieses Modell zeigt -
+     * null, wenn es keine gibt oder der Nutzer sie nicht sehen darf. Ein
+     * Link auf eine verbotene Seite wäre nur ein Umweg zur Fehlermeldung.
+     */
+    protected function listenTyp(string $klasse): ?string
+    {
+        if (! array_key_exists($klasse, $this->listen)) {
+            $typ = collect(config('forms'))->search(fn ($d) => ($d['model'] ?? null) === $klasse) ?: null;
+
+            $this->listen[$klasse] = $typ && Route::has($typ.'.index') && Gate::allows($typ.'_viewAny')
+                ? $typ
+                : null;
+        }
+
+        return $this->listen[$klasse];
     }
 
     /**
@@ -156,7 +196,7 @@ class IpPlanController extends Controller
             return ['error' => 'Ungültiges Netz/Subnetz', 'rows' => []];
         }
 
-        [$networkLong, $first, $last] = $range;
+        [, $first, $last] = $range;
 
         $truncated = false;
         if ($last - $first > self::MAX_HOSTS) {
@@ -172,12 +212,12 @@ class IpPlanController extends Controller
         if ($network->gateway && filter_var($network->gateway, FILTER_VALIDATE_IP)) {
             $gw = ip2long($network->gateway) & 0xFFFFFFFF;
             if ($gw >= $first && $gw <= $last) {
-                $map[$gw] = isset($map[$gw]) ? 'Gateway / '.$map[$gw] : 'Gateway';
+                $map[$gw] ??= [];
                 $gatewayLong = $gw;
             }
         }
 
-        $dhcp = $this->dhcpRange($network, $networkLong);
+        $dhcp = $network->dhcpBereich();
 
         // Je Adresse die Beschriftung des Bereichs, in dem sie liegt. Als
         // Nachschlagetabelle statt einer Schleife je Adresse: Ein /16 haette
@@ -213,7 +253,7 @@ class IpPlanController extends Controller
 
             $geraete = [];
             if ($runKind === 'dhcp' && ! $dhcpGenannt) {
-                $geraete = array_values(array_unique($dhcpGeraete));
+                $geraete = $this->ohneDoppelte($dhcpGeraete);
                 $dhcpGenannt = true;
             }
 
@@ -244,7 +284,11 @@ class IpPlanController extends Controller
                     'from' => long2ip($ip),
                     'to' => long2ip($ip),
                     'single' => true,
-                    'label' => $map[$ip],
+                    'label' => implode(' / ', array_merge(
+                        $ip === $gatewayLong ? ['Gateway'] : [],
+                        array_column($map[$ip], 'name'),
+                    )),
+                    'geraete' => $map[$ip],
                     'isGateway' => $ip === $gatewayLong,
                     // Eine belegte Adresse innerhalb einer Reservierung bleibt
                     // eine belegte Adresse - sie traegt nur zusaetzlich, wozu
@@ -307,9 +351,17 @@ class IpPlanController extends Controller
             // Ohne gepflegten DHCP-Bereich gibt es keine Zeile, an der sie
             // stehen koennten. Verschwinden duerfen sie trotzdem nicht - dann
             // waere das Geraet in der Doku, aber nicht im Plan.
-            'dhcpOhneBereich' => $dhcpGenannt ? [] : array_values(array_unique($dhcpGeraete)),
+            'dhcpOhneBereich' => $dhcpGenannt ? [] : $this->ohneDoppelte($dhcpGeraete),
             'usedCount' => $counts['device'],
         ];
+    }
+
+    /**
+     * Ein Gerät mit mehreren DHCP-Zuordnungen im selben Netz nur einmal nennen.
+     */
+    protected function ohneDoppelte(array $eintraege): array
+    {
+        return array_values(collect($eintraege)->unique(fn ($e) => $e['name'].'|'.$e['url'])->all());
     }
 
     /**
@@ -379,37 +431,5 @@ class IpPlanController extends Controller
         }
 
         return [$networkLong, $networkLong + 1, $networkLong + $hostCount - 2];
-    }
-
-    /**
-     * @return array{0:int,1:int}|null [startLong, endLong]
-     */
-    protected function dhcpRange(Network $network, int $networkLong): ?array
-    {
-        $start = $this->resolveHost($network->dhcpStart, $networkLong);
-        $end = $this->resolveHost($network->dhcpEnd, $networkLong);
-
-        if ($start === null || $end === null || $start > $end) {
-            return null;
-        }
-
-        return [$start, $end];
-    }
-
-    protected function resolveHost($value, int $networkLong): ?int
-    {
-        $value = trim((string) $value);
-        if ($value === '') {
-            return null;
-        }
-        if (filter_var($value, FILTER_VALIDATE_IP)) {
-            return ip2long($value) & 0xFFFFFFFF;
-        }
-        // Reiner Host-Offset (z. B. "100") -> in das Subnetz einsetzen
-        if (ctype_digit($value)) {
-            return $networkLong + (int) $value;
-        }
-
-        return null;
     }
 }

@@ -6,11 +6,9 @@ use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Concerns\HatBeschaffung;
 use App\Models\Concerns\TracksChanges;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Crypt;
 
 class PhoneSystem extends Model
 {
@@ -22,14 +20,6 @@ class PhoneSystem extends Model
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
-    protected function password(): Attribute
-    {
-        return new Attribute(
-            get: fn ($value) => ! empty($value) ? Crypt::decryptString($value) : null,
-            set: fn ($value) => Crypt::encryptString($value),
-        );
-    }
-
     public function customer()
     {
         return $this->belongsTo(Customer::class);
@@ -38,8 +28,7 @@ class PhoneSystem extends Model
     /**
      * Eine TK-Anlage hat keinen Namen, nur Hersteller, Art und Modell.
      *
-     * Ohne diese Methode fiele die zentrale Liste auf username zurueck - und
-     * im Protokoll hiesse die Anlage dann "admin".
+     * Ohne diese Methode stuende die Anlage im Protokoll ohne Namen da.
      */
     public function protokollName(): ?string
     {

@@ -341,7 +341,6 @@ test('ein NAS im Papierkorb nimmt seine Zugangsdaten nicht mit', function () {
     [$customer, $site, $vm, $login] = zugangsUmgebung();
     $nas = NAS::create([
         'customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'NAS-01',
-        'username' => 'admin', 'password' => 'geheim',
     ]);
     $nas->credentialLinks()->create(['customer_id' => $customer->id, 'login_general_id' => $login->id]);
 

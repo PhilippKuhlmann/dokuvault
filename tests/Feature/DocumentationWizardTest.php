@@ -97,8 +97,6 @@ test('Standort setzt run.site_id, Folgeschritt erbt sie', function () {
         ->set('form.name', 'RTR-Core')
         ->set('form.ip_address', '10.10.30.1')
         ->set('form.port', '443')
-        ->set('form.username', 'admin')
-        ->set('form.password', 'geheim123')
         ->call('save')
         ->assertHasNoErrors();
 
@@ -187,30 +185,29 @@ test('Massenzuweisung: customer_id und hidden aus dem Formular werden ignoriert'
     expect($site->id)->not->toBe(99999);
 });
 
-test('Router-Passwort wird verschlüsselt gespeichert', function () {
-    $this->actingAs(userWithPermissions(['site_create', 'router_create']));
+test('WLAN-Passwort wird verschlüsselt gespeichert', function () {
+    $this->actingAs(userWithPermissions(['site_create', 'wifi_create']));
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $network = Network::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id]);
     DocumentationRun::create([
         'customer_id' => $customer->id, 'user_id' => auth()->id(),
-        'site_id' => $site->id, 'current_step' => 'router',
+        'site_id' => $site->id, 'current_step' => 'wifi',
         'completed_steps' => [], 'skipped_steps' => [],
     ]);
 
     Livewire::test(DocumentationWizard::class, ['customer' => $customer])
-        ->set('form.name', 'RTR-Core')
-        ->set('form.ip', '10.10.30.1')
-        ->set('form.port', '443')
-        ->set('form.username', 'admin')
+        ->set('form.ssid', 'Mitarbeiter-WLAN')
         ->set('form.password', 'geheim123')
+        ->set('form.network_id', $network->id)
+        ->set('form.encryption', 'WPA2')
         ->call('save')
         ->assertHasNoErrors();
 
-    $raw = DB::table('routers')->where('customer_id', $customer->id)->first();
+    $raw = DB::table('wifis')->where('customer_id', $customer->id)->first();
     expect($raw->password)->not->toBe('geheim123');
 
-    $router = Router::where('customer_id', $customer->id)->first();
-    expect($router->password)->toBe('geheim123');
+    expect(Wifi::where('customer_id', $customer->id)->first()->password)->toBe('geheim123');
 });
 
 test('leeres optionales Feld bleibt NULL statt Chiffretext eines Leerstrings', function () {
@@ -226,8 +223,6 @@ test('leeres optionales Feld bleibt NULL statt Chiffretext eines Leerstrings', f
     Livewire::test(DocumentationWizard::class, ['customer' => $customer])
         ->set('form.name', '') // NAS: 'name' ist optional
         ->set('form.ip1', '10.10.30.20')
-        ->set('form.username', 'admin')
-        ->set('form.password', 'geheim123')
         ->call('save')
         ->assertHasNoErrors();
 
@@ -389,8 +384,6 @@ test('schon erfasste Eintraege öffnen mit Änderungsrecht das Bearbeiten-Modal'
         ->call('nextStep')
         ->set('form.name', 'RTR-Core')
         ->set('form.port', '443')
-        ->set('form.username', 'admin')
-        ->set('form.password', 'geheim123')
         ->call('save')
         ->html();
 

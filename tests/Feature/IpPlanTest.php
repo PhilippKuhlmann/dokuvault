@@ -33,7 +33,6 @@ test('IP-Plan listet belegte Adressen und fasst freie Bereiche + DHCP zusammen',
     $rtr = Router::create([
         'customer_id' => $customer->id, 'site_id' => $site->id,
         'name' => 'RTR-Core', 'port' => '443',
-        'username' => 'admin', 'password' => 'x',
     ]);
     $rtr->ipAddresses()->create(['customer_id' => $customer->id, 'address' => '192.168.1.1']);
 
@@ -67,4 +66,54 @@ test('IP-Plan listet belegte Adressen und fasst freie Bereiche + DHCP zusammen',
 
     // Freier Bereich am Ende (.201 - .254)
     $response->assertSeeInOrder(['192.168.1.201', '192.168.1.254'], false);
+});
+
+/**
+ * Ein Netz mit einem Server auf .10 und einem per DHCP versorgten Computer.
+ */
+function ipPlanMitGeraeten(): array
+{
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $os = OperatingSystem::factory()->create(['name' => 'Windows Server 2022']);
+    $netz = Network::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'network' => '10.20.0.0', 'cidr' => '24', 'subnetmask' => '255.255.255.0',
+        'gateway' => '10.20.0.1', 'dhcpStart' => '100', 'dhcpEnd' => '200',
+    ]);
+
+    $srv = Server::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'name' => 'SRV-SPRUNG', 'operating_system_id' => $os->id,
+    ]);
+    $srv->ipAddresses()->create(['customer_id' => $customer->id, 'address' => '10.20.0.10']);
+
+    $pc = Computer::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'name' => 'PC-DHCP', 'operating_system_id' => $os->id,
+    ]);
+    $pc->ipAddresses()->create(['customer_id' => $customer->id, 'dhcp' => true, 'network_id' => $netz->id]);
+
+    return [$customer, $srv, $pc];
+}
+
+test('im IP-Plan führt ein Gerät per Klick auf seine Karte in der Liste', function () {
+    $this->actingAs(userWithPermissions(['network_viewAny', 'server_viewAny', 'computer_viewAny']));
+    [$customer, $srv, $pc] = ipPlanMitGeraeten();
+
+    $this->get("/{$customer->slug}/ip-plan")
+        ->assertOk()
+        // Feste Adresse und DHCP-Pool - beide springen auf die Karte.
+        ->assertSee(route('server.index', [$customer, 'highlight' => $srv->id]), false)
+        ->assertSee(route('computer.index', [$customer, 'highlight' => $pc->id]), false);
+});
+
+test('ohne Recht auf die Liste steht das Gerät im IP-Plan ohne Link', function () {
+    $this->actingAs(userWithPermissions(['network_viewAny']));
+    [$customer, $srv] = ipPlanMitGeraeten();
+
+    $this->get("/{$customer->slug}/ip-plan")
+        ->assertOk()
+        ->assertSee('SRV-SPRUNG')
+        ->assertDontSee(route('server.index', [$customer, 'highlight' => $srv->id]), false);
 });

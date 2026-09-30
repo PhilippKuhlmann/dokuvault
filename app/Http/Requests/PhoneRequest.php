@@ -35,8 +35,6 @@ class PhoneRequest extends FormRequest
             'serialNumber' => 'max:255',
             'port' => 'max:255',
             'mac' => 'max:255',
-            'username' => 'max:255',
-            'password' => 'nullable|max:255',
             ...$this->beschaffungRegeln(),
         ];
     }
@@ -51,8 +49,6 @@ class PhoneRequest extends FormRequest
             'serialNumber' => 'Seriennmmer',
             'port' => 'Port',
             'mac' => 'MAC-Adresse',
-            'username' => 'Benutzername',
-            'password' => 'Passwort',
             ...$this->beschaffungBezeichnungen(),
         ];
     }

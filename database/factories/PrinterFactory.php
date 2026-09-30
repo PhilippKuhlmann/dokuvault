@@ -23,8 +23,6 @@ class PrinterFactory extends Factory
             'model' => fake()->randomElement(['MFC-L8900CDW', 'LaserJet M480', 'ECOSYS M5526cdw', 'WorkForce Pro WF-C5790']),
             'serialNumber' => fake()->ean13(),
             'port' => fake()->randomElement(['443', '80', '8080']),
-            'username' => fake()->userName(),
-            'password' => fake()->password($minLength = 6, $maxLength = 12),
         ];
     }
 }

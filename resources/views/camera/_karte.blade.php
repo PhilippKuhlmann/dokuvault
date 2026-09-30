@@ -22,7 +22,6 @@
 
             <x-slot:body>
 
-
                 <x-ipcard :device="$eintrag" />
 
                 <x-minitablecard :title="__('Allgemein')" :array="[
@@ -35,11 +34,6 @@
 
                 <x-minitablecard :title="__('Netzwerk')" :array="[
                     'Port' => $eintrag->port,
-                ]" />
-
-                <x-minitablecard :title="__('Login')" :array="[
-                    'Benutzer' => $eintrag->username,
-                    'Passwort' => $eintrag->password,
                 ]" />
 
                 <x-beschaffungcard :device="$eintrag" />

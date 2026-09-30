@@ -20,7 +20,6 @@ class AccesspointFactory extends Factory
             'name' => 'AP-'.fake()->randomElement(['Empfang', 'Buero-1', 'Buero-2', 'Lager', 'Besprechung', 'Werkstatt']),
             'manufacturer' => $m, 'model' => $mo,
             'serialNumber' => strtoupper(fake()->bothify('??####-######')),
-            'username' => 'admin', 'password' => fake()->password(8, 14),
         ];
     }
 }

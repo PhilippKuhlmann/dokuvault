@@ -2,10 +2,9 @@
 
 use App\Livewire\AdminSicherheit;
 use App\Models\Customer;
-use App\Models\NAS;
+use App\Models\LoginGeneral;
 use App\Models\Role;
 use App\Models\Setting;
-use App\Models\Site;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password as PasswordBroker;
@@ -194,18 +193,15 @@ test('dokumentierte Kundenkennwörter bleiben unberührt', function () {
     Setting::setzen(Setting::PW_MIN, 20);
     Setting::setzen(Setting::PW_SYMBOLS, 1);
 
-    $this->actingAs(userWithPermissions(['nas_create']));
+    $this->actingAs(userWithPermissions(['logingeneral_create']));
 
     $kunde = Customer::factory()->create();
-    $standort = Site::factory()->create(['customer_id' => $kunde->id]);
 
-    imModal('nas', $kunde, [
-        'site_id' => $standort->id,
-        'name' => 'NAS1',
-        'ip1' => '10.0.0.1',
+    imModal('logingeneral', $kunde, [
+        'name' => 'NAS1 Admin',
         'username' => 'admin',
         'password' => 'admin',
     ])->assertHasNoErrors();
 
-    expect(NAS::where('name', 'NAS1')->first()->password)->toBe('admin');
+    expect(LoginGeneral::where('name', 'NAS1 Admin')->first()->password)->toBe('admin');
 });

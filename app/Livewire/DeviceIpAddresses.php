@@ -60,6 +60,29 @@ class DeviceIpAddresses extends Component
         }
     }
 
+    /**
+     * VLAN gewählt: die nächste freie Adresse daraus ins Feld schreiben.
+     *
+     * Eine schon eingetragene Adresse, die in dieses Netz passt, bleibt stehen -
+     * wer sie getippt hat, meinte sie. Eine, die nicht passt, war für ein
+     * anderes Netz gedacht und wird ersetzt.
+     */
+    public function updatedNetworkId($id): void
+    {
+        if ($this->dhcp || ! $id) {
+            return;
+        }
+
+        $netz = Network::where('customer_id', $this->customerId)->find($id);
+
+        if (! $netz || $netz->enthaeltAdresse($this->address)) {
+            return;
+        }
+
+        $this->address = $netz->naechsteFreieAdresse() ?? '';
+        $this->resetValidation('address');
+    }
+
     // Eingebettet: ohne eigenen Kartenrahmen, weil der Block dann in der Karte
     // des Formulars steht (x-create.main, Slot "nach").
     #[Locked]
@@ -176,6 +199,9 @@ class DeviceIpAddresses extends Component
     public function vlanUebernehmen(int $id): void
     {
         $this->network_id = $id;
+        // Programmatisch gesetzt loest den updated-Hook nicht aus - der
+        // Vorschlag soll aber genauso kommen wie bei der Auswahl von Hand.
+        $this->updatedNetworkId($id);
         // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
         // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
         $this->dispatch('geraet-geaendert');

@@ -32,8 +32,6 @@ class FirewallRequest extends FormRequest
             'management_url' => 'nullable|max:255',
             // Anders als beim Router nicht verpflichtend: Das Kennwort kann im
             // Passwort-Manager liegen und hier nur verlinkt sein.
-            'username' => 'nullable|max:255',
-            'password' => 'nullable|max:255',
             'port' => 'nullable|numeric',
             'form_factor' => ['nullable', Rule::in(array_keys(config('custom.firewall_form_factors')))],
             'url_user' => 'nullable|max:255',
@@ -58,8 +56,6 @@ class FirewallRequest extends FormRequest
             'serialNumber' => 'Seriennummer',
             'firmware' => 'Firmware',
             'management_url' => 'Verwaltungsoberfläche',
-            'username' => 'Benutzername',
-            'password' => 'Passwort',
             'port' => 'Port',
             'form_factor' => 'Bauform',
             'url_user' => 'Benutzerportal',

@@ -3,49 +3,43 @@
 use App\Livewire\ObjektFormular;
 use App\Models\Customer;
 use App\Models\LicenseSoftware;
+use App\Models\LoginGeneral;
 use App\Models\OperatingSystem;
-use App\Models\Router;
 use App\Models\Server;
 use App\Models\Site;
 use Livewire\Livewire;
 
 test('Passwort mit Sonderzeichen übersteht den Edit-Roundtrip unverändert', function () {
-    $this->actingAs(userWithPermissions(['router_update', 'router_viewAny']));
+    $this->actingAs(userWithPermissions(['logingeneral_update', 'logingeneral_viewAny']));
 
     $customer = Customer::factory()->create();
-    $site = Site::factory()->create(['customer_id' => $customer->id]);
 
     $password = 'a&b"<c>\'d';
 
-    $router = Router::create([
+    $login = LoginGeneral::create([
         'customer_id' => $customer->id,
-        'site_id' => $site->id,
+        'kind' => LoginGeneral::KIND,
         'name' => 'RTR-Test',
         'username' => 'admin',
         'password' => $password,
-        'ip' => '10.0.0.1',
-        'port' => '443',
     ]);
 
     // Das Modal bindet ueber wire:model, der Wert steht also im Zustand der
     // Komponente und nicht in einem value-Attribut. Genau dort muss er
     // unveraendert ankommen - eine zusaetzliche Maskierung faellt hier auf.
-    $formular = Livewire::test(ObjektFormular::class, ['typ' => 'router', 'customer' => $customer])
-        ->call('bearbeiten', 'router', $router->id);
+    $formular = Livewire::test(ObjektFormular::class, ['typ' => 'logingeneral', 'customer' => $customer])
+        ->call('bearbeiten', 'logingeneral', $login->id);
 
     expect($formular->get('form')['password'])->toBe($password);
 
     // Speichern ohne Änderung -> Wert bleibt exakt gleich
-    imModalBearbeiten('router', $customer, $router, [
-        'site_id' => $site->id,
+    imModalBearbeiten('logingeneral', $customer, $login, [
         'name' => 'RTR-Test',
         'username' => 'admin',
         'password' => $password,
-        'ip' => '10.0.0.1',
-        'port' => '443',
     ])->assertHasNoErrors();
 
-    expect($router->fresh()->password)->toBe($password);
+    expect($login->fresh()->password)->toBe($password);
 });
 
 test('Script-Payload im Passwort bricht nicht aus dem Attribut aus (XSS)', function () {

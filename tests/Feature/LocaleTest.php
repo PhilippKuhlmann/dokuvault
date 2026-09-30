@@ -2,6 +2,7 @@
 
 use App\Models\Customer;
 use App\Models\Rack;
+use App\Models\ScanTarget;
 use App\Models\Role;
 use App\Models\User;
 
@@ -234,6 +235,7 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
         // Beschriftungen aus Model-Konstanten laufen ebenfalls erst zur
         // Laufzeit durch __() - etwa die Rackseiten.
         ->merge(array_values(Rack::SEITEN))
+        ->merge(array_values(ScanTarget::ARTEN))
         ->filter()->all();
 
     $verwendet = array_unique(array_merge($verwendet, $ausConfig));

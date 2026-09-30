@@ -42,6 +42,8 @@ use App\Models\RackCatalogItem;
 use App\Models\Recorder;
 use App\Models\Role;
 use App\Models\Router;
+use App\Models\Scanner;
+use App\Models\ScanTarget;
 use App\Models\SecurepointUMA;
 use App\Models\Server;
 use App\Models\Service;
@@ -565,6 +567,27 @@ class LocalDatabaseSeeder extends Seeder
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
         ]);
+
+        // Scanner mit mehreren Zielen, und dieselben Ziele auf beiden - der
+        // Fall, fuer den es die eigene Liste gibt. Das FTP-Archiv meldet sich
+        // mit eigenem Konto an, das bei den Zugangsdaten steht.
+        $scanner = Scanner::factory(2)->create([
+            'customer_id' => $customer->id,
+            'site_id' => $site1->id,
+        ]);
+        $ftpKonto = LoginGeneral::create([
+            'customer_id' => $customer->id,
+            'name' => 'Scanner FTP',
+            'description' => 'Konto der Scanner fuer das FTP-Archiv',
+            'username' => 'scan',
+            'password' => 'Sc4n!Demo2026',
+        ]);
+        $ziele = collect([
+            ['name' => 'Buchhaltung', 'kind' => 'smb', 'target' => '\\\\srv-file01\\scans\\buchhaltung'],
+            ['name' => 'Empfang', 'kind' => 'email', 'target' => 'empfang@example.com'],
+            ['name' => 'Archiv', 'kind' => 'ftp', 'target' => 'sftp://srv-file01/archiv', 'login_general_id' => $ftpKonto->id],
+        ])->map(fn ($ziel) => ScanTarget::create(['customer_id' => $customer->id, ...$ziel]));
+        $scanner->each(fn (Scanner $s) => $s->scanTargets()->attach($ziele->pluck('id')));
 
         IoTDevice::factory(4)->create([
             'customer_id' => $customer->id,

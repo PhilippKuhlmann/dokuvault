@@ -140,14 +140,13 @@
 
     <x-pdf.section :title="__('Firewalls')" :items="$customer->firewalls" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Firmware' => 'firmware', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
-        'Zugang' => ['Oberfläche' => 'management_url', 'Benutzername' => 'username', 'Passwort' => 'password', 'Port' => 'port'],
+        'Zugang' => ['Oberfläche' => 'management_url', 'Port' => 'port'],
         'Subscription' => ['Läuft bis' => 'subscription_until'],
         'Sonstiges' => ['Notizen' => 'notes'],
     ]" />
 
     <x-pdf.section :title="__('Router')" :items="$customer->routers" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
-        'Login' => ['Benutzername' => 'username', 'Passwort' => 'password'],
         'Netzwerk' => ['Port' => 'port'],
     ]" />
 
@@ -163,13 +162,11 @@
 
     <x-pdf.section :title="__('Switches')" :items="$customer->networkswitches" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
-        'Login' => ['Benutzername' => 'username', 'Passwort' => 'password'],
         'Netzwerk' => ['Port' => 'port'],
     ]" />
 
     <x-pdf.section :title="__('Accesspoints')" :items="$customer->accesspoints" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
-        'Login' => ['Benutzername' => 'username', 'Passwort' => 'password'],
         'Netzwerk' => ['Port' => 'port'],
     ]" />
 
@@ -246,7 +243,6 @@
     <x-pdf.section :title="__('NAS')" :items="$customer->nas" :groups="[
         'Hardware' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
         'Netzwerk' => ['Port' => 'port'],
-        'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
     {{-- Clients --}}
@@ -258,13 +254,22 @@
     <x-pdf.section :title="__('Drucker')" :items="$customer->printers" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
         'Netzwerk' => ['Port' => 'port'],
-        'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
+    ]" />
+
+    <x-pdf.section :title="__('Scanner')" :items="$customer->scanners" :groups="[
+        'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
+        'Scan-Ziele' => ['Ziele' => fn($s) => $s->scanTargets->map(fn($z) => $z->name ?: $z->target)->implode(', ')],
+    ]" />
+
+    <x-pdf.section :title="__('Scan-Ziele')" :items="$customer->scantargets()->with('scanners', 'login')->get()" :titleField="fn($z) => $z->name ?: $z->target" :groups="[
+        'Ziel' => ['Art' => fn($z) => $z->artName(), 'Ziel' => 'target', 'Beschreibung' => 'description'],
+        'Zugang' => ['Zugangsdaten' => fn($z) => $z->login ? trim($z->login->name.($z->login->username ? ' ('.$z->login->username.')' : '')) : null],
+        'Eingerichtet auf' => ['Scanner' => fn($z) => $z->scanners->pluck('name')->implode(', ')],
     ]" />
 
     <x-pdf.section :title="__('IoT-Geräte')" :items="$customer->iotdevices" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
         'Netzwerk' => ['Port' => 'port', 'URL' => 'url'],
-        'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
     <x-pdf.section :title="__('Maschinen')" :items="$customer->machines" :groups="[
@@ -274,7 +279,6 @@
     <x-pdf.section :title="__('Sonstige Clients')" :items="$customer->otherclients" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
         'Netzwerk' => ['Port' => 'port'],
-        'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
     {{-- Active Directory --}}
@@ -300,19 +304,17 @@
     <x-pdf.section :title="__('Telefone')" :items="$customer->phones" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Durchwahl' => 'extension', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
         'Netzwerk' => ['MAC' => 'mac'],
-        'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
     <x-pdf.section :title="__('DECT')" :items="$customer->dects" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
         'Netzwerk' => ['MAC' => 'mac'],
-        'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
     {{-- E-Mail --}}
     <x-pdf.section :title="__('E-Mail-Archivierung')" :items="$customer->securepointumas" :titleField="fn($u) => $u->name ?: ($u->manufacturer ?: 'E-Mail-Archivierung #'.$u->id)" :groups="[
         'Allgemein' => ['Hersteller / Produkt' => 'manufacturer', 'Art' => 'type'],
-        'Login' => ['Benutzername' => 'username', 'Passwort' => 'password', 'Verschlüsselungscode' => 'encryptionkey'],
+        'Verschlüsselung' => ['Verschlüsselungscode' => 'encryptionkey'],
         'URL' => ['Admin URL' => 'urlAdmin', 'User URL' => 'urlUser'],
     ]" />
 
@@ -325,13 +327,11 @@
     <x-pdf.section :title="__('Recorder')" :items="$customer->recorders" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
         'Netzwerk' => ['Port' => 'port'],
-        'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
     <x-pdf.section :title="__('Kameras')" :items="$customer->cameras" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
         'Netzwerk' => ['Port' => 'port'],
-        'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
 

@@ -51,6 +51,8 @@
             ['nas_viewAny', __('NAS'), 'nas.index'],
             ['computer_viewAny', __('Computer'), 'computer.index'],
             ['printer_viewAny', __('Drucker'), 'printer.index'],
+            ['scanner_viewAny', __('Scanner'), 'scanner.index'],
+            ['scantarget_viewAny', __('Scan-Ziele'), 'scantarget.index'],
             ['iotdevice_viewAny', __('IoT-Gerät'), 'iotdevice.index'],
             ['machine_viewAny', __('Maschinen'), 'machine.index'],
             ['otherclient_viewAny', __('Sonstige'), 'otherclient.index'],

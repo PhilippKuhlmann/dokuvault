@@ -11,12 +11,10 @@
     // Ist ein Modell uebergeben, holt GeheimFeld den Wert erst auf Klick, statt
     // ihn in den DOM zu legen.
     //
-    // 'Passwort' ist mehrdeutig - mal das Geraetekennwort, mal das der
-    // Fernwartung. Es greift hier nur, weil die Fernwartungs-Karten bewusst
-    // KEIN Modell uebergeben; dort bleibt 'Passwort' das einfache Feld. Wo ein
-    // Modell da ist (SecurepointUMA), meint 'Passwort' das Feld 'password'.
+    // 'Passwort' steht bewusst nicht darin: Geraete haben kein eigenes Kennwort
+    // mehr (das laeuft ueber die verknuepften Zugangsdaten), und bei der
+    // Fernwartung, die ohne Modell kommt, bleibt es das einfache Feld.
     $geheimFelder = [
-        'Passwort' => 'password',
         'BMC Passwort' => 'bmcPassword',
         'DSRM Passwort' => 'dsrmpassword',
         'Cloud Backup Passwort' => 'cloud_backup_password',

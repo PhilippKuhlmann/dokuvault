@@ -33,8 +33,6 @@ class CameraRequest extends FormRequest
             'model' => '',
             'serialNumber' => '',
             'port' => 'required',
-            'username' => '',
-            'password' => 'nullable|max:255',
             ...$this->beschaffungRegeln(),
         ];
     }
@@ -48,8 +46,6 @@ class CameraRequest extends FormRequest
             'model' => 'Model',
             'serialNumber' => 'Seriennummer',
             'port' => 'Port',
-            'username' => 'Benutzername',
-            'password' => 'Passwort',
             ...$this->beschaffungBezeichnungen(),
         ];
     }
