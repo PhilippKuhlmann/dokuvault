@@ -308,6 +308,16 @@
                     <x-input.button type="button" wire:click="nextStep" wire:loading.attr="disabled" wire:target="nextStep" :label="__('Weiter')" color="gray" />
                 </div>
             </div>
+
+            {{-- Erstaufnahme vorzeitig beenden: der Durchlauf gilt als abgeschlossen,
+                 das Dashboard schlägt den Assistenten danach nicht mehr vor. --}}
+            <div class="mt-4 border-t border-gray-100 pt-3 text-right dark:border-gray-700">
+                <button type="button" wire:click="finish"
+                    wire:confirm="{{ __('Erstaufnahme als erledigt markieren? Das Dashboard schlägt den Assistenten danach nicht mehr vor.') }}"
+                    class="text-sm text-gray-400 hover:text-cerulean-600 dark:text-gray-500 dark:hover:text-cerulean-400">
+                    {{ __('Als erledigt markieren') }}
+                </button>
+            </div>
         </x-panel>
     @endif
 

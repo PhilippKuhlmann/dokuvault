@@ -15,21 +15,32 @@
 
         @php $wizardPermissions = collect(config('custom.wizard_steps'))->pluck('permission')->all(); @endphp
         @canany($wizardPermissions)
-            @if ($openWizardRun || $inventoryCount <= 2)
-                <a href="{{ route('wizard.index', $customer) }}"
-                    class="flex items-center justify-between gap-3 p-4 mb-5 rounded-xl border border-cerulean-200 bg-cerulean-50 shadow-xs transition hover:border-cerulean-400 dark:bg-cerulean-900/10 dark:border-cerulean-800 dark:hover:border-cerulean-600">
-                    <div>
+            @if ($openWizardRun || ($inventoryCount <= 2 && ! $wizardCompleted))
+                {{-- Kein umschließender Link mehr: das Formular für "Als erledigt
+                     markieren" darf nicht in einem <a> stecken. --}}
+                <div class="flex flex-wrap items-center justify-between gap-3 p-4 mb-5 rounded-xl border border-cerulean-200 bg-cerulean-50 shadow-xs transition hover:border-cerulean-400 dark:bg-cerulean-900/10 dark:border-cerulean-800 dark:hover:border-cerulean-600">
+                    <a href="{{ route('wizard.index', $customer) }}" class="min-w-0 flex-1">
                         <div class="font-DINPro-bold text-cerulean-900 dark:text-cerulean-200">
                             {{ $openWizardRun ? __('Erstaufnahme fortsetzen') : __('Erstaufnahme starten') }}
                         </div>
                         <div class="text-sm text-cerulean-700 dark:text-cerulean-400">
                             {{ $openWizardRun ? __('Ein Durchlauf ist noch offen — weiter geht es dort, wo du aufgehört hast.') : __('Der Assistent fragt Standort, Netzwerk, Server und mehr Schritt für Schritt ab.') }}
                         </div>
+                    </a>
+                    <div class="flex shrink-0 items-center gap-2">
+                        <form method="POST" action="{{ route('wizard.complete', $customer) }}">
+                            @csrf
+                            <button type="submit"
+                                class="px-4 py-2 rounded-lg border border-cerulean-300 bg-white text-cerulean-700 text-sm font-DINPro-bold transition-colors hover:bg-cerulean-100 dark:bg-transparent dark:border-cerulean-700 dark:text-cerulean-300 dark:hover:bg-cerulean-900/30">
+                                {{ __('Als erledigt markieren') }}
+                            </button>
+                        </form>
+                        <a href="{{ route('wizard.index', $customer) }}"
+                            class="px-4 py-2 rounded-lg bg-cerulean-600 text-white text-sm font-DINPro-bold transition-colors hover:bg-cerulean-700">
+                            {{ $openWizardRun ? __('Fortsetzen') : __('Starten') }}
+                        </a>
                     </div>
-                    <span class="shrink-0 px-4 py-2 rounded-lg bg-cerulean-600 text-white text-sm font-DINPro-bold">
-                        {{ $openWizardRun ? __('Fortsetzen') : __('Starten') }}
-                    </span>
-                </a>
+                </div>
             @endif
         @endcanany
 

@@ -103,9 +103,15 @@ class CustomerController extends Controller
 
         // Einstieg zum Dokumentations-Assistenten: anbieten, wenn ein Durchlauf dieses Nutzers
         // offen ist ("Fortsetzen") oder der Kunde insgesamt noch kaum Inventar hat.
+        // Wurde die Erstaufnahme für diesen Kunden schon einmal abgeschlossen (auch
+        // per "Als erledigt markieren"), wird "Starten" nicht mehr vorgeschlagen.
         $openWizardRun = DocumentationRun::where('customer_id', $customer->id)
             ->where('user_id', auth()->id())
             ->whereNull('completed_at')
+            ->exists();
+
+        $wizardCompleted = DocumentationRun::where('customer_id', $customer->id)
+            ->whereNotNull('completed_at')
             ->exists();
 
         $inventoryCount = $customer->servers_count + $customer->computers_count + $customer->vms_count
@@ -115,7 +121,7 @@ class CustomerController extends Controller
 
         return view('customer.dashboard', compact(
             'customer', 'sites', 'contactpersons', 'tiles', 'expiringLicenses', 'expiringCertificates',
-            'expiringWarranties', 'openWizardRun', 'inventoryCount'
+            'expiringWarranties', 'openWizardRun', 'wizardCompleted', 'inventoryCount'
         ));
     }
 

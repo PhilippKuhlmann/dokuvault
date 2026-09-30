@@ -89,6 +89,13 @@
   ::file-selector-button {
     border-color: var(--color-gray-200, currentcolor);
   }
+
+  /* Tailwind v4 setzt bei Buttons cursor: default (v3: pointer). Ohne diese
+     Regel zeigt kein <button> ohne eigenes cursor-pointer die Hand. */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
 }
 
 [x-cloak] {

@@ -1,5 +1,15 @@
 # Changelog
 
+## 26.09.30
+
+### Added
+
+- **Dokumentations-Assistent als erledigt markieren.** Im Assistenten unter jedem Schritt (mit Rückfrage) und auf dem Dashboard direkt neben „Starten“/„Fortsetzen“ gibt es jetzt „Als erledigt markieren“. Der Durchlauf gilt dann als abgeschlossen, und das Kunden-Dashboard bietet „Erstaufnahme starten“ nicht mehr an – auch wenn der Kunde noch kaum Inventar hat. Das gilt ebenso, wenn ein Durchlauf regulär bis zum Ende durchlaufen wurde. Über die Seitenleiste lässt sich der Assistent weiterhin jederzeit aufrufen.
+
+### Fixed
+
+- **Mauszeiger über Buttons.** Seit Tailwind v4 zeigten Buttons ohne eigene Angabe den normalen Pfeil statt der Hand. Jetzt zeigen alle aktiven Buttons wieder die Hand.
+
 ## 26.09.24
 
 ### Added

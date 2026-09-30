@@ -302,6 +302,7 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
 
             // Dokumentations-Assistent (geführte Erstaufnahme)
             Route::get('wizard', [WizardController::class, 'index'])->name('wizard.index');
+            Route::post('wizard/complete', [WizardController::class, 'complete'])->name('wizard.complete');
 
             Route::resource('site', SiteController::class)->only(['index']);
             Route::resource('contactperson', ContactPersonController::class)->only(['index']);

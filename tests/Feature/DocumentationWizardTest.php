@@ -703,3 +703,58 @@ test('erfasst und übersprungen schließen sich aus', function () {
     expect($run->skipped_steps)->toContain('server');
     expect($run->completed_steps)->not->toContain('server');
 });
+
+test('nach "Als erledigt markieren" schlägt das Dashboard den Assistenten nicht mehr vor', function () {
+    $user = userWithPermissions(['site_create']);
+    $this->actingAs($user);
+    $customer = Customer::factory()->create();
+
+    // Leerer Kunde: Einstieg wird angeboten.
+    $this->get(route('customer.dashboard', $customer))->assertSee('Erstaufnahme starten');
+
+    Livewire::test(DocumentationWizard::class, ['customer' => $customer])
+        ->assertSee('Als erledigt markieren')
+        ->call('finish')
+        ->assertRedirect(route('customer.dashboard', $customer));
+
+    $this->get(route('customer.dashboard', $customer))
+        ->assertDontSee('Erstaufnahme starten')
+        ->assertDontSee('Erstaufnahme fortsetzen');
+});
+
+test('"Als erledigt markieren" auf dem Dashboard schließt den offenen Durchlauf ab', function () {
+    $this->actingAs(userWithPermissions(['site_create']));
+    $customer = Customer::factory()->create();
+
+    Livewire::test(DocumentationWizard::class, ['customer' => $customer]);
+
+    $this->get(route('customer.dashboard', $customer))
+        ->assertSee('Erstaufnahme fortsetzen')
+        ->assertSee(route('wizard.complete', $customer));
+
+    $this->post(route('wizard.complete', $customer))
+        ->assertRedirect(route('customer.dashboard', $customer));
+
+    expect(DocumentationRun::where('customer_id', $customer->id)->whereNull('completed_at')->exists())->toBeFalse();
+    $this->get(route('customer.dashboard', $customer))
+        ->assertDontSee('Erstaufnahme starten')
+        ->assertDontSee('Erstaufnahme fortsetzen');
+});
+
+test('"Als erledigt markieren" ohne Durchlauf legt einen abgeschlossenen an', function () {
+    $this->actingAs(userWithPermissions(['site_create']));
+    $customer = Customer::factory()->create();
+
+    $this->post(route('wizard.complete', $customer))->assertRedirect();
+
+    expect(DocumentationRun::where('customer_id', $customer->id)->whereNotNull('completed_at')->count())->toBe(1);
+    $this->get(route('customer.dashboard', $customer))->assertDontSee('Erstaufnahme starten');
+});
+
+test('"Als erledigt markieren" ohne Assistenten-Recht ist verboten', function () {
+    $this->actingAs(userWithPermissions([]));
+    $customer = Customer::factory()->create();
+
+    $this->post(route('wizard.complete', $customer))->assertForbidden();
+    expect(DocumentationRun::count())->toBe(0);
+});
