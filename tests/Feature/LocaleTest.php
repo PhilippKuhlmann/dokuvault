@@ -2,8 +2,8 @@
 
 use App\Models\Customer;
 use App\Models\Rack;
-use App\Models\ScanTarget;
 use App\Models\Role;
+use App\Models\ScanTarget;
 use App\Models\User;
 
 test('ohne Einstellung entscheidet die Browsersprache', function () {

@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.10.01
+
+### Fixed
+
+- **Deploy läuft wieder.** Der Code-Stil-Check (Pint) schlug an zwei Testdateien fehl (Import-Reihenfolge, ungenutzter Import), dadurch galt der Test-Workflow als fehlgeschlagen und das Deploy wurde übersprungen.
+
 ## 26.09.30
 
 ### Changed

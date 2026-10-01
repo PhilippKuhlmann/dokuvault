@@ -4,7 +4,6 @@ use App\Models\Customer;
 use App\Models\LicenseWindows;
 use App\Models\LoginGeneral;
 use App\Models\OperatingSystem;
-use App\Models\Site;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
