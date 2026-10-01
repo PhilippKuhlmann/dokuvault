@@ -36,6 +36,7 @@ use App\Http\Requests\ScannerRequest;
 use App\Http\Requests\ScanTargetRequest;
 use App\Http\Requests\SecurepointUMARequest;
 use App\Http\Requests\ServerRequest;
+use App\Http\Requests\SipAccountRequest;
 use App\Http\Requests\SiteRequest;
 use App\Http\Requests\SshKeyRequest;
 use App\Http\Requests\UpsRequest;
@@ -80,6 +81,7 @@ use App\Models\Scanner;
 use App\Models\ScanTarget;
 use App\Models\SecurepointUMA;
 use App\Models\Server;
+use App\Models\SipAccount;
 use App\Models\Site;
 use App\Models\SshKey;
 use App\Models\Ups;
@@ -775,6 +777,41 @@ return [
             ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
             ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
             ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+        ],
+    ],
+    'sipaccount' => [
+        'model' => SipAccount::class, 'request' => SipAccountRequest::class,
+        'relation' => 'sipaccounts', 'einzahl' => 'SIP-Anschluss',
+        'suchfelder' => ['provider', 'main_number', 'numbers', 'contract_number'],
+        // SIP credentials via the credentials block: single numbers often
+        // have one login each, a trunk one for all.
+        'bloecke' => true,
+        'spalten' => 2,
+        'felder' => [
+            ['name' => 'provider', 'label' => 'Anbieter', 'type' => 'text', 'gruppe' => 'Anschluss'],
+            ['name' => 'account_type', 'label' => 'Anschlussart', 'type' => 'optionen',
+                'quelle' => 'custom.sip_account_types', 'gruppe' => 'Anschluss'],
+            ['name' => 'product', 'label' => 'Produkt', 'type' => 'text', 'gruppe' => 'Anschluss'],
+            ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort', 'gruppe' => 'Anschluss'],
+            ['name' => 'contract_number', 'label' => 'Vertragsnummer', 'type' => 'text', 'gruppe' => 'Anschluss'],
+            ['name' => 'provider_customer_number', 'label' => 'Kundennummer', 'type' => 'text', 'gruppe' => 'Anschluss'],
+            ['name' => 'hotline', 'label' => 'Hotline', 'type' => 'text', 'gruppe' => 'Anschluss'],
+            ['name' => 'channels', 'label' => 'Sprachkanäle', 'type' => 'number', 'gruppe' => 'Anschluss'],
+            // A trunk has a main number with a range, single numbers are a list.
+            ['name' => 'main_number', 'label' => 'Stammnummer', 'type' => 'text', 'gruppe' => 'Rufnummern',
+                'sichtbar_wenn' => ['account_type' => 'trunk']],
+            ['name' => 'number_range', 'label' => 'Durchwahlbereich', 'type' => 'text', 'gruppe' => 'Rufnummern',
+                'sichtbar_wenn' => ['account_type' => 'trunk']],
+            ['name' => 'numbers', 'label' => 'Rufnummern (eine je Zeile)', 'type' => 'mehrzeilig', 'zeilen' => 4,
+                'platzhalter' => '040 1234567', 'breit' => true, 'gruppe' => 'Rufnummern',
+                'sichtbar_wenn' => ['account_type' => 'single']],
+            ['name' => 'registrar', 'label' => 'SIP-Registrar / Proxy', 'type' => 'text', 'gruppe' => 'Technik'],
+            ['name' => 'phone_system_id', 'label' => 'TK-Anlage', 'type' => 'auswahl', 'gruppe' => 'Technik',
+                'quelle' => PhoneSystem::class, 'anzeige' => '{manufacturer} {model}'],
+            ['name' => 'internet_connection_id', 'label' => 'Über Internetanschluss', 'type' => 'auswahl', 'gruppe' => 'Technik',
+                'quelle' => InternetConnection::class, 'anzeige' => '{provider} · {product}'],
+            ['name' => 'notes', 'label' => 'Notizen', 'type' => 'mehrzeilig', 'zeilen' => 3, 'breit' => true,
+                'gruppe' => 'Sonstiges'],
         ],
     ],
     'scanner' => [

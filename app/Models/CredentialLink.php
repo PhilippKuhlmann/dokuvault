@@ -71,7 +71,7 @@ class CredentialLink extends Model
         }
 
         $typ = config('custom.trashables')[$this->zielSlug()][1] ?? class_basename($ziel);
-        $name = $ziel->name ?? $ziel->host ?? $ziel->domain ?? $ziel->ip ?? $ziel->ip1 ?? '#'.$ziel->id;
+        $name = $ziel->name ?? $ziel->host ?? $ziel->domain ?? $ziel->provider ?? $ziel->ip ?? $ziel->ip1 ?? '#'.$ziel->id;
 
         return $name.' ('.__($typ).')';
     }

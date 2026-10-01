@@ -57,6 +57,7 @@ use App\Models\Scanner;
 use App\Models\ScanTarget;
 use App\Models\SecurepointUMA;
 use App\Models\Server;
+use App\Models\SipAccount;
 use App\Models\Site;
 use App\Models\SshKey;
 use App\Models\Ups;
@@ -109,6 +110,7 @@ return [
         'ADUser',
         'ADGroup',
         'PhoneSystem',
+        'SipAccount',
         'Phone',
         'DECT',
         'LoginGeneral',
@@ -165,6 +167,7 @@ return [
         'aduser' => [ADUser::class, 'AD-Benutzer'],
         'adgroup' => [ADGroup::class, 'AD-Gruppe'],
         'phonesystem' => [PhoneSystem::class, 'TK-Anlage'],
+        'sipaccount' => [SipAccount::class, 'SIP-Anschluss'],
         'phone' => [Phone::class, 'Telefon'],
         'dect' => [DECT::class, 'DECT'],
         'logingeneral' => [LoginGeneral::class, 'Login Allgemein'],
@@ -206,6 +209,7 @@ return [
         'aduser' => 'AD-Benutzer',
         'adgroup' => 'AD-Gruppen',
         'phonesystem' => 'TK-Anlagen',
+        'sipaccount' => 'SIP-Anschlüsse',
         'phone' => 'Telefone',
         'logingeneral' => 'Logins Allgemein',
         'sshkey' => 'SSH-Schlüssel',
@@ -647,6 +651,12 @@ return [
     | not claim 2008 just because nobody looked yet.
     |
     */
+    'sip_account_types' => [
+        '' => 'Unbekannt',
+        'trunk' => 'SIP-Trunk (Anlagenanschluss)',
+        'single' => 'Einzelnummern (Mehrgeräteanschluss)',
+    ],
+
     'ad_functional_levels' => [
         '' => 'Unbekannt',
         '2008' => 'Windows Server 2008',

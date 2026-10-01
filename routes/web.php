@@ -57,6 +57,7 @@ use App\Http\Controllers\SecurepointUMAController;
 use App\Http\Controllers\ServerController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\SipAccountController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\SshKeyController;
 use App\Http\Controllers\TrashController;
@@ -339,6 +340,7 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::resource('otherclient', OtherClientController::class)->only(['index']);
             Route::resource('printer', PrinterController::class)->only(['index']);
             Route::resource('scanner', ScannerController::class)->only(['index']);
+            Route::resource('sipaccount', SipAccountController::class)->only(['index']);
             Route::resource('scantarget', ScanTargetController::class)->only(['index']);
             Route::resource('ftpserver', FTPServerController::class)->only(['index']);
             Route::resource('recorder', RecorderController::class)->only(['index']);

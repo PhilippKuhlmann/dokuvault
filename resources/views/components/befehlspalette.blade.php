@@ -60,6 +60,7 @@
             ['aduser_viewAny', __('AD-User'), 'aduser.index'],
             ['adgroup_viewAny', __('AD-Gruppen'), 'adgroup.index'],
             ['phonesystem_viewAny', __('TK-Anlage'), 'phonesystem.index'],
+            ['sipaccount_viewAny', __('SIP-Anschluss'), 'sipaccount.index'],
             ['phone_viewAny', __('Telefon'), 'phone.index'],
             ['dect_viewAny', __('DECT'), 'dect.index'],
             ['logingeneral_viewAny', __('Logins').' · '.__('Allgemein'), 'logingeneral.index'],

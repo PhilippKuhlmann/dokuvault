@@ -4,6 +4,9 @@
 
 ### Added
 
+- **SIP-Anschlüsse unter „Telefon“.** Neuer Menüpunkt für den Anbieter, bei dem die Rufnummern liegen: Anbieter, Anschlussart (SIP-Trunk oder Einzelnummern), Produkt, Vertrags- und Kundennummer, Hotline, Sprachkanäle, SIP-Registrar sowie die TK-Anlage und der Internetanschluss, über die er läuft. Ein Trunk führt Stammnummer und Durchwahlbereich, Einzelnummern eine Liste mit einer Nummer je Zeile – das Formular zeigt jeweils nur das Passende. SIP-Zugangsdaten werden wie bei Geräten unter „Zugangsdaten“ verknüpft, bei Einzelnummern also auch mehrere. Die Übersicht zeigt Karten mit den Rufnummern in der Kopfzeile, das PDF einen eigenen Abschnitt.
+  - Die Rechte `sipaccount_*` bekommt per Migration jede Rolle, die schon die entsprechenden TK-Anlagen-Rechte hat.
+
 - **AD-Domänen dokumentieren mehr als Name und DSRM-Kennwort.** Neu im Formular: Funktionsebene, UPN-Suffixe, Domänencontroller, FSMO-Rollen, DNS-Weiterleitungen, DHCP-Server, Entra Connect (ja/nein samt Server), Zertifizierungsstelle und Notizen. Das Domänen-Admin-Konto wird wie bei Geräten unter „Zugangsdaten“ verknüpft. Die Übersicht zeigt jede Domäne als Karte mit allen Angaben – gruppiert wie im Formular, mit Funktionsebene und Domänencontrollern in der Kopfzeile –, das PDF ebenso.
   - Domänencontroller, Entra-Connect-Server und Zertifizierungsstelle werden aus den Servern und VMs des Kunden ausgewählt, Domänencontroller auch mehrere. Eine umbenannte Maschine heißt damit auch hier sofort richtig; Maschinen anderer Kunden werden abgewiesen.
   - Funktionsebene und Entra Connect stehen bei einer neuen Domäne auf „Unbekannt“ statt auf dem ersten Listeneintrag.

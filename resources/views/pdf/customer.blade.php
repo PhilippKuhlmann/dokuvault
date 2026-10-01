@@ -304,6 +304,12 @@
         'Netzwerk' => ['Port' => 'port'],
     ]" />
 
+    <x-pdf.section :title="__('SIP-Anschlüsse')" :items="$customer->sipaccounts()->with('phoneSystem', 'internetConnection')->get()" titleField="provider" :groups="[
+        'Anschluss' => ['Anschlussart' => fn($s) => $s->accountTypeLabel(), 'Produkt' => 'product', 'Vertragsnummer' => 'contract_number', 'Kundennummer' => 'provider_customer_number', 'Hotline' => 'hotline', 'Sprachkanäle' => 'channels'],
+        'Rufnummern' => ['Stammnummer' => 'main_number', 'Durchwahlbereich' => 'number_range', 'Rufnummern' => 'numbers'],
+        'Technik' => ['SIP-Registrar' => 'registrar', 'TK-Anlage' => fn($s) => $s->phoneSystemLabel(), 'Internetanschluss' => fn($s) => $s->internetConnectionLabel(), 'Notizen' => 'notes'],
+    ]" />
+
     <x-pdf.section :title="__('Telefone')" :items="$customer->phones" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Durchwahl' => 'extension', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
         'Netzwerk' => ['MAC' => 'mac'],

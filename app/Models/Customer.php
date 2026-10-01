@@ -148,6 +148,11 @@ class Customer extends Model
         return $this->hasMany(PhoneSystem::class);
     }
 
+    public function sipaccounts()
+    {
+        return $this->hasMany(SipAccount::class);
+    }
+
     public function phones()
     {
         return $this->hasMany(Phone::class);

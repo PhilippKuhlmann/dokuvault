@@ -147,11 +147,14 @@
                 </x-aside.dropdown>
             @endcanany
 
-            @canany(['phonesystem_viewAny', 'phone_viewAny', 'dect_viewAny'])
+            @canany(['phonesystem_viewAny', 'sipaccount_viewAny', 'phone_viewAny', 'dect_viewAny'])
                 <x-aside.dropdown :label="__('Telefon')" svg="svg.phone">
                     <x-slot:links>
                         @can('phonesystem_viewAny')
                             <x-aside.dropdownlink :label="__('TK-Anlage')" href="{{ route('phonesystem.index', $customer) }}" />
+                        @endcan
+                        @can('sipaccount_viewAny')
+                            <x-aside.dropdownlink :label="__('SIP-Anschluss')" href="{{ route('sipaccount.index', $customer) }}" />
                         @endcan
                         @can('phone_viewAny')
                             <x-aside.dropdownlink :label="__('Telefon')" href="{{ route('phone.index', $customer) }}" />
