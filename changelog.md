@@ -4,6 +4,14 @@
 
 ### Changed
 
+- **Dashboard: Support-Ende, Zuletzt geändert, schlankere Zählerleiste, Links mit Markierung.**
+  - Neue Kachel „Support-Ende“: Geräte, deren Hersteller-Support (EOL) abgelaufen ist oder innerhalb der EOL-Frist aus den Einstellungen endet, und Server, VMs und Computer, deren Betriebssystem keinen Support mehr hat oder bald verliert.
+  - Neue Kachel „Zuletzt geändert“ über die volle Breite: die letzten acht Änderungen an der Dokumentation dieses Kunden mit Objekt, Art, Aktion, Person und Zeitpunkt – nur für Typen, deren Liste man sehen darf.
+  - Die Zählerleiste oben zeigt nur noch die zwölf wichtigsten Typen in zwei Zeilen (Internet, Firewalls, Switches, Accesspoints, Server, VMs, NAS, Backups, Computer, Drucker, Telefone, AD-User). Alles andere bleibt über die Seitenleiste erreichbar.
+  - Ein Klick auf einen Eintrag in Lizenzen, Zertifikaten, Garantien, Support-Ende oder Zuletzt geändert öffnet die Liste und hebt den Eintrag hervor – wie aus der globalen Suche. Bei gelöschten Einträgen öffnet nur die Liste.
+
+- **Die Kacheln im Kunden-Dashboard sind gleich groß.** Ablaufende Lizenzen, Zertifikate und Garantien sowie Standorte und Ansprechpartner stehen jetzt in einem gemeinsamen Raster (eine, zwei oder drei Spalten je nach Bildschirmbreite), jede Kachel gleich breit und gleich hoch. Bisher standen sie in zwei verschiedenen Anordnungen mit unterschiedlichen Breiten, und jede Kachel war so hoch wie ihr Inhalt. Passt eine Liste nicht in die Kachel, scrollt sie darin.
+
 - **Im Rack-Editor bestimmt das Rack die Höhe, nicht die Geräteliste.** Die Liste links („Server“, „Switch“, …, „Katalog“) ist jetzt so hoch wie das Rack und scrollt für sich. Bisher wuchs die Seite mit der Liste: Bei vielen dokumentierten Geräten endete das Rack weit über dem Listenende, und wer ein Gerät von unten hineinziehen wollte, scrollte das Rack aus dem Bild. Auf dem Handy, wo Liste und Rack untereinander stehen, bleibt es wie bisher.
 
 ### Added

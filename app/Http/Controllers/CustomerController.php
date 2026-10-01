@@ -5,18 +5,23 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CustomerRequest;
 use App\Jobs\KundenPdfErzeugen;
 use App\Models\Certificate;
+use App\Models\Computer;
 use App\Models\Concerns\HatBeschaffung;
 use App\Models\ContactPerson;
 use App\Models\Customer;
 use App\Models\DocumentationRun;
 use App\Models\LicenseSoftware;
 use App\Models\PdfExport;
+use App\Models\Server;
 use App\Models\Setting;
 use App\Models\Site;
+use App\Models\VM;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Spatie\Activitylog\Models\Activity;
 
 class CustomerController extends Controller
 {
@@ -52,33 +57,29 @@ class CustomerController extends Controller
 
         // Inventar-Zähler (in einer Abfrage via loadCount)
         $customer->loadCount([
-            'internetconnections', 'firewalls', 'routers', 'networkswitches',
-            'accesspoints', 'networks', 'wifis', 'racks', 'patchpanels',
-            'servers', 'vms', 'nas', 'computers', 'printers', 'cameras',
+            'internetconnections', 'firewalls', 'networkswitches', 'accesspoints',
+            'servers', 'vms', 'nas', 'backups', 'computers', 'printers',
             'phones', 'adusers',
+            // Not tiles, but part of $inventoryCount below.
+            'networks', 'wifis', 'cameras',
         ]);
 
         $tiles = [
-            // Von aussen nach innen, so wie man vor Ort danach sucht: erst
-            // der Anschluss und was daran haengt, dann die Server, dann die
-            // Arbeitsplaetze. Firewall, Router, Switches, Accesspoints,
-            // Schraenke und Patchfelder fehlten hier ganz - man konnte sie
-            // dokumentieren, sah sie aber in der Uebersicht nie wieder.
+            // Only the twelve one looks up most - two full rows of six. With
+            // every type (25 at one point) the row was a wall of numbers before
+            // anything of substance; the rest is one click away in the sidebar.
+            // Outside in, as one searches on site: the line and what hangs off
+            // it, then the servers, then the workstations.
             ['label' => 'Internet / WAN', 'icon' => 'svg.link',     'count' => $customer->internetconnections_count, 'route' => route('internetconnection.index', $customer), 'can' => 'internetconnection_viewAny'],
             ['label' => 'Firewalls',      'icon' => 'svg.fire',     'count' => $customer->firewalls_count,           'route' => route('firewall.index', $customer),           'can' => 'firewall_viewAny'],
-            ['label' => 'Router',         'icon' => 'svg.wifi',     'count' => $customer->routers_count,             'route' => route('router.index', $customer),             'can' => 'router_viewAny'],
             ['label' => 'Switches',       'icon' => 'svg.group',    'count' => $customer->networkswitches_count,     'route' => route('networkswitch.index', $customer),      'can' => 'networkswitch_viewAny'],
             ['label' => 'Accesspoints',   'icon' => 'svg.signal',   'count' => $customer->accesspoints_count,        'route' => route('accesspoint.index', $customer),        'can' => 'accesspoint_viewAny'],
-            ['label' => 'Netzwerke',      'icon' => 'svg.wifi',     'count' => $customer->networks_count,            'route' => route('network.index', $customer),            'can' => 'network_viewAny'],
-            ['label' => 'WLAN',           'icon' => 'svg.signal',   'count' => $customer->wifis_count,               'route' => route('wifi.index', $customer),               'can' => 'wifi_viewAny'],
-            ['label' => 'Serverschränke', 'icon' => 'svg.folder',   'count' => $customer->racks_count,               'route' => route('rack.index', $customer),               'can' => 'rack_viewAny'],
-            ['label' => 'Patchfelder',    'icon' => 'svg.link',     'count' => $customer->patchpanels_count,         'route' => route('patchpanel.index', $customer),         'can' => 'patchpanel_viewAny'],
             ['label' => 'Server',         'icon' => 'svg.servers',  'count' => $customer->servers_count,             'route' => route('server.index', $customer),             'can' => 'server_viewAny'],
             ['label' => 'VMs',            'icon' => 'svg.server',   'count' => $customer->vms_count,                 'route' => route('vm.index', $customer),                 'can' => 'vm_viewAny'],
             ['label' => 'NAS',            'icon' => 'svg.db',       'count' => $customer->nas_count,                 'route' => route('nas.index', $customer),                'can' => 'nas_viewAny'],
+            ['label' => 'Backups',        'icon' => 'svg.db',       'count' => $customer->backups_count,             'route' => route('backup.index', $customer),             'can' => 'backup_viewAny'],
             ['label' => 'Computer',       'icon' => 'svg.computer', 'count' => $customer->computers_count,           'route' => route('computer.index', $customer),           'can' => 'computer_viewAny'],
             ['label' => 'Drucker',        'icon' => 'svg.printer',  'count' => $customer->printers_count,            'route' => route('printer.index', $customer),            'can' => 'printer_viewAny'],
-            ['label' => 'Kameras',        'icon' => 'svg.cam',      'count' => $customer->cameras_count,             'route' => route('camera.index', $customer),             'can' => 'camera_viewAny'],
             ['label' => 'Telefone',       'icon' => 'svg.phone',    'count' => $customer->phones_count,              'route' => route('phone.index', $customer),              'can' => 'phone_viewAny'],
             ['label' => 'AD-User',        'icon' => 'svg.user',     'count' => $customer->adusers_count,             'route' => route('aduser.index', $customer),             'can' => 'aduser_viewAny'],
         ];
@@ -101,6 +102,12 @@ class CustomerController extends Controller
         // Frist: Eine Lizenz verlängert man, ein Gerät muss ersetzt werden.
         $expiringWarranties = $this->ablaufendeGarantien($customer);
 
+        // Support ending: devices (eol_date) and operating systems together -
+        // "no more security updates" is the same question for both.
+        $endOfSupport = $this->endOfSupport($customer);
+
+        $recentChanges = $this->recentChanges($customer);
+
         // Einstieg zum Dokumentations-Assistenten: anbieten, wenn ein Durchlauf dieses Nutzers
         // offen ist ("Fortsetzen") oder der Kunde insgesamt noch kaum Inventar hat.
         // Wurde die Erstaufnahme für diesen Kunden schon einmal abgeschlossen (auch
@@ -121,8 +128,103 @@ class CustomerController extends Controller
 
         return view('customer.dashboard', compact(
             'customer', 'sites', 'contactpersons', 'tiles', 'expiringLicenses', 'expiringCertificates',
-            'expiringWarranties', 'openWizardRun', 'wizardCompleted', 'inventoryCount'
+            'expiringWarranties', 'endOfSupport', 'recentChanges',
+            'openWizardRun', 'wizardCompleted', 'inventoryCount'
         ));
+    }
+
+    /**
+     * Devices and operating systems whose support has ended or ends soon.
+     *
+     * Two sources: the support end of the hardware (eol_date via
+     * HatBeschaffung, found the same way as the warranties) and that of the
+     * operating system on servers, VMs and computers. Uses the EOL deadline
+     * from the settings - replacing a server needs more lead time than
+     * renewing a license.
+     */
+    private function endOfSupport(Customer $customer): Collection
+    {
+        $grenze = now()->addDays(Setting::fristEol())->toDateString();
+        $eintrag = fn ($name, $art, $datum, $slug, $id) => [
+            'name' => $name ?: '—',
+            'art' => $art,
+            'datum' => $datum,
+            'tage' => (int) now()->startOfDay()->diffInDays($datum->copy()->startOfDay(), false),
+            // ?highlight= like the global search: the list jumps to the entry
+            // and marks it.
+            'url' => route($slug.'.index', [$customer, 'highlight' => $id]),
+        ];
+
+        $geraete = collect(config('custom.trashables'))
+            ->filter(fn ($e, $slug) => in_array(HatBeschaffung::class, class_uses_recursive($e[0]), true)
+                && Gate::allows($slug.'_viewAny'))
+            ->flatMap(fn ($e, $slug) => $e[0]::where('customer_id', $customer->id)
+                ->whereNotNull('eol_date')
+                ->whereDate('eol_date', '<=', $grenze)
+                ->orderBy('eol_date')
+                ->limit(10)
+                ->get()
+                ->map(fn ($g) => $eintrag($g->name ?? $g->serialNumber, __($e[1]), $g->eol_date, $slug, $g->id)));
+
+        $systeme = collect(['server' => Server::class, 'vm' => VM::class, 'computer' => Computer::class])
+            ->filter(fn ($klasse, $slug) => Gate::allows($slug.'_viewAny'))
+            ->flatMap(fn ($klasse, $slug) => $klasse::where('customer_id', $customer->id)
+                ->whereHas('operatingSystem', fn ($os) => $os->whereNotNull('eol_date')->whereDate('eol_date', '<=', $grenze))
+                ->with('operatingSystem')
+                ->limit(10)
+                ->get()
+                ->map(fn ($m) => $eintrag(
+                    $m->name,
+                    __(config('custom.trashables')[$slug][1]).' · '.$m->operatingSystem->name,
+                    $m->operatingSystem->eol_date,
+                    $slug,
+                    $m->id
+                )));
+
+        return $geraete->concat($systeme)->sortBy('datum')->values();
+    }
+
+    /**
+     * The latest changes to this customer's documentation.
+     *
+     * The activity log has no customer column - it is reached through the
+     * changed object. Only types the user may list, so the tile shows nothing
+     * whose list stays closed to them. Without the trash scope: a deletion is
+     * a change too, and its object is in the trash.
+     */
+    private function recentChanges(Customer $customer, int $anzahl = 8): Collection
+    {
+        // Every trashable type carries customer_id (the trash itself relies on it).
+        $typen = collect(config('custom.trashables'))
+            ->filter(fn ($e, $slug) => Gate::allows($slug.'_viewAny'));
+
+        if ($typen->isEmpty()) {
+            return collect();
+        }
+
+        $slugs = $typen->mapWithKeys(fn ($e, $slug) => [$e[0] => [$slug, $e[1]]]);
+
+        return Activity::with('causer')
+            ->whereHasMorph('subject', $typen->pluck(0)->all(), fn ($q) => $q
+                ->withoutGlobalScopes()
+                ->where('customer_id', $customer->id))
+            ->latest()
+            ->limit($anzahl)
+            ->get()
+            ->map(fn ($a) => [
+                'name' => $a->properties['objekt'] ?? '#'.$a->subject_id,
+                'art' => __($slugs[$a->subject_type][1] ?? class_basename($a->subject_type)),
+                'ereignis' => $a->event,
+                'wer' => $a->causer?->name,
+                'wann' => $a->created_at,
+                // Highlighted like from the global search - unless deleted:
+                // the entry is in the trash, there is nothing to mark.
+                'url' => isset($slugs[$a->subject_type]) && Route::has($slugs[$a->subject_type][0].'.index')
+                    ? route($slugs[$a->subject_type][0].'.index', $a->event === 'deleted'
+                        ? [$customer]
+                        : [$customer, 'highlight' => $a->subject_id])
+                    : null,
+            ]);
     }
 
     /**
@@ -159,7 +261,7 @@ class CustomerController extends Controller
                         'art' => $bezeichnung,
                         'datum' => $geraet->warranty_until,
                         'tage' => $geraet->garantieTage(),
-                        'url' => route($slug.'.index', $customer),
+                        'url' => route($slug.'.index', [$customer, 'highlight' => $geraet->id]),
                     ]);
             })
             ->sortBy('datum')

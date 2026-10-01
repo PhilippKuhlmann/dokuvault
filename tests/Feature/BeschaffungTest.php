@@ -127,9 +127,9 @@ test('das Dashboard sammelt ablaufende Garantien ueber alle Geraetearten', funct
 
     $this->get(route('customer.dashboard', $customer))
         ->assertSee('Ablaufende Garantien')
-        ->assertSee('SRV-Bald')
-        ->assertSee('PC-Abgelaufen')
-        ->assertDontSee('SRV-Lange');
+        // Checked on the tile's data: every device just created also shows
+        // up under "Zuletzt geändert", so the page as a whole proves nothing.
+        ->assertViewHas('expiringWarranties', fn ($l) => $l->pluck('name')->sort()->values()->all() === ['PC-Abgelaufen', 'SRV-Bald']);
 });
 
 test('ohne Recht auf die Geraeteart erscheint sie nicht auf der Karte', function () {

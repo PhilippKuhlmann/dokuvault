@@ -46,13 +46,11 @@
 
         {{-- Inventar-Übersicht.
 
-             Kompakter als zuvor: Seit auch Firewall, Router, Switches,
-             Accesspoints, Schraenke und Patchfelder mitzaehlen, sind es
-             siebzehn Kacheln statt zehn - in der alten Groesse fuellten sie
-             den Bildschirm, bevor irgendetwas Inhaltliches kam. Die Zahlen
-             sind Nachschlagewerte, keine Schlagzeilen: kleineres Symbol,
-             kleinere Zahl, mehr Kacheln je Zeile. --}}
-        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 mb-6">
+             Die Zahlen sind Nachschlagewerte, keine Schlagzeilen: kleines
+             Symbol, kleine Zahl. Höchstens zwölf (zwei Zeilen à sechs), die
+             Auswahl steht im CustomerController - mit allen Typen wurde die
+             Leiste zur Zahlenwand. --}}
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2 mb-6">
             @foreach ($tiles as $tile)
                 @can($tile['can'])
                     <a href="{{ $tile['route'] }}"
@@ -73,19 +71,22 @@
             @endforeach
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-5">
+        {{-- One grid for all five tiles, each the same size (x-dashboard-tile).
+             Before, expiry lists and sites/contacts stood in two different
+             layouts with different widths, and every tile was as tall as its
+             content. --}}
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
 
             {{-- Ablaufende Lizenzen --}}
             @can('licensesoftware_viewAny')
-                <x-panel class="col-span-2">
-                    <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Ablaufende Lizenzen') }}</div>
+                <x-dashboard-tile :title="__('Ablaufende Lizenzen')">
                     <div class="divide-y divide-gray-100 dark:divide-gray-700">
                         @forelse ($expiringLicenses as $license)
                             @php
                                 $end = \Carbon\Carbon::parse($license->end_date)->startOfDay();
                                 $days = now()->startOfDay()->diffInDays($end, false);
                             @endphp
-                            <a href="{{ route('licensesoftware.index', $customer) }}"
+                            <a href="{{ route('licensesoftware.index', [$customer, 'highlight' => $license->id]) }}"
                                 class="flex items-center justify-between py-2.5 -mx-2 px-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                 <span class="text-gray-800 dark:text-gray-100">{{ $license->name }}</span>
                                 @if ($days < 0)
@@ -102,20 +103,19 @@
                             <div class="py-3 text-sm text-gray-400 dark:text-gray-500">{{ __('Keine ablaufenden Lizenzen 🎉') }}</div>
                         @endforelse
                     </div>
-                </x-panel>
+                </x-dashboard-tile>
             @endcan
 
             {{-- Ablaufende Zertifikate --}}
             @can('certificate_viewAny')
-                <x-panel class="col-span-2">
-                    <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Ablaufende Zertifikate') }}</div>
+                <x-dashboard-tile :title="__('Ablaufende Zertifikate')">
                     <div class="divide-y divide-gray-100 dark:divide-gray-700">
                         @forelse ($expiringCertificates as $certificate)
                             @php
                                 $end = \Carbon\Carbon::parse($certificate->expiry_date)->startOfDay();
                                 $days = now()->startOfDay()->diffInDays($end, false);
                             @endphp
-                            <a href="{{ route('certificate.index', $customer) }}"
+                            <a href="{{ route('certificate.index', [$customer, 'highlight' => $certificate->id]) }}"
                                 class="flex items-center justify-between py-2.5 -mx-2 px-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                 <span class="text-gray-800 dark:text-gray-100">{{ $certificate->name }}</span>
                                 @if ($days < 0)
@@ -132,15 +132,14 @@
                             <div class="py-3 text-sm text-gray-400 dark:text-gray-500">{{ __('Keine ablaufenden Zertifikate 🎉') }}</div>
                         @endforelse
                     </div>
-                </x-panel>
+                </x-dashboard-tile>
             @endcan
 
             {{-- Ablaufende Garantien.
 
                  Über alle Gerätearten hinweg: Die Frage "ist die Kiste noch in
                  Garantie?" stellt sich nicht je Liste, sondern beim Kunden. --}}
-            <x-panel class="col-span-2">
-                <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Ablaufende Garantien') }}</div>
+            <x-dashboard-tile :title="__('Ablaufende Garantien')">
                 <div class="divide-y divide-gray-100 dark:divide-gray-700">
                     @forelse ($expiringWarranties as $garantie)
                         <a href="{{ $garantie['url'] }}"
@@ -163,15 +162,37 @@
                         <div class="py-3 text-sm text-gray-400 dark:text-gray-500">{{ __('Keine ablaufenden Garantien 🎉') }}</div>
                     @endforelse
                 </div>
-            </x-panel>
+            </x-dashboard-tile>
 
-        </div>
-
-        <div class="flex flex-wrap gap-5">
+            {{-- Support ending: hardware and operating systems. Same row shape
+                 as the warranties next to it. --}}
+            <x-dashboard-tile :title="__('Support-Ende')">
+                <div class="divide-y divide-gray-100 dark:divide-gray-700">
+                    @forelse ($endOfSupport as $eol)
+                        <a href="{{ $eol['url'] }}"
+                            class="flex items-center justify-between gap-3 py-2.5 -mx-2 px-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <span class="min-w-0">
+                                <span class="block truncate text-gray-800 dark:text-gray-100">{{ $eol['name'] }}</span>
+                                <span class="block truncate text-xs text-gray-400 dark:text-gray-500">{{ $eol['art'] }}</span>
+                            </span>
+                            @if ($eol['tage'] < 0)
+                                <span class="shrink-0 text-sm font-medium text-red-600 dark:text-red-400">{{ __('abgelaufen') }}</span>
+                            @elseif ($eol['tage'] == 0)
+                                <span class="shrink-0 text-sm font-medium text-red-600 dark:text-red-400">{{ __('heute') }}</span>
+                            @elseif ($eol['tage'] <= 90)
+                                <span class="shrink-0 text-sm font-medium text-amber-600 dark:text-amber-400">{{ __('in :tage Tagen', ['tage' => $eol['tage']]) }}</span>
+                            @else
+                                <span class="shrink-0 text-sm text-gray-500 dark:text-gray-400">{{ $eol['datum']->format('m/Y') }}</span>
+                            @endif
+                        </a>
+                    @empty
+                        <div class="py-3 text-sm text-gray-400 dark:text-gray-500">{{ __('Alles im Support 🎉') }}</div>
+                    @endforelse
+                </div>
+            </x-dashboard-tile>
 
             {{-- Standorte --}}
-            <x-panel class="w-full sm:w-80">
-                <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Standorte') }}</div>
+            <x-dashboard-tile :title="__('Standorte')">
                 <div class="space-y-4">
                     @forelse ($sites as $site)
                         <div>
@@ -183,11 +204,10 @@
                         <div class="text-sm text-gray-400 dark:text-gray-500">{{ __('Keine Standorte') }}</div>
                     @endforelse
                 </div>
-            </x-panel>
+            </x-dashboard-tile>
 
             {{-- Ansprechpartner --}}
-            <x-panel class="w-full sm:w-80">
-                <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-4">{{ __('Ansprechpartner') }}</div>
+            <x-dashboard-tile :title="__('Ansprechpartner')">
                 <div class="space-y-4">
                     @forelse ($contactpersons as $contactperson)
                         <div>
@@ -199,7 +219,39 @@
                         <div class="text-sm text-gray-400 dark:text-gray-500">{{ __('Keine Ansprechpartner') }}</div>
                     @endforelse
                 </div>
-            </x-panel>
+            </x-dashboard-tile>
+
+            {{-- Latest changes. A full row: seven tiles fill 3+3+1 or
+                 2+2+2+1 columns, and the list reads better wide. --}}
+            <x-dashboard-tile :title="__('Zuletzt geändert')" class="md:col-span-2 xl:col-span-3">
+                <div class="divide-y divide-gray-100 dark:divide-gray-700">
+                    @forelse ($recentChanges as $aenderung)
+                        <a @if ($aenderung['url']) href="{{ $aenderung['url'] }}" @endif
+                            class="flex items-center justify-between gap-3 py-2.5 -mx-2 px-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <span class="min-w-0">
+                                <span class="block truncate text-gray-800 dark:text-gray-100">{{ $aenderung['name'] }}</span>
+                                <span class="block truncate text-xs text-gray-400 dark:text-gray-500">
+                                    {{ $aenderung['art'] }} ·
+                                    {{ match ($aenderung['ereignis']) {
+                                        'created' => __('angelegt'),
+                                        'deleted' => __('gelöscht'),
+                                        'restored' => __('wiederhergestellt'),
+                                        default => __('geändert'),
+                                    } }}
+                                    @if ($aenderung['wer'])
+                                        {{ __('von') }} {{ $aenderung['wer'] }}
+                                    @endif
+                                </span>
+                            </span>
+                            <span class="shrink-0 text-sm text-gray-500 dark:text-gray-400" title="{{ $aenderung['wann']->format('d.m.Y H:i') }}">
+                                {{ $aenderung['wann']->diffForHumans() }}
+                            </span>
+                        </a>
+                    @empty
+                        <div class="py-3 text-sm text-gray-400 dark:text-gray-500">{{ __('Noch keine Änderungen protokolliert.') }}</div>
+                    @endforelse
+                </div>
+            </x-dashboard-tile>
 
         </div>
     </div>

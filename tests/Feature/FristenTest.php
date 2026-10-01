@@ -53,11 +53,13 @@ test('die Vorwarnzeit entscheidet, was auf dem Kundendashboard steht', function 
     $this->actingAs(admin());
 
     // 60 Tage Vorwarnzeit: 90 Tage sind zu weit weg.
-    $this->get(route('customer.dashboard', $customer))->assertDontSee('wildcard.example.test');
+    $this->get(route('customer.dashboard', $customer))
+        ->assertViewHas('expiringCertificates', fn ($l) => ! $l->pluck('name')->contains('wildcard.example.test'));
 
     Setting::setzen(Setting::FRIST_VERTRAEGE, 120);
 
-    $this->get(route('customer.dashboard', $customer))->assertSee('wildcard.example.test');
+    $this->get(route('customer.dashboard', $customer))
+        ->assertViewHas('expiringCertificates', fn ($l) => $l->pluck('name')->contains('wildcard.example.test'));
 });
 
 test('die Vorwarnzeit entscheidet, was in der Übersicht über alle Kunden steht', function () {
@@ -90,11 +92,13 @@ test('die Garantiefrist hat ihre eigene Zahl', function () {
 
     $this->actingAs(admin());
 
-    $this->get(route('customer.dashboard', $customer))->assertDontSee('SRV-GARANTIE');
+    $this->get(route('customer.dashboard', $customer))
+        ->assertViewHas('expiringWarranties', fn ($l) => ! $l->pluck('name')->contains('SRV-GARANTIE'));
 
     Setting::setzen(Setting::FRIST_GARANTIE, 120);
 
-    $this->get(route('customer.dashboard', $customer))->assertSee('SRV-GARANTIE');
+    $this->get(route('customer.dashboard', $customer))
+        ->assertViewHas('expiringWarranties', fn ($l) => $l->pluck('name')->contains('SRV-GARANTIE'));
 
     // Und die Vertragsfrist hat sie nicht mitgezogen.
     expect(Setting::fristVertraege())->toBe(config('custom.fristen.vertraege_tage'));
