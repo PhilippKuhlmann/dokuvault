@@ -638,6 +638,27 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | AD functional levels
+    |--------------------------------------------------------------------------
+    |
+    | Domain and forest level. 2019 and 2022 introduced no level of their own -
+    | they run at 2016, which is why they are missing here. The empty entry
+    | comes first: the form preselects the first one, and a new domain must
+    | not claim 2008 just because nobody looked yet.
+    |
+    */
+    'ad_functional_levels' => [
+        '' => 'Unbekannt',
+        '2008' => 'Windows Server 2008',
+        '2008R2' => 'Windows Server 2008 R2',
+        '2012' => 'Windows Server 2012',
+        '2012R2' => 'Windows Server 2012 R2',
+        '2016' => 'Windows Server 2016',
+        '2025' => 'Windows Server 2025',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Fernwartungsloesungen
     |--------------------------------------------------------------------------
     |

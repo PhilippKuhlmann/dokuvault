@@ -283,7 +283,10 @@
 
     {{-- Active Directory --}}
     <x-pdf.section :title="__('AD-Domänen')" :items="$customer->addomains" titleField="domain" :groups="[
-        'Domäne' => ['Domäne' => 'domain', 'NetBIOS' => 'netbios', 'DSRM-Passwort' => 'dsrmpassword'],
+        'Domäne' => ['Domäne' => 'domain', 'NetBIOS' => 'netbios', 'UPN-Suffixe' => 'upn_suffixes', 'Funktionsebene' => fn($d) => $d->functionalLevelLabel()],
+        'Domänencontroller' => ['Domänencontroller' => fn($d) => $d->hostNames('dc'), 'FSMO-Rollen' => 'fsmo_holder', 'DSRM-Passwort' => 'dsrmpassword', 'DNS-Weiterleitungen' => 'dns_forwarders'],
+        'Dienste' => ['DHCP-Server' => 'dhcp_server', 'Zertifizierungsstelle' => fn($d) => $d->hostNames('ca'), 'Entra Connect' => fn($d) => $d->entra_connect === null ? null : ($d->entra_connect ? 'Ja' : 'Nein'), 'Entra-Connect-Server' => fn($d) => $d->hostNames('entra_connect')],
+        'Sonstiges' => ['Notizen' => 'notes'],
     ]" />
 
     <x-pdf.section :title="__('AD-Benutzer')" :items="$customer->adusers" :titleField="fn($u) => trim(($u->firstName ?? '').' '.($u->lastName ?? ''))" :groups="[

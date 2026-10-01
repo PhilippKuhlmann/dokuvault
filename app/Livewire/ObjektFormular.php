@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Livewire\Concerns\GehoertZumKunden;
 use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
+use App\Models\ADDomainHost;
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
@@ -18,6 +19,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -126,6 +128,7 @@ class ObjektFormular extends Component
             // muesste man bei jedem Rackserver die 1 fuer die Hoeheneinheit
             // tippen - das Seitenformular belegt sie laengst vor.
             $this->form[$feld['name']] = match (true) {
+                $feld['type'] === 'host' && ($feld['mehrfach'] ?? false) => [],
                 $feld['type'] === 'optionen' => (string) array_key_first($feld['werte'] ?? config($feld['quelle'])),
                 isset($feld['default']) => (string) $feld['default'],
                 default => '',
@@ -161,6 +164,14 @@ class ObjektFormular extends Component
         $objekt = $this->objektHolen($id);
 
         foreach ($this->einstellung()['felder'] as $feld) {
+            // No column: the machines sit in their own table (ADDomain::hosts).
+            if ($feld['type'] === 'host') {
+                $schluessel = $objekt->hostKeys($feld['rolle']);
+                $this->form[$feld['name']] = ($feld['mehrfach'] ?? false) ? $schluessel : ($schluessel[0] ?? '');
+
+                continue;
+            }
+
             $wert = $objekt->{$feld['name']};
             // Datumsfelder kommen je nach Model als Carbon oder als Text.
             // Dienste kommen als Array aus dem Model (explode beim Lesen),
@@ -299,7 +310,36 @@ class ObjektFormular extends Component
 
         return collect($regelnMitKunde)
             ->map(fn ($regel) => $this->feldverweiseUmschreiben($regel))
-            ->mapWithKeys(fn ($regel, $feld) => ['form.'.$feld => $regel])->all();
+            ->mapWithKeys(fn ($regel, $feld) => ['form.'.$feld => $regel])
+            ->merge($this->hostRegeln())
+            ->all();
+    }
+
+    /**
+     * Rules for 'host' fields: only machines of this customer. The request
+     * cannot say that - it does not know the customer.
+     */
+    protected function hostRegeln(): array
+    {
+        $felder = collect($this->einstellung()['felder'])->where('type', 'host');
+
+        if ($felder->isEmpty()) {
+            return [];
+        }
+
+        $erlaubt = Rule::in(array_keys(ADDomainHost::options($this->customerId)));
+        $regeln = [];
+
+        foreach ($felder as $feld) {
+            if ($feld['mehrfach'] ?? false) {
+                $regeln['form.'.$feld['name']] = ['nullable', 'array'];
+                $regeln['form.'.$feld['name'].'.*'] = [$erlaubt];
+            } else {
+                $regeln['form.'.$feld['name']] = ['nullable', $erlaubt];
+            }
+        }
+
+        return $regeln;
     }
 
     /**
@@ -372,13 +412,22 @@ class ObjektFormular extends Component
 
         $daten = $this->dateiAblegen($daten);
 
+        // Not a column - written after the object exists, see below.
+        $hostFelder = collect($this->einstellung()['felder'])->where('type', 'host');
+        $daten = array_diff_key($daten, $hostFelder->keyBy('name')->all());
+
         if ($this->bearbeiteId) {
-            $this->objektHolen($this->bearbeiteId)->update($daten);
+            $objekt = $this->objektHolen($this->bearbeiteId);
+            $objekt->update($daten);
             $meldung = $this->einstellung()['einzahl'].' gespeichert.';
         } else {
             $relation = $this->einstellung()['relation'];
-            $this->kunde()->{$relation}()->create($daten);
+            $objekt = $this->kunde()->{$relation}()->create($daten);
             $meldung = $this->einstellung()['einzahl'].' angelegt.';
+        }
+
+        foreach ($hostFelder as $feld) {
+            $objekt->syncHosts($feld['rolle'], (array) ($this->form[$feld['name']] ?? []));
         }
 
         // Nach dem Geraet, aber vor dem Leeren des Formulars: Die Zuordnung
@@ -707,6 +756,10 @@ class ObjektFormular extends Component
             'einzahl' => $einstellung['einzahl'],
             'spalten' => $einstellung['spalten'] ?? 1,
             'kunde' => $this->kunde(),
+            // Servers and VMs of the customer, only where a 'host' field exists.
+            'hosts' => collect($einstellung['felder'])->contains('type', 'host')
+                ? ADDomainHost::options($this->customerId)
+                : [],
             // Nur laden, wenn ein Standortfeld vorkommt.
             'sites' => collect($einstellung['felder'])->contains('type', 'standort')
                 ? Site::where('customer_id', $this->customerId)->orderBy('name')->get()

@@ -409,11 +409,35 @@ return [
     ],
     'addomain' => [
         'model' => ADDomain::class, 'request' => ADDomainRequest::class,
-        'relation' => 'addomains', 'einzahl' => 'AD-Domäne', 'suchfelder' => ['domain', 'netbios'],
+        'relation' => 'addomains', 'einzahl' => 'AD-Domäne',
+        'suchfelder' => ['domain', 'netbios'],
+        // Domain admin account via the credentials block, not a column of its own.
+        'bloecke' => true,
+        'spalten' => 2,
+        // Two columns, so the order is in pairs per row: what belongs together
+        // stands side by side. Entra Connect comes last in its group - its
+        // server is hidden on "Nein" and would otherwise leave a gap mid-form.
         'felder' => [
-            ['name' => 'domain', 'label' => 'Domäne', 'type' => 'text'],
-            ['name' => 'netbios', 'label' => 'NetBIOS', 'type' => 'text'],
-            ['name' => 'dsrmpassword', 'label' => 'DSRM Passwort', 'type' => 'text'],
+            ['name' => 'domain', 'label' => 'Domäne', 'type' => 'text', 'gruppe' => 'Domäne'],
+            ['name' => 'netbios', 'label' => 'NetBIOS', 'type' => 'text', 'gruppe' => 'Domäne'],
+            ['name' => 'upn_suffixes', 'label' => 'UPN-Suffixe', 'type' => 'text', 'gruppe' => 'Domäne'],
+            ['name' => 'functional_level', 'label' => 'Funktionsebene', 'type' => 'optionen',
+                'quelle' => 'custom.ad_functional_levels', 'gruppe' => 'Domäne'],
+            // Server or VM of the customer, stored in ad_domain_hosts under 'rolle'.
+            ['name' => 'domain_controllers', 'label' => 'Domänencontroller', 'type' => 'host',
+                'rolle' => 'dc', 'mehrfach' => true, 'gruppe' => 'Domänencontroller'],
+            ['name' => 'fsmo_holder', 'label' => 'FSMO-Rollen / PDC', 'type' => 'text', 'gruppe' => 'Domänencontroller'],
+            ['name' => 'dsrmpassword', 'label' => 'DSRM Passwort', 'type' => 'text', 'gruppe' => 'Domänencontroller'],
+            ['name' => 'dns_forwarders', 'label' => 'DNS-Weiterleitungen', 'type' => 'text', 'gruppe' => 'Domänencontroller'],
+            ['name' => 'dhcp_server', 'label' => 'DHCP-Server', 'type' => 'text', 'gruppe' => 'Dienste'],
+            ['name' => 'certificate_authority', 'label' => 'Zertifizierungsstelle (AD CS)', 'type' => 'host',
+                'rolle' => 'ca', 'gruppe' => 'Dienste'],
+            ['name' => 'entra_connect', 'label' => 'Entra Connect (Azure AD Sync)', 'type' => 'optionen',
+                'werte' => ['' => 'Unbekannt', 1 => 'Ja', 0 => 'Nein'], 'gruppe' => 'Dienste'],
+            ['name' => 'entra_connect_server', 'label' => 'Entra-Connect-Server', 'type' => 'host',
+                'rolle' => 'entra_connect', 'sichtbar_wenn' => ['entra_connect' => '1'], 'gruppe' => 'Dienste'],
+            ['name' => 'notes', 'label' => 'Notizen', 'type' => 'mehrzeilig', 'zeilen' => 3, 'breit' => true,
+                'gruppe' => 'Sonstiges'],
         ],
     ],
     'wifi' => [

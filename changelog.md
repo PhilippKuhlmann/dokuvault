@@ -2,6 +2,12 @@
 
 ## 26.10.01
 
+### Added
+
+- **AD-Domänen dokumentieren mehr als Name und DSRM-Kennwort.** Neu im Formular: Funktionsebene, UPN-Suffixe, Domänencontroller, FSMO-Rollen, DNS-Weiterleitungen, DHCP-Server, Entra Connect (ja/nein samt Server), Zertifizierungsstelle und Notizen. Das Domänen-Admin-Konto wird wie bei Geräten unter „Zugangsdaten“ verknüpft. Die Übersicht zeigt jede Domäne als Karte mit allen Angaben – gruppiert wie im Formular, mit Funktionsebene und Domänencontrollern in der Kopfzeile –, das PDF ebenso.
+  - Domänencontroller, Entra-Connect-Server und Zertifizierungsstelle werden aus den Servern und VMs des Kunden ausgewählt, Domänencontroller auch mehrere. Eine umbenannte Maschine heißt damit auch hier sofort richtig; Maschinen anderer Kunden werden abgewiesen.
+  - Funktionsebene und Entra Connect stehen bei einer neuen Domäne auf „Unbekannt“ statt auf dem ersten Listeneintrag.
+
 ### Fixed
 
 - **Deploy läuft wieder.** Der Code-Stil-Check (Pint) schlug an zwei Testdateien fehl (Import-Reihenfolge, ungenutzter Import), dadurch galt der Test-Workflow als fehlgeschlagen und das Deploy wurde übersprungen.

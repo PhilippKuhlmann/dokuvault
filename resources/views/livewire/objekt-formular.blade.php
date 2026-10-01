@@ -194,6 +194,18 @@
                                             class="rounded border-gray-300 text-cerulean-600 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700" />
                                         <span class="text-sm text-gray-700 dark:text-gray-300">{{ __('Ja') }}</span>
                                     </label>
+                                @elseif ($feld['type'] === 'host' && ($feld['mehrfach'] ?? false))
+                                    {{-- Several machines, e.g. the domain controllers:
+                                         looks like the single select below, but ticks. --}}
+                                    <x-input.mehrfachauswahl :optionen="$hosts" :feld="'form.'.$feld['name']"
+                                        wire:model="form.{{ $feld['name'] }}" class="mt-1 w-full" />
+                                @elseif ($feld['type'] === 'host')
+                                    <x-input.select :name="$feld['name']" :feld="'form.'.$feld['name']" wire:model.live="form.{{ $feld['name'] }}" class="mt-1 w-full">
+                                        <option value="">— {{ __('keiner') }} —</option>
+                                        @foreach ($hosts as $schluessel => $beschriftung)
+                                            <option value="{{ $schluessel }}">{{ $beschriftung }}</option>
+                                        @endforeach
+                                    </x-input.select>
                                 @elseif ($feld['type'] === 'auswahl')
                                     <x-input.select :name="$feld['name']" :feld="'form.'.$feld['name']" wire:model.live.debounce.400ms="form.{{ $feld['name'] }}" class="mt-1 w-full">
                                         <option value="">— {{ __('bitte wählen') }} —</option>
