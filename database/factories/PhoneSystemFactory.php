@@ -14,6 +14,7 @@ class PhoneSystemFactory extends Factory
         ]);
 
         return [
+            'name' => 'TK-'.fake()->numberBetween(1, 20),
             'manufacturer' => $m, 'model' => $mo,
             'serialNumber' => strtoupper(fake()->bothify('??########')),
             'port' => '443',

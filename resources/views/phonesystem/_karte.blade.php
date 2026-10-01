@@ -7,7 +7,13 @@
         <x-card>
             <x-slot:head>
                 <x-show.header can="phonesystem_update" editAction="$dispatch('objekt-bearbeiten', { typ: 'phonesystem', id: {{ $eintrag->id }} })">
-                    {{ $eintrag->manufacturer }}
+                    {{-- The name, where there is one - two phone systems of the same
+                         make were indistinguishable before. --}}
+                    {{ $eintrag->name ?: $eintrag->manufacturer }}
+
+                    @if ($eintrag->name && ($eintrag->manufacturer || $eintrag->model))
+                        <span class="text-sm font-normal text-gray-500 dark:text-gray-400">{{ trim($eintrag->manufacturer.' '.$eintrag->model) }}</span>
+                    @endif
 
                     {{-- Was man fast immer sucht, neben dem Namen. --}}
                     <x-slot:kernwerte>

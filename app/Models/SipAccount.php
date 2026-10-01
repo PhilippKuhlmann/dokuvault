@@ -77,7 +77,7 @@ class SipAccount extends Model
     {
         $anlage = $this->phoneSystem;
 
-        return $anlage ? trim($anlage->manufacturer.' '.$anlage->model) ?: '#'.$anlage->id : null;
+        return $anlage ? ($anlage->name ?: trim($anlage->manufacturer.' '.$anlage->model) ?: '#'.$anlage->id) : null;
     }
 
     public function internetConnectionLabel(): ?string

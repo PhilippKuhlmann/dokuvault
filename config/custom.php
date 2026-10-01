@@ -526,8 +526,9 @@ return [
             'question' => 'Welche Telefonanlage ist im Einsatz?',
             'model' => PhoneSystem::class, 'relation' => 'phonesystems',
             'request' => PhoneSystemRequest::class, 'permission' => 'phonesystem_create',
-            'scope' => 'site', 'label_field' => 'manufacturer',
+            'scope' => 'site', 'label_field' => 'name',
             'fields' => [
+                ['name' => 'name', 'label' => 'Name', 'type' => 'text', 'placeholder' => 'TK-Zentrale'],
                 ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
                 ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
                 ['name' => 'ip_address', 'label' => 'IP-Adresse', 'type' => 'text'],

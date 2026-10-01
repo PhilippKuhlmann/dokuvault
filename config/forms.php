@@ -764,10 +764,11 @@ return [
     ],
     'phonesystem' => [
         'model' => PhoneSystem::class, 'request' => PhoneSystemRequest::class,
-        'relation' => 'phonesystems', 'einzahl' => 'TK-Anlage', 'suchfelder' => ['model', 'serialNumber'],
+        'relation' => 'phonesystems', 'einzahl' => 'TK-Anlage', 'suchfelder' => ['name', 'manufacturer', 'model', 'serialNumber'],
         'bloecke' => true,
         'felder' => [
             ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
             ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
             ['name' => 'type', 'label' => 'Typ', 'type' => 'text'],
             ['name' => 'model', 'label' => 'Model', 'type' => 'text'],
@@ -807,7 +808,7 @@ return [
                 'sichtbar_wenn' => ['account_type' => 'single']],
             ['name' => 'registrar', 'label' => 'SIP-Registrar / Proxy', 'type' => 'text', 'gruppe' => 'Technik'],
             ['name' => 'phone_system_id', 'label' => 'TK-Anlage', 'type' => 'auswahl', 'gruppe' => 'Technik',
-                'quelle' => PhoneSystem::class, 'anzeige' => '{manufacturer} {model}'],
+                'quelle' => PhoneSystem::class, 'anzeige' => '{name} · {manufacturer} {model}'],
             ['name' => 'internet_connection_id', 'label' => 'Über Internetanschluss', 'type' => 'auswahl', 'gruppe' => 'Technik',
                 'quelle' => InternetConnection::class, 'anzeige' => '{provider} · {product}'],
             ['name' => 'notes', 'label' => 'Notizen', 'type' => 'mehrzeilig', 'zeilen' => 3, 'breit' => true,

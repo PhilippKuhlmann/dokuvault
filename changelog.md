@@ -4,6 +4,8 @@
 
 ### Added
 
+- **TK-Anlagen haben einen Namen.** Bisher hieß eine Anlage nur nach ihrem Hersteller – zwei Auerswald beim selben Kunden oder in der Auswahl am SIP-Anschluss waren nicht zu unterscheiden. Die Karte zeigt jetzt den Namen und Hersteller/Modell klein daneben; ohne Namen bleibt es beim Hersteller. Der Name ist durchsuchbar, steht im PDF-Titel und im Assistenten.
+
 - **SIP-Anschlüsse unter „Telefon“.** Neuer Menüpunkt für den Anbieter, bei dem die Rufnummern liegen: Anbieter, Anschlussart (SIP-Trunk oder Einzelnummern), Produkt, Vertrags- und Kundennummer, Hotline, Sprachkanäle, SIP-Registrar sowie die TK-Anlage und der Internetanschluss, über die er läuft. Ein Trunk führt Stammnummer und Durchwahlbereich, Einzelnummern eine Liste mit einer Nummer je Zeile – das Formular zeigt jeweils nur das Passende. SIP-Zugangsdaten werden wie bei Geräten unter „Zugangsdaten“ verknüpft, bei Einzelnummern also auch mehrere. Die Übersicht zeigt Karten mit den Rufnummern in der Kopfzeile, das PDF einen eigenen Abschnitt.
   - Die Rechte `sipaccount_*` bekommt per Migration jede Rolle, die schon die entsprechenden TK-Anlagen-Rechte hat.
 

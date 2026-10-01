@@ -29,6 +29,7 @@ class PhoneSystemRequest extends FormRequest
     {
         return [
             'site_id' => ['required', new BelongsToCustomer('sites')],
+            'name' => 'nullable|max:255',
             'manufacturer' => 'max:255',
             'type' => 'max:255',
             'model' => 'max:255',
@@ -42,6 +43,7 @@ class PhoneSystemRequest extends FormRequest
     {
         return [
             'site_id' => 'Standort',
+            'name' => 'Name',
             'manufacturer' => 'Hersteller',
             'type' => 'Typ',
             'model' => 'Model',
