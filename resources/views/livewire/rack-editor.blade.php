@@ -89,8 +89,14 @@
 
     <div class="flex flex-col md:flex-row gap-6">
 
-        {{-- Palette --}}
-        <div class="md:w-64 shrink-0 space-y-4">
+        {{-- Palette. Side by side (md+) the rack sets the height, not the list:
+             the inner box sits absolutely in the column, so it adds no height
+             of its own, and scrolls. With many documented devices the rack
+             otherwise ended far above the bottom of the list - dragging the
+             last device in meant scrolling the page away from the rack.
+             Stacked on a phone it stays in the normal flow. --}}
+        <div class="md:w-64 shrink-0 md:relative">
+        <div class="space-y-4 md:absolute md:inset-0 md:overflow-y-auto md:pr-2">
             @forelse ($palette as $group)
                 <div wire:key="palette-{{ $group['key'] }}">
                     <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1">{{ $group['label'] }}</div>
@@ -101,7 +107,7 @@
                                 x-on:dragstart="drag = { kind: 'device', type: '{{ $group['key'] }}', id: {{ $device->id }}, he: 1 }"
                                 x-on:dragend="drag = null; hover = null"
                                 class="flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm cursor-grab active:cursor-grabbing dark:border-gray-600 dark:bg-gray-700/60 dark:text-gray-200">
-                                <span class="truncate">{{ $device->name }}</span>
+                                <span class="truncate">{{ method_exists($device, 'rackName') ? $device->rackName() : $device->name }}</span>
                                 <button type="button" wire:click="quickPlaceDevice('{{ $group['key'] }}', {{ $device->id }})"
                                     class="shrink-0 text-xs text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400" title="{{ __('Auf untersten freien Platz einbauen') }}">{{ __('Einbauen') }}</button>
                             </li>
@@ -136,6 +142,7 @@
                     @endforelse
                 </ul>
             </div>
+        </div>
         </div>
 
         {{-- Links das beschriftete Arbeitsschema, rechts die gezeichnete Frontansicht.

@@ -2,7 +2,13 @@
 
 ## 26.10.01
 
+### Changed
+
+- **Im Rack-Editor bestimmt das Rack die Höhe, nicht die Geräteliste.** Die Liste links („Server“, „Switch“, …, „Katalog“) ist jetzt so hoch wie das Rack und scrollt für sich. Bisher wuchs die Seite mit der Liste: Bei vielen dokumentierten Geräten endete das Rack weit über dem Listenende, und wer ein Gerät von unten hineinziehen wollte, scrollte das Rack aus dem Bild. Auf dem Handy, wo Liste und Rack untereinander stehen, bleibt es wie bisher.
+
 ### Added
+
+- **TK-Anlagen lassen sich ins Rack einbauen.** Sie stehen im Rack-Editor unter „TK-Anlage“ zum Einbauen bereit und erscheinen in Rack-Ansicht und PDF mit der Frontansicht eines Routers. Die Karte der TK-Anlage zeigt den Einbauort in der Kopfzeile. Eine Anlage ohne Namen heißt im Rack nach Hersteller und Modell statt leer zu bleiben. Ein Frontblenden-Bild lässt sich wie bei den übrigen Rack-Geräten im Formular hinterlegen.
 
 - **TK-Anlagen haben einen Namen.** Bisher hieß eine Anlage nur nach ihrem Hersteller – zwei Auerswald beim selben Kunden oder in der Auswahl am SIP-Anschluss waren nicht zu unterscheiden. Die Karte zeigt jetzt den Namen und Hersteller/Modell klein daneben; ohne Namen bleibt es beim Hersteller. Der Name ist durchsuchbar, steht im PDF-Titel und im Assistenten.
 

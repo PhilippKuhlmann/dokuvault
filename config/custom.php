@@ -756,8 +756,9 @@ return [
         'router' => [Router::class, 'Router', 'router'],
         'firewall' => [Firewall::class, 'Firewall', 'router'],
         'ups' => [Ups::class, 'USV', 'ups'],
-        // PhoneSystem fehlt bewusst: die Tabelle hat keine name-Spalte,
-        // ein Einbau hätte in der Rack-Ansicht keinen Anzeigenamen.
+        // Name is optional for phone systems - PhoneSystem::rackName() falls
+        // back to make and model.
+        'phonesystem' => [PhoneSystem::class, 'TK-Anlage', 'router'],
         'recorder' => [Recorder::class, 'Recorder', 'server'],
         'securepointuma' => [SecurepointUMA::class, 'E-Mail-Archiv', 'server'],
     ],

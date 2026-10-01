@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Concerns\HatBeschaffung;
+use App\Models\Concerns\IstEinbaubar;
 use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +17,7 @@ class PhoneSystem extends Model
     use HasFactory, SoftDeletes;
     use HasIpAddresses;
     use HatBeschaffung;
+    use IstEinbaubar;
     use TracksChanges;
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
@@ -26,12 +28,18 @@ class PhoneSystem extends Model
     }
 
     /**
-     * Eine TK-Anlage hat keinen Namen, nur Hersteller, Art und Modell.
-     *
-     * Ohne diese Methode stuende die Anlage im Protokoll ohne Namen da.
+     * Der Name ist optional - aeltere Anlagen haben nur Hersteller, Art und
+     * Modell. Ohne diese Methode stuende eine solche Anlage im Protokoll ohne
+     * Namen da.
      */
     public function protokollName(): ?string
     {
-        return trim($this->manufacturer.' '.($this->model ?: $this->type)) ?: null;
+        return $this->name ?: (trim($this->manufacturer.' '.($this->model ?: $this->type)) ?: null);
+    }
+
+    /** Label in the rack: never empty, even without a name. */
+    public function rackName(): string
+    {
+        return $this->protokollName() ?? '#'.$this->id;
     }
 }

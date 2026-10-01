@@ -307,7 +307,9 @@ class RackEditor extends Component
                             ->whereColumn('rack_items.device_id', (new $class)->getTable().'.id');
                     })
                     ->orderBy('name')
-                    ->get(['id', 'name']);
+                    // All columns: rackName() of a phone system without a name
+                    // needs make and model.
+                    ->get();
 
                 return ['key' => $key, 'label' => $label, 'devices' => $devices];
             })

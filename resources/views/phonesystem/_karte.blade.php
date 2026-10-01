@@ -22,6 +22,10 @@
                                 <x-ip-anzeige :adresse="$adressen->first()" />
                             </x-kernwert>
                         @endif
+
+                        @if ($eintrag->einbauort())
+                            <x-kernwert :label="__('Rack')">{{ $eintrag->einbauort() }}</x-kernwert>
+                        @endif
                     </x-slot>
                 </x-show.header>
             </x-slot>

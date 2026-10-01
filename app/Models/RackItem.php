@@ -75,9 +75,16 @@ class RackItem extends Model
         return $this->catalogItem?->bildPfad() ?? $this->geraeteModell()?->bildPfad();
     }
 
-    /** Anzeigename: Geraetename aus der Doku bzw. Katalogbezeichnung. */
+    /**
+     * Anzeigename: Geraetename aus der Doku bzw. Katalogbezeichnung. A device
+     * whose name is optional (phone system) supplies rackName() instead.
+     */
     public function label(): string
     {
+        if ($this->device && method_exists($this->device, 'rackName')) {
+            return $this->device->rackName();
+        }
+
         return $this->device?->name ?? $this->name ?? '—';
     }
 

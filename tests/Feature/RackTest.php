@@ -3,6 +3,7 @@
 use App\Livewire\RackEditor;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
+use App\Models\PhoneSystem;
 use App\Models\Rack;
 use App\Models\RackCatalogItem;
 use App\Models\RackItem;
@@ -350,4 +351,23 @@ test('jeder Eintrag in rack_device_types zeigt auf ein Model mit customer_id und
         expect(Schema::hasColumn($table, 'name'))
             ->toBeTrue("{$table} hat keine name-Spalte");
     }
+});
+
+test('a phone system can be mounted and is labelled even without a name', function () {
+    $this->actingAs(userWithPermissions(['rack_update']));
+    [$customer, $site, $rack] = customerWithRack();
+    $anlage = PhoneSystem::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'name' => null, 'manufacturer' => 'Auerswald', 'model' => 'COMpact 5500R',
+    ]);
+
+    Livewire::test(RackEditor::class, ['rack' => $rack, 'customer' => $customer])
+        ->assertSee('Auerswald COMpact 5500R')
+        ->call('placeDevice', 'phonesystem', $anlage->id, 12)
+        ->assertHasNoErrors();
+
+    $einbau = RackItem::where('device_type', PhoneSystem::class)->first();
+    expect($einbau->position)->toBe(12);
+    expect($einbau->label())->toBe('Auerswald COMpact 5500R');
+    expect($anlage->fresh()->einbauort())->toContain('Rack Test');
 });
