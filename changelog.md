@@ -2,6 +2,13 @@
 
 ## 26.10.02
 
+### Added
+
+- **Der AD-Agent füllt die AD-Domäne aus.** Bisher meldete das Script nur Benutzer und Gruppen. Jetzt legt es auch die Domäne an bzw. aktualisiert sie: NetBIOS-Name, Funktionsebene, UPN-Suffixe, FSMO-Rollen, DNS-Weiterleitungen, DHCP-Server und Entra Connect. Domänencontroller, Zertifizierungsstelle und Entra-Connect-Server werden über den Hostnamen mit den dokumentierten Servern und VMs verknüpft; Maschinen, die DokuVault noch nicht kennt, nennt das Script am Ende.
+  - Was eine Abfrage nicht liefert (fehlendes Modul, fehlende Rechte), bleibt unverändert – ein von Hand eingetragener Wert wird nicht gelöscht. Notizen und DSRM-Kennwort fasst der Agent nie an.
+  - Entra Connect wird am Konto `MSOL_…` erkannt und dann auf „Ja“ gesetzt; fehlt es, bleibt der Wert, wie er ist (Cloud Sync kommt ohne dieses Konto aus).
+  - Ein Script aus einem früheren Download meldet weiterhin nur den Namen; die Domäne wird dann mit diesem Namen angelegt. Für die übrigen Angaben das Script neu herunterladen.
+
 ### Fixed
 
 - **PowerShell-Agenten: Hinweis zum Freigeben nach dem Download.** Ein aus dem Browser heruntergeladenes `.ps1` trägt die Markierung „aus dem Internet“, und mit der üblichen Richtlinie (RemoteSigned) verweigert Windows unsignierte Skripte mit dieser Markierung („is not digitally signed“). Die Agent-Seite nennt jetzt bei jeder PowerShell-Fassung vor dem Aufruf `Unblock-File .\…-doku.ps1`. Das entfernt nur die Markierung an dieser einen Datei; die Ausführungsrichtlinie bleibt unverändert.

@@ -1,9 +1,12 @@
 <?php
 
+use App\Models\ADDomain;
 use App\Models\ADGroup;
 use App\Models\ADUser;
 use App\Models\AgentToken;
 use App\Models\Customer;
+use App\Models\OperatingSystem;
+use App\Models\Server;
 use App\Models\Site;
 
 function windowsAdPayload(): array
@@ -82,4 +85,90 @@ test('ohne gültigen Agent-Token: 401', function () {
     $this->withToken('doc_falsch')
         ->postJson('/api/agent/windows-ad', windowsAdPayload())
         ->assertUnauthorized();
+});
+
+function adAgentKunde(): array
+{
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [, $plain] = AgentToken::generateFor($customer, $site, 'DC01');
+
+    return [$customer, $site, $plain];
+}
+
+function adAgentServer(Customer $customer, Site $site, string $name): Server
+{
+    return Server::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $site->id, 'name' => $name,
+        'operating_system_id' => OperatingSystem::factory()->create(['name' => 'Windows Server 2022'])->id,
+    ]);
+}
+
+test('the AD agent fills the domain and links its machines', function () {
+    [$customer, $site, $plain] = adAgentKunde();
+    adAgentServer($customer, $site, 'DC01');
+    adAgentServer($customer, $site, 'SYNC01');
+
+    $payload = windowsAdPayload() + ['ad' => [
+        'netbios' => 'MUSTERMANN',
+        'domain_mode' => 'Windows2016Domain',
+        'upn_suffixes' => ['mustermann.de'],
+        'fsmo' => array_fill_keys(['pdc', 'rid', 'infrastructure', 'schema', 'naming'], 'dc01.mustermann.local'),
+        'domain_controllers' => [
+            ['name' => 'dc01.mustermann.local', 'ip' => '10.0.0.10'],
+            ['name' => 'dc02.mustermann.local', 'ip' => '10.0.0.11'],
+        ],
+        'dns_forwarders' => ['1.1.1.1', '9.9.9.9'],
+        'dhcp_servers' => ['dc01.mustermann.local'],
+        'ca_hosts' => ['dc01.mustermann.local'],
+        'entra_connect_host' => 'SYNC01',
+    ]];
+
+    $this->withToken($plain)->postJson('/api/agent/windows-ad', $payload)
+        ->assertOk()
+        // DC02 is not documented yet - reported back instead of silently dropped.
+        ->assertJson(['unmatched_hosts' => ['dc02.mustermann.local']]);
+
+    $domaene = ADDomain::where('customer_id', $customer->id)->sole();
+    expect($domaene->domain)->toBe('mustermann.local')
+        ->and($domaene->netbios)->toBe('MUSTERMANN')
+        ->and($domaene->functional_level)->toBe('2016')
+        ->and($domaene->upn_suffixes)->toBe('mustermann.de')
+        ->and($domaene->fsmo_holder)->toBe('DC01 (alle 5 Rollen)')
+        ->and($domaene->dns_forwarders)->toBe('1.1.1.1, 9.9.9.9')
+        ->and($domaene->dhcp_server)->toBe('dc01.mustermann.local')
+        ->and((bool) $domaene->entra_connect)->toBeTrue()
+        ->and($domaene->hostNames('dc'))->toBe('DC01')
+        ->and($domaene->hostNames('ca'))->toBe('DC01')
+        ->and($domaene->hostNames('entra_connect'))->toBe('SYNC01');
+});
+
+test('a second run updates the same domain and keeps what was entered by hand', function () {
+    [$customer, $site, $plain] = adAgentKunde();
+    $domaene = ADDomain::factory()->create([
+        'customer_id' => $customer->id, 'domain' => 'Mustermann.local',
+        'dsrmpassword' => 'Geheim!', 'notes' => 'Von Hand', 'dhcp_server' => 'Firewall',
+    ]);
+
+    // Functional level only, DHCP query failed (empty list).
+    $this->withToken($plain)->postJson('/api/agent/windows-ad', windowsAdPayload() + ['ad' => [
+        'domain_mode' => 'Windows2012R2Domain', 'dhcp_servers' => [],
+    ]])->assertOk();
+
+    expect(ADDomain::where('customer_id', $customer->id)->count())->toBe(1);
+    $domaene->refresh();
+    expect($domaene->functional_level)->toBe('2012R2')
+        ->and($domaene->dsrmpassword)->toBe('Geheim!')
+        ->and($domaene->notes)->toBe('Von Hand')
+        ->and($domaene->dhcp_server)->toBe('Firewall');
+});
+
+test('an older script that sends only the domain name still creates the domain', function () {
+    [$customer, , $plain] = adAgentKunde();
+
+    $this->withToken($plain)->postJson('/api/agent/windows-ad', windowsAdPayload())->assertOk();
+
+    $domaene = ADDomain::where('customer_id', $customer->id)->sole();
+    expect($domaene->netbios)->toBe('MUSTERMANN')
+        ->and($domaene->functional_level)->toBeNull();
 });
