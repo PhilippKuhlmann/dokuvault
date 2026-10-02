@@ -110,6 +110,13 @@
                                 </div>
                                 <pre x-ref="skript" class="overflow-x-auto rounded-lg bg-gray-900 p-4 text-xs text-gray-100 leading-relaxed">{{ session('agentSkripte')[$schluessel][$i] ?? '' }}</pre>
                                 <div class="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
+                                    {{-- A downloaded .ps1 carries the "from the internet" mark,
+                                         and with the usual RemoteSigned policy Windows refuses
+                                         to run it unsigned. Unblock-File only removes that mark
+                                         from this one file - the policy stays as it is. --}}
+                                    @if (str_ends_with($fassung['datei'], '.ps1'))
+                                        <p>{{ __('Nach dem Download einmal freigeben:') }} <code class="break-all">Unblock-File .\{{ $fassung['datei'] }}</code></p>
+                                    @endif
                                     <p>{{ __($fassung['ausfuehren_auf']) }} <code class="break-all">{{ $fassung['aufruf'] }}</code></p>
                                     <p>{{ __('Ziel-URL im Script:') }} <code class="break-all">{{ url('/api/agent/'.$agent['endpunkt']) }}</code></p>
                                     <p>

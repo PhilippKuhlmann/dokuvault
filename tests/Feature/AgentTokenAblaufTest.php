@@ -108,3 +108,16 @@ test('ein Altbestands-Token ist in der Liste als unbegrenzt gekennzeichnet', fun
         ->assertOk()
         ->assertSee(__('unbegrenzt (Altbestand)'));
 });
+
+test('PowerShell variants say to unblock the downloaded file, bash variants do not', function () {
+    $this->actingAs(userWithPermissions(['see_hidden']));
+    [$customer, $site] = agentKundeStandort();
+
+    // The run instructions only appear once a token was created.
+    // A downloaded .ps1 is refused by Windows (RemoteSigned) until unblocked.
+    $this->followingRedirects()
+        ->post(route('agent.store', $customer), ['name' => 'Hinweis', 'site_id' => $site->id, 'expires_at' => now()->addMonth()->format('Y-m-d')])
+        ->assertOk()
+        ->assertSee('Unblock-File .\windows-server-doku.ps1', false)
+        ->assertDontSee('Unblock-File .\proxmox-doku.sh', false);
+});

@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.10.02
+
+### Fixed
+
+- **PowerShell-Agenten: Hinweis zum Freigeben nach dem Download.** Ein aus dem Browser heruntergeladenes `.ps1` trägt die Markierung „aus dem Internet“, und mit der üblichen Richtlinie (RemoteSigned) verweigert Windows unsignierte Skripte mit dieser Markierung („is not digitally signed“). Die Agent-Seite nennt jetzt bei jeder PowerShell-Fassung vor dem Aufruf `Unblock-File .\…-doku.ps1`. Das entfernt nur die Markierung an dieser einen Datei; die Ausführungsrichtlinie bleibt unverändert.
+
 ## 26.10.01
 
 ### Changed
