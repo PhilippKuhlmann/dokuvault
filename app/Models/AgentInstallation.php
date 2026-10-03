@@ -21,6 +21,7 @@ class AgentInstallation extends Model
         'roles' => 'array',
         'last_seen_at' => 'datetime',
         'last_run_at' => 'datetime',
+        'run_requested_at' => 'datetime',
         'last_results' => 'array',
     ];
 
@@ -55,9 +56,13 @@ class AgentInstallation extends Model
      * the same domain already does it. Roles once switched off here stay
      * off: the choice made on the page wins over the detection.
      *
+     * $interval is what the machine was installed with (install -interval,
+     * INTERVAL=): taken over once, on first contact - afterwards the agent
+     * page decides.
+     *
      * @param  array<int, string>  $detected
      */
-    public static function checkin(AgentToken $token, string $kind, string $machineId, string $hostname, ?string $domain, ?string $version, array $detected): self
+    public static function checkin(AgentToken $token, string $kind, string $machineId, string $hostname, ?string $domain, ?string $version, array $detected, ?int $interval = null): self
     {
         $available = array_keys(static::availableRoles($kind));
         $detected = array_values(array_intersect($detected, $available));
@@ -75,6 +80,13 @@ class AgentInstallation extends Model
                 continue;
             }
             $roles[] = $role;
+        }
+
+        if (! $installation->exists && $interval && $interval !== config('custom.agent_intervall_standard')) {
+            // The nearest offered interval: 45 from an old install becomes 30.
+            $installation->interval_minutes = collect(array_keys(config('custom.agent_intervalle')))
+                ->sortBy(fn ($m) => abs($m - $interval))
+                ->first();
         }
 
         $installation->fill([
@@ -99,6 +111,33 @@ class AgentInstallation extends Model
             ->get()
             ->contains(fn (self $other) => in_array($role, $other->roles ?? [], true)
                 && strcasecmp((string) $other->domain, (string) $domain) === 0);
+    }
+
+    public function intervalMinutes(): int
+    {
+        return $this->interval_minutes ?: (int) config('custom.agent_intervall_standard');
+    }
+
+    /**
+     * Whether the agent should run now - asked on every checkin (every five
+     * minutes). Due when "Jetzt melden" was pressed, when it never ran, or
+     * when the interval has passed. Two minutes of slack: polling every five
+     * minutes, an hourly agent would otherwise drift to 65 minutes.
+     *
+     * Saying yes counts as the run: last_run_at is set now (the report sets
+     * it again), so a lost report does not mean a run on every poll.
+     */
+    public function takeDueRun(): bool
+    {
+        $due = $this->run_requested_at !== null
+            || $this->last_run_at === null
+            || $this->last_run_at->lte(now()->subMinutes($this->intervalMinutes())->addMinutes(2));
+
+        if ($due) {
+            $this->forceFill(['last_run_at' => now(), 'run_requested_at' => null])->save();
+        }
+
+        return $due;
     }
 
     /**

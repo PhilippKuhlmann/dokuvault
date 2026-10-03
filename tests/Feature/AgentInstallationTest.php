@@ -36,7 +36,7 @@ test('the first check-in records the machine and assigns what it detected', func
 
     checkinAls($plain, 'dc01', ['windows-server', 'windows-ad', 'unbekannt'])
         ->assertOk()
-        ->assertExactJson(['roles' => ['windows-server', 'windows-ad']]);
+        ->assertJsonPath('roles', ['windows-server', 'windows-ad']);
 
     $installation = AgentInstallation::sole();
     expect($installation->customer_id)->toBe($token->customer_id)
@@ -51,7 +51,7 @@ test('the second DC of a domain reports as server but not AD', function () {
 
     checkinAls($plain, 'dc01', ['windows-server', 'windows-ad']);
     checkinAls($plain, 'dc02', ['windows-server', 'windows-ad'])
-        ->assertExactJson(['roles' => ['windows-server']]);
+        ->assertJsonPath('roles', ['windows-server']);
 });
 
 test('a DC of another domain gets AD as well', function () {
@@ -59,7 +59,7 @@ test('a DC of another domain gets AD as well', function () {
 
     checkinAls($plain, 'dc01', ['windows-server', 'windows-ad'], 'firma.local');
     checkinAls($plain, 'dc-tochter', ['windows-server', 'windows-ad'], 'tochter.local')
-        ->assertExactJson(['roles' => ['windows-server', 'windows-ad']]);
+        ->assertJsonPath('roles', ['windows-server', 'windows-ad']);
 });
 
 test('another customer does not block AD', function () {
@@ -68,7 +68,7 @@ test('another customer does not block AD', function () {
 
     checkinAls($plainA, 'dc01', ['windows-server', 'windows-ad']);
     checkinAls($plainB, 'dc01', ['windows-server', 'windows-ad'])
-        ->assertExactJson(['roles' => ['windows-server', 'windows-ad']]);
+        ->assertJsonPath('roles', ['windows-server', 'windows-ad']);
 
     expect(AgentInstallation::count())->toBe(2);
 });
@@ -80,7 +80,7 @@ test('a role switched off on the page stays off', function () {
     AgentInstallation::sole()->update(['roles' => ['windows-server']]);
 
     checkinAls($plain, 'dc01', ['windows-server', 'windows-ad'])
-        ->assertExactJson(['roles' => ['windows-server']]);
+        ->assertJsonPath('roles', ['windows-server']);
 });
 
 test('a role detected later is switched on', function () {
@@ -88,7 +88,7 @@ test('a role detected later is switched on', function () {
 
     checkinAls($plain, 'srv01', ['windows-server']);
     checkinAls($plain, 'srv01', ['windows-server', 'hyperv'])
-        ->assertExactJson(['roles' => ['windows-server', 'hyperv']]);
+        ->assertJsonPath('roles', ['windows-server', 'hyperv']);
 });
 
 test('check-in needs a valid token and a known kind', function () {
@@ -223,4 +223,61 @@ test('without the right to manage agents there is no agents tile', function () {
     $this->actingAs(userWithPermissions(['server_viewAny']));
 
     $this->get(route('customer.dashboard', $token->customer))->assertOk()->assertViewHas('agentWarnings', null);
+});
+
+test('the first check-in runs, the next ones only when the interval is due', function () {
+    [, $plain] = installationToken();
+
+    checkinAls($plain, 'srv01', ['windows-server'])->assertJsonPath('run', true)->assertJsonPath('interval', 60);
+    checkinAls($plain, 'srv01', ['windows-server'])->assertJsonPath('run', false);
+
+    $this->travel(50)->minutes();
+    checkinAls($plain, 'srv01', ['windows-server'])->assertJsonPath('run', false);
+
+    // Two minutes of slack: an hourly agent polling every five minutes runs
+    // at 60, not at 65.
+    $this->travel(9)->minutes();
+    checkinAls($plain, 'srv01', ['windows-server'])->assertJsonPath('run', true);
+});
+
+test('the interval from the install is taken over once, then the page decides', function () {
+    [, $plain] = installationToken();
+
+    $this->withToken($plain)->postJson('/api/agent/checkin', [
+        'kind' => 'windows', 'machine_id' => 'srv01', 'hostname' => 'SRV01', 'detected' => ['windows-server'], 'interval' => 20,
+    ])->assertJsonPath('interval', 15);
+
+    AgentInstallation::sole()->update(['interval_minutes' => 240]);
+    $this->withToken($plain)->postJson('/api/agent/checkin', [
+        'kind' => 'windows', 'machine_id' => 'srv01', 'hostname' => 'SRV01', 'detected' => ['windows-server'], 'interval' => 20,
+    ])->assertJsonPath('interval', 240);
+});
+
+test('"Jetzt melden" makes the next check-in run, once', function () {
+    $this->actingAs(userWithPermissions(['see_hidden']));
+    [$token, $plain] = installationToken();
+    checkinAls($plain, 'srv01', ['windows-server']);
+    $installation = AgentInstallation::sole();
+
+    $this->post(route('agent.installation.run', [$token->customer, $installation]))
+        ->assertRedirect(route('agent.index', $token->customer));
+    $this->get(route('agent.index', $token->customer))->assertSee('Lauf angefordert');
+
+    checkinAls($plain, 'srv01', ['windows-server'])->assertJsonPath('run', true);
+    checkinAls($plain, 'srv01', ['windows-server'])->assertJsonPath('run', false);
+    expect($installation->fresh()->run_requested_at)->toBeNull();
+});
+
+test('the interval is chosen on the agent page from the offered values', function () {
+    $this->actingAs(userWithPermissions(['see_hidden']));
+    [$token, $plain] = installationToken();
+    checkinAls($plain, 'srv01', ['windows-server']);
+    $installation = AgentInstallation::sole();
+
+    $this->put(route('agent.installation.update', [$token->customer, $installation]), ['roles' => ['windows-server'], 'interval_minutes' => 15]);
+    expect($installation->fresh()->intervalMinutes())->toBe(15);
+
+    $this->put(route('agent.installation.update', [$token->customer, $installation]), ['roles' => ['windows-server'], 'interval_minutes' => 7])
+        ->assertSessionHasErrors('interval_minutes');
+    expect($installation->fresh()->intervalMinutes())->toBe(15);
 });

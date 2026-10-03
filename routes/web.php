@@ -304,6 +304,7 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::post('agent/{agentToken}/erneuern', [AgentTokenController::class, 'erneuern'])->name('agent.erneuern');
             Route::get('agent/dienst.exe', [AgentTokenController::class, 'dienstExe'])->name('agent.dienst');
             Route::put('agent/installation/{agentInstallation}', [AgentTokenController::class, 'updateInstallation'])->name('agent.installation.update');
+            Route::post('agent/installation/{agentInstallation}/run', [AgentTokenController::class, 'runInstallation'])->name('agent.installation.run');
             Route::delete('agent/installation/{agentInstallation}', [AgentTokenController::class, 'destroyInstallation'])->name('agent.installation.destroy');
             Route::get('agent/dienst-proxmox.sh', [AgentTokenController::class, 'dienstProxmox'])->name('agent.dienst.proxmox');
 

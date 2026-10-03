@@ -84,14 +84,29 @@ var runScript = func(path string) (string, error) {
 }
 
 // runOnce asks DokuVault which agents to run (assignedAgents) and runs each
-// once. One failing agent does not stop the others; the returned error
+// once, due or not (run-once on the command line). One failing agent does not stop the others; the returned error
 // summarises all failures.
 func runOnce(cfg Config, log func(level, msg string)) error {
-	agents, err := assignedAgents(cfg, log)
+	_, err := runIfDue(cfg, log, true)
+	return err
+}
+
+// runIfDue is the service's poll: ask DokuVault, run only when due (or
+// force). Returns whether it ran.
+func runIfDue(cfg Config, log func(level, msg string), force bool) (bool, error) {
+	agents, due, err := assignedAgents(cfg, log, force)
 	if err != nil {
 		log("error", err.Error())
-		return err
+		return false, err
 	}
+	if !due {
+		return false, nil
+	}
+	lastLocalRun = time.Now()
+	return true, runAgents(cfg, agents, log)
+}
+
+func runAgents(cfg Config, agents []string, log func(level, msg string)) error {
 	if len(agents) == 0 {
 		log("info", "Keine Aufgaben zugewiesen (in DokuVault unter Agenten anhaken)")
 		return nil

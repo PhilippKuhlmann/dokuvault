@@ -300,26 +300,31 @@ func (h *handler) Execute(_ []string, req <-chan svc.ChangeRequest, status chan<
 		_ = registerUninstall(exe)
 	}
 
-	// Config read before every run: set-token and a re-install take effect
-	// without restarting the service. Before collecting, the agent checks
-	// for a newer version of itself; if it replaced its exe, it stops and
-	// restarts with the new one.
+	// Every five minutes: config read (set-token and a re-install take
+	// effect without restarting), once an hour the check for a newer
+	// version of itself, then DokuVault is asked whether a run is due -
+	// interval and "Jetzt melden" are set on the agent page. If the exe was
+	// replaced, the service stops and restarts with the new one.
+	var lastUpdateCheck time.Time
 	run := func() (time.Duration, bool) {
 		cfg, err := loadConfig()
 		if err != nil {
 			log("error", err.Error())
-			return time.Hour, false
+			return pollInterval, false
 		}
-		if neu, neueVersion, err := checkUpdate(cfg); err != nil {
+		if time.Since(lastUpdateCheck) >= time.Hour {
+			lastUpdateCheck = time.Now()
+			if neu, neueVersion, err := checkUpdate(cfg); err != nil {
+				log("warn", err.Error())
+			} else if neu {
+				log("info", "Update auf Version "+neueVersion+" installiert - Dienst startet neu")
+				return 0, true
+			}
+		}
+		if _, err := runIfDue(cfg, log, false); err != nil {
 			log("warn", err.Error())
-		} else if neu {
-			log("info", "Update auf Version "+neueVersion+" installiert - Dienst startet neu")
-			return 0, true
 		}
-		if err := runOnce(cfg, log); err != nil {
-			log("warn", err.Error())
-		}
-		return time.Duration(cfg.IntervalMinutes) * time.Minute, false
+		return pollInterval, false
 	}
 
 	restart := func() (bool, uint32) {

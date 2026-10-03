@@ -478,8 +478,8 @@ class AgentController extends Controller
     }
 
     /**
-     * An installed agent reports in before every run: which machine, what it
-     * detected. The answer is the roles it should run - switched on and off
+     * An installed agent reports in every few minutes: which machine, what it
+     * detected. The answer is the roles it should run and whether to run now - switched on and off
      * on the agent page, so two DCs can both report as servers while only
      * one reports the domain.
      */
@@ -493,6 +493,7 @@ class AgentController extends Controller
             'version' => ['nullable', 'string', 'max:100'],
             'detected' => ['array'],
             'detected.*' => ['string', 'max:50'],
+            'interval' => ['nullable', 'integer', 'min:5', 'max:10080'],
         ]);
 
         $installation = AgentInstallation::checkin(
@@ -503,9 +504,16 @@ class AgentController extends Controller
             $data['domain'] ?? null,
             $data['version'] ?? null,
             $data['detected'] ?? [],
+            $data['interval'] ?? null,
         );
 
-        return response()->json(['roles' => $installation->roles]);
+        // run: whether to run now (interval due or "Jetzt melden"). Agents
+        // from before 26.10.03 do not know it and run on their own timer.
+        return response()->json([
+            'roles' => $installation->roles,
+            'run' => $installation->takeDueRun(),
+            'interval' => $installation->intervalMinutes(),
+        ]);
     }
 
     /**

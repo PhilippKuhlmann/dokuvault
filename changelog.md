@@ -8,6 +8,12 @@
 
 ### Added
 
+- **Agenten aus DokuVault steuern: Intervall und „Jetzt melden“.** Unter „Installierte Agenten“ hat jeder Agent eine Intervall-Auswahl (15 Min. bis täglich) und einen Knopf „Jetzt melden“.
+  - Wann ein Agent läuft, entscheidet jetzt DokuVault: Die Agenten fragen alle 5 Minuten an (`checkin` antwortet mit `run`) und laufen, wenn ihr Intervall um ist oder „Jetzt melden“ gedrückt wurde – spätestens 5 Minuten danach.
+  - Ist DokuVault nicht erreichbar, läuft der Agent im lokalen Intervall weiter. Das bei der Installation angegebene Intervall (`-interval`, `INTERVAL=`) wird beim ersten Kontakt übernommen.
+  - Neben „Zuletzt erreichbar“ steht jetzt „Letzter Lauf“.
+  - Windows- und Proxmox-Agent bekommen das mit dem nächsten Selbst-Update; der Proxmox-Timer läuft danach alle 5 Minuten.
+
 - **Agenten melden ihr Ergebnis; Dashboard warnt.** Nach jedem Lauf schickt der Agent je Aufgabe, ob sie geklappt hat, samt Ende der Ausgabe (`POST /api/agent/report`).
   - Agent-Seite: grüner oder roter Punkt neben jeder Aufgabe; fehlgeschlagene Aufgaben stehen darunter mit Zeitpunkt und aufklappbarer Meldung (z. B. „Get-ADUser: Zugriff verweigert“).
   - Dashboard: neue Kachel „Agenten“ für alle, die Agenten verwalten – Rechner, die seit drei Stunden nicht melden, fehlgeschlagene Läufe und Agent-Token, die in 30 Tagen ablaufen oder abgelaufen sind. Nur bei Kunden mit Agenten oder Token.

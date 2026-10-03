@@ -1102,7 +1102,7 @@ return [
             'kurz' => 'Dienst für Windows-Server und -PCs, meldet stündlich',
             'datei' => 'dokuvault-agent.exe',
             'download' => 'agent.dienst',
-            'beschreibung' => 'Auf den Rechner kopieren und doppelklicken – Adresse und Token sind schon enthalten. Der Dienst erkennt die Rollen des Rechners selbst (Server, Domänencontroller, Hyper-V, Arbeitsplatz) und meldet stündlich; was er meldet, lässt sich danach hier unter „Installierte Agenten“ an- und abhaken. Der Download ist 30 Minuten lang möglich und so vertraulich wie der Token.',
+            'beschreibung' => 'Auf den Rechner kopieren und doppelklicken – Adresse und Token sind schon enthalten. Der Dienst erkennt die Rollen des Rechners selbst (Server, Domänencontroller, Hyper-V, Arbeitsplatz) und meldet stündlich; was er meldet und wie oft, stellst du danach hier unter „Installierte Agenten“ ein – dort gibt es auch „Jetzt melden“. Der Download ist 30 Minuten lang möglich und so vertraulich wie der Token.',
             'befehl' => '.\dokuvault-agent.exe install -url :url -token :token',
             // What an installed agent can do - switched on and off per
             // machine on the agent page (AgentInstallation).
@@ -1121,7 +1121,7 @@ return [
             ],
             'hinweise' => [
                 'Was der Agent meldet, legst du nach der ersten Meldung unter „Installierte Agenten“ fest. Vorschlag statt Erkennung: -agents windows-server,windows-ad.',
-                'Anderes Intervall: -interval 15 (Minuten, mindestens 5).',
+                'Intervall: auf dieser Seite unter „Installierte Agenten“; -interval 15 ist nur der Vorschlag für den ersten Kontakt.',
                 'Testen: run-once · Status: status · Token erneuern: set-token -token doc_…',
                 'Protokoll: Ereignisanzeige (Quelle „DokuVault Agent“) und C:\ProgramData\DokuVault\agent.log. Unter einer Gruppenrichtlinie „AllSigned“ laufen die Scripte nicht.',
             ],
@@ -1133,7 +1133,7 @@ return [
             'kurz' => 'systemd-Timer auf dem Proxmox-Host, meldet stündlich',
             'datei' => 'dokuvault-agent-proxmox.sh',
             'download' => 'agent.dienst.proxmox',
-            'beschreibung' => 'Auf den Proxmox-Host kopieren und als root ausführen – Adresse und Token sind schon enthalten. Der Agent meldet sofort und dann stündlich Host, VMs und Container. Der Download ist 30 Minuten lang möglich und so vertraulich wie der Token.',
+            'beschreibung' => 'Auf den Proxmox-Host kopieren und als root ausführen – Adresse und Token sind schon enthalten. Der Agent meldet sofort und dann stündlich Host, VMs und Container; Intervall und „Jetzt melden“ hier unter „Installierte Agenten“. Der Download ist 30 Minuten lang möglich und so vertraulich wie der Token.',
             'befehl' => 'bash dokuvault-agent-proxmox.sh',
             'rollen' => [
                 'proxmox' => 'Proxmox-Host',
@@ -1143,13 +1143,26 @@ return [
                 'Entfernt Timer, Dienst, Konfiguration samt Token und /etc/dokuvault. Den Token danach in DokuVault widerrufen.',
             ],
             'hinweise' => [
-                'Anderes Intervall: INTERVAL=15 bash dokuvault-agent-proxmox.sh (Minuten, mindestens 5).',
+                'Intervall: auf dieser Seite unter „Installierte Agenten“; INTERVAL=15 ist nur der Vorschlag für den ersten Kontakt.',
                 'Nächster Lauf: systemctl list-timers dokuvault-agent.timer · Sofort melden: systemctl start dokuvault-agent.service',
                 'Protokoll: journalctl -u dokuvault-agent.service',
                 'Neuer Token: Agent mit der neuen Datei einfach erneut einrichten.',
             ],
         ],
     ],
+
+    // How often an installed agent reports, chosen per agent on the agent
+    // page (minutes => label). The agents ask every five minutes whether a
+    // run is due, so nothing below that makes sense.
+    'agent_intervalle' => [
+        15 => 'alle 15 Minuten',
+        30 => 'alle 30 Minuten',
+        60 => 'stündlich',
+        120 => 'alle 2 Stunden',
+        240 => 'alle 4 Stunden',
+        1440 => 'täglich',
+    ],
+    'agent_intervall_standard' => 60,
 
     'agenten_token' => [
         'gueltigkeit_tage_standard' => 365,

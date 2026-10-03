@@ -2,12 +2,13 @@
 #
 # DokuVault-Agent fuer Proxmox VE
 #
-# Richtet einen systemd-Timer ein, der stuendlich das aktuelle Proxmox-Script
+# Richtet einen systemd-Timer ein, der alle 5 Minuten bei DokuVault fragt, ob ein
+# Lauf faellig ist (Intervall und "Jetzt melden" auf der Agent-Seite), und dann das aktuelle Proxmox-Script
 # von DokuVault holt und ausfuehrt - nur lesend, wie das Script von Hand.
 # Als root auf dem Proxmox-Host ausfuehren:
 #
-#   bash dokuvault-agent-proxmox.sh                 einrichten (stuendlich)
-#   INTERVAL=15 bash dokuvault-agent-proxmox.sh     anderes Intervall (Minuten, mind. 5)
+#   bash dokuvault-agent-proxmox.sh                 einrichten (meldet stuendlich)
+#   INTERVAL=15 bash dokuvault-agent-proxmox.sh     Intervall vorschlagen (Minuten, mind. 5; danach in DokuVault)
 #   bash dokuvault-agent-proxmox.sh --uninstall     wieder entfernen
 #
 # Danach:
@@ -116,8 +117,16 @@ status="$(curl -sS -o "$antwort" -w '%{http_code}' -X POST \
   -H "Authorization: Bearer $TOKEN" \
   -H "User-Agent: DokuVault-Agent-Proxmox" \
   -H "Content-Type: application/json" -H "Accept: application/json" \
-  -d "{\"kind\":\"proxmox\",\"machine_id\":\"$(cat /etc/machine-id 2>/dev/null)\",\"hostname\":\"$(hostname)\",\"version\":\"$(cat /usr/local/lib/dokuvault/version 2>/dev/null)\",\"detected\":[\"proxmox\"]}" \
+  -d "{\"kind\":\"proxmox\",\"machine_id\":\"$(cat /etc/machine-id 2>/dev/null)\",\"hostname\":\"$(hostname)\",\"version\":\"$(cat /usr/local/lib/dokuvault/version 2>/dev/null)\",\"detected\":[\"proxmox\"],\"interval\":${INTERVAL:-60}}" \
   "$URL/api/agent/checkin")" || status=000
+
+# The timer fires every five minutes; whether to run now is DokuVault's
+# call (interval and "Jetzt melden" on the agent page). Without an answer
+# (unreachable, older DokuVault) the local INTERVAL decides.
+letzter=/var/lib/dokuvault/last-run
+lokal_faellig() {
+  [ ! -f "$letzter" ] || [ $(( $(date +%s) - $(cat "$letzter" 2>/dev/null || echo 0) )) -ge $(( ${INTERVAL:-60} * 60 )) ]
+}
 case "$status" in
   200)
     if ! grep -q '"proxmox"' "$antwort"; then
@@ -125,10 +134,25 @@ case "$status" in
       rm -f "$antwort"
       exit 0
     fi
+    if grep -q '"run":false' "$antwort"; then
+      rm -f "$antwort"
+      exit 0
+    fi
+    if ! grep -q '"run":true' "$antwort" && ! lokal_faellig; then
+      rm -f "$antwort"
+      exit 0
+    fi
     ;;
   401) echo "Token abgelehnt (abgelaufen oder widerrufen) - in DokuVault einen neuen Token erzeugen und den Agenten neu einrichten." >&2; exit 1 ;;
+  *)
+    if ! lokal_faellig; then
+      rm -f "$antwort"
+      exit 0
+    fi
+    ;;
 esac
 rm -f "$antwort"
+date +%s > "$letzter"
 
 ziel=/var/lib/dokuvault/proxmox.sh
 status="$(curl -sS -o "$ziel.neu" -w '%{http_code}' \
@@ -198,11 +222,11 @@ SERVICE
 
 cat > "/etc/systemd/system/$UNIT.timer" <<TIMER
 [Unit]
-Description=DokuVault Agent (Proxmox) alle $INTERVAL Minuten
+Description=DokuVault Agent (Proxmox) - fragt alle 5 Minuten, ob ein Lauf faellig ist
 
 [Timer]
 OnBootSec=2min
-OnUnitActiveSec=${INTERVAL}min
+OnUnitActiveSec=5min
 RandomizedDelaySec=60
 
 [Install]
@@ -220,7 +244,7 @@ fi
 
 systemctl enable --now "$UNIT.timer" >/dev/null
 
-echo "DokuVault-Agent eingerichtet: meldet alle $INTERVAL Minuten an $BASE_URL."
+echo "DokuVault-Agent eingerichtet: meldet an $BASE_URL - Intervall und \"Jetzt melden\" in DokuVault unter Agenten."
 echo "Erster Lauf ..."
 if systemctl start "$UNIT.service"; then
   echo "Gemeldet. Protokoll: journalctl -u $UNIT.service"

@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func useTempDir(t *testing.T) {
@@ -305,5 +306,62 @@ func TestRunOnceReportsTheOutcomePerAgent(t *testing.T) {
 	}
 	if report.Results[1].OK || !strings.Contains(report.Results[1].Message, "Zugriff verweigert") || !strings.Contains(report.Results[1].Message, "exit status 1") {
 		t.Fatalf("ad result %+v", report.Results[1])
+	}
+}
+
+func dueServer(t *testing.T, answer string) *httptest.Server {
+	t.Helper()
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/agent/checkin":
+			w.Write([]byte(answer))
+		case "/api/agent/report":
+			w.Write([]byte(`{"status":"ok"}`))
+		default:
+			w.Write([]byte("Write-Host ok"))
+		}
+	}))
+}
+
+func TestRunIfDueRunsOnlyWhenDokuVaultSaysSo(t *testing.T) {
+	useTempDir(t)
+	ran := 0
+	oldRun := runScript
+	runScript = func(string) (string, error) { ran++; return "", nil }
+	defer func() { runScript = oldRun }()
+
+	notYet := dueServer(t, `{"roles":["windows-server"],"run":false,"interval":60}`)
+	defer notYet.Close()
+	if did, err := runIfDue(validConfig(notYet.URL), func(string, string) {}, false); err != nil || did || ran != 0 {
+		t.Fatalf("not due: did=%v ran=%d err=%v", did, ran, err)
+	}
+
+	// run-once runs anyway.
+	if err := runOnce(validConfig(notYet.URL), func(string, string) {}); err != nil || ran != 1 {
+		t.Fatalf("forced: ran=%d err=%v", ran, err)
+	}
+
+	now := dueServer(t, `{"roles":["windows-server"],"run":true,"interval":60}`)
+	defer now.Close()
+	if did, err := runIfDue(validConfig(now.URL), func(string, string) {}, false); err != nil || !did || ran != 2 {
+		t.Fatalf("due: did=%v ran=%d err=%v", did, ran, err)
+	}
+}
+
+func TestOlderServerWithoutRunUsesTheLocalInterval(t *testing.T) {
+	useTempDir(t)
+	ran := 0
+	oldRun := runScript
+	runScript = func(string) (string, error) { ran++; return "", nil }
+	defer func() { runScript = oldRun }()
+
+	srv := dueServer(t, `{"roles":["windows-server"]}`)
+	defer srv.Close()
+
+	lastLocalRun = time.Time{}
+	runIfDue(validConfig(srv.URL), func(string, string) {}, false)
+	runIfDue(validConfig(srv.URL), func(string, string) {}, false)
+	if ran != 1 {
+		t.Fatalf("expected one run within the interval, got %d", ran)
 	}
 }

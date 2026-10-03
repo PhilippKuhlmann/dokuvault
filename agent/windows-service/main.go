@@ -70,7 +70,7 @@ func command(name string, args []string) error {
 		u := fs.String("url", "", "Adresse von DokuVault")
 		token := fs.String("token", "", "Agent-Token (doc_...)")
 		agents := fs.String("agents", "auto", "auto (nach Rollen des Rechners) oder Agenten, durch Komma getrennt")
-		interval := fs.Int("interval", 60, "Intervall in Minuten (mindestens 5)")
+		interval := fs.Int("interval", 60, "Intervall in Minuten (mindestens 5) - Vorschlag, danach in DokuVault einstellbar")
 		if err := fs.Parse(args); err != nil {
 			return err
 		}
@@ -104,7 +104,7 @@ func command(name string, args []string) error {
 		if isAuto(cfg.Agents) {
 			agenten = "auto (erkannt: " + strings.Join(detectAgents(), ", ") + ")"
 		}
-		fmt.Printf("Dienst:    %s\nURL:       %s\nAgenten:   %s\nIntervall: %d Minuten\nProtokoll: %s\n",
+		fmt.Printf("Dienst:    %s\nURL:       %s\nAgenten:   %s\nIntervall: %d Minuten (ohne Verbindung zu DokuVault; sonst dort eingestellt)\nProtokoll: %s\n",
 			serviceStatus(), cfg.URL, agenten, cfg.IntervalMinutes, logPath())
 		return nil
 
@@ -198,7 +198,7 @@ func doubleClick() error {
 	fmt.Println("Dienst \"DokuVault Agent\" eingerichtet.")
 	fmt.Println("Meldet an:  ", cfg.URL)
 	fmt.Println("Erkannt:    ", strings.Join(detectAgents(), ", "))
-	fmt.Println("Intervall:   stuendlich (aendern: install -interval 15 ...)")
+	fmt.Println("Intervall:   stuendlich - aendern und sofort melden in DokuVault unter Agenten")
 	fmt.Println("Protokoll:  ", logPath())
 	fmt.Println("\nDer erste Lauf startet jetzt im Hintergrund.")
 	pause()

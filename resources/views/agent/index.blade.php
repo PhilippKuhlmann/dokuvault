@@ -243,7 +243,7 @@
         <x-panel>
             <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">{{ __('Installierte Agenten') }}</div>
             <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">
-                {{ __('Was jeder Agent meldet, legst du hier fest – gilt ab seinem nächsten Lauf. „erkannt“ heißt: der Rechner hat die Rolle. Active Directory reicht von einem Domänencontroller je Domäne.') }}
+                {{ __('Was jeder Agent meldet und wie oft, legst du hier fest – gilt ab seinem nächsten Lauf. „erkannt“ heißt: der Rechner hat die Rolle. Active Directory reicht von einem Domänencontroller je Domäne.') }}
             </p>
 
             @forelse ($installations as $installation)
@@ -261,7 +261,8 @@
                             @if ($installation->domain)
                                 {{ $installation->domain }} ·
                             @endif
-                            {{ __('Zuletzt gemeldet') }}: {{ Zeit::anzeigen($installation->last_seen_at, 'd.m.Y H:i', __('noch nie')) }} ·
+                            {{ __('Letzter Lauf') }}: {{ Zeit::anzeigen($installation->last_run_at, 'd.m.Y H:i', __('noch nie')) }} ·
+                            {{ __('Zuletzt erreichbar') }}: {{ Zeit::anzeigen($installation->last_seen_at, 'd.m.Y H:i', __('noch nie')) }} ·
                             {{ __('Version') }}: {{ $installation->version ?? '—' }} ·
                             {{ __('Token') }}: {{ $installation->agentToken ? ($installation->agentToken->name ?: 'Token #'.$installation->agentToken->id) : __('widerrufen') }}
                         </div>
@@ -302,7 +303,21 @@
                                     @endif
                                 </label>
                             @endforeach
+                            <x-input.select name="interval_minutes" class="w-40" :aria-label="__('Intervall')">
+                                @foreach (config('custom.agent_intervalle') as $minuten => $bezeichnung)
+                                    <option value="{{ $minuten }}" @selected($minuten === $installation->intervalMinutes())>{{ __($bezeichnung) }}</option>
+                                @endforeach
+                            </x-input.select>
                             <x-input.button type="submit" size="sm" :label="__('Speichern')" />
+                        </form>
+                        {{-- Picked up on the next checkin, within five minutes. --}}
+                        <form method="POST" action="{{ route('agent.installation.run', [$customer, $installation]) }}">
+                            @csrf
+                            @if ($installation->run_requested_at)
+                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('Lauf angefordert') }}</span>
+                            @else
+                                <x-input.button type="submit" size="sm" color="gray" :label="__('Jetzt melden')" />
+                            @endif
                         </form>
                         <x-loeschdialog :url="route('agent.installation.destroy', [$customer, $installation])"
                             :frage="__('Agent aus der Liste entfernen?')"

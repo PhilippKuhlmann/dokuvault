@@ -47,12 +47,31 @@ class AgentTokenController extends Controller
         $validated = $request->validate([
             'roles' => ['array'],
             'roles.*' => [Rule::in(array_keys(AgentInstallation::availableRoles($agentInstallation->kind)))],
+            'interval_minutes' => ['nullable', Rule::in(array_keys(config('custom.agent_intervalle')))],
         ]);
 
-        $agentInstallation->update(['roles' => array_values($validated['roles'] ?? [])]);
+        $agentInstallation->update([
+            'roles' => array_values($validated['roles'] ?? []),
+            'interval_minutes' => $validated['interval_minutes'] ?? $agentInstallation->interval_minutes,
+        ]);
 
         return redirect(route('agent.index', $customer))
             ->with('success', __('Aufgaben für :name gespeichert – gilt ab dem nächsten Lauf.', ['name' => $agentInstallation->hostname]));
+    }
+
+    /**
+     * "Jetzt melden": the agent picks it up on its next checkin, within
+     * five minutes.
+     */
+    public function runInstallation(Customer $customer, AgentInstallation $agentInstallation)
+    {
+        Gate::authorize('see_hidden');
+        abort_if($agentInstallation->customer_id !== $customer->id, 403);
+
+        $agentInstallation->forceFill(['run_requested_at' => now()])->save();
+
+        return redirect(route('agent.index', $customer))
+            ->with('success', __(':name meldet innerhalb der nächsten fünf Minuten.', ['name' => $agentInstallation->hostname]));
     }
 
     /**
