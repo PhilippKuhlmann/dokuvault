@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- **UniFi-Script an der Dream Machine: verständliche Fehler statt „401“.** Lehnte UniFi OS (UDM, UDM-Pro, Cloud Key Gen2+) die Anmeldung ab – falsches Kennwort, Cloud-Konto, Zwei-Faktor –, fiel das Script still auf die Anmeldung des klassischen Controllers zurück, die es auf UniFi OS nicht gibt; übrig blieb ein nacktes „401“, als ginge die UDM gar nicht. Jetzt nur noch zurück, wenn es die UniFi-OS-Anmeldung nicht gibt, sonst mit der Meldung der UDM und dem Hinweis auf einen lokalen Administrator. Auch falscher Port (`:8443` an einer UDM) und selbstsigniertes Zertifikat werden benannt. Bash und PowerShell; die Bash-Fassung an einer echten UDM Pro geprüft.
+
 - **Globale Suche sprang bei VMs nicht auf Seite 2 oder 3.** Ein Agent legt Dutzende VMs in derselben Sekunde an; bei gleichem Anlegezeitpunkt war die Reihenfolge der Liste nicht festgelegt, und die Datenbank sortierte die Seitenberechnung anders als die angezeigte Seite (auf der Produktion lagen 32 von 53 VMs auf einer anderen Seite als berechnet). Alle Listen sortieren jetzt zusätzlich nach ID.
 
 - **Lange Werte liefen über die Karte hinaus.** Eine lange Liste ohne Leerzeichen (z. B. die ausgeschlossenen VMs eines Proxmox-Backup-Jobs) ließ sich nicht umbrechen und lief in die Nachbarspalte. Die Kartenwerte brechen jetzt an beliebiger Stelle um; das Proxmox-Script trennt die VM-IDs außerdem mit „, “.

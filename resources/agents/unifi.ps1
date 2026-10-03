@@ -117,8 +117,40 @@ try {
 
     Write-Host "Angemeldet (UniFi OS)."
 } catch {
-    Invoke-RestMethod -Method Post -Uri "$Controller/api/login" -Body $anmeldung `
-        -ContentType "application/json" -SessionVariable sitzung @RestExtra | Out-Null
+    <#
+      Klassisch nur, wenn es /api/auth/login gar nicht gibt (404). Vorher fiel
+      jede Ablehnung dorthin zurueck: Eine UDM mit falschem Kennwort antwortete
+      403 "Invalid username or password", das Script versuchte still
+      /api/login, das es auf UniFi OS nicht gibt - und uebrig blieb ein
+      nacktes 401, als koenne das Script mit der UDM nichts anfangen.
+    #>
+    $status = $null
+    if ($_.Exception.Response) { $status = [int]$_.Exception.Response.StatusCode }
+
+    if ($null -eq $status) {
+        throw "$Controller nicht erreichbar: $($_.Exception.Message) - Adresse pruefen (UDM/UniFi OS: https://<IP>, ohne :8443). Selbstsigniertes Zertifikat: -ZertifikatIgnorieren"
+    }
+
+    if ($status -ne 404) {
+        $meldung = $null
+        try { $meldung = ($_.ErrorDetails.Message | ConvertFrom-Json).message } catch { }
+        $hinweis = if ($status -eq 429) { "Zu viele Versuche - einige Minuten warten." } else {
+            "Benutzername und Kennwort pruefen. Die Schnittstelle braucht einen LOKALEN Administrator (UniFi OS: Einstellungen -> Admins -> 'Nur lokaler Zugriff'), kein Ubiquiti-/Cloud-Konto und keine Zwei-Faktor-Anmeldung."
+        }
+        throw "Anmeldung an UniFi OS abgelehnt (HTTP $status)$(if ($meldung) { ": $meldung" }). $hinweis"
+    }
+
+    try {
+        Invoke-RestMethod -Method Post -Uri "$Controller/api/login" -Body $anmeldung `
+            -ContentType "application/json" -SessionVariable sitzung @RestExtra | Out-Null
+    } catch {
+        $klassisch = $null
+        if ($_.Exception.Response) { $klassisch = [int]$_.Exception.Response.StatusCode }
+        if ($klassisch -eq 404) {
+            throw "Unter $Controller antwortet kein UniFi-Controller (weder /api/auth/login noch /api/login). UDM/UniFi OS: https://<IP> ohne Port; klassischer Controller meist https://<host>:8443."
+        }
+        throw "Anmeldung am Controller abgelehnt (HTTP $klassisch) - Benutzername und Kennwort pruefen."
+    }
     $basis = $Controller
     Write-Host "Angemeldet (klassischer Controller)."
 }

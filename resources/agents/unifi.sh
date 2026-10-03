@@ -95,8 +95,38 @@ CSRF=""
 #   Endpunkte liegen direkt unter der Wurzel.
 # Erst UniFi OS versuchen, sonst klassisch - so laeuft dasselbe Script auf
 # beiden, ohne dass man die Bauart kennen muss.
-if curl -fsS $UNSICHER -c "$KEKSE" -D "$KOPFZEILEN" -X POST "$CONTROLLER/api/auth/login" \
-     -H "Content-Type: application/json" -d "$anmeldung" >/dev/null 2>&1; then
+#
+# Klassisch nur, wenn es /api/auth/login gar nicht gibt (404). Vorher fiel
+# jede Ablehnung dorthin zurueck: Eine UDM mit falschem Kennwort antwortete
+# 403 "Invalid username or password", das Script versuchte still /api/login,
+# das es auf UniFi OS nicht gibt, und uebrig blieb ein nacktes "401" - als
+# koenne das Script mit der UDM nichts anfangen.
+auth_antwort="$(curl -sS $UNSICHER -c "$KEKSE" -D "$KOPFZEILEN" -w $'\n%{http_code}' -X POST "$CONTROLLER/api/auth/login" \
+     -H "Content-Type: application/json" -d "$anmeldung" 2>&1)" || {
+  echo "Fehler: $CONTROLLER nicht erreichbar:" >&2
+  printf '  %s\n' "$auth_antwort" >&2
+  echo "  Adresse pruefen (UDM/UniFi OS: https://<IP>, ohne :8443). Selbstsigniertes Zertifikat: --unsicher" >&2
+  exit 1
+}
+auth_code="$(printf '%s' "$auth_antwort" | tail -n1)"
+auth_text="$(printf '%s' "$auth_antwort" | sed '$d')"
+
+if [ "$auth_code" != "200" ] && [ "$auth_code" != "404" ]; then
+  {
+    echo "Fehler: Anmeldung an UniFi OS abgelehnt (HTTP $auth_code)."
+    meldung="$(printf '%s' "$auth_text" | jq -r '.message // empty' 2>/dev/null || true)"
+    [ -n "$meldung" ] && echo "  Meldung: $meldung"
+    case "$auth_code" in
+      429) echo "  Zu viele Versuche - einige Minuten warten." ;;
+      *)   echo "  Benutzername und Kennwort pruefen. Die Schnittstelle braucht einen LOKALEN"
+           echo "  Administrator (UniFi OS: Einstellungen -> Admins -> 'Nur lokaler Zugriff'),"
+           echo "  kein Ubiquiti-/Cloud-Konto und keine Zwei-Faktor-Anmeldung." ;;
+    esac
+  } >&2
+  exit 1
+fi
+
+if [ "$auth_code" = "200" ]; then
   BASIS="$CONTROLLER/proxy/network"
 
   # UniFi OS laesst den Sitzungskeks allein nicht genuegen: jede Anfrage unter
@@ -118,8 +148,16 @@ if curl -fsS $UNSICHER -c "$KEKSE" -D "$KOPFZEILEN" -X POST "$CONTROLLER/api/aut
 
   echo "Angemeldet (UniFi OS)."
 else
-  curl -fsS $UNSICHER -c "$KEKSE" -X POST "$CONTROLLER/api/login" \
-    -H "Content-Type: application/json" -d "$anmeldung" >/dev/null
+  klassisch_code="$(curl -sS $UNSICHER -c "$KEKSE" -o /dev/null -w '%{http_code}' -X POST "$CONTROLLER/api/login" \
+    -H "Content-Type: application/json" -d "$anmeldung" 2>/dev/null || echo 000)"
+  case "$klassisch_code" in
+    200) ;;
+    404) echo "Fehler: unter $CONTROLLER antwortet kein UniFi-Controller (weder /api/auth/login noch /api/login)." >&2
+         echo "  UDM/UniFi OS: https://<IP> ohne Port; klassischer Controller meist https://<host>:8443." >&2
+         exit 1 ;;
+    *)   echo "Fehler: Anmeldung am Controller abgelehnt (HTTP $klassisch_code) - Benutzername und Kennwort pruefen." >&2
+         exit 1 ;;
+  esac
   BASIS="$CONTROLLER"
   echo "Angemeldet (klassischer Controller)."
 fi
