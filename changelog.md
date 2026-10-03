@@ -4,6 +4,9 @@
 
 ### Fixed
 
+- **Proxmox-Script brach auf Einzelknoten ab** (gefunden beim Test auf einem echten Host): ohne Cluster fehlt `/etc/pve/corosync.conf`, das Auslesen des Clusternamens scheiterte und beendete unter `set -e` die ganze Meldung – Host und VMs wären nicht mehr angekommen. Jetzt gilt dann der Hostname.
+- **Proxmox-Backup-Status gehört jetzt zum Job.** Bisher bekam jeder Job das Ergebnis des letzten vzdump-Laufs des Knotens – ein manuelles Backup einer anderen VM mit Fehler markierte den Job als fehlgeschlagen. Jetzt zählen nur Läufe der VMs des Jobs (bzw. Läufe über mehrere Gäste). Jobs ohne Kommentar heißen „vzdump nach pbs01 (sun 10:00)“ statt nach ihrer internen ID.
+
 - **AD-Abgleich legte von Hand dokumentierte Benutzer doppelt an.** Der Agent erkannte Benutzer und Gruppen nur an der AD-ObjectGUID – ein von Hand angelegter Benutzer hat keine, also entstand ein zweiter. Jetzt übernimmt der Abgleich einen Eintrag ohne GUID mit gleichem Benutzernamen (Gruppen: gleicher Name, Groß-/Kleinschreibung egal) und ergänzt ihn; das von Hand gepflegte Passwort bleibt. Leere Felder aus dem AD überschreiben keine Eingaben mehr.
 
 ### Added
