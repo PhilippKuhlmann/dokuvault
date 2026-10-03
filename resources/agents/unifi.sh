@@ -111,16 +111,47 @@ auth_antwort="$(curl -sS $UNSICHER -c "$KEKSE" -D "$KOPFZEILEN" -w $'\n%{http_co
 auth_code="$(printf '%s' "$auth_antwort" | tail -n1)"
 auth_text="$(printf '%s' "$auth_antwort" | sed '$d')"
 
+# Weiterleitung, meist http:// -> https:// (UDM: 301, UniFi OS Server: 307).
+# Der Anmeldung zu folgen hiesse, das Kennwort an eine Adresse zu schicken,
+# die nur der Server nennt - deshalb nur die neue Adresse uebernehmen, wenn
+# es derselbe Host bleibt, und dort noch einmal anmelden.
+case "$auth_code" in
+  301|302|307|308)
+    ziel="$(tr -d '\r' < "$KOPFZEILEN" | awk 'tolower($1) == "location:" {print $2}' | tail -n1)"
+    neu="$(printf '%s' "$ziel" | sed -E 's#^(https?://[^/]+).*#\1#')"
+    host_alt="$(printf '%s' "$CONTROLLER" | sed -E 's#^https?://([^/:]+).*#\1#')"
+    host_neu="$(printf '%s' "$neu" | sed -E 's#^https?://([^/:]+).*#\1#')"
+    if [ -n "$neu" ] && [ "$host_alt" = "$host_neu" ] && [ "$neu" != "$CONTROLLER" ]; then
+      echo "Hinweis: $CONTROLLER leitet weiter auf $neu - verwende diese Adresse (beim naechsten Aufruf direkt angeben)."
+      CONTROLLER="$neu"
+      auth_antwort="$(curl -sS $UNSICHER -c "$KEKSE" -D "$KOPFZEILEN" -w $'\n%{http_code}' -X POST "$CONTROLLER/api/auth/login" \
+           -H "Content-Type: application/json" -d "$anmeldung" 2>&1)" || {
+        echo "Fehler: $CONTROLLER nicht erreichbar:" >&2
+        printf '  %s\n' "$auth_antwort" >&2
+        echo "  Selbstsigniertes Zertifikat (UDM): --unsicher" >&2
+        exit 1
+      }
+      auth_code="$(printf '%s' "$auth_antwort" | tail -n1)"
+      auth_text="$(printf '%s' "$auth_antwort" | sed '$d')"
+    else
+      echo "Fehler: $CONTROLLER leitet weiter${ziel:+ auf $ziel} (HTTP $auth_code) - die Controller-Adresse pruefen, meist https:// statt http://." >&2
+      exit 1
+    fi
+    ;;
+esac
+
 if [ "$auth_code" != "200" ] && [ "$auth_code" != "404" ]; then
   {
     echo "Fehler: Anmeldung an UniFi OS abgelehnt (HTTP $auth_code)."
     meldung="$(printf '%s' "$auth_text" | jq -r '.message // empty' 2>/dev/null || true)"
     [ -n "$meldung" ] && echo "  Meldung: $meldung"
     case "$auth_code" in
-      429) echo "  Zu viele Versuche - einige Minuten warten." ;;
-      *)   echo "  Benutzername und Kennwort pruefen. Die Schnittstelle braucht einen LOKALEN"
+      401|403)
+           echo "  Benutzername und Kennwort pruefen. Die Schnittstelle braucht einen LOKALEN"
            echo "  Administrator (UniFi OS: Einstellungen -> Admins -> 'Nur lokaler Zugriff'),"
            echo "  kein Ubiquiti-/Cloud-Konto und keine Zwei-Faktor-Anmeldung." ;;
+      429) echo "  Zu viele Versuche - einige Minuten warten." ;;
+      *)   echo "  Unerwartete Antwort - Controller-Adresse pruefen (UDM/UniFi OS: https://<IP>)." ;;
     esac
   } >&2
   exit 1

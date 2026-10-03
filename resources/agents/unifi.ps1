@@ -36,6 +36,14 @@ $ErrorActionPreference = "Stop"
 $Token = "__AGENT_TOKEN__"
 $Controller = $Controller.TrimEnd('/')
 
+# UniFi OS spricht nur https; http:// leitet weiter (UDM 301, UniFi OS Server
+# 307), und einer Weiterleitung folgt Invoke-WebRequest bei POST nicht mit
+# den Anmeldedaten. Also gleich die richtige Adresse.
+if ($Controller -match '^http://') {
+    $Controller = $Controller -replace '^http://', 'https://'
+    Write-Host "Hinweis: verwende $Controller (UniFi OS spricht nur https)."
+}
+
 <#
   Ein UniFi-Controller bringt ab Werk ein selbst signiertes Zertifikat mit.
   -ZertifikatIgnorieren schaltet die Pruefung ab; der Weg dorthin ist in
