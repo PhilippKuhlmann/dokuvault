@@ -43,6 +43,8 @@ var knownAgents = map[string]bool{
 	"windows-ad":     true,
 	"hyperv":         true,
 	"windows-client": true,
+	"veeam":          true,
+	"windows-backup": true,
 }
 
 func (c Config) Validate() error {
@@ -61,7 +63,7 @@ func (c Config) Validate() error {
 	}
 	for _, a := range c.Agents {
 		if !knownAgents[a] {
-			return fmt.Errorf("unbekannter Agent %q (moeglich: windows-server, windows-ad, hyperv, windows-client)", a)
+			return fmt.Errorf("unbekannter Agent %q (moeglich: windows-server, windows-ad, hyperv, windows-client, veeam, windows-backup)", a)
 		}
 	}
 	return validateInterval(c.IntervalMinutes)

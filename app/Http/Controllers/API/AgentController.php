@@ -9,6 +9,7 @@ use App\Models\ADDomainHost;
 use App\Models\ADGroup;
 use App\Models\ADUser;
 use App\Models\AgentInstallation;
+use App\Models\Backup;
 use App\Models\Computer;
 use App\Models\Domain;
 use App\Models\LicenseSoftware;
@@ -23,6 +24,7 @@ use App\Models\VM;
 use App\Models\Wifi;
 use App\Support\AgentSkript;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class AgentController extends Controller
 {
@@ -94,7 +96,7 @@ class AgentController extends Controller
             'host.storages.*.type' => ['nullable', 'string', 'max:255'],
             'host.storages.*.total_gb' => ['nullable', 'numeric'],
             'host.storages.*.used_gb' => ['nullable', 'numeric'],
-        ]));
+        ], $this->backupRegeln('backups')));
 
         // Versionsspezifisch ("Proxmox VE 8" statt nur "Proxmox VE"): Version
         // 7/8/9 haben unterschiedliche Support-Enden, ein Sammel-Eintrag
@@ -109,6 +111,9 @@ class AgentController extends Controller
             nurKatalog: true
         );
 
+        // vzdump jobs of the cluster (since 26.10.03; older scripts send none).
+        $backupCount = $this->backupsDokumentieren($customer->id, $data['backups'] ?? []);
+
         return response()->json([
             'status' => 'ok',
             'customer' => $customer->name,
@@ -116,6 +121,7 @@ class AgentController extends Controller
             'server' => $server->name,
             'server_id' => $server->id,
             'guests_documented' => $guestCount,
+            'backups_documented' => $backupCount,
         ]);
     }
 
@@ -335,6 +341,85 @@ class AgentController extends Controller
             // the script prints them, so they can be documented and linked.
             'unmatched_hosts' => $domainResult['unmatched_hosts'],
         ]);
+    }
+
+    /**
+     * Backup jobs from Veeam B&R or the Windows Server-Sicherung (scripts
+     * veeam.ps1, windows-backup.ps1). Proxmox sends its vzdump jobs with
+     * the host report instead.
+     */
+    public function backup(Request $request)
+    {
+        $customer = $request->attributes->get('agentCustomer');
+        $data = $request->validate($this->backupRegeln('jobs'));
+
+        return response()->json([
+            'status' => 'ok',
+            'customer' => $customer->name,
+            'backups_documented' => $this->backupsDokumentieren($customer->id, $data['jobs'] ?? []),
+        ]);
+    }
+
+    /** Validation for a list of reported backup jobs under $feld. */
+    private function backupRegeln(string $feld): array
+    {
+        return [
+            $feld => ['nullable', 'array', 'max:500'],
+            $feld.'.*.identifier' => ['required', 'string', 'max:255'],
+            $feld.'.*.name' => ['nullable', 'string', 'max:255'],
+            $feld.'.*.software' => ['nullable', 'string', 'max:255'],
+            $feld.'.*.source' => ['nullable', 'string', 'max:255'],
+            $feld.'.*.destination' => ['nullable', 'string', 'max:255'],
+            $feld.'.*.schedule' => ['nullable', 'string', 'max:255'],
+            $feld.'.*.retention' => ['nullable', 'string', 'max:255'],
+            $feld.'.*.last_status' => ['nullable', 'in:'.implode(',', array_keys(Backup::STATUS))],
+            $feld.'.*.last_run_at' => ['nullable', 'date'],
+            $feld.'.*.last_success' => ['nullable', 'date'],
+        ];
+    }
+
+    /**
+     * Create or update reported backup jobs. Found by agent_identifier, else
+     * a job documented by hand with the same name is adopted (as with AD
+     * users). Only what was reported is written - notes and password stay.
+     * Nothing is deleted: a job removed in Veeam stays until someone
+     * removes it here.
+     */
+    private function backupsDokumentieren(int $customerId, array $jobs): int
+    {
+        foreach ($jobs as $job) {
+            $backup = Backup::where('customer_id', $customerId)->where('agent_identifier', $job['identifier'])->first();
+
+            if (! $backup && filled($job['name'] ?? null)) {
+                $backup = Backup::where('customer_id', $customerId)
+                    ->whereNull('agent_identifier')
+                    ->whereRaw('LOWER(name) = ?', [mb_strtolower($job['name'])])
+                    ->orderBy('id')
+                    ->first();
+            }
+
+            $backup ??= new Backup(['customer_id' => $customerId]);
+
+            $backup->fill(array_filter([
+                'agent_identifier' => $job['identifier'],
+                'name' => $job['name'] ?? null,
+                'software' => $job['software'] ?? null,
+                'source' => $job['source'] ?? null,
+                'destination' => $job['destination'] ?? null,
+                'schedule' => $job['schedule'] ?? null,
+                'retention' => $job['retention'] ?? null,
+                'last_status' => $job['last_status'] ?? null,
+                'last_run_at' => filled($job['last_run_at'] ?? null) ? Carbon::parse($job['last_run_at']) : null,
+                'last_success' => filled($job['last_success'] ?? null) ? Carbon::parse($job['last_success'])->toDateString() : null,
+            ], fn ($wert) => filled($wert)));
+
+            // A name is needed for the list; a job without one is named by
+            // its software.
+            $backup->name ??= ($job['software'] ?? 'Backup');
+            $backup->save();
+        }
+
+        return count($jobs);
     }
 
     /**

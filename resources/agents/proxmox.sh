@@ -133,10 +133,55 @@ if command -v pct >/dev/null 2>&1; then
   done < <(pct list 2>/dev/null | awk 'NR>1{print $1}')
 fi
 
+# --- Backup-Jobs (vzdump, auch mit Proxmox Backup Server als Ziel) ---
+# Aus /etc/pve/jobs.cfg (Proxmox VE 7.2 und neuer). Die Jobs gelten fuer den
+# ganzen Cluster - die Kennung traegt deshalb den Clusternamen, damit jeder
+# Knoten denselben Eintrag aktualisiert. Ergebnis und Zeit stammen aus dem
+# letzten vzdump-Lauf dieses Knotens.
+BACKUPS_JSON=""
+json_zahl() { printf '%s' "$2" | grep -oE "\"$1\"[[:space:]]*:[[:space:]]*[0-9]+" | head -n1 | grep -oE '[0-9]+$' || true; }
+iso_zeit() { if [ -n "${1:-}" ]; then date -d "@$1" -Iseconds 2>/dev/null || true; fi; }
+if [ -f /etc/pve/jobs.cfg ]; then
+  CLUSTER="$(sed -n 's/^[[:space:]]*cluster_name:[[:space:]]*//p' /etc/pve/corosync.conf 2>/dev/null | head -n1)"
+  CLUSTER="${CLUSTER:-$HOSTNAME}"
+  KNOTEN="$(hostname)"
+
+  letzte="$(pvesh get "/nodes/$KNOTEN/tasks" --typefilter vzdump --limit 1 --output-format json 2>/dev/null || true)"
+  erfolg="$(pvesh get "/nodes/$KNOTEN/tasks" --typefilter vzdump --statusfilter ok --limit 1 --output-format json 2>/dev/null || true)"
+  LETZTER_LAUF="$(iso_zeit "$(json_zahl endtime "$letzte")")"
+  LETZTER_ERFOLG="$(iso_zeit "$(json_zahl endtime "$erfolg")")"
+  case "$(json_feld status "$letzte")" in
+    "") LETZTER_STATUS="" ;;
+    OK) LETZTER_STATUS="ok" ;;
+    WARNINGS*) LETZTER_STATUS="warning" ;;
+    *) LETZTER_STATUS="failed" ;;
+  esac
+
+  # One line per job: id|schedule|storage|all|vmids|pool|prune|comment|enabled
+  # (vmids: the excluded ones when "all" is set, else the backed up ones).
+  while IFS='|' read -r jid zeitplan storage alle vmids pool prune kommentar aktiv; do
+    [ -z "${jid:-}" ] && continue
+    [ "${aktiv:-1}" = "0" ] && continue
+    if [ "${alle:-0}" = "1" ]; then quelle="alle Gaeste${vmids:+ ausser $vmids}"
+    elif [ -n "${pool:-}" ]; then quelle="Pool $pool"
+    else quelle="${vmids:+VMs $vmids}"; fi
+    eintrag="{\"identifier\":$(json_str "proxmox/$CLUSTER/$jid"),\"name\":$(json_str "${kommentar:-vzdump $jid}"),\"software\":\"Proxmox vzdump\",\"source\":$(json_str "$quelle"),\"destination\":$(json_str "$storage"),\"schedule\":$(json_str "$zeitplan"),\"retention\":$(json_str "$prune"),\"last_status\":$(json_str "$LETZTER_STATUS"),\"last_run_at\":$(json_str "$LETZTER_LAUF"),\"last_success\":$(json_str "$LETZTER_ERFOLG")}"
+    BACKUPS_JSON="${BACKUPS_JSON:+$BACKUPS_JSON,}$eintrag"
+  done < <(awk '
+    function aus() {
+      if (id == "") return
+      print id "|" f["schedule"] "|" f["storage"] "|" f["all"] "|" (f["all"] == "1" ? f["exclude"] : f["vmid"]) "|" f["pool"] "|" f["prune-backups"] "|" f["comment"] "|" f["enabled"]
+    }
+    /^[^[:space:]]/ { aus(); id = ($1 == "vzdump:") ? $2 : ""; split("", f); next }
+    id != "" && NF >= 2 { k = $1; $1 = ""; sub(/^ /, ""); f[k] = $0 }
+    END { aus() }
+  ' /etc/pve/jobs.cfg)
+fi
+
 # --- Payload zusammenbauen ---
 HOST_JSON="{\"identifier\":$(json_str "$IDENTIFIER"),\"hostname\":$(json_str "$HOSTNAME"),\"manufacturer\":$(json_str "$MANUFACTURER"),\"model\":$(json_str "$MODEL"),\"serial\":$(json_str "$SERIAL"),\"ip\":$(json_str "$IP"),\"pve_version\":$(json_str "$PVE_VERSION"),\"kernel\":$(json_str "$KERNEL"),\"cpu\":$(json_str "$CPU"),\"memory_gb\":$(num "$MEM_GB"),\"storages\":[$STORAGES_JSON]}"
 
-PAYLOAD="{\"host\":$HOST_JSON,\"guests\":[$GUESTS_JSON]}"
+PAYLOAD="{\"host\":$HOST_JSON,\"guests\":[$GUESTS_JSON],\"backups\":[$BACKUPS_JSON]}"
 
 echo "Sende Dokumentation an $API_URL ..."
 curl -fsS -X POST "$API_URL" \

@@ -6,6 +6,7 @@ use App\Http\Requests\CustomerRequest;
 use App\Jobs\KundenPdfErzeugen;
 use App\Models\AgentInstallation;
 use App\Models\AgentToken;
+use App\Models\Backup;
 use App\Models\Certificate;
 use App\Models\Computer;
 use App\Models\Concerns\HatBeschaffung;
@@ -140,7 +141,8 @@ class CustomerController extends Controller
 
     /**
      * What needs attention with the agents: machines that stopped reporting,
-     * runs that failed, tokens about to expire. Null when the customer has
+     * runs that failed, backups that failed or warned, tokens about to
+     * expire. Null when the customer has
      * neither agents nor tokens - then there is no tile at all.
      *
      * @return Collection<int, array{name: string, art: string, text: string, schwer: bool}>|null
@@ -149,6 +151,11 @@ class CustomerController extends Controller
     {
         $installations = AgentInstallation::where('customer_id', $customer->id)->orderBy('hostname')->get();
         $tokens = AgentToken::where('customer_id', $customer->id)->get();
+        // Backups whose last run failed or warned, as an agent reported it.
+        $backups = Backup::where('customer_id', $customer->id)
+            ->whereIn('last_status', ['failed', 'warning'])
+            ->orderBy('name')
+            ->get();
 
         if ($installations->isEmpty() && $tokens->isEmpty()) {
             return null;
@@ -176,6 +183,15 @@ class CustomerController extends Controller
                     'schwer' => true,
                 ]);
             }
+        }
+
+        foreach ($backups as $backup) {
+            $warnings->push([
+                'name' => $backup->name,
+                'art' => __('Backup').($backup->software ? ' · '.$backup->software : ''),
+                'text' => __(Backup::STATUS[$backup->last_status]),
+                'schwer' => $backup->last_status === 'failed',
+            ]);
         }
 
         foreach ($tokens as $token) {

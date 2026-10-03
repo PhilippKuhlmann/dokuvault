@@ -16,6 +16,17 @@ class Backup extends Model
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
+    protected $casts = [
+        'last_run_at' => 'datetime',
+    ];
+
+    /** Outcome of the last run as reported by an agent: label per status. */
+    public const STATUS = [
+        'ok' => 'Erfolgreich',
+        'warning' => 'Mit Warnungen',
+        'failed' => 'Fehlgeschlagen',
+    ];
+
     protected function password(): Attribute
     {
         return new Attribute(

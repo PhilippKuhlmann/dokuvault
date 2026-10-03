@@ -8,6 +8,13 @@
 
 ### Added
 
+- **Backups automatisch dokumentiert: Veeam, Windows Server-Sicherung, Proxmox.** Die Agenten tragen Backup-Jobs unter „Backups“ ein – Quelle, Ziel, Zeitplan, Aufbewahrung, letzter Erfolg und neu: Ergebnis und Zeitpunkt des letzten Laufs.
+  - Veeam B&R: neue Aufgabe „Veeam Backup“ im Windows-Agenten (erkannt am Veeam-Dienst), Script `veeam.ps1` – alle Jobs mit gesicherten Objekten, Ziel-Repository, Zeitplan, Aufbewahrung.
+  - Windows Server-Sicherung: neue Aufgabe „Windows-Sicherung“ (erkannt am installierten Feature), Script `windows-backup.ps1` – Volumes/Systemstatus, Ziel, Zeiten, Ergebnis.
+  - Proxmox: der Proxmox-Agent meldet die vzdump-Jobs aus `/etc/pve/jobs.cfg` mit (auch mit Proxmox Backup Server als Ziel); Ergebnis aus dem letzten vzdump-Lauf des Knotens.
+  - Backup-Karte mit Status-Abzeichen (Erfolgreich / Mit Warnungen / Fehlgeschlagen); fehlgeschlagene Backups und solche mit Warnungen erscheinen in der Dashboard-Kachel „Agenten“.
+  - Ein von Hand angelegtes Backup mit gleichem Namen wird übernommen; Passwort und Notizen bleiben. Beide Scripte gibt es auch zum Ausführen von Hand.
+
 - **Agenten aus DokuVault steuern: Intervall und „Jetzt melden“.** Unter „Installierte Agenten“ hat jeder Agent eine Intervall-Auswahl (15 Min. bis täglich) und einen Knopf „Jetzt melden“.
   - Wann ein Agent läuft, entscheidet jetzt DokuVault: Die Agenten fragen alle 5 Minuten an (`checkin` antwortet mit `run`) und laufen, wenn ihr Intervall um ist oder „Jetzt melden“ gedrückt wurde – spätestens 5 Minuten danach.
   - Ist DokuVault nicht erreichbar, läuft der Agent im lokalen Intervall weiter. Das bei der Installation angegebene Intervall (`-interval`, `INTERVAL=`) wird beim ersten Kontakt übernommen.

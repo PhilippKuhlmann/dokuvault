@@ -30,7 +30,7 @@ Befehle (als Administrator):
   set-token -token doc_...   Neuen Token eintragen (nach Ablauf oder Erneuern).
   uninstall Dienst und C:\ProgramData\DokuVault entfernen.
 
-Agenten: windows-server, windows-ad, hyperv, windows-client
+Agenten: windows-server, windows-ad, hyperv, windows-client, veeam, windows-backup
 `
 
 // installEmbeddedArg: the elevated relaunch after a double click.

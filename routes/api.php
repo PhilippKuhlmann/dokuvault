@@ -37,6 +37,7 @@ Route::middleware('agent')->prefix('agent')->group(function () {
     Route::post('/windows-client', [AgentController::class, 'windowsClient']);
     Route::post('/unifi', [AgentController::class, 'unifi']);
     Route::post('/microsoft365', [AgentController::class, 'microsoft365']);
+    Route::post('/backup', [AgentController::class, 'backup']);
     // Installed agents report in and get the roles chosen on the agent page.
     Route::post('/checkin', [AgentController::class, 'checkin']);
     Route::post('/report', [AgentController::class, 'report']);

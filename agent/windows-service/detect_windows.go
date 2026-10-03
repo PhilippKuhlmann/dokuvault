@@ -4,6 +4,7 @@ package main
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 	"syscall"
 
@@ -18,6 +19,8 @@ import (
 //	ProductType ServerNT -> member server     -> windows-server
 //	ProductType LanmanNT -> domain controller -> windows-server + windows-ad
 //	service vmms present -> Hyper-V host      -> + hyperv (servers only)
+//	VeeamBackupSvc       -> Veeam B&R server  -> + veeam
+//	WindowsServerBackup  -> feature installed -> + windows-backup
 //
 // Read before every run, so later role changes are picked up.
 func detectAgents() []string {
@@ -39,6 +42,14 @@ func detectAgents() []string {
 	}
 	if serviceExists("vmms") {
 		agents = append(agents, "hyperv")
+	}
+	if serviceExists("VeeamBackupSvc") {
+		agents = append(agents, "veeam")
+	}
+	// The feature "Windows Server-Sicherung" brings this module; the script
+	// itself reports nothing when no backup is set up.
+	if _, err := os.Stat(filepath.Join(os.Getenv("SystemRoot"), `System32\WindowsPowerShell\v1.0\Modules\WindowsServerBackup`)); err == nil {
+		agents = append(agents, "windows-backup")
 	}
 	return agents
 }

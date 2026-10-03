@@ -1111,6 +1111,8 @@ return [
                 'windows-ad' => 'Active Directory',
                 'hyperv' => 'Hyper-V',
                 'windows-client' => 'Arbeitsplatz',
+                'veeam' => 'Veeam Backup',
+                'windows-backup' => 'Windows-Sicherung',
             ],
             // Shown always, not only after creating a token - one looks this
             // up months later.
@@ -1554,6 +1556,54 @@ return [
                     'ausfuehren_auf' => 'Ausführen auf einem Domaincontroller bzw. Rechner mit RSAT-AD-Modul:',
                     'aufruf' => '.\\windows-ad-doku.ps1',
                     'ueberschreiben' => '.\\windows-ad-doku.ps1 -ApiUrl "https://euer-server/api/agent/windows-ad"',
+                ],
+            ],
+        ],
+
+        // Backups: both report to the same endpoint, each job carries its
+        // software. Proxmox vzdump jobs come with the Proxmox report.
+        'veeam' => [
+            'name' => 'Veeam',
+            'endpunkt' => 'backup',
+            'kurz' => 'Backup-Jobs aus Veeam B&R',
+            'zugangsdaten' => false,
+            'erreichbar_von' => 'Diese URL muss vom Veeam-Server aus erreichbar sein. Falls nicht, beim Aufruf überschreiben:',
+            'macht' => [
+                'Liest die Backup-Jobs über die Veeam-PowerShell (Get-VBRJob) – rein lesend, startet und ändert keine Jobs.',
+                'Legt je Job einen Backup-Eintrag an oder aktualisiert ihn: gesicherte Objekte, Ziel-Repository, Zeitplan, Aufbewahrung, Ergebnis und Zeitpunkt des letzten Laufs, letzter Erfolg.',
+                'Ein von Hand angelegtes Backup mit gleichem Namen wird übernommen; Passwort und Notizen bleiben unangetastet.',
+            ],
+            'varianten' => [
+                [
+                    'name' => 'PowerShell',
+                    'skript' => 'veeam.ps1',
+                    'datei' => 'veeam-doku.ps1',
+                    'ausfuehren_auf' => 'Ausführen auf dem Veeam-Backup-Server (als Administrator):',
+                    'aufruf' => '.\\veeam-doku.ps1',
+                    'ueberschreiben' => '.\\veeam-doku.ps1 -ApiUrl "https://euer-server/api/agent/backup"',
+                ],
+            ],
+        ],
+
+        'windows-backup' => [
+            'name' => 'Windows-Sicherung',
+            'endpunkt' => 'backup',
+            'kurz' => 'Windows Server-Sicherung (wbadmin)',
+            'zugangsdaten' => false,
+            'erreichbar_von' => 'Diese URL muss vom Server aus erreichbar sein. Falls nicht, beim Aufruf überschreiben:',
+            'macht' => [
+                'Liest die eingerichtete Windows Server-Sicherung (Get-WBPolicy, Get-WBSummary) – rein lesend.',
+                'Legt einen Backup-Eintrag je Server an oder aktualisiert ihn: Volumes/Systemstatus, Sicherungsziel, Zeiten, Ergebnis der letzten Sicherung, letzter Erfolg.',
+                'Ohne eingerichtete Sicherung wird nichts gemeldet.',
+            ],
+            'varianten' => [
+                [
+                    'name' => 'PowerShell',
+                    'skript' => 'windows-backup.ps1',
+                    'datei' => 'windows-backup-doku.ps1',
+                    'ausfuehren_auf' => 'Ausführen auf dem Windows-Server (als Administrator):',
+                    'aufruf' => '.\\windows-backup-doku.ps1',
+                    'ueberschreiben' => '.\\windows-backup-doku.ps1 -ApiUrl "https://euer-server/api/agent/backup"',
                 ],
             ],
         ],
