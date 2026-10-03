@@ -203,11 +203,26 @@ class AgentTokenController extends Controller
      */
     public function dienstProxmox(Customer $customer)
     {
-        $inhalt = AgentSkript::rendernInstaller('proxmox-agent.sh', $this->dienstToken($customer));
+        return $this->linuxInstaller($customer, 'proxmox');
+    }
+
+    /** The agent for Linux servers (Debian/Ubuntu) - same installer. */
+    public function dienstLinux(Customer $customer)
+    {
+        return $this->linuxInstaller($customer, 'linux');
+    }
+
+    /**
+     * One installer for both: they differ only in the script they run,
+     * set by KIND in the download.
+     */
+    protected function linuxInstaller(Customer $customer, string $art)
+    {
+        $inhalt = AgentSkript::rendernInstaller('linux-agent.sh', $this->dienstToken($customer), $art);
 
         return response($inhalt, 200, [
             'Content-Type' => 'text/x-shellscript; charset=utf-8',
-            'Content-Disposition' => 'attachment; filename="dokuvault-agent-proxmox.sh"',
+            'Content-Disposition' => 'attachment; filename="'.config("custom.dienste.$art.datei").'"',
             'Cache-Control' => 'no-store',
         ]);
     }

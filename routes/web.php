@@ -307,6 +307,7 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::post('agent/installation/{agentInstallation}/run', [AgentTokenController::class, 'runInstallation'])->name('agent.installation.run');
             Route::delete('agent/installation/{agentInstallation}', [AgentTokenController::class, 'destroyInstallation'])->name('agent.installation.destroy');
             Route::get('agent/dienst-proxmox.sh', [AgentTokenController::class, 'dienstProxmox'])->name('agent.dienst.proxmox');
+            Route::get('agent/dienst-linux.sh', [AgentTokenController::class, 'dienstLinux'])->name('agent.dienst.linux');
 
             // Dokumentations-Assistent (geführte Erstaufnahme)
             Route::get('wizard', [WizardController::class, 'index'])->name('wizard.index');

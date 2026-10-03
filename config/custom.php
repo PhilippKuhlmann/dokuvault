@@ -1146,9 +1146,30 @@ return [
             ],
             'hinweise' => [
                 'Intervall: auf dieser Seite unter „Installierte Agenten“; INTERVAL=15 ist nur der Vorschlag für den ersten Kontakt.',
-                'Nächster Lauf: systemctl list-timers dokuvault-agent.timer · Sofort melden: systemctl start dokuvault-agent.service',
-                'Protokoll: journalctl -u dokuvault-agent.service',
+                'Sofort melden: „Jetzt melden“ unter „Installierte Agenten“ · Protokoll: journalctl -u dokuvault-agent.service',
                 'Neuer Token: Agent mit der neuen Datei einfach erneut einrichten.',
+            ],
+        ],
+        // Same installer as Proxmox (resources/agents/install/linux-agent.sh),
+        // it runs linux-server.sh instead of proxmox.sh.
+        'linux' => [
+            'name' => 'Linux',
+            'kurz' => 'systemd-Timer auf Debian/Ubuntu-Servern, meldet stündlich',
+            'datei' => 'dokuvault-agent-linux.sh',
+            'download' => 'agent.dienst.linux',
+            'beschreibung' => 'Auf den Linux-Server (Debian/Ubuntu) kopieren und als root ausführen – Adresse und Token sind schon enthalten. Der Agent meldet Hardware, Betriebssystem, IP-Adresse und laufende Dienste; eine VM ergänzt den Eintrag, den der Proxmox- oder Hyper-V-Agent schon angelegt hat. Für Proxmox-Hosts den Proxmox-Agenten nehmen. Der Download ist 30 Minuten lang möglich und so vertraulich wie der Token.',
+            'befehl' => 'bash dokuvault-agent-linux.sh',
+            'rollen' => [
+                'linux-server' => 'Linux-Server',
+            ],
+            'deinstallieren' => [
+                'Als root auf dem Server: dokuvault-agent-uninstall',
+                'Entfernt Timer, Dienst, Konfiguration samt Token und /etc/dokuvault. Den Token danach in DokuVault widerrufen.',
+            ],
+            'hinweise' => [
+                'Intervall: auf dieser Seite unter „Installierte Agenten“; INTERVAL=15 ist nur der Vorschlag für den ersten Kontakt.',
+                'Sofort melden: „Jetzt melden“ unter „Installierte Agenten“ · Protokoll: journalctl -u dokuvault-agent.service',
+                'Braucht curl; für Hersteller/Modell/Seriennummer dmidecode (bei Debian/Ubuntu meist vorhanden).',
             ],
         ],
     ],
@@ -1556,6 +1577,29 @@ return [
                     'ausfuehren_auf' => 'Ausführen auf einem Domaincontroller bzw. Rechner mit RSAT-AD-Modul:',
                     'aufruf' => '.\\windows-ad-doku.ps1',
                     'ueberschreiben' => '.\\windows-ad-doku.ps1 -ApiUrl "https://euer-server/api/agent/windows-ad"',
+                ],
+            ],
+        ],
+
+        'linux-server' => [
+            'name' => 'Linux-Server',
+            'endpunkt' => 'linux-server',
+            'kurz' => 'Debian-/Ubuntu-Server',
+            'zugangsdaten' => false,
+            'erreichbar_von' => 'Diese URL muss vom Server aus erreichbar sein. Falls nicht, beim Aufruf überschreiben:',
+            'macht' => [
+                'Liest Hersteller, Modell, Seriennummer (dmidecode), Betriebssystem (/etc/os-release), IP-Adresse und laufende Dienste (systemctl) – rein lesend.',
+                'Hardware wird als Server angelegt oder aktualisiert. Eine VM ergänzt den Eintrag gleichen Namens, den der Proxmox- oder Hyper-V-Agent angelegt hat; ohne Treffer entsteht eine VM.',
+                'Dienste werden nur eingetragen, solange das Feld leer ist – von Hand gepflegte bleiben.',
+            ],
+            'varianten' => [
+                [
+                    'name' => 'Bash',
+                    'skript' => 'linux-server.sh',
+                    'datei' => 'linux-server-doku.sh',
+                    'ausfuehren_auf' => 'Ausführen auf dem Linux-Server (als root):',
+                    'aufruf' => 'bash linux-server-doku.sh',
+                    'ueberschreiben' => 'bash linux-server-doku.sh https://euer-server/api/agent/linux-server',
                 ],
             ],
         ],

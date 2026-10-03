@@ -135,7 +135,8 @@ test('the Proxmox installer comes with address and token filled in', function ()
     expect($inhalt)
         ->toContain('BASE_URL="'.rtrim(url('/'), '/').'"')
         ->toContain('TOKEN="'.$plain.'"')
-        ->toContain('/api/agent/script/proxmox?shell=bash')
+        ->toContain('KIND="proxmox"')
+        ->toContain('/api/agent/script/$ROLE?shell=bash')
         ->not->toContain('__BASE_URL__')
         ->not->toContain('__AGENT_TOKEN__');
     expect($antwort->headers->get('Content-Disposition'))->toContain('dokuvault-agent-proxmox.sh');
@@ -171,7 +172,7 @@ test('the Windows agent gets an update only when its version differs', function 
 
 test('the Proxmox agent gets the current installer with its own token', function () {
     [, $plain] = dienstToken();
-    $aktuell = AgentSkript::installerVersion('proxmox-agent.sh');
+    $aktuell = AgentSkript::installerVersion('linux-agent.sh');
 
     $this->withToken($plain)->get('/api/agent/update/proxmox?version='.$aktuell)->assertNoContent();
 
@@ -179,7 +180,12 @@ test('the Proxmox agent gets the current installer with its own token', function
         ->assertOk()
         ->assertHeader('X-Agent-Version', $aktuell)
         ->assertSee('TOKEN="'.$plain.'"', false)
-        ->assertSee('AGENT_VERSION="'.$aktuell.'"', false);
+        ->assertSee('AGENT_VERSION="'.$aktuell.'"', false)
+        ->assertSee('KIND="proxmox"', false);
+
+    $this->withToken($plain)->get('/api/agent/update/linux?version=alt')
+        ->assertOk()
+        ->assertSee('KIND="linux"', false);
 });
 
 test('updates need a valid token and a known agent', function () {

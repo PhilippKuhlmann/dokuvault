@@ -56,6 +56,27 @@ class AgentController extends Controller
     ];
 
     /**
+     * Running systemd units of a Linux server that match a service of the
+     * catalog - like WINDOWS_ROLLEN, only what the catalog knows is kept.
+     */
+    protected const LINUX_DIENSTE = [
+        'apache2' => 'apache2',
+        'httpd' => 'apache2',
+        'nginx' => 'nginx',
+        'docker' => 'docker',
+        'mariadb' => 'mariadb',
+        'mysql' => 'SQL',
+        'postgresql' => 'SQL',
+        'named' => 'DNS',
+        'bind9' => 'DNS',
+        'smbd' => 'Fileserver',
+        'nfs-server' => 'Fileserver',
+        'cups' => 'Print',
+        'isc-dhcp-server' => 'DHCP',
+        'kea-dhcp4-server' => 'DHCP',
+    ];
+
+    /**
      * Was /etc/os-release meldet, auf den Betriebssystem-Katalog abgebildet:
      * 'debian' + '12' wird "Debian 12".
      *
@@ -238,6 +259,86 @@ class AgentController extends Controller
             'site' => $site->name,
             'server' => $server->name,
             'server_id' => $server->id,
+            'services_documented' => count($dienste),
+        ]);
+    }
+
+    /**
+     * A Linux server (Debian/Ubuntu agent, script linux-server.sh).
+     *
+     * Hardware becomes a server. A virtual machine is usually documented
+     * already - by the Proxmox or Hyper-V agent, under the name of its
+     * hypervisor - so it is looked up by host name and completed instead of
+     * appearing a second time as a server. Only without a match it is
+     * created as a VM of its own.
+     */
+    public function linuxServer(Request $request)
+    {
+        $customer = $request->attributes->get('agentCustomer');
+        $site = $request->attributes->get('agentSite');
+
+        $data = $request->validate([
+            'server.identifier' => ['required', 'string', 'max:255'],
+            'server.hostname' => ['required', 'string', 'max:255'],
+            'server.manufacturer' => ['nullable', 'string', 'max:255'],
+            'server.model' => ['nullable', 'string', 'max:255'],
+            'server.serial' => ['nullable', 'string', 'max:255'],
+            'server.ip' => ['nullable', 'string', 'max:255'],
+            'server.os_id' => ['nullable', 'string', 'max:50'],
+            'server.os_version' => ['nullable', 'string', 'max:50'],
+            'server.virtual' => ['nullable', 'boolean'],
+            'server.cpu' => ['nullable', 'string', 'max:255'],
+            'server.memory_gb' => ['nullable', 'numeric'],
+            'server.services' => ['nullable', 'array', 'max:100'],
+            'server.services.*' => ['string', 'max:100'],
+        ]);
+        $meldung = $data['server'];
+
+        // No catalog entry, no operating system: the support end hangs on it.
+        $osName = $this->osReleaseKatalogName($meldung['os_id'] ?? null, $meldung['os_version'] ?? null);
+        $dienste = collect($meldung['services'] ?? [])
+            ->map(fn ($unit) => self::LINUX_DIENSTE[$unit] ?? null)
+            ->filter()
+            ->unique()
+            ->intersect(Service::pluck('name'))
+            ->values()
+            ->all();
+
+        if ($meldung['virtual'] ?? false) {
+            $kurz = mb_strtolower(explode('.', $meldung['hostname'])[0]);
+            $geraet = VM::where('customer_id', $customer->id)->where('agent_identifier', $meldung['identifier'])->first()
+                ?? VM::where('customer_id', $customer->id)
+                    ->where(fn ($q) => $q->whereRaw('LOWER(name) = ?', [$kurz])
+                        ->orWhereRaw('LOWER(name) = ?', [mb_strtolower($meldung['hostname'])]))
+                    ->orderBy('id')
+                    ->first()
+                ?? new VM([
+                    'customer_id' => $customer->id,
+                    'site_id' => $site->id,
+                    'name' => $meldung['hostname'],
+                    'agent_identifier' => $meldung['identifier'],
+                ]);
+
+            if ($osId = $this->betriebssystemId($osName, true)) {
+                $geraet->operating_system_id = $osId;
+            }
+            $geraet->save();
+            $this->meldeAdresse($geraet, $customer->id, $site->id, $meldung['ip'] ?? null);
+        } else {
+            [$geraet] = $this->hostUndGaeste($meldung, [], $customer, $site, (string) $osName, nurKatalog: true);
+        }
+
+        // As with Windows: only into an empty field - whoever maintained the
+        // services by hand knows more than systemctl.
+        if ($dienste !== [] && blank($geraet->getRawOriginal('services'))) {
+            $geraet->update(['services' => implode(',', $dienste)]);
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'customer' => $customer->name,
+            'type' => $geraet instanceof VM ? 'vm' : 'server',
+            'name' => $geraet->name,
             'services_documented' => count($dienste),
         ]);
     }
@@ -547,15 +648,15 @@ class AgentController extends Controller
             ]);
         }
 
-        // proxmox
-        $aktuell = AgentSkript::installerVersion('proxmox-agent.sh');
+        // proxmox, linux: one installer, rendered with the kind asked for.
+        $aktuell = AgentSkript::installerVersion('linux-agent.sh');
         if ($gemeldet === $aktuell) {
             return response()->noContent();
         }
 
         $token = $request->bearerToken() ?: $request->header('X-Agent-Token');
 
-        return response(AgentSkript::rendernInstaller('proxmox-agent.sh', $token), 200, [
+        return response(AgentSkript::rendernInstaller('linux-agent.sh', $token, $dienst), 200, [
             'Content-Type' => 'text/x-shellscript; charset=utf-8',
             'X-Agent-Version' => $aktuell,
             'Cache-Control' => 'no-store',

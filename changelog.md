@@ -8,6 +8,11 @@
 
 ### Added
 
+- **Agent für Linux-Server (Debian/Ubuntu).** Neuer Reiter „Linux“ auf der Agent-Seite: `dokuvault-agent-linux.sh` herunterladen, als root ausführen – meldet Hersteller, Modell, Seriennummer, Betriebssystem, IP-Adresse und laufende Dienste (apache2, nginx, docker, mariadb, PostgreSQL, Samba, …).
+  - Echte Hardware wird als Server angelegt. Eine VM ergänzt den Eintrag gleichen Namens, den der Proxmox- oder Hyper-V-Agent schon angelegt hat (Betriebssystem, IP) – kein doppelter Server mehr. Ohne Treffer entsteht eine VM.
+  - Dienste nur in ein leeres Feld, wie beim Windows-Agenten. Auch als Script zum Ausführen von Hand.
+  - Proxmox- und Linux-Agent teilen sich jetzt einen Installer (`resources/agents/install/linux-agent.sh`, Art per `KIND`); installierte Proxmox-Agenten stellen sich beim nächsten Selbst-Update darauf um.
+
 - **Backups automatisch dokumentiert: Veeam, Windows Server-Sicherung, Proxmox.** Die Agenten tragen Backup-Jobs unter „Backups“ ein – Quelle, Ziel, Zeitplan, Aufbewahrung, letzter Erfolg und neu: Ergebnis und Zeitpunkt des letzten Laufs.
   - Veeam B&R: neue Aufgabe „Veeam Backup“ im Windows-Agenten (erkannt am Veeam-Dienst), Script `veeam.ps1` – alle Jobs mit gesicherten Objekten, Ziel-Repository, Zeitplan, Aufbewahrung.
   - Windows Server-Sicherung: neue Aufgabe „Windows-Sicherung“ (erkannt am installierten Feature), Script `windows-backup.ps1` – Volumes/Systemstatus, Ziel, Zeiten, Ergebnis.

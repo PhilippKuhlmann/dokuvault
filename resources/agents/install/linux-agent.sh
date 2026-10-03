@@ -1,20 +1,21 @@
 #!/usr/bin/env bash
 #
-# DokuVault-Agent fuer Proxmox VE
+# DokuVault-Agent fuer Linux: Proxmox VE oder Linux-Server (Debian/Ubuntu)
 #
-# Richtet einen systemd-Timer ein, der alle 5 Minuten bei DokuVault fragt, ob ein
-# Lauf faellig ist (Intervall und "Jetzt melden" auf der Agent-Seite), und dann das aktuelle Proxmox-Script
-# von DokuVault holt und ausfuehrt - nur lesend, wie das Script von Hand.
-# Als root auf dem Proxmox-Host ausfuehren:
+# Richtet einen systemd-Timer ein, der alle 5 Minuten bei DokuVault fragt, ob
+# ein Lauf faellig ist (Intervall und "Jetzt melden" auf der Agent-Seite), und
+# dann das aktuelle Script von DokuVault holt und ausfuehrt - nur lesend, wie
+# das Script von Hand. Welches Script, ist beim Download eingesetzt worden
+# (KIND unten). Als root ausfuehren:
 #
-#   bash dokuvault-agent-proxmox.sh                 einrichten (meldet stuendlich)
-#   INTERVAL=15 bash dokuvault-agent-proxmox.sh     Intervall vorschlagen (Minuten, mind. 5; danach in DokuVault)
-#   bash dokuvault-agent-proxmox.sh --uninstall     wieder entfernen
+#   bash dokuvault-agent-<art>.sh                   einrichten (meldet stuendlich)
+#   INTERVAL=15 bash dokuvault-agent-<art>.sh       Intervall vorschlagen (Minuten, mind. 5; danach in DokuVault)
+#   bash dokuvault-agent-<art>.sh --uninstall       wieder entfernen
 #
 # Danach:
 #   dokuvault-agent-uninstall                       entfernen, ohne diese Datei
-#   systemctl list-timers dokuvault-agent.timer     naechster Lauf
-#   systemctl start dokuvault-agent.service         sofort melden
+#   systemctl list-timers dokuvault-agent.timer     naechste Anfrage
+#   systemctl start dokuvault-agent.service         sofort anfragen
 #   journalctl -u dokuvault-agent.service           Protokoll
 #
 # Adresse und Token sind beim Download eingesetzt worden. Die Datei ist so
@@ -27,6 +28,14 @@ TOKEN="__AGENT_TOKEN__"
 # Set by DokuVault from the content of this file - run.sh compares it before
 # every run and applies a newer installer with --update.
 AGENT_VERSION="__AGENT_VERSION__"
+# proxmox | linux - which agent this is (config custom.dienste). The role is
+# the script it runs: proxmox.sh or linux-server.sh.
+KIND="__AGENT_KIND__"
+case "$KIND" in
+  proxmox) ROLE=proxmox ;;
+  linux)   ROLE=linux-server ;;
+  *) echo "Unbekannte Agent-Art $KIND." >&2; exit 1 ;;
+esac
 
 CONF_DIR=/etc/dokuvault
 LIB_DIR=/usr/local/lib/dokuvault
@@ -64,7 +73,14 @@ if ! [[ "$INTERVAL" =~ ^[0-9]+$ ]] || [ "$INTERVAL" -lt 5 ]; then
   exit 1
 fi
 command -v curl >/dev/null || { echo "curl fehlt (apt install curl)." >&2; exit 1; }
-command -v pveversion >/dev/null || echo "Hinweis: pveversion nicht gefunden - ist das ein Proxmox-Host?" >&2
+if [ "$KIND" = proxmox ]; then
+  command -v pveversion >/dev/null || echo "Hinweis: pveversion nicht gefunden - ist das ein Proxmox-Host?" >&2
+elif [ -z "$UPDATE" ] && command -v pveversion >/dev/null; then
+  # Both would share /etc/dokuvault and the timer; the Proxmox agent
+  # reports the host as server anyway, with its guests.
+  echo "Das ist ein Proxmox-Host - bitte den Agenten fuer Proxmox verwenden." >&2
+  exit 1
+fi
 
 install -d -m 700 "$CONF_DIR" "$LIB_DIR" "$STATE_DIR"
 
@@ -74,6 +90,8 @@ cat > "$CONF_DIR/agent.conf.neu" <<CONF
 URL=$BASE_URL
 TOKEN=$TOKEN
 INTERVAL=$INTERVAL
+KIND=$KIND
+ROLE=$ROLE
 CONF
 mv "$CONF_DIR/agent.conf.neu" "$CONF_DIR/agent.conf"
 printf '%s\n' "$AGENT_VERSION" > "$LIB_DIR/version"
@@ -87,13 +105,16 @@ cat > "$LIB_DIR/run.sh.neu" <<'RUN'
 #!/usr/bin/env bash
 set -euo pipefail
 . /etc/dokuvault/agent.conf
+# Installed before KIND existed: those were all Proxmox agents.
+KIND="${KIND:-proxmox}"
+ROLE="${ROLE:-proxmox}"
 
 if [ -z "${DOKUVAULT_UPDATED:-}" ]; then
   installer=/var/lib/dokuvault/installer.neu
   status="$(curl -sS -o "$installer" -w '%{http_code}' \
     -H "Authorization: Bearer $TOKEN" \
-    -H "User-Agent: DokuVault-Agent-Proxmox" \
-    "$URL/api/agent/update/proxmox?version=$(cat /usr/local/lib/dokuvault/version 2>/dev/null)")" || status=000
+    -H "User-Agent: DokuVault-Agent-$KIND" \
+    "$URL/api/agent/update/$KIND?version=$(cat /usr/local/lib/dokuvault/version 2>/dev/null)")" || status=000
 
   case "$status" in
     200)
@@ -115,9 +136,9 @@ fi
 antwort=/var/lib/dokuvault/checkin.json
 status="$(curl -sS -o "$antwort" -w '%{http_code}' -X POST \
   -H "Authorization: Bearer $TOKEN" \
-  -H "User-Agent: DokuVault-Agent-Proxmox" \
+  -H "User-Agent: DokuVault-Agent-$KIND" \
   -H "Content-Type: application/json" -H "Accept: application/json" \
-  -d "{\"kind\":\"proxmox\",\"machine_id\":\"$(cat /etc/machine-id 2>/dev/null)\",\"hostname\":\"$(hostname)\",\"version\":\"$(cat /usr/local/lib/dokuvault/version 2>/dev/null)\",\"detected\":[\"proxmox\"],\"interval\":${INTERVAL:-60}}" \
+  -d "{\"kind\":\"$KIND\",\"machine_id\":\"$(cat /etc/machine-id 2>/dev/null)\",\"hostname\":\"$(hostname)\",\"version\":\"$(cat /usr/local/lib/dokuvault/version 2>/dev/null)\",\"detected\":[\"$ROLE\"],\"interval\":${INTERVAL:-60}}" \
   "$URL/api/agent/checkin")" || status=000
 
 # The timer fires every five minutes; whether to run now is DokuVault's
@@ -129,7 +150,7 @@ lokal_faellig() {
 }
 case "$status" in
   200)
-    if ! grep -q '"proxmox"' "$antwort"; then
+    if ! grep -q "\"$ROLE\"" "$antwort"; then
       echo "Keine Aufgaben zugewiesen (in DokuVault unter Agenten anhaken)."
       rm -f "$antwort"
       exit 0
@@ -154,11 +175,11 @@ esac
 rm -f "$antwort"
 date +%s > "$letzter"
 
-ziel=/var/lib/dokuvault/proxmox.sh
+ziel="/var/lib/dokuvault/$ROLE.sh"
 status="$(curl -sS -o "$ziel.neu" -w '%{http_code}' \
   -H "Authorization: Bearer $TOKEN" \
-  -H "User-Agent: DokuVault-Agent-Proxmox" \
-  "$URL/api/agent/script/proxmox?shell=bash")" || {
+  -H "User-Agent: DokuVault-Agent-$KIND" \
+  "$URL/api/agent/script/$ROLE?shell=bash")" || {
   echo "DokuVault nicht erreichbar ($URL)." >&2
   exit 1
 }
@@ -180,9 +201,9 @@ nachricht="$(printf '%s' "$ausgabe" | tail -c 4000 | tr -d '\000-\010\013\014\01
   | sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/ /g' | awk 'NR > 1 { printf "\\n" } { printf "%s", $0 }')"
 curl -sS -o /dev/null -X POST \
   -H "Authorization: Bearer $TOKEN" \
-  -H "User-Agent: DokuVault-Agent-Proxmox" \
+  -H "User-Agent: DokuVault-Agent-$KIND" \
   -H "Content-Type: application/json" -H "Accept: application/json" \
-  -d "{\"machine_id\":\"$(cat /etc/machine-id 2>/dev/null)\",\"results\":[{\"role\":\"proxmox\",\"ok\":$ok,\"message\":\"$nachricht\"}]}" \
+  -d "{\"machine_id\":\"$(cat /etc/machine-id 2>/dev/null)\",\"results\":[{\"role\":\"$ROLE\",\"ok\":$ok,\"message\":\"$nachricht\"}]}" \
   "$URL/api/agent/report" || echo "Ergebnis nicht gemeldet." >&2
 
 exit "$rc"
@@ -210,7 +231,7 @@ chmod 700 /usr/local/sbin/dokuvault-agent-uninstall
 
 cat > "/etc/systemd/system/$UNIT.service" <<SERVICE
 [Unit]
-Description=DokuVault Agent (Proxmox) - meldet Host, VMs und Container
+Description=DokuVault Agent ($KIND) - meldet an DokuVault
 Wants=network-online.target
 After=network-online.target
 
@@ -222,7 +243,7 @@ SERVICE
 
 cat > "/etc/systemd/system/$UNIT.timer" <<TIMER
 [Unit]
-Description=DokuVault Agent (Proxmox) - fragt alle 5 Minuten, ob ein Lauf faellig ist
+Description=DokuVault Agent ($KIND) - fragt alle 5 Minuten, ob ein Lauf faellig ist
 
 [Timer]
 OnBootSec=2min

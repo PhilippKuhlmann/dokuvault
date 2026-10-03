@@ -33,6 +33,7 @@ Route::middleware('agent')->prefix('agent')->group(function () {
     Route::post('/hyperv', [AgentController::class, 'hyperv']);
     Route::post('/vmware', [AgentController::class, 'vmware']);
     Route::post('/windows-server', [AgentController::class, 'windowsServer']);
+    Route::post('/linux-server', [AgentController::class, 'linuxServer']);
     Route::post('/windows-ad', [AgentController::class, 'windowsAd']);
     Route::post('/windows-client', [AgentController::class, 'windowsClient']);
     Route::post('/unifi', [AgentController::class, 'unifi']);
@@ -44,7 +45,7 @@ Route::middleware('agent')->prefix('agent')->group(function () {
     // The Windows service fetches the current script before every run.
     Route::get('/script/{agent}', [AgentController::class, 'script'])->where('agent', '[a-z0-9-]+');
     // Installed agents update themselves (the agent program, not only the script).
-    Route::get('/update/{dienst}', [AgentController::class, 'update'])->where('dienst', 'windows|proxmox');
+    Route::get('/update/{dienst}', [AgentController::class, 'update'])->where('dienst', 'windows|proxmox|linux');
 });
 
 Route::middleware(['auth:sanctum', 'aktiv'])->group(function () {

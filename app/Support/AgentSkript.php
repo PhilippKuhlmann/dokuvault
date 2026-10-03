@@ -49,15 +49,15 @@ class AgentSkript
     }
 
     /**
-     * An installer from resources/agents/install/ with the DokuVault address
-     * and the token filled in - handed out right after creating a token
+     * An installer from resources/agents/install/ with the DokuVault address,
+     * the token and the kind of agent (proxmox, linux) filled in - handed out right after creating a token
      * (AgentTokenController::dienstInstaller).
      */
-    public static function rendernInstaller(string $datei, string $token): string
+    public static function rendernInstaller(string $datei, string $token, string $art = 'proxmox'): string
     {
         return str_replace(
-            ['__BASE_URL__', '__AGENT_TOKEN__', '__AGENT_VERSION__'],
-            [rtrim(url('/'), '/'), $token, self::installerVersion($datei)],
+            ['__BASE_URL__', '__AGENT_TOKEN__', '__AGENT_VERSION__', '__AGENT_KIND__'],
+            [rtrim(url('/'), '/'), $token, self::installerVersion($datei), $art],
             file_get_contents(resource_path('agents/install/'.$datei))
         );
     }
