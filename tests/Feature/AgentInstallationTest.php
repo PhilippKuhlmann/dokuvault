@@ -139,3 +139,88 @@ test('agents of another customer cannot be changed', function () {
     $this->put(route('agent.installation.update', [$fremd, AgentInstallation::sole()]), ['roles' => []])
         ->assertNotFound();
 });
+
+function reportAls(string $plain, string $machine, array $results)
+{
+    return test()->withToken($plain)->postJson('/api/agent/report', ['machine_id' => $machine, 'results' => $results]);
+}
+
+test('a run report is stored per role, cut to the end of the output', function () {
+    [, $plain] = installationToken();
+    checkinAls($plain, 'dc01', ['windows-server', 'windows-ad']);
+
+    reportAls($plain, 'dc01', [
+        ['role' => 'windows-server', 'ok' => true, 'message' => 'Server gemeldet'],
+        ['role' => 'windows-ad', 'ok' => false, 'message' => str_repeat('x', 3000).'Zugriff verweigert'],
+    ])->assertOk();
+
+    $installation = AgentInstallation::sole();
+    expect($installation->last_run_at)->not->toBeNull()
+        ->and($installation->resultFor('windows-server')['ok'])->toBeTrue()
+        ->and($installation->failedRoles())->toBe(['windows-ad'])
+        ->and($installation->resultFor('windows-ad')['message'])->toEndWith('Zugriff verweigert')
+        ->and(mb_strlen($installation->resultFor('windows-ad')['message']))->toBe(AgentInstallation::MESSAGE_LENGTH);
+});
+
+test('results of roles no longer assigned are dropped', function () {
+    [, $plain] = installationToken();
+    checkinAls($plain, 'dc01', ['windows-server', 'windows-ad']);
+    reportAls($plain, 'dc01', [['role' => 'windows-ad', 'ok' => false, 'message' => 'kaputt']]);
+
+    AgentInstallation::sole()->update(['roles' => ['windows-server']]);
+    reportAls($plain, 'dc01', [['role' => 'windows-server', 'ok' => true]]);
+
+    expect(AgentInstallation::sole()->failedRoles())->toBe([]);
+});
+
+test('a report needs a machine that checked in with this customer', function () {
+    [, $plain] = installationToken();
+    reportAls($plain, 'unbekannt', [['role' => 'windows-server', 'ok' => true]])->assertNotFound();
+
+    [, $fremd] = installationToken();
+    checkinAls($fremd, 'dc01', ['windows-server']);
+    reportAls($plain, 'dc01', [['role' => 'windows-server', 'ok' => true]])->assertNotFound();
+});
+
+test('the agent page shows a failed run with its message', function () {
+    $this->actingAs(userWithPermissions(['see_hidden']));
+    [$token, $plain] = installationToken();
+    checkinAls($plain, 'dc01', ['windows-server', 'windows-ad']);
+    reportAls($plain, 'dc01', [['role' => 'windows-ad', 'ok' => false, 'message' => 'Get-ADUser: Zugriff verweigert']]);
+
+    $this->get(route('agent.index', $token->customer))
+        ->assertOk()
+        ->assertSee('Active Directory fehlgeschlagen')
+        ->assertSee('Get-ADUser: Zugriff verweigert');
+});
+
+test('the dashboard warns about silent agents, failed runs and expiring tokens', function () {
+    $this->actingAs(userWithPermissions(['see_hidden']));
+    [$token, $plain] = installationToken();
+    $customer = $token->customer;
+    $token->update(['expires_at' => now()->addDays(10)->endOfDay(), 'name' => 'Token Zentrale']);
+
+    checkinAls($plain, 'dc01', ['windows-server', 'windows-ad']);
+    reportAls($plain, 'dc01', [['role' => 'windows-ad', 'ok' => false, 'message' => 'kaputt']]);
+    checkinAls($plain, 'srv-alt', ['windows-server']);
+    AgentInstallation::where('machine_id', 'srv-alt')->update(['last_seen_at' => now()->subDays(2)]);
+
+    $this->get(route('customer.dashboard', $customer))
+        ->assertOk()
+        ->assertViewHas('agentWarnings', fn ($w) => $w->pluck('name')->sort()->values()->all() === ['DC01', 'SRV-ALT', 'Token Zentrale'])
+        ->assertSee('läuft ab in 10 Tagen');
+});
+
+test('without agents or tokens there is no agents tile', function () {
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['see_hidden']));
+
+    $this->get(route('customer.dashboard', $customer))->assertOk()->assertViewHas('agentWarnings', null);
+});
+
+test('without the right to manage agents there is no agents tile', function () {
+    [$token] = installationToken();
+    $this->actingAs(userWithPermissions(['server_viewAny']));
+
+    $this->get(route('customer.dashboard', $token->customer))->assertOk()->assertViewHas('agentWarnings', null);
+});

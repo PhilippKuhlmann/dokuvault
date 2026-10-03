@@ -98,13 +98,14 @@ func runOnce(cfg Config, log func(level, msg string)) error {
 	}
 
 	var failed []string
+	var results []runResult
 
 	for _, agent := range agents {
+		var out string
 		body, err := fetchScript(cfg, agent)
 		if err == nil {
 			var path string
 			if path, err = writeScript(agent, body); err == nil {
-				var out string
 				out, err = runScript(path)
 				if out = strings.TrimSpace(out); out != "" {
 					log("info", agent+": "+out)
@@ -115,13 +116,21 @@ func runOnce(cfg Config, log func(level, msg string)) error {
 		if err != nil {
 			log("error", agent+": "+err.Error())
 			failed = append(failed, agent)
-			// The same token serves every agent - no point asking again.
+			// The same token serves every agent - no point asking again,
+			// nor reporting with it.
 			if errors.Is(err, errUnauthorized) {
-				break
+				return fmt.Errorf("fehlgeschlagen: %s", strings.Join(failed, ", "))
 			}
+			results = append(results, runResult{Role: agent, OK: false, Message: strings.TrimSpace(out + "\n" + err.Error())})
 			continue
 		}
 		log("info", agent+": gemeldet")
+		results = append(results, runResult{Role: agent, OK: true, Message: out})
+	}
+
+	// Not fatal: the data is in DokuVault already, only the status is missing.
+	if err := sendReport(cfg, results); err != nil {
+		log("warn", "Ergebnis nicht gemeldet: "+err.Error())
 	}
 
 	if len(failed) > 0 {

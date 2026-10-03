@@ -338,6 +338,30 @@ class AgentController extends Controller
     }
 
     /**
+     * The outcome of a run, per role: shown on the agent page and the
+     * dashboard. Only for a machine that checked in with this customer.
+     */
+    public function report(Request $request)
+    {
+        $data = $request->validate([
+            'machine_id' => ['required', 'string', 'max:100'],
+            'results' => ['required', 'array', 'max:50'],
+            'results.*.role' => ['required', 'string', 'max:50'],
+            'results.*.ok' => ['required', 'boolean'],
+            // Long output is cut to its end by the model, not refused.
+            'results.*.message' => ['nullable', 'string', 'max:100000'],
+        ]);
+
+        $installation = AgentInstallation::where('customer_id', $request->attributes->get('agentCustomer')->id)
+            ->where('machine_id', strtolower($data['machine_id']))
+            ->firstOrFail();
+
+        $installation->recordResults($data['results']);
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    /**
      * Memberships of one group as AD reports them.
      *
      * Only users AD knows (with a GUID) are added or removed. A link to a

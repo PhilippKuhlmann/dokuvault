@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -260,5 +261,49 @@ func TestCheckUpdateRejectsTamperedDownload(t *testing.T) {
 
 	if updated, _, err := checkUpdate(validConfig(srv.URL)); err == nil || updated {
 		t.Fatalf("tampered download must not be installed: updated=%v err=%v", updated, err)
+	}
+}
+
+func TestRunOnceReportsTheOutcomePerAgent(t *testing.T) {
+	useTempDir(t)
+
+	var report struct {
+		MachineID string      `json:"machine_id"`
+		Results   []runResult `json:"results"`
+	}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/agent/checkin":
+			w.Write([]byte(`{"roles":["windows-server","windows-ad"]}`))
+		case "/api/agent/report":
+			_ = json.NewDecoder(r.Body).Decode(&report)
+			w.Write([]byte(`{"status":"ok"}`))
+		default:
+			w.Write([]byte("Write-Host ok"))
+		}
+	}))
+	defer srv.Close()
+
+	oldRun := runScript
+	runScript = func(path string) (string, error) {
+		if filepath.Base(path) == "windows-ad.ps1" {
+			return "Get-ADUser: Zugriff verweigert", errors.New("exit status 1")
+		}
+		return "Server gemeldet", nil
+	}
+	defer func() { runScript = oldRun }()
+
+	if err := runOnce(validConfig(srv.URL), func(string, string) {}); err == nil {
+		t.Fatal("expected the failed AD run as error")
+	}
+
+	if report.MachineID != "test-machine" || len(report.Results) != 2 {
+		t.Fatalf("report %+v", report)
+	}
+	if !report.Results[0].OK || report.Results[0].Message != "Server gemeldet" {
+		t.Fatalf("server result %+v", report.Results[0])
+	}
+	if report.Results[1].OK || !strings.Contains(report.Results[1].Message, "Zugriff verweigert") || !strings.Contains(report.Results[1].Message, "exit status 1") {
+		t.Fatalf("ad result %+v", report.Results[1])
 	}
 }

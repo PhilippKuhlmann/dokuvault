@@ -221,9 +221,37 @@
                 </div>
             </x-dashboard-tile>
 
+            {{-- Agents: only for those who manage them, and only where there
+                 are agents or tokens. Everything links to the agent page. --}}
+            @if ($agentWarnings !== null)
+                <x-dashboard-tile :title="__('Agenten')">
+                    <div class="divide-y divide-gray-100 dark:divide-gray-700">
+                        @forelse ($agentWarnings as $warnung)
+                            <a href="{{ route('agent.index', $customer) }}"
+                                class="flex items-center justify-between gap-3 py-2.5 -mx-2 px-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                <span class="min-w-0">
+                                    <span class="block truncate text-gray-800 dark:text-gray-100">{{ $warnung['name'] }}</span>
+                                    <span class="block truncate text-xs text-gray-400 dark:text-gray-500">{{ $warnung['art'] }}</span>
+                                </span>
+                                <span @class([
+                                    'shrink-0 text-sm font-medium',
+                                    'text-red-600 dark:text-red-400' => $warnung['schwer'],
+                                    'text-amber-600 dark:text-amber-400' => ! $warnung['schwer'],
+                                ])>{{ $warnung['text'] }}</span>
+                            </a>
+                        @empty
+                            <div class="py-3 text-sm text-gray-400 dark:text-gray-500">{{ __('Alle Agenten melden 🎉') }}</div>
+                        @endforelse
+                    </div>
+                </x-dashboard-tile>
+            @endif
+
             {{-- Latest changes. A full row: seven tiles fill 3+3+1 or
-                 2+2+2+1 columns, and the list reads better wide. --}}
-            <x-dashboard-tile :title="__('Zuletzt geändert')" class="md:col-span-2 xl:col-span-3">
+                 2+2+2+1 columns, and the list reads better wide. With the
+                 agents tile there are eight: 3+3+2 at xl, and at md the eight
+                 fill four rows by themselves. --}}
+            <x-dashboard-tile :title="__('Zuletzt geändert')"
+                :class="$agentWarnings === null ? 'md:col-span-2 xl:col-span-3' : 'xl:col-span-2'">
                 <div class="divide-y divide-gray-100 dark:divide-gray-700">
                     @forelse ($recentChanges as $aenderung)
                         <a @if ($aenderung['url']) href="{{ $aenderung['url'] }}" @endif

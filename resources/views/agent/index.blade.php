@@ -265,6 +265,18 @@
                             {{ __('Version') }}: {{ $installation->version ?? '—' }} ·
                             {{ __('Token') }}: {{ $installation->agentToken ? ($installation->agentToken->name ?: 'Token #'.$installation->agentToken->id) : __('widerrufen') }}
                         </div>
+                        {{-- Failed roles with the end of their output - visible
+                             without hovering, the full text folded. --}}
+                        @foreach ($installation->failedRoles() as $rolle)
+                            @php($ergebnis = $installation->resultFor($rolle))
+                            <details class="mt-1 max-w-xl text-xs text-red-700 dark:text-red-400">
+                                <summary class="cursor-pointer select-none">
+                                    {{ __(':rolle fehlgeschlagen', ['rolle' => __($rollen[$rolle] ?? $rolle)]) }}
+                                    · {{ \Illuminate\Support\Carbon::parse($ergebnis['at'])->format('d.m.Y H:i') }}
+                                </summary>
+                                <pre class="mt-1 max-h-48 overflow-auto whitespace-pre-wrap rounded bg-red-50 p-2 text-[11px] text-red-900 dark:bg-red-950/30 dark:text-red-200">{{ $ergebnis['message'] ?? __('Keine Ausgabe.') }}</pre>
+                            </details>
+                        @endforeach
                     </div>
 
                     <div class="flex flex-wrap items-center gap-3">
@@ -276,6 +288,15 @@
                                     <input type="checkbox" name="roles[]" value="{{ $rolle }}" @checked(in_array($rolle, $installation->roles ?? [], true))
                                         class="h-4 w-4 rounded border-gray-300 text-cerulean-600 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700">
                                     {{ __($bezeichnung) }}
+                                    {{-- Outcome of the last run of this role. --}}
+                                    @if ($ergebnis = $installation->resultFor($rolle))
+                                        <span @class([
+                                                'inline-block h-2 w-2 rounded-full',
+                                                'bg-green-500' => $ergebnis['ok'],
+                                                'bg-red-500' => ! $ergebnis['ok'],
+                                            ])
+                                            title="{{ ($ergebnis['ok'] ? __('Letzter Lauf erfolgreich') : __('Letzter Lauf fehlgeschlagen')).' · '.\Illuminate\Support\Carbon::parse($ergebnis['at'])->format('d.m.Y H:i') }}"></span>
+                                    @endif
                                     @if (in_array($rolle, $installation->detected ?? [], true))
                                         <span class="text-[10px] text-green-700 dark:text-green-400">{{ __('erkannt') }}</span>
                                     @endif

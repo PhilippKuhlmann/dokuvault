@@ -145,7 +145,23 @@ case "$status" in
   *)   echo "Unerwartete Antwort $status von $URL." >&2; exit 1 ;;
 esac
 
-exec bash "$ziel"
+# Run, then tell DokuVault how it went (agent page, dashboard). The output
+# is still printed for journalctl.
+if ausgabe="$(bash "$ziel" 2>&1)"; then ok=true; rc=0; else rc=$?; ok=false; fi
+printf '%s\n' "$ausgabe"
+
+# Last 4000 characters as a JSON string: backslash and quotes escaped,
+# control characters dropped, line breaks as \n.
+nachricht="$(printf '%s' "$ausgabe" | tail -c 4000 | tr -d '\000-\010\013\014\016-\037\r' \
+  | sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/ /g' | awk 'NR > 1 { printf "\\n" } { printf "%s", $0 }')"
+curl -sS -o /dev/null -X POST \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "User-Agent: DokuVault-Agent-Proxmox" \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -d "{\"machine_id\":\"$(cat /etc/machine-id 2>/dev/null)\",\"results\":[{\"role\":\"proxmox\",\"ok\":$ok,\"message\":\"$nachricht\"}]}" \
+  "$URL/api/agent/report" || echo "Ergebnis nicht gemeldet." >&2
+
+exit "$rc"
 RUN
 chmod 700 "$LIB_DIR/run.sh.neu"
 mv "$LIB_DIR/run.sh.neu" "$LIB_DIR/run.sh"

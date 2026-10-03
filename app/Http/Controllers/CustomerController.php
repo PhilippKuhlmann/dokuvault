@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CustomerRequest;
 use App\Jobs\KundenPdfErzeugen;
+use App\Models\AgentInstallation;
+use App\Models\AgentToken;
 use App\Models\Certificate;
 use App\Models\Computer;
 use App\Models\Concerns\HatBeschaffung;
@@ -108,6 +110,9 @@ class CustomerController extends Controller
 
         $recentChanges = $this->recentChanges($customer);
 
+        // Only for those who manage agents, and only where there are any.
+        $agentWarnings = Gate::allows('see_hidden') ? $this->agentWarnings($customer) : null;
+
         // Einstieg zum Dokumentations-Assistenten: anbieten, wenn ein Durchlauf dieses Nutzers
         // offen ist ("Fortsetzen") oder der Kunde insgesamt noch kaum Inventar hat.
         // Wurde die Erstaufnahme für diesen Kunden schon einmal abgeschlossen (auch
@@ -128,9 +133,66 @@ class CustomerController extends Controller
 
         return view('customer.dashboard', compact(
             'customer', 'sites', 'contactpersons', 'tiles', 'expiringLicenses', 'expiringCertificates',
-            'expiringWarranties', 'endOfSupport', 'recentChanges',
+            'expiringWarranties', 'endOfSupport', 'recentChanges', 'agentWarnings',
             'openWizardRun', 'wizardCompleted', 'inventoryCount'
         ));
+    }
+
+    /**
+     * What needs attention with the agents: machines that stopped reporting,
+     * runs that failed, tokens about to expire. Null when the customer has
+     * neither agents nor tokens - then there is no tile at all.
+     *
+     * @return Collection<int, array{name: string, art: string, text: string, schwer: bool}>|null
+     */
+    private function agentWarnings(Customer $customer): ?Collection
+    {
+        $installations = AgentInstallation::where('customer_id', $customer->id)->orderBy('hostname')->get();
+        $tokens = AgentToken::where('customer_id', $customer->id)->get();
+
+        if ($installations->isEmpty() && $tokens->isEmpty()) {
+            return null;
+        }
+
+        $warnings = collect();
+
+        foreach ($installations as $installation) {
+            if ($installation->isStale()) {
+                $warnings->push([
+                    'name' => $installation->hostname,
+                    'art' => __('Agent'),
+                    'text' => $installation->last_seen_at
+                        ? __('meldet nicht seit :zeit', ['zeit' => $installation->last_seen_at->diffForHumans(null, true)])
+                        : __('meldet nicht'),
+                    'schwer' => true,
+                ]);
+            }
+
+            foreach ($installation->failedRoles() as $role) {
+                $warnings->push([
+                    'name' => $installation->hostname,
+                    'art' => __(AgentInstallation::availableRoles($installation->kind)[$role] ?? $role),
+                    'text' => __('fehlgeschlagen'),
+                    'schwer' => true,
+                ]);
+            }
+        }
+
+        foreach ($tokens as $token) {
+            if ($token->expires_at === null || $token->expires_at->gt(now()->addDays(30))) {
+                continue;
+            }
+            $warnings->push([
+                'name' => $token->name ?: 'Token #'.$token->id,
+                'art' => __('Agent-Token'),
+                'text' => $token->istAbgelaufen()
+                    ? __('abgelaufen')
+                    : __('läuft ab in :tage Tagen', ['tage' => (int) now()->startOfDay()->diffInDays($token->expires_at->copy()->startOfDay())]),
+                'schwer' => $token->istAbgelaufen(),
+            ]);
+        }
+
+        return $warnings;
     }
 
     /**

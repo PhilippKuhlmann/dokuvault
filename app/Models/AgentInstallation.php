@@ -20,7 +20,12 @@ class AgentInstallation extends Model
         'detected' => 'array',
         'roles' => 'array',
         'last_seen_at' => 'datetime',
+        'last_run_at' => 'datetime',
+        'last_results' => 'array',
     ];
+
+    /** Longest message kept per role - the tail of the output says most. */
+    public const MESSAGE_LENGTH = 1000;
 
     /** Roles that exist once per domain, not once per machine. */
     public const ONCE_PER_DOMAIN = ['windows-ad'];
@@ -94,6 +99,45 @@ class AgentInstallation extends Model
             ->get()
             ->contains(fn (self $other) => in_array($role, $other->roles ?? [], true)
                 && strcasecmp((string) $other->domain, (string) $domain) === 0);
+    }
+
+    /**
+     * Stores the outcome of a run. Reported roles replace their old result;
+     * results of roles no longer assigned are dropped - a red dot for
+     * something switched off would only confuse.
+     *
+     * @param  array<int, array{role: string, ok: bool, message?: string|null}>  $results
+     */
+    public function recordResults(array $results): void
+    {
+        $stand = $this->last_results ?? [];
+
+        foreach ($results as $result) {
+            $message = trim((string) ($result['message'] ?? ''));
+            $stand[$result['role']] = [
+                'ok' => (bool) $result['ok'],
+                // Keep the end: errors come last in a script's output.
+                'message' => $message === '' ? null : mb_substr($message, -self::MESSAGE_LENGTH),
+                'at' => now()->toIso8601String(),
+            ];
+        }
+
+        $this->forceFill([
+            'last_results' => array_intersect_key($stand, array_flip($this->roles ?? [])),
+            'last_run_at' => now(),
+        ])->save();
+    }
+
+    /** @return array{ok: bool, message: string|null, at: string}|null */
+    public function resultFor(string $role): ?array
+    {
+        return $this->last_results[$role] ?? null;
+    }
+
+    /** @return array<int, string> roles whose last run failed */
+    public function failedRoles(): array
+    {
+        return array_keys(array_filter($this->last_results ?? [], fn ($r) => ! ($r['ok'] ?? true)));
     }
 
     /**

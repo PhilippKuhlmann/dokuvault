@@ -8,6 +8,11 @@
 
 ### Added
 
+- **Agenten melden ihr Ergebnis; Dashboard warnt.** Nach jedem Lauf schickt der Agent je Aufgabe, ob sie geklappt hat, samt Ende der Ausgabe (`POST /api/agent/report`).
+  - Agent-Seite: grüner oder roter Punkt neben jeder Aufgabe; fehlgeschlagene Aufgaben stehen darunter mit Zeitpunkt und aufklappbarer Meldung (z. B. „Get-ADUser: Zugriff verweigert“).
+  - Dashboard: neue Kachel „Agenten“ für alle, die Agenten verwalten – Rechner, die seit drei Stunden nicht melden, fehlgeschlagene Läufe und Agent-Token, die in 30 Tagen ablaufen oder abgelaufen sind. Nur bei Kunden mit Agenten oder Token.
+  - Windows- und Proxmox-Agent bekommen das mit dem nächsten Selbst-Update.
+
 - **AD: Wer ist in welcher Gruppe.** Die Benutzerliste zeigt je Benutzer die Zahl seiner Gruppen, die Gruppenliste die Zahl der Mitglieder – ein Klick klappt die vollständige Liste auf. Bearbeiten geht von beiden Seiten: im Benutzer das Feld „Gruppen“, in der Gruppe „Mitglieder“.
   - Der AD-Agent meldet die direkten Mitglieder jeder Gruppe mit (nur Benutzer; verschachtelte Gruppen und Computer nicht). Wer im AD aus einer Gruppe entfernt wird, verschwindet auch hier; eine Zuordnung zu einem nur von Hand dokumentierten Benutzer bleibt stehen.
   - Ein älteres Script ohne Mitglieder lässt die Zuordnungen in Ruhe.

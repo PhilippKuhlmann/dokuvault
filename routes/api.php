@@ -39,6 +39,7 @@ Route::middleware('agent')->prefix('agent')->group(function () {
     Route::post('/microsoft365', [AgentController::class, 'microsoft365']);
     // Installed agents report in and get the roles chosen on the agent page.
     Route::post('/checkin', [AgentController::class, 'checkin']);
+    Route::post('/report', [AgentController::class, 'report']);
     // The Windows service fetches the current script before every run.
     Route::get('/script/{agent}', [AgentController::class, 'script'])->where('agent', '[a-z0-9-]+');
     // Installed agents update themselves (the agent program, not only the script).
