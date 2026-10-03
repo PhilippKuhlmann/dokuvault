@@ -1,5 +1,19 @@
 # Changelog
 
+## 26.10.03
+
+### Added
+
+- **Windows-Dienst: Agenten melden automatisch.** Neu auf der Agent-Seite (nach dem Erzeugen eines Tokens): `dokuvault-agent.exe` zum Herunterladen, in die Adresse und Token schon eingebettet sind. Auf den Server kopieren, doppelklicken, Administratorrechte bestätigen – danach läuft der Dienst „DokuVault Agent“ unter LocalSystem, startet mit Windows und meldet stündlich. Kein `Unblock-File` mehr nötig.
+  - Der Dienst erkennt die Rollen des Rechners selbst und meldet passend: Server → Windows-Server, Domänencontroller → zusätzlich AD, Hyper-V-Host → zusätzlich Hyper-V, Arbeitsplatz → Windows-Client. Geprüft vor jedem Lauf – kommt eine Rolle später dazu, meldet er sie ohne Neuinstallation.
+  - Der vorkonfigurierte Download ist 30 Minuten nach dem Erzeugen des Tokens möglich und nur für diesen Kunden; die Datei ist so vertraulich wie der Token.
+  - Für Verteilung per Script bleibt die Kommandozeile: `install -url … -token … [-agents …] [-interval 15]`.
+  - Der Dienst sammelt nicht selbst: Vor jedem Lauf holt er das aktuelle Script von DokuVault (`GET /api/agent/script/{agent}`) und führt es aus. Script-Verbesserungen kommen so ohne Neuinstallation an.
+  - Nur Agenten, die ohne fremde Zugangsdaten auskommen (Windows-Server, AD, Hyper-V, Windows-Client); UniFi, VMware und Microsoft 365 bleiben Scripte zum Aufrufen.
+  - Konfiguration samt Token liegt in `C:\ProgramData\DokuVault`, nur für SYSTEM und Administratoren lesbar. Protokoll in der Ereignisanzeige und in `agent.log`. Weitere Befehle: `run-once`, `status`, `set-token` (nach Ablauf des Tokens), `uninstall`.
+  - Die Ausführungsrichtlinie wird nicht verändert; unter einer Gruppenrichtlinie „AllSigned“ laufen die Scripte nicht.
+  - Das Programm ist noch nicht signiert: Beim Doppelklick warnt SmartScreen, der Aufruf in der Kommandozeile funktioniert.
+
 ## 26.10.02
 
 ### Added

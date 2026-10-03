@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AgentToken;
 use App\Models\Customer;
 use App\Models\Site;
+use App\Support\AgentSkript;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -89,9 +90,19 @@ class AgentTokenController extends Controller
         $skripte = [];
         foreach (config('custom.agenten', []) as $schluessel => $agent) {
             foreach ($agent['varianten'] as $i => $variante) {
-                $skripte[$schluessel][$i] = $this->skript($variante, $agent['endpunkt'], $plain);
+                $skripte[$schluessel][$i] = AgentSkript::rendern($variante, $agent['endpunkt'], $plain);
             }
         }
+
+        // For the preconfigured service exe (dienstExe): the plain token is
+        // gone after this redirect, but the download is a second request.
+        // Kept for half an hour and only for this customer - enough to fetch
+        // it for a few servers, short enough not to linger.
+        session()->put('agentDienst', [
+            'customer_id' => $customer->id,
+            'token' => $plain,
+            'bis' => now()->addMinutes(30)->timestamp,
+        ]);
 
         return redirect(route('agent.index', $customer))
             ->with('newToken', $plain)
@@ -99,26 +110,36 @@ class AgentTokenController extends Controller
             ->with('agentSkripte', $skripte);
     }
 
-    /**
-     * Liest die Skriptdatei einer Variante und setzt Ziel-URL und Token ein.
-     *
-     * Die Skripte liegen als Dateien unter resources/agents/ statt als Heredoc
-     * im Controller: als Datei sind sie in ihrer eigenen Sprache lesbar, von
-     * einem Editor pruefbar und der Controller waechst nicht mit jedem Agenten
-     * um hundert Zeilen.
-     *
-     * Die Ziel-URL kommt vom Agenten, nicht von der Variante: PowerShell- und
-     * Bash-Fassung melden an denselben Endpunkt, sie sind zwei Wege zur selben
-     * Aufgabe.
-     */
-    protected function skript(array $variante, string $endpunkt, string $token): string
-    {
-        $inhalt = file_get_contents(resource_path('agents/'.$variante['skript']));
+    /** Marker the exe looks for at its own end (agent/windows-service/embedded.go). */
+    public const EXE_KENNUNG = 'DVCFG001';
 
-        return str_replace(
-            ['__API_URL__', '__AGENT_TOKEN__'],
-            [url('/api/agent/'.$endpunkt), $token],
-            $inhalt
+    /**
+     * The Windows service exe with URL and token appended - a double click
+     * installs it, no command line needed.
+     *
+     * Appended after the PE image: Windows ignores trailing data, the exe
+     * reads its own last bytes (JSON, 4-byte length, marker). Like the
+     * script, the file is as confidential as the token in it.
+     */
+    public function dienstExe(Customer $customer)
+    {
+        Gate::authorize('see_hidden');
+
+        $dienst = session('agentDienst');
+        abort_unless(
+            $dienst && $dienst['customer_id'] === $customer->id && $dienst['bis'] >= now()->timestamp,
+            410,
+            __('Der Download ist nur kurz nach dem Erzeugen eines Tokens möglich. Bitte einen neuen Token erzeugen.')
         );
+
+        $json = json_encode(['url' => url('/'), 'token' => $dienst['token']], JSON_UNESCAPED_SLASHES);
+        $inhalt = file_get_contents(public_path('downloads/dokuvault-agent.exe'))
+            .$json.pack('V', strlen($json)).self::EXE_KENNUNG;
+
+        return response($inhalt, 200, [
+            'Content-Type' => 'application/vnd.microsoft.portable-executable',
+            'Content-Disposition' => 'attachment; filename="dokuvault-agent-'.$customer->slug.'.exe"',
+            'Cache-Control' => 'no-store',
+        ]);
     }
 }

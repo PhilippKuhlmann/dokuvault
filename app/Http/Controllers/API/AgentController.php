@@ -20,6 +20,7 @@ use App\Models\Server;
 use App\Models\Service;
 use App\Models\VM;
 use App\Models\Wifi;
+use App\Support\AgentSkript;
 use Illuminate\Http\Request;
 
 class AgentController extends Controller
@@ -323,6 +324,31 @@ class AgentController extends Controller
             // the script prints them, so they can be documented and linked.
             'unmatched_hosts' => $domainResult['unmatched_hosts'],
         ]);
+    }
+
+    /**
+     * The current PowerShell script of an agent, with URL and token filled in.
+     *
+     * Called by the Windows service (agent/windows-service) before every run:
+     * so script updates reach installed services without anyone downloading
+     * anything. The token is the one the service authenticated with - the
+     * plain value is only known here because it came in the header.
+     *
+     * Only agents the service can run unattended (AgentSkript::fuerDienst);
+     * everything else is a 404, not a hint that it exists.
+     */
+    public function script(Request $request, string $agent)
+    {
+        $variante = AgentSkript::fuerDienst()[$agent] ?? null;
+        abort_unless($variante, 404);
+
+        $token = $request->bearerToken() ?: $request->header('X-Agent-Token');
+
+        return response(
+            AgentSkript::rendern($variante, config('custom.agenten')[$agent]['endpunkt'], $token),
+            200,
+            ['Content-Type' => 'text/plain; charset=utf-8', 'Cache-Control' => 'no-store']
+        );
     }
 
     /**

@@ -22,6 +22,33 @@ jobs:
       - name: Pint
         run: ./vendor/bin/pint --test
 
+  # The Windows service (agent/windows-service) is Go, not PHP. Vet and test
+  # it for both platforms and cross-build the exe, so a change that breaks it
+  # does not go unnoticed until someone installs it on a server.
+  windows-agent:
+    name: Windows-Dienst (Go)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: agent/windows-service
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: agent/windows-service/go.mod
+
+      - name: Vet
+        run: |
+          go vet ./...
+          GOOS=windows GOARCH=amd64 go vet ./...
+
+      - name: Test
+        run: go test ./...
+
+      - name: Build
+        run: GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o /tmp/dokuvault-agent.exe .
+
   tests:
     name: PHP ${{ matrix.php }} / ${{ matrix.datenbank }}
     runs-on: ubuntu-latest

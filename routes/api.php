@@ -37,6 +37,8 @@ Route::middleware('agent')->prefix('agent')->group(function () {
     Route::post('/windows-client', [AgentController::class, 'windowsClient']);
     Route::post('/unifi', [AgentController::class, 'unifi']);
     Route::post('/microsoft365', [AgentController::class, 'microsoft365']);
+    // The Windows service fetches the current script before every run.
+    Route::get('/script/{agent}', [AgentController::class, 'script'])->where('agent', '[a-z0-9-]+');
 });
 
 Route::middleware(['auth:sanctum', 'aktiv'])->group(function () {

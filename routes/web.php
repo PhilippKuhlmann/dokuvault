@@ -302,6 +302,7 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::post('agent', [AgentTokenController::class, 'store'])->name('agent.store');
             Route::delete('agent/{agentToken}', [AgentTokenController::class, 'destroy'])->name('agent.destroy');
             Route::post('agent/{agentToken}/erneuern', [AgentTokenController::class, 'erneuern'])->name('agent.erneuern');
+            Route::get('agent/dienst.exe', [AgentTokenController::class, 'dienstExe'])->name('agent.dienst');
 
             // Dokumentations-Assistent (geführte Erstaufnahme)
             Route::get('wizard', [WizardController::class, 'index'])->name('wizard.index');
