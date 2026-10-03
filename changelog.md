@@ -2,6 +2,15 @@
 
 ## 26.10.03
 
+### Fixed
+
+- **Windows-Agent: „Access is denied“ auf config.json.** Die Rechte wurden mit `/T` auch auf die schon geschriebenen Dateien gesetzt; eine Datei nimmt die Ordner-Einträge nicht an und stand danach ganz ohne Zugriffsrechte da – auch für Administratoren. Jetzt wird nur der Ordner gesperrt, bevor Dateien hineinkommen, und die Dateien erben. Dateien aus einem fehlgeschlagenen Lauf werden beim nächsten Doppelklick repariert. Außerdem wird ein laufender Dienst vor dem Kopieren der neuen exe gestoppt, sonst schlug eine Neuinstallation fehl.
+
+### Changed
+
+- **Agent-Seite: erst wählen, dann sehen.** Nach dem Erzeugen eines Tokens wählt man oben zwischen „Agent“ (einmal installieren, meldet automatisch) und „Script“ (einmal von Hand ausführen); gezeigt wird nur das Gewählte. Der Scripttext ist eingeklappt („Script anzeigen“) – Kopieren und Download funktionieren ohne Aufklappen. Die Installation per Kommandozeile steht beim Agenten ebenfalls eingeklappt. Die Übersicht trennt „Agenten“ und „Scripte“.
+  - Agenten kommen wie die Scripte aus der Konfiguration (`custom.dienste`); ein weiterer Agent ist ein Eintrag dort und erscheint als eigener Reiter.
+
 ### Added
 
 - **Windows-Dienst: Agenten melden automatisch.** Neu auf der Agent-Seite (nach dem Erzeugen eines Tokens): `dokuvault-agent.exe` zum Herunterladen, in die Adresse und Token schon eingebettet sind. Auf den Server kopieren, doppelklicken, Administratorrechte bestätigen – danach läuft der Dienst „DokuVault Agent“ unter LocalSystem, startet mit Windows und meldet stündlich. Kein `Unblock-File` mehr nötig.

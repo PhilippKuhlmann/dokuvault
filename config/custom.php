@@ -1081,6 +1081,38 @@ return [
     | Erneuern setzt.
     |
     */
+    /*
+    |--------------------------------------------------------------------------
+    | Installable agents (services)
+    |--------------------------------------------------------------------------
+    |
+    | As opposed to the scripts in 'agenten' below, which run once by hand:
+    | an agent is installed once and reports by itself. The agent page lets
+    | the user choose between the two, and lists one tab per entry here - a
+    | future Linux agent is an entry, not a new block in the view.
+    |
+    | 'download': route that hands out the file with URL and token embedded
+    | (only shortly after creating a token). 'befehl': the command-line
+    | alternative, :url and :token are filled in.
+    |
+    */
+    'dienste' => [
+        'windows' => [
+            'name' => 'Windows',
+            'kurz' => 'Dienst für Windows-Server und -PCs, meldet stündlich',
+            'datei' => 'dokuvault-agent.exe',
+            'download' => 'agent.dienst',
+            'beschreibung' => 'Auf den Rechner kopieren und doppelklicken – Adresse und Token sind schon enthalten. Der Dienst erkennt die Rollen des Rechners selbst (Server, Domänencontroller, Hyper-V, Arbeitsplatz) und meldet stündlich. Der Download ist 30 Minuten lang möglich und so vertraulich wie der Token.',
+            'befehl' => '.\dokuvault-agent.exe install -url :url -token :token',
+            'hinweise' => [
+                'Agenten fest vorgeben statt erkennen: -agents windows-server,windows-ad (möglich: windows-server, windows-ad, hyperv, windows-client).',
+                'Anderes Intervall: -interval 15 (Minuten, mindestens 5).',
+                'Testen: run-once · Status: status · Token erneuern: set-token -token doc_… · Entfernen: uninstall',
+                'Protokoll: Ereignisanzeige (Quelle „DokuVault Agent“) und C:\ProgramData\DokuVault\agent.log. Unter einer Gruppenrichtlinie „AllSigned“ laufen die Scripte nicht.',
+            ],
+        ],
+    ],
+
     'agenten_token' => [
         'gueltigkeit_tage_standard' => 365,
     ],

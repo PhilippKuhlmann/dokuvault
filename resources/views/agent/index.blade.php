@@ -21,8 +21,12 @@
                  dazwischen waere rohes PHP geworden. --}}
             @php
                 $agenten = config('custom.agenten', []);
+                $dienste = config('custom.dienste', []);
             @endphp
-            <div x-data="{ tab: @js(array_key_first($agenten)) }" class="p-5 rounded-xl border border-green-300 bg-green-50 shadow-xs dark:bg-gray-800 dark:border-green-800">
+            {{-- art: agent (install once, reports by itself) or script (run by
+                 hand). One of the two is shown - both at once was a wall of
+                 text, and more of each are coming. --}}
+            <div x-data="{ art: 'agent', tab: @js(array_key_first($agenten)), dienst: @js(array_key_first($dienste)) }" class="p-5 rounded-xl border border-green-300 bg-green-50 shadow-xs dark:bg-gray-800 dark:border-green-800">
                 <div class="text-lg font-CoconPro text-green-800 dark:text-green-300">
                     {{ __('Token „:name" erstellt', ['name' => session('newTokenName')]) }}
                 </div>
@@ -31,7 +35,7 @@
                          einzige Weg, das <strong> aus der Uebersetzung kommen zu lassen -
                          und rohes HTML aus einer Sprachdatei will hier niemand. --}}
                     {{ __('Dieser Token wird') }} <strong>{{ __('nur jetzt') }}</strong>
-                    {{ __('angezeigt. Lade das passende Script herunter oder kopiere es – der Token ist darin bereits eingetragen.') }}
+                    {{ __('angezeigt. Installiere einen Agenten oder lade ein Script herunter – der Token ist jeweils schon eingetragen.') }}
                 </p>
 
                 <div class="mt-3">
@@ -41,33 +45,69 @@
                     </div>
                 </div>
 
-                {{-- Windows service: reports by itself, hourly by default. Shown
-                     here because only now the plain token is known - the
-                     install line comes ready to paste. --}}
-                <div class="mt-4 rounded-lg border border-cerulean-200 bg-white p-4 text-sm dark:border-cerulean-800 dark:bg-gray-900">
-                    <div class="flex flex-wrap items-center justify-between gap-2">
-                        <div class="font-medium text-gray-900 dark:text-gray-100">{{ __('Als Windows-Dienst – meldet automatisch') }}</div>
-                        {{-- URL and token are appended to this download - a double
-                             click installs it. Only offered right after creating
-                             a token (AgentTokenController::dienstExe). --}}
-                        <a href="{{ route('agent.dienst', $customer) }}"
-                            class="text-sm px-3 py-1.5 rounded-lg bg-cerulean-600 text-white hover:bg-cerulean-700">
-                            {{ __('Download') }} dokuvault-agent.exe
-                        </a>
-                    </div>
-                    <p class="mt-1 text-gray-500 dark:text-gray-400">
-                        {{ __('Auf den Server kopieren und doppelklicken – Adresse und Token sind schon enthalten. Der Dienst erkennt die Rollen des Rechners selbst (Server, Domänencontroller, Hyper-V, Arbeitsplatz) und meldet stündlich. Der Download ist 30 Minuten lang möglich und so vertraulich wie der Token.') }}
-                    </p>
-                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ __('Oder per Kommandozeile, etwa für die Verteilung per Script:') }}</p>
-                    <code class="mt-1 block break-all rounded bg-gray-100 px-3 py-2 text-xs text-gray-800 dark:bg-gray-800 dark:text-gray-100">.\dokuvault-agent.exe install -url {{ url('/') }} -token {{ session('newToken') }}</code>
-                    <ul class="mt-2 list-disc space-y-0.5 pl-5 text-xs text-gray-500 dark:text-gray-400">
-                        <li>{{ __('Agenten fest vorgeben statt erkennen:') }} <code>-agents windows-server,windows-ad</code> ({{ __('möglich:') }} <code>{{ implode(', ', array_keys(\App\Support\AgentSkript::fuerDienst())) }}</code>).</li>
-                        <li>{{ __('Anderes Intervall:') }} <code>-interval 15</code> {{ __('(Minuten, mindestens 5).') }}</li>
-                        <li>{{ __('Testen:') }} <code>.\dokuvault-agent.exe run-once</code> · {{ __('Status:') }} <code>status</code> · {{ __('Token erneuern:') }} <code>set-token -token doc_…</code> · {{ __('Entfernen:') }} <code>uninstall</code></li>
-                        <li>{{ __('Protokoll: Ereignisanzeige (Quelle „DokuVault Agent“) und C:\ProgramData\DokuVault\agent.log. Unter einer Gruppenrichtlinie „AllSigned“ laufen die Scripte nicht.') }}</li>
-                    </ul>
+                {{-- Agent or script. --}}
+                <div class="mt-4 grid gap-2 sm:grid-cols-2" role="tablist">
+                    <button type="button" role="tab" @click="art = 'agent'"
+                        :class="art === 'agent' ? 'border-cerulean-500 bg-white ring-1 ring-cerulean-500 dark:bg-gray-900' : 'border-gray-200 bg-white/60 hover:border-gray-300 dark:border-gray-700 dark:bg-gray-900/40'"
+                        class="rounded-lg border p-3 text-left transition-colors">
+                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ __('Agent') }}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ __('Einmal installieren – meldet danach automatisch.') }}</div>
+                    </button>
+                    <button type="button" role="tab" @click="art = 'script'"
+                        :class="art === 'script' ? 'border-cerulean-500 bg-white ring-1 ring-cerulean-500 dark:bg-gray-900' : 'border-gray-200 bg-white/60 hover:border-gray-300 dark:border-gray-700 dark:bg-gray-900/40'"
+                        class="rounded-lg border p-3 text-left transition-colors">
+                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ __('Script') }}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ __('Einmal von Hand ausführen – auch für Proxmox, VMware, UniFi, Microsoft 365.') }}</div>
+                    </button>
                 </div>
 
+                {{-- Agents from config('custom.dienste'): one tab each, only
+                     shown once there is more than one. --}}
+                <div x-show="art === 'agent'" class="mt-4">
+                    @if (count($dienste) > 1)
+                        <div class="mb-3 flex flex-wrap gap-1 border-b border-green-200 dark:border-green-800">
+                            @foreach ($dienste as $schluessel => $dienst)
+                                <button type="button" @click="dienst = @js($schluessel)"
+                                    :class="dienst === @js($schluessel) ? 'border-cerulean-600 text-cerulean-700 dark:text-cerulean-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700'"
+                                    class="px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors">
+                                    {{ __($dienst['name']) }}
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    @foreach ($dienste as $schluessel => $dienst)
+                        <div x-show="dienst === @js($schluessel)" class="rounded-lg border border-cerulean-200 bg-white p-4 text-sm dark:border-cerulean-800 dark:bg-gray-900">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <div>
+                                    <div class="font-medium text-gray-900 dark:text-gray-100">{{ __('Agent für :name', ['name' => __($dienst['name'])]) }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ __($dienst['kurz']) }}</div>
+                                </div>
+                                {{-- URL and token are embedded in this download; only
+                                     offered right after creating a token. --}}
+                                <a href="{{ route($dienst['download'], $customer) }}"
+                                    class="text-sm px-3 py-1.5 rounded-lg bg-cerulean-600 text-white hover:bg-cerulean-700">
+                                    {{ __('Download') }} {{ $dienst['datei'] }}
+                                </a>
+                            </div>
+                            <p class="mt-2 text-gray-600 dark:text-gray-300">{{ __($dienst['beschreibung']) }}</p>
+
+                            {{-- The command line is the exception (distribution via
+                                 script/GPO) - folded away like the scripts. --}}
+                            <details class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                                <summary class="cursor-pointer select-none">{{ __('Per Kommandozeile installieren') }}</summary>
+                                <code class="mt-2 block break-all rounded bg-gray-100 px-3 py-2 text-gray-800 dark:bg-gray-800 dark:text-gray-100">{{ strtr($dienst['befehl'], [':url' => url('/'), ':token' => session('newToken')]) }}</code>
+                                <ul class="mt-2 list-disc space-y-0.5 pl-5">
+                                    @foreach ($dienst['hinweise'] as $hinweis)
+                                        <li>{{ __($hinweis) }}</li>
+                                    @endforeach
+                                </ul>
+                            </details>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div x-show="art === 'script'" x-cloak>
                 {{-- Script-Umschalter. flex-wrap: acht Reiter passen nicht mehr
                      in eine Zeile, ohne sie waeren die letzten abgeschnitten. --}}
                 <div class="mt-4 flex flex-wrap gap-1 border-b border-green-200 dark:border-green-800">
@@ -82,19 +122,6 @@
 
                 @foreach ($agenten as $schluessel => $agent)
                     <div x-show="tab === @js($schluessel)" x-cloak class="mt-4" x-data="{ variante: 0 }">
-
-                        {{-- Was das Script tut, gilt fuer alle Varianten: die
-                             Bash- und die PowerShell-Fassung melden dasselbe an
-                             denselben Endpunkt. Deshalb steht der Kasten ueber
-                             der Variantenwahl und nicht darin. --}}
-                        <div class="mb-3 rounded-lg border border-cerulean-100 bg-cerulean-50/60 p-3 dark:border-cerulean-900/60 dark:bg-cerulean-950/20">
-                            <div class="text-xs font-semibold uppercase tracking-wide text-cerulean-700 dark:text-cerulean-300">{{ __('Was macht das Script?') }}</div>
-                            <ul class="mt-1.5 list-inside list-disc space-y-1 text-xs text-cerulean-900 dark:text-cerulean-200">
-                                @foreach ($agent['macht'] as $punkt)
-                                    <li>{{ __($punkt) }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
 
                         {{-- Nur zeigen, wo es etwas zu waehlen gibt. Die Agenten,
                              die auf dem Geraet selbst laufen, haben genau eine
@@ -118,9 +145,15 @@
                                 $typ = str_ends_with($fassung['datei'], '.sh') ? 'text/x-shellscript' : 'text/plain';
                                 $endung = pathinfo($fassung['datei'], PATHINFO_EXTENSION);
                             @endphp
-                            <div x-show="variante === @js($i)" x-data="{ copied: false }">
-                                <div class="flex items-center justify-between mb-1">
-                                    <label class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ __(':name-Script', ['name' => __($agent['name'])]) }} ({{ $fassung['datei'] }})</label>
+                            {{-- Same card as the agent above: title left, actions top
+                                 right, explanation below - the buttons sat at the
+                                 bottom here before, below a long text box. --}}
+                            <div x-show="variante === @js($i)" x-data="{ copied: false }" class="rounded-lg border border-cerulean-200 bg-white p-4 text-sm dark:border-cerulean-800 dark:bg-gray-900">
+                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                    <div>
+                                        <div class="font-medium text-gray-900 dark:text-gray-100">{{ __(':name-Script', ['name' => __($agent['name'])]) }}</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ $fassung['datei'] }}</div>
+                                    </div>
                                     <div class="flex gap-2">
                                         <button type="button"
                                             @click="copyText($refs.skript.textContent); copied = true; setTimeout(() => copied = false, 1500)"
@@ -135,7 +168,27 @@
                                         </button>
                                     </div>
                                 </div>
-                                <pre x-ref="skript" class="overflow-x-auto rounded-lg bg-gray-900 p-4 text-xs text-gray-100 leading-relaxed">{{ session('agentSkripte')[$schluessel][$i] ?? '' }}</pre>
+                                {{-- What the script does is the same for every variant
+                                     (bash and PowerShell report the same to the same
+                                     endpoint); repeated per variant so it sits in the
+                                     card under the actions. --}}
+                                <div class="mt-3 rounded-lg border border-cerulean-100 bg-cerulean-50/60 p-3 dark:border-cerulean-900/60 dark:bg-cerulean-950/20">
+                                    <div class="text-xs font-semibold uppercase tracking-wide text-cerulean-700 dark:text-cerulean-300">{{ __('Was macht das Script?') }}</div>
+                                    <ul class="mt-1.5 list-inside list-disc space-y-1 text-xs text-cerulean-900 dark:text-cerulean-200">
+                                        @foreach ($agent['macht'] as $punkt)
+                                            <li>{{ __($punkt) }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+
+                                {{-- Folded: copy and download work without it, and
+                                     the text was most of the page. Inside <details>
+                                     the <pre> stays in the DOM, so $refs.skript
+                                     still has the content. --}}
+                                <details class="mt-3 rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+                                    <summary class="cursor-pointer select-none px-3 py-2 text-xs text-gray-500 dark:text-gray-400">{{ __('Script anzeigen') }}</summary>
+                                    <pre x-ref="skript" class="overflow-x-auto rounded-b-lg bg-gray-900 p-4 text-xs text-gray-100 leading-relaxed">{{ session('agentSkripte')[$schluessel][$i] ?? '' }}</pre>
+                                </details>
                                 <div class="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
                                     {{-- A downloaded .ps1 carries the "from the internet" mark,
                                          and with the usual RemoteSigned policy Windows refuses
@@ -166,6 +219,7 @@
                         @endforeach
                     </div>
                 @endforeach
+                </div>
             </div>
         @endif
 
@@ -176,10 +230,22 @@
              ueberhaupt zur Auswahl steht. Vorher sah man das erst nach dem
              Anlegen des Tokens - also eine Entscheidung zu spaet. --}}
         <x-panel>
-            <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">{{ __('Diese Agenten gibt es') }}</div>
+            <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">{{ __('Agenten und Scripte') }}</div>
             <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">
-                {{ __('Ein Token gilt für alle – nach dem Anlegen steht jedes Script zum Herunterladen bereit. Der Name ist nur für dich, damit du den Token später wiedererkennst.') }}
+                {{ __('Ein Token gilt für alle – nach dem Anlegen steht jeder Agent und jedes Script zum Herunterladen bereit. Der Name ist nur für dich, damit du den Token später wiedererkennst.') }}
             </p>
+
+            <div class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ __('Agenten – einmal installieren, melden automatisch') }}</div>
+            <div class="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach (config('custom.dienste', []) as $dienst)
+                    <div class="rounded-lg border border-cerulean-200 p-3 dark:border-cerulean-800">
+                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ __('Agent für :name', ['name' => __($dienst['name'])]) }}</div>
+                        <div class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ __($dienst['kurz']) }}</div>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ __('Scripte – einmal von Hand ausführen') }}</div>
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach (config('custom.agenten', []) as $agent)
                     <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-600">

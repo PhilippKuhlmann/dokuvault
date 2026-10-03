@@ -104,7 +104,9 @@ func saveConfig(c Config) error {
 	if err := c.Validate(); err != nil {
 		return err
 	}
-	if err := os.MkdirAll(dataDir, 0o700); err != nil {
+	// Folder first, locked down before any file is written - the files then
+	// inherit its permissions (see prepareDataDir in service_windows.go).
+	if err := prepareDataDir(); err != nil {
 		return err
 	}
 	data, err := json.MarshalIndent(c, "", "  ")

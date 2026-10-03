@@ -25,26 +25,26 @@ const (
 // and registers an auto-start service running as LocalSystem. Running it
 // again replaces an existing installation (new URL, agents, interval).
 func installService() error {
-	exe, err := installBinary()
-	if err != nil {
-		return err
-	}
-	if err := lockDown(dataDir); err != nil {
-		return err
-	}
-
 	m, err := mgr.Connect()
 	if err != nil {
 		return fmt.Errorf("Dienstverwaltung nicht erreichbar (als Administrator ausfuehren?): %w", err)
 	}
 	defer m.Disconnect()
 
+	// Stop an existing installation before copying: its exe is in use while
+	// the service runs, and the copy would fail.
 	if old, err := m.OpenService(serviceName); err == nil {
 		stopAndWait(old)
 		_ = old.Delete()
 		old.Close()
 		// The SCM removes the entry asynchronously.
 		time.Sleep(2 * time.Second)
+	}
+
+	// The folder is already locked down by saveConfig (prepareDataDir).
+	exe, err := installBinary()
+	if err != nil {
+		return err
 	}
 
 	s, err := m.CreateService(serviceName, exe, mgr.Config{
@@ -100,17 +100,33 @@ func installBinary() (string, error) {
 	return dst, out.Close()
 }
 
-// lockDown: only SYSTEM (S-1-5-18) and Administrators (S-1-5-32-544) may
-// read the folder - config.json holds the agent token. SIDs instead of
-// names, so it works on a German Windows as well.
-func lockDown(dir string) error {
-	out, err := exec.Command("icacls", dir,
+// prepareDataDir creates the folder and locks it down: only SYSTEM
+// (S-1-5-18) and Administrators (S-1-5-32-544) - config.json holds the agent
+// token. SIDs instead of names, so it works on a German Windows as well.
+//
+// Only the folder gets explicit permissions; files inherit them through
+// (OI)(CI). The first version applied this with /T to the files as well:
+// a file takes no (OI)(CI) entries, so after /inheritance:r it was left with
+// none at all - "Access is denied" even for administrators. Files from such
+// a run are reset to inheriting first; as owner (Administrators) we may.
+func prepareDataDir() error {
+	if err := os.MkdirAll(dataDir, 0o700); err != nil {
+		return err
+	}
+
+	if entries, _ := os.ReadDir(dataDir); len(entries) > 0 {
+		if out, err := exec.Command("icacls", filepath.Join(dataDir, "*"), "/reset", "/T", "/C", "/Q").CombinedOutput(); err != nil {
+			appendLog("warn", fmt.Sprintf("Rechte der vorhandenen Dateien nicht zuruecksetzbar: %v %s", err, out))
+		}
+	}
+
+	out, err := exec.Command("icacls", dataDir,
 		"/inheritance:r",
 		"/grant:r", "*S-1-5-18:(OI)(CI)F",
 		"/grant:r", "*S-1-5-32-544:(OI)(CI)F",
-		"/T", "/Q").CombinedOutput()
+		"/Q").CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("Rechte auf %s nicht setzbar: %v %s", dir, err, out)
+		return fmt.Errorf("Rechte auf %s nicht setzbar: %v %s", dataDir, err, out)
 	}
 	return nil
 }
