@@ -192,10 +192,13 @@ if [ -f /etc/pve/jobs.cfg ]; then
   while IFS='|' read -r jid zeitplan storage alle vmids pool prune kommentar aktiv; do
     [ -z "${jid:-}" ] && continue
     [ "${aktiv:-1}" = "0" ] && continue
+    # ", " between the IDs: a comma list without spaces cannot wrap and ran
+    # across the card.
+    vmids="${vmids//,/, }"
     if [ "${alle:-0}" = "1" ]; then quelle="alle Gaeste${vmids:+ ausser $vmids}"
     elif [ -n "${pool:-}" ]; then quelle="Pool $pool"
     else quelle="${vmids:+VMs $vmids}"; fi
-    job_lauf "${alle:-0}" "${vmids:-}" "${pool:-}"
+    job_lauf "${alle:-0}" "${vmids// /}" "${pool:-}"
     eintrag="{\"identifier\":$(json_str "proxmox/$CLUSTER/$jid"),\"name\":$(json_str "${kommentar:-vzdump nach $storage${zeitplan:+ ($zeitplan)}}"),\"software\":\"Proxmox vzdump\",\"source\":$(json_str "$quelle"),\"destination\":$(json_str "$storage"),\"schedule\":$(json_str "$zeitplan"),\"retention\":$(json_str "$prune"),\"last_status\":$(json_str "$LETZTER_STATUS"),\"last_run_at\":$(json_str "$LETZTER_LAUF"),\"last_success\":$(json_str "$LETZTER_ERFOLG"),\"runs\":[$LAEUFE_JSON]}"
     BACKUPS_JSON="${BACKUPS_JSON:+$BACKUPS_JSON,}$eintrag"
   done < <(awk '

@@ -112,11 +112,11 @@
                             </a>
                         </td>
                     @elseif (\Illuminate\Support\Str::contains($key, ['IP', 'MAC', 'Serien']))
-                        <td class="py-1 wrap-break-word text-gray-900 dark:text-gray-100">
+                        <td class="py-1 wrap-anywhere text-gray-900 dark:text-gray-100">
                             <x-copy :value="$value" />
                         </td>
                     @else
-                        <td class="py-1 wrap-break-word text-gray-900 dark:text-gray-100">{{ $value }}</td>
+                        <td class="py-1 wrap-anywhere text-gray-900 dark:text-gray-100">{{ $value }}</td>
                     @endif
 
                 </tr>
