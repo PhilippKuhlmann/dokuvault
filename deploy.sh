@@ -79,4 +79,15 @@ if [ "$IS_DEMO" -eq 1 ]; then
     php artisan demo:reset
 fi
 
+# As root, every artisan call above can leave files in storage/ that belong
+# to root - cache directories, compiled views, logs. The web server
+# (www-data) then cannot write there: the rate limiter of the API found
+# such a cache directory and every agent request from the IPs hashed into
+# it ended in a 500. Give them back after each deploy.
+WEB_USER="${WEB_USER:-www-data}"
+if [ "$(id -u)" -eq 0 ] && id "$WEB_USER" >/dev/null 2>&1; then
+    echo "==> Rechte von storage/ und bootstrap/cache/ an $WEB_USER"
+    chown -R "$WEB_USER:$WEB_USER" storage bootstrap/cache
+fi
+
 echo "==> Fertig"

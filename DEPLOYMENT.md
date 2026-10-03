@@ -157,9 +157,15 @@ That does two things:
 The deploy detects demo mode from `.env` and then installs **with** dev dependencies — the demo data
 needs `fakerphp/faker`. After the deploy it resets the database once.
 
-For the hourly reset, create a cron job for the deploy user:
+For the hourly reset, create a cron job **as the web server user**
+(`crontab -u www-data -e`), not as root. Whatever a root cron job creates in `storage/`
+(cache directories, views, logs) belongs to root; the web server can no longer write there
+and requests randomly end in a 500 (first seen on the agent API: the rate limiter keeps its
+counters in the file cache). The same goes for `schedule:run`. `deploy.sh` hands `storage/`
+back to `www-data` after every deploy when it runs as root.
 
 ```
+* * * * * cd /var/www/dokuvault && php artisan schedule:run >> /dev/null 2>&1
 0 * * * * cd /var/www/dokuvault && flock -n storage/deploy.lock php artisan demo:reset >> storage/logs/demo-reset.log 2>&1
 ```
 

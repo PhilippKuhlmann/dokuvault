@@ -142,9 +142,16 @@ Der Deploy erkennt den Demo-Modus an der `.env` und installiert dann **mit**
 Dev-Abhängigkeiten – die Demo-Daten brauchen `fakerphp/faker`. Nach dem Deploy setzt
 er die Datenbank einmal zurück.
 
-Für den stündlichen Reset einen Cronjob des Deploy-Benutzers anlegen:
+Für den stündlichen Reset einen Cronjob anlegen – **als Webserver-Benutzer**
+(`crontab -u www-data -e`), nicht als root. Was ein root-Cronjob in `storage/`
+anlegt (Cache-Ordner, Views, Logs), gehört root; der Webserver kann dort nicht mehr
+schreiben, und Anfragen enden zufällig in einem 500 (zuerst gesehen bei der
+Agent-API: die Drosselung legt ihre Zähler im Datei-Cache ab). Dasselbe gilt für
+`schedule:run`. `deploy.sh` gibt `storage/` nach jedem Deploy an `www-data` zurück,
+wenn es als root läuft.
 
 ```
+* * * * * cd /var/www/dokuvault && php artisan schedule:run >> /dev/null 2>&1
 0 * * * * cd /var/www/dokuvault && flock -n storage/deploy.lock php artisan demo:reset >> storage/logs/demo-reset.log 2>&1
 ```
 

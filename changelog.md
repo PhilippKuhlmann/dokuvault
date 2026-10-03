@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- **Agent-API lieferte auf dem Server 500.** Ursache waren Cache-Ordner unter `storage/`, die root gehörten – angelegt von Cronjobs bzw. dem Deploy, die als root laufen. Die Drosselung der API legt ihre Zähler dort ab; für jede IP, deren Zähler in so einem Ordner landete, endete jede Agent-Anfrage in einem Fehler. `deploy.sh` gibt `storage/` und `bootstrap/cache/` jetzt nach jedem Deploy an `www-data` zurück; DEPLOYMENT beschreibt die Cronjobs als `www-data`.
+
 - **Proxmox-Script brach auf Einzelknoten ab** (gefunden beim Test auf einem echten Host): ohne Cluster fehlt `/etc/pve/corosync.conf`, das Auslesen des Clusternamens scheiterte und beendete unter `set -e` die ganze Meldung – Host und VMs wären nicht mehr angekommen. Jetzt gilt dann der Hostname.
 - **Proxmox-Backup-Status gehört jetzt zum Job.** Bisher bekam jeder Job das Ergebnis des letzten vzdump-Laufs des Knotens – ein manuelles Backup einer anderen VM mit Fehler markierte den Job als fehlgeschlagen. Jetzt zählen nur Läufe der VMs des Jobs (bzw. Läufe über mehrere Gäste). Jobs ohne Kommentar heißen „vzdump nach pbs01 (sun 10:00)“ statt nach ihrer internen ID.
 
