@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -134,5 +136,72 @@ func TestAutoAgentsAreValidAndResolve(t *testing.T) {
 	}
 	if got := effectiveAgents(c); len(got) == 0 || got[0] == "auto" {
 		t.Fatalf("auto must resolve to real agents, got %v", got)
+	}
+}
+
+func TestVerifyUpdateRejectsWrongChecksumAndNonExe(t *testing.T) {
+	exe := []byte("MZ fake windows program")
+	sum := sha256.Sum256(exe)
+	if err := verifyUpdate(exe, hex.EncodeToString(sum[:])); err != nil {
+		t.Fatalf("valid update rejected: %v", err)
+	}
+	if verifyUpdate(exe, "deadbeef") == nil {
+		t.Fatal("wrong checksum must be rejected")
+	}
+	page := []byte("<html>error</html>")
+	pageSum := sha256.Sum256(page)
+	if verifyUpdate(page, hex.EncodeToString(pageSum[:])) == nil {
+		t.Fatal("a non-exe must be rejected even with matching checksum")
+	}
+}
+
+func TestSwapBinaryReplacesAndKeepsOld(t *testing.T) {
+	dir := t.TempDir()
+	exe := filepath.Join(dir, "dokuvault-agent.exe")
+	os.WriteFile(exe, []byte("MZ old"), 0o755)
+
+	if err := swapBinary(exe, []byte("MZ new")); err != nil {
+		t.Fatalf("swap: %v", err)
+	}
+	if got, _ := os.ReadFile(exe); string(got) != "MZ new" {
+		t.Fatalf("exe not replaced: %q", got)
+	}
+	if got, _ := os.ReadFile(exe + ".old"); string(got) != "MZ old" {
+		t.Fatalf("old exe not kept: %q", got)
+	}
+}
+
+func TestCheckUpdateSaysNoContentWhenCurrent(t *testing.T) {
+	old := version
+	version = "26.10.03-test"
+	defer func() { version = old }()
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Query().Get("version") != "26.10.03-test" || r.Header.Get("Authorization") != "Bearer doc_test" {
+			t.Errorf("unexpected request %s", r.URL)
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer srv.Close()
+
+	updated, _, err := checkUpdate(validConfig(srv.URL))
+	if err != nil || updated {
+		t.Fatalf("expected no update, got updated=%v err=%v", updated, err)
+	}
+}
+
+func TestCheckUpdateRejectsTamperedDownload(t *testing.T) {
+	old := version
+	version = "26.10.03-test"
+	defer func() { version = old }()
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Agent-Sha256", "0000")
+		w.Write([]byte("MZ not what the checksum says"))
+	}))
+	defer srv.Close()
+
+	if updated, _, err := checkUpdate(validConfig(srv.URL)); err == nil || updated {
+		t.Fatalf("tampered download must not be installed: updated=%v err=%v", updated, err)
 	}
 }

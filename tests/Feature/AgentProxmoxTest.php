@@ -225,3 +225,49 @@ test('Token aktualisiert last_used_at', function () {
     $this->withToken($plain)->postJson('/api/agent/proxmox', proxmoxPayload())->assertOk();
     expect($token->fresh()->last_used_at)->not->toBeNull();
 });
+
+test('BIOS placeholders are not stored as hardware, and stored ones get cleared', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [, $plain] = AgentToken::generateFor($customer, $site, 'pve');
+
+    // Whitebox board: the system fields say nothing.
+    $payload = proxmoxPayload();
+    $payload['host']['manufacturer'] = 'System manufacturer';
+    $payload['host']['model'] = 'System Product Name';
+    $payload['host']['serial'] = 'System Serial Number';
+
+    // An earlier run had stored exactly those placeholders.
+    $this->withToken($plain)->postJson('/api/agent/proxmox', proxmoxPayload())->assertOk();
+    $server = Server::where('agent_identifier', 'machine-abc')->sole();
+    $server->update(['manufacturer' => 'System manufacturer', 'model' => 'To Be Filled By O.E.M.', 'serialNumber' => '0000000000']);
+
+    $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)->assertOk();
+
+    $server->refresh();
+    expect($server->manufacturer)->toBeNull()
+        ->and($server->model)->toBeNull()
+        ->and($server->serialNumber)->toBeNull();
+});
+
+test('a value entered by hand survives a placeholder from the agent', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [, $plain] = AgentToken::generateFor($customer, $site, 'pve');
+
+    $this->withToken($plain)->postJson('/api/agent/proxmox', proxmoxPayload())->assertOk();
+    $server = Server::where('agent_identifier', 'machine-abc')->sole();
+    $server->update(['manufacturer' => 'Eigenbau', 'model' => 'ASUS PRIME B550-PLUS']);
+
+    $payload = proxmoxPayload();
+    $payload['host']['manufacturer'] = 'To Be Filled By O.E.M.';
+    $payload['host']['model'] = 'Default string';
+
+    $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)->assertOk();
+
+    $server->refresh();
+    expect($server->manufacturer)->toBe('Eigenbau')
+        ->and($server->model)->toBe('ASUS PRIME B550-PLUS')
+        // Real serial from the payload still arrives.
+        ->and($server->serialNumber)->toBe('SN12345');
+});

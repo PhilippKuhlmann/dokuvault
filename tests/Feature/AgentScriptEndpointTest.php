@@ -142,3 +142,48 @@ test('the Proxmox installer comes with address and token filled in', function ()
     $this->travel(31)->minutes();
     $this->get(route('agent.dienst.proxmox', $customer))->assertStatus(410);
 });
+
+test('the agent page always says how to uninstall each agent', function () {
+    $this->actingAs(userWithPermissions(['see_hidden']));
+    $customer = Customer::factory()->create();
+
+    // No fresh token - this is what one sees months later.
+    $seite = $this->get(route('agent.index', $customer))->assertOk();
+
+    foreach (config('custom.dienste') as $dienst) {
+        expect($dienst['deinstallieren'])->not->toBeEmpty();
+        $seite->assertSee($dienst['deinstallieren'][0]);
+    }
+});
+
+test('the Windows agent gets an update only when its version differs', function () {
+    [, $plain] = dienstToken();
+    $aktuell = \App\Support\AgentSkript::exeVersion();
+    expect($aktuell)->not->toBeEmpty();
+
+    $this->withToken($plain)->get('/api/agent/update/windows?version='.urlencode($aktuell))->assertNoContent();
+
+    $antwort = $this->withToken($plain)->get('/api/agent/update/windows?version=26.01.01-alt')->assertOk();
+    expect($antwort->headers->get('X-Agent-Version'))->toBe($aktuell);
+    expect($antwort->headers->get('X-Agent-Sha256'))->toBe(hash_file('sha256', public_path('downloads/dokuvault-agent.exe')));
+});
+
+test('the Proxmox agent gets the current installer with its own token', function () {
+    [, $plain] = dienstToken();
+    $aktuell = \App\Support\AgentSkript::installerVersion('proxmox-agent.sh');
+
+    $this->withToken($plain)->get('/api/agent/update/proxmox?version='.$aktuell)->assertNoContent();
+
+    $this->withToken($plain)->get('/api/agent/update/proxmox?version=alt')
+        ->assertOk()
+        ->assertHeader('X-Agent-Version', $aktuell)
+        ->assertSee('TOKEN="'.$plain.'"', false)
+        ->assertSee('AGENT_VERSION="'.$aktuell.'"', false);
+});
+
+test('updates need a valid token and a known agent', function () {
+    $this->get('/api/agent/update/windows?version=x')->assertUnauthorized();
+
+    [, $plain] = dienstToken();
+    $this->withToken($plain)->get('/api/agent/update/unifi?version=x')->assertNotFound();
+});

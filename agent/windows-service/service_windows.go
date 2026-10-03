@@ -119,6 +119,15 @@ func removeUninstallEntry() {
 	_ = registry.DeleteKey(registry.LOCAL_MACHINE, uninstallKey)
 }
 
+// restartServiceLater starts the service again a few seconds after this
+// process has stopped - so the new exe runs. A detached cmd, because a
+// service cannot start itself while it is still stopping.
+func restartServiceLater() error {
+	cmd := exec.Command("cmd.exe", "/C", "ping -n 6 127.0.0.1 >nul & sc start "+serviceName)
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: 0x00000008} // DETACHED_PROCESS
+	return cmd.Start()
+}
+
 // removeDataDirLater deletes the data folder a few seconds after this
 // process has ended: uninstall usually runs from the copy inside it, and a
 // running exe cannot delete itself.
@@ -284,27 +293,58 @@ func (h *handler) Execute(_ []string, req <-chan svc.ChangeRequest, status chan<
 	status <- svc.Status{State: svc.Running, Accepts: svc.AcceptStop | svc.AcceptShutdown}
 	log("info", "Dienst gestartet, Version "+version)
 
+	// After an update: remove the replaced exe, and refresh the entry under
+	// Apps so it shows the new version.
+	cleanupOldBinary()
+	if exe, err := os.Executable(); err == nil {
+		_ = registerUninstall(exe)
+	}
+
 	// Config read before every run: set-token and a re-install take effect
-	// without restarting the service.
-	run := func() time.Duration {
+	// without restarting the service. Before collecting, the agent checks
+	// for a newer version of itself; if it replaced its exe, it stops and
+	// restarts with the new one.
+	run := func() (time.Duration, bool) {
 		cfg, err := loadConfig()
 		if err != nil {
 			log("error", err.Error())
-			return time.Hour
+			return time.Hour, false
+		}
+		if neu, neueVersion, err := checkUpdate(cfg); err != nil {
+			log("warn", err.Error())
+		} else if neu {
+			log("info", "Update auf Version "+neueVersion+" installiert - Dienst startet neu")
+			return 0, true
 		}
 		if err := runOnce(cfg, log); err != nil {
 			log("warn", err.Error())
 		}
-		return time.Duration(cfg.IntervalMinutes) * time.Minute
+		return time.Duration(cfg.IntervalMinutes) * time.Minute, false
 	}
 
-	timer := time.NewTimer(run())
+	restart := func() (bool, uint32) {
+		if err := restartServiceLater(); err != nil {
+			log("error", "Neustart nach Update nicht moeglich: "+err.Error())
+		}
+		status <- svc.Status{State: svc.StopPending}
+		return false, 0
+	}
+
+	pause, updated := run()
+	if updated {
+		return restart()
+	}
+	timer := time.NewTimer(pause)
 	defer timer.Stop()
 
 	for {
 		select {
 		case <-timer.C:
-			timer.Reset(run())
+			pause, updated := run()
+			if updated {
+				return restart()
+			}
+			timer.Reset(pause)
 		case c := <-req:
 			switch c.Cmd {
 			case svc.Interrogate:

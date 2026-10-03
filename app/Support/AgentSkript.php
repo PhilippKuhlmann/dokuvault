@@ -56,9 +56,27 @@ class AgentSkript
     public static function rendernInstaller(string $datei, string $token): string
     {
         return str_replace(
-            ['__BASE_URL__', '__AGENT_TOKEN__'],
-            [rtrim(url('/'), '/'), $token],
+            ['__BASE_URL__', '__AGENT_TOKEN__', '__AGENT_VERSION__'],
+            [rtrim(url('/'), '/'), $token, self::installerVersion($datei)],
             file_get_contents(resource_path('agents/install/'.$datei))
         );
+    }
+
+    /**
+     * Version of an installer: derived from its content, so any change to the
+     * template is an update for installed agents - nobody has to remember to
+     * bump a number.
+     */
+    public static function installerVersion(string $datei): string
+    {
+        return substr(sha1_file(resource_path('agents/install/'.$datei)), 0, 12);
+    }
+
+    /** Version of the Windows agent exe, written by scripts/build-windows-agent.sh. */
+    public static function exeVersion(): ?string
+    {
+        $datei = public_path('downloads/dokuvault-agent.version');
+
+        return is_file($datei) ? trim(file_get_contents($datei)) : null;
     }
 }

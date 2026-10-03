@@ -4,26 +4,16 @@
 
 ### Added
 
+- **Windows- und Proxmox-Agent aktualisieren sich selbst.** Vor jedem Lauf fragt der Agent DokuVault nach seiner Version (`/api/agent/update/{windows|proxmox}`); gibt es eine neuere, spielt er sie ein – das Script, das sammelt, kam schon bisher bei jedem Lauf frisch.
+  - Windows: Die neue exe wird erst nach geprüfter SHA-256-Prüfsumme eingesetzt, die laufende umbenannt (das erlaubt Windows) und der Dienst startet mit der neuen Version neu. Unter „Apps“ steht danach die neue Version.
+  - Proxmox: Das Startscript holt den aktuellen Installer und spielt ihn mit `--update` ein; Intervall und Token bleiben. Die Version ergibt sich aus dem Inhalt des Installers – jede Änderung ist automatisch ein Update.
+  - Agenten, die vor dieser Version eingerichtet wurden, kennen das Update noch nicht: einmal mit der neuen Datei einrichten, danach geht es von selbst.
+
+- **Agent-Seite: So deinstallierst du die Agenten.** Bei jedem Agenten steht jetzt, wie er wieder entfernt wird – in der immer sichtbaren Übersicht zum Aufklappen und nach dem Erzeugen eines Tokens in der Agent-Karte. Windows: Einstellungen → Apps → „DokuVault Agent“ → Deinstallieren (oder `dokuvault-agent.exe uninstall`). Proxmox: `dokuvault-agent-uninstall` als root – den Befehl legt der Installer jetzt auf dem Host ab, die heruntergeladene Datei mit dem Token muss dafür nicht aufbewahrt werden.
+
 - **Agent für Proxmox.** Neben dem Windows-Agenten gibt es auf der Agent-Seite jetzt einen Reiter „Proxmox“: `dokuvault-agent-proxmox.sh` mit eingesetzter Adresse und Token herunterladen, auf dem Host als root `bash dokuvault-agent-proxmox.sh` – fertig. Eingerichtet wird ein systemd-Timer, der sofort und dann stündlich Host, VMs und Container meldet (`INTERVAL=15` für ein anderes Intervall).
   - Wie beim Windows-Agenten holt jeder Lauf das aktuelle Proxmox-Script von DokuVault (`/api/agent/script/proxmox?shell=bash`); Verbesserungen kommen ohne Neuinstallation an.
   - Token in `/etc/dokuvault/agent.conf`, nur für root lesbar. Protokoll per `journalctl -u dokuvault-agent.service`, Entfernen mit `--uninstall`.
-
-### Changed
-
-- **Windows-Agent unter „Apps“ deinstallierbar.** Der Agent trägt sich bei der Installation unter Einstellungen → Apps bzw. „Programme und Features“ ein – mit Logo, Hersteller und Version. „Deinstallieren“ fordert Administratorrechte an, entfernt Dienst, Konfiguration samt Token und den Ordner `C:\ProgramData\DokuVault`. Bereits installierte Agenten erscheinen dort nach dem nächsten Einrichten mit der neuen Datei.
-
-- **Windows-Agent mit DokuVault-Logo.** `dokuvault-agent.exe` zeigt im Explorer und in der Taskleiste das DokuVault-Symbol statt des Standard-Programmsymbols; unter Eigenschaften → Details stehen Produktname „DokuVault Agent“, Beschreibung und Version.
-
-### Fixed
-
-- **Windows-Agent: „Access is denied“ auf config.json.** Die Rechte wurden mit `/T` auch auf die schon geschriebenen Dateien gesetzt; eine Datei nimmt die Ordner-Einträge nicht an und stand danach ganz ohne Zugriffsrechte da – auch für Administratoren. Jetzt wird nur der Ordner gesperrt, bevor Dateien hineinkommen, und die Dateien erben. Dateien aus einem fehlgeschlagenen Lauf werden beim nächsten Doppelklick repariert. Außerdem wird ein laufender Dienst vor dem Kopieren der neuen exe gestoppt, sonst schlug eine Neuinstallation fehl.
-
-### Changed
-
-- **Agent-Seite: erst wählen, dann sehen.** Nach dem Erzeugen eines Tokens wählt man oben zwischen „Agent“ (einmal installieren, meldet automatisch) und „Script“ (einmal von Hand ausführen); gezeigt wird nur das Gewählte. Der Scripttext ist eingeklappt („Script anzeigen“) – Kopieren und Download funktionieren ohne Aufklappen. Die Installation per Kommandozeile steht beim Agenten ebenfalls eingeklappt. Die Übersicht trennt „Agenten“ und „Scripte“.
-  - Agenten kommen wie die Scripte aus der Konfiguration (`custom.dienste`); ein weiterer Agent ist ein Eintrag dort und erscheint als eigener Reiter.
-
-### Added
 
 - **Windows-Dienst: Agenten melden automatisch.** Neu auf der Agent-Seite (nach dem Erzeugen eines Tokens): `dokuvault-agent.exe` zum Herunterladen, in die Adresse und Token schon eingebettet sind. Auf den Server kopieren, doppelklicken, Administratorrechte bestätigen – danach läuft der Dienst „DokuVault Agent“ unter LocalSystem, startet mit Windows und meldet stündlich. Kein `Unblock-File` mehr nötig.
   - Der Dienst erkennt die Rollen des Rechners selbst und meldet passend: Server → Windows-Server, Domänencontroller → zusätzlich AD, Hyper-V-Host → zusätzlich Hyper-V, Arbeitsplatz → Windows-Client. Geprüft vor jedem Lauf – kommt eine Rolle später dazu, meldet er sie ohne Neuinstallation.
@@ -34,6 +24,21 @@
   - Konfiguration samt Token liegt in `C:\ProgramData\DokuVault`, nur für SYSTEM und Administratoren lesbar. Protokoll in der Ereignisanzeige und in `agent.log`. Weitere Befehle: `run-once`, `status`, `set-token` (nach Ablauf des Tokens), `uninstall`.
   - Die Ausführungsrichtlinie wird nicht verändert; unter einer Gruppenrichtlinie „AllSigned“ laufen die Scripte nicht.
   - Das Programm ist noch nicht signiert: Beim Doppelklick warnt SmartScreen, der Aufruf in der Kommandozeile funktioniert.
+
+### Changed
+
+- **Windows-Agent unter „Apps“ deinstallierbar.** Der Agent trägt sich bei der Installation unter Einstellungen → Apps bzw. „Programme und Features“ ein – mit Logo, Hersteller und Version. „Deinstallieren“ fordert Administratorrechte an, entfernt Dienst, Konfiguration samt Token und den Ordner `C:\ProgramData\DokuVault`. Bereits installierte Agenten erscheinen dort nach dem nächsten Einrichten mit der neuen Datei.
+
+- **Windows-Agent mit DokuVault-Logo.** `dokuvault-agent.exe` zeigt im Explorer und in der Taskleiste das DokuVault-Symbol statt des Standard-Programmsymbols; unter Eigenschaften → Details stehen Produktname „DokuVault Agent“, Beschreibung und Version.
+
+- **Agent-Seite: erst wählen, dann sehen.** Nach dem Erzeugen eines Tokens wählt man oben zwischen „Agent“ (einmal installieren, meldet automatisch) und „Script“ (einmal von Hand ausführen); gezeigt wird nur das Gewählte. Der Scripttext ist eingeklappt („Script anzeigen“) – Kopieren und Download funktionieren ohne Aufklappen. Die Installation per Kommandozeile steht beim Agenten ebenfalls eingeklappt. Die Übersicht trennt „Agenten“ und „Scripte“.
+  - Agenten kommen wie die Scripte aus der Konfiguration (`custom.dienste`); ein weiterer Agent ist ein Eintrag dort und erscheint als eigener Reiter.
+
+### Fixed
+
+- **Agenten speichern keine BIOS-Platzhalter mehr als Hardware.** Desktop- und Whitebox-Mainboards lassen in den Systemfeldern Texte wie „System manufacturer“, „System Product Name“ oder „To Be Filled By O.E.M.“ stehen; die landeten bisher als Hersteller, Modell und Seriennummer am Server. Jetzt verwirft DokuVault solche Werte bei allen Agenten, und schon gespeicherte Platzhalter werden beim nächsten Lauf gelöscht. Ein von Hand eingetragener Wert bleibt stehen. Das Proxmox-Script nimmt in diesem Fall die Angaben des Mainboards (Hersteller, Modell, Seriennummer), die bei solchen Boards meist stimmen.
+
+- **Windows-Agent: „Access is denied“ auf config.json.** Die Rechte wurden mit `/T` auch auf die schon geschriebenen Dateien gesetzt; eine Datei nimmt die Ordner-Einträge nicht an und stand danach ganz ohne Zugriffsrechte da – auch für Administratoren. Jetzt wird nur der Ordner gesperrt, bevor Dateien hineinkommen, und die Dateien erben. Dateien aus einem fehlgeschlagenen Lauf werden beim nächsten Doppelklick repariert. Außerdem wird ein laufender Dienst vor dem Kopieren der neuen exe gestoppt, sonst schlug eine Neuinstallation fehl.
 
 ## 26.10.02
 

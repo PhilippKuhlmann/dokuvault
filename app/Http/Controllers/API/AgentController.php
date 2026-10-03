@@ -355,6 +355,50 @@ class AgentController extends Controller
     }
 
     /**
+     * Self-update of an installed agent: asked before every run with the
+     * version it has. Same version: 204. Otherwise the current one.
+     *
+     * windows: the exe, with SHA-256 in a header - the service checks it
+     * before replacing itself. proxmox: the installer, rendered with the token
+     * the agent authenticated with; run.sh applies it with --update.
+     */
+    public function update(Request $request, string $dienst)
+    {
+        $gemeldet = (string) $request->query('version', '');
+
+        if ($dienst === 'windows') {
+            $aktuell = AgentSkript::exeVersion();
+            $datei = public_path('downloads/dokuvault-agent.exe');
+            abort_unless($aktuell && is_file($datei), 404);
+
+            if ($gemeldet === $aktuell) {
+                return response()->noContent();
+            }
+
+            return response()->file($datei, [
+                'Content-Type' => 'application/vnd.microsoft.portable-executable',
+                'X-Agent-Version' => $aktuell,
+                'X-Agent-Sha256' => hash_file('sha256', $datei),
+                'Cache-Control' => 'no-store',
+            ]);
+        }
+
+        // proxmox
+        $aktuell = AgentSkript::installerVersion('proxmox-agent.sh');
+        if ($gemeldet === $aktuell) {
+            return response()->noContent();
+        }
+
+        $token = $request->bearerToken() ?: $request->header('X-Agent-Token');
+
+        return response(AgentSkript::rendernInstaller('proxmox-agent.sh', $token), 200, [
+            'Content-Type' => 'text/x-shellscript; charset=utf-8',
+            'X-Agent-Version' => $aktuell,
+            'Cache-Control' => 'no-store',
+        ]);
+    }
+
+    /**
      * Create or update the AD domain from what the DC reports.
      *
      * Found by customer and DNS name - a domain has no GUID worth keeping,
@@ -423,6 +467,61 @@ class AgentController extends Controller
         }
 
         return ['unmatched_hosts' => array_values(array_unique($nichtGefunden))];
+    }
+
+    /**
+     * Manufacturer, model and serial as reported - without BIOS placeholders.
+     *
+     * Desktop and whitebox boards leave "System manufacturer", "To Be Filled
+     * By O.E.M." and the like in the DMI fields; the agent reads them
+     * correctly, they just mean nothing. Such a value is not written - and if
+     * an earlier run already stored one, it is cleared. A real value entered
+     * by hand stays when the agent has nothing better.
+     *
+     * @return array<string, string|null>
+     */
+    private function hardwareFelder(array $gemeldet, $vorhanden): array
+    {
+        $felder = [];
+
+        foreach (['manufacturer' => 'manufacturer', 'model' => 'model', 'serial' => 'serialNumber'] as $quelle => $spalte) {
+            if (! array_key_exists($quelle, $gemeldet)) {
+                continue;
+            }
+
+            $wert = trim((string) $gemeldet[$quelle]);
+
+            if ($wert !== '' && ! $this->istPlatzhalter($wert)) {
+                $felder[$spalte] = $wert;
+            } elseif ($vorhanden && $this->istPlatzhalter((string) $vorhanden->{$spalte})) {
+                $felder[$spalte] = null;
+            }
+        }
+
+        return $felder;
+    }
+
+    private function istPlatzhalter(string $wert): bool
+    {
+        $wert = strtolower(trim($wert));
+
+        if ($wert === '') {
+            return false;
+        }
+
+        // Only zeros, X, dots, dashes: "0000000000", "XXXXXXXX", "-".
+        if (preg_match('/^[0x\s.\-_]+$/i', $wert)) {
+            return true;
+        }
+
+        return in_array($wert, [
+            'system manufacturer', 'system product name', 'system serial number', 'system version',
+            'to be filled by o.e.m.', 'to be filled by oem', 'default string', 'default',
+            'not specified', 'not applicable', 'not available', 'none', 'n/a', 'na', 'oem', 'o.e.m.',
+            'unknown', 'undefined', 'invalid', '0123456789', '123456789', '1234567890',
+            'base board serial number', 'chassis manufacturer', 'chassis serial number',
+            'type1productconfigid', 'sku', 'all series',
+        ], true);
     }
 
     /** "Windows2016Domain" -> "2016", "Windows2012R2Domain" -> "2012R2". */
@@ -501,16 +600,15 @@ class AgentController extends Controller
 
         $os = OperatingSystem::firstOrCreate(['name' => $this->osKatalogName($client['os'] ?? null, 'Windows')]);
 
+        $vorhanden = Computer::where('customer_id', $customer->id)->where('agent_identifier', $client['identifier'])->first();
+
         $computer = Computer::updateOrCreate(
             ['customer_id' => $customer->id, 'agent_identifier' => $client['identifier']],
             [
                 'site_id' => $site->id,
                 'operating_system_id' => $os->id,
                 'name' => $client['hostname'],
-                'manufacturer' => $client['manufacturer'] ?? null,
-                'model' => $client['model'] ?? null,
-                'serialNumber' => $client['serial'] ?? null,
-            ]
+            ] + $this->hardwareFelder($client, $vorhanden)
         );
 
         $this->meldeAdresse($computer, $customer->id, $site->id, $client['ip'] ?? null);
@@ -743,11 +841,8 @@ class AgentController extends Controller
         // Nur gemeldete Felder schreiben. vCenter gibt Hersteller, Modell und
         // Seriennummer nicht heraus - wuerde hier stur null eingetragen, loeschte
         // jeder Lauf, was jemand von Hand nachgetragen hat.
-        foreach (['manufacturer' => 'manufacturer', 'model' => 'model', 'serial' => 'serialNumber'] as $quelle => $spalte) {
-            if (array_key_exists($quelle, $host)) {
-                $attribute[$spalte] = $host[$quelle];
-            }
-        }
+        $vorhanden = Server::where('customer_id', $customer->id)->where('agent_identifier', $host['identifier'])->first();
+        $attribute += $this->hardwareFelder($host, $vorhanden);
 
         $server = Server::updateOrCreate(
             ['customer_id' => $customer->id, 'agent_identifier' => $host['identifier']],

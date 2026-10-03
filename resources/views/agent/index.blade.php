@@ -103,6 +103,15 @@
                                     @endforeach
                                 </ul>
                             </details>
+
+                            <div class="mt-3 border-t border-gray-100 pt-3 text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                                <div class="mb-1 font-semibold uppercase tracking-wide">{{ __('Deinstallieren') }}</div>
+                                <ul class="list-disc space-y-0.5 pl-5">
+                                    @foreach ($dienst['deinstallieren'] as $schritt)
+                                        <li>{{ __($schritt) }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
                         </div>
                     @endforeach
                 </div>
@@ -241,6 +250,16 @@
                     <div class="rounded-lg border border-cerulean-200 p-3 dark:border-cerulean-800">
                         <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ __('Agent für :name', ['name' => __($dienst['name'])]) }}</div>
                         <div class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ __($dienst['kurz']) }}</div>
+                        {{-- Always visible here: the card after creating a token is
+                             gone by the time someone wants to remove the agent. --}}
+                        <details class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            <summary class="cursor-pointer select-none">{{ __('Deinstallieren') }}</summary>
+                            <ul class="mt-1 list-disc space-y-0.5 pl-4">
+                                @foreach ($dienst['deinstallieren'] as $schritt)
+                                    <li>{{ __($schritt) }}</li>
+                                @endforeach
+                            </ul>
+                        </details>
                     </div>
                 @endforeach
             </div>

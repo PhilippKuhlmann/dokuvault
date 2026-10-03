@@ -27,9 +27,32 @@ num() { local n="${1:-}"; [[ "$n" =~ ^[0-9]+$ ]] && printf '%s' "$n" || printf '
 # --- Host-Infos sammeln ---
 IDENTIFIER="$(cat /etc/machine-id 2>/dev/null || hostname)"
 HOSTNAME="$(hostname -f 2>/dev/null || hostname)"
-MANUFACTURER="$(dmidecode -s system-manufacturer 2>/dev/null | head -n1 || true)"
-MODEL="$(dmidecode -s system-product-name 2>/dev/null | head -n1 || true)"
-SERIAL="$(dmidecode -s system-serial-number 2>/dev/null | head -n1 || true)"
+# Desktop and whitebox boards leave placeholders in the system fields
+# ("System manufacturer", "To Be Filled By O.E.M."). Then the baseboard
+# (mainboard) usually has the real maker, model and serial.
+platzhalter() {
+  local v
+  v="$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+  case "$v" in
+    ""|"system manufacturer"|"system product name"|"system serial number"|"system version"|\
+    "to be filled by o.e.m."|"to be filled by oem"|"default string"|"default"|"not specified"|\
+    "not applicable"|"none"|"n/a"|"oem"|"o.e.m."|"unknown"|"0123456789"|"123456789"|"1234567890"|\
+    "base board serial number"|"all series") return 0 ;;
+  esac
+  [[ "$v" =~ ^[0x[:space:].-]+$ ]]
+}
+dmi() {
+  local wert
+  wert="$(dmidecode -s "system-$1" 2>/dev/null | head -n1 || true)"
+  if platzhalter "$wert"; then
+    wert="$(dmidecode -s "baseboard-$2" 2>/dev/null | head -n1 || true)"
+  fi
+  platzhalter "$wert" && wert=""
+  printf '%s' "$wert"
+}
+MANUFACTURER="$(dmi manufacturer manufacturer)"
+MODEL="$(dmi product-name product-name)"
+SERIAL="$(dmi serial-number serial-number)"
 IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
 PVE_VERSION="$(pveversion 2>/dev/null | sed -n 's#.*pve-manager/\([0-9.]*\).*#\1#p' | head -n1)"
 KERNEL="$(uname -r 2>/dev/null)"
