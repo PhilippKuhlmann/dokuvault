@@ -303,6 +303,7 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::delete('agent/{agentToken}', [AgentTokenController::class, 'destroy'])->name('agent.destroy');
             Route::post('agent/{agentToken}/erneuern', [AgentTokenController::class, 'erneuern'])->name('agent.erneuern');
             Route::get('agent/dienst.exe', [AgentTokenController::class, 'dienstExe'])->name('agent.dienst');
+            Route::get('agent/dienst-proxmox.sh', [AgentTokenController::class, 'dienstProxmox'])->name('agent.dienst.proxmox');
 
             // Dokumentations-Assistent (geführte Erstaufnahme)
             Route::get('wizard', [WizardController::class, 'index'])->name('wizard.index');

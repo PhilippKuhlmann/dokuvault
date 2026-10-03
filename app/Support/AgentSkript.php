@@ -29,18 +29,36 @@ class AgentSkript
     }
 
     /**
-     * Agents the Windows service may run: a PowerShell variant, and no
-     * credentials of a foreign system needed at call time (UniFi, vCenter,
-     * Graph want parameters the service has no way to supply).
+     * Agents an installed agent may run unattended: no credentials of a
+     * foreign system needed at call time (UniFi, vCenter, Graph want
+     * parameters an agent has no way to supply), and a variant for its shell
+     * - PowerShell for the Windows service, bash for the Proxmox agent.
      *
+     * @param  'powershell'|'bash'  $shell
      * @return array<string, array> key => variant
      */
-    public static function fuerDienst(): array
+    public static function fuerDienst(string $shell = 'powershell'): array
     {
+        $endung = $shell === 'bash' ? '.sh' : '.ps1';
+
         return collect(config('custom.agenten', []))
             ->reject(fn ($agent) => $agent['zugangsdaten'] ?? false)
-            ->map(fn ($agent) => collect($agent['varianten'])->first(fn ($v) => str_ends_with($v['skript'], '.ps1')))
+            ->map(fn ($agent) => collect($agent['varianten'])->first(fn ($v) => str_ends_with($v['skript'], $endung)))
             ->filter()
             ->all();
+    }
+
+    /**
+     * An installer from resources/agents/install/ with the DokuVault address
+     * and the token filled in - handed out right after creating a token
+     * (AgentTokenController::dienstInstaller).
+     */
+    public static function rendernInstaller(string $datei, string $token): string
+    {
+        return str_replace(
+            ['__BASE_URL__', '__AGENT_TOKEN__'],
+            [rtrim(url('/'), '/'), $token],
+            file_get_contents(resource_path('agents/install/'.$datei))
+        );
     }
 }

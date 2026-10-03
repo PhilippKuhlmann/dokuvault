@@ -127,16 +127,26 @@ func command(name string, args []string) error {
 		return nil
 
 	case "uninstall":
+		// Also started from Settings > Apps, without admin rights: ask via
+		// UAC, the elevated copy continues in its own window.
+		if !isElevated() {
+			return relaunchElevated("uninstall")
+		}
 		if err := uninstallService(); err != nil {
 			return err
 		}
-		// Called from the copy inside dataDir, Windows cannot delete the
-		// running exe - everything else (config with the token) is gone.
+		// Usually runs from the copy inside dataDir, which cannot delete
+		// itself while running: config and token go now, the folder right
+		// after this process has ended.
 		if err := os.RemoveAll(dataDir); err != nil {
-			fmt.Println("Dienst entfernt. Rest in", dataDir, "bitte von Hand loeschen:", err)
-			return nil
+			if err := removeDataDirLater(); err != nil {
+				fmt.Println("Dienst entfernt. Rest in", dataDir, "bitte von Hand loeschen:", err)
+				pause()
+				return nil
+			}
 		}
-		fmt.Println("Dienst und", dataDir, "entfernt.")
+		fmt.Println("DokuVault Agent deinstalliert.")
+		pause()
 		return nil
 
 	case "version", "-v", "--version":

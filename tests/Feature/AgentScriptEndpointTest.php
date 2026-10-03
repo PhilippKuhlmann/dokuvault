@@ -58,6 +58,7 @@ test('after creating a token the agent page offers the service with a ready inst
         ->assertOk();
 
     $seite->assertSee(route('agent.dienst', $customer), false)
+        ->assertSee(route('agent.dienst.proxmox', $customer), false)
         ->assertSee('dokuvault-agent.exe install -url '.url('/').' -token '.session('newToken'), false);
 
     expect(file_exists(public_path('downloads/dokuvault-agent.exe')))->toBeTrue();
@@ -106,4 +107,38 @@ test('without the right to agents there is no exe', function () {
     $customer = Customer::factory()->create();
 
     $this->get(route('agent.dienst', $customer))->assertForbidden();
+});
+
+test('the Proxmox agent fetches the bash script, unattended bash agents only', function () {
+    [, $plain] = dienstToken();
+
+    $this->withToken($plain)->get('/api/agent/script/proxmox?shell=bash')
+        ->assertOk()
+        ->assertSee('#!/usr/bin/env bash', false)
+        ->assertSee($plain, false)
+        ->assertSee(url('/api/agent/proxmox'), false);
+
+    // Without ?shell=bash the Windows service asks - Proxmox has no PowerShell.
+    $this->withToken($plain)->get('/api/agent/script/proxmox')->assertNotFound();
+    // UniFi has a bash variant, but needs credentials at call time.
+    $this->withToken($plain)->get('/api/agent/script/unifi?shell=bash')->assertNotFound();
+});
+
+test('the Proxmox installer comes with address and token filled in', function () {
+    $this->actingAs(userWithPermissions(['see_hidden']));
+    [$customer, $plain] = tokenFuerDienstExe();
+
+    $antwort = $this->get(route('agent.dienst.proxmox', $customer))->assertOk();
+    $inhalt = $antwort->getContent();
+
+    expect($inhalt)
+        ->toContain('BASE_URL="'.rtrim(url('/'), '/').'"')
+        ->toContain('TOKEN="'.$plain.'"')
+        ->toContain('/api/agent/script/proxmox?shell=bash')
+        ->not->toContain('__BASE_URL__')
+        ->not->toContain('__AGENT_TOKEN__');
+    expect($antwort->headers->get('Content-Disposition'))->toContain('dokuvault-agent-proxmox.sh');
+
+    $this->travel(31)->minutes();
+    $this->get(route('agent.dienst.proxmox', $customer))->assertStatus(410);
 });

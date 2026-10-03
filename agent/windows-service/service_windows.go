@@ -8,8 +8,10 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"syscall"
 	"time"
 
+	"golang.org/x/sys/windows/registry"
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/eventlog"
 	"golang.org/x/sys/windows/svc/mgr"
@@ -68,7 +70,62 @@ func installService() error {
 		appendLog("warn", "Ereignisquelle nicht anlegbar: "+err.Error())
 	}
 
+	// Not fatal: the service works without it, only the entry under
+	// Settings > Apps would be missing.
+	if err := registerUninstall(exe); err != nil {
+		appendLog("warn", "Eintrag unter Apps nicht anlegbar: "+err.Error())
+	}
+
 	return s.Start()
+}
+
+const uninstallKey = `SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\` + serviceName
+
+// registerUninstall lists the agent under Settings > Apps and in "Programs
+// and Features", with logo and an uninstall button that runs
+// "dokuvault-agent.exe uninstall".
+func registerUninstall(exe string) error {
+	k, _, err := registry.CreateKey(registry.LOCAL_MACHINE, uninstallKey, registry.SET_VALUE)
+	if err != nil {
+		return err
+	}
+	defer k.Close()
+
+	size := uint32(0)
+	if fi, err := os.Stat(exe); err == nil {
+		size = uint32(fi.Size() / 1024)
+	}
+
+	values := map[string]string{
+		"DisplayName":     serviceDisplay,
+		"DisplayIcon":     exe + ",0",
+		"DisplayVersion":  version,
+		"Publisher":       "DokuVault",
+		"InstallLocation": dataDir,
+		"UninstallString": `"` + exe + `" uninstall`,
+	}
+	for name, value := range values {
+		if err := k.SetStringValue(name, value); err != nil {
+			return err
+		}
+	}
+	_ = k.SetDWordValue("NoModify", 1)
+	_ = k.SetDWordValue("NoRepair", 1)
+	_ = k.SetDWordValue("EstimatedSize", size)
+	return nil
+}
+
+func removeUninstallEntry() {
+	_ = registry.DeleteKey(registry.LOCAL_MACHINE, uninstallKey)
+}
+
+// removeDataDirLater deletes the data folder a few seconds after this
+// process has ended: uninstall usually runs from the copy inside it, and a
+// running exe cannot delete itself.
+func removeDataDirLater() error {
+	cmd := exec.Command("cmd.exe", "/C", "ping -n 4 127.0.0.1 >nul & rmdir /S /Q \""+dataDir+"\"")
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: 0x00000008} // DETACHED_PROCESS
+	return cmd.Start()
 }
 
 // installBinary copies the running exe into the data folder: the service
@@ -149,6 +206,7 @@ func uninstallService() error {
 		return err
 	}
 	_ = eventlog.Remove(serviceName)
+	removeUninstallEntry()
 	return nil
 }
 

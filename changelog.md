@@ -2,6 +2,18 @@
 
 ## 26.10.03
 
+### Added
+
+- **Agent für Proxmox.** Neben dem Windows-Agenten gibt es auf der Agent-Seite jetzt einen Reiter „Proxmox“: `dokuvault-agent-proxmox.sh` mit eingesetzter Adresse und Token herunterladen, auf dem Host als root `bash dokuvault-agent-proxmox.sh` – fertig. Eingerichtet wird ein systemd-Timer, der sofort und dann stündlich Host, VMs und Container meldet (`INTERVAL=15` für ein anderes Intervall).
+  - Wie beim Windows-Agenten holt jeder Lauf das aktuelle Proxmox-Script von DokuVault (`/api/agent/script/proxmox?shell=bash`); Verbesserungen kommen ohne Neuinstallation an.
+  - Token in `/etc/dokuvault/agent.conf`, nur für root lesbar. Protokoll per `journalctl -u dokuvault-agent.service`, Entfernen mit `--uninstall`.
+
+### Changed
+
+- **Windows-Agent unter „Apps“ deinstallierbar.** Der Agent trägt sich bei der Installation unter Einstellungen → Apps bzw. „Programme und Features“ ein – mit Logo, Hersteller und Version. „Deinstallieren“ fordert Administratorrechte an, entfernt Dienst, Konfiguration samt Token und den Ordner `C:\ProgramData\DokuVault`. Bereits installierte Agenten erscheinen dort nach dem nächsten Einrichten mit der neuen Datei.
+
+- **Windows-Agent mit DokuVault-Logo.** `dokuvault-agent.exe` zeigt im Explorer und in der Taskleiste das DokuVault-Symbol statt des Standard-Programmsymbols; unter Eigenschaften → Details stehen Produktname „DokuVault Agent“, Beschreibung und Version.
+
 ### Fixed
 
 - **Windows-Agent: „Access is denied“ auf config.json.** Die Rechte wurden mit `/T` auch auf die schon geschriebenen Dateien gesetzt; eine Datei nimmt die Ordner-Einträge nicht an und stand danach ganz ohne Zugriffsrechte da – auch für Administratoren. Jetzt wird nur der Ordner gesperrt, bevor Dateien hineinkommen, und die Dateien erben. Dateien aus einem fehlgeschlagenen Lauf werden beim nächsten Doppelklick repariert. Außerdem wird ein laufender Dienst vor dem Kopieren der neuen exe gestoppt, sonst schlug eine Neuinstallation fehl.

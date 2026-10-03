@@ -1107,8 +1107,24 @@ return [
             'hinweise' => [
                 'Agenten fest vorgeben statt erkennen: -agents windows-server,windows-ad (möglich: windows-server, windows-ad, hyperv, windows-client).',
                 'Anderes Intervall: -interval 15 (Minuten, mindestens 5).',
-                'Testen: run-once · Status: status · Token erneuern: set-token -token doc_… · Entfernen: uninstall',
+                'Testen: run-once · Status: status · Token erneuern: set-token -token doc_… · Entfernen: unter Einstellungen → Apps („DokuVault Agent“) oder uninstall',
                 'Protokoll: Ereignisanzeige (Quelle „DokuVault Agent“) und C:\ProgramData\DokuVault\agent.log. Unter einer Gruppenrichtlinie „AllSigned“ laufen die Scripte nicht.',
+            ],
+        ],
+        // systemd timer on the host instead of a program: Proxmox is Debian,
+        // systemd and curl are always there.
+        'proxmox' => [
+            'name' => 'Proxmox',
+            'kurz' => 'systemd-Timer auf dem Proxmox-Host, meldet stündlich',
+            'datei' => 'dokuvault-agent-proxmox.sh',
+            'download' => 'agent.dienst.proxmox',
+            'beschreibung' => 'Auf den Proxmox-Host kopieren und als root ausführen – Adresse und Token sind schon enthalten. Der Agent meldet sofort und dann stündlich Host, VMs und Container. Der Download ist 30 Minuten lang möglich und so vertraulich wie der Token.',
+            'befehl' => 'bash dokuvault-agent-proxmox.sh',
+            'hinweise' => [
+                'Anderes Intervall: INTERVAL=15 bash dokuvault-agent-proxmox.sh (Minuten, mindestens 5).',
+                'Nächster Lauf: systemctl list-timers dokuvault-agent.timer · Sofort melden: systemctl start dokuvault-agent.service',
+                'Protokoll: journalctl -u dokuvault-agent.service',
+                'Entfernen: bash dokuvault-agent-proxmox.sh --uninstall · Neuer Token: Agent mit der neuen Datei einfach erneut einrichten.',
             ],
         ],
     ],

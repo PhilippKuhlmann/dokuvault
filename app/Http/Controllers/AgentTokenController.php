@@ -123,6 +123,40 @@ class AgentTokenController extends Controller
      */
     public function dienstExe(Customer $customer)
     {
+        $token = $this->dienstToken($customer);
+
+        $json = json_encode(['url' => url('/'), 'token' => $token], JSON_UNESCAPED_SLASHES);
+        $inhalt = file_get_contents(public_path('downloads/dokuvault-agent.exe'))
+            .$json.pack('V', strlen($json)).self::EXE_KENNUNG;
+
+        return response($inhalt, 200, [
+            'Content-Type' => 'application/vnd.microsoft.portable-executable',
+            'Content-Disposition' => 'attachment; filename="dokuvault-agent-'.$customer->slug.'.exe"',
+            'Cache-Control' => 'no-store',
+        ]);
+    }
+
+    /**
+     * The Proxmox agent: an installer with URL and token filled in, which
+     * sets up a systemd timer on the host (resources/agents/install).
+     */
+    public function dienstProxmox(Customer $customer)
+    {
+        $inhalt = AgentSkript::rendernInstaller('proxmox-agent.sh', $this->dienstToken($customer));
+
+        return response($inhalt, 200, [
+            'Content-Type' => 'text/x-shellscript; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="dokuvault-agent-proxmox.sh"',
+            'Cache-Control' => 'no-store',
+        ]);
+    }
+
+    /**
+     * The plain token kept after creating it (mitNeuemToken) - only for this
+     * customer and only for half an hour; otherwise 410.
+     */
+    protected function dienstToken(Customer $customer): string
+    {
         Gate::authorize('see_hidden');
 
         $dienst = session('agentDienst');
@@ -132,14 +166,6 @@ class AgentTokenController extends Controller
             __('Der Download ist nur kurz nach dem Erzeugen eines Tokens möglich. Bitte einen neuen Token erzeugen.')
         );
 
-        $json = json_encode(['url' => url('/'), 'token' => $dienst['token']], JSON_UNESCAPED_SLASHES);
-        $inhalt = file_get_contents(public_path('downloads/dokuvault-agent.exe'))
-            .$json.pack('V', strlen($json)).self::EXE_KENNUNG;
-
-        return response($inhalt, 200, [
-            'Content-Type' => 'application/vnd.microsoft.portable-executable',
-            'Content-Disposition' => 'attachment; filename="dokuvault-agent-'.$customer->slug.'.exe"',
-            'Cache-Control' => 'no-store',
-        ]);
+        return $dienst['token'];
     }
 }

@@ -339,7 +339,10 @@ class AgentController extends Controller
      */
     public function script(Request $request, string $agent)
     {
-        $variante = AgentSkript::fuerDienst()[$agent] ?? null;
+        // ?shell=bash for the Proxmox agent; without it PowerShell, as the
+        // Windows service has always asked.
+        $shell = $request->query('shell') === 'bash' ? 'bash' : 'powershell';
+        $variante = AgentSkript::fuerDienst($shell)[$agent] ?? null;
         abort_unless($variante, 404);
 
         $token = $request->bearerToken() ?: $request->header('X-Agent-Token');

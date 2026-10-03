@@ -19,6 +19,9 @@ func uninstallService() error { return errNotWindows }
 func serviceStatus() string   { return "nur unter Windows" }
 func runService() error       { return errNotWindows }
 
+func removeUninstallEntry()     {}
+func removeDataDirLater() error { return errNotWindows }
+
 // Permissions are a Windows matter; elsewhere just the folder (tests).
 func prepareDataDir() error { return os.MkdirAll(dataDir, 0o700) }
 
