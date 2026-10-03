@@ -1102,8 +1102,16 @@ return [
             'kurz' => 'Dienst für Windows-Server und -PCs, meldet stündlich',
             'datei' => 'dokuvault-agent.exe',
             'download' => 'agent.dienst',
-            'beschreibung' => 'Auf den Rechner kopieren und doppelklicken – Adresse und Token sind schon enthalten. Der Dienst erkennt die Rollen des Rechners selbst (Server, Domänencontroller, Hyper-V, Arbeitsplatz) und meldet stündlich. Der Download ist 30 Minuten lang möglich und so vertraulich wie der Token.',
+            'beschreibung' => 'Auf den Rechner kopieren und doppelklicken – Adresse und Token sind schon enthalten. Der Dienst erkennt die Rollen des Rechners selbst (Server, Domänencontroller, Hyper-V, Arbeitsplatz) und meldet stündlich; was er meldet, lässt sich danach hier unter „Installierte Agenten“ an- und abhaken. Der Download ist 30 Minuten lang möglich und so vertraulich wie der Token.',
             'befehl' => '.\dokuvault-agent.exe install -url :url -token :token',
+            // What an installed agent can do - switched on and off per
+            // machine on the agent page (AgentInstallation).
+            'rollen' => [
+                'windows-server' => 'Server',
+                'windows-ad' => 'Active Directory',
+                'hyperv' => 'Hyper-V',
+                'windows-client' => 'Arbeitsplatz',
+            ],
             // Shown always, not only after creating a token - one looks this
             // up months later.
             'deinstallieren' => [
@@ -1112,7 +1120,7 @@ return [
                 'Entfernt Dienst, Konfiguration samt Token und den Ordner C:\ProgramData\DokuVault. Den Token danach in DokuVault widerrufen.',
             ],
             'hinweise' => [
-                'Agenten fest vorgeben statt erkennen: -agents windows-server,windows-ad (möglich: windows-server, windows-ad, hyperv, windows-client).',
+                'Was der Agent meldet, legst du nach der ersten Meldung unter „Installierte Agenten“ fest. Vorschlag statt Erkennung: -agents windows-server,windows-ad.',
                 'Anderes Intervall: -interval 15 (Minuten, mindestens 5).',
                 'Testen: run-once · Status: status · Token erneuern: set-token -token doc_…',
                 'Protokoll: Ereignisanzeige (Quelle „DokuVault Agent“) und C:\ProgramData\DokuVault\agent.log. Unter einer Gruppenrichtlinie „AllSigned“ laufen die Scripte nicht.',
@@ -1127,6 +1135,9 @@ return [
             'download' => 'agent.dienst.proxmox',
             'beschreibung' => 'Auf den Proxmox-Host kopieren und als root ausführen – Adresse und Token sind schon enthalten. Der Agent meldet sofort und dann stündlich Host, VMs und Container. Der Download ist 30 Minuten lang möglich und so vertraulich wie der Token.',
             'befehl' => 'bash dokuvault-agent-proxmox.sh',
+            'rollen' => [
+                'proxmox' => 'Proxmox-Host',
+            ],
             'deinstallieren' => [
                 'Als root auf dem Proxmox-Host: dokuvault-agent-uninstall',
                 'Entfernt Timer, Dienst, Konfiguration samt Token und /etc/dokuvault. Den Token danach in DokuVault widerrufen.',

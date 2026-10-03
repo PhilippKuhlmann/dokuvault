@@ -228,6 +228,11 @@ class Customer extends Model
         return $this->hasMany(AgentToken::class);
     }
 
+    public function agentInstallations()
+    {
+        return $this->hasMany(AgentInstallation::class);
+    }
+
     /**
      * Kind-Bindung fuer Ansprechpartner von Hand aufloesen.
      *

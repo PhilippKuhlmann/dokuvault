@@ -109,6 +109,27 @@ if [ -z "${DOKUVAULT_UPDATED:-}" ]; then
   rm -f "$installer"
 fi
 
+# Report in and ask whether to run - the agent can be switched off on the
+# agent page in DokuVault. An older DokuVault without checkin: just run.
+antwort=/var/lib/dokuvault/checkin.json
+status="$(curl -sS -o "$antwort" -w '%{http_code}' -X POST \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "User-Agent: DokuVault-Agent-Proxmox" \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -d "{\"kind\":\"proxmox\",\"machine_id\":\"$(cat /etc/machine-id 2>/dev/null)\",\"hostname\":\"$(hostname)\",\"version\":\"$(cat /usr/local/lib/dokuvault/version 2>/dev/null)\",\"detected\":[\"proxmox\"]}" \
+  "$URL/api/agent/checkin")" || status=000
+case "$status" in
+  200)
+    if ! grep -q '"proxmox"' "$antwort"; then
+      echo "Keine Aufgaben zugewiesen (in DokuVault unter Agenten anhaken)."
+      rm -f "$antwort"
+      exit 0
+    fi
+    ;;
+  401) echo "Token abgelehnt (abgelaufen oder widerrufen) - in DokuVault einen neuen Token erzeugen und den Agenten neu einrichten." >&2; exit 1 ;;
+esac
+rm -f "$antwort"
+
 ziel=/var/lib/dokuvault/proxmox.sh
 status="$(curl -sS -o "$ziel.neu" -w '%{http_code}' \
   -H "Authorization: Bearer $TOKEN" \

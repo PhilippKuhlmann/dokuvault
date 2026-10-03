@@ -8,6 +8,7 @@ use App\Models\ADDomain;
 use App\Models\ADDomainHost;
 use App\Models\ADGroup;
 use App\Models\ADUser;
+use App\Models\AgentInstallation;
 use App\Models\Computer;
 use App\Models\Domain;
 use App\Models\LicenseSoftware;
@@ -396,6 +397,37 @@ class AgentController extends Controller
             'X-Agent-Version' => $aktuell,
             'Cache-Control' => 'no-store',
         ]);
+    }
+
+    /**
+     * An installed agent reports in before every run: which machine, what it
+     * detected. The answer is the roles it should run - switched on and off
+     * on the agent page, so two DCs can both report as servers while only
+     * one reports the domain.
+     */
+    public function checkin(Request $request)
+    {
+        $data = $request->validate([
+            'kind' => ['required', 'string', 'in:'.implode(',', array_keys(config('custom.dienste', [])))],
+            'machine_id' => ['required', 'string', 'max:100'],
+            'hostname' => ['required', 'string', 'max:255'],
+            'domain' => ['nullable', 'string', 'max:255'],
+            'version' => ['nullable', 'string', 'max:100'],
+            'detected' => ['array'],
+            'detected.*' => ['string', 'max:50'],
+        ]);
+
+        $installation = AgentInstallation::checkin(
+            $request->attributes->get('agentToken'),
+            $data['kind'],
+            strtolower($data['machine_id']),
+            $data['hostname'],
+            $data['domain'] ?? null,
+            $data['version'] ?? null,
+            $data['detected'] ?? [],
+        );
+
+        return response()->json(['roles' => $installation->roles]);
     }
 
     /**

@@ -85,6 +85,7 @@ test('was nach einem Geheimnis klingt, liegt verschlüsselt oder steht mit Grund
         'device_models.model_key' => 'normalisierter Suchschlüssel',
         'login_generals.key_type' => 'Verfahren, etwa ed25519',
         'login_generals.public_key' => 'der öffentliche Teil - er darf öffentlich sein',
+        'agent_installations.agent_token_id' => 'Fremdschlüssel auf agent_tokens',
         'credential_links.credentialable_id' => 'polymorphe Verknüpfung',
         'credential_links.credentialable_type' => 'polymorphe Verknüpfung',
         'personal_access_tokens.tokenable_id' => 'polymorphe Verknüpfung',

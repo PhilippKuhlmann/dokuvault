@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -61,6 +62,11 @@ func TestRunOnceFetchesWritesAndRunsEveryAgent(t *testing.T) {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
+		// An older server without checkin: the configured agents run.
+		if r.URL.Path == "/api/agent/checkin" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		w.Write([]byte("Write-Host 'Grüße aus " + filepath.Base(r.URL.Path) + "'"))
 	}))
 	defer srv.Close()
@@ -104,6 +110,57 @@ func TestExpiredTokenStopsAfterFirstAgent(t *testing.T) {
 	}
 	if !strings.Contains(strings.Join(logged, "\n"), "set-token") {
 		t.Fatalf("log should tell how to fix it: %v", logged)
+	}
+}
+
+func TestRunOnceRunsOnlyTheAgentsDokuVaultAssigns(t *testing.T) {
+	useTempDir(t)
+
+	var sent map[string]any
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/api/agent/checkin" {
+			_ = json.NewDecoder(r.Body).Decode(&sent)
+			// The second DC: server yes, AD no - and nothing unknown.
+			w.Write([]byte(`{"roles":["windows-server","something-else"]}`))
+			return
+		}
+		w.Write([]byte("Write-Host ok"))
+	}))
+	defer srv.Close()
+
+	var ran []string
+	oldRun := runScript
+	runScript = func(path string) (string, error) {
+		ran = append(ran, filepath.Base(path))
+		return "", nil
+	}
+	defer func() { runScript = oldRun }()
+
+	if err := runOnce(validConfig(srv.URL), func(string, string) {}); err != nil {
+		t.Fatalf("runOnce: %v", err)
+	}
+	if strings.Join(ran, ",") != "windows-server.ps1" {
+		t.Fatalf("ran %v", ran)
+	}
+	if sent["kind"] != "windows" || sent["machine_id"] != "test-machine" || sent["hostname"] == "" {
+		t.Fatalf("checkin sent %v", sent)
+	}
+}
+
+func TestNoAssignedAgentsRunsNothing(t *testing.T) {
+	useTempDir(t)
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/api/agent/checkin" {
+			w.Write([]byte(`{"roles":[]}`))
+			return
+		}
+		t.Errorf("unexpected request %s", r.URL.Path)
+	}))
+	defer srv.Close()
+
+	if err := runOnce(validConfig(srv.URL), func(string, string) {}); err != nil {
+		t.Fatalf("runOnce: %v", err)
 	}
 }
 

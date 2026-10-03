@@ -27,5 +27,7 @@ func prepareDataDir() error { return os.MkdirAll(dataDir, 0o700) }
 
 // Role detection needs the Windows registry; elsewhere a plain server.
 func detectAgents() []string             { return []string{"windows-server"} }
+func machineID() string                  { return "test-machine" }
+func machineDomain() string              { return "" }
 func isElevated() bool                   { return true }
 func relaunchElevated(args string) error { return errNotWindows }

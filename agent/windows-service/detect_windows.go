@@ -43,6 +43,30 @@ func detectAgents() []string {
 	return agents
 }
 
+// machineID identifies this machine to DokuVault - one token serves many
+// machines. MachineGuid survives renames and is set by Windows setup.
+func machineID() string {
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Cryptography`, registry.QUERY_VALUE|registry.WOW64_64KEY)
+	if err != nil {
+		return ""
+	}
+	defer k.Close()
+	v, _, _ := k.GetStringValue("MachineGuid")
+	return v
+}
+
+// machineDomain is the DNS domain of the machine (empty outside a domain):
+// one AD report per domain is enough.
+func machineDomain() string {
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SYSTEM\CurrentControlSet\Services\Tcpip\Parameters`, registry.QUERY_VALUE)
+	if err != nil {
+		return ""
+	}
+	defer k.Close()
+	v, _, _ := k.GetStringValue("Domain")
+	return v
+}
+
 func serviceExists(name string) bool {
 	m, err := mgr.Connect()
 	if err != nil {

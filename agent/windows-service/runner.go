@@ -83,12 +83,23 @@ var runScript = func(path string) (string, error) {
 	return string(out), err
 }
 
-// runOnce runs every configured agent once. One failing agent does not stop
-// the others; the returned error summarises all failures.
+// runOnce asks DokuVault which agents to run (assignedAgents) and runs each
+// once. One failing agent does not stop the others; the returned error
+// summarises all failures.
 func runOnce(cfg Config, log func(level, msg string)) error {
+	agents, err := assignedAgents(cfg, log)
+	if err != nil {
+		log("error", err.Error())
+		return err
+	}
+	if len(agents) == 0 {
+		log("info", "Keine Aufgaben zugewiesen (in DokuVault unter Agenten anhaken)")
+		return nil
+	}
+
 	var failed []string
 
-	for _, agent := range effectiveAgents(cfg) {
+	for _, agent := range agents {
 		body, err := fetchScript(cfg, agent)
 		if err == nil {
 			var path string

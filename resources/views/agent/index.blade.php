@@ -232,6 +232,73 @@
             </div>
         @endif
 
+        @if (session('success'))
+            <div class="rounded-lg border border-green-300 bg-green-50 px-4 py-2 text-sm text-green-800 dark:border-green-800 dark:bg-gray-800 dark:text-green-300">{{ session('success') }}</div>
+        @endif
+
+        {{-- Installed agents: each reports in before every run and gets the
+             roles ticked here. Defaults follow the detection, except AD -
+             only one DC per domain gets it, the domain is the same from
+             every DC. --}}
+        <x-panel>
+            <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">{{ __('Installierte Agenten') }}</div>
+            <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">
+                {{ __('Was jeder Agent meldet, legst du hier fest – gilt ab seinem nächsten Lauf. „erkannt“ heißt: der Rechner hat die Rolle. Active Directory reicht von einem Domänencontroller je Domäne.') }}
+            </p>
+
+            @forelse ($installations as $installation)
+                @php($rollen = \App\Models\AgentInstallation::availableRoles($installation->kind))
+                <div class="flex flex-wrap items-start justify-between gap-3 py-3 border-b border-gray-100 last:border-0 dark:border-gray-700">
+                    <div class="min-w-48">
+                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {{ $installation->hostname }}
+                            <span class="ml-1 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:bg-gray-700 dark:text-gray-300">{{ __(config('custom.dienste.'.$installation->kind.'.name', $installation->kind)) }}</span>
+                            @if ($installation->isStale())
+                                <span class="ml-1 rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-700 dark:bg-red-900/30 dark:text-red-400">{{ __('meldet nicht') }}</span>
+                            @endif
+                        </div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                            @if ($installation->domain)
+                                {{ $installation->domain }} ·
+                            @endif
+                            {{ __('Zuletzt gemeldet') }}: {{ Zeit::anzeigen($installation->last_seen_at, 'd.m.Y H:i', __('noch nie')) }} ·
+                            {{ __('Version') }}: {{ $installation->version ?? '—' }} ·
+                            {{ __('Token') }}: {{ $installation->agentToken ? ($installation->agentToken->name ?: 'Token #'.$installation->agentToken->id) : __('widerrufen') }}
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3">
+                        <form method="POST" action="{{ route('agent.installation.update', [$customer, $installation]) }}" class="flex flex-wrap items-center gap-3">
+                            @csrf
+                            @method('PUT')
+                            @foreach ($rollen as $rolle => $bezeichnung)
+                                <label class="flex cursor-pointer select-none items-center gap-1.5 text-sm text-gray-700 dark:text-gray-200">
+                                    <input type="checkbox" name="roles[]" value="{{ $rolle }}" @checked(in_array($rolle, $installation->roles ?? [], true))
+                                        class="h-4 w-4 rounded border-gray-300 text-cerulean-600 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700">
+                                    {{ __($bezeichnung) }}
+                                    @if (in_array($rolle, $installation->detected ?? [], true))
+                                        <span class="text-[10px] text-green-700 dark:text-green-400">{{ __('erkannt') }}</span>
+                                    @endif
+                                </label>
+                            @endforeach
+                            <x-input.button type="submit" size="sm" :label="__('Speichern')" />
+                        </form>
+                        <x-loeschdialog :url="route('agent.installation.destroy', [$customer, $installation])"
+                            :frage="__('Agent aus der Liste entfernen?')"
+                            :hinweis="__('Nur der Eintrag verschwindet. Ist der Agent noch installiert, meldet er sich beim nächsten Lauf wieder – deinstalliert wird auf dem Rechner.')"
+                            :bestaetigen="__('Entfernen')">
+                            <x-slot:ausloeser>
+                                <x-input.button type="button" color="red" size="sm"
+                                    x-on:click="offen = true" :label="__('Entfernen')" />
+                            </x-slot:ausloeser>
+                        </x-loeschdialog>
+                    </div>
+                </div>
+            @empty
+                <div class="text-sm text-gray-400 dark:text-gray-500">{{ __('Noch kein Agent installiert. Agenten erscheinen hier nach ihrer ersten Meldung.') }}</div>
+            @endforelse
+        </x-panel>
+
         {{-- Welche Agenten es gibt.
 
              Steht ueber dem Formular, weil dort die Frage aufkommt: Wer einen

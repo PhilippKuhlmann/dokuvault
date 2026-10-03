@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AgentInstallation;
 use App\Models\AgentToken;
 use App\Models\Customer;
 use App\Models\Site;
@@ -24,7 +25,48 @@ class AgentTokenController extends Controller
 
         $sites = Site::where('customer_id', $customer->id)->orderBy('name')->get();
 
-        return view('agent.index', compact('customer', 'tokens', 'sites'));
+        $installations = AgentInstallation::where('customer_id', $customer->id)
+            ->with('agentToken')
+            ->orderBy('kind')
+            ->orderBy('hostname')
+            ->get();
+
+        return view('agent.index', compact('customer', 'tokens', 'sites', 'installations'));
+    }
+
+    /**
+     * What an installed agent should run - takes effect on its next run.
+     * Any role of its kind may be switched on, detected or not: the
+     * detection can be wrong, and the agent log then says why it failed.
+     */
+    public function updateInstallation(Customer $customer, AgentInstallation $agentInstallation, Request $request)
+    {
+        Gate::authorize('see_hidden');
+        abort_if($agentInstallation->customer_id !== $customer->id, 403);
+
+        $validated = $request->validate([
+            'roles' => ['array'],
+            'roles.*' => [Rule::in(array_keys(AgentInstallation::availableRoles($agentInstallation->kind)))],
+        ]);
+
+        $agentInstallation->update(['roles' => array_values($validated['roles'] ?? [])]);
+
+        return redirect(route('agent.index', $customer))
+            ->with('success', __('Aufgaben für :name gespeichert – gilt ab dem nächsten Lauf.', ['name' => $agentInstallation->hostname]));
+    }
+
+    /**
+     * Removes the entry only. A still installed agent reports in again on
+     * its next run - uninstalling happens on the machine.
+     */
+    public function destroyInstallation(Customer $customer, AgentInstallation $agentInstallation)
+    {
+        Gate::authorize('see_hidden');
+        abort_if($agentInstallation->customer_id !== $customer->id, 403);
+
+        $agentInstallation->delete();
+
+        return redirect(route('agent.index', $customer));
     }
 
     public function store(Customer $customer, Request $request)

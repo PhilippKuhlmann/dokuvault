@@ -4,6 +4,12 @@
 
 ### Added
 
+- **Agent-Seite: installierte Agenten sehen und festlegen, was sie melden.** Neuer Abschnitt „Installierte Agenten“: jeder Rechner mit Agent, mit Domäne, letzter Meldung, Version und Token – und Häkchen für seine Aufgaben (Windows: Server, Active Directory, Hyper-V, Arbeitsplatz; Proxmox: Proxmox-Host). „erkannt“ zeigt, welche Rolle der Rechner wirklich hat; „meldet nicht“, wenn er seit drei Stunden still ist.
+  - Vor jedem Lauf meldet sich der Agent an (`POST /api/agent/checkin`, erkannt an MachineGuid bzw. `/etc/machine-id`) und führt nur aus, was hier angehakt ist. Nichts angehakt: er läuft, meldet aber nichts.
+  - Zwei Domänencontroller einer Domäne: Beide melden sich als Server, Active Directory bekommt nur der erste – die Domäne ist von jedem DC aus dieselbe. Ein DC einer anderen Domäne bekommt AD wieder. Umhängen per Häkchen.
+  - Was später neu erkannt wird (Hyper-V nachinstalliert), wird angehakt; was hier abgehakt wurde, bleibt aus.
+  - Installierte Agenten bekommen das mit dem nächsten Selbst-Update; bis dahin melden sie wie bisher alles Erkannte.
+
 - **Windows- und Proxmox-Agent aktualisieren sich selbst.** Vor jedem Lauf fragt der Agent DokuVault nach seiner Version (`/api/agent/update/{windows|proxmox}`); gibt es eine neuere, spielt er sie ein – das Script, das sammelt, kam schon bisher bei jedem Lauf frisch.
   - Windows: Die neue exe wird erst nach geprüfter SHA-256-Prüfsumme eingesetzt, die laufende umbenannt (das erlaubt Windows) und der Dienst startet mit der neuen Version neu. Unter „Apps“ steht danach die neue Version.
   - Proxmox: Das Startscript holt den aktuellen Installer und spielt ihn mit `--update` ein; Intervall und Token bleiben. Die Version ergibt sich aus dem Inhalt des Installers – jede Änderung ist automatisch ein Update.
