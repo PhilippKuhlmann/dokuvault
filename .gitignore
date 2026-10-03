@@ -35,3 +35,6 @@ Homestead.json
 
 # Ausgabe von /brag: Plan, Komposition, gerendertes Video
 /brag-output*
+
+# Editor-Auslagerungsdateien (Vim)
+*.swp
