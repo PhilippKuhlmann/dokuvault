@@ -73,19 +73,30 @@ ZUGANG="$(curl -fsS -X POST "https://login.microsoftonline.com/$TENANT/oauth2/v2
 # @odata.nextLink auf die naechste. Ohne das Nachladen waere ab dem 101.
 # Postfach die Doku still unvollstaendig - der schlimmste Fehler, den eine
 # Dokumentation machen kann.
+#
+# Pages and the report go through files, not jq arguments: Linux allows
+# 128 KB per argument, a tenant with a few hundred users is larger ("Die
+# Argumentliste ist zu lang"). Each page's .value is appended; jq --slurpfile
+# reads them as a list of pages later.
+BENUTZER_DATEI="$(mktemp)"
+DOMAINS_DATEI="$(mktemp)"
+LIZENZEN_DATEI="$(mktemp)"
+NUTZLAST_DATEI="$(mktemp)"
+trap 'rm -f "$BENUTZER_DATEI" "$DOMAINS_DATEI" "$LIZENZEN_DATEI" "$NUTZLAST_DATEI"' EXIT
+
 graph_alle() {
-  local url="$1" alle='[]' antwort
+  local url="$1" datei="$2" antwort
+  : > "$datei"
   while [ -n "$url" ]; do
     antwort="$(curl -fsS -H "Authorization: Bearer $ZUGANG" "$url")"
-    alle="$(jq -n --argjson a "$alle" --argjson b "$(jq '.value' <<<"$antwort")" '$a + $b')"
+    jq '.value' <<<"$antwort" >> "$datei"
     url="$(jq -r '."@odata.nextLink" // empty' <<<"$antwort")"
   done
-  printf '%s' "$alle"
 }
 
-BENUTZER="$(graph_alle 'https://graph.microsoft.com/v1.0/users?$select=id,displayName,mail,userPrincipalName,accountEnabled&$top=100')"
-DOMAINS="$(graph_alle 'https://graph.microsoft.com/v1.0/domains')"
-LIZENZEN="$(graph_alle 'https://graph.microsoft.com/v1.0/subscribedSkus')"
+graph_alle 'https://graph.microsoft.com/v1.0/users?$select=id,displayName,mail,userPrincipalName,accountEnabled&$top=100' "$BENUTZER_DATEI"
+graph_alle 'https://graph.microsoft.com/v1.0/domains' "$DOMAINS_DATEI"
+graph_alle 'https://graph.microsoft.com/v1.0/subscribedSkus' "$LIZENZEN_DATEI"
 
 # Nur Konten mit Postfach: Raeume, Dienstkonten ohne Mail und Gastbenutzer
 # ohne Adresse gehoeren nicht in die Postfachliste.
@@ -93,8 +104,10 @@ LIZENZEN="$(graph_alle 'https://graph.microsoft.com/v1.0/subscribedSkus')"
 # skuPartNumber ist eine Kennung wie O365_BUSINESS_PREMIUM. Graph kennt keinen
 # Anzeigenamen dazu - aus den Unterstrichen werden Leerzeichen, mehr laesst
 # sich ehrlich nicht daraus machen.
-PAYLOAD="$(jq -n --arg tenant "$TENANT" \
-  --argjson u "$BENUTZER" --argjson d "$DOMAINS" --argjson l "$LIZENZEN" '
+jq -n --arg tenant "$TENANT" \
+  --slurpfile up "$BENUTZER_DATEI" --slurpfile dp "$DOMAINS_DATEI" --slurpfile lp "$LIZENZEN_DATEI" '
+  # One array per page - joined into one list.
+  ($up | add // []) as $u | ($dp | add // []) as $d | ($lp | add // []) as $l |
   {
     tenant: $tenant,
     mailboxes: [ $u[] | select(.mail != null) | {
@@ -107,7 +120,7 @@ PAYLOAD="$(jq -n --arg tenant "$TENANT" \
       gebucht:    .prepaidUnits.enabled,
       belegt:     .consumedUnits
     } ]
-  }')"
+  }' > "$NUTZLAST_DATEI"
 
 # Nicht "curl -f": das verschluckt die Antwort und laesst nur "error: 401"
 # uebrig. DokuVault schreibt aber hinein, was ihm fehlt.
@@ -116,7 +129,7 @@ antwort="$(curl -sS -X POST "$API_URL" -w $'\n%{http_code}' \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
-  -d "$PAYLOAD")"
+  --data-binary @"$NUTZLAST_DATEI")"
 code="$(printf '%s' "$antwort" | tail -n1)"
 
 if [ "$code" != "200" ]; then
@@ -134,4 +147,4 @@ if [ "$code" != "200" ]; then
 fi
 
 printf '%s\n' "$(printf '%s' "$antwort" | sed '$d')"
-echo "Fertig. $(jq -r '"\(.mailboxes|length) Postfaecher, \(.domains|length) Domains, \(.licences|length) Lizenzen"' <<<"$PAYLOAD") gemeldet."
+echo "Fertig. $(jq -r '"\(.mailboxes|length) Postfaecher, \(.domains|length) Domains, \(.licences|length) Lizenzen"' "$NUTZLAST_DATEI") gemeldet."

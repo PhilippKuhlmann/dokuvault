@@ -82,7 +82,14 @@ CONTROLLER="${CONTROLLER%/}"
 # nur so lange, wie das Script laeuft.
 KEKSE="$(mktemp)"
 KOPFZEILEN="$(mktemp)"
-trap 'rm -f "$KEKSE" "$KOPFZEILEN"' EXIT
+# Controller answers and the report go through files, not arguments: Linux
+# allows 128 KB per argument, and stat/device of a UDM with a few switches
+# and APs is larger ("jq: Die Argumentliste ist zu lang"). macOS has no such
+# limit per argument - there it never showed.
+GERAETE_DATEI="$(mktemp)"
+WLAN_DATEI="$(mktemp)"
+NUTZLAST_DATEI="$(mktemp)"
+trap 'rm -f "$KEKSE" "$KOPFZEILEN" "$GERAETE_DATEI" "$WLAN_DATEI" "$NUTZLAST_DATEI"' EXIT
 
 anmeldung="$(jq -n --arg u "$BENUTZER" --arg p "$KENNWORT" '{username: $u, password: $p}')"
 
@@ -274,8 +281,8 @@ fi
 
 echo "Site: $SITE ($(jq -r --arg n "$SITE" '.data[] | select(.name == $n) | .desc // "ohne Namen"' <<<"$SITES"))"
 
-GERAETE="$(hole "/api/s/$SITE/stat/device")"
-WLANCONF="$(hole "/api/s/$SITE/rest/wlanconf")"
+hole "/api/s/$SITE/stat/device" > "$GERAETE_DATEI"
+hole "/api/s/$SITE/rest/wlanconf" > "$WLAN_DATEI"
 
 # Die MAC-Adresse als Kennung: sie bleibt, auch wenn das Geraet umbenannt oder
 # in einen anderen Standort umgehaengt wird. Ein frisch adoptiertes Geraet hat
@@ -284,7 +291,7 @@ WLANCONF="$(hole "/api/s/$SITE/rest/wlanconf")"
 MIT_KENNWORT="true"
 [ -n "$OHNE_KENNWOERTER" ] && MIT_KENNWORT="false"
 
-PAYLOAD="$(jq -n --arg site "$SITE" --argjson g "$GERAETE" --argjson w "$WLANCONF" \
+jq -n --arg site "$SITE" --slurpfile geraete "$GERAETE_DATEI" --slurpfile wlans "$WLAN_DATEI" \
   --argjson mitkennwort "$MIT_KENNWORT" '
   def geraet: {
     identifier:   .mac,
@@ -301,6 +308,7 @@ PAYLOAD="$(jq -n --arg site "$SITE" --argjson g "$GERAETE" --argjson w "$WLANCON
   # vorhandene Bezeichnung stehen.
   + (if (.config_network.type // "") == "" then {}
      else {dhcp: (.config_network.type == "dhcp")} end);
+  ($geraete[0]) as $g | ($wlans[0]) as $w |
   def verschluesselung:
     if .security == "open" then "Offen"
     elif .security == "wpaeap" then "WPA2-Enterprise"
@@ -320,14 +328,14 @@ PAYLOAD="$(jq -n --arg site "$SITE" --argjson g "$GERAETE" --argjson w "$WLANCON
                     | {identifier: ._id, ssid: .name, encryption: verschluesselung}
                       + (if $mitkennwort and ((.x_passphrase // "") != "")
                          then {password: .x_passphrase} else {} end) ]
-  }')"
+  }' > "$NUTZLAST_DATEI"
 
 echo "Sende Dokumentation an $API_URL ..."
 antwort="$(curl -sS -X POST "$API_URL" -w $'\n%{http_code}' \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
-  -d "$PAYLOAD")"
+  --data-binary @"$NUTZLAST_DATEI")"
 code="$(printf '%s' "$antwort" | tail -n1)"
 
 if [ "$code" != "200" ]; then
@@ -345,4 +353,4 @@ if [ "$code" != "200" ]; then
 fi
 
 printf '%s\n' "$(printf '%s' "$antwort" | sed '$d')"
-echo "Fertig. $(jq -r '"\(.switches|length) Switches, \(.accesspoints|length) Accesspoints, \(.wifis|length) WLANs"' <<<"$PAYLOAD") gemeldet."
+echo "Fertig. $(jq -r '"\(.switches|length) Switches, \(.accesspoints|length) Accesspoints, \(.wifis|length) WLANs"' "$NUTZLAST_DATEI") gemeldet."

@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- **UniFi- und Microsoft-365-Script brachen unter Linux ab: „Die Argumentliste ist zu lang“.** Die Daten des Controllers bzw. von Graph liefen als Argument durch `jq`; Linux erlaubt 128 KB je Argument, `stat/device` einer UDM Pro mit vier Switches und vier APs hat schon 227 KB (macOS kennt die Grenze nicht, dort fiel es nie auf). Jetzt über temporäre Dateien, ebenso die Meldung an DokuVault. UniFi unter Linux an der UDM Pro geprüft, Microsoft 365 mit 1.200 Testbenutzern.
+
 - **UniFi-Script: http:// statt https:// führte zu „Anmeldung abgelehnt (HTTP 301)“.** UniFi OS spricht nur https und leitet http weiter (UDM 301, UniFi OS Server 307); das Script hielt die Weiterleitung für eine Ablehnung und schickte zum Konto. Jetzt übernimmt es die neue Adresse (nur bei gleichem Host) und meldet sich dort an; die PowerShell-Fassung stellt http direkt auf https um. Den Hinweis auf einen lokalen Administrator gibt es nur noch bei 401/403. An einer UDM Pro mit lokalem Konto geprüft: Anmeldung über http, 4 Switches, 4 Access Points, 3 WLANs ausgelesen.
 
 - **UniFi-Script an der Dream Machine: verständliche Fehler statt „401“.** Lehnte UniFi OS (UDM, UDM-Pro, Cloud Key Gen2+) die Anmeldung ab – falsches Kennwort, Cloud-Konto, Zwei-Faktor –, fiel das Script still auf die Anmeldung des klassischen Controllers zurück, die es auf UniFi OS nicht gibt; übrig blieb ein nacktes „401“, als ginge die UDM gar nicht. Jetzt nur noch zurück, wenn es die UniFi-OS-Anmeldung nicht gibt, sonst mit der Meldung der UDM und dem Hinweis auf einen lokalen Administrator. Auch falscher Port (`:8443` an einer UDM) und selbstsigniertes Zertifikat werden benannt. Bash und PowerShell; die Bash-Fassung an einer echten UDM Pro geprüft.
