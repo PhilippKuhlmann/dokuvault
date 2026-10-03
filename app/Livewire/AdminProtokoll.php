@@ -3,8 +3,11 @@
 namespace App\Livewire;
 
 use App\Models\AgentToken;
+use App\Models\Customer;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -41,20 +44,24 @@ class AdminProtokoll extends Component
     #[Url(except: '')]
     public string $benutzer = '';
 
+    /** Only changes to objects of this customer (id). */
+    #[Url(except: '')]
+    public string $kunde = '';
+
     /** Nur die letzten X Tage. 0 heißt: alles. */
     #[Url(except: 0)]
     public int $tage = 0;
 
     public function updated(string $eigenschaft): void
     {
-        if (in_array($eigenschaft, ['suche', 'ereignis', 'art', 'benutzer', 'tage'], true)) {
+        if (in_array($eigenschaft, ['suche', 'ereignis', 'art', 'benutzer', 'kunde', 'tage'], true)) {
             $this->resetPage();
         }
     }
 
     public function zuruecksetzen(): void
     {
-        $this->reset(['suche', 'ereignis', 'art', 'benutzer', 'tage']);
+        $this->reset(['suche', 'ereignis', 'art', 'benutzer', 'kunde', 'tage']);
         $this->resetPage();
     }
 
@@ -69,6 +76,7 @@ class AdminProtokoll extends Component
                 [$typ, $id] = $this->verursacherWahl();
                 $a->where('causer_type', $typ)->where('causer_id', $id);
             })
+            ->when($this->kunde !== '', fn ($a) => $this->nurKunde($a, (int) $this->kunde))
             ->when($this->tage > 0, fn ($a) => $a->where('created_at', '>=', $this->grenze()))
             // Volltext über die Eigenschaften: In einem Protokoll sucht man
             // nicht nach einem Feld, sondern nach dem, woran man sich erinnert -
@@ -82,10 +90,14 @@ class AdminProtokoll extends Component
             ))
             ->latest('id');
 
+        // Bewusst nicht einstellbar wie die uebrigen Listen: Im Protokoll
+        // sucht man nach einem Vorgang und ueberfliegt, statt zu lesen.
+        $activities = $abfrage->paginate(50);
+
         return view('livewire.admin-protokoll', [
-            // Bewusst nicht einstellbar wie die uebrigen Listen: Im Protokoll
-            // sucht man nach einem Vorgang und ueberfliegt, statt zu lesen.
-            'activities' => $abfrage->paginate(50),
+            'activities' => $activities,
+            'kundeVon' => $this->kundenDerEintraege($activities->getCollection()),
+            'kunden' => Customer::orderBy('name')->pluck('name', 'id')->all(),
             'gesamt' => Activity::count(),
             'ereignisse' => config('custom.activity_events'),
             'arten' => $this->arten(),
@@ -93,8 +105,70 @@ class AdminProtokoll extends Component
             // gewinnt in der View - die Auswahlliste waere dort ein String.
             'benutzerListe' => $this->verursacher(),
             'gefiltert' => $this->suche !== '' || $this->ereignis !== '' || $this->art !== ''
-                || $this->benutzer !== '' || $this->tage > 0,
+                || $this->benutzer !== '' || $this->kunde !== '' || $this->tage > 0,
         ])->layout('layouts.admin.app');
+    }
+
+    /**
+     * Object types in the log that belong to a customer (customer_id column).
+     * From the table, like arten(): IP addresses or credential links are
+     * logged too and carry the customer.
+     *
+     * @return array<int, class-string>
+     */
+    protected function kundenTypen(): array
+    {
+        return collect(array_keys($this->arten()))
+            ->filter(fn ($klasse) => class_exists($klasse)
+                && Schema::hasColumn((new $klasse)->getTable(), 'customer_id'))
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Changes to objects of one customer, and to the customer itself.
+     * Without global scopes: deleted objects (soft deletes) still belong to
+     * their customer - "who deleted the firewall?" is the question here.
+     */
+    protected function nurKunde($abfrage, int $kundeId): void
+    {
+        $typen = $this->kundenTypen();
+
+        $abfrage->where(fn ($a) => $a
+            ->where(fn ($k) => $k->where('subject_type', Customer::class)->where('subject_id', $kundeId))
+            ->when($typen !== [], fn ($q) => $q->orWhereHasMorph('subject', $typen, fn ($s) => $s
+                ->withoutGlobalScopes()
+                ->where('customer_id', $kundeId))));
+    }
+
+    /**
+     * Customer name per entry on this page: one query per object type, not
+     * one per row.
+     *
+     * @return array<int, string> activity id => customer name
+     */
+    protected function kundenDerEintraege(Collection $eintraege): array
+    {
+        $namen = Customer::pluck('name', 'id');
+        $typen = array_flip($this->kundenTypen());
+        $kundeJeObjekt = [];
+
+        foreach ($eintraege->groupBy('subject_type') as $typ => $gruppe) {
+            if (! isset($typen[$typ])) {
+                continue;
+            }
+            $kundeJeObjekt[$typ] = $typ::withoutGlobalScopes()
+                ->whereIn('id', $gruppe->pluck('subject_id')->unique())
+                ->pluck('customer_id', 'id');
+        }
+
+        return $eintraege->mapWithKeys(function ($eintrag) use ($namen, $kundeJeObjekt) {
+            $kundeId = $eintrag->subject_type === Customer::class
+                ? $eintrag->subject_id
+                : ($kundeJeObjekt[$eintrag->subject_type][$eintrag->subject_id] ?? null);
+
+            return [$eintrag->id => $kundeId ? ($namen[$kundeId] ?? null) : null];
+        })->filter()->all();
     }
 
     /**

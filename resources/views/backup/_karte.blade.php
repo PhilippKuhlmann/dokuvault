@@ -31,6 +31,13 @@
                     ? $eintrag->last_run_at->format('d.m.Y H:i').($eintrag->last_status ? ' · '.__(\App\Models\Backup::STATUS[$eintrag->last_status] ?? $eintrag->last_status) : '')
                     : null,
             ]" />
+            {{-- Reported runs, as on the admin overview: as many as set
+                 there. Only for backups an agent reports. --}}
+            @if ($eintrag->agent_identifier)
+                <x-minitextcard :title="__('Letzte Läufe')">
+                    <x-backup-verlauf :runs="$eintrag->recentRuns" />
+                </x-minitextcard>
+            @endif
             <x-minitablecard :title="__('Login')" :array="[
                 'Passwort' => $eintrag->password,
             ]" />

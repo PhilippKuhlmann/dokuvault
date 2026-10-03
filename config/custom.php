@@ -1309,6 +1309,7 @@ return [
         'admin_trash' => 'Papierkorb über alle Kunden',
         'admin_activity' => 'Protokoll sehen',
         'admin_apitoken' => 'API-Token verwalten',
+        'admin_backup' => 'Backups aller Kunden sehen',
     ],
 
     /*

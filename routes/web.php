@@ -68,6 +68,7 @@ use App\Http\Controllers\WifiController;
 use App\Http\Controllers\WizardController;
 use App\Livewire\AdminAllgemein;
 use App\Livewire\AdminApiToken;
+use App\Livewire\AdminBackups;
 use App\Livewire\AdminFristen;
 use App\Livewire\AdminOperatingSystem;
 use App\Livewire\AdminPapierkorb;
@@ -169,6 +170,10 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
         // Menuepunkt darauf haette beim Klicken Token erzeugt.
         Route::get('/apitoken', AdminApiToken::class)
             ->middleware('can:admin_apitoken')->name('admin.apitoken');
+
+        // Backups of all customers with their last runs (reported by agents).
+        Route::get('/backups', AdminBackups::class)
+            ->middleware('can:admin_backup')->name('admin.backups');
 
         Route::get('/', [AdminController::class, 'index'])->name('admin.dashboard');
 

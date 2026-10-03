@@ -450,6 +450,29 @@ class Setting extends Model
 
     public const PDF_STUNDEN = 'pdf_stunden';
 
+    public const BACKUP_VERLAUF = 'backup_verlauf';
+
+    public const BACKUP_AUFBEWAHRUNG = 'backup_aufbewahrung';
+
+    /** How many runs per backup are shown - admin overview and customer card (5-50, default 10). */
+    public static function backupVerlauf(): int
+    {
+        $wert = (int) self::wert(self::BACKUP_VERLAUF);
+
+        return $wert >= 5 && $wert <= 50 ? $wert : 10;
+    }
+
+    /**
+     * How many runs per backup are kept before the oldest are deleted
+     * (default 100). Never fewer than are shown.
+     */
+    public static function backupAufbewahrung(): int
+    {
+        $wert = (int) self::wert(self::BACKUP_AUFBEWAHRUNG);
+
+        return max($wert >= 10 && $wert <= 10000 ? $wert : 100, self::backupVerlauf());
+    }
+
     /** Vorwarnzeit fuer Lizenzen, Zertifikate und Domains, in Tagen. */
     public static function fristVertraege(): int
     {

@@ -294,3 +294,29 @@ test('eine Verknuepfung traegt den Namen dessen, was sie verbindet', function ()
     // Die Verknuepfung selbst hat keinen Namen - sie traegt den des Geraets.
     expect($eintrag->properties['objekt'])->toContain('FW-Verknuepft');
 });
+
+test('der Kundenfilter zeigt nur Aenderungen an Objekten dieses Kunden', function () {
+    $this->actingAs(userWithPermissions([]));
+    $mustermann = Customer::factory()->create(['name' => 'Mustermann GmbH']);
+    $nordwind = Customer::factory()->create(['name' => 'Nordwind Fischerei']);
+
+    Domain::factory()->create(['customer_id' => $mustermann->id, 'name' => 'mustermann.de']);
+    Domain::factory()->create(['customer_id' => $nordwind->id, 'name' => 'nordwind.de']);
+    // Deleted: still belongs to its customer - "who deleted it?" is the question.
+    Domain::factory()->create(['customer_id' => $mustermann->id, 'name' => 'alt-mustermann.de'])->delete();
+
+    Livewire::test(AdminProtokoll::class)
+        ->set('kunde', (string) $mustermann->id)
+        ->assertSee('mustermann.de')
+        ->assertSee('alt-mustermann.de')
+        ->assertDontSee('nordwind.de');
+});
+
+test('jede Zeile nennt den Kunden des geaenderten Objekts', function () {
+    $this->actingAs(userWithPermissions([]));
+    $nordwind = Customer::factory()->create(['name' => 'Nordwind Fischerei']);
+    Domain::factory()->create(['customer_id' => $nordwind->id, 'name' => 'nordwind.de']);
+
+    Livewire::test(AdminProtokoll::class)
+        ->assertViewHas('kundeVon', fn ($kunden) => in_array('Nordwind Fischerei', $kunden, true));
+});

@@ -147,24 +147,30 @@ iso_zeit() { if [ -n "${1:-}" ]; then date -d "@$1" -Iseconds 2>/dev/null || tru
 # single guest carries its VMID. Not every task belongs to the job: a manual
 # backup of another VM must not mark the job as failed.
 job_lauf() {
-  local alle="$1" vmids=",$2," pool="$3" tid tstatus tende
-  LETZTER_STATUS=""; LETZTER_LAUF=""; LETZTER_ERFOLG=""
+  local alle="$1" vmids=",$2," pool="$3" tid tstatus tende status zeit anzahl=0
+  LETZTER_STATUS=""; LETZTER_LAUF=""; LETZTER_ERFOLG=""; LAEUFE_JSON=""
   while IFS='|' read -r tid tstatus tende; do
     [ -z "${tende:-}" ] && continue
     if [ -n "$tid" ] && [ "$alle" != "1" ] && [ -z "$pool" ] && [[ "$vmids" != *",$tid,"* ]]; then
       continue
     fi
+    case "$tstatus" in
+      OK) status="ok" ;;
+      WARNINGS*) status="warning" ;;
+      *) status="failed" ;;
+    esac
+    zeit="$(iso_zeit "$tende")"
     if [ -z "$LETZTER_LAUF" ]; then
-      LETZTER_LAUF="$(iso_zeit "$tende")"
-      case "$tstatus" in
-        OK) LETZTER_STATUS="ok" ;;
-        WARNINGS*) LETZTER_STATUS="warning" ;;
-        *) LETZTER_STATUS="failed" ;;
-      esac
+      LETZTER_LAUF="$zeit"
+      LETZTER_STATUS="$status"
     fi
-    if [ -z "$LETZTER_ERFOLG" ] && [ "$tstatus" = "OK" ]; then
-      LETZTER_ERFOLG="$(iso_zeit "$tende")"
-      break
+    if [ -z "$LETZTER_ERFOLG" ] && [ "$status" = "ok" ]; then
+      LETZTER_ERFOLG="$zeit"
+    fi
+    # The last 20 runs - the history on the backup overview in DokuVault.
+    if [ "$anzahl" -lt 20 ] && [ -n "$zeit" ]; then
+      LAEUFE_JSON="${LAEUFE_JSON:+$LAEUFE_JSON,}{\"status\":\"$status\",\"finished_at\":\"$zeit\"}"
+      anzahl=$((anzahl + 1))
     fi
   done <<< "$TASKS"
 }
@@ -190,7 +196,7 @@ if [ -f /etc/pve/jobs.cfg ]; then
     elif [ -n "${pool:-}" ]; then quelle="Pool $pool"
     else quelle="${vmids:+VMs $vmids}"; fi
     job_lauf "${alle:-0}" "${vmids:-}" "${pool:-}"
-    eintrag="{\"identifier\":$(json_str "proxmox/$CLUSTER/$jid"),\"name\":$(json_str "${kommentar:-vzdump nach $storage${zeitplan:+ ($zeitplan)}}"),\"software\":\"Proxmox vzdump\",\"source\":$(json_str "$quelle"),\"destination\":$(json_str "$storage"),\"schedule\":$(json_str "$zeitplan"),\"retention\":$(json_str "$prune"),\"last_status\":$(json_str "$LETZTER_STATUS"),\"last_run_at\":$(json_str "$LETZTER_LAUF"),\"last_success\":$(json_str "$LETZTER_ERFOLG")}"
+    eintrag="{\"identifier\":$(json_str "proxmox/$CLUSTER/$jid"),\"name\":$(json_str "${kommentar:-vzdump nach $storage${zeitplan:+ ($zeitplan)}}"),\"software\":\"Proxmox vzdump\",\"source\":$(json_str "$quelle"),\"destination\":$(json_str "$storage"),\"schedule\":$(json_str "$zeitplan"),\"retention\":$(json_str "$prune"),\"last_status\":$(json_str "$LETZTER_STATUS"),\"last_run_at\":$(json_str "$LETZTER_LAUF"),\"last_success\":$(json_str "$LETZTER_ERFOLG"),\"runs\":[$LAEUFE_JSON]}"
     BACKUPS_JSON="${BACKUPS_JSON:+$BACKUPS_JSON,}$eintrag"
   done < <(awk '
     function aus() {

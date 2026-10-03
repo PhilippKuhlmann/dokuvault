@@ -13,6 +13,14 @@
 
 ### Added
 
+- **Admin-Bereich „Backups“: die letzten Läufe aller Kunden.** Neue Seite unter Admin → Backups: jedes von einem Agenten gemeldete Backup mit seinen letzten Läufen als farbige Kästchen (grün/gelb/rot, ältester links), Erfolgsquote und letztem Erfolg. Backups mit Fehler oder Warnung stehen oben; Filter nach Kunde und „nur mit Fehler oder Warnung“.
+  - Wie viele Läufe (5, 10, 20, 30, 50) wird direkt auf der Seite eingestellt und für die Installation gespeichert. Dieselbe Zahl gilt für den Kunden: Die Backup-Karte zeigt unter „Letzte Läufe“ dieselbe Kästchenreihe.
+  - Die Läufe kommen von den Agenten: Veeam, Windows Server-Sicherung und Proxmox melden jetzt jeweils ihre letzten 20 Läufe mit, der Verlauf ist also sofort gefüllt.
+  - „Höchstens speichern“ (Standard 100 Läufe je Backup, mindestens so viele wie angezeigt): Ältere Läufe werden gelöscht – beim Senken des Werts sofort, sonst bei der nächsten Meldung. So wächst die Datenbank nicht unbegrenzt.
+  - Neues Recht „Backups aller Kunden sehen“ (`admin_backup`); bestehende Installationen geben es jeder Rolle, die das Protokoll sehen darf.
+
+- **Protokoll nach Kunde filtern.** Im Aktivitätsprotokoll gibt es einen Filter „Kunde“ und eine Spalte „Kunde“. Maßgeblich ist der Kunde des geänderten Objekts (Server, Domain, IP-Adresse …), nicht der des Benutzers – auch gelöschte Objekte bleiben ihrem Kunden zugeordnet.
+
 - **Agent für Linux-Server (Debian/Ubuntu).** Neuer Reiter „Linux“ auf der Agent-Seite: `dokuvault-agent-linux.sh` herunterladen, als root ausführen – meldet Hersteller, Modell, Seriennummer, Betriebssystem, IP-Adresse und laufende Dienste (apache2, nginx, docker, mariadb, PostgreSQL, Samba, …).
   - Echte Hardware wird als Server angelegt. Eine VM ergänzt den Eintrag gleichen Namens, den der Proxmox- oder Hyper-V-Agent schon angelegt hat (Betriebssystem, IP) – kein doppelter Server mehr. Ohne Treffer entsteht eine VM.
   - Dienste nur in ein leeres Feld, wie beim Windows-Agenten. Auch als Script zum Ausführen von Hand.

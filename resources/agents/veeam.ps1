@@ -74,8 +74,14 @@ foreach ($job in Get-VBRJob) {
 
     $letzte = $null
     try { $letzte = $job.FindLastSession() } catch { }
-    $erfolg = $sitzungen | Where-Object { $_.JobId -eq $job.Id -and "$($_.Result)" -eq "Success" } |
-        Sort-Object EndTime -Descending | Select-Object -First 1
+    $jobSitzungen = @($sitzungen | Where-Object { $_.JobId -eq $job.Id -and $_.EndTime -gt [datetime]"2000-01-01" } |
+        Sort-Object EndTime -Descending)
+    $erfolg = $jobSitzungen | Where-Object { "$($_.Result)" -eq "Success" } | Select-Object -First 1
+    # The last 20 runs - the history on the backup overview in DokuVault.
+    $laeufe = @($jobSitzungen | Select-Object -First 20 | ForEach-Object {
+        $s = Get-Status $_.Result
+        if ($s) { [PSCustomObject]@{ status = $s; finished_at = $_.EndTime.ToString("o") } }
+    })
 
     $jobs += [PSCustomObject]@{
         identifier   = "veeam/$($job.Id)"
@@ -88,10 +94,11 @@ foreach ($job in Get-VBRJob) {
         last_status  = if ($letzte) { Get-Status $letzte.Result } else { $null }
         last_run_at  = if ($letzte -and $letzte.EndTime -gt [datetime]"2000-01-01") { $letzte.EndTime.ToString("o") } else { $null }
         last_success = if ($erfolg) { $erfolg.EndTime.ToString("o") } else { $null }
+        runs         = $laeufe
     }
 }
 
-$payload = [PSCustomObject]@{ jobs = $jobs } | ConvertTo-Json -Depth 4
+$payload = [PSCustomObject]@{ jobs = $jobs } | ConvertTo-Json -Depth 6
 
 Write-Host "Sende Dokumentation an $ApiUrl ..."
 Invoke-RestMethod -Method Post -Uri $ApiUrl `

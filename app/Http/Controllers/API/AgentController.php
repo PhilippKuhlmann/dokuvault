@@ -476,6 +476,10 @@ class AgentController extends Controller
             $feld.'.*.last_status' => ['nullable', 'in:'.implode(',', array_keys(Backup::STATUS))],
             $feld.'.*.last_run_at' => ['nullable', 'date'],
             $feld.'.*.last_success' => ['nullable', 'date'],
+            // Recent runs (since 26.10.03) - the history on the admin overview.
+            $feld.'.*.runs' => ['nullable', 'array', 'max:100'],
+            $feld.'.*.runs.*.status' => ['required', 'in:'.implode(',', array_keys(Backup::STATUS))],
+            $feld.'.*.runs.*.finished_at' => ['required', 'date'],
         ];
     }
 
@@ -518,6 +522,14 @@ class AgentController extends Controller
             // its software.
             $backup->name ??= ($job['software'] ?? 'Backup');
             $backup->save();
+
+            // The history: the runs sent along, and the last run itself - a
+            // script without "runs" still builds up a history over time.
+            $runs = $job['runs'] ?? [];
+            if (filled($job['last_run_at'] ?? null) && filled($job['last_status'] ?? null)) {
+                $runs[] = ['status' => $job['last_status'], 'finished_at' => $job['last_run_at']];
+            }
+            $backup->recordRuns($runs);
         }
 
         return count($jobs);

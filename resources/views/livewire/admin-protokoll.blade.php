@@ -16,7 +16,7 @@
     </div>
 
     <x-panel polster="eng">
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <div class="sm:col-span-2 lg:col-span-1">
                 <x-input.label :value="__('Suche')" />
                 {{-- Volltext ueber die Eigenschaften: In einem Protokoll sucht man
@@ -42,6 +42,16 @@
                     <option value="">{{ __('Alle Arten') }}</option>
                     @foreach ($arten as $klasse => $bezeichnung)
                         <option value="{{ $klasse }}">{{ $bezeichnung }}</option>
+                    @endforeach
+                </x-input.select>
+            </div>
+
+            <div>
+                <x-input.label :value="__('Kunde')" />
+                <x-input.select name="kunde" wire:model.live="kunde" class="mt-1">
+                    <option value="">{{ __('Alle Kunden') }}</option>
+                    @foreach ($kunden as $id => $name)
+                        <option value="{{ $id }}">{{ $name }}</option>
                     @endforeach
                 </x-input.select>
             </div>
@@ -104,6 +114,7 @@
                         <th class="px-4 py-2.5 font-semibold">{{ __('Zeitpunkt') }}</th>
                         <th class="px-4 py-2.5 font-semibold">{{ __('Benutzer') }}</th>
                         <th class="px-4 py-2.5 font-semibold">{{ __('Ereignis') }}</th>
+                        <th class="px-4 py-2.5 font-semibold">{{ __('Kunde') }}</th>
                         <th class="px-4 py-2.5 font-semibold">{{ __('Objekt') }}</th>
                         <th class="px-4 py-2.5 font-semibold">{{ __('Details') }}</th>
                     </tr>
@@ -136,6 +147,9 @@
                             <td class="px-4 py-2.5">
                                 <span class="rounded px-2 py-0.5 text-xs font-medium {{ $badge }}">{{ __($label) }}</span>
                             </td>
+                            {{-- Whose object it is - the causer's customer stands
+                                 under the name, this is the customer of the change. --}}
+                            <td class="px-4 py-2.5">{{ $kundeVon[$activity->id] ?? '—' }}</td>
                             <td class="px-4 py-2.5 text-gray-900 dark:text-gray-100">
                                 {{ class_basename($activity->subject_type) }}
                                 <span class="text-gray-400">{{ is_scalar($objectName) ? $objectName : '' }}</span>

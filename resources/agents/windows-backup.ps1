@@ -49,6 +49,18 @@ if ($policy) {
         $erfolg = $summary.LastSuccessfulBackupTime.ToString("o")
     }
 
+    # The last 20 backups - the history on the backup overview in DokuVault.
+    $laeufe = @()
+    try {
+        $laeufe = @(Get-WBJob -Previous 20 | Where-Object { "$($_.JobType)" -eq "Backup" -and $_.EndTime -gt [datetime]"2000-01-01" } |
+            ForEach-Object {
+                [PSCustomObject]@{
+                    status      = if ($_.HResult -eq 0) { "ok" } else { "failed" }
+                    finished_at = $_.EndTime.ToString("o")
+                }
+            })
+    } catch { }
+
     $jobs += [PSCustomObject]@{
         identifier   = "wsb/$((Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Cryptography').MachineGuid)"
         name         = "Windows Server-Sicherung $env:COMPUTERNAME"
@@ -59,10 +71,11 @@ if ($policy) {
         last_status  = $status
         last_run_at  = $letzter
         last_success = $erfolg
+        runs         = $laeufe
     }
 }
 
-$payload = [PSCustomObject]@{ jobs = $jobs } | ConvertTo-Json -Depth 4
+$payload = [PSCustomObject]@{ jobs = $jobs } | ConvertTo-Json -Depth 6
 
 Write-Host "Sende Dokumentation an $ApiUrl ..."
 Invoke-RestMethod -Method Post -Uri $ApiUrl `

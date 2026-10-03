@@ -71,6 +71,14 @@
                 </x-aside.dropdown>
             @endcanany
 
+            @can('admin_backup')
+                <x-aside.dropdown :label="__('Backups')" svg="svg.db" >
+                    <x-slot:links>
+                        <x-aside.dropdownlink :label="__('Alle Kunden')" href="{{ route('admin.backups') }}" />
+                    </x-slot:links>
+                </x-aside.dropdown>
+            @endcan
+
             @can('admin_trash')
                 <x-aside.dropdown :label="__('Papierkorb')" svg="svg.trash" >
                     <x-slot:links>
