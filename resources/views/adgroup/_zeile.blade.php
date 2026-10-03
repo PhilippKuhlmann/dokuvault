@@ -4,6 +4,7 @@
                         :values="[
                             $eintrag->name,
                             $eintrag->description,
+                            'liste:Mitglieder' => $eintrag->users->map(fn ($u) => $u->username ?: trim($u->firstName.' '.$u->lastName))->all(),
                         ]"
 
                         editAction="$dispatch('objekt-bearbeiten', { typ: 'adgroup', id: {{ $eintrag->id }} })"

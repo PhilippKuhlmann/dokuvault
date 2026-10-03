@@ -5,6 +5,7 @@
                             $eintrag->lastName,
                             $eintrag->username,
                             $eintrag->email,
+                            'liste:Gruppen' => $eintrag->groups->pluck('name')->all(),
                             'status' => $eintrag->enabled,
                             'geheim' => [$eintrag, 'password'],
                         ]"

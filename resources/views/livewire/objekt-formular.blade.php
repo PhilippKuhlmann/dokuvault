@@ -199,6 +199,10 @@
                                          looks like the single select below, but ticks. --}}
                                     <x-input.mehrfachauswahl :optionen="$hosts" :feld="'form.'.$feld['name']"
                                         wire:model="form.{{ $feld['name'] }}" class="mt-1 w-full" />
+                                @elseif ($feld['type'] === 'verknuepfung')
+                                    {{-- Many-to-many, e.g. the groups of an AD user. --}}
+                                    <x-input.mehrfachauswahl :optionen="$verknuepfungen[$feld['name']] ?? []" :feld="'form.'.$feld['name']"
+                                        wire:model="form.{{ $feld['name'] }}" class="mt-1 w-full" />
                                 @elseif ($feld['type'] === 'host')
                                     <x-input.select :name="$feld['name']" :feld="'form.'.$feld['name']" wire:model.live="form.{{ $feld['name'] }}" class="mt-1 w-full">
                                         <option value="">— {{ __('keiner') }} —</option>

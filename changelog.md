@@ -2,7 +2,15 @@
 
 ## 26.10.03
 
+### Fixed
+
+- **AD-Abgleich legte von Hand dokumentierte Benutzer doppelt an.** Der Agent erkannte Benutzer und Gruppen nur an der AD-ObjectGUID – ein von Hand angelegter Benutzer hat keine, also entstand ein zweiter. Jetzt übernimmt der Abgleich einen Eintrag ohne GUID mit gleichem Benutzernamen (Gruppen: gleicher Name, Groß-/Kleinschreibung egal) und ergänzt ihn; das von Hand gepflegte Passwort bleibt. Leere Felder aus dem AD überschreiben keine Eingaben mehr.
+
 ### Added
+
+- **AD: Wer ist in welcher Gruppe.** Die Benutzerliste zeigt je Benutzer die Zahl seiner Gruppen, die Gruppenliste die Zahl der Mitglieder – ein Klick klappt die vollständige Liste auf. Bearbeiten geht von beiden Seiten: im Benutzer das Feld „Gruppen“, in der Gruppe „Mitglieder“.
+  - Der AD-Agent meldet die direkten Mitglieder jeder Gruppe mit (nur Benutzer; verschachtelte Gruppen und Computer nicht). Wer im AD aus einer Gruppe entfernt wird, verschwindet auch hier; eine Zuordnung zu einem nur von Hand dokumentierten Benutzer bleibt stehen.
+  - Ein älteres Script ohne Mitglieder lässt die Zuordnungen in Ruhe.
 
 - **Agent-Seite: installierte Agenten sehen und festlegen, was sie melden.** Neuer Abschnitt „Installierte Agenten“: jeder Rechner mit Agent, mit Domäne, letzter Meldung, Version und Token – und Häkchen für seine Aufgaben (Windows: Server, Active Directory, Hyper-V, Arbeitsplatz; Proxmox: Proxmox-Host). „erkannt“ zeigt, welche Rolle der Rechner wirklich hat; „meldet nicht“, wenn er seit drei Stunden still ist.
   - Vor jedem Lauf meldet sich der Agent an (`POST /api/agent/checkin`, erkannt an MachineGuid bzw. `/etc/machine-id`) und führt nur aus, was hier angehakt ist. Nichts angehakt: er läuft, meldet aber nichts.

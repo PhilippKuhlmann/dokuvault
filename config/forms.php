@@ -138,6 +138,7 @@ return [
     'aduser' => [
         'model' => ADUser::class, 'request' => ADUserRequest::class,
         'relation' => 'adusers', 'einzahl' => 'AD-Benutzer',
+        'mitladen' => ['groups'],
         'suchfelder' => ['username', 'firstName', 'lastName', 'email'],
         'felder' => [
             ['name' => 'firstName', 'label' => 'Vorname', 'type' => 'text'],
@@ -148,6 +149,9 @@ return [
             // Zwei Werte brauchen keinen eigenen Konfigurationseintrag.
             ['name' => 'enabled', 'label' => 'Status', 'type' => 'optionen',
                 'werte' => [1 => 'Aktiv', 0 => 'Deaktiviert']],
+            // Filled by the AD agent, editable here and on the group.
+            ['name' => 'groups', 'label' => 'Gruppen', 'type' => 'verknuepfung',
+                'relation' => 'groups', 'quelle' => ADGroup::class, 'anzeige' => 'name'],
             // Technisch, nicht fuer die Anzeige: Der Wert wird unveraendert
             // durchgereicht, wie im bisherigen Formular.
             ['name' => 'hidden', 'label' => 'Verborgen', 'type' => 'versteckt'],
@@ -156,9 +160,12 @@ return [
     'adgroup' => [
         'model' => ADGroup::class, 'request' => ADGroupRequest::class,
         'relation' => 'adgroups', 'einzahl' => 'AD-Gruppe', 'suchfelder' => ['name', 'description'],
+        'mitladen' => ['users'],
         'felder' => [
             ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
             ['name' => 'description', 'label' => 'Beschreibung', 'type' => 'text'],
+            ['name' => 'users', 'label' => 'Mitglieder', 'type' => 'verknuepfung',
+                'relation' => 'users', 'quelle' => ADUser::class, 'anzeige' => 'username'],
         ],
     ],
     'backup' => [

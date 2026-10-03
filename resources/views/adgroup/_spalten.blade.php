@@ -1,2 +1,2 @@
 {{-- Spaltenueberschriften dieser Tabelle. --}}
-<x-table.head :labels="['Gruppenname', 'Beschreibung', '', ]" />
+<x-table.head :labels="['Gruppenname', 'Beschreibung', 'Mitglieder', '', ]" />

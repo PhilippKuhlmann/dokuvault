@@ -129,6 +129,7 @@ class ObjektFormular extends Component
             // tippen - das Seitenformular belegt sie laengst vor.
             $this->form[$feld['name']] = match (true) {
                 $feld['type'] === 'host' && ($feld['mehrfach'] ?? false) => [],
+                $feld['type'] === 'verknuepfung' => [],
                 $feld['type'] === 'optionen' => (string) array_key_first($feld['werte'] ?? config($feld['quelle'])),
                 isset($feld['default']) => (string) $feld['default'],
                 default => '',
@@ -168,6 +169,14 @@ class ObjektFormular extends Component
             if ($feld['type'] === 'host') {
                 $schluessel = $objekt->hostKeys($feld['rolle']);
                 $this->form[$feld['name']] = ($feld['mehrfach'] ?? false) ? $schluessel : ($schluessel[0] ?? '');
+
+                continue;
+            }
+
+            // Many-to-many (e.g. AD user <-> group): the ids of the linked
+            // entries, as strings like the options of the select.
+            if ($feld['type'] === 'verknuepfung') {
+                $this->form[$feld['name']] = array_map('strval', $objekt->{$feld['relation']}->modelKeys());
 
                 continue;
             }
@@ -316,19 +325,28 @@ class ObjektFormular extends Component
     }
 
     /**
-     * Rules for 'host' fields: only machines of this customer. The request
-     * cannot say that - it does not know the customer.
+     * Rules for 'host' and 'verknuepfung' fields: only machines and entries
+     * of this customer. The request cannot say that - it does not know the
+     * customer.
      */
     protected function hostRegeln(): array
     {
+        $regeln = [];
+
+        // Linked entries must belong to this customer.
+        foreach (collect($this->einstellung()['felder'])->where('type', 'verknuepfung') as $feld) {
+            $tabelle = (new $feld['quelle'])->getTable();
+            $regeln['form.'.$feld['name']] = ['nullable', 'array'];
+            $regeln['form.'.$feld['name'].'.*'] = [Rule::exists($tabelle, 'id')->where('customer_id', $this->customerId)->whereNull('deleted_at')];
+        }
+
         $felder = collect($this->einstellung()['felder'])->where('type', 'host');
 
         if ($felder->isEmpty()) {
-            return [];
+            return $regeln;
         }
 
         $erlaubt = Rule::in(array_keys(ADDomainHost::options($this->customerId)));
-        $regeln = [];
 
         foreach ($felder as $feld) {
             if ($feld['mehrfach'] ?? false) {
@@ -414,7 +432,8 @@ class ObjektFormular extends Component
 
         // Not a column - written after the object exists, see below.
         $hostFelder = collect($this->einstellung()['felder'])->where('type', 'host');
-        $daten = array_diff_key($daten, $hostFelder->keyBy('name')->all());
+        $verknuepfungen = collect($this->einstellung()['felder'])->where('type', 'verknuepfung');
+        $daten = array_diff_key($daten, $hostFelder->keyBy('name')->all(), $verknuepfungen->keyBy('name')->all());
 
         if ($this->bearbeiteId) {
             $objekt = $this->objektHolen($this->bearbeiteId);
@@ -428,6 +447,10 @@ class ObjektFormular extends Component
 
         foreach ($hostFelder as $feld) {
             $objekt->syncHosts($feld['rolle'], (array) ($this->form[$feld['name']] ?? []));
+        }
+
+        foreach ($verknuepfungen as $feld) {
+            $objekt->{$feld['relation']}()->sync(array_map('intval', (array) ($this->form[$feld['name']] ?? [])));
         }
 
         // Nach dem Geraet, aber vor dem Leeren des Formulars: Die Zuordnung
@@ -760,6 +783,14 @@ class ObjektFormular extends Component
             'hosts' => collect($einstellung['felder'])->contains('type', 'host')
                 ? ADDomainHost::options($this->customerId)
                 : [],
+            // Options of many-to-many fields, only this customer's entries.
+            'verknuepfungen' => collect($einstellung['felder'])
+                ->where('type', 'verknuepfung')
+                ->mapWithKeys(fn ($feld) => [$feld['name'] => $feld['quelle']::where('customer_id', $this->customerId)
+                    ->orderBy($feld['anzeige'])
+                    ->get()
+                    ->mapWithKeys(fn ($eintrag) => [(string) $eintrag->id => $eintrag->{$feld['anzeige']} ?: '#'.$eintrag->id])
+                    ->all()]),
             // Nur laden, wenn ein Standortfeld vorkommt.
             'sites' => collect($einstellung['felder'])->contains('type', 'standort')
                 ? Site::where('customer_id', $this->customerId)->orderBy('name')->get()

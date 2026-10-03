@@ -261,6 +261,10 @@ class AgentController extends Controller
             'groups.*.identifier' => ['required_with:groups', 'string', 'max:255'],
             'groups.*.name' => ['nullable', 'string', 'max:255'],
             'groups.*.description' => ['nullable', 'string', 'max:255'],
+            // Since 26.10.03: user GUIDs of the direct members. Missing (older
+            // script) leaves the memberships as they are.
+            'groups.*.members' => ['nullable', 'array'],
+            'groups.*.members.*' => ['string', 'max:255'],
             // The domain itself (since 26.10.02). All optional: an older
             // script sends only the name, and every query on the DC may fail
             // for lack of rights or a missing module.
@@ -289,30 +293,36 @@ class AgentController extends Controller
 
         $userCount = 0;
         foreach ($data['users'] ?? [] as $u) {
-            ADUser::updateOrCreate(
-                ['customer_id' => $customer->id, 'agent_identifier' => $u['identifier']],
-                [
-                    'firstName' => $u['firstName'] ?? null,
-                    'lastName' => $u['lastName'] ?? null,
-                    'username' => $u['username'] ?? null,
-                    'email' => $u['email'] ?? null,
-                    'enabled' => array_key_exists('enabled', $u) ? (bool) $u['enabled'] : null,
-                    // 'password' bleibt bewusst unangetastet (manuell gepflegt)
-                ]
-            );
+            $user = $this->adEintragFinden(ADUser::class, $customer->id, $u['identifier'], 'username', $u['username'] ?? null);
+            // Only what AD reported: an empty field must not wipe a value
+            // entered by hand. 'password' is never touched (kept by hand).
+            $user->fill(array_filter([
+                'agent_identifier' => $u['identifier'],
+                'firstName' => $u['firstName'] ?? null,
+                'lastName' => $u['lastName'] ?? null,
+                'username' => $u['username'] ?? null,
+                'email' => $u['email'] ?? null,
+            ], fn ($wert) => filled($wert)));
+            if (array_key_exists('enabled', $u) && $u['enabled'] !== null) {
+                $user->enabled = (bool) $u['enabled'];
+            }
+            $user->save();
             $userCount++;
         }
 
         $groupCount = 0;
         foreach ($data['groups'] ?? [] as $g) {
-            ADGroup::updateOrCreate(
-                ['customer_id' => $customer->id, 'agent_identifier' => $g['identifier']],
-                [
-                    'name' => $g['name'] ?? null,
-                    'description' => $g['description'] ?? null,
-                ]
-            );
+            $group = $this->adEintragFinden(ADGroup::class, $customer->id, $g['identifier'], 'name', $g['name'] ?? null);
+            $group->fill(array_filter([
+                'agent_identifier' => $g['identifier'],
+                'name' => $g['name'] ?? null,
+                'description' => $g['description'] ?? null,
+            ], fn ($wert) => filled($wert)))->save();
             $groupCount++;
+
+            if (array_key_exists('members', $g) && is_array($g['members'])) {
+                $this->adMitgliederAbgleichen($group, $customer->id, $g['members']);
+            }
         }
 
         return response()->json([
@@ -325,6 +335,50 @@ class AgentController extends Controller
             // the script prints them, so they can be documented and linked.
             'unmatched_hosts' => $domainResult['unmatched_hosts'],
         ]);
+    }
+
+    /**
+     * Memberships of one group as AD reports them.
+     *
+     * Only users AD knows (with a GUID) are added or removed. A link to a
+     * user documented by hand only - no GUID, so AD cannot report it - is
+     * kept: the agent cannot tell whether it is wrong.
+     *
+     * @param  array<int, string>  $guids
+     */
+    private function adMitgliederAbgleichen(ADGroup $group, int $customerId, array $guids): void
+    {
+        $soll = ADUser::where('customer_id', $customerId)
+            ->whereIn('agent_identifier', $guids)
+            ->pluck('id')
+            ->all();
+
+        $vonHand = $group->users()->whereNull('agent_identifier')->pluck('ad_users.id')->all();
+
+        $group->users()->sync(array_merge($soll, $vonHand));
+    }
+
+    /**
+     * The AD user or group a reported object belongs to.
+     *
+     * First by objectGUID (agent_identifier) - survives renames. Then by
+     * name, but only among entries without a GUID: someone documented the
+     * user by hand before the agent ran, and this run adopts that entry
+     * instead of creating a second one. Case-insensitive, as AD is.
+     */
+    private function adEintragFinden(string $klasse, int $customerId, string $identifier, string $namensfeld, ?string $name): ADUser|ADGroup
+    {
+        $eintrag = $klasse::where('customer_id', $customerId)->where('agent_identifier', $identifier)->first();
+
+        if (! $eintrag && filled($name)) {
+            $eintrag = $klasse::where('customer_id', $customerId)
+                ->whereNull('agent_identifier')
+                ->whereRaw('LOWER('.$namensfeld.') = ?', [mb_strtolower($name)])
+                ->orderBy('id')
+                ->first();
+        }
+
+        return $eintrag ?? new $klasse(['customer_id' => $customerId]);
     }
 
     /**

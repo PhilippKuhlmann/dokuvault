@@ -172,3 +172,47 @@ test('an older script that sends only the domain name still creates the domain',
     expect($domaene->netbios)->toBe('MUSTERMANN')
         ->and($domaene->functional_level)->toBeNull();
 });
+
+test('a user documented by hand with only the username is adopted, not duplicated', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [, $plain] = AgentToken::generateFor($customer, $site);
+
+    $vonHand = ADUser::create(['customer_id' => $customer->id, 'username' => 'MMustermann', 'password' => 'geheim123']);
+    $gruppe = ADGroup::create(['customer_id' => $customer->id, 'name' => 'vertrieb']);
+
+    $this->withToken($plain)->postJson('/api/agent/windows-ad', windowsAdPayload())->assertOk();
+
+    expect(ADUser::where('customer_id', $customer->id)->whereRaw('LOWER(username) = ?', ['mmustermann'])->count())->toBe(1);
+    $vonHand->refresh();
+    expect($vonHand->agent_identifier)->toBe('guid-maxm')
+        ->and($vonHand->firstName)->toBe('Max')
+        ->and($vonHand->lastName)->toBe('Mustermann')
+        ->and($vonHand->password)->toBe('geheim123');
+    expect(ADGroup::where('customer_id', $customer->id)->count())->toBe(1)
+        ->and($gruppe->fresh()->agent_identifier)->toBe('guid-grp-vertrieb');
+});
+
+test('an empty field from AD does not wipe what was entered by hand', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [, $plain] = AgentToken::generateFor($customer, $site);
+
+    ADUser::create(['customer_id' => $customer->id, 'username' => 'Administrator', 'email' => 'admin@mustermann.de']);
+
+    $this->withToken($plain)->postJson('/api/agent/windows-ad', windowsAdPayload())->assertOk();
+
+    expect(ADUser::where('agent_identifier', 'guid-admin')->sole()->email)->toBe('admin@mustermann.de');
+});
+
+test('a user of another customer is never adopted', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [, $plain] = AgentToken::generateFor($customer, $site);
+
+    $fremd = ADUser::create(['customer_id' => Customer::factory()->create()->id, 'username' => 'mmustermann']);
+
+    $this->withToken($plain)->postJson('/api/agent/windows-ad', windowsAdPayload())->assertOk();
+
+    expect($fremd->fresh()->agent_identifier)->toBeNull();
+});

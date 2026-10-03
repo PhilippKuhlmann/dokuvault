@@ -1,2 +1,2 @@
 {{-- Spaltenueberschriften dieser Tabelle. --}}
-<x-table.head :labels="['Vorname', 'Nachname', 'Benutzername', 'E-Mail', 'Status', 'Passwort', '', ]" />
+<x-table.head :labels="['Vorname', 'Nachname', 'Benutzername', 'E-Mail', 'Gruppen', 'Status', 'Passwort', '', ]" />

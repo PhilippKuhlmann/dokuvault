@@ -29,4 +29,12 @@ class ADUser extends Model
             set: fn ($value) => ! empty($value) ? Crypt::encryptString($value) : null,
         );
     }
+
+    /** The groups this user is a direct member of (ad_group_ad_user). */
+    public function groups()
+    {
+        return $this->belongsToMany(ADGroup::class, 'ad_group_ad_user', 'ad_user_id', 'ad_group_id')
+            ->withTimestamps()
+            ->orderBy('name');
+    }
 }

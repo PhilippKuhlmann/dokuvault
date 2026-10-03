@@ -43,6 +43,29 @@
                     <span class="text-gray-400 dark:text-gray-500">—</span>
                 @endif
             </td>
+        @elseif (str_starts_with((string) $key, 'liste'))
+            {{-- A list of names (e.g. the groups of an AD user). Folded to a
+                 count, so a user in twenty groups does not stretch every row;
+                 a click unfolds the whole list in place. Key 'liste:Gruppen'
+                 - the part after the colon names what is counted. --}}
+            <td scope="row" class="py-2.5 px-4 align-top">
+                @if (count($value) === 0)
+                    <span class="text-gray-400 dark:text-gray-500">—</span>
+                @else
+                    <div x-data="{ offen: false }">
+                        <button type="button" @click="offen = !offen"
+                            class="inline-flex items-center gap-1 rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                            {{ count($value) }} {{ __(\Illuminate\Support\Str::after((string) $key, ':')) }}
+                            <svg class="h-3 w-3 transition-transform" :class="offen && 'rotate-180'" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+                        </button>
+                        <ul x-show="offen" x-cloak class="mt-1.5 max-h-60 space-y-0.5 overflow-y-auto text-xs text-gray-700 dark:text-gray-200">
+                            @foreach ($value as $name)
+                                <li>{{ $name }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+            </td>
         @elseif ($key == 'credentials')
             {{-- $value ist hier das Geraet selbst, nicht ein Wert: Die verknuepften
                  Zugangsdaten holt sich die Komponente daraus. --}}

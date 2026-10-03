@@ -28,10 +28,13 @@ function Get-Rid([string]$SidValue) {
 # Eingebauter Administrator (RID 500) bleibt drin, uebrige System-Konten
 # (Gast/501, krbtgt/502, DefaultAccount/503, ...) werden ausgeschlossen.
 $users = @()
+# DN -> GUID of the reported users: group members come as DNs.
+$userGuids = @{}
 Get-ADUser -Filter * -Properties GivenName, Surname, SamAccountName, EmailAddress, Enabled, ObjectGUID, SID |
     ForEach-Object {
         $rid = Get-Rid $_.SID.Value
         if ($rid -ge 1000 -or $rid -eq 500) {
+            $userGuids[$_.DistinguishedName] = $_.ObjectGUID.Guid
             $users += [PSCustomObject]@{
                 identifier = $_.ObjectGUID.Guid
                 firstName  = $_.GivenName
@@ -47,14 +50,18 @@ Get-ADUser -Filter * -Properties GivenName, Surname, SamAccountName, EmailAddres
 # Nur selbst angelegte Gruppen: keine Built-in-Gruppen (isCriticalSystemObject)
 # und keine System-RIDs (< 1000).
 $groups = @()
-Get-ADGroup -Filter * -Properties Description, isCriticalSystemObject, SID, ObjectGUID |
+Get-ADGroup -Filter * -Properties Description, isCriticalSystemObject, SID, ObjectGUID, Member |
     ForEach-Object {
         $rid = Get-Rid $_.SID.Value
         if (-not $_.isCriticalSystemObject -and $rid -ge 1000) {
+            # Direct members that are reported users; nested groups and
+            # computers are left out. @() keeps a single member an array.
+            $members = @($_.Member | Where-Object { $userGuids.ContainsKey($_) } | ForEach-Object { $userGuids[$_] })
             $groups += [PSCustomObject]@{
                 identifier  = $_.ObjectGUID.Guid
                 name        = $_.Name
                 description = $_.Description
+                members     = $members
             }
         }
     }
