@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- **Globale Suche sprang bei VMs nicht auf Seite 2 oder 3.** Ein Agent legt Dutzende VMs in derselben Sekunde an; bei gleichem Anlegezeitpunkt war die Reihenfolge der Liste nicht festgelegt, und die Datenbank sortierte die Seitenberechnung anders als die angezeigte Seite (auf der Produktion lagen 32 von 53 VMs auf einer anderen Seite als berechnet). Alle Listen sortieren jetzt zusätzlich nach ID.
+
 - **Lange Werte liefen über die Karte hinaus.** Eine lange Liste ohne Leerzeichen (z. B. die ausgeschlossenen VMs eines Proxmox-Backup-Jobs) ließ sich nicht umbrechen und lief in die Nachbarspalte. Die Kartenwerte brechen jetzt an beliebiger Stelle um; das Proxmox-Script trennt die VM-IDs außerdem mit „, “.
 
 - **Agent-API lieferte auf dem Server 500.** Ursache waren Cache-Ordner unter `storage/`, die root gehörten – angelegt von Cronjobs bzw. dem Deploy, die als root laufen. Die Drosselung der API legt ihre Zähler dort ab; für jede IP, deren Zähler in so einem Ordner landete, endete jede Agent-Anfrage in einem Fehler. `deploy.sh` gibt `storage/` und `bootstrap/cache/` jetzt nach jedem Deploy an `www-data` zurück; DEPLOYMENT beschreibt die Cronjobs als `www-data`.

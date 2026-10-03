@@ -4,6 +4,7 @@ use App\Models\Customer;
 use App\Models\OperatingSystem;
 use App\Models\Server;
 use App\Models\Site;
+use App\Models\VM;
 
 /*
  * Der in der Seitenleiste gewählte Standort (session('site')) muss die
@@ -83,4 +84,24 @@ test('ein aus der globalen Suche markierter Eintrag erscheint trotz anderem Stan
     $this->withSession(['site' => $muenchen->id])
         ->get("/{$customer->slug}/server")
         ->assertDontSee('SRV-HAMBURG');
+});
+
+test('the global search finds a VM on page two even when all VMs were created in the same second', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $this->actingAs(userWithPermissions(['vm_viewAny']));
+
+    // As an agent creates them: one run, one timestamp for all.
+    $jetzt = now()->startOfSecond();
+    $vms = collect(range(1, 60))->map(fn ($i) => VM::forceCreate([
+        'customer_id' => $customer->id, 'site_id' => $site->id, 'name' => sprintf('VM-%03d', $i),
+        'created_at' => $jetzt, 'updated_at' => $jetzt,
+    ]));
+
+    // Ties broken by id (newest first) - the same order for the page jump
+    // and for the page shown.
+    $ziel = $vms[19];
+    $this->get("/{$customer->slug}/vm?highlight={$ziel->id}")
+        ->assertSee('VM-020')
+        ->assertSee('data-highlight', false);
 });

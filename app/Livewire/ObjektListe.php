@@ -318,16 +318,20 @@ class ObjektListe extends Component
 
         if (! $gewaehlt) {
             $abfrage->latest();
+        } else {
+            [$beschriftung, $spalte, $richtung] = $gewaehlt;
 
-            return;
+            if (str_ends_with($spalte, '_date') || str_ends_with($spalte, '_at')) {
+                $abfrage->orderByRaw($spalte.' IS NULL');
+            }
+
+            $abfrage->orderBy($spalte, $richtung);
         }
 
-        [$beschriftung, $spalte, $richtung] = $gewaehlt;
-
-        if (str_ends_with($spalte, '_date') || str_ends_with($spalte, '_at')) {
-            $abfrage->orderByRaw($spalte.' IS NULL');
-        }
-
-        $abfrage->orderBy($spalte, $richtung);
+        // Ties broken by id. An agent creates fifty VMs within one second;
+        // with equal created_at the database may order them differently per
+        // query - jumpToEntryPage() computed page 2, the page itself showed
+        // other VMs, and the match from the global search was not there.
+        $abfrage->orderByDesc($abfrage->getModel()->getQualifiedKeyName());
     }
 }
