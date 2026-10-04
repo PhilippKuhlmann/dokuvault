@@ -2,6 +2,10 @@
 
 ## 26.10.04
 
+### Changed
+
+- **Backup-Läufe: Datum und Ergebnis sofort beim Überfahren.** Statt des Browser-Tooltips, der erst nach einer Sekunde kam und auf Touch-Geräten gar nicht, erscheint ein dunkler Hinweis wie an den Symbolen im Menü – sofort, auch per Antippen und per Tastatur. Auf der Kunden-Karte und in der Admin-Übersicht.
+
 ### Fixed
 
 - **Backup-Karte: „Letzte Läufe“ immer rechts.** Die Karte verteilte ihre Blöcke in fließenden Spalten – bei langer Quelle rutschten die letzten Läufe in die Mitte, bei kurzer standen sie rechts. Jetzt feste Plätze: Konfiguration links, Zeitplan in der Mitte, Läufe rechts.
