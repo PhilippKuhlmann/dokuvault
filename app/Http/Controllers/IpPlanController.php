@@ -246,7 +246,14 @@ class IpPlanController extends Controller
         // stuenden die Geraete am erstbesten Block.
         $dhcpGenannt = false;
 
-        $flush = function ($endLong) use (&$rows, &$runStart, &$runKind, &$runBereich, $dhcpGeraete, &$dhcpGenannt) {
+        // Devices with a fixed address inside the DHCP range: they stand at
+        // the range with their address and a mark instead of cutting it in two.
+        // An agent reports the address of a VM but cannot tell whether it
+        // came from DHCP - the pool showed as ".150-.165, test, .167-.199",
+        // as if someone had set up two ranges.
+        $runImPool = [];
+
+        $flush = function ($endLong) use (&$rows, &$runStart, &$runKind, &$runBereich, $dhcpGeraete, &$dhcpGenannt, &$runImPool) {
             if ($runStart === null) {
                 return;
             }
@@ -256,6 +263,10 @@ class IpPlanController extends Controller
                 $geraete = $this->ohneDoppelte($dhcpGeraete);
                 $dhcpGenannt = true;
             }
+            if ($runKind === 'dhcp') {
+                $geraete = array_merge($geraete, $runImPool);
+            }
+            $runImPool = [];
 
             $rows[] = [
                 'kind' => $runKind, // 'free' | 'dhcp' | 'reserved'
@@ -276,7 +287,19 @@ class IpPlanController extends Controller
         };
 
         for ($ip = $first; $ip <= $last; $ip++) {
-            if (isset($map[$ip])) {
+            $imPool = $dhcp && $ip >= $dhcp[0] && $ip <= $dhcp[1] && $ip !== $gatewayLong;
+
+            if (isset($map[$ip]) && $imPool) {
+                // Remembered for the range row; the address itself counts as
+                // part of the pool below, like every other one in it.
+                // With the full address and marked: a fixed address inside the
+                // pool may be a conflict - it must stay visible, only it no
+                // longer cuts the range in two. Set to "per DHCP" on the
+                // address, it moves to the range without the mark.
+                foreach ($map[$ip] as $eintrag) {
+                    $runImPool[] = ['name' => $eintrag['name'].' ('.long2ip($ip).')', 'imPool' => true] + $eintrag;
+                }
+            } elseif (isset($map[$ip])) {
                 $flush($ip - 1);
                 $counts['device']++;
                 $rows[] = [

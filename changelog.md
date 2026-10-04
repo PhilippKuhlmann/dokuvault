@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.10.04
+
+### Fixed
+
+- **IP-Plan: DHCP-Bereich wurde von einer VM zerteilt.** Lag die Adresse eines Geräts mitten im DHCP-Bereich – etwa eine VM, deren Adresse der Proxmox-Agent meldet, ohne zu wissen, dass sie per DHCP kam –, schnitt sie den Bereich in zwei Zeilen, als wären es zwei Bereiche. Jetzt bleibt der Bereich eine Zeile; das Gerät steht daran mit seiner Adresse („test (10.10.250.166)“) und dem gelben Hinweis „fest im DHCP-Bereich“ – ein möglicher Adresskonflikt bleibt sichtbar. Kam die Adresse per DHCP, an der Adresse „per DHCP“ setzen, dann entfällt der Hinweis. Nur das Gateway behält eine eigene Zeile.
+
 ## 26.10.03
 
 ### Fixed

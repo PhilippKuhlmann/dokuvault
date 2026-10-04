@@ -7,6 +7,7 @@ use App\Models\OperatingSystem;
 use App\Models\Router;
 use App\Models\Server;
 use App\Models\Site;
+use App\Models\VM;
 
 test('IP-Plan listet belegte Adressen und fasst freie Bereiche + DHCP zusammen', function () {
     $this->actingAs(userWithPermissions(['network_viewAny']));
@@ -116,4 +117,28 @@ test('ohne Recht auf die Liste steht das Gerät im IP-Plan ohne Link', function 
         ->assertOk()
         ->assertSee('SRV-SPRUNG')
         ->assertDontSee(route('server.index', [$customer, 'highlight' => $srv->id]), false);
+});
+
+test('a device with an address inside the DHCP range does not split the range', function () {
+    $this->actingAs(userWithPermissions(['network_viewAny']));
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    Network::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $site->id, 'description' => 'Server-VLAN',
+        'network' => '10.10.250.0', 'cidr' => '24', 'subnetmask' => '255.255.255.0',
+        'gateway' => '10.10.250.254', 'dhcpStart' => '150', 'dhcpEnd' => '199',
+    ]);
+    // As the Proxmox agent reports a VM: an address, no DHCP flag.
+    $vm = VM::create(['customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'test']);
+    $vm->ipAddresses()->create(['customer_id' => $customer->id, 'address' => '10.10.250.166']);
+
+    $antwort = $this->get("/{$customer->slug}/ip-plan")->assertOk();
+
+    $zeilen = collect($antwort->viewData('plans')->first()['plan']['rows']);
+    $pool = $zeilen->where('kind', 'dhcp');
+    expect($pool)->toHaveCount(1)
+        ->and($pool->first()['from'])->toBe('10.10.250.150')
+        ->and($pool->first()['to'])->toBe('10.10.250.199')
+        ->and(collect($pool->first()['geraete'])->pluck('name')->all())->toBe(['test (10.10.250.166)'])
+        ->and($zeilen->where('kind', 'device')->pluck('from')->all())->toBe(['10.10.250.254']);
 });
