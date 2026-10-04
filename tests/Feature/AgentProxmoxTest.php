@@ -271,3 +271,27 @@ test('a value entered by hand survives a placeholder from the agent', function (
         // Real serial from the payload still arrives.
         ->and($server->serialNumber)->toBe('SN12345');
 });
+
+test('a guest set to DHCP by hand stays DHCP when the agent reports its address again', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [, $plain] = AgentToken::generateFor($customer, $site);
+    $netz = Network::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'network' => '10.10.250.0', 'cidr' => '24', 'subnetmask' => '255.255.255.0',
+    ]);
+    $meldung = ['host' => ['identifier' => 'pve-x', 'hostname' => 'pve01'], 'guests' => [
+        ['identifier' => 'pve01/qemu/101', 'vmid' => 101, 'name' => 'test', 'type' => 'qemu', 'ip' => '10.10.250.166'],
+    ]];
+
+    $this->withToken($plain)->postJson('/api/agent/proxmox', $meldung)->assertOk();
+    $vm = VM::where('agent_identifier', 'pve01/qemu/101')->sole();
+
+    // Set to DHCP on the page: the row loses its address, keeps the network.
+    $vm->ipAddresses()->sole()->update(['address' => null, 'dhcp' => true, 'network_id' => $netz->id]);
+
+    $this->withToken($plain)->postJson('/api/agent/proxmox', $meldung)->assertOk();
+
+    expect($vm->ipAddresses()->count())->toBe(1)
+        ->and($vm->ipAddresses()->sole()->dhcp)->toBeTrue();
+});

@@ -1324,6 +1324,16 @@ class AgentController extends Controller
             return;
         }
 
+        // The agent cannot tell (Proxmox, Hyper-V report a guest's address
+        // without knowing where it came from), and someone set the device
+        // to DHCP in this network: that stays. Before, every run added the
+        // reported address again as a fixed one next to the DHCP entry - the
+        // choice made by hand was undone within the hour.
+        if ($dhcp === null && $geraet->ipAddresses()->where('dhcp', true)
+            ->when($netz, fn ($q) => $q->where('network_id', $netz))->exists()) {
+            return;
+        }
+
         // Aus DHCP wurde eine feste Adresse: Die adresslose Zeile wird zur
         // festen, statt eine zweite danebenzustellen.
         if ($dhcp === false && $alt = $geraet->ipAddresses()->where('dhcp', true)->first()) {
