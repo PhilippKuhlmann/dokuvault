@@ -30,7 +30,7 @@ class ServiceSeeder extends Seeder
         'FS' => ['#00A4EF', 'Fileserver'],
         'DFS' => ['#0063B1', 'Distributed File System'],
         'RDS' => ['#F25022', 'Remote Desktop Services'],
-        'SQL' => ['#CC2927', 'Structured Query Language'],
+        'SQL' => ['#CC2927', 'Datenbankserver'],
         'Print' => ['#737373', 'Druckserver'],
         'Backup' => ['#00B336', 'Datensicherung'],
         'Monitoring' => ['#7E57C2', 'Überwachung'],
