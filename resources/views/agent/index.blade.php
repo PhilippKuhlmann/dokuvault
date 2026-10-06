@@ -303,12 +303,14 @@
                                     @endif
                                 </label>
                             @endforeach
-                            <x-input.select name="interval_minutes" class="w-40" :aria-label="__('Intervall')">
+                            {{-- One height for all controls of the row (h-9): the select came in
+                                 its form size, the buttons in their small one. --}}
+                            <x-input.select name="interval_minutes" class="w-40 h-9 px-3 py-1 text-sm" :aria-label="__('Intervall')">
                                 @foreach (config('custom.agent_intervalle') as $minuten => $bezeichnung)
                                     <option value="{{ $minuten }}" @selected($minuten === $installation->intervalMinutes())>{{ __($bezeichnung) }}</option>
                                 @endforeach
                             </x-input.select>
-                            <x-input.button type="submit" size="sm" :label="__('Speichern')" />
+                            <x-input.button type="submit" class="h-9" :label="__('Speichern')" />
                         </form>
                         {{-- Picked up on the next checkin, within five minutes. --}}
                         <form method="POST" action="{{ route('agent.installation.run', [$customer, $installation]) }}">
@@ -316,7 +318,7 @@
                             @if ($installation->run_requested_at)
                                 <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('Lauf angefordert') }}</span>
                             @else
-                                <x-input.button type="submit" size="sm" color="gray" :label="__('Jetzt melden')" />
+                                <x-input.button type="submit" color="gray" class="h-9" :label="__('Jetzt melden')" />
                             @endif
                         </form>
                         <x-loeschdialog :url="route('agent.installation.destroy', [$customer, $installation])"
@@ -324,7 +326,7 @@
                             :hinweis="__('Nur der Eintrag verschwindet. Ist der Agent noch installiert, meldet er sich beim nächsten Lauf wieder – deinstalliert wird auf dem Rechner.')"
                             :bestaetigen="__('Entfernen')">
                             <x-slot:ausloeser>
-                                <x-input.button type="button" color="red" size="sm"
+                                <x-input.button type="button" color="red" class="h-9"
                                     x-on:click="offen = true" :label="__('Entfernen')" />
                             </x-slot:ausloeser>
                         </x-loeschdialog>

@@ -12,6 +12,7 @@
 
 ### Changed
 
+- **Installierte Agenten: Auswahl und Knöpfe gleich hoch.** Das Intervall stand in Formulargröße neben kleinen Knöpfen; jetzt haben Intervall, „Speichern“, „Jetzt melden“ und „Entfernen“ dieselbe Höhe und Schriftgröße.
 - **Agent-Seite: „Neuen Token erzeugen“ aufgeräumt.** Bezeichnung, Standort, Ablaufdatum und Knopf stehen in vier gleich breiten Spalten, alle Felder gleich hoch und im selben Stil wie die Filterleisten der Listen (vorher drei verschiedene Eingabefelder in drei Höhen). Darüber zwei Sätze, wofür der Token da ist; das Kalendersymbol ist im Dunkelmodus jetzt sichtbar.
 
 ### Fixed
