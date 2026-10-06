@@ -4,6 +4,12 @@
 
 ### Added
 
+- **Statistik: System, Datenwachstum, Agenten, Nutzung.** Vier neue Seiten unter Admin → Statistik (Recht „Statistik sehen“):
+  - **System:** Größe von Datenbank, Dateien und eigenen Backups, Plattenplatz, Arbeitsspeicher, Last, Warteschlange und fehlgeschlagene Aufträge – mit Warnfarbe, wenn es eng wird – samt Verlauf der letzten 90 Tage und den größten Tabellen.
+  - **Datenwachstum:** Anzahl je Bereich (Server, VMs, AD-Benutzer, …) jetzt und die Veränderung im Zeitraum; Verlauf je Bereich und Aufteilung nach Kunde.
+  - **Agenten:** alle installierten Agenten aller Kunden – wer meldet, wer still ist, wessen Lauf fehlschlug und wer noch eine alte Version hat; Probleme oben.
+  - **Nutzung:** Anmeldungen (auch gescheiterte) und Änderungen pro Tag, je Benutzer und je Bereich, aus dem Protokoll.
+  - Die Verläufe kommen aus einem nächtlichen Schnappschuss (`statistik:schnappschuss`, 02:30), aufbewahrt zwei Jahre.
 - **Admin → Statistik → API-Auslastung.** Zeigt, wann wie viele Anfragen von Agenten und API-Token kommen und wie schnell DokuVault antwortet – um einzuschätzen, ob und wann der Server mehr Leistung braucht. Kennzahlen (Anfragen, Spitze je Stunde, Antwortzeit Ø/max., Fehler), Verlauf je Stunde oder Tag (24 Stunden, 7 oder 30 Tage), Tagesprofil nach Uhrzeit und eine Tabelle je Endpunkt.
   - Gezählt wird je Stunde und Endpunkt, nach dem Senden der Antwort – die Anfragen werden dadurch nicht langsamer. Nach 90 Tagen werden die Zahlen gelöscht.
   - Eigener Menüpunkt „Statistik“, weitere Auswertungen folgen dort als Unterpunkte. Eigenes Recht „Statistik sehen“ (`admin_statistik`) in der Rollenverwaltung; Rollen, die die Einstellungen der Installation ändern dürfen, bekommen es beim Update.

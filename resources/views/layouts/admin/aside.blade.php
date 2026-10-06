@@ -76,7 +76,11 @@
             @can('admin_statistik')
                 <x-aside.dropdown :label="__('Statistik')" svg="svg.chart" >
                     <x-slot:links>
+                        <x-aside.dropdownlink :label="__('System')" href="{{ route('admin.statistik.system') }}" />
                         <x-aside.dropdownlink :label="__('API-Auslastung')" href="{{ route('admin.auslastung') }}" />
+                        <x-aside.dropdownlink :label="__('Datenwachstum')" href="{{ route('admin.statistik.wachstum') }}" />
+                        <x-aside.dropdownlink :label="__('Agenten')" href="{{ route('admin.statistik.agenten') }}" />
+                        <x-aside.dropdownlink :label="__('Nutzung')" href="{{ route('admin.statistik.nutzung') }}" />
                     </x-slot:links>
                 </x-aside.dropdown>
             @endcan

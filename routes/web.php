@@ -66,16 +66,20 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VMController;
 use App\Http\Controllers\WifiController;
 use App\Http\Controllers\WizardController;
+use App\Livewire\AdminAgentenStatistik;
 use App\Livewire\AdminAllgemein;
 use App\Livewire\AdminApiToken;
 use App\Livewire\AdminAuslastung;
 use App\Livewire\AdminBackups;
+use App\Livewire\AdminDatenwachstum;
 use App\Livewire\AdminFristen;
+use App\Livewire\AdminNutzung;
 use App\Livewire\AdminOperatingSystem;
 use App\Livewire\AdminPapierkorb;
 use App\Livewire\AdminProtokoll;
 use App\Livewire\AdminProtokollHistorie;
 use App\Livewire\AdminSicherheit;
+use App\Livewire\AdminSystem;
 use App\Livewire\GlobalSearch;
 use App\Livewire\RemoteSearch;
 use Illuminate\Support\Facades\Route;
@@ -176,6 +180,12 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
         // whether the server keeps up. Own right, more pages follow.
         Route::get('/auslastung', AdminAuslastung::class)
             ->middleware('can:admin_statistik')->name('admin.auslastung');
+        Route::middleware('can:admin_statistik')->prefix('statistik')->group(function () {
+            Route::get('/system', AdminSystem::class)->name('admin.statistik.system');
+            Route::get('/datenwachstum', AdminDatenwachstum::class)->name('admin.statistik.wachstum');
+            Route::get('/agenten', AdminAgentenStatistik::class)->name('admin.statistik.agenten');
+            Route::get('/nutzung', AdminNutzung::class)->name('admin.statistik.nutzung');
+        });
 
         // Backups of all customers with their last runs (reported by agents).
         Route::get('/backups', AdminBackups::class)

@@ -70,3 +70,7 @@ Schedule::command('protokoll:aufraeumen')->dailyAt('03:40');
 Schedule::call(fn () => DB::table('api_request_stats')
     ->where('stunde', '<', now()->subDays(90))->delete())
     ->dailyAt('03:50')->name('api-statistik-aufraeumen');
+
+// Kennzahlen des Tages fuer Admin -> Statistik (System, Datenwachstum).
+// Nachts, nach dem Backup um 01:30 - dessen Groesse soll schon mitzaehlen.
+Schedule::command('statistik:schnappschuss')->dailyAt('02:30');
