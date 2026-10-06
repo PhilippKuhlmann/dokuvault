@@ -5,6 +5,7 @@ use App\Models\Customer;
 use App\Models\Network;
 use App\Models\OperatingSystem;
 use App\Models\Server;
+use App\Models\Service;
 use App\Models\Site;
 use App\Models\VM;
 
@@ -294,4 +295,26 @@ test('a guest set to DHCP by hand stays DHCP when the agent reports its address 
 
     expect($vm->ipAddresses()->count())->toBe(1)
         ->and($vm->ipAddresses()->sole()->dhcp)->toBeTrue();
+});
+
+test('Proxmox tags that name a service of the catalog are added to the guest services', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [, $plain] = AgentToken::generateFor($customer, $site);
+    foreach (['DNS', 'docker'] as $name) {
+        Service::firstOrCreate(['name' => $name]);
+    }
+    $meldung = fn (array $tags) => ['host' => ['identifier' => 'pve-x', 'hostname' => 'pve01'], 'guests' => [
+        ['identifier' => 'pve01/lxc/250016', 'vmid' => 250016, 'name' => 'dns01', 'type' => 'lxc', 'tags' => $tags],
+    ]];
+
+    $this->withToken($plain)->postJson('/api/agent/proxmox', $meldung(['linux', 'dns']))->assertOk();
+    $vm = VM::where('agent_identifier', 'pve01/lxc/250016')->sole();
+    // Catalog spelling, unknown tags ignored.
+    expect($vm->getRawOriginal('services'))->toBe('DNS');
+
+    // Added, never removed: a service entered by hand stays.
+    $vm->update(['services' => 'DNS,Fileserver']);
+    $this->withToken($plain)->postJson('/api/agent/proxmox', $meldung(['docker']))->assertOk();
+    expect($vm->fresh()->getRawOriginal('services'))->toBe('DNS,Fileserver,docker');
 });

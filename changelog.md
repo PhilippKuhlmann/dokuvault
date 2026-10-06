@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.10.05
+
+### Added
+
+- **Proxmox-Tags werden zu Diensten.** Der Proxmox-Agent meldet die Tags jeder VM und jedes Containers mit. Tags, die genauso heißen wie ein Dienst im Katalog (Admin → Auswahlmenüs → Dienste; Groß-/Kleinschreibung egal), kommen zu den Diensten des Gastes dazu – in der Schreibweise des Katalogs. Andere Tags (`linux`, `test`) werden ignoriert. Nur hinzufügen, nie entfernen: von Hand eingetragene Dienste bleiben.
+
 ## 26.10.04
 
 ### Changed

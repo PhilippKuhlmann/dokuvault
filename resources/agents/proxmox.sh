@@ -88,6 +88,16 @@ OS_VERSION=""
 
 os_reset() { OS_ID=""; OS_VERSION=""; }
 
+# Proxmox tags ("linux;docker") as a JSON list - DokuVault takes those that
+# name a service of its catalog.
+tags_json() {
+  local out="" t
+  for t in $(printf '%s' "${1:-}" | tr ';, ' '   '); do
+    out="${out:+$out,}$(json_str "$t")"
+  done
+  printf '[%s]' "$out"
+}
+
 # Wert eines JSON-Feldes aus der Antwort des QEMU-Gastagenten.
 json_feld() { printf '%s' "$2" | grep -oE "\"$1\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" | head -n1 | sed 's/.*:[[:space:]]*"//; s/"$//'; }
 
@@ -105,7 +115,8 @@ if command -v qm >/dev/null 2>&1; then
       OS_ID="$(json_feld id "$osinfo")"
       OS_VERSION="$(json_feld version-id "$osinfo")"
     fi
-    add_guest "{\"identifier\":$(json_str "${HOSTNAME}/qemu/${vmid}"),\"vmid\":$(num "$vmid"),\"name\":$(json_str "$name"),\"type\":\"qemu\",\"os_id\":$(json_str "$OS_ID"),\"os_version\":$(json_str "$OS_VERSION"),\"ip\":$(json_str "$ip"),\"status\":$(json_str "$status"),\"cores\":$(num "$cores"),\"memory_gb\":$(num "$memgb")}"
+    tags="$(qm config "$vmid" 2>/dev/null | sed -n 's/^tags:[[:space:]]*//p' | head -n1)"
+    add_guest "{\"identifier\":$(json_str "${HOSTNAME}/qemu/${vmid}"),\"tags\":$(tags_json "$tags"),\"vmid\":$(num "$vmid"),\"name\":$(json_str "$name"),\"type\":\"qemu\",\"os_id\":$(json_str "$OS_ID"),\"os_version\":$(json_str "$OS_VERSION"),\"ip\":$(json_str "$ip"),\"status\":$(json_str "$status"),\"cores\":$(num "$cores"),\"memory_gb\":$(num "$memgb")}"
   done < <(qm list 2>/dev/null | awk 'NR>1{print $1" "$2" "$3}')
 fi
 
@@ -129,7 +140,8 @@ if command -v pct >/dev/null 2>&1; then
       OS_ID="$(printf '%s\n' "$osrelease" | sed -n 's/^ID=//p' | tr -d '"' | head -n1)"
       OS_VERSION="$(printf '%s\n' "$osrelease" | sed -n 's/^VERSION_ID=//p' | tr -d '"' | head -n1)"
     fi
-    add_guest "{\"identifier\":$(json_str "${HOSTNAME}/lxc/${vmid}"),\"vmid\":$(num "$vmid"),\"name\":$(json_str "$name"),\"type\":\"lxc\",\"os_id\":$(json_str "$OS_ID"),\"os_version\":$(json_str "$OS_VERSION"),\"ip\":$(json_str "$ip"),\"status\":$(json_str "$status"),\"cores\":$(num "$cores"),\"memory_gb\":$(num "$memgb")}"
+    tags="$(pct config "$vmid" 2>/dev/null | sed -n 's/^tags:[[:space:]]*//p' | head -n1)"
+    add_guest "{\"identifier\":$(json_str "${HOSTNAME}/lxc/${vmid}"),\"tags\":$(tags_json "$tags"),\"vmid\":$(num "$vmid"),\"name\":$(json_str "$name"),\"type\":\"lxc\",\"os_id\":$(json_str "$OS_ID"),\"os_version\":$(json_str "$OS_VERSION"),\"ip\":$(json_str "$ip"),\"status\":$(json_str "$status"),\"cores\":$(num "$cores"),\"memory_gb\":$(num "$memgb")}"
   done < <(pct list 2>/dev/null | awk 'NR>1{print $1}')
 fi
 

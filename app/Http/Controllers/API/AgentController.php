@@ -1194,6 +1194,19 @@ class AgentController extends Controller
             );
 
             $this->meldeAdresse($vm, $customer->id, $site->id, $gast['ip'] ?? null);
+
+            // Tags that name a service of the catalog (case-insensitive,
+            // stored in the catalog's spelling) are added to the services -
+            // added, never removed: what was entered by hand stays.
+            if (! empty($gast['tags'])) {
+                $katalog = Service::pluck('name')->keyBy(fn ($n) => mb_strtolower($n));
+                $neu = collect($gast['tags'])->map(fn ($t) => $katalog[mb_strtolower(trim($t))] ?? null)->filter();
+                $vorhanden = collect(explode(',', (string) $vm->getRawOriginal('services')))->map(fn ($d) => trim($d))->filter();
+                $alle = $vorhanden->merge($neu)->unique(fn ($d) => mb_strtolower($d))->values();
+                if ($alle->count() > $vorhanden->count()) {
+                    $vm->update(['services' => $alle->implode(',')]);
+                }
+            }
             $anzahl++;
         }
 
@@ -1426,6 +1439,9 @@ class AgentController extends Controller
             'guests.*.status' => ['nullable', 'string', 'max:32'],
             'guests.*.cores' => ['nullable', 'integer'],
             'guests.*.memory_gb' => ['nullable', 'numeric'],
+            // Proxmox tags; only those matching a service of the catalog count.
+            'guests.*.tags' => ['nullable', 'array', 'max:50'],
+            'guests.*.tags.*' => ['string', 'max:100'],
         ];
     }
 
