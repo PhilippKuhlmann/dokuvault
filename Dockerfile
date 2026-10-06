@@ -17,8 +17,9 @@ FROM --platform=$BUILDPLATFORM composer:2.8 AS vendor
 WORKDIR /app
 COPY composer.json composer.lock ./
 # Ohne --no-dev: die Demo-Daten brauchen fakerphp/faker. --no-scripts, weil
-# artisan hier noch nicht vollstaendig vorliegt.
-RUN composer install --no-interaction --prefer-dist --no-scripts --no-autoloader
+# artisan hier noch nicht vollstaendig vorliegt. ext-ftp (FTP-Ziel der
+# Sicherung) fehlt im Composer-Image; das Laufzeit-Image unten hat sie.
+RUN composer install --no-interaction --prefer-dist --no-scripts --no-autoloader --ignore-platform-req=ext-ftp
 
 # ------------------------------------------------------------------ Frontend
 # Ebenso: Vite erzeugt CSS und JavaScript, beides ohne Architekturbezug.
@@ -57,9 +58,10 @@ RUN apk add --no-cache \
         freetype libjpeg-turbo libpng libzip \
         nginx supervisor \
     && apk add --no-cache --virtual .bau \
-        freetype-dev libjpeg-turbo-dev libpng-dev libzip-dev \
+        freetype-dev libjpeg-turbo-dev libpng-dev libzip-dev openssl-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j"$(nproc)" pdo_mysql gd zip opcache \
+    && docker-php-ext-configure ftp --with-openssl-dir=/usr \
+    && docker-php-ext-install -j"$(nproc)" pdo_mysql gd zip opcache ftp \
     && apk del .bau
 
 WORKDIR /app

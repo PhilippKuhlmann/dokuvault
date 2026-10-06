@@ -100,7 +100,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: pdo_sqlite, sqlite3, pdo_mysql, gd, zip
+          extensions: pdo_sqlite, sqlite3, pdo_mysql, gd, zip, ftp
 
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress

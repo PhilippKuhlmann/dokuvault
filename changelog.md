@@ -39,6 +39,9 @@
 
 ### Fixed
 
+- **Docker-Image baut wieder.** Die FTP-Bibliothek für das Backup-Ziel braucht die PHP-Erweiterung `ftp`; das Image installiert sie jetzt (mit OpenSSL für FTPS).
+- **Sicherheitsupdate `league/commonmark` 2.10.1 → 2.10.3.** Behebt die von `composer audit` gemeldeten Lücken; das Audit ist jetzt sauber.
+
 - **Sortierung in den Listen war leer und niedriger als die übrigen Felder.** Ohne gewählte Sortierung gab es keine passende Option – das Feld zeigte nichts und fiel flacher aus (z. B. bei den Windows-Lizenzen). Jetzt steht dort die erste Sortierung („Neueste zuerst“); „Filter zurücksetzen“ erscheint dafür nicht mehr.
 
 ## 26.10.05
