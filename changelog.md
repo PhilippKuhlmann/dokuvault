@@ -6,7 +6,7 @@
 
 - **Admin → Statistik → API-Auslastung.** Zeigt, wann wie viele Anfragen von Agenten und API-Token kommen und wie schnell DokuVault antwortet – um einzuschätzen, ob und wann der Server mehr Leistung braucht. Kennzahlen (Anfragen, Spitze je Stunde, Antwortzeit Ø/max., Fehler), Verlauf je Stunde oder Tag (24 Stunden, 7 oder 30 Tage), Tagesprofil nach Uhrzeit und eine Tabelle je Endpunkt.
   - Gezählt wird je Stunde und Endpunkt, nach dem Senden der Antwort – die Anfragen werden dadurch nicht langsamer. Nach 90 Tagen werden die Zahlen gelöscht.
-  - Eigener Menüpunkt „Statistik“, weitere Auswertungen folgen dort als Unterpunkte.
+  - Eigener Menüpunkt „Statistik“, weitere Auswertungen folgen dort als Unterpunkte. Eigenes Recht „Statistik sehen“ (`admin_statistik`) in der Rollenverwaltung; Rollen, die die Einstellungen der Installation ändern dürfen, bekommen es beim Update.
 - **Lokale Umgebung und Demo nutzen den Standard-Dienstekatalog.** Statt der eigenen Liste mit „Fileserver“, „docker“, „apache2“ und „mariadb“ legen Entwicklung und Demo dieselben 21 Dienste an wie eine neue Produktion; die Beispielgeräte tragen die passenden Namen (FS, Docker, Web, SQL, PVE).
 - **Dienst-Beschreibungen sind die Langform des Kürzels.** „DNS“ heißt „Domain Name System“, „PKI“ „Public Key Infrastructure“, „PVE“ „Proxmox Virtual Environment“ – statt einer Erklärung, was der Dienst tut.
 - **Dienste in den Farben ihres Produkts.** Docker in Docker-Blau, PVE/PBS/PMG in Proxmox-Orange, ESXi in VMware-Grau, SQL in SQL-Server-Rot, Backup in Veeam-Grün, Web in nginx-Grün; die Windows-Rollen in den Farben des Microsoft-Logos und der Microsoft-Palette, damit sie nicht alle gleich blau sind.

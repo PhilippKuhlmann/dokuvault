@@ -42,11 +42,11 @@ test('a real API request is counted, even when it is turned away', function () {
     expect(DB::table('api_request_stats')->where('pfad', 'api/agent/checkin')->value('anzahl'))->toBe(1);
 });
 
-test('the load page shows the figures and needs the settings right', function () {
+test('the load page shows the figures and needs the statistics right', function () {
     zaehle('api/agent/checkin');
     zaehle('api/agent/checkin');
 
-    $this->actingAs(userWithPermissions(['admin_setting']));
+    $this->actingAs(userWithPermissions(['admin_statistik']));
     Livewire::test(AdminAuslastung::class)
         ->assertOk()
         ->assertViewHas('summe', fn ($s) => $s['anzahl'] === 2 && $s['agent'] === 2)
@@ -55,8 +55,8 @@ test('the load page shows the figures and needs the settings right', function ()
         ->assertViewHas('verlauf', fn ($v) => count($v) === 24);
 });
 
-test('without the settings right there is no load page', function () {
-    $this->actingAs(userWithPermissions(['admin_activity']));
+test('the settings right alone does not open the load page', function () {
+    $this->actingAs(userWithPermissions(['admin_setting']));
 
     $this->get(route('admin.auslastung'))->assertForbidden();
 });

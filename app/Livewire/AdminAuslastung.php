@@ -27,7 +27,7 @@ class AdminAuslastung extends Component
 
     public function mount(): void
     {
-        Gate::authorize('admin_setting');
+        Gate::authorize('admin_statistik');
 
         if (! array_key_exists($this->zeitraum, self::ZEITRAEUME)) {
             $this->zeitraum = '7d';

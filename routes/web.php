@@ -150,10 +150,6 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             // Vorwarnzeiten und die Aufbewahrung der PDF-Ausgaben.
             Route::get('/fristen', AdminFristen::class)->name('admin.fristen.index');
 
-            // Requests to the API per hour - when the load comes, whether the
-            // server keeps up.
-            Route::get('/auslastung', AdminAuslastung::class)->name('admin.auslastung');
-
             Route::get('/setting', [SettingController::class, 'index'])->name('admin.setting.index');
             Route::patch('/setting', [SettingController::class, 'update'])->name('admin.setting.update');
 
@@ -175,6 +171,11 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
         // Menuepunkt darauf haette beim Klicken Token erzeugt.
         Route::get('/apitoken', AdminApiToken::class)
             ->middleware('can:admin_apitoken')->name('admin.apitoken');
+
+        // Statistik: requests to the API per hour - when the load comes,
+        // whether the server keeps up. Own right, more pages follow.
+        Route::get('/auslastung', AdminAuslastung::class)
+            ->middleware('can:admin_statistik')->name('admin.auslastung');
 
         // Backups of all customers with their last runs (reported by agents).
         Route::get('/backups', AdminBackups::class)
