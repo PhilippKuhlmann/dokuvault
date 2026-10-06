@@ -44,12 +44,14 @@ class AgentController extends Controller
         'AD-Certificate' => 'PKI',
         'DNS' => 'DNS',
         'DHCP' => 'DHCP',
-        'FS-FileServer' => 'Fileserver',
+        // Either spelling: the standard catalog (ServiceSeeder) says "FS",
+        // older installations "Fileserver".
+        'FS-FileServer' => ['FS', 'Fileserver'],
         'FS-DFS-Namespace' => 'DFS',
         'Print-Services' => 'Print',
         'Remote-Desktop-Services' => 'RDS',
         'Hyper-V' => 'Hyper-V',
-        'Web-Server' => 'IIS',
+        'Web-Server' => ['IIS', 'Web'],
         'UpdateServices' => 'WSUS',
         'WDS' => 'WDS',
         'RemoteAccess' => 'VPN',
@@ -60,17 +62,19 @@ class AgentController extends Controller
      * catalog - like WINDOWS_ROLLEN, only what the catalog knows is kept.
      */
     protected const LINUX_DIENSTE = [
-        'apache2' => 'apache2',
-        'httpd' => 'apache2',
-        'nginx' => 'nginx',
+        // The specific name where a catalog has it, else "Web" of the
+        // standard catalog (ServiceSeeder).
+        'apache2' => ['apache2', 'Web'],
+        'httpd' => ['apache2', 'Web'],
+        'nginx' => ['nginx', 'Web'],
         'docker' => 'docker',
         'mariadb' => 'mariadb',
         'mysql' => 'SQL',
         'postgresql' => 'SQL',
         'named' => 'DNS',
         'bind9' => 'DNS',
-        'smbd' => 'Fileserver',
-        'nfs-server' => 'Fileserver',
+        'smbd' => ['FS', 'Fileserver'],
+        'nfs-server' => ['FS', 'Fileserver'],
         'cups' => 'Print',
         'isc-dhcp-server' => 'DHCP',
         'kea-dhcp4-server' => 'DHCP',
@@ -296,13 +300,10 @@ class AgentController extends Controller
 
         // No catalog entry, no operating system: the support end hangs on it.
         $osName = $this->osReleaseKatalogName($meldung['os_id'] ?? null, $meldung['os_version'] ?? null);
-        $dienste = collect($meldung['services'] ?? [])
+        $dienste = $this->imKatalog(collect($meldung['services'] ?? [])
             ->map(fn ($unit) => self::LINUX_DIENSTE[$unit] ?? null)
             ->filter()
-            ->unique()
-            ->intersect(Service::pluck('name'))
-            ->values()
-            ->all();
+            ->all());
 
         if ($meldung['virtual'] ?? false) {
             $kurz = mb_strtolower(explode('.', $meldung['hostname'])[0]);
@@ -1266,15 +1267,35 @@ class AgentController extends Controller
     {
         $gewuenscht = collect($rollen)
             ->map(fn ($rolle) => self::WINDOWS_ROLLEN[$rolle] ?? null)
-            ->filter()
-            ->unique();
+            ->filter();
 
         if ($gewuenscht->isEmpty()) {
             return [];
         }
 
-        return $gewuenscht
-            ->intersect(Service::pluck('name'))
+        return $this->imKatalog($gewuenscht->all());
+    }
+
+    /**
+     * The catalog names for wanted services: case-insensitive ("docker"
+     * finds "Docker"), in the catalog's spelling. An entry may list
+     * alternatives ("FS" or "Fileserver") - the first one the catalog has
+     * counts. What the catalog does not have is dropped: agents never create
+     * catalog entries.
+     *
+     * @param  array<int, string|array<int, string>>  $gewuenscht
+     * @return array<int, string>
+     */
+    protected function imKatalog(array $gewuenscht): array
+    {
+        $katalog = Service::pluck('name')->keyBy(fn ($name) => mb_strtolower($name));
+
+        return collect($gewuenscht)
+            ->map(fn ($eintrag) => collect((array) $eintrag)
+                ->map(fn ($name) => $katalog[mb_strtolower($name)] ?? null)
+                ->first(fn ($name) => $name !== null))
+            ->filter()
+            ->unique()
             ->values()
             ->all();
     }

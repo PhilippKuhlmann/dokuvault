@@ -16,6 +16,8 @@ class ProductionDatabaseSeeder extends Seeder
             PermissionRoleSeeder::class,
             OperatingSystemsSeeder::class,
             MailboxProvidorsSeeder::class,
+            // Standard service catalog - without it the agents assign nothing.
+            ServiceSeeder::class,
         ]);
     }
 }

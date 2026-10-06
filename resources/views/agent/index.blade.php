@@ -391,19 +391,26 @@
 
         {{-- Neuen Token erzeugen --}}
         <x-panel>
-            <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-3">{{ __('Neuen Token erzeugen') }}</div>
+            <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">{{ __('Neuen Token erzeugen') }}</div>
+            <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">
+                {{ __('Mit dem Token melden Agenten und Scripte Daten an diesen Kunden – nur an den gewählten Standort, und nur bis zum Ablaufdatum. Nach dem Erzeugen kannst du Agenten und Scripte mit eingesetztem Token herunterladen; den Token selbst siehst du nur einmal.') }}
+            </p>
             @if ($sites->isEmpty())
                 <p class="text-sm text-amber-600 dark:text-amber-400">{{ __('Für diesen Kunden ist noch kein Standort angelegt. Bitte zuerst einen Standort anlegen.') }}</p>
             @else
-                <form method="POST" action="{{ route('agent.store', $customer) }}" class="flex flex-wrap items-end gap-3">
+                {{-- Same bar as the list filters: equal columns, equal field
+                     heights (x-input.field / x-input.select), the button level
+                     with the fields. Before, three different input components
+                     stood side by side in three heights and two backgrounds. --}}
+                <form method="POST" action="{{ route('agent.store', $customer) }}" class="grid grid-cols-1 items-end gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     @csrf
-                    <div class="flex flex-col">
-                        <x-input.label :value="__('Bezeichnung')" />
-                        <x-input.text name="name" class="mt-1 w-56" :placeholder="__('z. B. Proxmox Rechenzentrum')" />
+                    <div class="min-w-0">
+                        <x-input.label for="token-name" :value="__('Bezeichnung')" />
+                        <x-input.field id="token-name" name="name" class="mt-1 w-full" :value="old('name')" :placeholder="__('z. B. Proxmox Rechenzentrum')" />
                     </div>
-                    <div class="flex flex-col">
+                    <div class="min-w-0">
                         <x-input.label :value="__('Standort')" />
-                        <x-input.select name="site_id" class="mt-1">
+                        <x-input.select name="site_id" class="mt-1 w-full">
                             @foreach ($sites as $site)
                                 <option value="{{ $site->id }}">{{ $site->name }}</option>
                             @endforeach
@@ -411,13 +418,14 @@
                     </div>
                     {{-- Pflicht und vorbelegt: Ein Token ohne Ablauf ist ein
                          Dauerzugang. Die Vorgabe kommt aus der Konfiguration. --}}
-                    <div class="flex flex-col">
-                        <x-input.label :value="__('Läuft ab am')" />
-                        <x-input.text type="date" name="expires_at" feld="expires_at" class="mt-1 w-44"
+                    <div class="min-w-0">
+                        <x-input.label for="token-ablauf" :value="__('Läuft ab am')" />
+                        <x-input.field id="token-ablauf" type="date" name="expires_at" class="mt-1 w-full dark:scheme-dark"
                             min="{{ now()->addDay()->format('Y-m-d') }}"
                             :value="old('expires_at', now()->addDays(config('custom.agenten_token.gueltigkeit_tage_standard'))->format('Y-m-d'))" />
                     </div>
-                    <x-input.button :label="__('Token erzeugen')" />
+                    <x-input.button size="feld" class="w-full justify-center" :label="__('Token erzeugen')" />
+                    <x-input.fehler feld="expires_at" class="sm:col-span-2 lg:col-span-4" />
                 </form>
             @endif
         </x-panel>

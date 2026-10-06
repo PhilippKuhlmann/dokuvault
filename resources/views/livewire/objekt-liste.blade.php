@@ -85,8 +85,12 @@
                     <div class="min-w-0">
                         <x-input.label :value="__('Sortierung')" />
                         <x-input.select name="sortierung" wire:model.live="sortierung" class="mt-1 w-full">
+                            {{-- The first one carries the empty value: "no choice" is
+                                 the first sort order. Without an option for '' the
+                                 field showed nothing and collapsed lower than the
+                                 other fields of the bar. --}}
                             @foreach ($sortierungen as $schluessel => $eine)
-                                <option value="{{ $schluessel }}">{{ __($eine[0]) }}</option>
+                                <option value="{{ $loop->first ? '' : $schluessel }}">{{ __($eine[0]) }}</option>
                             @endforeach
                         </x-input.select>
                     </div>

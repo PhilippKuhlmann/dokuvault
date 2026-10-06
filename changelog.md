@@ -1,5 +1,20 @@
 # Changelog
 
+## 26.10.06
+
+### Added
+
+- **Standard-Dienstekatalog für neue Installationen.** Eine frische Produktion hatte keinen einzigen Dienst – die Agenten tragen aber nur Dienste ein, die es im Katalog gibt, und ordneten deshalb nichts zu. Jetzt legt die Einrichtung 21 Dienste mit Farbe und Beschreibung an: AD, DNS, DHCP, FS, DFS, RDS, SQL, Print, Backup, Monitoring, Docker, Web, IIS, PKI, WSUS, VPN, Hyper-V, ESXi, PVE, PBS, PMG (`ServiceSeeder`). Vorhandene Dienste bleiben, auch in anderer Schreibweise.
+- **Agenten finden Dienste unabhängig von der Schreibweise.** Windows-Rollen und Linux-Dienste werden ohne Rücksicht auf Groß-/Kleinschreibung zugeordnet (`docker` → „Docker“), ein Fileserver trifft „FS“ oder „Fileserver“, nginx/Apache unter Linux „Web“, ein IIS „IIS“ oder „Web“.
+
+### Changed
+
+- **Agent-Seite: „Neuen Token erzeugen“ aufgeräumt.** Bezeichnung, Standort, Ablaufdatum und Knopf stehen in vier gleich breiten Spalten, alle Felder gleich hoch und im selben Stil wie die Filterleisten der Listen (vorher drei verschiedene Eingabefelder in drei Höhen). Darüber zwei Sätze, wofür der Token da ist; das Kalendersymbol ist im Dunkelmodus jetzt sichtbar.
+
+### Fixed
+
+- **Sortierung in den Listen war leer und niedriger als die übrigen Felder.** Ohne gewählte Sortierung gab es keine passende Option – das Feld zeigte nichts und fiel flacher aus (z. B. bei den Windows-Lizenzen). Jetzt steht dort die erste Sortierung („Neueste zuerst“); „Filter zurücksetzen“ erscheint dafür nicht mehr.
+
 ## 26.10.05
 
 ### Added

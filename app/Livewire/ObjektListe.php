@@ -314,7 +314,9 @@ class ObjektListe extends Component
     protected function sortierungAnwenden($abfrage): void
     {
         $sortierungen = $this->sortierungen();
-        $gewaehlt = $sortierungen[$this->sortierung] ?? null;
+        // Empty (or an unknown key from the address bar): the first sort
+        // order of the type - the one the field shows.
+        $gewaehlt = $sortierungen[$this->sortierung] ?? (reset($sortierungen) ?: null);
 
         if (! $gewaehlt) {
             $abfrage->latest();
