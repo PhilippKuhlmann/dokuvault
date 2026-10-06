@@ -22,29 +22,29 @@ use Illuminate\Database\Seeder;
  */
 class ServiceSeeder extends Seeder
 {
-    /** name => [colour, description] */
+    /** name => [colour, description]; the description is the long form of the name. */
     public const KATALOG = [
-        'AD' => ['#0078D4', 'Active Directory: Anmeldung, Benutzer und Gruppenrichtlinien'],
-        'DNS' => ['#7FBA00', 'Namensauflösung im Netz'],
-        'DHCP' => ['#FFB900', 'Vergibt Adressen im Netz'],
-        'FS' => ['#00A4EF', 'Fileserver: Dateifreigaben'],
-        'DFS' => ['#0063B1', 'Verteiltes Dateisystem über mehrere Server oder Standorte'],
-        'RDS' => ['#F25022', 'Remotedesktopdienste: Terminalserver für Remote-Arbeitsplätze'],
-        'SQL' => ['#CC2927', 'Datenbankserver'],
-        'Print' => ['#737373', 'Druckserver: Warteschlangen und Treiber'],
-        'Backup' => ['#00B336', 'Sicherung – hier laufen die Aufträge'],
-        'Monitoring' => ['#7E57C2', 'Überwachung von Systemen und Diensten'],
-        'Docker' => ['#2496ED', 'Container-Laufzeitumgebung'],
-        'Web' => ['#009639', 'Webserver (nginx, Apache)'],
-        'IIS' => ['#D83B01', 'Microsoft-Webserver (Internet Information Services)'],
-        'PKI' => ['#5C2D91', 'Zertifizierungsstelle: stellt Zertifikate aus'],
-        'WSUS' => ['#00B294', 'Windows-Updates zentral verteilen'],
-        'VPN' => ['#88171A', 'Zugang von außen ins Netz'],
-        'Hyper-V' => ['#00BCF2', 'Virtualisierung mit Hyper-V – auf diesem Host laufen VMs'],
-        'ESXi' => ['#607078', 'Virtualisierung mit VMware ESXi – auf diesem Host laufen VMs'],
-        'PVE' => ['#E57000', 'Proxmox Virtual Environment – auf diesem Host laufen VMs und Container'],
-        'PBS' => ['#F29400', 'Proxmox Backup Server – Sicherungsziel'],
-        'PMG' => ['#C25400', 'Proxmox Mail Gateway – Spam- und Virenfilter für E-Mail'],
+        'AD' => ['#0078D4', 'Active Directory'],
+        'DNS' => ['#7FBA00', 'Domain Name System'],
+        'DHCP' => ['#FFB900', 'Dynamic Host Configuration Protocol'],
+        'FS' => ['#00A4EF', 'Fileserver'],
+        'DFS' => ['#0063B1', 'Distributed File System'],
+        'RDS' => ['#F25022', 'Remote Desktop Services'],
+        'SQL' => ['#CC2927', 'Structured Query Language'],
+        'Print' => ['#737373', 'Druckserver'],
+        'Backup' => ['#00B336', 'Datensicherung'],
+        'Monitoring' => ['#7E57C2', 'Überwachung'],
+        'Docker' => ['#2496ED', 'Docker'],
+        'Web' => ['#009639', 'Webserver'],
+        'IIS' => ['#D83B01', 'Internet Information Services'],
+        'PKI' => ['#5C2D91', 'Public Key Infrastructure'],
+        'WSUS' => ['#00B294', 'Windows Server Update Services'],
+        'VPN' => ['#88171A', 'Virtual Private Network'],
+        'Hyper-V' => ['#00BCF2', 'Microsoft Hyper-V'],
+        'ESXi' => ['#607078', 'VMware ESXi'],
+        'PVE' => ['#E57000', 'Proxmox Virtual Environment'],
+        'PBS' => ['#F29400', 'Proxmox Backup Server'],
+        'PMG' => ['#C25400', 'Proxmox Mail Gateway'],
     ];
 
     public function run(): void
