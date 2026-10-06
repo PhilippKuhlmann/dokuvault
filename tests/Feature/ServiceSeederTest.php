@@ -52,3 +52,13 @@ test('nginx on a Linux server becomes Web in the standard catalog', function () 
 
     expect(Server::where('customer_id', $customer->id)->sole()->getRawOriginal('services'))->toBe('Web');
 });
+
+test('a service created by hand without description gets the catalog description', function () {
+    Service::create(['name' => 'docker', 'color' => '#123456']);
+
+    $this->seed(ServiceSeeder::class);
+
+    $docker = Service::where('name', 'docker')->sole();
+    expect($docker->description)->toBe(ServiceSeeder::KATALOG['Docker'][1])
+        ->and($docker->color)->toBe('#123456');
+});

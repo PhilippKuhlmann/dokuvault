@@ -12,8 +12,9 @@ use Illuminate\Database\Seeder;
  * assign services that exist in the catalog (roles of a Windows server,
  * systemd units of a Linux server, Proxmox tags), so nothing was assigned.
  *
- * firstOrCreate by name, ignoring case: a service someone already created
- * ("docker", "Fileserver") is kept as it is, with its colour and text.
+ * By name, ignoring case: a service someone already created ("docker",
+ * "Fileserver") keeps its name, colour and text; only a missing
+ * description is filled in.
  * Colours of the product where there is one (Docker blue, Proxmox orange,
  * VMware grey, SQL Server red, Veeam green, nginx green); the Windows roles
  * in the Microsoft logo and palette colours, so they are not all the same
@@ -48,13 +49,23 @@ class ServiceSeeder extends Seeder
 
     public function run(): void
     {
-        $vorhanden = Service::pluck('name')->map(fn ($name) => mb_strtolower($name))->all();
+        $vorhanden = Service::all()->keyBy(fn ($dienst) => mb_strtolower($dienst->name));
 
         foreach (self::KATALOG as $name => [$farbe, $beschreibung]) {
-            if (in_array(mb_strtolower($name), $vorhanden, true)) {
+            $dienst = $vorhanden[mb_strtolower($name)] ?? null;
+
+            if (! $dienst) {
+                Service::create(['name' => $name, 'color' => $farbe, 'description' => $beschreibung]);
+
                 continue;
             }
-            Service::create(['name' => $name, 'color' => $farbe, 'description' => $beschreibung]);
+
+            // Created by hand before the catalog existed: colour and name
+            // stay, only a missing description is filled in - the tile shows
+            // it on hover, and an empty one explains nothing.
+            if (blank($dienst->description)) {
+                $dienst->update(['description' => $beschreibung]);
+            }
         }
     }
 }
