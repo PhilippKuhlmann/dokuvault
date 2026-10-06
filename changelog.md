@@ -4,6 +4,7 @@
 
 ### Added
 
+- **Dienste in den Farben ihres Produkts.** Docker in Docker-Blau, PVE/PBS/PMG in Proxmox-Orange, ESXi in VMware-Grau, SQL in SQL-Server-Rot, Backup in Veeam-Grün, Web in nginx-Grün; die Windows-Rollen in den Farben des Microsoft-Logos und der Microsoft-Palette, damit sie nicht alle gleich blau sind.
 - **Standard-Dienstekatalog für neue Installationen.** Eine frische Produktion hatte keinen einzigen Dienst – die Agenten tragen aber nur Dienste ein, die es im Katalog gibt, und ordneten deshalb nichts zu. Jetzt legt die Einrichtung 21 Dienste mit Farbe und Beschreibung an: AD, DNS, DHCP, FS, DFS, RDS, SQL, Print, Backup, Monitoring, Docker, Web, IIS, PKI, WSUS, VPN, Hyper-V, ESXi, PVE, PBS, PMG (`ServiceSeeder`). Vorhandene Dienste bleiben, auch in anderer Schreibweise.
 - **Agenten finden Dienste unabhängig von der Schreibweise.** Windows-Rollen und Linux-Dienste werden ohne Rücksicht auf Groß-/Kleinschreibung zugeordnet (`docker` → „Docker“), ein Fileserver trifft „FS“ oder „Fileserver“, nginx/Apache unter Linux „Web“, ein IIS „IIS“ oder „Web“.
 

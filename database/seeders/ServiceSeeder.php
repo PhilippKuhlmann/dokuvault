@@ -14,34 +14,36 @@ use Illuminate\Database\Seeder;
  *
  * firstOrCreate by name, ignoring case: a service someone already created
  * ("docker", "Fileserver") is kept as it is, with its colour and text.
- * Colour by role, as in the local example data: what fails, fails with
- * different weight.
+ * Colours of the product where there is one (Docker blue, Proxmox orange,
+ * VMware grey, SQL Server red, Veeam green, nginx green); the Windows roles
+ * in the Microsoft logo and palette colours, so they are not all the same
+ * blue.
  */
 class ServiceSeeder extends Seeder
 {
     /** name => [colour, description] */
     public const KATALOG = [
-        'AD' => ['#b91c1c', 'Active Directory: Anmeldung, Benutzer und Gruppenrichtlinien'],
-        'DNS' => ['#dc2626', 'Namensauflösung im Netz'],
-        'DHCP' => ['#ef4444', 'Vergibt Adressen im Netz'],
-        'FS' => ['#3391f0', 'Fileserver: Dateifreigaben'],
-        'DFS' => ['#8ecdff', 'Verteiltes Dateisystem über mehrere Server oder Standorte'],
-        'RDS' => ['#b45309', 'Remotedesktopdienste: Terminalserver für Remote-Arbeitsplätze'],
-        'SQL' => ['#1f73d6', 'Datenbankserver'],
-        'Print' => ['#f59e0b', 'Druckserver: Warteschlangen und Treiber'],
-        'Backup' => ['#15803d', 'Sicherung – hier laufen die Aufträge'],
-        'Monitoring' => ['#0891b2', 'Überwachung von Systemen und Diensten'],
-        'Docker' => ['#0f766e', 'Container-Laufzeitumgebung'],
-        'Web' => ['#14b8a6', 'Webserver (nginx, Apache)'],
-        'IIS' => ['#0d9488', 'Microsoft-Webserver (Internet Information Services)'],
-        'PKI' => ['#be185d', 'Zertifizierungsstelle: stellt Zertifikate aus'],
-        'WSUS' => ['#2563eb', 'Windows-Updates zentral verteilen'],
-        'VPN' => ['#4f46e5', 'Zugang von außen ins Netz'],
-        'Hyper-V' => ['#7c3aed', 'Virtualisierung mit Hyper-V – auf diesem Host laufen VMs'],
-        'ESXi' => ['#6d28d9', 'Virtualisierung mit VMware ESXi – auf diesem Host laufen VMs'],
-        'PVE' => ['#ea580c', 'Proxmox Virtual Environment – auf diesem Host laufen VMs und Container'],
-        'PBS' => ['#c2410c', 'Proxmox Backup Server – Sicherungsziel'],
-        'PMG' => ['#9a3412', 'Proxmox Mail Gateway – Spam- und Virenfilter für E-Mail'],
+        'AD' => ['#0078D4', 'Active Directory: Anmeldung, Benutzer und Gruppenrichtlinien'],
+        'DNS' => ['#7FBA00', 'Namensauflösung im Netz'],
+        'DHCP' => ['#FFB900', 'Vergibt Adressen im Netz'],
+        'FS' => ['#00A4EF', 'Fileserver: Dateifreigaben'],
+        'DFS' => ['#0063B1', 'Verteiltes Dateisystem über mehrere Server oder Standorte'],
+        'RDS' => ['#F25022', 'Remotedesktopdienste: Terminalserver für Remote-Arbeitsplätze'],
+        'SQL' => ['#CC2927', 'Datenbankserver'],
+        'Print' => ['#737373', 'Druckserver: Warteschlangen und Treiber'],
+        'Backup' => ['#00B336', 'Sicherung – hier laufen die Aufträge'],
+        'Monitoring' => ['#7E57C2', 'Überwachung von Systemen und Diensten'],
+        'Docker' => ['#2496ED', 'Container-Laufzeitumgebung'],
+        'Web' => ['#009639', 'Webserver (nginx, Apache)'],
+        'IIS' => ['#D83B01', 'Microsoft-Webserver (Internet Information Services)'],
+        'PKI' => ['#5C2D91', 'Zertifizierungsstelle: stellt Zertifikate aus'],
+        'WSUS' => ['#00B294', 'Windows-Updates zentral verteilen'],
+        'VPN' => ['#88171A', 'Zugang von außen ins Netz'],
+        'Hyper-V' => ['#00BCF2', 'Virtualisierung mit Hyper-V – auf diesem Host laufen VMs'],
+        'ESXi' => ['#607078', 'Virtualisierung mit VMware ESXi – auf diesem Host laufen VMs'],
+        'PVE' => ['#E57000', 'Proxmox Virtual Environment – auf diesem Host laufen VMs und Container'],
+        'PBS' => ['#F29400', 'Proxmox Backup Server – Sicherungsziel'],
+        'PMG' => ['#C25400', 'Proxmox Mail Gateway – Spam- und Virenfilter für E-Mail'],
     ];
 
     public function run(): void
