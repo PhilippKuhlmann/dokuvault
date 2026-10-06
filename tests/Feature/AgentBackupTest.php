@@ -114,7 +114,7 @@ test('the Proxmox report brings its vzdump jobs along', function () {
 });
 
 test('the dashboard warns about failed backups and the card shows the status', function () {
-    $this->actingAs(userWithPermissions(['see_hidden', 'backup_viewAny']));
+    $this->actingAs(userWithPermissions(['agent_manage', 'backup_viewAny']));
     [$customer, $plain] = backupToken();
     $this->withToken($plain)->postJson('/api/agent/backup', ['jobs' => [veeamJob(['last_status' => 'failed'])]]);
 

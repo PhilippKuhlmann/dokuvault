@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Customer;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
@@ -243,4 +244,45 @@ test('die frueheren deutschen Adressen leiten auf die englischen weiter', functi
 
     $this->get('/admin/papierkorb')->assertRedirect('/admin/trash');
     $this->get('/admin/protokoll-historie')->assertRedirect('/admin/log-retention');
+});
+
+test('the role editor names areas as in the menu, not by class name', function () {
+    $rolle = Role::factory()->create();
+    foreach (['licensewindows' => 'LicenseWindows', 'securepointuma' => 'SecurepointUMA', 'site' => 'Site'] as $slug => $klasse) {
+        Permission::where('name', $slug.'_viewAny')->exists() || Permission::forceCreate(['name' => $slug.'_viewAny', 'description' => $klasse.' sehen']);
+    }
+
+    $this->actingAs(userWithPermissions(['admin_role']))
+        ->get(route('admin.role.edit', $rolle))
+        ->assertOk()
+        ->assertSee('Windows-Lizenz')
+        ->assertSee('E-Mail-Archivierung')
+        ->assertDontSee('LicenseWindows</button>', false);
+});
+
+test('the agent page needs its own right, see_hidden is not enough', function () {
+    $customer = Customer::factory()->create();
+
+    $this->actingAs(userWithPermissions(['see_hidden']))
+        ->get(route('agent.index', $customer))->assertForbidden();
+});
+
+test('with the agent right the agent page opens', function () {
+    $customer = Customer::factory()->create();
+
+    $this->actingAs(userWithPermissions(['agent_manage']))
+        ->get(route('agent.index', $customer))->assertOk();
+});
+
+test('the role editor orders areas like the customer menu, with its sections', function () {
+    $rolle = Role::factory()->create();
+    foreach (['licensewindows' => 'LicenseWindows', 'site' => 'Site', 'server' => 'Server'] as $slug => $klasse) {
+        Permission::where('name', $slug.'_viewAny')->exists() || Permission::forceCreate(['name' => $slug.'_viewAny', 'description' => $klasse.' sehen']);
+    }
+
+    $this->actingAs(userWithPermissions(['admin_role']))
+        ->get(route('admin.role.edit', $rolle))
+        ->assertOk()
+        // Kunde -> Server -> Lizenzen, as in the sidebar - not alphabetical.
+        ->assertSeeInOrder(['Kunde', 'Standort', 'Server', 'Server', 'Lizenzen', 'Windows-Lizenz']);
 });

@@ -80,7 +80,7 @@
             ['backup_viewAny', __('Backup'), 'backup.index'],
             ['ups_viewAny', __('USV'), 'ups.index'],
             ['file_viewAny', __('Dateien'), 'file.index'],
-            ['see_hidden', __('Auto-Dokumentation'), 'agent.index'],
+            ['agent_manage', __('Auto-Dokumentation'), 'agent.index'],
             [null, __('Papierkorb'), 'trash.index'],
         ], $customer);
     }

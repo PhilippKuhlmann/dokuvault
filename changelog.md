@@ -15,6 +15,8 @@
 
 ### Changed
 
+- **Rollenverwaltung wie das Menü.** Die Bereiche heißen wie im Menü („Windows-Lizenz“ statt „LicenseWindows“, „E-Mail-Archivierung“ statt „SecurepointUMA“) und stehen in derselben Reihenfolge und unter denselben Abschnitten wie die Seitenleiste beim Kunden (Kunde, Netzwerk, Server, Clients, AD, Telefon, …) statt alphabetisch.
+- **Eigenes Recht „Agenten verwalten“.** Die Agent-Seite (Token, Downloads, installierte Agenten) und die Dashboard-Kachel „Agenten“ hingen am Recht „Verstecke Objekte sehen“ – etwas ganz anderes. Jetzt `agent_manage`; Rollen mit „Verstecke Objekte sehen“ bekommen es beim Update, niemand verliert den Zugang.
 - **Windows-Agent fragt mit Zufallsabstand an.** Vor jeder Anfrage – auch der ersten nach dem Start – wartet der Dienst zusätzlich 0–60 Sekunden. Nach einem gemeinsamen Neustart (Patch-Tag) fragten sonst alle Server im Gleichtakt an. Die Linux- und Proxmox-Agenten haben das über systemd schon (`RandomizedDelaySec=60`). Kommt mit dem nächsten Selbst-Update.
 - **Installierte Agenten: Auswahl und Knöpfe gleich hoch.** Das Intervall stand in Formulargröße neben kleinen Knöpfen; jetzt haben Intervall, „Speichern“, „Jetzt melden“ und „Entfernen“ dieselbe Höhe und Schriftgröße.
 - **Agent-Seite: „Neuen Token erzeugen“ aufgeräumt.** Bezeichnung, Standort, Ablaufdatum und Knopf stehen in vier gleich breiten Spalten, alle Felder gleich hoch und im selben Stil wie die Filterleisten der Listen (vorher drei verschiedene Eingabefelder in drei Höhen). Darüber zwei Sätze, wofür der Token da ist; das Kalendersymbol ist im Dunkelmodus jetzt sichtbar.

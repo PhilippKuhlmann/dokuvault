@@ -45,7 +45,7 @@ test('ein Altbestands-Token ohne Frist bleibt gültig', function () {
 });
 
 test('ein neuer Token ohne Ablaufdatum wird nicht angelegt', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     [$customer, $site] = agentKundeStandort();
 
     $this->post(route('agent.store', $customer), ['name' => 'Ohne Frist', 'site_id' => $site->id])
@@ -55,7 +55,7 @@ test('ein neuer Token ohne Ablaufdatum wird nicht angelegt', function () {
 });
 
 test('ein Ablaufdatum in der Vergangenheit wird abgelehnt', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     [$customer, $site] = agentKundeStandort();
 
     $this->post(route('agent.store', $customer), [
@@ -65,7 +65,7 @@ test('ein Ablaufdatum in der Vergangenheit wird abgelehnt', function () {
 });
 
 test('erneuern macht den alten Klartext ungültig und setzt eine neue Frist', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     [$customer, $site] = agentKundeStandort();
     [$token, $alt] = AgentToken::generateFor($customer, $site, 'Zu erneuern', now()->addMonth());
 
@@ -89,7 +89,7 @@ test('erneuern macht den alten Klartext ungültig und setzt eine neue Frist', fu
 });
 
 test('die Token-Liste zeigt Ablauf und Erneuern-Knopf', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     [$customer, $site] = agentKundeStandort();
     AgentToken::generateFor($customer, $site, 'Mit Frist', now()->addYear());
 
@@ -100,7 +100,7 @@ test('die Token-Liste zeigt Ablauf und Erneuern-Knopf', function () {
 });
 
 test('ein Altbestands-Token ist in der Liste als unbegrenzt gekennzeichnet', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     [$customer, $site] = agentKundeStandort();
     AgentToken::generateFor($customer, $site, 'Altbestand');
 
@@ -110,7 +110,7 @@ test('ein Altbestands-Token ist in der Liste als unbegrenzt gekennzeichnet', fun
 });
 
 test('PowerShell variants say to unblock the downloaded file, bash variants do not', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     [$customer, $site] = agentKundeStandort();
 
     // The run instructions only appear once a token was created.

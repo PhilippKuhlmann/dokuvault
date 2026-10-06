@@ -137,6 +137,27 @@ return [
     ],
 
     /*
+     * Order and sections of the rights in the role editor - the same as the
+     * customer sidebar (layouts/aside.blade.php), so a right is found where
+     * its page is. Section => permission prefixes. What is not listed comes
+     * last under "Weitere".
+     */
+    'rechte_menue' => [
+        'Kunde' => ['site', 'contactperson'],
+        'Netzwerk' => ['internetconnection', 'firewall', 'router', 'network', 'wifi', 'networkswitch', 'accesspoint', 'rack', 'patchpanel'],
+        'Server' => ['server', 'cluster', 'vm', 'nas'],
+        'Clients' => ['computer', 'printer', 'scanner', 'scantarget', 'iotdevice', 'machine', 'otherclient'],
+        'AD' => ['addomain', 'aduser', 'adgroup'],
+        'Telefon' => ['phonesystem', 'sipaccount', 'phone', 'dect'],
+        'Logins' => ['logingeneral', 'loginwebsite', 'sshkey'],
+        'E-Mail' => ['securepointuma', 'mailbox'],
+        'Kamera' => ['recorder', 'camera'],
+        'Lizenzen' => ['licensewindows', 'licenseaccess', 'licensesoftware'],
+        'Dienste' => ['ftpserver', 'dyndns', 'domain', 'certificate', 'backup'],
+        'Sonstiges' => ['ups', 'file'],
+    ],
+
+    /*
      * Whitelist für den Papierkorb: URL-Slug => [Model-Klasse, Anzeigename].
      * Nur Models mit customer_id und SoftDeletes aufnehmen.
      */
@@ -1325,6 +1346,9 @@ return [
     */
     'extra_permissions' => [
         'remote_search' => 'Fernwartungs-Suche benutzen',
+        // Agent page: tokens, downloads, installed agents. Was "see_hidden"
+        // ("Verstecke Objekte sehen") before - a different matter.
+        'agent_manage' => 'Agenten verwalten',
     ],
 
     /*

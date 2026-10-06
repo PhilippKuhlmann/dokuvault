@@ -93,7 +93,7 @@ test('services maintained by hand are kept', function () {
 });
 
 test('the Linux installer is the shared one with KIND linux', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     $this->post(route('agent.store', $customer), ['name' => 'Linux', 'site_id' => $site->id, 'expires_at' => now()->addMonth()->format('Y-m-d')]);

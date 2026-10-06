@@ -99,7 +99,7 @@ test('jeder Eintrag beschreibt, was das Script tut und wie man es aufruft', func
 });
 
 test('das erzeugte Token liefert zu jedem Agenten ein fertiges Script', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
 
@@ -138,7 +138,7 @@ test('das erzeugte Token liefert zu jedem Agenten ein fertiges Script', function
  * Aufloesung der Kind-Bindung war ja kaputt, und die passiert nur unterwegs.
  */
 test('ein Token laesst sich widerrufen', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
 
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
@@ -154,7 +154,7 @@ test('ein Token laesst sich widerrufen', function () {
 });
 
 test('ein fremder Token laesst sich nicht ueber den eigenen Kunden widerrufen', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
 
     $eigener = Customer::factory()->create();
     $fremder = Customer::factory()->create();

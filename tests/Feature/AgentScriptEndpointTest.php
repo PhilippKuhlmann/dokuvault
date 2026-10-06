@@ -50,7 +50,7 @@ test('agents that need credentials or unknown names are not served', function (s
 })->with(['unifi', 'vmware', 'microsoft365', 'proxmox', 'gibt-es-nicht']);
 
 test('after creating a token the agent page offers the service with a ready install line', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
 
@@ -76,7 +76,7 @@ function tokenFuerDienstExe(): array
 }
 
 test('the preconfigured exe carries URL and token at its end', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     [$customer, $plain] = tokenFuerDienstExe();
 
     $antwort = $this->get(route('agent.dienst', $customer))->assertOk();
@@ -93,7 +93,7 @@ test('the preconfigured exe carries URL and token at its end', function () {
 });
 
 test('the preconfigured exe is only available shortly after creating a token, for that customer', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     [$customer] = tokenFuerDienstExe();
     $anderer = Customer::factory()->create();
 
@@ -126,7 +126,7 @@ test('the Proxmox agent fetches the bash script, unattended bash agents only', f
 });
 
 test('the Proxmox installer comes with address and token filled in', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     [$customer, $plain] = tokenFuerDienstExe();
 
     $antwort = $this->get(route('agent.dienst.proxmox', $customer))->assertOk();
@@ -146,7 +146,7 @@ test('the Proxmox installer comes with address and token filled in', function ()
 });
 
 test('the agent page always says how to uninstall each agent', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     $customer = Customer::factory()->create();
 
     // No fresh token - this is what one sees months later.

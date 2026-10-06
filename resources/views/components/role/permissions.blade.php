@@ -33,6 +33,17 @@
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700/60">
                 @foreach ($matrix as $row)
+                    {{-- Section header as in the customer sidebar. --}}
+                    @if (($row['gruppe'] ?? null) !== ($vorige ?? null))
+                        <tr class="bg-gray-50/60 dark:bg-gray-700/20">
+                            <td colspan="{{ count($actions) + 1 }}" class="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ __($row['gruppe'] ?? '') }}</td>
+                        </tr>
+                        {{-- Block form: the short @php(...) would swallow everything
+                             up to the next @endphp further down. --}}
+                        @php
+                            $vorige = $row['gruppe'] ?? null;
+                        @endphp
+                    @endif
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                         <td class="px-4 py-1.5 whitespace-nowrap">
                             <button type="button" title="{{ __('Ganze Zeile umschalten') }}"

@@ -44,6 +44,13 @@ class RoleController extends Controller
         // vergibt, sollte das nicht zwischen zwei Geraetezeilen tun.
         $adminNamen = array_keys(config('custom.admin_permissions'));
 
+        // German names per resource (permission prefix = slug of the trash
+        // list). "file" is not trashable - it gets its menu name.
+        $anzeigenamen = collect(config('custom.trashables'))
+            ->mapWithKeys(fn ($eintrag, $slug) => [$slug => $eintrag[1]])
+            ->put('file', 'Datei')
+            ->all();
+
         foreach (Permission::orderBy('description')->get() as $p) {
             $pos = strrpos($p->name, '_');
             $resource = $pos !== false ? substr($p->name, 0, $pos) : $p->name;
@@ -53,7 +60,11 @@ class RoleController extends Controller
                 $adminRechte[] = $p;
             } elseif (array_key_exists($action, $actions)) {
                 if (! isset($matrix[$resource])) {
-                    $label = trim(preg_replace('/\s+(sehen|erstellen|bearbeiten|löschen)$/ui', '', $p->description));
+                    // The German name the user knows from the menu and the
+                    // trash ("Windows-Lizenz"), not the class name stored in
+                    // the description ("LicenseWindows sehen").
+                    $label = $anzeigenamen[$resource]
+                        ?? trim(preg_replace('/\s+(sehen|erstellen|bearbeiten|löschen)$/ui', '', $p->description));
                     $matrix[$resource] = ['label' => $label !== '' ? $label : ucfirst($resource), 'perms' => []];
                 }
                 $matrix[$resource]['perms'][$action] = $p;
@@ -62,7 +73,19 @@ class RoleController extends Controller
             }
         }
 
-        uasort($matrix, fn ($a, $b) => strcasecmp($a['label'], $b['label']));
+        // As in the customer sidebar: section by section, in menu order -
+        // alphabetical put "Accesspoint" next to "AD-Benutzer".
+        $position = [];
+        foreach (config('custom.rechte_menue') as $gruppe => $bereiche) {
+            foreach ($bereiche as $bereich) {
+                $position[$bereich] = [count($position), $gruppe];
+            }
+        }
+        foreach ($matrix as $resource => &$zeile) {
+            [$zeile['position'], $zeile['gruppe']] = $position[$resource] ?? [PHP_INT_MAX, __('Weitere')];
+        }
+        unset($zeile);
+        uasort($matrix, fn ($a, $b) => [$a['position'], $a['label']] <=> [$b['position'], $b['label']]);
 
         return [$matrix, $others, $actions, $adminRechte];
     }

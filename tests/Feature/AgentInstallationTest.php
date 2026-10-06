@@ -101,7 +101,7 @@ test('check-in needs a valid token and a known kind', function () {
 });
 
 test('the agent page lists installed agents and saves the ticked roles', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     [$token, $plain] = installationToken();
     $customer = $token->customer;
 
@@ -131,7 +131,7 @@ test('the agent page lists installed agents and saves the ticked roles', functio
 });
 
 test('agents of another customer cannot be changed', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     [, $plain] = installationToken();
     checkinAls($plain, 'dc01', ['windows-server']);
 
@@ -183,7 +183,7 @@ test('a report needs a machine that checked in with this customer', function () 
 });
 
 test('the agent page shows a failed run with its message', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     [$token, $plain] = installationToken();
     checkinAls($plain, 'dc01', ['windows-server', 'windows-ad']);
     reportAls($plain, 'dc01', [['role' => 'windows-ad', 'ok' => false, 'message' => 'Get-ADUser: Zugriff verweigert']]);
@@ -195,7 +195,7 @@ test('the agent page shows a failed run with its message', function () {
 });
 
 test('the dashboard warns about silent agents, failed runs and expiring tokens', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     [$token, $plain] = installationToken();
     $customer = $token->customer;
     $token->update(['expires_at' => now()->addDays(10)->endOfDay(), 'name' => 'Token Zentrale']);
@@ -213,7 +213,7 @@ test('the dashboard warns about silent agents, failed runs and expiring tokens',
 
 test('without agents or tokens there is no agents tile', function () {
     $customer = Customer::factory()->create();
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
 
     $this->get(route('customer.dashboard', $customer))->assertOk()->assertViewHas('agentWarnings', null);
 });
@@ -254,7 +254,7 @@ test('the interval from the install is taken over once, then the page decides', 
 });
 
 test('"Jetzt melden" makes the next check-in run, once', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     [$token, $plain] = installationToken();
     checkinAls($plain, 'srv01', ['windows-server']);
     $installation = AgentInstallation::sole();
@@ -269,7 +269,7 @@ test('"Jetzt melden" makes the next check-in run, once', function () {
 });
 
 test('the interval is chosen on the agent page from the offered values', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     [$token, $plain] = installationToken();
     checkinAls($plain, 'srv01', ['windows-server']);
     $installation = AgentInstallation::sole();

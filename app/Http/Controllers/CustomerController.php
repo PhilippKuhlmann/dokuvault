@@ -112,7 +112,7 @@ class CustomerController extends Controller
         $recentChanges = $this->recentChanges($customer);
 
         // Only for those who manage agents, and only where there are any.
-        $agentWarnings = Gate::allows('see_hidden') ? $this->agentWarnings($customer) : null;
+        $agentWarnings = Gate::allows('agent_manage') ? $this->agentWarnings($customer) : null;
 
         // Einstieg zum Dokumentations-Assistenten: anbieten, wenn ein Durchlauf dieses Nutzers
         // offen ist ("Fortsetzen") oder der Kunde insgesamt noch kaum Inventar hat.

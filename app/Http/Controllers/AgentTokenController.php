@@ -16,7 +16,7 @@ class AgentTokenController extends Controller
 {
     public function index(Customer $customer)
     {
-        Gate::authorize('see_hidden');
+        Gate::authorize('agent_manage');
 
         $tokens = $this->getFilteredQuery(AgentToken::class, $customer)
             ->with('site')
@@ -41,7 +41,7 @@ class AgentTokenController extends Controller
      */
     public function updateInstallation(Customer $customer, AgentInstallation $agentInstallation, Request $request)
     {
-        Gate::authorize('see_hidden');
+        Gate::authorize('agent_manage');
         abort_if($agentInstallation->customer_id !== $customer->id, 403);
 
         $validated = $request->validate([
@@ -65,7 +65,7 @@ class AgentTokenController extends Controller
      */
     public function runInstallation(Customer $customer, AgentInstallation $agentInstallation)
     {
-        Gate::authorize('see_hidden');
+        Gate::authorize('agent_manage');
         abort_if($agentInstallation->customer_id !== $customer->id, 403);
 
         $agentInstallation->forceFill(['run_requested_at' => now()])->save();
@@ -80,7 +80,7 @@ class AgentTokenController extends Controller
      */
     public function destroyInstallation(Customer $customer, AgentInstallation $agentInstallation)
     {
-        Gate::authorize('see_hidden');
+        Gate::authorize('agent_manage');
         abort_if($agentInstallation->customer_id !== $customer->id, 403);
 
         $agentInstallation->delete();
@@ -90,7 +90,7 @@ class AgentTokenController extends Controller
 
     public function store(Customer $customer, Request $request)
     {
-        Gate::authorize('see_hidden');
+        Gate::authorize('agent_manage');
 
         $validated = $request->validate([
             'name' => ['nullable', 'string', 'max:255'],
@@ -114,7 +114,7 @@ class AgentTokenController extends Controller
 
     public function destroy(Customer $customer, AgentToken $agentToken)
     {
-        Gate::authorize('see_hidden');
+        Gate::authorize('agent_manage');
         abort_if($agentToken->customer_id !== $customer->id, 403);
 
         $agentToken->delete();
@@ -129,7 +129,7 @@ class AgentTokenController extends Controller
      */
     public function erneuern(Customer $customer, AgentToken $agentToken)
     {
-        Gate::authorize('see_hidden');
+        Gate::authorize('agent_manage');
         abort_if($agentToken->customer_id !== $customer->id, 403);
 
         $frist = now()->addDays(config('custom.agenten_token.gueltigkeit_tage_standard'))->endOfDay();
@@ -233,7 +233,7 @@ class AgentTokenController extends Controller
      */
     protected function dienstToken(Customer $customer): string
     {
-        Gate::authorize('see_hidden');
+        Gate::authorize('agent_manage');
 
         $dienst = session('agentDienst');
         abort_unless(

@@ -84,7 +84,7 @@ test('IPAM blendet Geraete fremder Standorte im gefilterten VLAN NICHT aus', fun
 });
 
 test('Auto-Dokumentation zeigt bei gewaehltem Standort nur dessen Tokens', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     [$customer, $hamburg, $muenchen] = ipPlanFixture();
 
     AgentToken::generateFor($customer, $hamburg, 'Token Hamburg');
@@ -98,7 +98,7 @@ test('Auto-Dokumentation zeigt bei gewaehltem Standort nur dessen Tokens', funct
 });
 
 test('Auto-Dokumentation zeigt ohne Standortfilter alle Tokens', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['agent_manage']));
     [$customer, $hamburg, $muenchen] = ipPlanFixture();
 
     AgentToken::generateFor($customer, $hamburg, 'Token Hamburg');
