@@ -68,6 +68,7 @@ use App\Http\Controllers\WifiController;
 use App\Http\Controllers\WizardController;
 use App\Livewire\AdminAllgemein;
 use App\Livewire\AdminApiToken;
+use App\Livewire\AdminAuslastung;
 use App\Livewire\AdminBackups;
 use App\Livewire\AdminFristen;
 use App\Livewire\AdminOperatingSystem;
@@ -148,6 +149,10 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
             // Vorwarnzeiten und die Aufbewahrung der PDF-Ausgaben.
             Route::get('/fristen', AdminFristen::class)->name('admin.fristen.index');
+
+            // Requests to the API per hour - when the load comes, whether the
+            // server keeps up.
+            Route::get('/auslastung', AdminAuslastung::class)->name('admin.auslastung');
 
             Route::get('/setting', [SettingController::class, 'index'])->name('admin.setting.index');
             Route::patch('/setting', [SettingController::class, 'update'])->name('admin.setting.update');

@@ -335,11 +335,9 @@ func (h *handler) Execute(_ []string, req <-chan svc.ChangeRequest, status chan<
 		return false, 0
 	}
 
-	pause, updated := run()
-	if updated {
-		return restart()
-	}
-	timer := time.NewTimer(pause)
+	// The first run, too, after a random delay of up to a minute: after a
+	// shared reboot all services start in the same second.
+	timer := time.NewTimer(jitter())
 	defer timer.Stop()
 
 	for {
@@ -349,7 +347,7 @@ func (h *handler) Execute(_ []string, req <-chan svc.ChangeRequest, status chan<
 			if updated {
 				return restart()
 			}
-			timer.Reset(pause)
+			timer.Reset(pause + jitter())
 		case c := <-req:
 			switch c.Cmd {
 			case svc.Interrogate:

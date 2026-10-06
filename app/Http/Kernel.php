@@ -9,6 +9,7 @@ use App\Http\Middleware\isAdmin;
 use App\Http\Middleware\isCustomer;
 use App\Http\Middleware\isTechniker;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
+use App\Http\Middleware\RecordApiRequest;
 use App\Http\Middleware\RecordDemoUsage;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\SetLocale;
@@ -105,6 +106,9 @@ class Kernel extends HttpKernel
 
         'api' => [
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            // First, so it also counts what the throttle or a bad token
+            // turns away - that is load as well.
+            RecordApiRequest::class,
             'throttle:api',
             SubstituteBindings::class,
         ],

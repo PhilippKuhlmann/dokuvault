@@ -365,3 +365,17 @@ func TestOlderServerWithoutRunUsesTheLocalInterval(t *testing.T) {
 		t.Fatalf("expected one run within the interval, got %d", ran)
 	}
 }
+
+func TestJitterStaysWithinAMinuteAndVaries(t *testing.T) {
+	seen := map[time.Duration]bool{}
+	for i := 0; i < 50; i++ {
+		j := jitter()
+		if j < 0 || j >= maxJitter {
+			t.Fatalf("jitter %v outside [0, %v)", j, maxJitter)
+		}
+		seen[j] = true
+	}
+	if len(seen) < 2 {
+		t.Fatal("jitter should vary between calls")
+	}
+}

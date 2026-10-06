@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand/v2"
 	"net/http"
 	"os"
 	"strings"
@@ -15,6 +16,16 @@ import (
 // pollInterval: how often the service asks DokuVault whether to run. The
 // run interval itself is set per agent on the agent page.
 const pollInterval = 5 * time.Minute
+
+// maxJitter: every poll waits a random extra up to this. Many servers
+// rebooted together (patch day) would otherwise ask DokuVault in lockstep,
+// every five minutes at the same second. The Linux agents get the same from
+// systemd (RandomizedDelaySec=60).
+const maxJitter = time.Minute
+
+func jitter() time.Duration {
+	return time.Duration(rand.Int64N(int64(maxJitter)))
+}
 
 // checkinAnswer is what DokuVault answers. Run is nil from a DokuVault
 // before 26.10.03, which decided nothing about timing.

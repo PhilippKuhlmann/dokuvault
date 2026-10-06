@@ -2,6 +2,7 @@
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,3 +64,9 @@ Schedule::command('pdf:aufraeumen')->hourly();
 // haengenden Kennwoerter. Taeglich, nicht stuendlich: Die Frist wird in Tagen
 // angegeben, eine Stunde Genauigkeit waere geheuchelte Praezision.
 Schedule::command('protokoll:aufraeumen')->dailyAt('03:40');
+
+// API-Statistik (Admin -> Auslastung) nach 90 Tagen loeschen: Fuer die Frage
+// "wann kommt die Last, reicht der Server" genuegt ein Quartal.
+Schedule::call(fn () => DB::table('api_request_stats')
+    ->where('stunde', '<', now()->subDays(90))->delete())
+    ->dailyAt('03:50')->name('api-statistik-aufraeumen');

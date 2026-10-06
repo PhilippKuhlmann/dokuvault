@@ -71,6 +71,16 @@
                 </x-aside.dropdown>
             @endcanany
 
+            {{-- Own section: figures about the installation itself. More
+                 pages follow here (as sub-items), not under the settings. --}}
+            @can('admin_setting')
+                <x-aside.dropdown :label="__('Statistik')" svg="svg.chart" >
+                    <x-slot:links>
+                        <x-aside.dropdownlink :label="__('API-Auslastung')" href="{{ route('admin.auslastung') }}" />
+                    </x-slot:links>
+                </x-aside.dropdown>
+            @endcan
+
             @can('admin_backup')
                 <x-aside.dropdown :label="__('Backups')" svg="svg.db" >
                     <x-slot:links>

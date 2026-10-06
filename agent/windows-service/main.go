@@ -200,7 +200,7 @@ func doubleClick() error {
 	fmt.Println("Erkannt:    ", strings.Join(detectAgents(), ", "))
 	fmt.Println("Intervall:   stuendlich - aendern und sofort melden in DokuVault unter Agenten")
 	fmt.Println("Protokoll:  ", logPath())
-	fmt.Println("\nDer erste Lauf startet jetzt im Hintergrund.")
+	fmt.Println("\nDer erste Lauf startet innerhalb der naechsten Minute im Hintergrund.")
 	pause()
 	return nil
 }
