@@ -32,7 +32,7 @@ class ServerFactory extends Factory
             'bmcIp' => fake()->localIpv4(),
             'bmcUser' => 'root',
             'bmcPassword' => fake()->password(10, 14),
-            'services' => fake()->randomElement(['Hyper-V,DNS,AD', 'Fileserver,DFS', 'SQL,Backup', 'RDS,Print']),
+            'services' => fake()->randomElement(['Hyper-V,DNS,AD', 'FS,DFS', 'SQL,Backup', 'RDS,Print']),
             'operating_system_id' => fake()->numberBetween(1, 10),
             'remoteID' => fake()->numberBetween(100000000, 999999999),
             'remotePassword' => fake()->password(10, 14),
