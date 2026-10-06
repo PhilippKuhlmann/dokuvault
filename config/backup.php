@@ -40,6 +40,9 @@ return [
                 'exclude' => [
                     base_path('vendor'),
                     base_path('node_modules'),
+                    // The code comes back from the repository on restore;
+                    // the history was 87 of 104 MB per backup.
+                    base_path('.git'),
 
                     /*
                      * Nicht ins Archiv: die .env traegt den APP_KEY, mit dem

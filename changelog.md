@@ -4,6 +4,16 @@
 
 ### Added
 
+- **Admin → Einstellungen → Backup: die Sicherung von DokuVault selbst.** Bisher nur über `config/backup.php` und `.env` einstellbar, jetzt in der Oberfläche (Recht „Einstellungen“):
+  - **Zeitplan:** an/aus und Uhrzeit (Standard 01:30); das Aufräumen läuft eine halbe Stunde vorher.
+  - **Externes Ziel:** SFTP (Passwort oder privater SSH-Schlüssel) oder FTP/FTPS, wahlweise zusätzlich lokal behalten. „Verbindung testen“ schreibt, liest und löscht eine kleine Datei; der Zielordner wird beim Speichern angelegt, falls er fehlt. Passwörter und Schlüssel werden verschlüsselt gespeichert und nie an den Browser geschickt.
+  - **Aufbewahrung:** alle für X Tage, danach eine je Tag, Woche und Monat, Obergrenze in MB.
+  - **Archivpasswort** (verschlüsselte ZIP) und **Benachrichtigungsadresse** – ohne Adresse gehen keine Mails mehr an „admin@example.com“.
+  - **Mit Archivpasswort kommt die `.env` mit in die Sicherung.** Sie enthält den `APP_KEY`, mit dem alle gespeicherten Passwörter (Server, WLAN, Firewall, …) verschlüsselt sind – ohne ihn wäre nach einer Wiederherstellung keins mehr lesbar. Ohne Archivpasswort bleibt sie draußen, und die Seite warnt, den Schlüssel getrennt aufzubewahren.
+  - **Das Archivpasswort verschlüsselt jetzt wirklich.** Das Paket meldet seine Verschlüsselung nur an, wenn das Passwort schon beim Start in `.env` steht – aus den Einstellungen kam es zu spät, und die ZIP blieb unverschlüsselt. Geprüft: alle Einträge AES-256.
+  - **Sicherung ohne `.git`.** Der Code kommt beim Wiederherstellen aus dem Repository; die Versionsgeschichte machte 87 von 104 MB jeder nächtlichen Sicherung aus.
+  - **Anleitung „Wiederherstellen“** auf der Seite: entpacken, `.env` und Dateien zurücklegen, Dump einspielen, `deploy.sh`, Probe mit einem gespeicherten Passwort.
+  - **Vorhandene Sicherungen** lokal und (auf Knopfdruck) extern, mit „Jetzt sichern“ und „Herunterladen“ je Sicherung (gestreamt, auch vom externen Ziel; nur Dateien, die als Sicherung gelistet sind).
 - **Statistik: System, Datenwachstum, Agenten, Nutzung.** Vier neue Seiten unter Admin → Statistik (Recht „Statistik sehen“):
   - **System:** Größe von Datenbank, Dateien und eigenen Backups, Plattenplatz, Arbeitsspeicher, Last, Warteschlange und fehlgeschlagene Aufträge – mit Warnfarbe, wenn es eng wird – samt Verlauf der letzten 90 Tage und den größten Tabellen.
   - **Datenwachstum:** Anzahl je Bereich (Server, VMs, AD-Benutzer, …) jetzt und die Veränderung im Zeitraum; Verlauf je Bereich und Aufteilung nach Kunde.

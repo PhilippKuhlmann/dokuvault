@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ADUserController;
 use App\Http\Controllers\AgentTokenController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\BackupDownloadController;
 use App\Http\Controllers\BrandingController;
 use App\Http\Controllers\CameraController;
 use App\Http\Controllers\CertificateController;
@@ -70,6 +71,7 @@ use App\Livewire\AdminAgentenStatistik;
 use App\Livewire\AdminAllgemein;
 use App\Livewire\AdminApiToken;
 use App\Livewire\AdminAuslastung;
+use App\Livewire\AdminBackupEinstellungen;
 use App\Livewire\AdminBackups;
 use App\Livewire\AdminDatenwachstum;
 use App\Livewire\AdminFristen;
@@ -153,6 +155,10 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
             // Vorwarnzeiten und die Aufbewahrung der PDF-Ausgaben.
             Route::get('/fristen', AdminFristen::class)->name('admin.fristen.index');
+
+            // Backup of DokuVault itself: schedule, external target, retention.
+            Route::get('/backup', AdminBackupEinstellungen::class)->name('admin.backup.einstellungen');
+            Route::get('/backup/download', BackupDownloadController::class)->name('admin.backup.download');
 
             Route::get('/setting', [SettingController::class, 'index'])->name('admin.setting.index');
             Route::patch('/setting', [SettingController::class, 'update'])->name('admin.setting.update');

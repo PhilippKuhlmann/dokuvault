@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\BackupEinstellungen;
 use App\Support\Changelog;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
@@ -34,6 +35,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        // The DokuVault backup is configured in the admin area; its settings
+        // replace config/backup.php at runtime. Never at the price of booting.
+        try {
+            BackupEinstellungen::anwenden();
+        } catch (Throwable) {
+        }
+
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }
