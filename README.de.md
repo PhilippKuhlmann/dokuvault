@@ -68,7 +68,7 @@ immer aktuell.
     <td width="50%"><img src="docs/screenshots/ipam.png" alt="IPAM"><br><sub><b>IPAM</b> – belegte, freie und reservierte Adressen je VLAN, jeder Bereich in eigener Farbe</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/screenshots/autodoc.png" alt="Auto-Dokumentation"><br><sub><b>Auto-Dokumentation</b> – ein Token, acht Scripts: erzeugen, ausführen, fertig</sub></td>
+    <td width="50%"><img src="docs/screenshots/autodoc.png" alt="Auto-Dokumentation"><br><sub><b>Auto-Dokumentation</b> – ein Token für Agenten und Scripte: erzeugen, installieren, fertig</sub></td>
     <td width="50%"><img src="docs/screenshots/certificates.png" alt="Zertifikate"><br><sub><b>SSL/TLS-Zertifikate</b> – mit Ablauf-Warnung im Dashboard</sub></td>
   </tr>
   <tr>

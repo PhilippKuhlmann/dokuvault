@@ -5,7 +5,7 @@
         <x-panel>
             <div class="text-2xl font-CoconPro text-chathams-blue-800 dark:text-gray-100">{{ __('Auto-Dokumentation') }}</div>
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                {{ __('Erzeuge einen Agent-Token und lade das passende Script herunter – für Proxmox, Hyper-V, VMware, Windows-Server und -Arbeitsplatzrechner, Active Directory, UniFi oder Microsoft 365. Einmal ausgeführt, dokumentiert sich die Umgebung selbst. Der Token ist an den gewählten Standort gebunden und darf ausschließlich Dokumentationsdaten melden – kein weiterer Zugriff.') }}
+                {{ __('Erzeuge einen Agent-Token und installiere einen Agenten – für Windows, Proxmox oder Linux; er meldet danach von selbst, was und wie oft du unten unter „Installierte Agenten“ festlegst. Für Hyper-V, VMware, UniFi und Microsoft 365 gibt es Scripte zum Ausführen von Hand. Der Token ist an den gewählten Standort gebunden und darf ausschließlich Dokumentationsdaten melden – kein weiterer Zugriff.') }}
             </p>
         </x-panel>
 

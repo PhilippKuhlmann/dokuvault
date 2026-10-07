@@ -11,6 +11,7 @@
 
 ### Changed
 
+- **Agent-Seite: Einleitung beschreibt die installierten Agenten** statt nur „Script herunterladen“; die Bildunterschrift im README („ein Token, acht Scripts“) ebenso.
 - **README und Screenshots überarbeitet.** Neue Abschnitte zu den installierten Agenten (Windows-Dienst, Proxmox, Linux – Rollen, Intervall, „Jetzt melden“, Ergebnisse, Selbst-Update, Signatur), Backup-Überwachung, Statistik, eigener Sicherung und den neuen Sicherheitsmerkmalen; sieben neue Bilder (installierte Agenten, Backups, API-Auslastung, Agenten, Datenwachstum, Backup-Einstellungen, AD-Gruppen), alle übrigen neu aufgenommen.
 - **Demo zeigt die neuen Funktionen.** Installierte Agenten (einer still, ein fehlgeschlagener Veeam-Job, eine alte Version), zwei Wochen Backup-Läufe samt Proxmox-vzdump-Job, eine Woche API-Statistik, 90 Tage Verlauf für Statistik, AD-Gruppen mit echten Namen und Mitgliedern statt Faker-Text, Zeitzone Europe/Berlin (`DemoAgentSeeder`, `DemoStatistikSeeder`).
 - **Installierte Agenten: Rollen und Knöpfe in zwei Zeilen.** Bei sechs Windows-Rollen brach „Speichern“ allein um und „Jetzt melden“/„Entfernen“ landeten darunter; jetzt stehen die Rollen oben und Intervall, „Speichern“, „Jetzt melden“ und „Entfernen“ immer in einer Reihe.
