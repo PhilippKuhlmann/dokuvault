@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Setting;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -65,10 +66,11 @@ Schedule::command('pdf:aufraeumen')->hourly();
 // angegeben, eine Stunde Genauigkeit waere geheuchelte Praezision.
 Schedule::command('protokoll:aufraeumen')->dailyAt('03:40');
 
-// API-Statistik (Admin -> Auslastung) nach 90 Tagen loeschen: Fuer die Frage
+// API-Statistik (Admin -> Auslastung) nach der eingestellten Frist (Standard
+// 90 Tage, Einstellungen -> Fristen) loeschen: Fuer die Frage
 // "wann kommt die Last, reicht der Server" genuegt ein Quartal.
 Schedule::call(fn () => DB::table('api_request_stats')
-    ->where('stunde', '<', now()->subDays(90))->delete())
+    ->where('stunde', '<', now()->subDays(Setting::statistikApiTage()))->delete())
     ->dailyAt('03:50')->name('api-statistik-aufraeumen');
 
 // Kennzahlen des Tages fuer Admin -> Statistik (System, Datenwachstum).

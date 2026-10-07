@@ -9,6 +9,12 @@
     <div class="p-3 sm:p-5 space-y-6">
         <div class="text-3xl font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Administration') }}</div>
 
+        {{-- Own backup: runs, is recent, reaches the external target. On
+             top, not between the tiles - it is a warning, not a figure. --}}
+        @can('admin_setting')
+            <x-backup-zustand />
+        @endcan
+
         {{-- Verwaltungs-Kacheln --}}
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             @foreach ($tiles as $tile)
@@ -28,11 +34,6 @@
                 </a>
             @endforeach
         </div>
-
-        {{-- Own backup: runs, is recent, reaches the external target. --}}
-        @can('admin_setting')
-            <x-backup-zustand />
-        @endcan
 
         {{-- Inventar-Statistik --}}
         <div>

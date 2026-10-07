@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AgentInstallation;
 use App\Models\AgentToken;
 use App\Models\Customer;
+use App\Models\Setting;
 use App\Models\Site;
 use App\Support\AgentSkript;
 use App\Support\ExeTag;
@@ -98,7 +99,8 @@ class AgentTokenController extends Controller
             'site_id' => ['required', Rule::exists('sites', 'id')->where('customer_id', $customer->id)],
             // Pflicht und in der Zukunft: Ein Token ohne Ablauf ist ein
             // Dauerzugang, der auf jedem dokumentierten Rechner liegt.
-            'expires_at' => ['required', 'date', 'after:today'],
+            // Not beyond the maximum from Einstellungen -> Agenten.
+            'expires_at' => ['required', 'date', 'after:today', 'before_or_equal:'.now()->addDays(Setting::agentTokenMaxTage())->toDateString()],
         ]);
 
         $site = Site::where('customer_id', $customer->id)->findOrFail($validated['site_id']);
@@ -133,7 +135,7 @@ class AgentTokenController extends Controller
         Gate::authorize('agent_manage');
         abort_if($agentToken->customer_id !== $customer->id, 403);
 
-        $frist = now()->addDays(config('custom.agenten_token.gueltigkeit_tage_standard'))->endOfDay();
+        $frist = now()->addDays(Setting::agentTokenTage())->endOfDay();
         $plain = $agentToken->erneuern($frist);
 
         return $this->mitNeuemToken($customer, $agentToken, $plain);

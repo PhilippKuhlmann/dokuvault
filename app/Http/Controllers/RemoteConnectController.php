@@ -37,7 +37,7 @@ class RemoteConnectController extends Controller
         abort_unless($link, 404);
 
         $schluessel = 'kennwort-ansehen:'.auth()->id();
-        abort_if(RateLimiter::tooManyAttempts($schluessel, config('custom.kennwort.ansehen_je_minute')), 429);
+        abort_if(RateLimiter::tooManyAttempts($schluessel, Setting::kennwortAbrufe()), 429);
         RateLimiter::hit($schluessel, 60);
 
         activity()

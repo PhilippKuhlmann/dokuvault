@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\CredentialLink;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Locked;
@@ -90,7 +91,7 @@ class KennwortFeld extends Component
         // nachzusehen ist normal, hundert in einer Minute nicht.
         $schluessel = 'kennwort-ansehen:'.auth()->id();
 
-        if (RateLimiter::tooManyAttempts($schluessel, config('custom.kennwort.ansehen_je_minute'))) {
+        if (RateLimiter::tooManyAttempts($schluessel, Setting::kennwortAbrufe())) {
             $this->addError('kennwort', __('Zu viele Kennwortabrufe in kurzer Zeit. Bitte einen Moment warten.'));
 
             return null;

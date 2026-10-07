@@ -473,6 +473,90 @@ class Setting extends Model
         return max($wert >= 10 && $wert <= 10000 ? $wert : 100, self::backupVerlauf());
     }
 
+    /*
+     * Formerly fixed in code or config, now under Admin -> Einstellungen.
+     * Each with its default and its range; a value outside the range (a
+     * typo, an empty field) falls back to the default instead of switching
+     * something off.
+     */
+    public const AGENT_INTERVALL = 'agent_intervall';
+
+    public const AGENT_STILL_STUNDEN = 'agent_still_stunden';
+
+    public const AGENT_TOKEN_TAGE = 'agent_token_tage';
+
+    public const AGENT_TOKEN_MAX_TAGE = 'agent_token_max_tage';
+
+    public const STATISTIK_API_TAGE = 'statistik_api_tage';
+
+    public const STATISTIK_MONATE = 'statistik_monate';
+
+    public const KENNWORT_ABRUFE = 'kennwort_abrufe';
+
+    /** [default, min, max] per setting. */
+    public const ZAHLEN = [
+        self::AGENT_STILL_STUNDEN => [3, 1, 168],
+        self::AGENT_TOKEN_TAGE => [365, 1, 3650],
+        self::AGENT_TOKEN_MAX_TAGE => [1095, 1, 3650],
+        self::STATISTIK_API_TAGE => [90, 7, 730],
+        self::STATISTIK_MONATE => [24, 1, 120],
+        self::KENNWORT_ABRUFE => [30, 1, 1000],
+    ];
+
+    /** A number setting from ZAHLEN, inside its range or its default. */
+    public static function begrenzt(string $schluessel): int
+    {
+        [$standard, $min, $max] = self::ZAHLEN[$schluessel];
+        $wert = (int) self::wert($schluessel);
+
+        return $wert >= $min && $wert <= $max ? $wert : $standard;
+    }
+
+    /** Interval of an agent without its own (minutes, one of custom.agent_intervalle). */
+    public static function agentIntervall(): int
+    {
+        $wert = (int) self::wert(self::AGENT_INTERVALL);
+
+        return array_key_exists($wert, config('custom.agent_intervalle'))
+            ? $wert
+            : (int) config('custom.agent_intervall_standard');
+    }
+
+    /** After how many hours without contact an agent counts as silent. */
+    public static function agentStillStunden(): int
+    {
+        return self::begrenzt(self::AGENT_STILL_STUNDEN);
+    }
+
+    /** Validity of a new or renewed agent token, never above the maximum. */
+    public static function agentTokenTage(): int
+    {
+        return min(self::begrenzt(self::AGENT_TOKEN_TAGE), self::agentTokenMaxTage());
+    }
+
+    public static function agentTokenMaxTage(): int
+    {
+        return self::begrenzt(self::AGENT_TOKEN_MAX_TAGE);
+    }
+
+    /** How long the API statistics (per hour and endpoint) are kept. */
+    public static function statistikApiTage(): int
+    {
+        return self::begrenzt(self::STATISTIK_API_TAGE);
+    }
+
+    /** How long the nightly snapshots (system, data growth) are kept. */
+    public static function statistikMonate(): int
+    {
+        return self::begrenzt(self::STATISTIK_MONATE);
+    }
+
+    /** Passwords one user may fetch per minute before the brake holds. */
+    public static function kennwortAbrufe(): int
+    {
+        return self::begrenzt(self::KENNWORT_ABRUFE);
+    }
+
     /** Vorwarnzeit fuer Lizenzen, Zertifikate und Domains, in Tagen. */
     public static function fristVertraege(): int
     {

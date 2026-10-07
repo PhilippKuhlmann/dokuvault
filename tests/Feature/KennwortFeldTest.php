@@ -5,6 +5,7 @@ use App\Models\CredentialLink;
 use App\Models\Customer;
 use App\Models\LoginGeneral;
 use App\Models\OperatingSystem;
+use App\Models\Setting;
 use App\Models\Site;
 use App\Models\VM;
 use Livewire\Livewire;
@@ -104,7 +105,7 @@ test('kopieren gibt den Wert heraus, ohne aufzudecken', function () {
 });
 
 test('die Bremse stoppt das reihenweise Abgreifen', function () {
-    config(['custom.kennwort.ansehen_je_minute' => 1]);
+    Setting::setzen(Setting::KENNWORT_ABRUFE, 1);
     $this->actingAs(userWithPermissions(['logingeneral_viewAny']));
     $link = eineVerknuepfung('Nur-Einmal-2026');
 

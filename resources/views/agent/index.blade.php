@@ -436,7 +436,7 @@
                         <x-input.label for="token-ablauf" :value="__('Läuft ab am')" />
                         <x-input.field id="token-ablauf" type="date" name="expires_at" class="mt-1 w-full dark:scheme-dark"
                             min="{{ now()->addDay()->format('Y-m-d') }}"
-                            :value="old('expires_at', now()->addDays(config('custom.agenten_token.gueltigkeit_tage_standard'))->format('Y-m-d'))" />
+                            :value="old('expires_at', now()->addDays(\App\Models\Setting::agentTokenTage())->format('Y-m-d'))" />
                     </div>
                     <x-input.button size="feld" class="w-full justify-center" :label="__('Token erzeugen')" />
                     <x-input.fehler feld="expires_at" class="sm:col-span-2 lg:col-span-4" />

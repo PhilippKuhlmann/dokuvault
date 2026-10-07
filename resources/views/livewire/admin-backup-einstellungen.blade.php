@@ -22,7 +22,7 @@
                     <input type="checkbox" wire:model="form.backup_aktiv" class="{{ $cb }}"> {{ __('Täglich sichern') }}
                 </label>
                 <div>
-                    <x-input.label for="uhrzeit" :value="__('Uhrzeit')" />
+                    <x-input.label for="uhrzeit" :value="__('Uhrzeit').' ('.\App\Support\Zeit::zone().')'" />
                     <x-input.field id="uhrzeit" type="time" wire:model="form.backup_uhrzeit" class="mt-1 w-full dark:scheme-dark" />
                     <x-input.fehler feld="form.backup_uhrzeit" />
                 </div>

@@ -1,3 +1,4 @@
+@use('App\Models\Setting')
 <div class="p-3 sm:p-5 space-y-6">
     <div class="text-3xl font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Fristen') }}</div>
 
@@ -57,5 +58,22 @@
         </p>
 
         <x-input.fehler feld="pdfStunden" />
+    </x-panel>
+
+    {{-- Formerly fixed in code: 90 days and two years. --}}
+    <x-panel class="max-w-3xl">
+        <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Statistik aufbewahren') }}</div>
+        <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">
+            {{ __('Wie weit die Auswertungen unter Statistik zurückreichen. Ältere Werte werden nachts gelöscht.') }}
+        </p>
+
+        <div class="space-y-6">
+            <x-einstellung.zahl feld="statistikApiTage" :label="__('API-Auslastung')" :einheit="__('Tage')"
+                :min="Setting::ZAHLEN[Setting::STATISTIK_API_TAGE][1]" :max="Setting::ZAHLEN[Setting::STATISTIK_API_TAGE][2]"
+                :hinweis="__('Anfragen von Agenten und API-Token je Stunde und Endpunkt. Eine Zeile je Stunde und Endpunkt – auch ein Jahr bleibt klein.')" />
+            <x-einstellung.zahl feld="statistikMonate" :label="__('Verläufe')" :einheit="__('Monate')"
+                :min="Setting::ZAHLEN[Setting::STATISTIK_MONATE][1]" :max="Setting::ZAHLEN[Setting::STATISTIK_MONATE][2]"
+                :hinweis="__('Der nächtliche Schnappschuss für System und Datenwachstum – eine Zeile je Tag und Kennzahl.')" />
+        </div>
     </x-panel>
 </div>

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Setting;
 use App\Support\SystemWerte;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -59,7 +60,7 @@ class StatistikSchnappschuss extends Command
         }
 
         // Two years are enough to see growth; older days go.
-        DB::table('statistik_werte')->where('datum', '<', now()->subYears(2)->toDateString())->delete();
+        DB::table('statistik_werte')->where('datum', '<', now()->subMonths(Setting::statistikMonate())->toDateString())->delete();
 
         $this->info(count($zeilen).' Kennzahlen fuer '.$heute.' gespeichert.');
 

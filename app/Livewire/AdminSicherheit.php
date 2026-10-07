@@ -45,6 +45,8 @@ class AdminSicherheit extends Component
 
     public int $rememberTage = 0;
 
+    public int $kennwortAbrufe = 0;
+
     public function mount(): void
     {
         Gate::authorize('admin_setting');
@@ -62,6 +64,7 @@ class AdminSicherheit extends Component
         $this->sitzungMinuten = Setting::sitzungMinuten();
         $this->sitzungSchliessen = Setting::sitzungBeimSchliessen();
         $this->rememberTage = Setting::rememberTage();
+        $this->kennwortAbrufe = Setting::kennwortAbrufe();
     }
 
     public function updatedVersuche(): void
@@ -90,6 +93,12 @@ class AdminSicherheit extends Component
     public function updatedRememberTage(): void
     {
         $this->zahl('rememberTage', Setting::REMEMBER_TAGE, 1, 365, __('„Angemeldet bleiben“'));
+    }
+
+    public function updatedKennwortAbrufe(): void
+    {
+        [, $min, $max] = Setting::ZAHLEN[Setting::KENNWORT_ABRUFE];
+        $this->zahl('kennwortAbrufe', Setting::KENNWORT_ABRUFE, $min, $max, __('Kennwortabrufe je Minute'));
     }
 
     public function updatedSitzungSchliessen(): void

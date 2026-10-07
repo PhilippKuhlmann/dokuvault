@@ -1076,20 +1076,8 @@ return [
         'versuche_je_herkunft' => 30,
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Kennwörter ansehen
-    |--------------------------------------------------------------------------
-    |
-    | Ein Kennwort in einer Liste steht verdeckt; erst der Klick holt es über
-    | den Server (App\Livewire\KennwortFeld). Wie oft je Minute und Benutzer,
-    | begrenzt dieser Wert. Ein paar nachzusehen ist normal - hundert in einer
-    | Minute ist ein Skript, das die Liste leerräumt.
-    |
-    */
-    'kennwort' => [
-        'ansehen_je_minute' => 30,
-    ],
+    // How many passwords per minute and user: Admin -> Einstellungen ->
+    // Sicherheit (Setting::kennwortAbrufe, default 30).
 
     /*
     |--------------------------------------------------------------------------
@@ -1206,11 +1194,9 @@ return [
         240 => 'alle 4 Stunden',
         1440 => 'täglich',
     ],
+    // Fallback only - set under Admin -> Einstellungen -> Agenten, like the
+    // silence threshold and the token validity (Setting::agent*).
     'agent_intervall_standard' => 60,
-
-    'agenten_token' => [
-        'gueltigkeit_tage_standard' => 365,
-    ],
 
     /*
     |--------------------------------------------------------------------------

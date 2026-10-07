@@ -93,6 +93,17 @@
     </x-panel>
 
     <x-panel class="max-w-3xl">
+        <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Kennwort-Einsicht') }}</div>
+        <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">
+            {{ __('Jedes angesehene oder kopierte Kennwort und jede Fernwartungsverbindung steht im Protokoll. Die Bremse hält jemanden auf, der eine Liste Zeile für Zeile abgreift.') }}
+        </p>
+
+        <x-einstellung.zahl feld="kennwortAbrufe" :label="__('Kennwortabrufe je Minute')" :einheit="__('je Benutzer')"
+            :min="\App\Models\Setting::ZAHLEN[\App\Models\Setting::KENNWORT_ABRUFE][1]" :max="\App\Models\Setting::ZAHLEN[\App\Models\Setting::KENNWORT_ABRUFE][2]"
+            :hinweis="__('Eine Handvoll Kennwörter nachzusehen ist normal, hundert in einer Minute nicht. Danach heißt es eine Minute warten.')" />
+    </x-panel>
+
+    <x-panel class="max-w-3xl">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Sitzung') }}</div>
         <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">
             {{ __('Wie lange jemand angemeldet bleibt, ohne etwas zu tun.') }}

@@ -82,7 +82,7 @@ class AgentInstallation extends Model
             $roles[] = $role;
         }
 
-        if (! $installation->exists && $interval && $interval !== config('custom.agent_intervall_standard')) {
+        if (! $installation->exists && $interval && $interval !== Setting::agentIntervall()) {
             // The nearest offered interval: 45 from an old install becomes 30.
             $installation->interval_minutes = collect(array_keys(config('custom.agent_intervalle')))
                 ->sortBy(fn ($m) => abs($m - $interval))
@@ -115,7 +115,7 @@ class AgentInstallation extends Model
 
     public function intervalMinutes(): int
     {
-        return $this->interval_minutes ?: (int) config('custom.agent_intervall_standard');
+        return $this->interval_minutes ?: Setting::agentIntervall();
     }
 
     /**
@@ -185,6 +185,6 @@ class AgentInstallation extends Model
      */
     public function isStale(): bool
     {
-        return $this->last_seen_at === null || $this->last_seen_at->lt(now()->subHours(3));
+        return $this->last_seen_at === null || $this->last_seen_at->lt(now()->subHours(Setting::agentStillStunden()));
     }
 }

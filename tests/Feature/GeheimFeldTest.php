@@ -4,6 +4,7 @@ use App\Livewire\GeheimFeld;
 use App\Models\Customer;
 use App\Models\Firewall;
 use App\Models\SecurepointUMA;
+use App\Models\Setting;
 use App\Models\Site;
 use Livewire\Livewire;
 use Spatie\Activitylog\Models\Activity;
@@ -70,7 +71,7 @@ test('die Einsicht steht im Protokoll - ohne den Wert', function () {
 });
 
 test('die Bremse stoppt das reihenweise Abgreifen', function () {
-    config(['custom.kennwort.ansehen_je_minute' => 1]);
+    Setting::setzen(Setting::KENNWORT_ABRUFE, 1);
     $this->actingAs(userWithPermissions(['firewall_viewAny']));
     $fw = eineGeheimFirewall(['cloud_backup_password' => 'Nur-Einmal-2026']);
 

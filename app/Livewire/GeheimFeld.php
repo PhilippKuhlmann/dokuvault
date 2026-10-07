@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Setting;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -96,7 +97,7 @@ class GeheimFeld extends Component
         // Benutzer gegen das reihenweise Abgreifen.
         $schluessel = 'kennwort-ansehen:'.auth()->id();
 
-        if (RateLimiter::tooManyAttempts($schluessel, config('custom.kennwort.ansehen_je_minute'))) {
+        if (RateLimiter::tooManyAttempts($schluessel, Setting::kennwortAbrufe())) {
             $this->addError('kennwort', __('Zu viele Kennwortabrufe in kurzer Zeit. Bitte einen Moment warten.'));
 
             return null;

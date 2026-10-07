@@ -4,6 +4,15 @@
 
 ### Added
 
+- **Einstellungen → Agenten.** Vorgaben für die Agenten aller Kunden, vorher fest im Code: Standardintervall (für alle Agenten ohne eigenes, auch schon installierte), ab wie vielen Stunden ohne Meldung ein Agent als „meldet nicht“ gilt (bisher fest 3), Gültigkeit neuer und erneuerter Tokens (bisher 365 Tage) und eine Höchstlaufzeit – ein späteres Ablaufdatum lässt sich nicht mehr wählen.
+- **Aufbewahrung der Statistik einstellbar** (Einstellungen → Fristen): API-Auslastung (bisher fest 90 Tage) und die Verläufe von System und Datenwachstum (bisher fest 2 Jahre).
+- **Bremse für Kennwortabrufe einstellbar** (Einstellungen → Sicherheit): wie viele Kennwörter ein Benutzer je Minute ansehen oder kopieren darf, bisher fest 30 in der Konfiguration.
+- **Befehlspalette:** Agenten-Vorgaben, Backup und die fünf Statistik-Seiten sind jetzt auch über die Suche erreichbar.
+
+### Changed
+
+- **Backup-Uhrzeit gilt in der eingestellten Zeitzone.** „01:30“ lief bisher um 01:30 UTC, also um 03:30 deutscher Zeit. Jetzt zählt die Zeitzone aus Einstellungen → Allgemein; das Formular zeigt sie neben der Uhrzeit. Gespeichert und geloggt wird weiter in UTC.
+
 - **Zustand der eigenen Sicherung auf einen Blick.** Eine Zeile im Admin-Dashboard, unter Statistik → System und auf der Backup-Seite: grün, wenn die Sicherung läuft, lokal und extern ankommt und ein Archivpasswort hat; gelb, wenn sie ausgeschaltet ist, kein Archivpasswort hat (dann fehlt der `APP_KEY`) oder nur auf diesem Server liegt; rot, wenn der letzte Lauf oder die Kopie zum externen Ziel fehlschlug oder die letzte Sicherung älter als 26 Stunden ist – mit der Fehlermeldung. Jeder Lauf wird dafür je Ziel festgehalten; braucht keinen Mailserver.
 - **Windows-Agent signierbar.** `scripts/build-windows-agent.sh` signiert die exe mit Authenticode, wenn ein Code-Signing-Zertifikat hinterlegt ist (`SIGN_PFX`, `SIGN_PASSWORD_FILE` in `scripts/signing.env`, nicht in git), samt Zeitstempel. Adresse und Token, die DokuVault beim Download anhängt, landen bei einer signierten exe in der Signaturtabelle (`ExeTag`) – einfach angehängt wäre die Signatur ungültig. Die Agent-Seite zeigt, ob die exe signiert ist; unsigniert mit dem Hinweis, wie man SmartScreen bestätigt.
 

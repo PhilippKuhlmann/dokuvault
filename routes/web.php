@@ -68,6 +68,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VMController;
 use App\Http\Controllers\WifiController;
 use App\Http\Controllers\WizardController;
+use App\Livewire\AdminAgentenEinstellungen;
 use App\Livewire\AdminAgentenStatistik;
 use App\Livewire\AdminAllgemein;
 use App\Livewire\AdminApiToken;
@@ -158,6 +159,9 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             Route::get('/fristen', AdminFristen::class)->name('admin.fristen.index');
 
             // Backup of DokuVault itself: schedule, external target, retention.
+            // Defaults for the agents of all customers.
+            Route::get('/agents', AdminAgentenEinstellungen::class)->name('admin.agenten.einstellungen');
+
             Route::get('/backup', AdminBackupEinstellungen::class)->name('admin.backup.einstellungen');
             Route::get('/backup/download', BackupDownloadController::class)->name('admin.backup.download');
 

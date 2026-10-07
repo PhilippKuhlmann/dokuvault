@@ -111,10 +111,17 @@
             ['admin_setting', $adminPraefix.__('Mail'), 'admin.mail.index'],
             ['admin_setting', $adminPraefix.__('Sicherheit'), 'admin.security.index'],
             ['admin_setting', $adminPraefix.__('Fristen'), 'admin.fristen.index'],
+            ['admin_setting', $adminPraefix.__('Agenten-Vorgaben'), 'admin.agenten.einstellungen'],
+            ['admin_setting', $adminPraefix.__('Backup'), 'admin.backup.einstellungen'],
             ['admin_activity', $adminPraefix.__('Protokoll-Historie'), 'admin.logretention'],
             ['admin_apitoken', $adminPraefix.__('API-Token'), 'admin.apitoken'],
             ['admin_trash', $adminPraefix.__('Alle Kunden'), 'admin.trash'],
             ['admin_activity', $adminPraefix.__('Aktivitäten'), 'admin.activity.index'],
+            ['admin_statistik', $adminPraefix.__('Statistik').' · '.__('System'), 'admin.statistik.system'],
+            ['admin_statistik', $adminPraefix.__('Statistik').' · '.__('API-Auslastung'), 'admin.auslastung'],
+            ['admin_statistik', $adminPraefix.__('Statistik').' · '.__('Datenwachstum'), 'admin.statistik.wachstum'],
+            ['admin_statistik', $adminPraefix.__('Statistik').' · '.__('Agenten'), 'admin.statistik.agenten'],
+            ['admin_statistik', $adminPraefix.__('Statistik').' · '.__('Nutzung'), 'admin.statistik.nutzung'],
         ]);
     }
 @endphp

@@ -26,6 +26,10 @@ class AdminFristen extends Component
 
     public int $pdfStunden = 0;
 
+    public int $statistikApiTage = 0;
+
+    public int $statistikMonate = 0;
+
     public function mount(): void
     {
         Gate::authorize('admin_setting');
@@ -34,6 +38,8 @@ class AdminFristen extends Component
         $this->garantie = Setting::fristGarantie();
         $this->eol = Setting::fristEol();
         $this->pdfStunden = Setting::pdfStunden();
+        $this->statistikApiTage = Setting::statistikApiTage();
+        $this->statistikMonate = Setting::statistikMonate();
     }
 
     public function updatedVertraege(): void
@@ -59,6 +65,27 @@ class AdminFristen extends Component
         $this->pruefen('pdfStunden', 1, 8760, __('Aufbewahrung der PDF-Ausgaben'));
 
         Setting::setzen(Setting::PDF_STUNDEN, $this->pdfStunden);
+
+        $this->dispatch('hinweis', text: __('Frist gespeichert.'));
+    }
+
+    public function updatedStatistikApiTage(): void
+    {
+        $this->begrenzt('statistikApiTage', Setting::STATISTIK_API_TAGE, __('API-Auslastung'));
+    }
+
+    public function updatedStatistikMonate(): void
+    {
+        $this->begrenzt('statistikMonate', Setting::STATISTIK_MONATE, __('Verläufe'));
+    }
+
+    /** A setting with its range from Setting::ZAHLEN. */
+    private function begrenzt(string $feld, string $schluessel, string $bezeichnung): void
+    {
+        [, $min, $max] = Setting::ZAHLEN[$schluessel];
+        $this->pruefen($feld, $min, $max, $bezeichnung);
+
+        Setting::setzen($schluessel, $this->$feld);
 
         $this->dispatch('hinweis', text: __('Frist gespeichert.'));
     }
