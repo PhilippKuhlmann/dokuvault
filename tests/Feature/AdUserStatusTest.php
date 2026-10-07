@@ -206,3 +206,16 @@ test('die Demo-Daten zeigen alle drei Zustaende und beide Adressfaelle', functio
     expect((clone $benutzer)->whereNotNull('email')->exists())->toBeTrue();
     expect((clone $benutzer)->whereNull('email')->exists())->toBeTrue();
 })->group('langsam');
+
+test('without a password the list shows a dash, not a field to reveal', function () {
+    $this->actingAs(userWithPermissions(['aduser_viewAny']));
+    [$customer, $ohne] = adBenutzer(true);
+    $mit = ADUser::create(['customer_id' => $customer->id, 'username' => 'kmuster', 'password' => 'Ad-7xQ']);
+
+    // Reported: a user without a password (by hand or from the agent) showed
+    // the masked field, and "show" revealed nothing.
+    $liste = Livewire::test(ObjektListe::class, ['typ' => 'aduser', 'customer' => $customer])->html();
+
+    expect(substr_count($liste, 'wire:name="geheim-feld"'))->toBe(1)
+        ->and($liste)->not->toContain('Ad-7xQ');
+});

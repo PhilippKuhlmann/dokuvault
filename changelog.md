@@ -18,6 +18,7 @@
 
 ### Fixed
 
+- **Listen zeigten ein verdecktes Kennwort, wo keins gespeichert ist.** AD-Benutzer ohne Kennwort – von Hand angelegt oder vom Agenten gemeldet – hatten in der Übersicht dasselbe Feld mit Auge wie einer mit Kennwort; „Anzeigen“ brachte nichts. Jetzt steht dort „—“. Gilt für alle Listen mit Kennwortspalte (AD-Benutzer, WLAN, Webseiten-Logins, Zugangsdaten, DynDNS).
 - **Englische Oberfläche der neuen Funktionen.** Rund 370 Texte – Statistik, Agenten, Backup-Seite, Sicherungszustand, Einstellungen, Agent-Beschreibungen, Intervalle – standen auch auf Englisch deutsch da; das Admin-Dashboard hatte „abgelaufen“, „in 7 T.“ und die Kachelnamen fest auf Deutsch. „Token“ hieß auf Englisch „tokens“.
 - **Screenshot-Werkzeug löste „Jetzt melden“ aus.** Es suchte das Widerrufen-Formular des Test-Tokens über `form[action*="/agent/"]` und traf seit den installierten Agenten deren „Jetzt melden“ – der Lauf wurde angefordert, der Token blieb liegen. Jetzt über die Token-ID; außerdem räumt es alle eigenen Protokolleinträge weg, nicht nur die Anmeldungen.
 

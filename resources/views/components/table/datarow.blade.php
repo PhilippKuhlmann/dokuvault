@@ -76,9 +76,17 @@
                  Klartext ins ausgelieferte HTML. Vorher stand der Wert im DOM
                  und war nur per JavaScript verdeckt - in einer Liste mit vielen
                  Zeilen also alle Kennwörter auf einmal. --}}
+            {{-- Without a stored value a dash, not the masked field: an AD user
+                 without a password (by hand or from the agent) looked like one
+                 with a password, and "show" revealed nothing. Checked on the
+                 decrypted value - some models encrypt an empty string, too. --}}
             <td scope="row" class="py-2.5 px-4">
-                <livewire:geheim-feld :modell="get_class($value[0])" :id="$value[0]->id" :feld="$value[1]"
-                    width="w-40" :key="'gf-'.class_basename($value[0]).'-'.$value[0]->id.'-'.$value[1]" />
+                @if (filled($value[0]->{$value[1]}))
+                    <livewire:geheim-feld :modell="get_class($value[0])" :id="$value[0]->id" :feld="$value[1]"
+                        width="w-40" :key="'gf-'.class_basename($value[0]).'-'.$value[0]->id.'-'.$value[1]" />
+                @else
+                    <span class="text-gray-400 dark:text-gray-500">—</span>
+                @endif
             </td>
 
 
