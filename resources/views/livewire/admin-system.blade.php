@@ -7,6 +7,8 @@
         </p>
     </div>
 
+    <x-backup-zustand />
+
     <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <x-statistik.kennzahl :titel="__('Datenbank')" :wert="SystemWerte::lesbar($db)" :zusatz="__('Tabellen und Indizes')" />
         <x-statistik.kennzahl :titel="__('Dateien')" :wert="SystemWerte::lesbar($dateien)" :zusatz="__('Dokumente und Uploads')" />

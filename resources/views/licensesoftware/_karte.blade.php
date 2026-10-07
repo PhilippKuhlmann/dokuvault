@@ -11,7 +11,7 @@
 
                 <x-minitablecard :title="__('Login')" :array="[
                     'Benutzer' => $eintrag->username,
-                    'Passwort' => $eintrag->password,
+                    'Passwort' => [$eintrag, 'password'],
                 ]" />
 
                 <x-minitablecard :title="__('Laufzeit')" :array="[

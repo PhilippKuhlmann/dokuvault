@@ -91,6 +91,18 @@
                                 </a>
                             </div>
                             <p class="mt-2 text-gray-600 dark:text-gray-300">{{ __($dienst['beschreibung']) }}</p>
+                            @if ($dienst['datei'] === 'dokuvault-agent.exe')
+                                {{-- The PE header is enough to see a signature - not the whole 7 MB. --}}
+                                @php
+                                    $kopf = @file_get_contents(public_path('downloads/dokuvault-agent.exe'), false, null, 0, 4096);
+                                    $signiert = $kopf && \App\Support\ExeTag::istSigniert($kopf);
+                                @endphp
+                                <p @class(['mt-1 text-xs', 'text-emerald-700 dark:text-emerald-400' => $signiert, 'text-amber-700 dark:text-amber-400' => ! $signiert])>
+                                    {{ $signiert
+                                        ? __('Digital signiert – Windows zeigt den Herausgeber beim Start an.')
+                                        : __('Nicht signiert – Windows SmartScreen fragt beim ersten Start nach („Weitere Informationen“ → „Trotzdem ausführen“).') }}
+                                </p>
+                            @endif
 
                             {{-- The command line is the exception (distribution via
                                  script/GPO) - folded away like the scripts. --}}

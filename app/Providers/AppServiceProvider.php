@@ -6,14 +6,18 @@ use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\BackupEinstellungen;
+use App\Support\BackupZustand;
 use App\Support\Changelog;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Spatie\Backup\Events\BackupHasFailed;
+use Spatie\Backup\Events\BackupWasSuccessful;
 use Throwable;
 
 class AppServiceProvider extends ServiceProvider
@@ -41,6 +45,10 @@ class AppServiceProvider extends ServiceProvider
             BackupEinstellungen::anwenden();
         } catch (Throwable) {
         }
+
+        // Outcome of each backup run, for the state on the dashboard.
+        Event::listen(BackupWasSuccessful::class, [BackupZustand::class, 'erfolg']);
+        Event::listen(BackupHasFailed::class, [BackupZustand::class, 'fehler']);
 
         if ($this->app->environment('production')) {
             URL::forceScheme('https');

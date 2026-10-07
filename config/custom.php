@@ -1368,6 +1368,8 @@ return [
         'restored' => ['Wiederhergestellt', 'text-amber-700 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/30'],
         'password_changed' => ['Kennwort geändert', 'text-purple-700 bg-purple-50 dark:text-purple-300 dark:bg-purple-900/30'],
         'kennwort_angesehen' => ['Kennwort angesehen', 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-900/30'],
+        'fernwartung_verbunden' => ['Fernwartung verbunden', 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-900/30'],
+        'pdf_heruntergeladen' => ['PDF mit Zugangsdaten', 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-900/30'],
         'anmeldung' => ['Angemeldet', 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-700'],
         'anmeldung_gescheitert' => ['Anmeldung gescheitert', 'text-amber-700 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/30'],
         'anmeldung_gesperrt' => ['Anmeldung gesperrt', 'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-900/30'],

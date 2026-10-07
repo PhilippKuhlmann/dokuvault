@@ -29,6 +29,11 @@
             @endforeach
         </div>
 
+        {{-- Own backup: runs, is recent, reaches the external target. --}}
+        @can('admin_setting')
+            <x-backup-zustand />
+        @endcan
+
         {{-- Inventar-Statistik --}}
         <div>
             <div class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">{{ __('Dokumentiertes Inventar (alle Kunden)') }}</div>

@@ -49,7 +49,7 @@ class RemoteSearch extends Component
 
             $vms = VM::where('remoteID', '!=', '')
                 ->where('remotePassword', '!=', '')
-                ->select('name')
+                ->with('customer')
                 ->join('customers', 'vms.customer_id', '=', 'customers.id')
                 ->select('vms.*', 'customers.name as customerName')
                 ->orderBy('customers.name')
@@ -60,8 +60,7 @@ class RemoteSearch extends Component
 
         foreach ($servers as $server) {
             $remotes[] = [
-                'remoteID' => $server->remoteID,
-                'remotePassword' => $server->remotePassword,
+                'geraet' => $server,
                 'customerName' => $server->customerName,
                 'name' => $server->name,
             ];
@@ -69,8 +68,7 @@ class RemoteSearch extends Component
 
         foreach ($vms as $vm) {
             $remotes[] = [
-                'remoteID' => $vm->remoteID,
-                'remotePassword' => $vm->remotePassword,
+                'geraet' => $vm,
                 'customerName' => $vm->customerName,
                 'name' => $vm->name,
             ];

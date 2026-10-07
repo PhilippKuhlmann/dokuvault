@@ -8,6 +8,7 @@ use App\Models\Setting;
 use App\Models\Site;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Spatie\Activitylog\Models\Activity;
 
 function adminNutzer(): User
 {
@@ -54,16 +55,60 @@ test('die Geraeteliste zeigt den Knopf der eingestellten Loesung', function () {
     Server::factory()->create([
         'customer_id' => $customer->id, 'site_id' => $site->id,
         'operating_system_id' => OperatingSystem::factory()->create(['name' => 'Debian 13'])->id,
-        'name' => 'SRV-Fern', 'remoteID' => '987654321', 'remotePassword' => 'geheim',
+        'name' => 'SRV-Fern', 'remoteID' => '987654321', 'remotePassword' => 'Pw-9x7Q',
     ]);
 
-    $this->get(route('server.index', $customer))->assertSee('rustdesk://connection/new/987654321', false);
+    $server = Server::where('name', 'SRV-Fern')->first();
+    $verbinden = route('remote.connect', ['server', $server->id]);
+
+    // The list carries only the link to DokuVault - the tool link with the
+    // password comes from the redirect.
+    $this->get(route('server.index', $customer))
+        ->assertSee($verbinden, false)
+        ->assertDontSee('rustdesk://', false)
+        ->assertDontSee('Pw-9x7Q', false);
+    $this->get($verbinden)->assertRedirect('rustdesk://connection/new/987654321?password=Pw-9x7Q');
 
     Setting::setzen(Setting::REMOTE_TOOL, 'anydesk');
 
-    $antwort = $this->get(route('server.index', $customer));
-    $antwort->assertSee('anydesk:987654321', false);
-    $antwort->assertDontSee('rustdesk://', false);
+    $this->get($verbinden)->assertRedirect('anydesk:987654321');
+});
+
+function fremderServer(): Server
+{
+    $fremd = Customer::factory()->create();
+
+    return Server::factory()->create([
+        'customer_id' => $fremd->id, 'site_id' => Site::factory()->create(['customer_id' => $fremd->id])->id,
+        'operating_system_id' => OperatingSystem::factory()->create(['name' => 'Debian 13'])->id,
+        'name' => 'SRV-Fremd', 'remoteID' => '111', 'remotePassword' => 'Pw-9x7Q',
+    ]);
+}
+
+test('connecting is logged, without the password', function () {
+    $server = fremderServer();
+    $techniker = userWithPermissions(['server_viewAny']);
+
+    $this->actingAs($techniker)->get(route('remote.connect', ['server', $server->id]))->assertRedirect();
+
+    $eintrag = Activity::where('event', 'fernwartung_verbunden')->latest('id')->first();
+    expect($eintrag->causer_id)->toBe($techniker->id)
+        ->and($eintrag->subject_id)->toBe($server->id)
+        ->and(json_encode($eintrag->properties))->not->toContain('Pw-9x7Q');
+});
+
+test('a customer account does not connect to another customer\'s device', function () {
+    $server = fremderServer();
+    $kunde = userWithPermissions(['server_viewAny']);
+    $kunde->forceFill(['customer_id' => Customer::factory()->create()->id])->save();
+
+    $this->actingAs($kunde)->get(route('remote.connect', ['server', $server->id]))->assertForbidden();
+});
+
+test('connecting needs the right of the list', function () {
+    $server = fremderServer();
+
+    $this->actingAs(userWithPermissions(['vm_viewAny']))->get(route('remote.connect', ['server', $server->id]))->assertForbidden();
 });
 
 test('ein eigenes Muster mit javascript wird abgelehnt', function () {

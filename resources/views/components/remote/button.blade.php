@@ -8,18 +8,21 @@
     Drei Varianten: "knopf" ist das Symbol in der Kopfzeile, "text" die breite
     Schaltfläche in der Computerliste, "label" der beschriftete Knopf in der
     Fernwartungs-Übersicht.
+
+    The link goes to RemoteConnectController, which logs the connection and
+    then redirects to the tool. The tool link itself carries the password
+    (RustDesk: "?password=") and must not sit in the HTML.
 --}}
 @props([
-    'device' => null,
-    'id' => null,
-    'password' => null,
+    'device',
     'stil' => 'knopf',
 ])
 
 @php
-    $kennung = $id ?? $device?->remoteID;
-    $kennwort = $password ?? $device?->remotePassword;
-    $link = \App\Models\Setting::fernwartungsLink($kennung, $kennwort);
+    // Only to know whether there is a button at all - not put into the page.
+    $moeglich = \App\Models\Setting::fernwartungsLink($device->remoteID, $device->remotePassword);
+    $typ = [\App\Models\Server::class => 'server', \App\Models\VM::class => 'vm', \App\Models\Computer::class => 'computer'][get_class($device)] ?? null;
+    $link = $moeglich && $typ ? route('remote.connect', [$typ, $device->id]) : null;
     $werkzeug = \App\Models\Setting::fernwartung();
 @endphp
 

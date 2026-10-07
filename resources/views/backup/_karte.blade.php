@@ -30,7 +30,7 @@
                         'Ziel' => $eintrag->destination,
                     ]" />
                     <x-minitablecard :title="__('Login')" :array="[
-                        'Passwort' => $eintrag->password,
+                        'Passwort' => [$eintrag, 'password'],
                     ]" />
                 </div>
                 <div>

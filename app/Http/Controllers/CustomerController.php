@@ -394,6 +394,15 @@ class CustomerController extends Controller
         abort_unless($pdfExport->istFertig() && $pdfExport->path, 404);
         abort_unless(Storage::disk('local')->exists($pdfExport->path), 410);
 
+        // The PDF carries every password of the customer - its download
+        // belongs in the log like a single password looked at.
+        activity()
+            ->event('pdf_heruntergeladen')
+            ->performedOn($customer)
+            ->causedBy(auth()->user())
+            ->withProperties(['objekt' => $customer->name, 'attributes' => ['IP' => request()->ip()]])
+            ->log('PDF mit Zugangsdaten heruntergeladen');
+
         return Storage::disk('local')->download(
             $pdfExport->path,
             Str::slug($customer->name).'-dokumentation.pdf'

@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+use Spatie\Activitylog\Models\Activity;
 
 /**
  * Die PDF-Ausgabe laeuft im Hintergrund.
@@ -72,6 +73,10 @@ test('nur der Besteller darf das PDF laden', function () {
     (new KundenPdfErzeugen($export->id))->handle();
 
     $this->get(route('customer.pdf-download', [$customer, $export]))->assertOk();
+
+    // ...and that is in the log: the file carries every password.
+    expect(Activity::where('event', 'pdf_heruntergeladen')
+        ->where('causer_id', $besteller->id)->where('subject_id', $customer->id)->exists())->toBeTrue();
 
     // Das PDF enthaelt alle Zugangsdaten des Kunden - eine ID in der Adresse
     // darf nicht genuegen.

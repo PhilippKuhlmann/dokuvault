@@ -7,6 +7,7 @@ use App\Models\AgentToken;
 use App\Models\Customer;
 use App\Models\Site;
 use App\Support\AgentSkript;
+use App\Support\ExeTag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -178,17 +179,21 @@ class AgentTokenController extends Controller
      * The Windows service exe with URL and token appended - a double click
      * installs it, no command line needed.
      *
-     * Appended after the PE image: Windows ignores trailing data, the exe
-     * reads its own last bytes (JSON, 4-byte length, marker). Like the
-     * script, the file is as confidential as the token in it.
+     * Appended at the end - after the PE image, or inside the signature
+     * table of a signed exe (ExeTag); the exe reads its own last bytes
+     * (JSON, 4-byte length, marker). Like the script, the file is as
+     * confidential as the token in it.
      */
     public function dienstExe(Customer $customer)
     {
         $token = $this->dienstToken($customer);
 
         $json = json_encode(['url' => url('/'), 'token' => $token], JSON_UNESCAPED_SLASHES);
-        $inhalt = file_get_contents(public_path('downloads/dokuvault-agent.exe'))
-            .$json.pack('V', strlen($json)).self::EXE_KENNUNG;
+        // Inside the signature table if the exe is signed (ExeTag).
+        $inhalt = ExeTag::anhaengen(
+            file_get_contents(public_path('downloads/dokuvault-agent.exe')),
+            $json.pack('V', strlen($json)).self::EXE_KENNUNG,
+        );
 
         return response($inhalt, 200, [
             'Content-Type' => 'application/vnd.microsoft.portable-executable',

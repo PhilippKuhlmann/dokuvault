@@ -5,7 +5,10 @@
      meisten Geraeten die zweite IP - als leere Zeilen sah die Karte
      lueckenhaft aus. Dieselbe Regel wie in der Schrankliste. --}}
 @php
-    $gefuellt = array_filter($array, fn ($v) => filled($v));
+    // A value [model, column] is a secret fetched on click (GeheimFeld) -
+    // filled when the column is.
+    $istGeheim = fn ($v) => is_array($v) && ($v[0] ?? null) instanceof \Illuminate\Database\Eloquent\Model;
+    $gefuellt = array_filter($array, fn ($v) => $istGeheim($v) ? filled($v[0]->{$v[1]}) : filled($v));
 
     // Diese Beschriftungen tragen ein Geheimnis, das direkt am Modell haengt.
     // Ist ein Modell uebergeben, holt GeheimFeld den Wert erst auf Klick, statt
@@ -38,7 +41,12 @@
                          Beschriftung lief sie in die Nachbarspalte und aus der Karte heraus
                          ("10.10.30.7Hersteller"). Umgebrochen wird nur, wenn es sonst nicht passt. --}}
                     <td class="py-1 pr-6 align-top text-gray-500 dark:text-gray-400">{{ __($key) }}</td>
-                    @if ($modell && array_key_exists($key, $geheimFelder))
+                    @if ($istGeheim($value))
+                        <td scope="row">
+                            <livewire:geheim-feld :modell="get_class($value[0])" :id="$value[0]->id" :feld="$value[1]"
+                                width="w-full" :key="'gf-'.class_basename($value[0]).'-'.$value[0]->id.'-'.$value[1]" />
+                        </td>
+                    @elseif ($modell && array_key_exists($key, $geheimFelder))
                         {{-- Geheimnis am Modell: erst auf Klick ueber den Server
                              (App\Livewire\GeheimFeld), nicht als Klartext im HTML. --}}
                         <td scope="row">

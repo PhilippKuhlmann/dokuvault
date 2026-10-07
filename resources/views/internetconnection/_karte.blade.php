@@ -24,7 +24,7 @@
             @if ($eintrag->pppoe_user || $eintrag->pppoe_password)
                 <x-minitablecard :title="__('Einwahl (PPPoE)')" :array="[
                     'Benutzer' => $eintrag->pppoe_user,
-                    'Passwort' => $eintrag->pppoe_password,
+                    'Passwort' => [$eintrag, 'pppoe_password'],
                 ]" />
             @endif
 

@@ -50,6 +50,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RackCatalogItemController;
 use App\Http\Controllers\RackController;
 use App\Http\Controllers\RecorderController;
+use App\Http\Controllers\RemoteConnectController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RouterController;
 use App\Http\Controllers\ScannerController;
@@ -304,6 +305,12 @@ Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.
 
 // Customer
 Route::middleware('auth')->get('/search', GlobalSearch::class)->name('search.global');
+
+// Remote support: logs, then redirects to the tool link. Without the customer
+// in the address - the lists would otherwise load it per device; the
+// controller checks the customer itself.
+Route::middleware('auth')->get('/remote/{type}/{id}', RemoteConnectController::class)
+    ->whereIn('type', ['server', 'vm', 'computer'])->whereNumber('id')->name('remote.connect');
 Route::get('/customer/search', [CustomerController::class, 'search'])->name('customer.search');
 Route::get('/{customer}', [CustomerController::class, 'dashboard'])->name('customer.dashboard');
 Route::post('/{customer}/view-pdf', [CustomerController::class, 'viewPDF'])->name('customer.view-pdf');

@@ -12,7 +12,7 @@
                 <x-minitablecard :title="__('Login')" :array="[
                     'E-Mail Adresse' => $eintrag->mailAdress,
                     'Benutzer' => $eintrag->username,
-                    'Passwort' => $eintrag->password,
+                    'Passwort' => [$eintrag, 'password'],
                 ]" />
 
                 <x-minitablecard title="{{ $eintrag->mailboxProvider?->name }} - Eingang" :array="[

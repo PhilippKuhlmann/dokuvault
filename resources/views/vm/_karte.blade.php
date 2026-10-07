@@ -51,7 +51,7 @@
                      (anderer Rechner, kein Client), braucht man die ID zum Abtippen. --}}
                 <x-minitablecard :title="__('Fernwartung')" :array="[
                     \App\Models\Setting::fernwartung()['id_label'] => $eintrag->remoteID,
-                    'Passwort' => $eintrag->remotePassword,
+                    'Passwort' => [$eintrag, 'remotePassword'],
                 ]" />
 
                 <x-minitagcard :title="__('Dienste')" :array="$eintrag->services" />

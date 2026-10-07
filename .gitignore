@@ -38,3 +38,7 @@ Homestead.json
 
 # Editor-Auslagerungsdateien (Vim)
 *.swp
+
+# Code signing of the Windows agent (scripts/build-windows-agent.sh)
+/scripts/signing.env
+*.pfx

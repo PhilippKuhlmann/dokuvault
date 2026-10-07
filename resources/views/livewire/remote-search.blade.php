@@ -78,7 +78,7 @@
                             </span>
 
                             <span class="shrink-0">
-                                <x-remote.button :id="$remote['remoteID']" :password="$remote['remotePassword']" stil="label" />
+                                <x-remote.button :device="$remote['geraet']" stil="label" />
                             </span>
                         </li>
                     @endforeach

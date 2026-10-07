@@ -11,6 +11,8 @@
         </p>
     </div>
 
+    <x-backup-zustand />
+
     <form wire:submit="speichern" class="space-y-4">
         {{-- Schedule --}}
         <x-panel>
