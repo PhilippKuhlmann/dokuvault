@@ -210,6 +210,11 @@ class BackupEinstellungen
             if (! in_array(EncryptBackupArchive::class, $angemeldet, true)) {
                 Event::listen(BackupZipWasCreated::class, EncryptBackupArchive::class);
             }
+        } elseif (blank(config('backup.backup.password'))) {
+            // "BACKUP_ARCHIVE_PASSWORD=" in .env is "", not null - the package
+            // took that for a password, encrypted with it every night and
+            // failed ("ZipArchive::close(): Invalid argument"). Empty means none.
+            config(['backup.backup.password' => null]);
         }
 
         // Without an address no mail at all - "admin@example.com" from the

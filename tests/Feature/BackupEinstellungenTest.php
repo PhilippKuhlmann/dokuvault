@@ -48,6 +48,14 @@ test('an SFTP target becomes a disk, retention and archive password are applied'
     expect(Setting::wert('backup_ziel_geheim_passwort'))->not->toBe('geheim123');
 });
 
+test('an empty BACKUP_ARCHIVE_PASSWORD is no password', function () {
+    config(['backup.backup.password' => '']);
+    BackupEinstellungen::anwenden();
+
+    expect(config('backup.backup.password'))->toBeNull()
+        ->and(EncryptBackupArchive::shouldEncrypt())->toBeFalse();
+});
+
 test('without an archive password the .env stays out of the backup', function () {
     BackupEinstellungen::anwenden();
 

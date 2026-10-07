@@ -7,6 +7,10 @@
 - **Zustand der eigenen Sicherung auf einen Blick.** Eine Zeile im Admin-Dashboard, unter Statistik → System und auf der Backup-Seite: grün, wenn die Sicherung läuft, lokal und extern ankommt und ein Archivpasswort hat; gelb, wenn sie ausgeschaltet ist, kein Archivpasswort hat (dann fehlt der `APP_KEY`) oder nur auf diesem Server liegt; rot, wenn der letzte Lauf oder die Kopie zum externen Ziel fehlschlug oder die letzte Sicherung älter als 26 Stunden ist – mit der Fehlermeldung. Jeder Lauf wird dafür je Ziel festgehalten; braucht keinen Mailserver.
 - **Windows-Agent signierbar.** `scripts/build-windows-agent.sh` signiert die exe mit Authenticode, wenn ein Code-Signing-Zertifikat hinterlegt ist (`SIGN_PFX`, `SIGN_PASSWORD_FILE` in `scripts/signing.env`, nicht in git), samt Zeitstempel. Adresse und Token, die DokuVault beim Download anhängt, landen bei einer signierten exe in der Signaturtabelle (`ExeTag`) – einfach angehängt wäre die Signatur ungültig. Die Agent-Seite zeigt, ob die exe signiert ist; unsigniert mit dem Hinweis, wie man SmartScreen bestätigt.
 
+### Fixed
+
+- **Nächtliche Sicherung brach beim Verschlüsseln ab.** Ein leeres `BACKUP_ARCHIVE_PASSWORD=` in der `.env` hielt das Paket für ein Passwort; es versuchte jede Nacht, mit leerem Passwort zu verschlüsseln, scheiterte („ZipArchive::close(): Invalid argument“) und legte die ZIP unverschlüsselt ab. Leer heißt jetzt: kein Passwort.
+
 ### Security
 
 - **Passwörter auf Karten erst auf Klick und protokolliert.** Mailbox, Software-Lizenz, Backup, PPPoE-Einwahl und Fernwartung (Server, VM) lieferten das Passwort als Klartext im HTML aus – sichtbar im Quelltext, ohne Klick und ohne Eintrag. Jetzt wie die übrigen Geheimnisse: Abruf über den Server, mit Recht, Bremse und Eintrag „Kennwort angesehen“.
