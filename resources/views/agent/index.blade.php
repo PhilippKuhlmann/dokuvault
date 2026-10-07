@@ -252,7 +252,7 @@
              roles ticked here. Defaults follow the detection, except AD -
              only one DC per domain gets it, the domain is the same from
              every DC. --}}
-        <x-panel>
+        <x-panel id="installierte-agenten">
             <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">{{ __('Installierte Agenten') }}</div>
             <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">
                 {{ __('Was jeder Agent meldet und wie oft, legst du hier fest – gilt ab seinem nächsten Lauf. „erkannt“ heißt: der Rechner hat die Rolle. Active Directory reicht von einem Domänencontroller je Domäne.') }}
@@ -292,8 +292,13 @@
                         @endforeach
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-3">
-                        <form method="POST" action="{{ route('agent.installation.update', [$customer, $installation]) }}" class="flex flex-wrap items-center gap-3">
+                    {{-- Two rows: the roles, then every control in one line. With
+                         six Windows roles in the same row the buttons broke
+                         apart - "Speichern" alone, the other two below. The
+                         interval and "Speichern" belong to the form via the
+                         form attribute. --}}
+                    <div class="w-full space-y-3">
+                        <form id="agent-{{ $installation->id }}" method="POST" action="{{ route('agent.installation.update', [$customer, $installation]) }}" class="flex flex-wrap items-center gap-x-4 gap-y-2">
                             @csrf
                             @method('PUT')
                             @foreach ($rollen as $rolle => $bezeichnung)
@@ -315,15 +320,16 @@
                                     @endif
                                 </label>
                             @endforeach
+                        </form>
+                        <div class="flex flex-wrap items-center gap-3">
                             {{-- One height for all controls of the row (h-9): the select came in
                                  its form size, the buttons in their small one. --}}
-                            <x-input.select name="interval_minutes" class="w-40 h-9 px-3 py-1 text-sm" :aria-label="__('Intervall')">
+                            <x-input.select name="interval_minutes" form="agent-{{ $installation->id }}" class="w-48 h-9 px-3 py-1 text-sm" :aria-label="__('Intervall')">
                                 @foreach (config('custom.agent_intervalle') as $minuten => $bezeichnung)
                                     <option value="{{ $minuten }}" @selected($minuten === $installation->intervalMinutes())>{{ __($bezeichnung) }}</option>
                                 @endforeach
                             </x-input.select>
-                            <x-input.button type="submit" class="h-9" :label="__('Speichern')" />
-                        </form>
+                            <x-input.button type="submit" form="agent-{{ $installation->id }}" class="h-9" :label="__('Speichern')" />
                         {{-- Picked up on the next checkin, within five minutes. --}}
                         <form method="POST" action="{{ route('agent.installation.run', [$customer, $installation]) }}">
                             @csrf
@@ -342,6 +348,7 @@
                                     x-on:click="offen = true" :label="__('Entfernen')" />
                             </x-slot:ausloeser>
                         </x-loeschdialog>
+                        </div>
                     </div>
                 </div>
             @empty
@@ -485,6 +492,7 @@
                                     x-on:click="offen = true" :label="__('Widerrufen')" />
                             </x-slot:ausloeser>
                         </x-loeschdialog>
+                        </div>
                     </div>
                 </div>
             @empty

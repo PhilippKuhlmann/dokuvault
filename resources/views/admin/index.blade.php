@@ -29,7 +29,7 @@
                          Rasterzelle und die ganze Seite scrollte waagerecht. --}}
                     <span class="flex min-w-0 flex-col">
                         <span class="text-2xl font-bold leading-none text-chathams-blue-800 dark:text-gray-100">{{ $tile['count'] }}</span>
-                        <span class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ $tile['label'] }}</span>
+                        <span class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __($tile['label']) }}</span>
                     </span>
                 </a>
             @endforeach
@@ -46,7 +46,7 @@
                         </span>
                         <span class="flex min-w-0 flex-col">
                             <span class="text-xl font-bold leading-none text-chathams-blue-800 dark:text-gray-100">{{ $item['count'] }}</span>
-                            <span class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ $item['label'] }}</span>
+                            <span class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ __($item['label']) }}</span>
                         </span>
                     </div>
                 @endforeach
@@ -66,20 +66,20 @@
                         <a href="{{ $e['route'] ?? '#' }}" class="flex items-center justify-between gap-3 py-2.5 -mx-2 px-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                             <div class="min-w-0">
                                 <div class="flex items-center gap-2">
-                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide {{ $typeColors[$e['type']] ?? 'bg-gray-100 text-gray-600' }}">{{ $e['type'] }}</span>
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide {{ $typeColors[$e['type']] ?? 'bg-gray-100 text-gray-600' }}">{{ __($e['type']) }}</span>
                                     <span class="text-sm text-gray-900 dark:text-gray-100 truncate">{{ $e['name'] }}</span>
                                 </div>
                                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ $e['customer']?->name ?? '—' }}</div>
                             </div>
                             <div class="shrink-0 text-sm text-right">
                                 @if ($days < 0)
-                                    <span class="font-medium text-red-600 dark:text-red-400">abgelaufen</span>
+                                    <span class="font-medium text-red-600 dark:text-red-400">{{ __('abgelaufen') }}</span>
                                 @elseif ($days == 0)
                                     <span class="font-medium text-red-600 dark:text-red-400">heute</span>
                                 @elseif ($days <= 14)
-                                    <span class="font-medium text-amber-600 dark:text-amber-400">in {{ $days }} T.</span>
+                                    <span class="font-medium text-amber-600 dark:text-amber-400">{{ __('in :tage T.', ['tage' => $days]) }}</span>
                                 @else
-                                    <span class="text-gray-500 dark:text-gray-400">in {{ $days }} T.</span>
+                                    <span class="text-gray-500 dark:text-gray-400">{{ __('in :tage T.', ['tage' => $days]) }}</span>
                                 @endif
                             </div>
                         </a>
@@ -94,14 +94,14 @@
                 <div class="flex items-center justify-between mb-3">
                     <div class="text-lg font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Letzte Aktivitäten') }}</div>
                     @can('admin_activity')
-                        <a href="{{ route('admin.activity.index') }}" class="text-sm text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400">alle →</a>
+                        <a href="{{ route('admin.activity.index') }}" class="text-sm text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400">{{ __('alle') }} →</a>
                     @endcan
                 </div>
                 <div class="divide-y divide-gray-100 dark:divide-gray-700">
                     @forelse ($activities as $a)
                         <div class="flex items-center justify-between gap-3 py-2.5">
                             <div class="min-w-0">
-                                <span class="text-sm font-medium {{ $eventColors[$a->description] ?? 'text-gray-700 dark:text-gray-300' }}">{{ $eventLabels[$a->description] ?? $a->description }}</span>
+                                <span class="text-sm font-medium {{ $eventColors[$a->description] ?? 'text-gray-700 dark:text-gray-300' }}">{{ __($eventLabels[$a->description] ?? $a->description) }}</span>
                                 <span class="text-sm text-gray-700 dark:text-gray-300">{{ $a->subject_type ? class_basename($a->subject_type) : '' }}</span>
                                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ \App\Support\Protokoll::verursacher($a->causer) }}</div>
                             </div>
@@ -141,7 +141,7 @@
                 <div class="text-lg font-CoconPro text-gray-900 dark:text-gray-100 mb-3">{{ __('Aktivität (14 Tage)') }}</div>
                 <div class="flex items-end gap-1.5 h-28">
                     @foreach ($chart as $d)
-                        <div class="flex-1 h-full flex items-end" title="{{ $d['label'] }} · {{ $d['count'] }} Aktivitäten">
+                        <div class="flex-1 h-full flex items-end" title="{{ $d['label'] }} · {{ $d['count'] }} {{ __('Aktivitäten') }}">
                             <div class="w-full rounded-t-md bg-cerulean-500/80 hover:bg-cerulean-500 transition-colors min-h-[2px]"
                                 style="height: {{ $chartMax ? round($d['count'] / $chartMax * 100) : 0 }}%"></div>
                         </div>

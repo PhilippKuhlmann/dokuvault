@@ -85,6 +85,15 @@ const SEITEN = [
   // autodoc-Schritt aufgenommen, damit kein "Screenshot Proxmox"-Token
   // darauf steht.
   { datei: 'agenten', pfad: AGENT_PFAD },
+  // Installed agents with their roles, interval and the result of the last
+  // run per role (DemoAgentSeeder: one silent, one failed Veeam job).
+  { datei: 'agenten-installiert', pfad: AGENT_PFAD, scrollZu: '#installierte-agenten' },
+  { datei: 'adgruppen', pfad: `/${KUNDE}/adgroup` },
+  { datei: 'backups', pfad: '/admin/backups' },
+  { datei: 'backup-einstellungen', pfad: '/admin/backup' },
+  { datei: 'statistik-auslastung', pfad: '/admin/auslastung' },
+  { datei: 'statistik-agenten', pfad: '/admin/statistik/agenten' },
+  { datei: 'statistik-wachstum', pfad: '/admin/statistik/datenwachstum' },
 ];
 
 async function anmelden(page) {
@@ -106,16 +115,18 @@ async function anmelden(page) {
 /**
  * Die Anmeldungen dieses Laufs aus dem Aktivitaetsprotokoll entfernen.
  *
- * Eng gefasst: nur das Ereignis "anmeldung" und nur ab dem Start des Skripts.
- * Wer waehrend eines Screenshot-Laufs zufaellig selbst eine echte Anmeldung
- * erzeugt, verliert deren Eintrag - das Zeitfenster sind die paar Minuten des
- * Laufs, und es ist eine Entwicklungsumgebung.
+ * Everything since the start of the script (sign-ins, the autodoc token).
+ * Whoever changes something in the same instance during a run loses those
+ * entries - the window is the few minutes of the run, and it is a
+ * development environment.
  */
 function anmeldungenWegraeumen() {
   try {
     execFileSync('php', ['artisan', 'tinker', '--execute',
-      `Spatie\\Activitylog\\Models\\Activity::where('event','anmeldung')`
-      + `->where('created_at','>=','${START_UTC}')->delete();`,
+      // Everything since the start, not only the sign-ins: the autodoc
+      // step of the first language creates and revokes a token, and those
+      // entries stood in the second language's protokoll.png.
+      `Spatie\\Activitylog\\Models\\Activity::where('created_at','>=','${START_UTC}')->delete();`,
     ], { stdio: 'ignore' });
   } catch (fehler) {
     console.error(`  WARNUNG: Anmeldungen nicht weggeraeumt (${fehler.message}).`);
@@ -180,8 +191,28 @@ async function autodocScreenshot(page, zielOrdner) {
   // war ein confirm() des Browsers. Sie ist jetzt ein Blatt der Anwendung
   // (x-loeschdialog), und das Widerrufen-Formular liegt darin - per
   // requestSubmit() abgeschickt braucht es den Dialog gar nicht erst.
+  // Only the revoke form of a token (".../agent/{id}", DELETE). A plain
+  // 'form[action*="/agent/"]' hit "Jetzt melden" of the first installed
+  // agent first (".../agent/installation/{id}/run") - the run was requested
+  // and the token stayed.
   const geklickt = await page.evaluate(() => {
-    const knopf = document.querySelector('form[action*="/agent/"] button[type=submit]');
+    // And only the one of the token just created - the demo has a real one
+    // ("Zentrale Hamburg") that must stay. The revoke dialog is teleported
+    // out of the token row, so the id comes from the "Erneuern" form, which
+    // stays in the row (".../agent/{id}/erneuern").
+    const erneuern = [...document.querySelectorAll('form')].find((f) => {
+      if (!/\/agent\/\d+\/erneuern$/.test(new URL(f.action).pathname)) return false;
+      for (let el = f.parentElement, i = 0; el && i < 8; el = el.parentElement, i++) {
+        if (el.textContent.includes('Screenshot Proxmox')) return !el.textContent.includes('Zentrale Hamburg');
+      }
+      return false;
+    });
+    const id = erneuern && new URL(erneuern.action).pathname.match(/\/agent\/(\d+)\/erneuern$/)[1];
+    const form = id && [...document.querySelectorAll('form')]
+      .find((f) => new URL(f.action).pathname.endsWith(`/agent/${id}`)
+        // x-loeschdialog writes @method('delete') - lower case.
+        && f.querySelector('input[name=_method]')?.value.toUpperCase() === 'DELETE');
+    const knopf = form?.querySelector('button[type=submit]');
     if (!knopf) return false;
     knopf.closest('form').requestSubmit(knopf);
     return true;

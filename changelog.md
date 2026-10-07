@@ -11,12 +11,19 @@
 
 ### Changed
 
+- **README und Screenshots überarbeitet.** Neue Abschnitte zu den installierten Agenten (Windows-Dienst, Proxmox, Linux – Rollen, Intervall, „Jetzt melden“, Ergebnisse, Selbst-Update, Signatur), Backup-Überwachung, Statistik, eigener Sicherung und den neuen Sicherheitsmerkmalen; sieben neue Bilder (installierte Agenten, Backups, API-Auslastung, Agenten, Datenwachstum, Backup-Einstellungen, AD-Gruppen), alle übrigen neu aufgenommen.
+- **Demo zeigt die neuen Funktionen.** Installierte Agenten (einer still, ein fehlgeschlagener Veeam-Job, eine alte Version), zwei Wochen Backup-Läufe samt Proxmox-vzdump-Job, eine Woche API-Statistik, 90 Tage Verlauf für Statistik, AD-Gruppen mit echten Namen und Mitgliedern statt Faker-Text, Zeitzone Europe/Berlin (`DemoAgentSeeder`, `DemoStatistikSeeder`).
+- **Installierte Agenten: Rollen und Knöpfe in zwei Zeilen.** Bei sechs Windows-Rollen brach „Speichern“ allein um und „Jetzt melden“/„Entfernen“ landeten darunter; jetzt stehen die Rollen oben und Intervall, „Speichern“, „Jetzt melden“ und „Entfernen“ immer in einer Reihe.
+
+### Fixed
+
+- **Englische Oberfläche der neuen Funktionen.** Rund 370 Texte – Statistik, Agenten, Backup-Seite, Sicherungszustand, Einstellungen, Agent-Beschreibungen, Intervalle – standen auch auf Englisch deutsch da; das Admin-Dashboard hatte „abgelaufen“, „in 7 T.“ und die Kachelnamen fest auf Deutsch. „Token“ hieß auf Englisch „tokens“.
+- **Screenshot-Werkzeug löste „Jetzt melden“ aus.** Es suchte das Widerrufen-Formular des Test-Tokens über `form[action*="/agent/"]` und traf seit den installierten Agenten deren „Jetzt melden“ – der Lauf wurde angefordert, der Token blieb liegen. Jetzt über die Token-ID; außerdem räumt es alle eigenen Protokolleinträge weg, nicht nur die Anmeldungen.
+
 - **Backup-Uhrzeit gilt in der eingestellten Zeitzone.** „01:30“ lief bisher um 01:30 UTC, also um 03:30 deutscher Zeit. Jetzt zählt die Zeitzone aus Einstellungen → Allgemein; das Formular zeigt sie neben der Uhrzeit. Gespeichert und geloggt wird weiter in UTC.
 
 - **Zustand der eigenen Sicherung auf einen Blick.** Eine Zeile im Admin-Dashboard, unter Statistik → System und auf der Backup-Seite: grün, wenn die Sicherung läuft, lokal und extern ankommt und ein Archivpasswort hat; gelb, wenn sie ausgeschaltet ist, kein Archivpasswort hat (dann fehlt der `APP_KEY`) oder nur auf diesem Server liegt; rot, wenn der letzte Lauf oder die Kopie zum externen Ziel fehlschlug oder die letzte Sicherung älter als 26 Stunden ist – mit der Fehlermeldung. Jeder Lauf wird dafür je Ziel festgehalten; braucht keinen Mailserver.
 - **Windows-Agent signierbar.** `scripts/build-windows-agent.sh` signiert die exe mit Authenticode, wenn ein Code-Signing-Zertifikat hinterlegt ist (`SIGN_PFX`, `SIGN_PASSWORD_FILE` in `scripts/signing.env`, nicht in git), samt Zeitstempel. Adresse und Token, die DokuVault beim Download anhängt, landen bei einer signierten exe in der Signaturtabelle (`ExeTag`) – einfach angehängt wäre die Signatur ungültig. Die Agent-Seite zeigt, ob die exe signiert ist; unsigniert mit dem Hinweis, wie man SmartScreen bestätigt.
-
-### Fixed
 
 - **Nächtliche Sicherung brach beim Verschlüsseln ab.** Ein leeres `BACKUP_ARCHIVE_PASSWORD=` in der `.env` hielt das Paket für ein Passwort; es versuchte jede Nacht, mit leerem Passwort zu verschlüsseln, scheiterte („ZipArchive::close(): Invalid argument“) und legte die ZIP unverschlüsselt ab. Leer heißt jetzt: kein Passwort.
 

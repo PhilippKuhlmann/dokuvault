@@ -46,6 +46,7 @@ use App\Models\Scanner;
 use App\Models\ScanTarget;
 use App\Models\SecurepointUMA;
 use App\Models\Server;
+use App\Models\Setting;
 use App\Models\Site;
 use App\Models\SshKey;
 use App\Models\Ups;
@@ -72,6 +73,10 @@ class LocalDatabaseSeeder extends Seeder
             OperatingSystemsSeeder::class,
             MailboxProvidorsSeeder::class,
         ]);
+
+        // Times in the demo as a German MSP sees them - the backup page and
+        // every timestamp said UTC otherwise.
+        Setting::setzen(Setting::APP_TIMEZONE, 'Europe/Berlin');
 
         // Dienste-Katalog: derselbe Standard-Katalog wie eine neue Produktion
         // (ServiceSeeder) - lokal, Demo und Produktion sehen gleich aus.
@@ -497,9 +502,28 @@ class LocalDatabaseSeeder extends Seeder
         // Zustand in der Liste aus, statt nur in der Theorie zu existieren.
         ADUser::factory()->ohneStatus()->beiFirma($adDomain)->create(['customer_id' => $customer->id]);
 
-        ADGroup::factory(5)->create([
-            'customer_id' => $customer->id,
-        ]);
+        // Groups as a domain controller reports them, with members - the
+        // agent fills both (windows-ad); faker slugs without members showed
+        // neither.
+        $adBenutzer = ADUser::where('customer_id', $customer->id)->orderBy('id')->get();
+        $menschen = $adBenutzer->reject(fn ($u) => str_starts_with((string) $u->username, 'svc-'))->values();
+        foreach ([
+            ['Domänen-Admins', 'Vordefinierte Gruppe: Administratoren der Domäne', $menschen->take(2)],
+            ['GG_Geschäftsführung', 'Globale Gruppe Geschäftsführung', $menschen->random(min(2, $menschen->count()))],
+            ['GG_Buchhaltung', 'Globale Gruppe Buchhaltung', $menschen->random(min(5, $menschen->count()))],
+            ['GG_Vertrieb', 'Globale Gruppe Vertrieb', $menschen->random(min(8, $menschen->count()))],
+            ['GG_Technik', 'Globale Gruppe Technik und Service', $menschen->random(min(6, $menschen->count()))],
+            ['DL_Projekte_RW', 'Fileserver \\SRV-FS01\Projekte – ändern', $menschen->random(min(14, $menschen->count()))],
+            ['DL_Projekte_R', 'Fileserver \\SRV-FS01\Projekte – lesen', $menschen->random(min(7, $menschen->count()))],
+            ['VPN-Benutzer', 'Zugang über das Firmen-VPN', $menschen->random(min(12, $menschen->count()))],
+            ['Backup-Operatoren', 'Vordefinierte Gruppe: dürfen sichern und wiederherstellen', $adBenutzer->filter(fn ($u) => $u->username === 'svc-backup')],
+        ] as [$name, $beschreibung, $mitglieder]) {
+            ADGroup::factory()->create([
+                'customer_id' => $customer->id,
+                'name' => $name,
+                'description' => $beschreibung,
+            ])->users()->attach($mitglieder->pluck('id'));
+        }
 
         // Server – Referenzen für die VM-Hosts merken. Feste Namen, sonst kollidieren
         // sie mit den oben namentlich angelegten SRV-DC01/FS01/HV01.
@@ -894,6 +918,11 @@ class LocalDatabaseSeeder extends Seeder
 
         $this->call([
             CustomerSeeder::class,
+            // Installed agents, backup runs, API statistics - so those pages
+            // are not empty in the demo.
+            DemoAgentSeeder::class,
+            // 90 days of history for Statistik -> System and Datenwachstum.
+            DemoStatistikSeeder::class,
             // Zum Schluss, damit die Historie auf fertigen Daten aufsetzt und
             // im Protokoll ganz oben steht.
             DemoProtokollSeeder::class,

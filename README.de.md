@@ -15,7 +15,7 @@ PDF-Export, globaler Suche über alle Kunden und Geräten, die sich per Agent
 ![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php&logoColor=white)
 ![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)
 ![Livewire](https://img.shields.io/badge/Livewire-4-FB70A9)
-![Tests](https://img.shields.io/badge/Tests-1131%20grün-3fb950)
+![Tests](https://img.shields.io/badge/Tests-1394%20grün-3fb950)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
 **[▶ Live-Demo ausprobieren](https://doku.dokuvault.de)**
@@ -43,7 +43,9 @@ immer aktuell.
 | 🧭 **Erstaufnahme-Assistent** | 16 Schritte führen durch den Neukunden – Frage stellen, Antwort speichern, weiter |
 | 🔌 **Patchfelder** | Je Port die Dosennummer, den Raum und den Ziel-Switch – „wo hängt Dose A.12?" |
 | 🔎 **Globale Suche** | Server, IP, Seriennummer oder MAC über **alle** Kunden in Sekunden finden |
-| 🤖 **Auto-Dokumentation** | **Acht Agenten** – ein Script, der Rest dokumentiert sich selbst: Proxmox, Hyper-V, VMware, Windows-Server, Windows-AD, Windows-Client, UniFi, Microsoft 365 |
+| 🤖 **Auto-Dokumentation** | **Installierte Agenten** für Windows, Proxmox und Linux melden von selbst – Rollen, Intervall und „Jetzt melden“ stellst du in DokuVault ein. Dazu Scripte für Hyper-V, VMware, UniFi und Microsoft 365 |
+| 💾 **Backup-Überwachung** | Veeam, Windows Server-Sicherung und Proxmox melden jeden Lauf – die letzten Läufe auf einen Blick, Fehler auf dem Dashboard |
+| 📊 **Statistik** | API-Auslastung, Datenwachstum, Zustand der Agenten, Nutzung und Systemressourcen – um zu sehen, wann der Server mehr Leistung braucht |
 | 🌐 **IPAM** | Belegte, freie & reservierte IP-Adressen je VLAN auf einen Blick, DHCP- und Gateway-Erkennung |
 | 🔐 **Verschlüsselt** | Alle Passwörter verschlüsselt gespeichert, rollenbasierte Zugriffe, Audit-Log |
 | 📄 **PDF-Export** | Komplette Kundendokumentation auf Knopfdruck als PDF |
@@ -94,8 +96,20 @@ immer aktuell.
     <td width="50%"><img src="docs/screenshots/protokoll.png" alt="Aktivitätsprotokoll"><br><sub><b>Aktivitätsprotokoll</b> – wer wann was angelegt, geändert, gelöscht oder wiederhergestellt hat; durchsuch- und filterbar</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/screenshots/admin-dashboard.png" alt="Admin-Dashboard"><br><sub><b>Adminbereich</b> – Inventar über alle Kunden, ablaufende Verträge und die letzten Änderungen</sub></td>
-    <td width="50%"></td>
+    <td width="50%"><img src="docs/screenshots/admin-dashboard.png" alt="Admin-Dashboard"><br><sub><b>Adminbereich</b> – Zustand der eigenen Sicherung, Inventar über alle Kunden, ablaufende Verträge</sub></td>
+    <td width="50%"><img src="docs/screenshots/agenten-installiert.png" alt="Installierte Agenten"><br><sub><b>Installierte Agenten</b> – Rollen je Rechner, Intervall, „Jetzt melden“ und das Ergebnis jedes Laufs</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/backups.png" alt="Backup-Überwachung"><br><sub><b>Backup-Überwachung</b> – die letzten Läufe jedes gemeldeten Jobs über alle Kunden</sub></td>
+    <td width="50%"><img src="docs/screenshots/statistik-auslastung.png" alt="API-Auslastung"><br><sub><b>API-Auslastung</b> – Anfragen von Agenten und API-Token je Stunde, Tagesprofil, Antwortzeiten</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/statistik-agenten.png" alt="Agenten-Statistik"><br><sub><b>Agenten</b> – wer meldet, wer schweigt, wessen Lauf scheiterte, wer noch eine alte Version hat</sub></td>
+    <td width="50%"><img src="docs/screenshots/statistik-wachstum.png" alt="Datenwachstum"><br><sub><b>Datenwachstum</b> – wie die Doku wächst, insgesamt und je Kunde</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/backup-einstellungen.png" alt="Backup-Einstellungen"><br><sub><b>Eigene Sicherung</b> – Zeitplan, SFTP/FTP-Ziel, Aufbewahrung, Archivpasswort, Download</sub></td>
+    <td width="50%"><img src="docs/screenshots/adgruppen.png" alt="AD-Gruppen"><br><sub><b>AD-Gruppen</b> – mit ihren Mitgliedern, eingetragen vom Agenten auf dem Domänencontroller</sub></td>
   </tr>
 </table>
 
@@ -135,13 +149,37 @@ Einstieg über **Sonstiges → Erstaufnahme-Assistent** oder die Karte auf dem K
 ## 🤖 Auto-Dokumentation – die Umgebung dokumentiert sich selbst
 
 Schluss mit Abtippen. Erzeuge in der Oberfläche einen **an Kunde und Standort gebundenen
-Agent-Token**, lade das passende Script herunter und führe es aus – der Bestand landet von selbst
-in der Doku. **Ein Token gilt für alle acht Agenten**, und wiederholte Läufe aktualisieren, statt
-zu verdoppeln: Das Script darf gefahrlos im Cronjob stehen.
+Agent-Token**, installiere einen Agenten oder führe ein Script aus – der Bestand landet von selbst
+in der Doku. **Ein Token gilt für alle Agenten**, und wiederholte Läufe aktualisieren, statt zu
+verdoppeln.
 
 <img src="docs/screenshots/agenten.png" alt="Übersicht der Agenten" width="900">
 
-### Auf dem Gerät selbst
+### Installierte Agenten – einmal einrichten, aus DokuVault steuern
+
+Der empfohlene Weg: ein Agent, der auf dem Rechner bleibt und von selbst meldet.
+
+| Agent | Einrichten | Meldet |
+| --- | --- | --- |
+| **Windows** | `.exe` herunterladen (Adresse und Token stecken schon drin) und doppelklicken – ein Windows-Dienst | Server, Active Directory (Benutzer, Gruppen, Mitgliedschaften), Hyper-V, Arbeitsplatz, Veeam- und Windows-Server-Sicherungen |
+| **Proxmox** | `bash dokuvault-agent-proxmox.sh` als root – ein systemd-Timer | Host, VMs, Container, vzdump-Backup-Jobs; Proxmox-**Tags werden zu Diensten**, wenn der Katalog sie kennt |
+| **Linux** | `bash dokuvault-agent-linux.sh` als root auf Debian/Ubuntu – ein systemd-Timer | Hardware, Betriebssystem, IP-Adresse und laufende Dienste |
+
+<img src="docs/screenshots/agenten-installiert.png" alt="Installierte Agenten" width="900">
+
+- **Rollen je Rechner** – jeder Agent erkennt, was sein Rechner kann; du hakst an, was er melden
+  soll. Bei zwei Domänencontrollern stehen beide als Server in der Doku, aber nur einer macht das AD.
+- **Intervall und „Jetzt melden“** je Rechner, eine Vorgabe für alle unter *Einstellungen → Agenten*.
+  Ein Zufallsabstand verhindert, dass alle nach einem gemeinsamen Neustart im Gleichtakt melden.
+- **Ergebnis jedes Laufs** je Rolle – ein fehlgeschlagener Veeam-Job oder ein stiller Agent steht
+  auf dem Dashboard und unter *Statistik → Agenten*.
+- **Selbst-Update** – installierte Agenten holen sich eine neue Version selbst.
+- **Backups** – Veeam, Windows Server-Sicherung und Proxmox melden jeden Lauf; die letzten Läufe je
+  Job stehen auf der Backup-Karte des Kunden und über alle Kunden unter *Backups*.
+- Die Windows-`.exe` lässt sich **signieren** (`scripts/build-windows-agent.sh` mit Zertifikat in
+  `scripts/signing.env`); der beim Download angehängte Token lässt die Signatur gültig.
+
+### Scripte auf dem Gerät selbst
 
 Diese Agenten brauchen nichts außer ihrem Token – sie lesen die Maschine, auf der sie laufen.
 
@@ -257,9 +295,23 @@ Dokumentation ist es genau das, was man nachschlägt. `--ohne-kennwoerter` schal
 - **Lizenzen** – Software-, Windows- und Zugriffslizenzen inkl. Ablaufdaten & Datei-Upload
 - **Zugangsdaten** – verschlüsselte Logins, Passwort anzeigen & kopieren, vorheriges Passwort
   bleibt für eine einstellbare Frist nachschlagbar – für den Fall, dass jemand falsch geändert hat
-- **Erfassung** – Erstaufnahme-Assistent (16 geführte Schritte), Auto-Dokumentation über **acht Agenten**
-  (Proxmox, Hyper-V, VMware, Windows-Server, Windows-AD, Windows-Client, UniFi, Microsoft 365),
-  Agent-Token auf eigener Seite verwaltet (anlegen, einmalig anzeigen, widerrufen)
+- **Erfassung** – Erstaufnahme-Assistent (16 geführte Schritte), **installierte Agenten** für
+  Windows, Proxmox und Linux (Rollen, Intervall und „Jetzt melden“ je Rechner, Ergebnis jedes
+  Laufs, Selbst-Update) sowie Scripte für Proxmox, Hyper-V, VMware, Windows-Server, Windows-AD,
+  Windows-Client, UniFi und Microsoft 365; Agent-Token auf eigener Seite verwaltet (anlegen,
+  einmalig anzeigen, erneuern, widerrufen)
+- **Active Directory** – Benutzer und Gruppen samt Mitgliedschaften, in beide Richtungen: wen eine
+  Gruppe enthält, in welchen Gruppen ein Benutzer ist
+- **Backup-Überwachung** – Veeam, Windows Server-Sicherung und Proxmox melden jeden Lauf; die letzten
+  Läufe je Job auf der Kundenkarte und über alle Kunden, mit einstellbarer Aufbewahrung
+- **Statistik** – System (Datenbank, Dateien, Platte, Arbeitsspeicher, Last, Warteschlange),
+  API-Auslastung je Stunde und Endpunkt, Datenwachstum je Bereich und Kunde, Zustand der Agenten,
+  Anmeldungen und Änderungen; ein nächtlicher Schnappschuss hält den Verlauf
+- **Eigene Sicherung** – im Adminbereich eingestellt: Zeitplan, SFTP- oder FTP/FTPS-Ziel mit
+  Verbindungstest, Aufbewahrung, Archivpasswort (dann kommt auch die `.env` mit dem `APP_KEY` mit),
+  Benachrichtigungsadresse, Download vorhandener Sicherungen und Anleitung zum Wiederherstellen; eine
+  Zustandszeile auf dem Dashboard wird gelb oder rot, wenn die Sicherung aus, alt, fehlgeschlagen oder
+  nur lokal ist
 - **Betrieb** – globale Suche, durchsuch- und filterbares Aktivitätsprotokoll (Ereignis, Objektart,
   Benutzer, Zeitraum), Papierkorb (Wiederherstellen, dazu eine Adminansicht über alle Kunden),
   PDF-Export, Dateiablage
@@ -271,7 +323,9 @@ Dokumentation ist es genau das, was man nachschlägt. `--ohne-kennwoerter` schal
 - **Einstellungen** – ohne Zugang zum Server: Name und Logos, Sprache, Zeitzone, ein Hinweis auf
   der Anmeldeseite, Zeilen je Seite, Upload-Grenze und erlaubte Dateiendungen; SMTP-Zugang für den
   Mailversand; Vorwarnzeiten für Lizenzen, Zertifikate, Garantien und Support-Ende sowie die
-  Aufbewahrung der PDF-Ausgaben; Kennwortregeln, Anmeldesperre und Sitzungsdauer
+  Aufbewahrung der PDF-Ausgaben; Kennwortregeln, Anmeldesperre und Sitzungsdauer; Vorgaben für
+  Agenten (Intervall, ab wann einer als still gilt, Token-Gültigkeit und Höchstlaufzeit); wie lange
+  die Statistik aufbewahrt wird; die Bremse für Kennwortabrufe
 - **Standortfilter** – schränkt Gerätelisten, IPAM und Auto-Dokumentation auf einen Standort ein
 - **Sprache** – Deutsch und Englisch, je Benutzer oder der Browsersprache folgend
 
@@ -299,8 +353,16 @@ Dokumentation ist es genau das, was man nachschlägt. `--ohne-kennwoerter` schal
 - Schutz gegen **IDOR** (fremde Kunden-/Standortzuweisung), XSS-Härtung, verschlüsselte Sessions
 - **Dateiuploads** gegen Pfadmanipulation im Dateinamen gehärtet; erlaubt ist eine Positivliste von
   Endungen, die sich kürzen, aber nicht erweitern lässt
-- **PDF-Ausgaben** enthalten alle Zugangsdaten eines Kunden im Klartext und werden nach einer
-  einstellbaren Frist automatisch gelöscht
+- **Kennwörter nur auf Klick und protokolliert** – kein gespeichertes Kennwort steht im
+  ausgelieferten HTML. Jedes angesehene oder kopierte Kennwort steht mit Benutzer und IP im
+  Protokoll, der Fernwartungs-Knopf trägt das RustDesk-Kennwort nicht mehr im Link (er läuft über
+  DokuVault, das die Verbindung protokolliert), und eine einstellbare Bremse hält auf, wer eine Liste
+  Zeile für Zeile abgreift
+- **PDF-Ausgaben** enthalten alle Zugangsdaten eines Kunden im Klartext: Ihr Download wird
+  protokolliert, und sie werden nach einer einstellbaren Frist automatisch gelöscht
+- **Verschlüsselte Sicherungen** – mit Archivpasswort ist die Backup-ZIP AES-256-verschlüsselt und
+  enthält auch den `APP_KEY`, ohne den nach einer Wiederherstellung kein gespeichertes Kennwort
+  lesbar wäre
 - Verantwortungsvolle Meldung von Lücken über [SECURITY.de.md](SECURITY.de.md)
 
 ---
@@ -333,10 +395,10 @@ Klartext weder in der Datenbank noch im Audit-Log landet.
 | Bereich | Eingesetzt |
 | --- | --- |
 | **Backend** | PHP 8.2 · Laravel 12 · Livewire 4 · Laravel Sanctum 4 *(Agent-/API-Token)* |
-| **Pakete** | spatie/laravel-activitylog 4.12 *(Audit-Log)* · barryvdh/laravel-dompdf 3.0 *(PDF-Export)* · spatie/laravel-backup 9.3 |
-| **Frontend** | Tailwind CSS 3.4 · Alpine.js 3 · Flowbite 1.8 · Vite 3 |
+| **Pakete** | spatie/laravel-activitylog 4.12 *(Audit-Log)* · barryvdh/laravel-dompdf 3.0 *(PDF-Export)* · spatie/laravel-backup 9.3 · league/flysystem-sftp-v3, -ftp *(Backup-Ziele)* |
+| **Frontend** | Tailwind CSS 4 · Alpine.js 3 · Flowbite 4 · Vite 6 |
 | **Datenbank** | MySQL / MariaDB |
-| **Qualität** | Pest 3 *(1033 Tests)* · Laravel Pint · GitHub Actions CI |
+| **Qualität** | Pest 3 *(1394 Tests)* · Laravel Pint · GitHub Actions CI |
 
 ---
 
@@ -400,6 +462,14 @@ php artisan db:seed --force          # führt den ProductionDatabaseSeeder aus
 > das Seeding fehl (`fake()` nicht gefunden) – dann entweder `APP_ENV=production` setzen oder
 > mit Dev-Paketen installieren.
 
+### DokuVault selbst sichern
+
+Unter **Admin → Einstellungen → Backup**: tägliche Uhrzeit, ein externes SFTP- oder FTP/FTPS-Ziel
+(vor dem Speichern getestet), Aufbewahrung und ein **Archivpasswort**. Nur mit Archivpasswort
+enthält die Sicherung die `.env` mit dem `APP_KEY` – ohne ihn ist nach einer Wiederherstellung jedes
+gespeicherte Kennwort unlesbar. Die Seite listet vorhandene Sicherungen zum Download und erklärt die
+Wiederherstellung Schritt für Schritt.
+
 ### Aktualisieren
 
 Eine bestehende Installation auf einen neueren Stand bringen – Backup, `git pull`,
@@ -453,7 +523,7 @@ deshalb sehen sie dort gleich aus.
 
 ## 🧪 Tests
 
-1033 Feature-Tests (Pest 3) laufen gegen eine In-Memory-SQLite – keine Einrichtung nötig, keine
+1394 Feature-Tests (Pest 3) laufen gegen eine In-Memory-SQLite – keine Einrichtung nötig, keine
 Spuren in der Entwicklungsdatenbank. Bei jedem Push führt GitHub Actions dieselbe Suite aus –
 gegen PHP 8.2 und 8.3, jeweils mit SQLite und MariaDB, dazu PHP 8.4 mitlaufend, aber nicht
 blockierend.

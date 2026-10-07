@@ -1,10 +1,15 @@
 <?php
 
+use App\Livewire\AdminAuslastung;
+use App\Livewire\AdminDatenwachstum;
+use App\Livewire\AdminNutzung;
+use App\Models\Backup;
 use App\Models\Customer;
 use App\Models\Rack;
 use App\Models\Role;
 use App\Models\ScanTarget;
 use App\Models\User;
+use App\Support\BackupEinstellungen;
 
 test('ohne Einstellung entscheidet die Browsersprache', function () {
     $this->withHeaders(['Accept-Language' => 'en-US,en'])->get('/login')->assertOk();
@@ -213,6 +218,19 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
         // Sprueche der Fehlerseiten - je Statuscode eine Liste.
         ->merge(collect(config('custom.fehler_sprueche', []))->flatten())
         ->merge(array_values(config('custom.rack_appearances', [])))
+        // Agents (agent page): intervals, and per installable agent its name,
+        // description, hints and uninstall steps and the roles to tick.
+        ->merge(array_values(config('custom.agent_intervalle', [])))
+        ->merge(collect(config('custom.dienste', []))->flatMap(fn ($d) => array_merge(
+            [$d['name'] ?? null, $d['kurz'] ?? null, $d['beschreibung'] ?? null],
+            $d['hinweise'] ?? [], $d['deinstallieren'] ?? [], array_values($d['rollen'] ?? [])
+        )))
+        // Backup status, target kinds and the period buttons of the statistics.
+        ->merge(array_values(Backup::STATUS))
+        ->merge(array_values(BackupEinstellungen::ARTEN))
+        ->merge(array_values(AdminAuslastung::ZEITRAEUME))
+        ->merge(array_values(AdminNutzung::ZEITRAEUME))
+        ->merge(array_values(AdminDatenwachstum::ZEITRAEUME))
         ->merge(array_values(config('custom.server_form_factors', [])))
         ->merge(array_values(config('custom.cluster_types', [])))
         ->merge(array_values(config('custom.firewall_form_factors', [])))

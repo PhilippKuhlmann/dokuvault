@@ -4,7 +4,7 @@
     <div class="flex flex-wrap items-baseline justify-between gap-3">
         <div class="text-3xl font-CoconPro text-gray-900 dark:text-gray-100">{{ __('API-Token') }}</div>
         <span class="text-sm text-gray-500 dark:text-gray-400">
-            {{ $tokens->count() }} {{ __('Token') }}
+            {{ __(':n Token', ['n' => $tokens->count()]) }}
         </span>
     </div>
 

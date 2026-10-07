@@ -15,7 +15,7 @@ PDF export, global search across every customer, and devices that
 ![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php&logoColor=white)
 ![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)
 ![Livewire](https://img.shields.io/badge/Livewire-4-FB70A9)
-![Tests](https://img.shields.io/badge/Tests-1131%20passing-3fb950)
+![Tests](https://img.shields.io/badge/Tests-1394%20passing-3fb950)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
 **[▶ Try the live demo](https://doku.dokuvault.de)**
@@ -42,7 +42,9 @@ MSPs lose time to scattered spreadsheets, stale wikis and “where did we write 
 | 🧭 **Initial survey wizard** | 16 steps through a new customer — ask, save the answer, next |
 | 🔌 **Patch panels** | Outlet number, room and target switch per port — “where does outlet A.12 go?” |
 | 🔎 **Global search** | Find a server, IP, serial number or MAC across **all** customers in seconds |
-| 🤖 **Auto-documentation** | **Eight agents** — one script, the rest documents itself: Proxmox, Hyper-V, VMware, Windows Server, Windows AD, Windows client, UniFi, Microsoft 365 |
+| 🤖 **Auto-documentation** | **Installed agents** for Windows, Proxmox and Linux report on their own — roles, interval and “report now” are set in DokuVault. Plus scripts for Hyper-V, VMware, UniFi and Microsoft 365 |
+| 💾 **Backup monitoring** | Veeam, Windows Server Backup and Proxmox jobs report every run — the last runs at a glance, failures on the dashboard |
+| 📊 **Statistics** | API load, data growth, agent health, usage and system resources — to see when the server needs more power |
 | 🌐 **IPAM** | Used, free and reserved IP addresses per VLAN at a glance, DHCP and gateway detection |
 | 🔐 **Encrypted** | Every password stored encrypted, role-based access, audit log |
 | 📄 **PDF export** | Complete customer documentation as a PDF at the push of a button |
@@ -93,8 +95,20 @@ MSPs lose time to scattered spreadsheets, stale wikis and “where did we write 
     <td width="50%"><img src="docs/screenshots/en/protokoll.png" alt="Activity log"><br><sub><b>Activity log</b> – who created, changed, deleted or restored what and when; searchable and filterable</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/screenshots/en/admin-dashboard.png" alt="Admin area"><br><sub><b>Admin area</b> – inventory across all customers, expiring contracts and the latest changes</sub></td>
-    <td width="50%"></td>
+    <td width="50%"><img src="docs/screenshots/en/admin-dashboard.png" alt="Admin area"><br><sub><b>Admin area</b> – the state of DokuVault's own backup, inventory across all customers, expiring contracts</sub></td>
+    <td width="50%"><img src="docs/screenshots/en/agenten-installiert.png" alt="Installed agents"><br><sub><b>Installed agents</b> – roles per machine, interval, “report now” and the result of every run</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/en/backups.png" alt="Backup monitoring"><br><sub><b>Backup monitoring</b> – the last runs of every reported job across all customers</sub></td>
+    <td width="50%"><img src="docs/screenshots/en/statistik-auslastung.png" alt="API load"><br><sub><b>API load</b> – requests from agents and API tokens per hour, daily profile, response times</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/en/statistik-agenten.png" alt="Agent statistics"><br><sub><b>Agents</b> – who reports, who is silent, whose run failed, who still runs an old version</sub></td>
+    <td width="50%"><img src="docs/screenshots/en/statistik-wachstum.png" alt="Data growth"><br><sub><b>Data growth</b> – how the documentation grows, in total and per customer</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/en/backup-einstellungen.png" alt="Backup settings"><br><sub><b>DokuVault's own backup</b> – schedule, SFTP/FTP target, retention, archive password, download</sub></td>
+    <td width="50%"><img src="docs/screenshots/en/adgruppen.png" alt="AD groups"><br><sub><b>AD groups</b> – with their members, filled in by the agent on the domain controller</sub></td>
   </tr>
 </table>
 
@@ -133,13 +147,36 @@ Start under **Other → Initial survey wizard**, or from the card on the custome
 ## 🤖 Auto-documentation — the environment documents itself
 
 No more typing things over. Create an **agent token bound to a customer and site** in the
-interface, download the matching script and run it — the inventory lands in the documentation by
-itself. **One token covers all eight agents**, and repeated runs update instead of duplicating:
-the script can safely live in a cron job.
+interface, install an agent or run a script — the inventory lands in the documentation by itself.
+**One token covers every agent**, and repeated runs update instead of duplicating.
 
 <img src="docs/screenshots/en/agenten.png" alt="The agents on offer" width="900">
 
-### On the device itself
+### Installed agents — set up once, controlled from DokuVault
+
+The recommended way: an agent that stays on the machine and reports by itself.
+
+| Agent | Install | Reports |
+| --- | --- | --- |
+| **Windows** | download the `.exe` (address and token are already inside) and double-click — a Windows service | server, Active Directory (users, groups, memberships), Hyper-V, workstation, Veeam and Windows Server Backup jobs |
+| **Proxmox** | `bash dokuvault-agent-proxmox.sh` as root — a systemd timer | host, VMs, containers, vzdump backup jobs; Proxmox **tags become services** if the catalogue knows them |
+| **Linux** | `bash dokuvault-agent-linux.sh` as root on Debian/Ubuntu — a systemd timer | hardware, operating system, IP address and running services |
+
+<img src="docs/screenshots/en/agenten-installiert.png" alt="Installed agents" width="900">
+
+- **Roles per machine** — each agent detects what its machine can do; you tick what it should
+  report. With two domain controllers both are documented as servers, but only one does the AD.
+- **Interval and “report now”** per machine, a default for all of them under *Settings → Agents*.
+  A random delay keeps a fleet from reporting in lockstep after a shared reboot.
+- **Results of every run** per role — a failed Veeam job or a silent agent shows up on the
+  dashboard and under *Statistics → Agents*.
+- **Self-update** — installed agents fetch a new version by themselves.
+- **Backups** — Veeam, Windows Server Backup and Proxmox report every run; the last runs per job
+  appear on the customer's backup card and across all customers under *Backups*.
+- The Windows `.exe` can be **code-signed** (`scripts/build-windows-agent.sh` with a certificate in
+  `scripts/signing.env`); the token appended on download keeps the signature valid.
+
+### Scripts on the device itself
 
 These agents need nothing but their token — they read the machine they run on.
 
@@ -254,9 +291,22 @@ it is exactly what people look up. `--ohne-kennwoerter` turns that off.
 - **Licences** — software, Windows and access licences including expiry dates & file upload
 - **Credentials** — encrypted logins, show and copy passwords, previous password stays available
   for a configurable retention period — for when someone changed it by mistake
-- **Data capture** — initial survey wizard (16 guided steps), auto-documentation via **eight agents**
-  (Proxmox, Hyper-V, VMware, Windows Server, Windows AD, Windows client, UniFi, Microsoft 365), agent
-  tokens managed on their own page (create, one-time reveal, revoke)
+- **Data capture** — initial survey wizard (16 guided steps), **installed agents** for Windows,
+  Proxmox and Linux (roles, interval and “report now” per machine, results of every run,
+  self-update) plus scripts for Proxmox, Hyper-V, VMware, Windows Server, Windows AD, Windows client,
+  UniFi and Microsoft 365; agent tokens managed on their own page (create, one-time reveal, renew,
+  revoke)
+- **Active Directory** — users and groups with their memberships, both ways: whom a group contains,
+  which groups a user is in
+- **Backup monitoring** — Veeam, Windows Server Backup and Proxmox jobs report every run; the last
+  runs per job on the customer card and across all customers, with a configurable retention
+- **Statistics** — system (database, files, disk, memory, load, queue), API load per hour and
+  endpoint, data growth per area and customer, agent health, sign-ins and changes; a nightly
+  snapshot keeps the history
+- **DokuVault's own backup** — configured in the admin area: schedule, SFTP or FTP/FTPS target with
+  connection test, retention, archive password (then the `.env` with the `APP_KEY` goes in too),
+  notification address, download of existing backups and restore instructions; a status line on the
+  dashboard turns amber or red when the backup is off, old, failed or only local
 - **Operations** — global search, searchable & filterable activity log (event, object type, user,
   time range), recycle bin (restore, plus an admin-wide view across every customer), PDF export,
   file storage
@@ -268,7 +318,9 @@ it is exactly what people look up. `--ohne-kennwoerter` turns that off.
 - **Settings** — without server access: name and logos, language, time zone, a note on the sign-in
   page, rows per page, upload limit and permitted file extensions; SMTP credentials for outgoing
   mail; advance warning for licences, certificates, warranties and end of support, plus how long
-  PDF exports are kept; password rules, login lockout and session length
+  PDF exports are kept; password rules, login lockout and session length; defaults for agents
+  (interval, when one counts as silent, token validity and maximum); how long statistics are kept;
+  the brake on password fetches
 - **Site filter** — narrows device lists, IPAM and auto-documentation to a single site
 - **Language** — German and English, per user or following the browser
 
@@ -295,8 +347,14 @@ it is exactly what people look up. `--ohne-kennwoerter` turns that off.
 - Protection against **IDOR** (foreign customer/site assignment), XSS hardening, encrypted sessions
 - **File uploads** hardened against path traversal in the filename; what is allowed is an allow
   list of extensions that can be shortened but not extended
-- **PDF exports** hold every one of a customer's credentials in the clear and are deleted
-  automatically after a configurable period
+- **Passwords only on click, and logged** — no stored password sits in the delivered HTML. Every
+  password viewed or copied is logged with user and IP, the remote-support button no longer carries
+  the RustDesk password in its link (it goes through DokuVault, which logs the connection), and a
+  configurable brake stops anyone harvesting a list row by row
+- **PDF exports** hold every one of a customer's credentials in the clear: their download is
+  logged, and they are deleted automatically after a configurable period
+- **Encrypted backups** — with an archive password the backup ZIP is AES-256 encrypted and also
+  carries the `APP_KEY`, without which no stored password could be read after a restore
 - Responsible disclosure via [SECURITY.md](SECURITY.md)
 
 ---
@@ -329,10 +387,10 @@ text reaches neither the database nor the audit log.
 | Area | Used |
 | --- | --- |
 | **Backend** | PHP 8.2 · Laravel 12 · Livewire 4 · Laravel Sanctum 4 *(agent/API tokens)* |
-| **Packages** | spatie/laravel-activitylog 4.12 *(audit log)* · barryvdh/laravel-dompdf 3.0 *(PDF export)* · spatie/laravel-backup 9.3 |
-| **Frontend** | Tailwind CSS 3.4 · Alpine.js 3 · Flowbite 1.8 · Vite 3 |
+| **Packages** | spatie/laravel-activitylog 4.12 *(audit log)* · barryvdh/laravel-dompdf 3.0 *(PDF export)* · spatie/laravel-backup 9.3 · league/flysystem-sftp-v3, -ftp *(backup targets)* |
+| **Frontend** | Tailwind CSS 4 · Alpine.js 3 · Flowbite 4 · Vite 6 |
 | **Database** | MySQL / MariaDB |
-| **Quality** | Pest 3 *(1033 tests)* · Laravel Pint · GitHub Actions CI |
+| **Quality** | Pest 3 *(1394 tests)* · Laravel Pint · GitHub Actions CI |
 
 ---
 
@@ -395,6 +453,13 @@ php artisan db:seed --force          # runs the ProductionDatabaseSeeder
 > With `APP_ENV=local` but installed without dev packages, seeding fails (`fake()` not found) —
 > then either set `APP_ENV=production` or install with dev packages.
 
+### Back up DokuVault itself
+
+Under **Admin → Settings → Backup**: daily time, an external SFTP or FTP/FTPS target (tested
+before saving), retention and an **archive password**. Only with the archive password does the
+backup contain the `.env` with the `APP_KEY` — without it every stored password is unreadable after
+a restore. The page lists existing backups for download and explains the restore step by step.
+
 ### Updating
 
 Bringing an existing installation up to date — backup, `git pull`, dependencies, migrations — is
@@ -443,7 +508,7 @@ built-in **Admin** role is special: it passes every permission check uncondition
 
 ## 🧪 Tests
 
-1033 feature tests (Pest 3) run against an in-memory SQLite — no setup needed, no traces in your
+1394 feature tests (Pest 3) run against an in-memory SQLite — no setup needed, no traces in your
 development database. GitHub Actions runs the same suite on every push, against PHP 8.2 and 8.3 with
 SQLite and MariaDB, plus PHP 8.4 alongside but not blocking.
 
