@@ -12,6 +12,8 @@ Gefunden in einem kompletten Durchlauf im Browser: neuer Kunde, alle 18 Schritte
 - **Falsche Feldnamen:** „Model“ → „Modell“, „Manufacturer“ → „Hersteller“, „Seriennmmer“ → „Seriennummer“ (Telefon, DECT), „Key“ → „Lizenzschlüssel“ (Lizenzen, auch Liste und PDF).
 - **„Das Feld URL muss eine gültige URL sein“** nannte bei jedem URL-Feld „URL“ statt des Feldnamens (z. B. „Admin URL“).
 - **Assistent:** „18 Bereiches erfasst“ heißt „18 Bereiche erfasst“; Ansprechpartner stehen mit Vor- und Nachnamen da statt nur mit dem Nachnamen.
+- **„Hinzufügen“ kurz nach dem Tippen legte beim zweiten Klick doppelt an.** Die Formularfelder meldeten sich 0,4 s nach der letzten Taste beim Server. Kam der Klick vorher, ging diese Meldung erst nach dem Speichern raus und schrieb den alten Text ins geleerte Feld zurück – ein zweiter Klick legte denselben Eintrag noch einmal an. Livewire bricht den Zeitgeber nicht ab. Jetzt melden sich die Felder beim Verlassen (Assistent, Bearbeiten-Dialoge, Netz-Schnellanlage, Zugangsdaten, IP-Adressen und -Bereiche, Scan-Ziele, Patchfeld); Auswahlfelder sofort. Subnetzmaske und CIDR sowie der Modellbild-Hinweis ergänzen sich beim Verlassen des Felds statt während des Tippens.
+- **Ablaufdatum von Agent- und API-Tokens einen Tag zu spät.** Das gewählte Datum wurde als 23:59:59 UTC gespeichert; in Europe/Berlin ist das 01:59 am Folgetag, die Liste zeigte deshalb das Datum danach, und der Token lief zwei Stunden länger. Jetzt gilt Mitternacht in der eingestellten Zeitzone (`Zeit::tagesende`). Schon angelegte Tokens behalten ihre Frist.
 
 ## 26.10.07
 

@@ -48,6 +48,23 @@ class Zeit
     }
 
     /**
+     * The end of a calendar day in the configured zone, as a UTC instant.
+     *
+     * For expiry dates picked in a date field: "valid until 08.10." means
+     * until midnight here. endOfDay() in UTC stored 23:59:59 UTC - shown in
+     * Europe/Berlin that was 01:59 on the 9th, so the list said "09.10." and
+     * the token lived two hours too long.
+     */
+    public static function tagesende(string|DateTimeInterface $datum): Carbon
+    {
+        $tag = $datum instanceof DateTimeInterface
+            ? Carbon::instance($datum)->setTimezone(self::zone())->toDateString()
+            : $datum;
+
+        return Carbon::parse($tag, self::zone())->endOfDay()->utc();
+    }
+
+    /**
      * Die Zonen zur Auswahl: Europa und UTC.
      *
      * Nicht alle 400 Kennungen der Welt - die Liste soll benutzbar bleiben.

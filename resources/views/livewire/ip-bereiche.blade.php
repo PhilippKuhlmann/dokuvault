@@ -54,26 +54,26 @@
             <div class="flex flex-wrap gap-3">
                 <div class="flex w-32 flex-col">
                     <x-input.label for="from_ip" :value="__('Von')" />
-                    <x-input.text id="from_ip" feld="from_ip" wire:model.live.debounce.400ms="from_ip"
+                    <x-input.text id="from_ip" feld="from_ip" wire:model.live.blur="from_ip"
                         type="text" class="mt-1 font-mono" placeholder="10.10.250.10" />
                 </div>
 
                 <div class="flex w-32 flex-col">
                     <x-input.label for="to_ip" :value="__('Bis')" />
-                    <x-input.text id="to_ip" feld="to_ip" wire:model.live.debounce.400ms="to_ip"
+                    <x-input.text id="to_ip" feld="to_ip" wire:model.live.blur="to_ip"
                         type="text" class="mt-1 font-mono" placeholder="10.10.250.20" />
                 </div>
 
                 <div class="flex flex-1 flex-col">
                     <x-input.label for="label" :value="__('Wofür')" />
-                    <x-input.text id="label" feld="label" wire:model.live.debounce.400ms="label"
+                    <x-input.text id="label" feld="label" wire:model.live.blur="label"
                         type="text" class="mt-1" :placeholder="__('z. B. Proxmox-Server')" />
                 </div>
             </div>
 
             <div class="mt-3 flex flex-col">
                 <x-input.label for="note" :value="__('Notiz')" />
-                <x-input.text id="note" feld="note" wire:model.live.debounce.400ms="note"
+                <x-input.text id="note" feld="note" wire:model.live.blur="note"
                     type="text" class="mt-1" :placeholder="__('optional')" />
             </div>
 

@@ -129,7 +129,7 @@
                                 @endunless
 
                                 @if ($feld['type'] === 'standort')
-                                    <x-input.select :name="$feld['name']" :feld="'form.'.$feld['name']" wire:model.live.debounce.400ms="form.{{ $feld['name'] }}" class="mt-1">
+                                    <x-input.select :name="$feld['name']" :feld="'form.'.$feld['name']" wire:model.live="form.{{ $feld['name'] }}" class="mt-1">
                                         <option value="">— {{ __('bitte wählen') }} —</option>
                                         @foreach ($sites as $site)
                                             <option value="{{ $site->id }}">{{ $site->name }}</option>
@@ -193,7 +193,7 @@
                                     <x-input.fehler feld="datei" />
                                 @elseif ($feld['type'] === 'schalter')
                                     <label class="mt-1 inline-flex items-center gap-2">
-                                        <input type="checkbox" wire:model.live.debounce.400ms="form.{{ $feld['name'] }}"
+                                        <input type="checkbox" wire:model.live="form.{{ $feld['name'] }}"
                                             class="rounded border-gray-300 text-cerulean-600 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700" />
                                         <span class="text-sm text-gray-700 dark:text-gray-300">{{ __('Ja') }}</span>
                                     </label>
@@ -214,7 +214,7 @@
                                         @endforeach
                                     </x-input.select>
                                 @elseif ($feld['type'] === 'auswahl')
-                                    <x-input.select :name="$feld['name']" :feld="'form.'.$feld['name']" wire:model.live.debounce.400ms="form.{{ $feld['name'] }}" class="mt-1 w-full">
+                                    <x-input.select :name="$feld['name']" :feld="'form.'.$feld['name']" wire:model.live="form.{{ $feld['name'] }}" class="mt-1 w-full">
                                         <option value="">— {{ __('bitte wählen') }} —</option>
                                         @foreach (($auswahlen[$feld['name']] ?? []) as $id => $beschriftung)
                                             <option value="{{ $id }}">{{ $beschriftung }}</option>
@@ -223,24 +223,24 @@
                                 @elseif ($feld['type'] === 'mehrzeilig')
                                     {{-- Werte, die keine Zeile sind, etwa ein
                                          SSH-Schluessel. --}}
-                                    <x-input.textarea wire:model.live.debounce.400ms="form.{{ $feld['name'] }}"
+                                    <x-input.textarea wire:model.live.blur="form.{{ $feld['name'] }}"
                                         :rows="$feld['zeilen'] ?? 3"
                                         :placeholder="$feld['platzhalter'] ?? ''" class="mt-1" />
                                 @else
                                     {{-- Hersteller und Modell werden bei Geraeten
-                                         mit Frontblende laufend uebertragen: Nur
-                                         so kann der Block unten melden, dass es
-                                         zu dieser Schreibweise schon ein Bild
-                                         gibt. Ohne das saehe man erst nach dem
-                                         Speichern, ob der Abgleich getroffen hat.
-                                         Die uebrigen Felder haengen seit der
-                                         laufenden Pruefung ebenfalls live, nur
-                                         mit kuerzerer Pause. --}}
+                                         mit Frontblende ohne Platzhalter
+                                         gezeigt; der Block unten meldet beim
+                                         Verlassen des Felds, ob es zu dieser
+                                         Schreibweise schon ein Bild gibt.
+                                         .live.blur statt .live.debounce: Ein
+                                         noch ausstehender verzoegerter Abgleich
+                                         ging nach dem Speichern raus und
+                                         schrieb den alten Wert zurueck. --}}
                                     @if ($mitModellbild && in_array($feld['name'], ['manufacturer', 'model'], true))
-                                        <x-input.text :feld="'form.'.$feld['name']" wire:model.live.debounce.600ms="form.{{ $feld['name'] }}"
+                                        <x-input.text :feld="'form.'.$feld['name']" wire:model.live.blur="form.{{ $feld['name'] }}"
                                             type="{{ $feld['type'] }}" class="mt-1" />
                                     @else
-                                        <x-input.text :feld="'form.'.$feld['name']" wire:model.live.debounce.400ms="form.{{ $feld['name'] }}"
+                                        <x-input.text :feld="'form.'.$feld['name']" wire:model.live.blur="form.{{ $feld['name'] }}"
                                             type="{{ $feld['type'] }}" :placeholder="$feld['platzhalter'] ?? ''" class="mt-1" />
                                     @endif
                                 @endif

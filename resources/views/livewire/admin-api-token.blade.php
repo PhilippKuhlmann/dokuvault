@@ -104,7 +104,7 @@
                                 @if ($token->expires_at)
                                     <span title="{{ Zeit::anzeigen($token->expires_at) }}"
                                         class="{{ $token->expires_at->isPast() ? 'font-semibold text-red-600 dark:text-red-400' : '' }}">
-                                        {{ $token->expires_at->isPast() ? __('abgelaufen') : $token->expires_at->format('d.m.Y') }}
+                                        {{ $token->expires_at->isPast() ? __('abgelaufen') : Zeit::anzeigen($token->expires_at, 'd.m.Y') }}
                                     </span>
                                 @else
                                     {{-- Vor Einfuehrung der Pflicht angelegt: laeuft weiter, bis er widerrufen wird. --}}

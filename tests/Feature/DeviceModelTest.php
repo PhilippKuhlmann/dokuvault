@@ -468,20 +468,6 @@ test('das hinterlegte Bild erscheint beim Tippen, noch vor dem Speichern', funct
         ->assertSee(route('devicemodel.image', $modell), false);
 });
 
-test('ein Typ ohne Frontblende ueberträgt seine Felder weiter erst beim Speichern', function () {
-    $this->actingAs(userWithPermissions(['domain_create', 'admin_catalog']));
-    $customer = Customer::factory()->create();
-
-    // Gegenprobe: Die laufende Uebertragung haengt am Modellbild-Block, nicht
-    // am Feldnamen - sonst zahlte jedes Formular der App eine Runde je
-    // Tastenpause.
-    $html = Livewire::test(ObjektFormular::class, ['typ' => 'domain', 'customer' => $customer])
-        ->call('neu')
-        ->html();
-
-    expect($html)->not->toContain('wire:model.live.debounce.600ms');
-});
-
 // --- Vier Beispielmodelle mit eigener Zeichnung ---
 
 test('der Seeder legt die vier Beispiele an und beim zweiten Lauf keines doppelt', function () {

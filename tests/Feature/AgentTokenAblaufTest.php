@@ -2,7 +2,9 @@
 
 use App\Models\AgentToken;
 use App\Models\Customer;
+use App\Models\Setting;
 use App\Models\Site;
+use Illuminate\Support\Carbon;
 
 /**
  * Kunde + Standort in einem Griff - jeder Test hier braucht beides.
@@ -62,6 +64,27 @@ test('ein Ablaufdatum in der Vergangenheit wird abgelehnt', function () {
         'name' => 'Rückdatiert', 'site_id' => $site->id,
         'expires_at' => now()->subDay()->format('Y-m-d'),
     ])->assertSessionHasErrors('expires_at');
+});
+
+test('das Ablaufdatum gilt bis Mitternacht in der eingestellten Zeitzone', function () {
+    // endOfDay() in UTC stored 23:59:59 UTC - in Europe/Berlin that is 01:59
+    // on the next day, and the list showed the date after the one picked.
+    Setting::setzen(Setting::APP_TIMEZONE, 'Europe/Berlin');
+    $this->actingAs(userWithPermissions(['agent_manage']));
+    [$customer, $site] = agentKundeStandort();
+    $tag = now()->addMonths(2)->format('Y-m-d');
+
+    $this->post(route('agent.store', $customer), [
+        'name' => 'Mitternacht', 'site_id' => $site->id, 'expires_at' => $tag,
+    ])->assertSessionHasNoErrors();
+
+    $token = AgentToken::where('customer_id', $customer->id)->sole();
+    $hier = $token->expires_at->copy()->setTimezone('Europe/Berlin');
+    expect($hier->toDateString())->toBe($tag);
+    expect($hier->format('H:i:s'))->toBe('23:59:59');
+
+    $this->get(route('agent.index', $customer))
+        ->assertSee(Carbon::parse($tag)->format('d.m.Y'));
 });
 
 test('erneuern macht den alten Klartext ungültig und setzt eine neue Frist', function () {

@@ -28,10 +28,10 @@ test('das Formular bietet Felder fuer die Einwahldaten', function () {
     foreach ([null, $anschluss->id] as $id) {
         $inhalt = modalHtml('internetconnection', $customer, $id);
 
-        // Live gebunden seit der laufenden Pruefung - ein rot markiertes Feld
-        // soll sein Rot verlieren, sobald der Wert stimmt.
-        expect($inhalt)->toContain('wire:model.live.debounce.400ms="form.pppoe_user"');
-        expect($inhalt)->toContain('wire:model.live.debounce.400ms="form.pppoe_password"');
+        // Live on blur - a red field loses its red once the value is right,
+        // and no debounced update trails the save.
+        expect($inhalt)->toContain('wire:model.live.blur="form.pppoe_user"');
+        expect($inhalt)->toContain('wire:model.live.blur="form.pppoe_password"');
     }
 });
 

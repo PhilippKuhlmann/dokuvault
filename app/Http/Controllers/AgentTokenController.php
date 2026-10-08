@@ -9,8 +9,8 @@ use App\Models\Setting;
 use App\Models\Site;
 use App\Support\AgentSkript;
 use App\Support\ExeTag;
+use App\Support\Zeit;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
@@ -109,7 +109,7 @@ class AgentTokenController extends Controller
             $customer,
             $site,
             $validated['name'] ?? null,
-            Carbon::parse($validated['expires_at'])->endOfDay(),
+            Zeit::tagesende($validated['expires_at']),
         );
 
         return $this->mitNeuemToken($customer, $token, $plain);
@@ -135,7 +135,7 @@ class AgentTokenController extends Controller
         Gate::authorize('agent_manage');
         abort_if($agentToken->customer_id !== $customer->id, 403);
 
-        $frist = now()->addDays(Setting::agentTokenTage())->endOfDay();
+        $frist = Zeit::tagesende(now()->addDays(Setting::agentTokenTage()));
         $plain = $agentToken->erneuern($frist);
 
         return $this->mitNeuemToken($customer, $agentToken, $plain);

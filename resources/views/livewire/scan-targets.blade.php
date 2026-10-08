@@ -87,7 +87,7 @@
                 @else
                     <div class="flex min-w-0 flex-col">
                         <x-input.label :value="__('Bezeichnung (optional)')" />
-                        <x-input.text wire:model.live.debounce.400ms="name" type="text" class="mt-1 w-full" :placeholder="__('z. B. Buchhaltung')" />
+                        <x-input.text wire:model.live.blur="name" type="text" class="mt-1 w-full" :placeholder="__('z. B. Buchhaltung')" />
                     </div>
 
                     <div class="flex min-w-0 flex-col">
@@ -101,7 +101,7 @@
 
                     <div class="flex min-w-0 flex-col sm:col-span-2">
                         <x-input.label :value="__('Ziel')" />
-                        <x-input.text feld="target" wire:model.live.debounce.400ms="target" type="text" class="mt-1 w-full font-mono text-sm"
+                        <x-input.text feld="target" wire:model.live.blur="target" type="text" class="mt-1 w-full font-mono text-sm"
                             :placeholder="match ($kind) {
                                 'email' => 'scan@firma.de',
                                 'ftp' => 'sftp://srv-file01/scans',

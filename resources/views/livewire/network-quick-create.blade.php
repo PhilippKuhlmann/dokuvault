@@ -45,7 +45,7 @@
                     @if ($sites->isNotEmpty())
                         <div class="flex flex-col">
                             <x-input.label :value="__('Standort')" />
-                            <x-input.select name="site_id" feld="site_id" wire:model.live.debounce.400ms="site_id" class="mt-1">
+                            <x-input.select name="site_id" feld="site_id" wire:model.live="site_id" class="mt-1">
                                 <option value="">— {{ __('bitte wählen') }} —</option>
                                 @foreach ($sites as $site)
                                     <option value="{{ $site->id }}">{{ $site->name }}</option>
@@ -57,20 +57,20 @@
 
                     <div class="flex flex-col">
                         <x-input.label :value="__('Bezeichnung')" />
-                        <x-input.text feld="description" wire:model.live.debounce.400ms="description" type="text" class="mt-1" :placeholder="__('z. B. Clients')" />
+                        <x-input.text feld="description" wire:model.live.blur="description" type="text" class="mt-1" :placeholder="__('z. B. Clients')" />
                         <x-input.fehler feld="description" />
                     </div>
 
                     <div class="flex gap-3">
                         <div class="flex w-1/3 flex-col">
                             <x-input.label :value="__('VLAN-ID')" />
-                            <x-input.text feld="vlanId" wire:model.live.debounce.400ms="vlanId" type="number" class="mt-1" placeholder="20" />
+                            <x-input.text feld="vlanId" wire:model.live.blur="vlanId" type="number" class="mt-1" placeholder="20" />
                             <x-input.fehler feld="vlanId" />
                         </div>
 
                         <div class="flex flex-1 flex-col">
                             <x-input.label :value="__('Netz')" />
-                            <x-input.text feld="network" wire:model.live.debounce.400ms="network" type="text" class="mt-1" placeholder="10.10.20.0" />
+                            <x-input.text feld="network" wire:model.live.blur="network" type="text" class="mt-1" placeholder="10.10.20.0" />
                             <x-input.fehler feld="network" />
                         </div>
                     </div>
@@ -78,39 +78,38 @@
                     <div class="flex gap-3">
                         <div class="flex flex-1 flex-col">
                             <x-input.label :value="__('Subnetzmaske')" />
-                            {{-- .live, damit die Umrechnung ueberhaupt laeuft:
-                                 .blur schreibt den Wert nur in den Browser und
-                                 schickt keine Anfrage - der Hook auf dem Server
-                                 feuert dann nie. Das debounce haelt die Anfragen
-                                 im Zaum, halb getippte Masken ergeben ohnehin
-                                 keine Zahl und lassen das Partnerfeld in Ruhe. --}}
-                            <x-input.text feld="subnetmask" wire:model.live.debounce.600ms="subnetmask" type="text" class="mt-1" />
+                            {{-- .live.blur, nicht nur .blur: .blur allein schreibt
+                                 den Wert nur in den Browser, der Hook auf dem
+                                 Server feuert dann nie. Und kein .debounce: Ein
+                                 noch ausstehender Abgleich ging nach dem
+                                 Anlegen raus und schrieb den alten Wert zurueck. --}}
+                            <x-input.text feld="subnetmask" wire:model.live.blur="subnetmask" type="text" class="mt-1" />
                             <x-input.fehler feld="subnetmask" />
                         </div>
 
                         <div class="flex w-1/3 flex-col">
                             <x-input.label :value="__('CIDR')" />
-                            <x-input.text feld="cidr" wire:model.live.debounce.600ms="cidr" type="number" class="mt-1" placeholder="24" />
+                            <x-input.text feld="cidr" wire:model.live.blur="cidr" type="number" class="mt-1" placeholder="24" />
                             <x-input.fehler feld="cidr" />
                         </div>
                     </div>
 
                     <div class="flex flex-col">
                         <x-input.label :value="__('Gateway')" />
-                        <x-input.text feld="gateway" wire:model.live.debounce.400ms="gateway" type="text" class="mt-1" placeholder="10.10.20.1" />
+                        <x-input.text feld="gateway" wire:model.live.blur="gateway" type="text" class="mt-1" placeholder="10.10.20.1" />
                         <x-input.fehler feld="gateway" />
                     </div>
 
                     <div class="flex gap-3">
                         <div class="flex flex-1 flex-col">
                             <x-input.label :value="__('DNS 1')" />
-                            <x-input.text feld="dns1" wire:model.live.debounce.400ms="dns1" type="text" class="mt-1" />
+                            <x-input.text feld="dns1" wire:model.live.blur="dns1" type="text" class="mt-1" />
                             <x-input.fehler feld="dns1" />
                         </div>
 
                         <div class="flex flex-1 flex-col">
                             <x-input.label :value="__('DNS 2')" />
-                            <x-input.text feld="dns2" wire:model.live.debounce.400ms="dns2" type="text" class="mt-1" />
+                            <x-input.text feld="dns2" wire:model.live.blur="dns2" type="text" class="mt-1" />
                             <x-input.fehler feld="dns2" />
                         </div>
                     </div>
@@ -118,13 +117,13 @@
                     <div class="flex gap-3">
                         <div class="flex flex-1 flex-col">
                             <x-input.label :value="__('DHCP-Start')" />
-                            <x-input.text feld="dhcpStart" wire:model.live.debounce.400ms="dhcpStart" type="text" class="mt-1" />
+                            <x-input.text feld="dhcpStart" wire:model.live.blur="dhcpStart" type="text" class="mt-1" />
                             <x-input.fehler feld="dhcpStart" />
                         </div>
 
                         <div class="flex flex-1 flex-col">
                             <x-input.label :value="__('DHCP-Ende')" />
-                            <x-input.text feld="dhcpEnd" wire:model.live.debounce.400ms="dhcpEnd" type="text" class="mt-1" />
+                            <x-input.text feld="dhcpEnd" wire:model.live.blur="dhcpEnd" type="text" class="mt-1" />
                             <x-input.fehler feld="dhcpEnd" />
                         </div>
                     </div>

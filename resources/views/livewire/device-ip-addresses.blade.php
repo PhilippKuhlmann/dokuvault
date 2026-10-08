@@ -113,14 +113,14 @@
             @unless ($dhcp)
                 <div class="flex min-w-0 flex-col">
                     <x-input.label :value="__('IP-Adresse')" />
-                    <x-input.text feld="address" wire:model.live.debounce.400ms="address" type="text" class="mt-1 w-full font-mono" placeholder="10.10.30.1" />
+                    <x-input.text feld="address" wire:model.live.blur="address" type="text" class="mt-1 w-full font-mono" placeholder="10.10.30.1" />
                     <x-input.fehler feld="address" />
                 </div>
             @endunless
 
             <div class="flex min-w-0 flex-col">
                 <x-input.label :value="__('Bezeichnung (optional)')" />
-                <x-input.text wire:model.live.debounce.400ms="label" type="text" class="mt-1 w-full" :placeholder="__('z. B. Gateway')" />
+                <x-input.text wire:model.live.blur="label" type="text" class="mt-1 w-full" :placeholder="__('z. B. Gateway')" />
             </div>
 
             {{-- Ohne Adressfeld (DHCP) steht die Bezeichnung neben dem VLAN,

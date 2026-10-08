@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
-use Illuminate\Support\Carbon;
+use App\Support\Zeit;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
@@ -76,7 +76,7 @@ class AdminApiToken extends Component
         // Dritter Parameter von createToken ist der Ablauf - Sanctum weist einen
         // abgelaufenen Token danach von selbst ab.
         $this->frischerToken = auth()->user()
-            ->createToken($this->name, ['*'], Carbon::parse($this->expiresAt)->endOfDay())
+            ->createToken($this->name, ['*'], Zeit::tagesende($this->expiresAt))
             ->plainTextToken;
 
         $this->name = '';

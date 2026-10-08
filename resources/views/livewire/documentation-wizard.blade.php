@@ -265,7 +265,7 @@
                         <x-input.label :value="__($field['label'])" />
 
                         @if (($field['type'] ?? 'text') === 'select')
-                            <x-input.select :name="$field['name']" wire:model.live.debounce.400ms="form.{{ $field['name'] }}" class="mt-1">
+                            <x-input.select :name="$field['name']" wire:model.live="form.{{ $field['name'] }}" class="mt-1">
                                 <option value="">— bitte wählen —</option>
                                 @if (is_array($field['options'] ?? null))
                                     @foreach ($field['options'] as $value => $optionLabel)
@@ -280,26 +280,17 @@
                                 @endif
                             </x-input.select>
                         @else
-                            {{-- 'sofort' in der Feldliste: Das Feld meldet sich
-                                 waehrend der Eingabe an den Server, weil es ein
-                                 anderes nachzieht (Subnetzmaske und CIDR). Alle
-                                 uebrigen bleiben stumm bis zum Speichern.
-
-                                 Zwei Zweige statt eines Ausdrucks im
-                                 Attributnamen: "wire:model" mit einem
-                                 Blade-Ausdruck dahinter zerlegt den
-                                 Komponenten-Parser, und die Felder verlieren
-                                 dabei alle uebrigen Attribute. --}}
-                            @if ($field['sofort'] ?? false)
-                                <x-input.field :name="$field['name']"
-                                    wire:model.live.debounce.600ms="form.{{ $field['name'] }}"
-                                    type="{{ $field['type'] ?? 'text' }}" class="mt-1"
-                                    placeholder="{{ $field['placeholder'] ?? '' }}" />
-                            @else
-                                <x-input.field :name="$field['name']" wire:model.live.debounce.400ms="form.{{ $field['name'] }}"
-                                    type="{{ $field['type'] ?? 'text' }}" class="mt-1"
-                                    placeholder="{{ $field['placeholder'] ?? '' }}" />
-                            @endif
+                            {{-- .live.blur, not .live.debounce: a debounced update
+                                 still pending when "Hinzufügen" is clicked went out
+                                 after the save and wrote the old text back into the
+                                 emptied field - a second click created the same
+                                 record again. Livewire does not cancel the timer.
+                                 Blur fires before the click, so nothing trails it.
+                                 Mask and CIDR ('sofort' in the config) fill each
+                                 other when the field is left. --}}
+                            <x-input.field :name="$field['name']" wire:model.live.blur="form.{{ $field['name'] }}"
+                                type="{{ $field['type'] ?? 'text' }}" class="mt-1"
+                                placeholder="{{ $field['placeholder'] ?? '' }}" />
                         @endif
 
                         <x-input.fehler :feld="'form.' . $field['name']" />
