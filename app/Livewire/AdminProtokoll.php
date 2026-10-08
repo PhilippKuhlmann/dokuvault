@@ -7,7 +7,6 @@ use App\Models\Customer;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -110,65 +109,30 @@ class AdminProtokoll extends Component
     }
 
     /**
-     * Object types in the log that belong to a customer (customer_id column).
-     * From the table, like arten(): IP addresses or credential links are
-     * logged too and carry the customer.
-     *
-     * @return array<int, class-string>
-     */
-    protected function kundenTypen(): array
-    {
-        return collect(array_keys($this->arten()))
-            ->filter(fn ($klasse) => class_exists($klasse)
-                && Schema::hasColumn((new $klasse)->getTable(), 'customer_id'))
-            ->values()
-            ->all();
-    }
-
-    /**
      * Changes to objects of one customer, and to the customer itself.
-     * Without global scopes: deleted objects (soft deletes) still belong to
-     * their customer - "who deleted the firewall?" is the question here.
+     * Through the customer column of the entry (set on writing, filled in
+     * for older entries by the migration of 2026-10-08) - before, one OR
+     * EXISTS per object type, which slowed down with every entry. Deleted
+     * objects still belong to their customer: "who deleted the firewall?"
+     * is the question here.
      */
     protected function nurKunde($abfrage, int $kundeId): void
     {
-        $typen = $this->kundenTypen();
-
-        $abfrage->where(fn ($a) => $a
-            ->where(fn ($k) => $k->where('subject_type', Customer::class)->where('subject_id', $kundeId))
-            ->when($typen !== [], fn ($q) => $q->orWhereHasMorph('subject', $typen, fn ($s) => $s
-                ->withoutGlobalScopes()
-                ->where('customer_id', $kundeId))));
+        $abfrage->where('customer_id', $kundeId);
     }
 
     /**
-     * Customer name per entry on this page: one query per object type, not
-     * one per row.
+     * Customer name per entry on this page.
      *
      * @return array<int, string> activity id => customer name
      */
     protected function kundenDerEintraege(Collection $eintraege): array
     {
-        $namen = Customer::pluck('name', 'id');
-        $typen = array_flip($this->kundenTypen());
-        $kundeJeObjekt = [];
+        $namen = Customer::whereIn('id', $eintraege->pluck('customer_id')->filter()->unique())->pluck('name', 'id');
 
-        foreach ($eintraege->groupBy('subject_type') as $typ => $gruppe) {
-            if (! isset($typen[$typ])) {
-                continue;
-            }
-            $kundeJeObjekt[$typ] = $typ::withoutGlobalScopes()
-                ->whereIn('id', $gruppe->pluck('subject_id')->unique())
-                ->pluck('customer_id', 'id');
-        }
-
-        return $eintraege->mapWithKeys(function ($eintrag) use ($namen, $kundeJeObjekt) {
-            $kundeId = $eintrag->subject_type === Customer::class
-                ? $eintrag->subject_id
-                : ($kundeJeObjekt[$eintrag->subject_type][$eintrag->subject_id] ?? null);
-
-            return [$eintrag->id => $kundeId ? ($namen[$kundeId] ?? null) : null];
-        })->filter()->all();
+        return $eintraege
+            ->mapWithKeys(fn ($eintrag) => [$eintrag->id => $namen[$eintrag->customer_id] ?? null])
+            ->filter()->all();
     }
 
     /**

@@ -16,7 +16,7 @@ use Illuminate\Validation\Rule;
 
 class AgentTokenController extends Controller
 {
-    public function index(Customer $customer)
+    public function index(Customer $customer, Request $request)
     {
         Gate::authorize('agent_manage');
 
@@ -27,13 +27,22 @@ class AgentTokenController extends Controller
 
         $sites = Site::where('customer_id', $customer->id)->orderBy('name')->get();
 
+        // Paged and searchable: every row carries its own form, interval
+        // select and delete dialog - about 17 KB of HTML. With 2000 agents the
+        // page took 2.4 s and was 35 MB.
+        $suche = trim((string) $request->query('suche', ''));
         $installations = AgentInstallation::where('customer_id', $customer->id)
             ->with('agentToken')
+            ->when($suche !== '', fn ($q) => $q->whereEnthaelt(['hostname', 'domain'], $suche))
             ->orderBy('kind')
             ->orderBy('hostname')
-            ->get();
+            ->paginate(Setting::seiteListe(), ['*'], 'agenten')
+            ->withQueryString()
+            ->fragment('installierte-agenten');
 
-        return view('agent.index', compact('customer', 'tokens', 'sites', 'installations'));
+        $agentenGesamt = AgentInstallation::where('customer_id', $customer->id)->count();
+
+        return view('agent.index', compact('customer', 'tokens', 'sites', 'installations', 'suche', 'agentenGesamt'));
     }
 
     /**
@@ -57,7 +66,7 @@ class AgentTokenController extends Controller
             'interval_minutes' => $validated['interval_minutes'] ?? $agentInstallation->interval_minutes,
         ]);
 
-        return redirect(route('agent.index', $customer))
+        return $this->zurListe($customer)
             ->with('success', __('Aufgaben für :name gespeichert – gilt ab dem nächsten Lauf.', ['name' => $agentInstallation->hostname]));
     }
 
@@ -72,7 +81,7 @@ class AgentTokenController extends Controller
 
         $agentInstallation->forceFill(['run_requested_at' => now()])->save();
 
-        return redirect(route('agent.index', $customer))
+        return $this->zurListe($customer)
             ->with('success', __(':name meldet innerhalb der nächsten fünf Minuten.', ['name' => $agentInstallation->hostname]));
     }
 
@@ -87,7 +96,22 @@ class AgentTokenController extends Controller
 
         $agentInstallation->delete();
 
-        return redirect(route('agent.index', $customer));
+        return $this->zurListe($customer);
+    }
+
+    /**
+     * Back to the agent list as it was - same page, same search. With paging
+     * a save on page 3 otherwise landed on page 1. Only to the agent page of
+     * this customer: the previous URL comes from the browser.
+     */
+    private function zurListe(Customer $customer)
+    {
+        $liste = route('agent.index', $customer);
+        $vorher = url()->previous();
+
+        $ziel = str_starts_with($vorher, $liste) ? strtok($vorher, '#') : $liste;
+
+        return redirect($ziel.'#installierte-agenten');
     }
 
     public function store(Customer $customer, Request $request)

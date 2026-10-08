@@ -114,7 +114,7 @@ test('the agent page lists installed agents and saves the ticked roles', functio
         ->assertSee('firma.local');
 
     $this->put(route('agent.installation.update', [$customer, $installation]), ['roles' => ['windows-ad']])
-        ->assertRedirect(route('agent.index', $customer));
+        ->assertRedirect(route('agent.index', $customer).'#installierte-agenten');
     expect($installation->fresh()->roles)->toBe(['windows-ad']);
 
     // Roles of another kind are refused.
@@ -126,7 +126,7 @@ test('the agent page lists installed agents and saves the ticked roles', functio
     expect($installation->fresh()->roles)->toBe([]);
 
     $this->delete(route('agent.installation.destroy', [$customer, $installation]))
-        ->assertRedirect(route('agent.index', $customer));
+        ->assertRedirect(route('agent.index', $customer).'#installierte-agenten');
     expect(AgentInstallation::count())->toBe(0);
 });
 
@@ -260,7 +260,7 @@ test('"Jetzt melden" makes the next check-in run, once', function () {
     $installation = AgentInstallation::sole();
 
     $this->post(route('agent.installation.run', [$token->customer, $installation]))
-        ->assertRedirect(route('agent.index', $token->customer));
+        ->assertRedirect(route('agent.index', $token->customer).'#installierte-agenten');
     $this->get(route('agent.index', $token->customer))->assertSee('Lauf angefordert');
 
     checkinAls($plain, 'srv01', ['windows-server'])->assertJsonPath('run', true);
@@ -280,4 +280,64 @@ test('the interval is chosen on the agent page from the offered values', functio
     $this->put(route('agent.installation.update', [$token->customer, $installation]), ['roles' => ['windows-server'], 'interval_minutes' => 7])
         ->assertSessionHasErrors('interval_minutes');
     expect($installation->fresh()->intervalMinutes())->toBe(15);
+});
+
+// --- Many agents: paged and searchable ---
+
+function vieleAgenten(int $anzahl): array
+{
+    [$token, $plain] = installationToken();
+    foreach (range(1, $anzahl) as $i) {
+        AgentInstallation::create([
+            'customer_id' => $token->customer_id, 'agent_token_id' => $token->id, 'kind' => 'windows',
+            'machine_id' => 'pc-'.$i, 'hostname' => sprintf('PC-%03d', $i), 'roles' => [], 'detected' => [],
+        ]);
+    }
+
+    return [$token->customer, $token];
+}
+
+test('the agent page shows the installed agents a page at a time', function () {
+    // Every row carries its own form and dialog - with 2000 agents the
+    // page was 35 MB.
+    test()->actingAs(userWithPermissions(['agent_manage']));
+    [$customer] = vieleAgenten(30);
+
+    $this->get(route('agent.index', $customer))
+        ->assertOk()
+        ->assertSee('PC-025')
+        ->assertDontSee('PC-026')
+        ->assertViewHas('installations', fn ($seite) => $seite->lastPage() === 2 && $seite->getPageName() === 'agenten');
+
+    $this->get(route('agent.index', [$customer, 'agenten' => 2]))
+        ->assertSee('PC-030')
+        ->assertDontSee('PC-001');
+});
+
+test('the agent list can be searched by machine name', function () {
+    test()->actingAs(userWithPermissions(['agent_manage']));
+    [$customer] = vieleAgenten(30);
+
+    $this->get(route('agent.index', [$customer, 'suche' => 'PC-02']))
+        ->assertSee('PC-027')
+        ->assertDontSee('PC-013');
+
+    $this->get(route('agent.index', [$customer, 'suche' => 'gibtsnicht']))
+        ->assertSee('Kein Agent passt zu');
+});
+
+test('saving an agent returns to the page it was on', function () {
+    test()->actingAs(userWithPermissions(['agent_manage']));
+    [$customer] = vieleAgenten(30);
+    $installation = AgentInstallation::where('hostname', 'PC-028')->first();
+    $seite = route('agent.index', [$customer, 'agenten' => 2]);
+
+    $this->from($seite)
+        ->put(route('agent.installation.update', [$customer, $installation]), ['roles' => ['windows-client']])
+        ->assertRedirect($seite.'#installierte-agenten');
+
+    // A foreign previous URL is not followed.
+    $this->from('https://example.com/elsewhere')
+        ->put(route('agent.installation.update', [$customer, $installation]), ['roles' => []])
+        ->assertRedirect(route('agent.index', $customer).'#installierte-agenten');
 });

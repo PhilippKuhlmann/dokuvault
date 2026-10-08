@@ -265,10 +265,8 @@ class CustomerController extends Controller
     /**
      * The latest changes to this customer's documentation.
      *
-     * The activity log has no customer column - it is reached through the
-     * changed object. Only types the user may list, so the tile shows nothing
-     * whose list stays closed to them. Without the trash scope: a deletion is
-     * a change too, and its object is in the trash.
+     * Only types the user may list, so the tile shows nothing whose list
+     * stays closed to them. A deletion is a change too.
      */
     private function recentChanges(Customer $customer, int $anzahl = 8): Collection
     {
@@ -282,10 +280,11 @@ class CustomerController extends Controller
 
         $slugs = $typen->mapWithKeys(fn ($e, $slug) => [$e[0] => [$slug, $e[1]]]);
 
+        // customer_id on the entry itself, not "whose object is it?": one
+        // OR EXISTS per object type took 250 ms with 96,000 entries.
         return Activity::with('causer')
-            ->whereHasMorph('subject', $typen->pluck(0)->all(), fn ($q) => $q
-                ->withoutGlobalScopes()
-                ->where('customer_id', $customer->id))
+            ->where('customer_id', $customer->id)
+            ->whereIn('subject_type', $typen->pluck(0)->all())
             ->latest()
             ->limit($anzahl)
             ->get()

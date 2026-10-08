@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Customer;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Backup\Events\BackupHasFailed;
 use Spatie\Backup\Events\BackupWasSuccessful;
 use Throwable;
@@ -49,6 +51,21 @@ class AppServiceProvider extends ServiceProvider
         // Outcome of each backup run, for the state on the dashboard.
         Event::listen(BackupWasSuccessful::class, [BackupZustand::class, 'erfolg']);
         Event::listen(BackupHasFailed::class, [BackupZustand::class, 'fehler']);
+
+        // Every log entry carries its customer: the customer itself, or the
+        // customer of the changed object. The customer dashboard and the
+        // customer filter in the log query this column instead of one
+        // OR EXISTS per object type - see the activity_log migration of
+        // 2026-10-08. The subject is already in memory (performedOn).
+        Activity::creating(function (Activity $eintrag) {
+            if ($eintrag->customer_id !== null) {
+                return;
+            }
+            $objekt = $eintrag->subject;
+            $eintrag->customer_id = $objekt instanceof Customer
+                ? $objekt->getKey()
+                : ($objekt?->getAttribute('customer_id') ?? null);
+        });
 
         if ($this->app->environment('production')) {
             URL::forceScheme('https');

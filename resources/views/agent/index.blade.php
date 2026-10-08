@@ -253,10 +253,27 @@
              only one DC per domain gets it, the domain is the same from
              every DC. --}}
         <x-panel id="installierte-agenten">
-            <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">{{ __('Installierte Agenten') }}</div>
+            <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">
+                {{ __('Installierte Agenten') }}
+                @if ($agentenGesamt > 0)
+                    <span class="ml-1 text-sm font-DINPro text-gray-400 dark:text-gray-500">{{ $agentenGesamt }}</span>
+                @endif
+            </div>
             <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">
                 {{ __('Was jeder Agent meldet und wie oft, legst du hier fest – gilt ab seinem nächsten Lauf. „erkannt“ heißt: der Rechner hat die Rolle. Active Directory reicht von einem Domänencontroller je Domäne.') }}
             </p>
+
+            {{-- Search only once the list has more than one page - with a
+                 handful of agents it would be noise. --}}
+            @if ($agentenGesamt > $installations->perPage() || $suche !== '')
+                <form method="GET" action="{{ route('agent.index', $customer) }}#installierte-agenten" class="mb-3 flex flex-wrap items-center gap-2">
+                    <x-input.field type="search" name="suche" :value="$suche" class="w-64" :placeholder="__('Rechner oder Domäne suchen')" :aria-label="__('Rechner oder Domäne suchen')" />
+                    <x-input.button type="submit" color="gray" class="h-9" :label="__('Suchen')" />
+                    @if ($suche !== '')
+                        <a href="{{ route('agent.index', $customer) }}#installierte-agenten" class="text-sm text-cerulean-600 hover:underline dark:text-cerulean-400">{{ __('zurücksetzen') }}</a>
+                    @endif
+                </form>
+            @endif
 
             @forelse ($installations as $installation)
                 @php($rollen = \App\Models\AgentInstallation::availableRoles($installation->kind))
@@ -352,8 +369,16 @@
                     </div>
                 </div>
             @empty
-                <div class="text-sm text-gray-400 dark:text-gray-500">{{ __('Noch kein Agent installiert. Agenten erscheinen hier nach ihrer ersten Meldung.') }}</div>
+                @if ($suche !== '')
+                    <div class="text-sm text-gray-400 dark:text-gray-500">{{ __('Kein Agent passt zu „:suche“.', ['suche' => $suche]) }}</div>
+                @else
+                    <div class="text-sm text-gray-400 dark:text-gray-500">{{ __('Noch kein Agent installiert. Agenten erscheinen hier nach ihrer ersten Meldung.') }}</div>
+                @endif
             @endforelse
+
+            @if ($installations->hasPages())
+                <div class="mt-4">{{ $installations->links() }}</div>
+            @endif
         </x-panel>
 
         {{-- Welche Agenten es gibt.

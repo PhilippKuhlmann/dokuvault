@@ -2,6 +2,14 @@
 
 ## 26.10.08
 
+### Changed
+
+Aus einem Lasttest auf dem Demo-Server (gleiche Ausstattung wie Produktion: 2 Kerne, 1 GB RAM). Der Server selbst schafft rund 265 Agent-Anfragen pro Sekunde ohne Fehler, auch bei 128 gleichzeitigen Verbindungen – die Grenzen lagen im Code:
+
+- **Agenten werden je Token gebremst, nicht je IP-Adresse.** Die Agent-API teilte sich das API-Limit von 60 Anfragen pro Minute und IP. Alle Rechner eines Standorts melden hinter derselben NAT-Adresse – bei etwa 260 Agenten war Schluss, der Rest bekam 429. Jetzt 1200 pro Minute und Token (reicht für rund 5000 Agenten) und zusätzlich 6000 pro Minute und IP als Deckel für jemanden, der Token durchprobiert. Die übrige API behält ihr Limit.
+- **Installierte Agenten seitenweise und durchsuchbar.** Jede Zeile bringt Formular, Intervall-Auswahl und Löschdialog mit, rund 17 KB HTML – bei 2000 Agenten war die Seite 35 MB groß und brauchte 2,4 s. Jetzt so viele je Seite wie in den übrigen Listen, mit Suche nach Rechner oder Domäne ab der zweiten Seite und der Gesamtzahl im Titel. Speichern, „Jetzt melden“ und Entfernen kehren auf dieselbe Seite zurück.
+- **Protokoll mit eigener Kundenspalte und Index auf dem Datum.** Bei 2000 Kunden und 96.000 Protokolleinträgen brauchte das Admin-Dashboard 1,3 s, Statistik → Nutzung 2,6 s und das Kunden-Dashboard 290 ms – alle drei lasen das Protokoll Zeile für Zeile oder fragten je Objektart, wem ein Eintrag gehört. Jetzt zählt die Datenbank, und jeder Eintrag trägt seinen Kunden (beim Schreiben gesetzt, für vorhandene Einträge von der Migration nachgetragen). Auch der Kundenfilter im Protokoll nutzt die Spalte.
+
 ### Fixed
 
 Gefunden in einem kompletten Durchlauf im Browser: neuer Kunde, alle 18 Schritte des Assistenten und jede Objektart einmal von Hand angelegt, bearbeitet, gelöscht und wiederhergestellt.

@@ -1434,5 +1434,8 @@
     "Standort für diesen Durchlauf": "Site for this run",
     "Die Geräte der folgenden Schritte werden diesem Standort zugeordnet.": "The devices of the following steps are assigned to this site.",
     "gewählt": "selected",
-    "ändern": "change"
+    "ändern": "change",
+    "zurücksetzen": "reset",
+    "Rechner oder Domäne suchen": "Search machine or domain",
+    "Kein Agent passt zu „:suche“.": "No agent matches “:suche”."
 }

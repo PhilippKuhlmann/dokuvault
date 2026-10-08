@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -35,16 +36,20 @@ class AdminNutzung extends Component
         $tage = (int) $this->zeitraum;
         $von = now()->subDays($tage - 1)->startOfDay();
 
-        $eintraege = Activity::query()
-            ->where('created_at', '>=', $von)
-            ->whereIn('event', [...self::AENDERUNGEN, 'anmeldung', 'anmeldung_gescheitert', 'anmeldung_gesperrt'])
-            ->get(['id', 'event', 'causer_type', 'causer_id', 'subject_type', 'created_at']);
+        // Counted in the database, not in PHP: reading every entry of the
+        // period took 2.6 s with 96,000 entries. Each query below returns
+        // at most a few hundred rows (days x events, users, object types).
+        $anmeldung = ['anmeldung', 'anmeldung_gescheitert', 'anmeldung_gesperrt'];
+        $basis = fn () => Activity::query()->where('created_at', '>=', $von);
 
-        $anmeldungen = $eintraege->where('event', 'anmeldung');
-        $aenderungen = $eintraege->whereIn('event', self::AENDERUNGEN);
+        $jeTagUndEreignis = $basis()
+            ->whereIn('event', [...self::AENDERUNGEN, ...$anmeldung])
+            ->selectRaw('DATE(created_at) as tag, event, COUNT(*) as anzahl')
+            ->groupBy('tag', 'event')
+            ->toBase()->get();
 
-        $proTag = function ($menge) use ($von, $tage) {
-            $je = $menge->groupBy(fn ($e) => $e->created_at->format('Y-m-d'))->map->count();
+        $proTag = function (array $ereignisse) use ($von, $tage, $jeTagUndEreignis) {
+            $je = $jeTagUndEreignis->whereIn('event', $ereignisse)->groupBy('tag')->map->sum('anzahl');
 
             return collect(range(0, $tage - 1))->map(function ($i) use ($von, $je) {
                 $tag = $von->copy()->addDays($i);
@@ -52,31 +57,49 @@ class AdminNutzung extends Component
                 return ['beschriftung' => $tag->format('d.m.'), 'titel' => $tag->format('d.m.Y'), 'wert' => (int) ($je[$tag->format('Y-m-d')] ?? 0)];
             })->all();
         };
+        $summe = fn (array $ereignisse) => (int) $jeTagUndEreignis->whereIn('event', $ereignisse)->sum('anzahl');
 
-        $namen = User::whereIn('id', $eintraege->where('causer_type', User::class)->pluck('causer_id')->unique())->pluck('name', 'id');
-        $jeBenutzer = $eintraege->where('causer_type', User::class)->groupBy('causer_id')
-            ->map(fn ($e, $id) => [
-                'name' => $namen[$id] ?? '#'.$id,
-                'anmeldungen' => $e->where('event', 'anmeldung')->count(),
-                'aenderungen' => $e->whereIn('event', self::AENDERUNGEN)->count(),
-                'zuletzt' => $e->max('created_at'),
+        $platzhalter = implode(',', array_fill(0, count(self::AENDERUNGEN), '?'));
+        $jeNutzer = $basis()
+            ->where('causer_type', User::class)
+            ->whereIn('event', [...self::AENDERUNGEN, 'anmeldung'])
+            ->selectRaw(
+                "causer_id, SUM(CASE WHEN event = 'anmeldung' THEN 1 ELSE 0 END) as anmeldungen,"
+                ." SUM(CASE WHEN event IN ($platzhalter) THEN 1 ELSE 0 END) as aenderungen, MAX(created_at) as zuletzt",
+                self::AENDERUNGEN
+            )
+            ->groupBy('causer_id')
+            ->toBase()->get();
+
+        $namen = User::whereIn('id', $jeNutzer->pluck('causer_id'))->pluck('name', 'id');
+        $jeBenutzer = $jeNutzer
+            ->map(fn ($z) => [
+                'name' => $namen[$z->causer_id] ?? '#'.$z->causer_id,
+                'anmeldungen' => (int) $z->anmeldungen,
+                'aenderungen' => (int) $z->aenderungen,
+                'zuletzt' => Carbon::parse($z->zuletzt),
             ])->sortByDesc('aenderungen')->values()->all();
 
         $bereiche = collect(config('custom.trashables'))->mapWithKeys(fn ($e) => [$e[0] => $e[1]]);
-        $jeBereich = $aenderungen->groupBy('subject_type')
-            ->map(fn ($e, $typ) => ['name' => $bereiche[$typ] ?? class_basename($typ), 'anzahl' => $e->count()])
-            ->sortByDesc('anzahl')->take(12)->values()->all();
+        $jeBereich = $basis()
+            ->whereIn('event', self::AENDERUNGEN)
+            ->selectRaw('subject_type, COUNT(*) as anzahl')
+            ->groupBy('subject_type')
+            ->orderByDesc('anzahl')->limit(12)
+            ->toBase()->get()
+            ->map(fn ($z) => ['name' => $bereiche[$z->subject_type] ?? class_basename((string) $z->subject_type), 'anzahl' => (int) $z->anzahl])
+            ->all();
 
         return view('livewire.admin-nutzung', [
             'zeitraeume' => self::ZEITRAEUME,
             'summe' => [
-                'anmeldungen' => $anmeldungen->count(),
-                'gescheitert' => $eintraege->whereIn('event', ['anmeldung_gescheitert', 'anmeldung_gesperrt'])->count(),
-                'aenderungen' => $aenderungen->count(),
-                'benutzer' => $anmeldungen->pluck('causer_id')->unique()->count(),
+                'anmeldungen' => $summe(['anmeldung']),
+                'gescheitert' => $summe(['anmeldung_gescheitert', 'anmeldung_gesperrt']),
+                'aenderungen' => $summe(self::AENDERUNGEN),
+                'benutzer' => $basis()->where('event', 'anmeldung')->distinct()->count('causer_id'),
             ],
-            'anmeldungenProTag' => $proTag($anmeldungen),
-            'aenderungenProTag' => $proTag($aenderungen),
+            'anmeldungenProTag' => $proTag(['anmeldung']),
+            'aenderungenProTag' => $proTag(self::AENDERUNGEN),
             'jeBenutzer' => $jeBenutzer,
             'jeBereich' => $jeBereich,
         ])->layout('layouts.admin.app');

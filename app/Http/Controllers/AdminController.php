@@ -152,8 +152,12 @@ class AdminController extends Controller
             ->sortByDesc('count')->take(6)->values();
 
         // Aktivitäts-Verlauf der letzten 14 Tage
+        // Counted in the database: reading every entry of two weeks took
+        // 1.2 s with 2000 customers. DATE() exists in MySQL and SQLite.
         $byDay = Activity::where('created_at', '>=', now()->subDays(13)->startOfDay())
-            ->get()->groupBy(fn ($a) => $a->created_at->format('Y-m-d'))->map->count();
+            ->selectRaw('DATE(created_at) as tag, COUNT(*) as anzahl')
+            ->groupBy('tag')
+            ->pluck('anzahl', 'tag');
         $chart = [];
         for ($i = 13; $i >= 0; $i--) {
             $day = now()->subDays($i);

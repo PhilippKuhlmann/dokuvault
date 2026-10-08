@@ -28,7 +28,9 @@ Route::middleware(['auth:sanctum', 'aktiv'])->get('/user', function (Request $re
 });
 
 // Self-Service-Dokumentation: Geräte melden sich per Agent-Token selbst.
-Route::middleware('agent')->prefix('agent')->group(function () {
+// Own limit per token instead of the API limit per IP - see
+// RouteServiceProvider: a whole site reports from one NAT address.
+Route::middleware(['throttle:agent', 'agent'])->withoutMiddleware('throttle:api')->prefix('agent')->group(function () {
     Route::post('/proxmox', [AgentController::class, 'proxmox']);
     Route::post('/hyperv', [AgentController::class, 'hyperv']);
     Route::post('/vmware', [AgentController::class, 'vmware']);
