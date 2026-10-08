@@ -12,8 +12,10 @@
         <x-panel polster="weit" class="mx-auto max-w-xl text-center">
             <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100 mb-2">{{ __('Durchlauf abgeschlossen') }}</div>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                {{ count($run->completed_steps ?? []) }} {{ Str::plural('Bereich', count($run->completed_steps ?? [])) }} erfasst,
-                {{ count($run->skipped_steps ?? []) }} übersprungen.
+                {{-- trans_choice, not Str::plural: that pluralises in English
+                     and made "18 Bereiches". --}}
+                {{ trans_choice(':n Bereich erfasst|:n Bereiche erfasst', count($run->completed_steps ?? []), ['n' => count($run->completed_steps ?? [])]) }},
+                {{ __(':n übersprungen.', ['n' => count($run->skipped_steps ?? [])]) }}
             </p>
 
             @if (! empty($zusammenfassung))
@@ -118,23 +120,38 @@
             <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __($step['label']) }}</div>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">{{ __($step['question']) }}</p>
 
-            @if ($step['key'] === 'site' && $existingSites->isNotEmpty() && ! $run->site_id)
+            {{-- The site the following devices go to. Shown always, with the
+                 chosen one marked: adding a second site silently made it the
+                 site of the whole run, and every device of the next steps
+                 landed there - with nothing on this step saying so. --}}
+            @if ($step['key'] === 'site' && $existingSites->isNotEmpty())
                 <div class="mb-5 space-y-1.5" wire:key="existing-sites">
-                    <div class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ __('Vorhandenen Standort verwenden') }}</div>
+                    <div class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Standort für diesen Durchlauf') }}</div>
+                    <p class="mb-1.5 text-xs text-gray-500 dark:text-gray-400">{{ __('Die Geräte der folgenden Schritte werden diesem Standort zugeordnet.') }}</p>
                     @foreach ($existingSites as $site)
-                        <div class="flex items-center justify-between px-3 py-2 rounded-lg border border-gray-100 dark:border-gray-700">
+                        <div @class([
+                            'flex items-center justify-between rounded-lg border px-3 py-2',
+                            'border-cerulean-300 bg-cerulean-50 dark:border-cerulean-700 dark:bg-cerulean-900/20' => $site->id === $run->site_id,
+                            'border-gray-100 dark:border-gray-700' => $site->id !== $run->site_id,
+                        ])>
                             <span class="text-sm text-gray-800 dark:text-gray-100">{{ $site->name }}</span>
-                            <button type="button" wire:click="selectSite({{ $site->id }})" class="text-sm text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400">
-                                {{ __('Verwenden') }}
-                            </button>
+                            @if ($site->id === $run->site_id)
+                                <span class="text-xs font-semibold text-cerulean-700 dark:text-cerulean-300">{{ __('gewählt') }}</span>
+                            @else
+                                <button type="button" wire:click="selectSite({{ $site->id }})" class="text-sm text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400">
+                                    {{ __('Verwenden') }}
+                                </button>
+                            @endif
                         </div>
                     @endforeach
                 </div>
             @endif
 
             @if ($step['key'] !== 'site' && $run->site_id)
-                <div class="mb-4 text-xs text-gray-400 dark:text-gray-500">
-                    {{ __('Standort:') }} <span class="text-gray-600 dark:text-gray-300">{{ $run->site?->name }}</span>
+                <div class="mb-4 flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 text-sm dark:bg-gray-700/40">
+                    <span class="text-gray-500 dark:text-gray-400">{{ __('Standort:') }}</span>
+                    <span class="font-medium text-gray-800 dark:text-gray-100">{{ $run->site?->name }}</span>
+                    <button type="button" wire:click="gotoStep('site')" class="ml-auto text-xs text-cerulean-600 hover:underline dark:text-cerulean-400">{{ __('ändern') }}</button>
                 </div>
             @endif
 
@@ -179,22 +196,22 @@
                                 <button type="button" wire:key="entry-{{ $step['key'] }}-{{ $entry->id }}"
                                     wire:click="$dispatch('objekt-bearbeiten', { typ: '{{ $step['key'] }}', id: {{ $entry->id }} })"
                                     class="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 transition-colors hover:border-cerulean-400 hover:text-cerulean-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-cerulean-500 dark:hover:text-cerulean-300">
-                                    {{ $entry->{$step['label_field']} ?: '—' }}
+                                    {{ \App\Livewire\DocumentationWizard::bezeichnung($entry, $step['label_field']) }}
                                 </button>
                             @elseif ($netzModal)
                                 <button type="button" wire:key="entry-{{ $step['key'] }}-{{ $entry->id }}"
                                     wire:click="$dispatch('vlan-bearbeiten', { id: {{ $entry->id }} })"
                                     class="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 transition-colors hover:border-cerulean-400 hover:text-cerulean-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-cerulean-500 dark:hover:text-cerulean-300">
-                                    {{ $entry->{$step['label_field']} ?: '—' }}
+                                    {{ \App\Livewire\DocumentationWizard::bezeichnung($entry, $step['label_field']) }}
                                 </button>
                             @elseif ($bearbeitbar)
                                 <a href="{{ $ziel === $step['key'].'.edit' ? route($ziel, [$customer, $entry]) : route($ziel, $customer) }}" target="_blank" rel="noopener"
                                     class="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 transition-colors hover:border-cerulean-400 hover:text-cerulean-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-cerulean-500 dark:hover:text-cerulean-300">
-                                    {{ $entry->{$step['label_field']} ?: '—' }}
+                                    {{ \App\Livewire\DocumentationWizard::bezeichnung($entry, $step['label_field']) }}
                                 </a>
                             @else
                                 <span class="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
-                                    {{ $entry->{$step['label_field']} ?: '—' }}
+                                    {{ \App\Livewire\DocumentationWizard::bezeichnung($entry, $step['label_field']) }}
                                 </span>
                             @endif
                         @endforeach
@@ -242,7 +259,7 @@
                 x-on:keydown.enter.prevent="if ($event.target.matches('input')) $wire.save()"
                 {{-- Beim Schrittwechsel ans erste Feld springen und nach oben
                      scrollen - siehe DocumentationWizard::dispatch('assistent-schritt'). --}}
-                @assistent-schritt.window="$nextTick(() => { $el.querySelector('input, select')?.focus(); window.scrollTo({ top: 0, behavior: 'smooth' }) })">
+                @assistent-schritt.window="$nextTick(() => { $el.querySelector('input:not([type=hidden]):not([type=search]), [role=combobox]')?.focus(); window.scrollTo({ top: 0, behavior: 'smooth' }) })">
                 @foreach ($step['fields'] as $field)
                     <div class="flex flex-col" wire:key="{{ $step['key'] }}-{{ $field['name'] }}">
                         <x-input.label :value="__($field['label'])" />

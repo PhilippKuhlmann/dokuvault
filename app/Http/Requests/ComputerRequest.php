@@ -47,7 +47,7 @@ class ComputerRequest extends FormRequest
             'site_id' => 'Standort',
             'name' => 'Name',
             'manufavtuter' => 'Hersteller',
-            'model' => 'Model',
+            'model' => 'Modell',
             'serialNumber' => 'Seriennummer',
             'remoteID' => Setting::fernwartung()['id_label'],
             'remotePassword' => Setting::fernwartung()['password_label'],

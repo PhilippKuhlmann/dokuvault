@@ -34,7 +34,7 @@ class LicenseAccessRequest extends FormRequest
     {
         return [
             'name' => 'Name',
-            'key' => 'Key',
+            'key' => 'Lizenzschlüssel',
             'file_path' => 'Datei',
             'file_name' => 'Datei Name',
         ];

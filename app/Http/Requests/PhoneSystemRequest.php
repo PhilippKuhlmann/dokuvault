@@ -46,7 +46,7 @@ class PhoneSystemRequest extends FormRequest
             'name' => 'Name',
             'manufacturer' => 'Hersteller',
             'type' => 'Typ',
-            'model' => 'Model',
+            'model' => 'Modell',
             'serialNumber' => 'Seriennummer',
             'port' => 'Port',
             ...$this->beschaffungBezeichnungen(),

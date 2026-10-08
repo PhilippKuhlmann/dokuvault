@@ -32,7 +32,7 @@ class UpsRequest extends FormRequest
 
     public function attributes(): array
     {
-        return ['site_id' => 'Standort', 'name' => 'Name', 'manufacturer' => 'Hersteller', 'model' => 'Model', 'serialNumber' => 'Seriennummer', 'ip' => 'IP', 'capacity' => 'Kapazität', 'runtime' => 'Laufzeit', 'notes' => 'Notizen',
+        return ['site_id' => 'Standort', 'name' => 'Name', 'manufacturer' => 'Hersteller', 'model' => 'Modell', 'serialNumber' => 'Seriennummer', 'ip' => 'IP', 'capacity' => 'Kapazität', 'runtime' => 'Laufzeit', 'notes' => 'Notizen',
             ...$this->beschaffungBezeichnungen()];
     }
 }

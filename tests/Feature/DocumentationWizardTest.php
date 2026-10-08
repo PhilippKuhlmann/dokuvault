@@ -751,3 +751,32 @@ test('"Als erledigt markieren" ohne Assistenten-Recht ist verboten', function ()
     $this->post(route('wizard.complete', $customer))->assertForbidden();
     expect(DocumentationRun::count())->toBe(0);
 });
+
+test('the site step shows which site the next steps use, and lets you switch', function () {
+    $this->actingAs(userWithPermissions(['site_create', 'router_create']));
+    $customer = Customer::factory()->create();
+
+    // Found in a manual run: a second site added in this step silently
+    // became the site of every following device, with nothing saying so.
+    $component = Livewire::test(DocumentationWizard::class, ['customer' => $customer])
+        ->set('form.name', 'Zentrale Bremen')->call('save')
+        ->set('form.name', 'Lager Hamburg')->call('save');
+
+    $bremen = Site::where('name', 'Zentrale Bremen')->firstOrFail();
+    $component->assertSee('Standort für diesen Durchlauf')
+        ->assertSee('Zentrale Bremen')
+        ->assertSee('gewählt')
+        ->call('selectSite', $bremen->id)
+        ->call('nextStep')
+        ->assertSee('Zentrale Bremen');
+
+    expect(DocumentationRun::where('customer_id', $customer->id)->value('site_id'))->toBe($bremen->id);
+});
+
+test('a contact is named with first and last name in the wizard', function () {
+    $contact = new ContactPerson(['first_name' => 'Petra', 'last_name' => 'Kruse']);
+    $server = new Server(['name' => 'SRV-01']);
+
+    expect(DocumentationWizard::bezeichnung($contact, 'last_name'))->toBe('Petra Kruse')
+        ->and(DocumentationWizard::bezeichnung($server, 'name'))->toBe('SRV-01');
+});

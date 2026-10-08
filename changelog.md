@@ -1,5 +1,18 @@
 # Changelog
 
+## 26.10.08
+
+### Fixed
+
+Gefunden in einem kompletten Durchlauf im Browser: neuer Kunde, alle 18 Schritte des Assistenten und jede Objektart einmal von Hand angelegt, bearbeitet, gelöscht und wiederhergestellt.
+
+- **Assistent: Ein zweiter Standort übernahm still den ganzen Durchlauf.** Wer im ersten Schritt zwei Standorte anlegte, bekam alle folgenden Geräte beim zuletzt angelegten – ohne dass der Schritt es zeigte. Jetzt listet er alle Standorte des Kunden, markiert den gewählten und lässt mit „Verwenden“ wechseln; in den späteren Schritten steht der Standort deutlich oben, mit „ändern“.
+- **Auswahlfeld klappte beim Öffnen jedes Bearbeiten-Dialogs auf.** Der Fokus fiel auf das versteckte `<select>`, das die Liste beim Fokus öffnet, und sie verdeckte die Felder darunter. Dialoge, Netz-Schnellanlage und Assistent fokussieren jetzt den sichtbaren Knopf.
+- **Escape in der Mehrfachauswahl schloss den ganzen Dialog.** Nach einem Klick in die Liste (etwa Mitglieder einer AD-Gruppe) lag der Fokus nicht mehr in der Auswahl; Escape erreichte den Dialog und das Eingetippte war weg.
+- **Falsche Feldnamen:** „Model“ → „Modell“, „Manufacturer“ → „Hersteller“, „Seriennmmer“ → „Seriennummer“ (Telefon, DECT), „Key“ → „Lizenzschlüssel“ (Lizenzen, auch Liste und PDF).
+- **„Das Feld URL muss eine gültige URL sein“** nannte bei jedem URL-Feld „URL“ statt des Feldnamens (z. B. „Admin URL“).
+- **Assistent:** „18 Bereiches erfasst“ heißt „18 Bereiche erfasst“; Ansprechpartner stehen mit Vor- und Nachnamen da statt nur mit dem Nachnamen.
+
 ## 26.10.07
 
 ### Added

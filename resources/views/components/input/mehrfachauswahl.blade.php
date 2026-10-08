@@ -113,7 +113,12 @@
         </svg>
     </button>
 
+    {{-- mousedown.prevent: a click on an entry must not take the focus
+         from the trigger. Without it the focus fell to <body>, Escape no
+         longer reached this component (which closes only the list) but the
+         dialog - and closed the whole form with what was typed. --}}
     <div x-show="offen" x-cloak
+        x-on:mousedown="if ($event.target !== $refs.suchfeld) $event.preventDefault()"
         x-bind:style="`left: ${x}px; min-width: ${breite}px; ` + (nachOben ? `bottom: ${y + 4}px` : `top: ${y + 4}px`)"
         class="fixed z-50 w-max max-w-[min(24rem,calc(100vw-2rem))] rounded-lg border border-gray-200 bg-gray-50 shadow-lg dark:border-gray-600 dark:bg-gray-700">
 

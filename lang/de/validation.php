@@ -7,9 +7,9 @@ return [
     // sowohl fuer ein Textfeld als auch fuer eine Auswahl.
     'required' => 'Bitte :attribute angeben.',
     'email' => 'Das Feld :attribute muss eine gültige E-Mail-Adresse enthalten.',
-    'ipv4' => 'Das  Feld :attribute muss eine gültige IPv4-Adresse sein.',
-    'url' => 'Das Feld URL muss eine gültige URL sein.',
-    'integer' => 'Das Feld :attribute muss eine Zahl sein',
+    'ipv4' => 'Das Feld :attribute muss eine gültige IPv4-Adresse sein.',
+    'url' => 'Das Feld :attribute muss eine gültige URL sein.',
+    'integer' => 'Das Feld :attribute muss eine Zahl sein.',
 
     // min und max je Art. Laravel waehlt die Variante nach dem Typ des Wertes:
     // Bei einer Zahl greift 'numeric', und die fehlte - eine Frist unter der

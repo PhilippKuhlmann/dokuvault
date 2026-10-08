@@ -1,2 +1,2 @@
 {{-- Spaltenueberschriften dieser Tabelle. --}}
-<x-table.head :labels="['Betriebssystem', 'Key', 'Download', '', ]" />
+<x-table.head :labels="['Betriebssystem', 'Lizenzschlüssel', 'Download', '', ]" />

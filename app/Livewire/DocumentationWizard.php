@@ -565,6 +565,23 @@ class DocumentationWizard extends Component
         //
     }
 
+    /**
+     * How an entry is named in the wizard: a model's own full name if it has
+     * one (a contact is "Petra Kruse", not "Kruse"), otherwise the field
+     * from config('custom.wizard_steps').
+     */
+    public static function bezeichnung($model, string $feld): string
+    {
+        // Only a model's own protokollName(), not the generic one from
+        // TracksChanges - that picks the first filled name field and would
+        // change what other steps show.
+        $eigener = method_exists($model, 'protokollName')
+            && (new \ReflectionMethod($model, 'protokollName'))->getDeclaringClass()->getName() === $model::class;
+        $name = $eigener ? $model->protokollName() : $model->{$feld};
+
+        return filled($name) ? (string) $name : '—';
+    }
+
     public function render()
     {
         [$customer, $run] = $this->guard();
@@ -626,7 +643,7 @@ class DocumentationWizard extends Component
                 $zusammenfassung[] = [
                     'label' => __($def['label']),
                     'route' => Route::has($key.'.index') ? $key.'.index' : null,
-                    'namen' => $modelle->map(fn ($m) => $m->{$def['label_field']} ?: '—')->all(),
+                    'namen' => $modelle->map(fn ($m) => self::bezeichnung($m, $def['label_field']))->all(),
                 ];
             }
         }

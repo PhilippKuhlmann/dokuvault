@@ -39,7 +39,7 @@ class LicenseSoftwareRequest extends FormRequest
     {
         return [
             'name' => 'Name',
-            'key' => 'Key',
+            'key' => 'Lizenzschlüssel',
             'username' => 'Benutzername',
             'password' => 'Passwort',
             'start_data' => 'Start Datum',

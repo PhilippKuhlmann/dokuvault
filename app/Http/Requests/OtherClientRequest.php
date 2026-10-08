@@ -43,7 +43,7 @@ class OtherClientRequest extends FormRequest
             'site_id' => 'Standort',
             'name' => 'Name',
             'manufavtuter' => 'Hersteller',
-            'model' => 'Model',
+            'model' => 'Modell',
             'serialNumber' => 'Seriennummer',
             'port' => 'Port',
             ...$this->beschaffungBezeichnungen(),

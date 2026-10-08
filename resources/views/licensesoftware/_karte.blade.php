@@ -26,7 +26,7 @@
                     @endif
                 </x-minitextcard>
 
-                <x-minitextcard :title="__('Key')">
+                <x-minitextcard :title="__('Lizenzschlüssel')">
                     {{ $eintrag->key }}
                 </x-minitextcard>
 

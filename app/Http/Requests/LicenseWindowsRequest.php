@@ -36,7 +36,7 @@ class LicenseWindowsRequest extends FormRequest
     {
         return [
             'operating_system_id' => 'Betriebssystem',
-            'key' => 'Key',
+            'key' => 'Lizenzschlüssel',
             'file_path' => 'Datei',
             'file_name' => 'Datei Name',
         ];

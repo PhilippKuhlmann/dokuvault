@@ -44,7 +44,7 @@ class IoTDeviceRequest extends FormRequest
             'site_id' => 'Standort',
             'name' => 'Name',
             'manufavtuter' => 'Hersteller',
-            'model' => 'Model',
+            'model' => 'Modell',
             'serialNumber' => 'Seriennummer',
             'port' => 'Port',
             'url' => 'URL',

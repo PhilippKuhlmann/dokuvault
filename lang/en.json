@@ -841,7 +841,6 @@
     "Voraussetzung ist eine einmalig angelegte App-Registrierung mit ausschließlich lesenden Berechtigungen: User.Read.All, Domain.Read.All, Organization.Read.All.": "It requires a one-time app registration with read-only permissions: User.Read.All, Domain.Read.All, Organization.Read.All.",
     "Vorderseite": "Front",
     "Vorhandene Werte werden überschrieben. Fortfahren?": "Existing values will be overwritten. Continue?",
-    "Vorhandenen Standort verwenden": "Use an existing site",
     "Vorhandenes Login": "Existing login",
     "Vorname": "First name",
     "Vorschau": "Preview",
@@ -1333,7 +1332,6 @@
     "Clients": "Clients",
     "AD": "AD",
     "Check icon": "Check icon",
-    "Key": "Key",
     "Kanäle": "Channels",
     "Anschluss": "Line",
     "Rufnummern": "Numbers",
@@ -1429,5 +1427,12 @@
     "Letzte 24 Stunden": "Last 24 hours",
     ":n Token": ":n tokens",
     "Domain": "Domain",
-    "in :tage T.": "in :tage d"
+    "in :tage T.": "in :tage d",
+    "Lizenzschlüssel": "Licence key",
+    ":n Bereich erfasst|:n Bereiche erfasst": ":n area recorded|:n areas recorded",
+    ":n übersprungen.": ":n skipped.",
+    "Standort für diesen Durchlauf": "Site for this run",
+    "Die Geräte der folgenden Schritte werden diesem Standort zugeordnet.": "The devices of the following steps are assigned to this site.",
+    "gewählt": "selected",
+    "ändern": "change"
 }

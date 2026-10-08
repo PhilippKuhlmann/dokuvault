@@ -363,17 +363,17 @@
 
     {{-- Lizenzen --}}
     <x-pdf.section :title="__('Lizenzen – Windows')" :items="$customer->licensewindows" :titleField="fn($l) => $l->operatingSystem?->name ?: 'Windows-Lizenz #'.$l->id" :groups="[
-        'Lizenz' => ['Key' => 'key'],
+        'Lizenz' => ['Lizenzschlüssel' => 'key'],
     ]" />
 
     <x-pdf.section :title="__('Lizenzen – Software')" :items="$customer->licensesoftware" :groups="[
         'Login' => ['Benutzer' => 'username', 'Passwort' => 'password'],
         'Laufzeit' => ['Start' => fn($l) => $date($l->start_date), 'Ende' => fn($l) => $date($l->end_date), 'Abrechnung' => 'abo'],
-        'Key' => ['Key' => 'key'],
+        'Lizenzschlüssel' => ['Lizenzschlüssel' => 'key'],
     ]" />
 
     <x-pdf.section :title="__('Lizenzen – CAL')" :items="$customer->licenseaccesses" :groups="[
-        'Lizenz' => ['Key' => 'key'],
+        'Lizenz' => ['Lizenzschlüssel' => 'key'],
     ]" />
 
     {{-- Dienste --}}

@@ -1,2 +1,2 @@
 {{-- Spaltenueberschriften dieser Tabelle. --}}
-<x-table.head :labels="['Name', 'Key', 'Download', '', ]" />
+<x-table.head :labels="['Name', 'Lizenzschlüssel', 'Download', '', ]" />

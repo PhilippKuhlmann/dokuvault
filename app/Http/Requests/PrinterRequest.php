@@ -44,7 +44,7 @@ class PrinterRequest extends FormRequest
             'site_id' => 'Standort',
             'name' => 'Name',
             'manufacturer' => 'Hersteller',
-            'model' => 'Model',
+            'model' => 'Modell',
             'serialNumber' => 'Seriennummer',
             'port' => 'Port',
             ...$this->beschaffungBezeichnungen(),

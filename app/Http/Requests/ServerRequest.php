@@ -68,7 +68,7 @@ class ServerRequest extends FormRequest
             'name' => 'Name',
             'type' => 'Typ',
             'manufacturer' => 'Hersteller',
-            'model' => 'Model',
+            'model' => 'Modell',
             'serialNumber' => 'Seriennummer',
             'bmcIp' => 'BMC IP',
             'bmcUser' => 'BMC Benutzer',
