@@ -12,7 +12,7 @@
 @endphp
 <tr>
 <td class="header">
-<a href="{{ $url }}" style="display: inline-block;">
+<a href="{{ $url }}" style="display: inline-block;" target="_blank" rel="noopener">
 @if ($eigenesLogo)
 <img src="{{ $eigenesLogo }}" class="logo" alt="{{ $name }}">
 @else

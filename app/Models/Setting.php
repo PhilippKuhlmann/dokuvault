@@ -325,6 +325,23 @@ class Setting extends Model
         return $auswahl ?: $erlaubt;
     }
 
+    public const EXPIRY_MAIL_KINDS = 'expiry_mail_kinds';
+
+    /** What an expiry mail can report, in display order. */
+    public const EXPIRY_KINDS = ['certificate', 'domain', 'licensesoftware', 'warranty'];
+
+    /**
+     * Which kinds the expiry mail reports - set once by an admin, valid for
+     * every recipient. Nothing chosen means all; switching the mail off is
+     * done per recipient, not here.
+     */
+    public static function expiryMailKinds(): array
+    {
+        $chosen = array_filter(explode(',', (string) self::wert(self::EXPIRY_MAIL_KINDS)));
+
+        return array_values(array_intersect(self::EXPIRY_KINDS, $chosen)) ?: self::EXPIRY_KINDS;
+    }
+
     public const APP_LOCALE = 'app_locale';
 
     public const ANMELDE_HINWEIS = 'anmelde_hinweis';

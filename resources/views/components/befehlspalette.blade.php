@@ -111,6 +111,7 @@
             ['admin_setting', $adminPraefix.__('Mail'), 'admin.mail.index'],
             ['admin_setting', $adminPraefix.__('Sicherheit'), 'admin.security.index'],
             ['admin_setting', $adminPraefix.__('Fristen'), 'admin.fristen.index'],
+            ['admin_setting', $adminPraefix.__('Benachrichtigungen'), 'admin.notifications'],
             ['admin_setting', $adminPraefix.__('Agenten-Vorgaben'), 'admin.agenten.einstellungen'],
             ['admin_setting', $adminPraefix.__('Backup'), 'admin.backup.einstellungen'],
             ['admin_activity', $adminPraefix.__('Protokoll-Historie'), 'admin.logretention'],

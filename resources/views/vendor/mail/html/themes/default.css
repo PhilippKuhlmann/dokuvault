@@ -1,3 +1,12 @@
+/*
+ * The look of every mail DokuVault sends: one white card on a light grey
+ * ground, a band in the darkest colour of the application on top, the
+ * button in the colour of the buttons in the application.
+ *
+ * Laravel inlines this file into each mail - mail clients ignore <style>
+ * blocks or strip them. Hence plain selectors only, no variables.
+ */
+
 /* Base */
 
 body,
@@ -10,10 +19,10 @@ body *:not(html):not(style):not(br):not(tr):not(code) {
 
 body {
     -webkit-text-size-adjust: none;
-    background-color: #ffffff;
-    color: #52525b;
+    background-color: #eef2f7;
+    color: #374151;
     height: 100%;
-    line-height: 1.4;
+    line-height: 1.5;
     margin: 0;
     padding: 0;
     width: 100% !important;
@@ -23,12 +32,12 @@ p,
 ul,
 ol,
 blockquote {
-    line-height: 1.4;
+    line-height: 1.6;
     text-align: start;
 }
 
 a {
-    color: #1a5cad;
+    color: #1f73d6;
 }
 
 a img {
@@ -38,14 +47,17 @@ a img {
 /* Typography */
 
 h1 {
-    color: #1b4176;
-    font-size: 20px;
+    color: #111827;
+    font-size: 22px;
     font-weight: bold;
+    line-height: 1.3;
     margin-top: 0;
+    margin-bottom: 16px;
     text-align: start;
 }
 
 h2 {
+    color: #122748;
     font-size: 16px;
     font-weight: bold;
     margin-top: 0;
@@ -60,8 +72,8 @@ h3 {
 }
 
 p {
-    font-size: 16px;
-    line-height: 1.5em;
+    font-size: 15px;
+    line-height: 1.6em;
     margin-top: 0;
     text-align: left;
 }
@@ -80,31 +92,41 @@ img {
     -premailer-cellpadding: 0;
     -premailer-cellspacing: 0;
     -premailer-width: 100%;
-    background-color: #eef7ff;
+    background-color: #eef2f7;
     margin: 0;
     padding: 0;
     width: 100%;
 }
 
-.content {
+.wrapper-cell {
+    padding: 32px 12px;
+}
+
+/* The card */
+.inner-body {
     -premailer-cellpadding: 0;
     -premailer-cellspacing: 0;
-    -premailer-width: 100%;
-    margin: 0;
+    -premailer-width: 600px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+    margin: 0 auto;
+    max-width: 600px;
+    overflow: hidden;
     padding: 0;
-    width: 100%;
+    width: 600px;
 }
 
 /* Header */
 
-/* Ein durchgehendes Band in der dunkelsten Farbe der Anwendung
-   (cerulean-950). Nicht der helle Akzent: Der traegt in der Anwendung die
-   Knoepfe, und zwei Blautoene, die um Aufmerksamkeit streiten, sind einer zu
-   viel. */
+/* A band in the darkest colour of the application (cerulean-950). Not
+   the light accent: that one carries the button, and two blues competing for
+   attention are one too many. */
 .header {
     background-color: #122748;
-    padding: 28px 0;
-    text-align: center;
+    border-radius: 10px 10px 0 0;
+    padding: 20px 28px;
+    text-align: left;
 }
 
 .header a {
@@ -117,41 +139,20 @@ img {
 
 /* Logo */
 
-/* Ein eigenes Logo bringt seine eigene Form mit - Hoehe begrenzen, Breite
-   laufen lassen. Fest auf 75x75 gesetzt sah ein breites Logo gequetscht aus. */
+/* A custom logo brings its own shape - limit the height, let the width
+   follow. */
 .logo {
     height: auto;
-    max-height: 48px;
-    max-width: 240px;
+    max-height: 36px;
+    max-width: 220px;
     width: auto;
 }
 
 /* Body */
 
-.body {
-    -premailer-cellpadding: 0;
-    -premailer-cellspacing: 0;
-    -premailer-width: 100%;
-    background-color: #eef7ff;
-    border-bottom: 1px solid #eef7ff;
-    border-top: 1px solid #eef7ff;
-    margin: 0;
-    padding: 0;
-    width: 100%;
-}
-
-.inner-body {
-    -premailer-cellpadding: 0;
-    -premailer-cellspacing: 0;
-    -premailer-width: 570px;
-    background-color: #ffffff;
-    border-color: #d9edff;
-    border-radius: 12px;
-    border-width: 1px;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-    margin: 0 auto;
-    padding: 0;
-    width: 570px;
+.content-cell {
+    max-width: 100vw;
+    padding: 32px 28px 12px;
 }
 
 .inner-body a {
@@ -161,35 +162,35 @@ img {
 /* Subcopy */
 
 .subcopy {
-    border-top: 1px solid #e4e4e7;
-    margin-top: 25px;
-    padding-top: 25px;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 8px;
+    padding-top: 20px;
 }
 
 .subcopy p {
-    font-size: 14px;
+    color: #6b7280;
+    font-size: 13px;
 }
 
 /* Footer */
 
 .footer {
-    -premailer-cellpadding: 0;
-    -premailer-cellspacing: 0;
-    -premailer-width: 570px;
-    margin: 0 auto;
-    padding: 0;
-    text-align: center;
-    width: 570px;
+    background-color: #f8fafc;
+    border-radius: 0 0 10px 10px;
+    border-top: 1px solid #e5e7eb;
+    padding: 18px 28px;
 }
 
 .footer p {
-    color: #1b4d8e;
+    color: #6b7280;
     font-size: 12px;
-    text-align: center;
+    line-height: 1.6;
+    text-align: left;
+    margin: 0;
 }
 
 .footer a {
-    color: #1b4d8e;
+    color: #1f73d6;
     text-decoration: underline;
 }
 
@@ -199,27 +200,26 @@ img {
     -premailer-cellpadding: 0;
     -premailer-cellspacing: 0;
     -premailer-width: 100%;
-    margin: 30px auto;
+    margin: 20px auto;
     width: 100%;
 }
 
 .table th {
-    border-bottom: 1px solid #e4e4e7;
+    border-bottom: 1px solid #e5e7eb;
+    color: #6b7280;
+    font-size: 12px;
     margin: 0;
     padding-bottom: 8px;
+    text-transform: uppercase;
 }
 
 .table td {
-    color: #52525b;
+    border-bottom: 1px solid #f1f5f9;
+    color: #374151;
     font-size: 15px;
-    line-height: 18px;
+    line-height: 1.5;
     margin: 0;
     padding: 10px 0;
-}
-
-.content-cell {
-    max-width: 100vw;
-    padding: 32px;
 }
 
 /* Buttons */
@@ -228,7 +228,7 @@ img {
     -premailer-cellpadding: 0;
     -premailer-cellspacing: 0;
     -premailer-width: 100%;
-    margin: 30px auto;
+    margin: 28px auto;
     padding: 0;
     text-align: center;
     width: 100%;
@@ -238,39 +238,40 @@ img {
 .button {
     -webkit-text-size-adjust: none;
     border-radius: 8px;
-    font-weight: bold;
     color: #fff;
     display: inline-block;
+    font-size: 15px;
+    font-weight: 600;
     overflow: hidden;
     text-decoration: none;
 }
 
-/* cerulean-600 - derselbe Ton, den die Knoepfe in der Anwendung tragen. */
+/* cerulean-600 - the colour of the buttons in the application. */
 .button-blue,
 .button-primary {
     background-color: #1f73d6;
-    border-bottom: 10px solid #1f73d6;
-    border-left: 20px solid #1f73d6;
-    border-right: 20px solid #1f73d6;
-    border-top: 10px solid #1f73d6;
+    border-bottom: 12px solid #1f73d6;
+    border-left: 26px solid #1f73d6;
+    border-right: 26px solid #1f73d6;
+    border-top: 12px solid #1f73d6;
 }
 
 .button-green,
 .button-success {
     background-color: #16a34a;
-    border-bottom: 8px solid #16a34a;
-    border-left: 18px solid #16a34a;
-    border-right: 18px solid #16a34a;
-    border-top: 8px solid #16a34a;
+    border-bottom: 12px solid #16a34a;
+    border-left: 26px solid #16a34a;
+    border-right: 26px solid #16a34a;
+    border-top: 12px solid #16a34a;
 }
 
 .button-red,
 .button-error {
     background-color: #dc2626;
-    border-bottom: 8px solid #dc2626;
-    border-left: 18px solid #dc2626;
-    border-right: 18px solid #dc2626;
-    border-top: 8px solid #dc2626;
+    border-bottom: 12px solid #dc2626;
+    border-left: 26px solid #dc2626;
+    border-right: 26px solid #dc2626;
+    border-top: 12px solid #dc2626;
 }
 
 /* Panels */
@@ -281,13 +282,13 @@ img {
 }
 
 .panel-content {
-    background-color: #fafafa;
-    color: #52525b;
+    background-color: #f1f5f9;
+    color: #374151;
     padding: 16px;
 }
 
 .panel-content p {
-    color: #52525b;
+    color: #374151;
 }
 
 .panel-item {

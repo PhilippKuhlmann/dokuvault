@@ -58,6 +58,7 @@
                             <x-aside.dropdownlink :label="__('Mail')" href="{{ route('admin.mail.index') }}" />
                             <x-aside.dropdownlink :label="__('Sicherheit')" href="{{ route('admin.security.index') }}" />
                             <x-aside.dropdownlink :label="__('Fristen')" href="{{ route('admin.fristen.index') }}" />
+                            <x-aside.dropdownlink :label="__('Benachrichtigungen')" href="{{ route('admin.notifications') }}" />
                             <x-aside.dropdownlink :label="__('Agenten')" href="{{ route('admin.agenten.einstellungen') }}" />
                             <x-aside.dropdownlink :label="__('Backup')" href="{{ route('admin.backup.einstellungen') }}" />
                         @endcan

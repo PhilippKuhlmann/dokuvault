@@ -43,6 +43,10 @@
                 </div>
 
                 <div class="px-6 py-8">
+                    <livewire:notification-profile />
+                </div>
+
+                <div class="px-6 py-8">
                     @include('profile.partials.delete-user-form')
                 </div>
             </div>

@@ -77,6 +77,7 @@ use App\Livewire\AdminBackupEinstellungen;
 use App\Livewire\AdminBackups;
 use App\Livewire\AdminDatenwachstum;
 use App\Livewire\AdminFristen;
+use App\Livewire\AdminNotifications;
 use App\Livewire\AdminNutzung;
 use App\Livewire\AdminOperatingSystem;
 use App\Livewire\AdminPapierkorb;
@@ -157,6 +158,9 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
             // Vorwarnzeiten und die Aufbewahrung der PDF-Ausgaben.
             Route::get('/fristen', AdminFristen::class)->name('admin.fristen.index');
+
+            // Who gets the daily expiry mail, and what it reports.
+            Route::get('/notifications', AdminNotifications::class)->name('admin.notifications');
 
             // Backup of DokuVault itself: schedule, external target, retention.
             // Defaults for the agents of all customers.

@@ -25,6 +25,7 @@ class User extends Authenticatable
         'customer_id',
         'two_factor_required',
         'deactivated_at',
+        'expiry_mail',
     ];
 
     protected $hidden = [
@@ -41,6 +42,7 @@ class User extends Authenticatable
         'invited_at' => 'datetime',
         'invitation_accepted_at' => 'datetime',
         'deactivated_at' => 'datetime',
+        'expiry_mail' => 'boolean',
     ];
 
     /**

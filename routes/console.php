@@ -73,6 +73,10 @@ Schedule::call(fn () => DB::table('api_request_stats')
     ->where('stunde', '<', now()->subDays(Setting::statistikApiTage()))->delete())
     ->dailyAt('03:50')->name('api-statistik-aufraeumen');
 
+// Expiry mails (Admin -> Einstellungen -> Benachrichtigungen). In the morning, so
+// the list is there when the day starts; the scheduler runs in UTC.
+Schedule::command('expiry:notify')->dailyAt('05:30');
+
 // Kennzahlen des Tages fuer Admin -> Statistik (System, Datenwachstum).
 // Nachts, nach dem Backup um 01:30 - dessen Groesse soll schon mitzaehlen.
 Schedule::command('statistik:schnappschuss')->dailyAt('02:30');

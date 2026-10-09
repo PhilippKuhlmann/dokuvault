@@ -1,5 +1,19 @@
 # Changelog
 
+## 26.10.09
+
+### Added
+
+- **Benachrichtigungen: ablaufende Einträge per Mail.** Eine Mail am Morgen, wenn Zertifikate, Domains, Software-Lizenzen oder Garantien in die Vorwarnzeit fallen oder abgelaufen sind – eine Liste je Empfänger, nach Kunden gruppiert, mit Link auf den Eintrag. Jeder Eintrag kommt höchstens zweimal: beim Eintritt in die Vorwarnzeit und beim Ablauf; ein verlängertes Zertifikat mit neuem Datum zählt neu. Einstellungen → Benachrichtigungen legt fest, was die Mail meldet, und wer sie bekommt – auch Benutzer, die nur einen Kunden sehen; sie bekommen nur dessen Einträge, und nur die Arten, die ihre Rolle sehen darf. Jeder Benutzer kann die Mail außerdem im Profil unter „Benachrichtigungen“ an- und abschalten. Die Vorwarnzeiten sind die unter Fristen. Ging der Versand schief, versucht es der nächste Lauf erneut.
+
+### Changed
+
+- **Alle Mails im selben Rahmen.** Einladung, Kennwort vergessen, Testmail und die neue Ablauf-Mail stehen auf einer weißen Karte mit dunkelblauem Kopfband, blauem Knopf und grauem Fuß. Der Rahmen liegt in der gemeinsamen Mail-Vorlage – jede künftige Mail sieht ohne eigenes Zutun genauso aus.
+
+### Fixed
+
+- **„Kennwort vergessen“ kam auf Englisch.** Betreff und Text der Mail stammen von Laravel und hatten keine deutsche Übersetzung; jetzt „Kennwort zurücksetzen“ mit deutschem Text. Die Textfassung aller Mails endete außerdem mit „All rights reserved“ und dem Namen aus der Konfiguration statt dem eingestellten.
+
 ## 26.10.08
 
 ### Changed
