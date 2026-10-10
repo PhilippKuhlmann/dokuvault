@@ -33,6 +33,8 @@ class Firewall extends Model
 
     protected $casts = [
         'subscription_until' => 'date',
+        'agent_details' => 'array',
+        'agent_reported_at' => 'datetime',
     ];
 
     /**

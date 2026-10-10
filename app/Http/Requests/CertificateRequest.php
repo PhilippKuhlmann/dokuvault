@@ -20,6 +20,9 @@ class CertificateRequest extends FormRequest
             'type' => 'nullable|max:255',
             'issued_date' => 'nullable|date',
             'expiry_date' => 'nullable|date',
+            'auto_check' => 'nullable|boolean',
+            'check_host' => 'nullable|max:255',
+            'check_port' => 'nullable|integer|min:1|max:65535',
             'notes' => 'nullable',
         ];
     }
@@ -33,6 +36,9 @@ class CertificateRequest extends FormRequest
             'type' => 'Typ',
             'issued_date' => 'Ausgestellt am',
             'expiry_date' => 'Ablaufdatum',
+            'auto_check' => 'Automatisch prüfen',
+            'check_host' => 'Prüfen an Host',
+            'check_port' => 'Port',
             'notes' => 'Notizen',
         ];
     }

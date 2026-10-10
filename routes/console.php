@@ -73,6 +73,10 @@ Schedule::call(fn () => DB::table('api_request_stats')
     ->where('stunde', '<', now()->subDays(Setting::statistikApiTage()))->delete())
     ->dailyAt('03:50')->name('api-statistik-aufraeumen');
 
+// Domains and certificates checked against the internet (RDAP, DNS, TLS) -
+// before the expiry mail, so it already reports the dates found tonight.
+Schedule::command('domains:check')->dailyAt('05:00')->withoutOverlapping(60);
+
 // Expiry mails (Admin -> Einstellungen -> Benachrichtigungen). In the morning, so
 // the list is there when the day starts; the scheduler runs in UTC.
 Schedule::command('expiry:notify')->dailyAt('05:30');

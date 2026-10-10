@@ -24,6 +24,8 @@ class AdminAgentenEinstellungen extends Component
 
     public int $tokenMaxTage = 0;
 
+    public bool $autoCheck = true;
+
     public function mount(): void
     {
         Gate::authorize('admin_setting');
@@ -32,6 +34,15 @@ class AdminAgentenEinstellungen extends Component
         $this->stillStunden = Setting::agentStillStunden();
         $this->tokenTage = Setting::agentTokenTage();
         $this->tokenMaxTage = Setting::agentTokenMaxTage();
+        $this->autoCheck = Setting::autoCheck();
+    }
+
+    public function updatedAutoCheck(): void
+    {
+        Gate::authorize('admin_setting');
+
+        Setting::setzen(Setting::AUTO_CHECK, $this->autoCheck ? '1' : '0');
+        $this->dispatch('hinweis', text: __('Einstellung gespeichert.'));
     }
 
     public function updatedIntervall(): void

@@ -328,7 +328,7 @@ class Setting extends Model
     public const EXPIRY_MAIL_KINDS = 'expiry_mail_kinds';
 
     /** What an expiry mail can report, in display order. */
-    public const EXPIRY_KINDS = ['certificate', 'domain', 'licensesoftware', 'warranty'];
+    public const EXPIRY_KINDS = ['certificate', 'domain', 'licensesoftware', 'firewall', 'warranty'];
 
     /**
      * Which kinds the expiry mail reports - set once by an admin, valid for
@@ -340,6 +340,20 @@ class Setting extends Model
         $chosen = array_filter(explode(',', (string) self::wert(self::EXPIRY_MAIL_KINDS)));
 
         return array_values(array_intersect(self::EXPIRY_KINDS, $chosen)) ?: self::EXPIRY_KINDS;
+    }
+
+    public const AUTO_CHECK = 'auto_check';
+
+    /**
+     * Whether DokuVault checks domains and certificates itself every night
+     * (domains:check). On by default; a server without internet access
+     * switches it off instead of logging a timeout per entry every day.
+     */
+    public static function autoCheck(): bool
+    {
+        $own = self::wert(self::AUTO_CHECK);
+
+        return $own === null ? true : (bool) $own;
     }
 
     public const APP_LOCALE = 'app_locale';

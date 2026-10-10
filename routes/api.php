@@ -39,6 +39,7 @@ Route::middleware(['throttle:agent', 'agent'])->withoutMiddleware('throttle:api'
     Route::post('/windows-ad', [AgentController::class, 'windowsAd']);
     Route::post('/windows-client', [AgentController::class, 'windowsClient']);
     Route::post('/unifi', [AgentController::class, 'unifi']);
+    Route::post('/firewall', [AgentController::class, 'firewall']);
     Route::post('/microsoft365', [AgentController::class, 'microsoft365']);
     Route::post('/backup', [AgentController::class, 'backup']);
     // Installed agents report in and get the roles chosen on the agent page.

@@ -47,6 +47,11 @@ trait TracksChanges
                 ...config('custom.secret_columns'),
                 'created_at',
                 'updated_at',
+                // Written by every daily check (domains:check) - a log entry
+                // a day saying "checked again" would bury the real changes.
+                'checked_at',
+                'check_error',
+                'agent_reported_at',
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();

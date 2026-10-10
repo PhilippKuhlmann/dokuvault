@@ -12,6 +12,7 @@ use App\Models\AgentInstallation;
 use App\Models\Backup;
 use App\Models\Computer;
 use App\Models\Domain;
+use App\Models\Firewall;
 use App\Models\LicenseSoftware;
 use App\Models\Mailbox;
 use App\Models\MailboxProvider;
@@ -1031,6 +1032,108 @@ class AgentController extends Controller
             'switches_documented' => $switches,
             'accesspoints_documented' => $accesspoints,
             'wifis_documented' => $wlans,
+        ]);
+    }
+
+    /**
+     * A firewall as the firewall agent reports it - OPNsense or Securepoint,
+     * in one vendor-neutral shape. The differences between vendors live in
+     * the scripts only, so a third vendor needs no change here.
+     *
+     * Matched by agent_identifier; a firewall documented by hand before is
+     * found by its serial number and taken over instead of duplicated. Name,
+     * management URL and everything the form keeps (credentials, notes,
+     * rack) belong to the user: the name is only set on a new entry, the URL
+     * only while empty.
+     */
+    public function firewall(Request $request)
+    {
+        $customer = $request->attributes->get('agentCustomer');
+        $site = $request->attributes->get('agentSite');
+
+        $data = $request->validate([
+            'identifier' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
+            'manufacturer' => ['nullable', 'string', 'max:255'],
+            'model' => ['nullable', 'string', 'max:255'],
+            'serial' => ['nullable', 'string', 'max:255'],
+            'firmware' => ['nullable', 'string', 'max:255'],
+            'management_url' => ['nullable', 'string', 'max:255'],
+            'subscription_until' => ['nullable', 'date'],
+            'interfaces' => ['nullable', 'array', 'max:500'],
+            'interfaces.*.name' => ['required', 'string', 'max:255'],
+            'interfaces.*.device' => ['nullable', 'string', 'max:255'],
+            'interfaces.*.ip' => ['nullable', 'string', 'max:255'],
+            'interfaces.*.vlan' => ['nullable', 'integer'],
+            'vpns' => ['nullable', 'array', 'max:500'],
+            'vpns.*.type' => ['required', 'string', 'max:50'],
+            'vpns.*.name' => ['required', 'string', 'max:255'],
+            'vpns.*.remote' => ['nullable', 'string', 'max:255'],
+            'port_forwards' => ['nullable', 'array', 'max:1000'],
+            'port_forwards.*.description' => ['nullable', 'string', 'max:255'],
+            'port_forwards.*.interface' => ['nullable', 'string', 'max:255'],
+            'port_forwards.*.protocol' => ['nullable', 'string', 'max:50'],
+            'port_forwards.*.port' => ['nullable', 'string', 'max:255'],
+            'port_forwards.*.target' => ['nullable', 'string', 'max:255'],
+            'port_forwards.*.target_port' => ['nullable', 'string', 'max:255'],
+            'gateways' => ['nullable', 'array', 'max:100'],
+            'gateways.*.name' => ['required', 'string', 'max:255'],
+            'gateways.*.address' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $firewall = Firewall::where('customer_id', $customer->id)
+            ->where('agent_identifier', $data['identifier'])->first();
+
+        if (! $firewall && filled($data['serial'] ?? null)) {
+            $firewall = Firewall::where('customer_id', $customer->id)
+                ->whereNull('agent_identifier')
+                ->where('serialNumber', $data['serial'])->first();
+        }
+
+        $neu = ! $firewall;
+        $firewall ??= new Firewall([
+            'customer_id' => $customer->id,
+            'site_id' => $site->id,
+            'name' => $data['name'],
+        ]);
+
+        $firewall->agent_identifier = $data['identifier'];
+
+        // What the device says about itself replaces what was typed - but
+        // "not reported" is not "empty".
+        foreach (['manufacturer' => 'manufacturer', 'model' => 'model', 'serial' => 'serialNumber', 'firmware' => 'firmware', 'subscription_until' => 'subscription_until'] as $feld => $spalte) {
+            if (filled($data[$feld] ?? null)) {
+                $firewall->$spalte = $data[$feld];
+            }
+        }
+
+        if (blank($firewall->management_url) && filled($data['management_url'] ?? null)) {
+            $firewall->management_url = $data['management_url'];
+        }
+
+        $firewall->agent_details = [
+            'interfaces' => array_values($data['interfaces'] ?? []),
+            'vpns' => array_values($data['vpns'] ?? []),
+            'port_forwards' => array_values($data['port_forwards'] ?? []),
+            'gateways' => array_values($data['gateways'] ?? []),
+        ];
+        $firewall->agent_reported_at = now();
+        $firewall->save();
+
+        // Interface addresses into the IPAM, without the prefix length.
+        foreach ($data['interfaces'] ?? [] as $schnittstelle) {
+            $this->meldeAdresse($firewall, $customer->id, $firewall->site_id, strtok((string) ($schnittstelle['ip'] ?? ''), '/') ?: null, false);
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'customer' => $customer->name,
+            'site' => $site->name,
+            'firewall' => $firewall->name,
+            'created' => $neu,
+            'interfaces_documented' => count($data['interfaces'] ?? []),
+            'vpns_documented' => count($data['vpns'] ?? []),
+            'port_forwards_documented' => count($data['port_forwards'] ?? []),
         ]);
     }
 

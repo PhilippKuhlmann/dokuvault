@@ -8,6 +8,7 @@ use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
 use App\Models\Setting;
 use App\Models\Site;
+use App\Support\AutoCheck;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\Locked;
@@ -192,6 +193,32 @@ class ObjektListe extends Component
      */
     #[On('geraet-geaendert')]
     public function geraetGeaendert(): void {}
+
+    /**
+     * "Check now" on a domain or certificate card - the same check the
+     * nightly domains:check runs, for one entry, without waiting a day.
+     */
+    public function check(int $id): void
+    {
+        abort_unless(in_array($this->typ, ['domain', 'certificate'], true), 404);
+        Gate::authorize($this->typ.'_update');
+        $this->nurEigenerKunde($this->customerId);
+
+        $klasse = config('forms.'.$this->typ.'.model');
+        $eintrag = $klasse::where('customer_id', $this->customerId)->findOrFail($id);
+
+        // DNS, RDAP and TLS together can take longer than PHP's default 30
+        // seconds; the check has its own budget below this.
+        set_time_limit(90);
+
+        $this->typ === 'domain'
+            ? app(AutoCheck::class)->checkDomain($eintrag)
+            : app(AutoCheck::class)->checkCertificate($eintrag);
+
+        $this->dispatch('hinweis', text: $eintrag->check_error
+            ? __('Prüfung fehlgeschlagen: :fehler', ['fehler' => $eintrag->check_error])
+            : __('Geprüft und aktualisiert.'));
+    }
 
     public function render()
     {

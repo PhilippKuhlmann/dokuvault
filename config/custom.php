@@ -1722,6 +1722,39 @@ return [
             ],
         ],
 
+        'firewall' => [
+            'name' => 'Firewall',
+            'endpunkt' => 'firewall',
+            'kurz' => 'OPNsense: Firmware, Schnittstellen, VPNs, Portweiterleitungen',
+            'zugangsdaten' => true,
+            'erreichbar_von' => 'Diese URL muss von diesem Rechner aus erreichbar sein. Falls nicht, zusätzlich überschreiben:',
+            'macht' => [
+                'Fragt die REST-API der OPNsense nach Version, Schnittstellen, VPNs (IPsec, OpenVPN, WireGuard), Portweiterleitungen und Gateways – rein lesend, verändert nichts an der Firewall.',
+                'Legt die Firewall an oder aktualisiert sie. Eine schon von Hand dokumentierte Firewall wird über die Seriennummer gefunden und übernommen. Name, Zugangsdaten, Notizen und Einbauort bleiben, wie sie sind.',
+                'Die Adressen der Schnittstellen landen im IPAM. VPNs, Portweiterleitungen und Gateways stehen auf der Karte der Firewall und werden bei jedem Lauf neu gemeldet.',
+                'API-Key und Secret werden dem Script beim Aufruf mitgegeben und nicht in DokuVault gespeichert. Ein eigener Benutzer mit reinen Leserechten genügt.',
+                'Mehrfaches Ausführen aktualisiert denselben Eintrag, statt Duplikate anzulegen.',
+            ],
+            'varianten' => [
+                [
+                    'name' => 'PowerShell',
+                    'skript' => 'firewall.ps1',
+                    'datei' => 'firewall-doku.ps1',
+                    'ausfuehren_auf' => 'Ausführen auf einem Windows-Rechner, der die Firewall erreicht:',
+                    'aufruf' => '.\\firewall-doku.ps1 -Url "https://opnsense.local" -Key "…" -Secret "…" -ZertifikatIgnorieren',
+                    'ueberschreiben' => '.\\firewall-doku.ps1 -Url "https://opnsense.local" -Key "…" -Secret "…" -ApiUrl "https://euer-server/api/agent/firewall"',
+                ],
+                [
+                    'name' => 'Bash',
+                    'skript' => 'firewall.sh',
+                    'datei' => 'firewall-doku.sh',
+                    'ausfuehren_auf' => 'Ausführen auf einem Mac oder Linux-Rechner, der die Firewall erreicht (braucht curl und jq; das Secret wird abgefragt):',
+                    'aufruf' => 'bash firewall-doku.sh --url https://opnsense.local --key … --unsicher',
+                    'ueberschreiben' => 'bash firewall-doku.sh --url https://opnsense.local --key … --api-url https://euer-server/api/agent/firewall',
+                ],
+            ],
+        ],
+
         'vmware' => [
             'name' => 'VMware',
             'endpunkt' => 'vmware',

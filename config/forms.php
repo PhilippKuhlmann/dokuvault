@@ -119,6 +119,12 @@ return [
             ['name' => 'expiry_date', 'label' => 'Ablaufdatum', 'type' => 'date'],
             ['name' => 'nameserver1', 'label' => 'Nameserver 1', 'type' => 'text'],
             ['name' => 'nameserver2', 'label' => 'Nameserver 2', 'type' => 'text'],
+            // Nightly check (domains:check): expiry from RDAP, nameservers,
+            // MX, SPF and DMARC from the DNS.
+            ['name' => 'auto_check', 'label' => 'Automatisch prüfen', 'type' => 'schalter', 'default' => '1'],
+            // DKIM selectors can't be listed over DNS - the check tries the
+            // common ones, these are added on top.
+            ['name' => 'dkim_selectors', 'label' => 'Eigene DKIM-Selektoren', 'type' => 'text', 'platzhalter' => 'z. B. mail2024, sendgrid'],
             ['name' => 'notes', 'label' => 'Notizen', 'type' => 'text'],
         ],
     ],
@@ -132,6 +138,11 @@ return [
             ['name' => 'type', 'label' => 'Art', 'type' => 'text'],
             ['name' => 'issued_date', 'label' => 'Ausgestellt am', 'type' => 'date'],
             ['name' => 'expiry_date', 'label' => 'Gültig bis', 'type' => 'date'],
+            // Nightly check (domains:check) reads the certificate the host
+            // serves. Empty host means the common name - a wildcard needs one.
+            ['name' => 'auto_check', 'label' => 'Automatisch prüfen', 'type' => 'schalter', 'default' => '1'],
+            ['name' => 'check_host', 'label' => 'Prüfen an Host', 'type' => 'text', 'platzhalter' => 'www.example.com'],
+            ['name' => 'check_port', 'label' => 'Port', 'type' => 'number', 'platzhalter' => '443'],
             ['name' => 'notes', 'label' => 'Notizen', 'type' => 'text'],
         ],
     ],

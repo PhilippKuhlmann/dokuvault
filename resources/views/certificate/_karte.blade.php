@@ -18,6 +18,7 @@
                 'Ausgestellt am' => $eintrag->issued_date ? \Carbon\Carbon::parse($eintrag->issued_date)->format('d.m.Y') : null,
                 'Ablaufdatum' => $eintrag->expiry_date ? \Carbon\Carbon::parse($eintrag->expiry_date)->format('d.m.Y') : null,
             ]" />
+            <x-auto-check :eintrag="$eintrag" can="certificate_update" />
             @if ($eintrag->notes)
                 <x-minitextcard :title="__('Notizen')">{{ $eintrag->notes }}</x-minitextcard>
             @endif

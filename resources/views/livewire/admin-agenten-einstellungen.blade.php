@@ -49,4 +49,22 @@
                 :hinweis="__('Ein späteres Ablaufdatum lässt sich beim Erzeugen nicht wählen. Bestehende Tokens behalten ihr Datum.')" />
         </div>
     </x-panel>
+
+    <x-panel class="max-w-3xl">
+        <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Prüfung ohne Agent') }}</div>
+        <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">
+            {{ __('DokuVault prüft Domains und Zertifikate selbst – dafür braucht es keinen Agent beim Kunden, aber Internetzugang vom Server aus.') }}
+        </p>
+
+        <label class="flex cursor-pointer select-none items-start gap-3">
+            <input type="checkbox" wire:model.live="autoCheck"
+                class="mt-0.5 h-4 w-4 rounded border-gray-300 text-cerulean-600 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700">
+            <span class="text-sm">
+                <span class="text-gray-900 dark:text-gray-100">{{ __('Domains und Zertifikate jede Nacht prüfen') }}</span>
+                <span class="mt-0.5 block text-xs text-gray-500 dark:text-gray-400">
+                    {{ __('Ablaufdatum und Registrar per RDAP, Nameserver, MX, SPF und DMARC aus dem DNS, bei Zertifikaten das, was der Host tatsächlich ausliefert. Einzelne Einträge lassen sich im Formular davon ausnehmen.') }}
+                </span>
+            </span>
+        </label>
+    </x-panel>
 </div>

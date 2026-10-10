@@ -1,5 +1,15 @@
 # Changelog
 
+## 26.10.10
+
+### Added
+
+- **Domains und Zertifikate prüft DokuVault selbst.** Jede Nacht um 05:00 (vor der Ablauf-Mail) holt DokuVault zu jeder Domain Ablaufdatum und Registrar per RDAP sowie Nameserver, MX, SPF und DMARC aus dem DNS, und zu jedem Zertifikat das, was der Host tatsächlich ausliefert: Aussteller, Ausstellungs- und Ablaufdatum. Kein Agent beim Kunden nötig. Die Karte zeigt, wann zuletzt geprüft wurde, warnt bei fehlendem SPF oder DMARC und hat „Jetzt prüfen“. Überschrieben wird nur, was die Prüfung wirklich findet – ein Zeitüberschreiten leert nichts, und ein von Hand eingetragener Registrar bleibt. .de-Domains liefern über DENIC kein Ablaufdatum; dort bleibt das gepflegte. Wildcard-Zertifikate brauchen im Formular einen Host zum Prüfen. Einzelne Einträge lassen sich im Formular ausnehmen, die ganze Prüfung unter Einstellungen → Agenten abschalten (für Server ohne Internetzugang).
+- **DKIM und Reverse DNS der Mailserver.** Die Domainprüfung sucht DKIM-Schlüssel unter den üblichen Selektoren (Microsoft 365, Google, Mailchimp, Hosting-Panels) und unter eigenen, die man im Formular einträgt – auflisten lässt DNS sie nicht. Je gefundenem Selektor steht auf der Karte, was eingerichtet ist („eingerichtet · RSA 4096 Bit“); ein RSA-Schlüssel unter 2048 Bit und ein zurückgezogener (leerer) Schlüssel werden gemeldet. Zu jedem Mailserver aus dem MX steht der PTR seiner Adressen auf der Karte, grün nur, wenn der Name auch wieder auf dieselbe Adresse zeigt, wie es empfangende Server prüfen. Fehlt DKIM oder passt ein PTR nicht, warnt die Karte.
+- **Registrar laut Registry getrennt vom eingetragenen.** Die Registry nennt den akkreditierten Großhändler (z. B. Key-Systems), nicht den Anbieter, über den der Kunde die Domain hat (z. B. EWE). Das Feld „Registrar“ wird deshalb nie automatisch beschrieben; was die Registry sagt, steht als „Laut Registry“ daneben, wenn es abweicht.
+- **Firewall-Agent für OPNsense.** Liest über die REST-API Version, Schnittstellen, VPNs (IPsec, OpenVPN, WireGuard), Portweiterleitungen und Gateways – rein lesend, als PowerShell- und Bash-Script auf der Agent-Seite. Schnittstellen-Adressen kommen ins IPAM, der Rest steht auf der Firewall-Karte. Eine von Hand angelegte Firewall wird über die Seriennummer übernommen; Name, Zugangsdaten, Notizen und Einbauort bleiben. Der Endpunkt ist herstellerneutral – Securepoint folgt.
+- **Firewall-Subscriptions in der Ablauf-Mail.** Als eigene Art unter Einstellungen → Benachrichtigungen.
+
 ## 26.10.09
 
 ### Added

@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\Certificate;
 use App\Models\Concerns\HatBeschaffung;
 use App\Models\Domain;
+use App\Models\Firewall;
 use App\Models\LicenseSoftware;
 use App\Models\Setting;
 use App\Models\User;
@@ -41,6 +42,7 @@ class ExpiringItems
             'certificate' => [Certificate::class, 'expiry_date', __('Zertifikat')],
             'domain' => [Domain::class, 'expiry_date', __('Domain')],
             'licensesoftware' => [LicenseSoftware::class, 'end_date', __('Software-Lizenz')],
+            'firewall' => [Firewall::class, 'subscription_until', __('Firewall-Subscription')],
         ];
 
         foreach ($contracts as $slug => [$class, $column, $label]) {

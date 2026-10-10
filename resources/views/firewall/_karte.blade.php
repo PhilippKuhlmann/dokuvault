@@ -63,6 +63,47 @@
                     'Läuft bis' => $eintrag->subscription_until?->format('d.m.Y'),
                 ]" />
 
+                {{-- What the firewall agent reported - read only, replaced by
+                     every run. Each list is left out when it is empty. --}}
+                @if ($eintrag->agent_reported_at)
+                    @php
+                        $details = $eintrag->agent_details ?? [];
+                        $listen = [
+                            __('Schnittstellen') => collect($details['interfaces'] ?? [])->map(fn ($i) => [
+                                $i['name'], trim(($i['ip'] ?? '').(! empty($i['vlan']) ? ' · VLAN '.$i['vlan'] : '')),
+                            ]),
+                            __('VPNs') => collect($details['vpns'] ?? [])->map(fn ($v) => [
+                                $v['name'], trim($v['type'].(! empty($v['remote']) ? ' · '.$v['remote'] : '')),
+                            ]),
+                            __('Portweiterleitungen') => collect($details['port_forwards'] ?? [])->map(fn ($p) => [
+                                trim(($p['protocol'] ?? '').' '.($p['port'] ?? '')).(! empty($p['description']) ? ' · '.$p['description'] : ''),
+                                trim(($p['target'] ?? '').(! empty($p['target_port']) ? ':'.$p['target_port'] : '')),
+                            ]),
+                            __('Gateways') => collect($details['gateways'] ?? [])->map(fn ($g) => [$g['name'], $g['address'] ?? '']),
+                        ];
+                    @endphp
+
+                    @foreach ($listen as $titel => $zeilen)
+                        @if ($zeilen->isNotEmpty())
+                            <div class="w-full mb-5 break-inside-avoid">
+                                <div class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ $titel }}</div>
+                                <table class="w-full text-sm dark:text-gray-100">
+                                    @foreach ($zeilen as [$links, $rechts])
+                                        <tr class="border-b border-gray-100 last:border-0 dark:border-gray-700/50">
+                                            <td class="py-1 pr-6 align-top text-gray-500 dark:text-gray-400">{{ $links }}</td>
+                                            <td class="py-1 break-all">{{ $rechts }}</td>
+                                        </tr>
+                                    @endforeach
+                                </table>
+                            </div>
+                        @endif
+                    @endforeach
+
+                    <p class="w-full mb-5 text-xs text-gray-500 dark:text-gray-400">
+                        {{ __('Vom Agent gemeldet am :datum', ['datum' => \App\Support\Zeit::anzeigen($eintrag->agent_reported_at)]) }}
+                    </p>
+                @endif
+
                 <x-minitablecard :title="__('Notizen')" :array="[
                     'Notizen' => $eintrag->notes,
                 ]" />
