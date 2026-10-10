@@ -177,7 +177,10 @@ jq -n \
   ($fw[0]) as $fw | ($st[0]) as $st | ($sys[0]) as $sys |
   # Nur zugewiesene Schnittstellen: Loopback und die unbelegten (enc0,
   # pflog0) haben keine Kennung und gehoeren nicht in die Doku.
-  [ ($ifs[0] | zeilen)[] | select((.identifier // "") != "" and .device != "lo0") ] as $schnittstellen |
+  # VPN-Tunnel (WireGuard, OpenVPN, IPsec) koennen zugewiesen sein, sind
+  # aber keine Netze der Doku - die VPNs stehen unten eigens.
+  [ ($ifs[0] | zeilen)[] | select((.identifier // "") != "" and .device != "lo0")
+    | select((.device // "") | test("^(wg|ovpn|tun|tap|ipsec|enc|gif|gre|ppp)") | not) ] as $schnittstellen |
   # Die MAC der LAN-Schnittstelle (sonst der ersten) bleibt, auch wenn
   # jemand Namen oder Adressen aendert - darueber findet der naechste Lauf
   # denselben Eintrag.

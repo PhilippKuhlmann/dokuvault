@@ -113,8 +113,10 @@ $status = Get-Api "core/firmware/status"
 $system = Get-Api "diagnostics/system/system_information"
 # Nur zugewiesene Schnittstellen: Loopback und die unbelegten (enc0,
 # pflog0) haben keine Kennung und gehoeren nicht in die Doku.
+# VPN-Tunnel (WireGuard, OpenVPN, IPsec) koennen zugewiesen sein, sind aber
+# keine Netze der Doku - die VPNs stehen unten eigens.
 $schnittstellen = @(Get-Zeilen (Get-Api "interfaces/overview/interfaces_info") |
-    Where-Object { $_.identifier -and $_.device -ne 'lo0' })
+    Where-Object { $_.identifier -and $_.device -ne 'lo0' -and "$($_.device)" -notmatch '^(wg|ovpn|tun|tap|ipsec|enc|gif|gre|ppp)' })
 
 $hostname = ([uri]$Url).Host
 

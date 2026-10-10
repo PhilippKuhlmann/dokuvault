@@ -1759,6 +1759,40 @@ return [
             ],
         ],
 
+        'securepoint' => [
+            'name' => 'Firewall Securepoint',
+            'endpunkt' => 'firewall',
+            'kurz' => 'UTM: Version, Lizenz, Schnittstellen, VLANs mit DHCP, VPNs, Portweiterleitungen',
+            'zugangsdaten' => true,
+            'erreichbar_von' => 'Diese URL muss von diesem Rechner aus erreichbar sein. Falls nicht, zusätzlich überschreiben:',
+            'macht' => [
+                'Die UTM hat keine REST-API: Das Script meldet sich per SSH an und liest alles mit „spcli“ – in einer einzigen Verbindung, rein lesend, verändert nichts an der UTM.',
+                'Legt die Firewall an oder aktualisiert sie, mit Seriennummer, Version und Lizenzlaufzeit (für die Ablauf-Mail). Eine schon von Hand dokumentierte UTM wird über die Seriennummer gefunden und übernommen. Name, Zugangsdaten, Notizen und Einbauort bleiben, wie sie sind.',
+                'Jede interne Schnittstelle wird ein Netz unter Netzwerk → VLAN – benannt nach ihrer Zone, mit VLAN-ID, der UTM als Gateway, DHCP-Bereich und DNS-Servern. Ein schon angelegtes Netz wird nur in leeren Feldern ergänzt; WAN wird übersprungen, gelöscht wird nichts.',
+                'VPNs (IPsec, OpenVPN, WireGuard) erscheinen mit Name und Gegenstelle – Pre-Shared Keys und andere Geheimnisse liest spcli zwar mit, das Script schickt sie aber nicht weiter. Portweiterleitungen (Regeln mit DESTNAT) stehen mit aufgelöstem Ziel und Port auf der Karte.',
+                'Gebraucht wird ein SSH-Zugang, der spcli aufrufen darf (root). Kennwort oder Schlüssel werden beim Aufruf abgefragt bzw. mitgegeben und nicht in DokuVault gespeichert. SSH muss auf der UTM für den Rechner freigegeben sein.',
+                'Mehrfaches Ausführen aktualisiert denselben Eintrag, statt Duplikate anzulegen.',
+            ],
+            'varianten' => [
+                [
+                    'name' => 'PowerShell',
+                    'skript' => 'securepoint.ps1',
+                    'datei' => 'securepoint-doku.ps1',
+                    'ausfuehren_auf' => 'Ausführen auf einem Windows-Rechner, der die UTM per SSH erreicht (OpenSSH-Client, ab Windows 10 dabei):',
+                    'aufruf' => '.\\securepoint-doku.ps1 -Host "192.168.175.1"',
+                    'ueberschreiben' => '.\\securepoint-doku.ps1 -Host "192.168.175.1" -ApiUrl "https://euer-server/api/agent/firewall"',
+                ],
+                [
+                    'name' => 'Bash',
+                    'skript' => 'securepoint.sh',
+                    'datei' => 'securepoint-doku.sh',
+                    'ausfuehren_auf' => 'Ausführen auf einem Mac oder Linux-Rechner, der die UTM per SSH erreicht (braucht ssh und jq; das Kennwort wird abgefragt):',
+                    'aufruf' => 'bash securepoint-doku.sh --host 192.168.175.1',
+                    'ueberschreiben' => 'bash securepoint-doku.sh --host 192.168.175.1 --api-url https://euer-server/api/agent/firewall',
+                ],
+            ],
+        ],
+
         'vmware' => [
             'name' => 'VMware',
             'endpunkt' => 'vmware',
