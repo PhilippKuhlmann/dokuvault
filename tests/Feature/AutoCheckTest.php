@@ -383,3 +383,16 @@ test('Schlüssellänge wird erkannt, ein schwacher oder zurückgezogener Schlüs
         ->assertSee('unter Selektor selector1 hat nur 1024 Bit')
         ->assertDontSee('Kein DKIM-Schlüssel');
 });
+
+test('Jetzt prüfen setzt der Kommandozeile kein Zeitlimit', function () {
+    fakeCertificate(null);
+    $this->actingAs(userWithPermissions(['certificate_viewAny', 'certificate_update']));
+    $customer = Customer::factory()->create();
+    $certificate = Certificate::factory()->create(['customer_id' => $customer->id, 'common_name' => 'www.example.com']);
+
+    Livewire::test(ObjektListe::class, ['typ' => 'certificate', 'customer' => $customer])
+        ->call('check', $certificate->id);
+
+    // The CLI runs without a limit; the call must not have set one.
+    expect((int) ini_get('max_execution_time'))->toBe(0);
+});

@@ -208,8 +208,14 @@ class ObjektListe extends Component
         $eintrag = $klasse::where('customer_id', $this->customerId)->findOrFail($id);
 
         // DNS, RDAP and TLS together can take longer than PHP's default 30
-        // seconds; the check has its own budget below this.
-        set_time_limit(90);
+        // seconds; the check has its own budget below this. Only ever
+        // raised: set_time_limit() counts for the whole process, and 0 (the
+        // CLI, the test suite) means no limit - lowering that to 90 seconds
+        // broke the CI run halfway through the suite.
+        $limit = (int) ini_get('max_execution_time');
+        if ($limit !== 0 && $limit < 90) {
+            set_time_limit(90);
+        }
 
         $this->typ === 'domain'
             ? app(AutoCheck::class)->checkDomain($eintrag)
