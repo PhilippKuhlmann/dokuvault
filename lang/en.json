@@ -1515,13 +1515,8 @@
     "Portweiterleitungen": "Port forwards",
     "Gateways": "Gateways",
     "Vom Agent gemeldet am :datum": "Reported by the agent on :datum",
-    "OPNsense: Firmware, Schnittstellen, VPNs, Portweiterleitungen": "OPNsense: firmware, interfaces, VPNs, port forwards",
     "Fragt die REST-API der OPNsense nach Version, Schnittstellen, VPNs (IPsec, OpenVPN, WireGuard), Portweiterleitungen und Gateways – rein lesend, verändert nichts an der Firewall.": "Asks the OPNsense REST API for version, interfaces, VPNs (IPsec, OpenVPN, WireGuard), port forwards and gateways – read only, changes nothing on the firewall.",
     "Legt die Firewall an oder aktualisiert sie. Eine schon von Hand dokumentierte Firewall wird über die Seriennummer gefunden und übernommen. Name, Zugangsdaten, Notizen und Einbauort bleiben, wie sie sind.": "Creates or updates the firewall. A firewall already documented by hand is found by its serial number and taken over. Name, credentials, notes and mounting location stay as they are.",
-    "Die Adressen der Schnittstellen landen im IPAM. VPNs, Portweiterleitungen und Gateways stehen auf der Karte der Firewall und werden bei jedem Lauf neu gemeldet.": "The interface addresses go into the IPAM. VPNs, port forwards and gateways are shown on the firewall card and reported anew on every run.",
-    "API-Key und Secret werden dem Script beim Aufruf mitgegeben und nicht in DokuVault gespeichert. Ein eigener Benutzer mit reinen Leserechten genügt.": "API key and secret are passed to the script when calling it and not stored in DokuVault. A dedicated user with read-only rights is enough.",
-    "Ausführen auf einem Windows-Rechner, der die Firewall erreicht:": "Run on a Windows machine that can reach the firewall:",
-    "Ausführen auf einem Mac oder Linux-Rechner, der die Firewall erreicht (braucht curl und jq; das Secret wird abgefragt):": "Run on a Mac or Linux machine that can reach the firewall (needs curl and jq; the secret is prompted for):",
     "Reverse DNS (PTR)": "Reverse DNS (PTR)",
     "kein PTR": "no PTR",
     "Kein DKIM-Schlüssel unter den üblichen Selektoren gefunden. Ist ein eigener Selektor im Einsatz, im Formular eintragen.": "No DKIM key found under the common selectors. If a custom selector is in use, enter it in the form.",
@@ -1533,5 +1528,13 @@
     "Selektor :name": "Selector :name",
     "zurückgezogen (leerer Schlüssel)": "withdrawn (empty key)",
     ":bits Bit": ":bits bit",
-    "DKIM-Schlüssel unter Selektor :name hat nur :bits Bit – 2048 Bit sind heute Standard.": "DKIM key under selector :name has only :bits bits – 2048 bits are standard today."
+    "DKIM-Schlüssel unter Selektor :name hat nur :bits Bit – 2048 Bit sind heute Standard.": "DKIM key under selector :name has only :bits bits – 2048 bits are standard today.",
+    "Firewall OPNsense": "Firewall OPNsense",
+    "Ausführen auf einem Windows-Rechner, der die OPNsense erreicht:": "Run on a Windows machine that can reach the OPNsense:",
+    "Ausführen auf einem Mac oder Linux-Rechner, der die OPNsense erreicht (braucht curl und jq; das Secret wird abgefragt):": "Run on a Mac or Linux machine that can reach the OPNsense (needs curl and jq; the secret is prompted for):",
+    "API-Key und Secret werden dem Script beim Aufruf mitgegeben und nicht in DokuVault gespeichert.": "API key and secret are passed to the script when calling it and not stored in DokuVault.",
+    "Reine Leserechte kennt die OPNsense nicht – das Script liest nur, der Schlüssel könnte mehr. Deshalb einen eigenen Benutzer nur dafür anlegen und den Schlüssel nicht weitergeben.": "OPNsense has no read-only privileges – the script only reads, but the key could do more. So create a dedicated user just for this and do not pass the key on.",
+    "Rechte des API-Benutzers (System → Zugang → Benutzer): Lobby: Dashboard, System: Firmware, Status: Interfaces, Interfaces: VLAN, VPN: IPsec: Connections, VPN: OpenVPN: Instances, VPN: WireGuard: Configuration, Firewall: NAT: Destination NAT, System: Gateways – dazu für DHCP „Services: Dnsmasq DNS/DHCP: Settings“ oder „Services: DHCP: Kea(v4)“, je nachdem, welcher läuft. Fehlt eines, nennt das Script den Bereich und lässt nur ihn weg.": "Privileges of the API user (System → Access → Users): Lobby: Dashboard, System: Firmware, Status: Interfaces, Interfaces: VLAN, VPN: IPsec: Connections, VPN: OpenVPN: Instances, VPN: WireGuard: Configuration, Firewall: NAT: Destination NAT, System: Gateways – plus for DHCP \"Services: Dnsmasq DNS/DHCP: Settings\" or \"Services: DHCP: Kea(v4)\", whichever is running. If one is missing, the script names the area and leaves only that out.",
+    "Firmware, Schnittstellen, VLANs mit DHCP, VPNs, Portweiterleitungen": "Firmware, interfaces, VLANs with DHCP, VPNs, port forwards",
+    "Jede interne Schnittstelle wird ein Netz unter Netzwerk → VLAN – mit VLAN-ID, der Firewall als Gateway, dem DHCP-Bereich aus Dnsmasq oder Kea und den DNS-Servern, die DHCP dort verteilt (ohne eigene Angabe die Firewall). Ein schon angelegtes Netz wird über Netzadresse und Maske gefunden und nur in leeren Feldern ergänzt; WAN wird übersprungen, gelöscht wird nichts. Die Adressen der Firewall landen im IPAM, VPNs, Portweiterleitungen und Gateways auf ihrer Karte.": "Every internal interface becomes a network under Network → VLAN – with VLAN ID, the firewall as gateway, the DHCP range from Dnsmasq or Kea and the DNS servers DHCP hands out there (the firewall unless set otherwise). An existing network is found by network address and mask and only completed in empty fields; WAN is skipped, nothing is deleted. The firewall's addresses go into the IPAM, VPNs, port forwards and gateways onto its card."
 }

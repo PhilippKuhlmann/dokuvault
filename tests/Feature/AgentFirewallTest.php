@@ -8,7 +8,7 @@ use App\Models\Setting;
 use App\Models\Site;
 use App\Support\ExpiringItems;
 
-/** What firewall.sh sends for an OPNsense. */
+/** What opnsense.sh sends. */
 function opnsensePayload(array $override = []): array
 {
     return array_replace([
@@ -19,9 +19,15 @@ function opnsensePayload(array $override = []): array
         'firmware' => '25.1.4',
         'management_url' => 'https://192.168.10.1',
         'interfaces' => [
-            ['name' => 'WAN', 'device' => 'igb0', 'ip' => '203.0.113.5/29', 'vlan' => null],
+            ['name' => 'WAN', 'device' => 'igb0', 'ip' => '203.0.113.5/29', 'vlan' => null, 'wan' => true],
             ['name' => 'LAN', 'device' => 'igb1', 'ip' => '192.168.10.1/24', 'vlan' => null],
             ['name' => 'Gast', 'device' => 'igb1_vlan20', 'ip' => '192.168.20.1/24', 'vlan' => 20],
+        ],
+        // The second range lies in no reported network and is ignored.
+        'dhcp_ranges' => [
+            ['start' => '192.168.20.100', 'end' => '192.168.20.199', 'dns' => ['9.9.9.9', '1.1.1.1']],
+            ['start' => '192.168.10.100', 'end' => '192.168.10.199'],
+            ['start' => '172.16.0.10', 'end' => '172.16.0.20'],
         ],
         'vpns' => [
             ['type' => 'IPsec', 'name' => 'Filiale Nord', 'remote' => '198.51.100.7'],
@@ -142,4 +148,60 @@ test('eine auslaufende Subscription steht in der Ablauf-Mail', function () {
     $items = ExpiringItems::forUser(userWithPermissions(['firewall_viewAny']), Setting::EXPIRY_KINDS);
 
     expect($items->pluck('name'))->toContain('fw01.kunde.local');
+});
+
+test('interne Schnittstellen werden zu Netzen unter VLAN, WAN nicht', function () {
+    [$customer, $site, $plain] = firewallToken();
+
+    $this->withToken($plain)->postJson('/api/agent/firewall', opnsensePayload())
+        ->assertOk()->assertJson(['networks_documented' => 2]);
+
+    $netze = Network::where('customer_id', $customer->id)->orderBy('network')->get();
+    expect($netze)->toHaveCount(2)
+        ->and($netze[0]->only(['description', 'network', 'cidr', 'subnetmask', 'gateway', 'vlanId']))
+        ->toBe(['description' => 'LAN', 'network' => '192.168.10.0', 'cidr' => '24', 'subnetmask' => '255.255.255.0', 'gateway' => '192.168.10.1', 'vlanId' => null])
+        // No DNS named for the LAN range: the firewall hands out itself.
+        ->and($netze[0]->only(['dns1', 'dns2']))->toBe(['dns1' => '192.168.10.1', 'dns2' => null])
+        ->and($netze[1]->only(['dns1', 'dns2']))->toBe(['dns1' => '9.9.9.9', 'dns2' => '1.1.1.1'])
+        ->and($netze[1]->only(['description', 'network', 'vlanId', 'gateway', 'dhcpStart', 'dhcpEnd']))
+        ->toBe(['description' => 'Gast', 'network' => '192.168.20.0', 'vlanId' => 20, 'gateway' => '192.168.20.1', 'dhcpStart' => '192.168.20.100', 'dhcpEnd' => '192.168.20.199'])
+        ->and($netze[0]->site_id)->toBe($site->id);
+
+    // The firewall's own address sits in the network it belongs to.
+    $firewall = Firewall::where('customer_id', $customer->id)->sole();
+    expect($firewall->ipAddresses()->where('address', '192.168.20.1')->value('network_id'))->toBe($netze[1]->id);
+
+    // A second run neither duplicates nor changes anything.
+    $this->withToken($plain)->postJson('/api/agent/firewall', opnsensePayload())->assertOk();
+    expect(Network::where('customer_id', $customer->id)->count())->toBe(2);
+});
+
+test('ein von Hand angelegtes Netz wird ergänzt, nicht überschrieben', function () {
+    [$customer, $site, $plain] = firewallToken();
+    $netz = Network::factory()->create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'description' => 'Gäste-WLAN', 'network' => '192.168.20.0', 'cidr' => '24', 'subnetmask' => '255.255.255.0',
+        'vlanId' => null, 'gateway' => null, 'dns1' => '192.168.20.5', 'dns2' => null, 'dhcpStart' => '192.168.20.50', 'dhcpEnd' => null,
+    ]);
+
+    $this->withToken($plain)->postJson('/api/agent/firewall', opnsensePayload())->assertOk();
+
+    $netz->refresh();
+    expect(Network::where('customer_id', $customer->id)->where('network', '192.168.20.0')->count())->toBe(1)
+        ->and($netz->description)->toBe('Gäste-WLAN')
+        ->and($netz->dns1)->toBe('192.168.20.5')
+        // dns2 was empty and is filled - dns1 typed in stays.
+        ->and($netz->dns2)->toBe('1.1.1.1')
+        ->and($netz->dhcpStart)->toBe('192.168.20.50')
+        ->and($netz->vlanId)->toBe(20)
+        ->and($netz->gateway)->toBe('192.168.20.1')
+        ->and($netz->dhcpEnd)->toBe('192.168.20.199');
+});
+
+test('ein Netz ohne DHCP-Bereich bekommt keinen DNS-Eintrag', function () {
+    [$customer, , $plain] = firewallToken();
+
+    $this->withToken($plain)->postJson('/api/agent/firewall', opnsensePayload(['dhcp_ranges' => []]))->assertOk();
+
+    expect(Network::where('customer_id', $customer->id)->whereNotNull('dns1')->count())->toBe(0);
 });

@@ -1064,7 +1064,18 @@ class AgentController extends Controller
             'interfaces.*.name' => ['required', 'string', 'max:255'],
             'interfaces.*.device' => ['nullable', 'string', 'max:255'],
             'interfaces.*.ip' => ['nullable', 'string', 'max:255'],
-            'interfaces.*.vlan' => ['nullable', 'integer'],
+            'interfaces.*.vlan' => ['nullable', 'integer', 'min:1', 'max:4094'],
+            // WAN and the like: a provider's transfer net is no VLAN of ours.
+            'interfaces.*.wan' => ['nullable', 'boolean'],
+            // DHCP ranges on their own: each goes to the network its start
+            // address lies in - the same for every DHCP server a vendor has.
+            'dhcp_ranges' => ['nullable', 'array', 'max:500'],
+            'dhcp_ranges.*.start' => ['required', 'ipv4'],
+            'dhcp_ranges.*.end' => ['required', 'ipv4'],
+            // DNS servers DHCP hands out there. Empty: the firewall itself,
+            // which is what OPNsense does unless told otherwise.
+            'dhcp_ranges.*.dns' => ['nullable', 'array', 'max:8'],
+            'dhcp_ranges.*.dns.*' => ['ipv4'],
             'vpns' => ['nullable', 'array', 'max:500'],
             'vpns.*.type' => ['required', 'string', 'max:50'],
             'vpns.*.name' => ['required', 'string', 'max:255'],
@@ -1120,6 +1131,13 @@ class AgentController extends Controller
         $firewall->agent_reported_at = now();
         $firewall->save();
 
+        // The internal networks first, so the firewall's own addresses below
+        // already find the network they belong to.
+        $netze = 0;
+        foreach ($data['interfaces'] ?? [] as $schnittstelle) {
+            $netze += $this->meldeNetz($schnittstelle, $data['dhcp_ranges'] ?? [], $customer->id, $firewall->site_id) ? 1 : 0;
+        }
+
         // Interface addresses into the IPAM, without the prefix length.
         foreach ($data['interfaces'] ?? [] as $schnittstelle) {
             $this->meldeAdresse($firewall, $customer->id, $firewall->site_id, strtok((string) ($schnittstelle['ip'] ?? ''), '/') ?: null, false);
@@ -1132,9 +1150,87 @@ class AgentController extends Controller
             'firewall' => $firewall->name,
             'created' => $neu,
             'interfaces_documented' => count($data['interfaces'] ?? []),
+            'networks_documented' => $netze,
             'vpns_documented' => count($data['vpns'] ?? []),
             'port_forwards_documented' => count($data['port_forwards'] ?? []),
         ]);
+    }
+
+    /**
+     * An interface of a firewall as network under Netzwerk -> VLAN: the net
+     * from its address, the firewall as gateway, VLAN tag and the DHCP range
+     * whose start lies in it - with the DNS servers handed out there (the
+     * firewall itself unless the range names others).
+     *
+     * Matched by network address and prefix at the customer and site, so a
+     * network entered by hand is completed instead of duplicated. Only empty
+     * fields are filled - name, DNS and anything typed in stay. Nothing is
+     * ever deleted: a VLAN gone from the firewall stays documented.
+     *
+     * Skipped: WAN interfaces, IPv6, no address, /31 and /32 (no network
+     * worth a VLAN entry).
+     */
+    protected function meldeNetz(array $schnittstelle, array $dhcpBereiche, int $customerId, ?int $siteId): bool
+    {
+        if (! empty($schnittstelle['wan']) || ! str_contains((string) ($schnittstelle['ip'] ?? ''), '/')) {
+            return false;
+        }
+
+        [$adresse, $praefix] = explode('/', $schnittstelle['ip'], 2);
+
+        if (filter_var($adresse, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false
+            || ! ctype_digit($praefix) || (int) $praefix < 1 || (int) $praefix > 30) {
+            return false;
+        }
+
+        $maske = Network::maskeAusCidr((int) $praefix);
+        $netzadresse = long2ip(ip2long($adresse) & ip2long($maske));
+
+        $dhcp = collect($dhcpBereiche)->first(
+            fn ($b) => (ip2long($b['start']) & ip2long($maske)) === ip2long($netzadresse)
+        );
+
+        $netz = Network::where('customer_id', $customerId)
+            ->when($siteId, fn ($q) => $q->where('site_id', $siteId))
+            ->where('network', $netzadresse)
+            ->where(fn ($q) => $q->where('cidr', $praefix)->orWhere('subnetmask', $maske))
+            ->first();
+
+        // 0.0.0.0 in a DHCP option means "this server" - the firewall.
+        $dns = $dhcp
+            ? collect($dhcp['dns'] ?? [])->map(fn ($a) => $a === '0.0.0.0' ? $adresse : $a)->unique()->values()->all() ?: [$adresse]
+            : [];
+
+        $werte = [
+            'vlanId' => $schnittstelle['vlan'] ?? null,
+            'gateway' => $adresse,
+            'dhcpStart' => $dhcp['start'] ?? null,
+            'dhcpEnd' => $dhcp['end'] ?? null,
+            'dns1' => $dns[0] ?? null,
+            'dns2' => $dns[1] ?? null,
+            'subnetmask' => $maske,
+            'cidr' => $praefix,
+        ];
+
+        if (! $netz) {
+            Network::create($werte + [
+                'customer_id' => $customerId,
+                'site_id' => $siteId,
+                'description' => $schnittstelle['name'],
+                'network' => $netzadresse,
+            ]);
+
+            return true;
+        }
+
+        foreach ($werte as $feld => $wert) {
+            if (blank($netz->$feld) && filled($wert)) {
+                $netz->$feld = $wert;
+            }
+        }
+        $netz->save();
+
+        return true;
     }
 
     /**
