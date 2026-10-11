@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.10.12
+
+### Fixed
+
+- **Backup-Mail mit falschem Absender.** Die Mail zum Backup nahm den Absender aus der `.env` (`hello@example.com`) statt aus Einstellungen → Mail, und der Mailserver lehnte sie ab. Jetzt geht sie mit demselben Absender raus wie jede andere Mail.
+
 ## 26.10.10
 
 ### Added

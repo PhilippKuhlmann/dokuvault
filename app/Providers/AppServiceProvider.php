@@ -262,5 +262,10 @@ class AppServiceProvider extends ServiceProvider
         if ($name = trim((string) Setting::wert(Setting::MAIL_FROM_NAME))) {
             config(['mail.from.name' => $name]);
         }
+
+        // config/backup.php reads its sender from the .env when the config
+        // loads - the backup mail went out as hello@example.com and the mail
+        // server refused it. It gets the same sender as every other mail.
+        config(['backup.notifications.mail.from' => config('mail.from')]);
     }
 }

@@ -116,7 +116,9 @@ test('gespeicherte Einstellungen gelten statt der Umgebung', function () {
     expect(config('mail.mailers.smtp.host'))->toBe('smtp.aus-der-datenbank')
         ->and(config('mail.mailers.smtp.port'))->toBe(2525)
         ->and(config('mail.mailers.smtp.password'))->toBe('Geheim-2026')
-        ->and(config('mail.from.address'))->toBe('doku@example.com');
+        ->and(config('mail.from.address'))->toBe('doku@example.com')
+        // Die Backup-Mail auch - sie las den Absender sonst aus der .env.
+        ->and(config('backup.notifications.mail.from.address'))->toBe('doku@example.com');
 });
 
 test('ohne Server bleibt die Umgebung unangetastet', function () {
