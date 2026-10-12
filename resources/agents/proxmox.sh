@@ -103,35 +103,40 @@ fi
 GUESTS_JSON=""
 add_guest() { GUESTS_JSON="${GUESTS_JSON:+$GUESTS_JSON,}$1"; }
 
-# Current load of every guest on this node, one call per kind: CPU as a
-# share of the guest's own cores (0.12 = 12 %) and memory in use, in bytes.
-# One line per guest, so last() below finds a guest by its VMID.
-LAST_QEMU="$(pvesh get "/nodes/$(hostname)/qemu" --output-format json 2>/dev/null | sed 's/},{/}\n{/g' || true)"
+# Root disk of every container on this node, one call: disk (used) and
+# maxdisk in bytes. One line per container, so last() finds it by its VMID.
+# A VM's disk shows 0 there - Proxmox cannot see inside it.
 LAST_LXC="$(pvesh get "/nodes/$(hostname)/lxc" --output-format json 2>/dev/null | sed 's/},{/}\n{/g' || true)"
 
-# ',"cpu_pct":12.5,"memory_used_gb":1.2' for a running guest, else nothing.
-# Containers also get their root disk: ',"disk_gb":8,"disk_used_gb":2.4'.
-# A VM's disk shows 0 there - Proxmox cannot see inside it - and maxdisk is
-# only the boot disk, so VMs get none.
+# Load of a running guest over the last hour, from Proxmox's own statistics
+# (rrddata, one point a minute): ',"cpu_pct":4.2,"memory_used_gb":3.6', for a
+# container also ',"disk_gb":32,"disk_used_gb":1.6'. Nothing for a stopped one.
+#
+# Not the "cpu" of the guest list or of status/current: pvesh computes it
+# from the previous sample, has none, and reports 0 for every guest. And the
+# "mem" of rrddata is what the guest uses (balloon driver), where the list
+# has what the VM took from the host - 6 of 6 GB for an idle VM.
 # The VMID is a number for VMs and a string for containers.
 last() {
-  local zeile cpu="" mem="" disk="" maxdisk=""
+  local zeile disk="" maxdisk=""
   [ "$3" = running ] || return 0
-  zeile="$(printf '%s\n' "$1" | grep -E "\"vmid\":\"?$2\"?[,}]" | head -n1 || true)"
-  [ -n "$zeile" ] || return 0
-  cpu="$(printf '%s' "$zeile" | grep -oE '"cpu":[0-9.eE+-]+' | head -n1 | cut -d: -f2 || true)"
-  mem="$(printf '%s' "$zeile" | grep -oE '"mem":[0-9]+' | head -n1 | cut -d: -f2 || true)"
-  if [ "${4:-}" = lxc ]; then
+  if [ "$4" = lxc ]; then
+    zeile="$(printf '%s\n' "$1" | grep -E "\"vmid\":\"?$2\"?[,}]" | head -n1 || true)"
     disk="$(printf '%s' "$zeile" | grep -oE '"disk":[0-9]+' | head -n1 | cut -d: -f2 || true)"
     maxdisk="$(printf '%s' "$zeile" | grep -oE '"maxdisk":[0-9]+' | head -n1 | cut -d: -f2 || true)"
   fi
-  awk -v c="$cpu" -v m="$mem" -v d="$disk" -v md="$maxdisk" 'BEGIN {
-    if (c != "") printf ",\"cpu_pct\":%.1f", c * 100
-    if (m != "") printf ",\"memory_used_gb\":%.1f", m / 1073741824
-    if (md != "" && md > 0) {
-      printf ",\"disk_gb\":%.1f", md / 1073741824
-      if (d != "") printf ",\"disk_used_gb\":%.1f", d / 1073741824
-    } }'
+  { pvesh get "/nodes/$(hostname)/$4/$2/rrddata" --timeframe hour --cf AVERAGE --output-format json 2>/dev/null || true; } \
+    | sed 's/},{/}\n{/g' \
+    | awk -v d="$disk" -v md="$maxdisk" '
+      match($0, /"cpu":[0-9.eE+-]+/) { c += substr($0, RSTART + 6, RLENGTH - 6); n++ }
+      match($0, /"mem":[0-9.eE+-]+/) { m += substr($0, RSTART + 6, RLENGTH - 6); k++ }
+      END {
+        if (n) printf ",\"cpu_pct\":%.1f", c / n * 100
+        if (k) printf ",\"memory_used_gb\":%.1f", m / k / 1073741824
+        if (md != "" && md > 0) {
+          printf ",\"disk_gb\":%.1f", md / 1073741824
+          if (d != "") printf ",\"disk_used_gb\":%.1f", d / 1073741824
+        } }'
 }
 
 # Betriebssystem des Gastes: ID und VERSION_ID aus /etc/os-release.
@@ -173,7 +178,7 @@ if command -v qm >/dev/null 2>&1; then
       OS_VERSION="$(json_feld version-id "$osinfo")"
     fi
     tags="$(qm config "$vmid" 2>/dev/null | sed -n 's/^tags:[[:space:]]*//p' | head -n1)"
-    add_guest "{\"identifier\":$(json_str "${HOSTNAME}/qemu/${vmid}"),\"tags\":$(tags_json "$tags"),\"vmid\":$(num "$vmid"),\"name\":$(json_str "$name"),\"type\":\"qemu\",\"os_id\":$(json_str "$OS_ID"),\"os_version\":$(json_str "$OS_VERSION"),\"ip\":$(json_str "$ip"),\"status\":$(json_str "$status"),\"cores\":$(num "$cores"),\"memory_gb\":$memgb$(last "$LAST_QEMU" "$vmid" "$status")}"
+    add_guest "{\"identifier\":$(json_str "${HOSTNAME}/qemu/${vmid}"),\"tags\":$(tags_json "$tags"),\"vmid\":$(num "$vmid"),\"name\":$(json_str "$name"),\"type\":\"qemu\",\"os_id\":$(json_str "$OS_ID"),\"os_version\":$(json_str "$OS_VERSION"),\"ip\":$(json_str "$ip"),\"status\":$(json_str "$status"),\"cores\":$(num "$cores"),\"memory_gb\":$memgb$(last "" "$vmid" "$status" qemu)}"
   done < <(qm list 2>/dev/null | awk 'NR>1{print $1" "$2" "$3}')
 fi
 

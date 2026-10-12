@@ -17,6 +17,7 @@
 
 ### Fixed
 
+- **CPU-Last der Gäste stand überall auf 0 %.** `pvesh` berechnet die Last aus dem Abstand zur vorigen Messung, hat beim einzelnen Aufruf keine und meldet für jeden Gast 0. Das Script nimmt jetzt den Mittelwert der letzten Stunde aus Proxmox' eigener Statistik (`rrddata`), passend zur stündlichen Meldung. Daher kommt auch der belegte Arbeitsspeicher: bei VMs mit Balloon-Treiber der im Gast belegte statt dem, was die VM dem Host abnimmt (am echten PC01 3,4 statt 7,4 von 8 GB). Kostet etwa eine halbe Sekunde je laufendem Gast.
 - **Arbeitsspeicher fehlte bei Hosts mit deutscher Systemsprache.** `free` schreibt dann „Speicher:“ statt „Mem:“, und der Wert ging ohne Meldung verloren (am echten srv-pve01 aufgefallen). Proxmox- und Linux-Script laufen jetzt mit englischer Ausgabe. Den Arbeitsspeicher zählen sie aus den eingebauten Modulen, statt ihn aus `free -g` zu lesen, wo ein 32-GB-Host als 31 GB erschien.
 - **Nicht erreichbare Storages** (deaktiviert, NAS aus) stehen als „nicht verfügbar“ auf der Server-Karte statt als „0 / 0 GB“.
 - **Container mit weniger als 1 GB Arbeitsspeicher** meldete das Proxmox-Script mit 0 GB. Jetzt mit einer Nachkommastelle („0.5“).
