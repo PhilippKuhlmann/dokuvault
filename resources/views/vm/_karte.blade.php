@@ -14,6 +14,20 @@
                     <x-remote.button :device="$eintrag" />
                     {{ $eintrag->name }}
 
+                    {{-- VM or container, as the agent reported it: decides how
+                         to get in (console vs. pct enter) and what a backup
+                         holds. Not stored for entries made by hand. --}}
+                    @php
+                        $gastTyp = match ($eintrag->agent_details['type'] ?? null) {
+                            'qemu' => ['VM', __('Virtuelle Maschine')],
+                            'lxc' => ['LXC', __('Container (LXC)')],
+                            default => null,
+                        };
+                    @endphp
+                    @if ($gastTyp)
+                        <span title="{{ $gastTyp[1] }}" class="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:bg-gray-700 dark:text-gray-300">{{ $gastTyp[0] }}</span>
+                    @endif
+
                     @if ($eintrag->operatingSystem)
                         <span class="text-sm font-normal text-gray-500 dark:text-gray-400">{{ $eintrag->operatingSystem->name }}</span>
 
@@ -58,11 +72,6 @@
                     $details = $eintrag->agent_details ?? [];
                 @endphp
                 <x-agentcard :device="$eintrag" :title="__('System')" :werte="[
-                    'Typ' => match ($details['type'] ?? null) {
-                        'qemu' => __('Virtuelle Maschine'),
-                        'lxc' => __('Container (LXC)'),
-                        default => $details['type'] ?? null,
-                    },
                     'VMID' => $details['vmid'] ?? null,
                     'Status' => match ($details['status'] ?? null) {
                         'running' => __('läuft'),

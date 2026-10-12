@@ -368,7 +368,8 @@ test('the server and VM cards show the report and say it came from the agent', f
         ->assertSee('Vom Agent gemeldet am');
     $this->get("/{$customer->slug}/vm")
         ->assertOk()
-        ->assertSee('Container (LXC)')
+        ->assertSee('title="Container (LXC)"', false)
+        ->assertSee('title="Virtuelle Maschine"', false)
         ->assertSee('0.5 GB')
         ->assertSee('Vom Agent gemeldet am');
 });
