@@ -2,6 +2,10 @@
 
 ## 26.10.12
 
+### Changed
+
+- **Windows-Agent baut der Deploy mit.** Hat sich der Quellcode des Windows-Dienstes seit der eingecheckten exe geändert, baut `deploy.sh` sie neu, sofern auf dem Server Go installiert ist. Sonst bleibt die eingecheckte exe. Die Version stammt jetzt aus dem letzten Commit statt aus der Uhrzeit des Baus. Derselbe Stand ergibt also überall dieselbe Version, und installierte Dienste aktualisieren sich nur bei echten Änderungen.
+
 ### Fixed
 
 - **Backup-Mail mit falschem Absender.** Die Mail zum Backup nahm den Absender aus der `.env` (`hello@example.com`) statt aus Einstellungen → Mail, und der Mailserver lehnte sie ab. Jetzt geht sie mit demselben Absender raus wie jede andere Mail.
