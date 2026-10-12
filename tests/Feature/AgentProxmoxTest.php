@@ -380,7 +380,7 @@ test('the server and VM cards show the report and say it came from the agent', f
         ->assertSee('title="Virtuelle Maschine"', false)
         ->assertSee('4 Kerne')
         ->assertSee('6 GB von 8 GB')
-        ->assertSee('75 %')
+        ->assertDontSee('75 %')
         ->assertSee('12 %')
         ->assertSee('alle Kerne')
         ->assertSee('0,5 GB')
@@ -494,3 +494,19 @@ test('sizes read like the rest of the app', function (float $gb, string $text) {
     [1006, '1 TB'],
     [5440, '5,4 TB'],
 ]);
+
+test('a VM at its memory limit stays neutral, a container warns', function () {
+    [$customer, , $plain] = proxmoxToken();
+    $payload = proxmoxPayload();
+    $payload['guests'][0] += ['memory_used_gb' => 8, 'cpu_pct' => 1];
+    $payload['guests'][1] += ['memory_gb' => 1, 'memory_used_gb' => 0.95];
+    $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)->assertOk();
+
+    $karten = AgentAnzeige::vm(VM::where('agent_identifier', 'pve01/qemu/100')->sole());
+    $ram = collect($karten['System'])->firstWhere(0, 'Arbeitsspeicher');
+    expect($ram[2]['warnen'])->toBeFalse();
+
+    $karten = AgentAnzeige::vm(VM::where('agent_identifier', 'pve01/lxc/200')->sole());
+    $ram = collect($karten['System'])->firstWhere(0, 'Arbeitsspeicher');
+    expect($ram[2]['warnen'])->toBeTrue();
+});

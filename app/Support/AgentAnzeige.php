@@ -99,7 +99,13 @@ class AgentAnzeige
             __('System') => [
                 [__('VMID'), isset($d['vmid']) ? (string) $d['vmid'] : null],
                 [__('CPU'), $kernText, $cpuLast !== null ? ['pct' => $cpuLast, 'warnen' => true] : null],
-                [__('Arbeitsspeicher'), $ramText, $belegt !== null && $ram ? ['pct' => $belegt / $ram * 100, 'warnen' => true] : null],
+                // A VM without balloon driver reports all the memory it took
+                // from the host, not what the guest uses - most VMs would show
+                // red. Containers report what is really in use.
+                [__('Arbeitsspeicher'), $ramText, $belegt !== null && $ram ? [
+                    'pct' => $belegt / $ram * 100,
+                    'warnen' => ($d['type'] ?? null) === 'lxc',
+                ] : null],
                 // Containers only: Proxmox sees their root disk, not inside a VM.
                 [__('Speicherplatz'), empty($d['disk_gb']) ? null : __(':belegt von :limit', [
                     'belegt' => self::gb($d['disk_used_gb'] ?? 0), 'limit' => self::gb($d['disk_gb']),
