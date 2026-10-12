@@ -52,6 +52,17 @@ echo "==> Frontend bauen"
 npm ci
 npm run build
 
+# Installed Windows services fetch the exe from public/downloads and replace
+# themselves when its version differs. Built only when agent/windows-service
+# changed since the committed exe and Go is installed; otherwise the
+# committed exe stays. A failed build must not stop the deploy - it falls
+# back to the committed exe.
+echo "==> Windows-Agent"
+if ! scripts/build-windows-agent.sh --if-outdated; then
+    echo "!!! Windows-Agent nicht gebaut - die eingecheckte exe bleibt" >&2
+    git checkout -- public/downloads/
+fi
+
 # Ab hier wird die Seite abgeschaltet - aber erst ab hier. Composer und der
 # Frontend-Build dauern ein bis zwei Minuten und brauchen keine Auszeit;
 # frueher lag die Demo genau so lange auf 503. Was jetzt noch kommt, sind

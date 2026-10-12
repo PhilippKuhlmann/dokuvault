@@ -42,3 +42,6 @@ Homestead.json
 # Code signing of the Windows agent (scripts/build-windows-agent.sh)
 /scripts/signing.env
 *.pfx
+
+# Written by go-winres on every build (scripts/build-windows-agent.sh)
+/agent/windows-service/rsrc_windows_amd64.syso

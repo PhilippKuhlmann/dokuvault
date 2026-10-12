@@ -4,12 +4,37 @@
 # download. Committed like public/build - the server needs no Go.
 set -euo pipefail
 
+#
+#   scripts/build-windows-agent.sh                  build
+#   scripts/build-windows-agent.sh --if-outdated    build only if the sources
+#       changed since the exe was built, and only if Go is installed (deploy.sh)
+
 root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "${root}/agent/windows-service"
 
-version="$(date +%y.%m.%d-%H%M)-$(git rev-parse --short HEAD)"
+# The version comes from the last commit of the sources, not from the clock:
+# building the same sources twice - here and again on the server - gives
+# the same version, so installed services do not update for nothing. In UTC,
+# so a Mac and a server in another time zone agree.
+if [ -n "$(git status --porcelain -- .)" ]; then
+    echo "agent/windows-service has uncommitted changes - commit first, the version comes from the commit" >&2
+    exit 1
+fi
+version="$(TZ=UTC git log -1 --date=format-local:%y.%m.%d-%H%M --format=%cd-%h -- .)"
 # Numeric for the Windows file properties: 26.10.03 -> 26.10.3.0
-numeric="$(date +%y).$((10#$(date +%m))).$((10#$(date +%d))).0"
+IFS=. read -r yy mm dd <<<"${version%%-*}"
+numeric="${yy}.$((10#${mm})).$((10#${dd})).0"
+
+if [ "${1:-}" = "--if-outdated" ]; then
+    if [ "$(cat ../../public/downloads/dokuvault-agent.version 2>/dev/null)" = "${version}" ]; then
+        echo "Windows agent up to date (${version})"
+        exit 0
+    fi
+    if ! command -v go >/dev/null; then
+        echo "!!! Windows agent outdated, but Go is not installed - keeping the committed exe" >&2
+        exit 0
+    fi
+fi
 
 go vet ./...
 GOOS=windows GOARCH=amd64 go vet ./...
