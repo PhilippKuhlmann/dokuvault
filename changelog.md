@@ -16,6 +16,8 @@
 
 ### Fixed
 
+- **Arbeitsspeicher fehlte bei Hosts mit deutscher Systemsprache.** `free` schreibt dann „Speicher:“ statt „Mem:“, und der Wert ging ohne Meldung verloren (am echten srv-pve01 aufgefallen). Proxmox- und Linux-Script laufen jetzt mit englischer Ausgabe. Den Arbeitsspeicher zählen sie aus den eingebauten Modulen, statt ihn aus `free -g` zu lesen, wo ein 32-GB-Host als 31 GB erschien.
+- **Nicht erreichbare Storages** (deaktiviert, NAS aus) stehen als „nicht verfügbar“ auf der Server-Karte statt als „0 / 0 GB“.
 - **Container mit weniger als 1 GB Arbeitsspeicher** meldete das Proxmox-Script mit 0 GB. Jetzt mit einer Nachkommastelle („0.5“).
 - **Aktive Token rutschten aus der Karte.** Auf der Agent-Seite stand nur der erste Token in der Liste „Aktive Token“. Jeder weitere landete eine Ebene weiter außen, ab dem dritten außerhalb des Seitenrahmens. Ursache war ein `</div>` zu viel in jeder Zeile.
 - **Backup-Mail mit falschem Absender.** Die Mail zum Backup nahm den Absender aus der `.env` (`hello@example.com`) statt aus Einstellungen → Mail, und der Mailserver lehnte sie ab. Jetzt geht sie mit demselben Absender raus wie jede andere Mail.

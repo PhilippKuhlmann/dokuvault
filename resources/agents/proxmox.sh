@@ -5,6 +5,10 @@
 #   bash proxmox-doku.sh
 #
 set -euo pipefail
+# Tool output in English, whatever the host's locale: free says "Speicher:"
+# instead of "Mem:" in German, lscpu "Modellname:" - and the values were
+# missing without a trace.
+export LC_ALL=C
 
 # Ziel-URL: 1. Argument  >  Umgebungsvariable DOKU_API_URL  >  eingebettete URL.
 # So kann man die URL ueberschreiben, ohne einen neuen Token zu erzeugen:
@@ -63,7 +67,16 @@ KERNEL="$(uname -r 2>/dev/null)"
 CPU_MODEL="$(lscpu 2>/dev/null | sed -n 's/^Model name:[[:space:]]*//p' | head -n1)"
 CORES="$(nproc 2>/dev/null || echo '')"
 CPU="${CPU_MODEL:-unbekannt} (${CORES:-?} Kerne)"
-MEM_GB="$(free -g 2>/dev/null | awk '/^Mem:/{print $2}')"
+# Installed memory: the modules from dmidecode. The kernel keeps a share for
+# itself - free -g showed 31 for a 32 GB host. Without dmidecode (or modules
+# it cannot read) /proc/meminfo, rounded up.
+MEM_GB="$(dmidecode -t memory 2>/dev/null | awk '
+  /^[[:space:]]+Size: [0-9]+ GB/ { s += $2 }
+  /^[[:space:]]+Size: [0-9]+ MB/ { s += $2 / 1024 }
+  END { if (s > 0) printf "%d", s + 0.5 }' || true)"
+if [ -z "$MEM_GB" ]; then
+  MEM_GB="$(awk '/^MemTotal:/{ g = $2 / 1048576; printf "%d", (g == int(g)) ? g : int(g) + 1 }' /proc/meminfo 2>/dev/null || true)"
+fi
 
 # --- Cluster ---
 # Name from corosync.conf; a single node has none and reports it empty.

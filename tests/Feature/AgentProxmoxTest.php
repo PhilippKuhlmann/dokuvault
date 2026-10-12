@@ -355,6 +355,7 @@ test('the server and VM cards show the report and say it came from the agent', f
     [$customer, , $plain] = proxmoxToken();
     $payload = proxmoxPayload();
     $payload['guests'][1]['memory_gb'] = 0.5;
+    $payload['host']['storages'][] = ['name' => 'nas-aus', 'type' => 'nfs', 'total_gb' => 0, 'used_gb' => 0];
     $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)->assertOk();
 
     $this->actingAs(userWithPermissions(['server_viewAny', 'vm_viewAny']));
@@ -362,6 +363,8 @@ test('the server and VM cards show the report and say it came from the agent', f
         ->assertOk()
         ->assertSee('6.8.4-2-pve')
         ->assertSee('400 / 1000 GB')
+        ->assertSee('nicht verfügbar')
+        ->assertDontSee('0 / 0 GB')
         ->assertSee('Vom Agent gemeldet am');
     $this->get("/{$customer->slug}/vm")
         ->assertOk()
