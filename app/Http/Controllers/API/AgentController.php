@@ -45,7 +45,7 @@ class AgentController extends Controller
     protected const HOST_DETAILS = ['pve_version', 'kernel', 'cpu', 'cores', 'memory_gb', 'storages'];
 
     /** What a guest reports beyond its columns (agent_details). */
-    protected const GAST_DETAILS = ['type', 'vmid', 'status', 'cores', 'memory_gb', 'cpu_pct', 'memory_used_gb'];
+    protected const GAST_DETAILS = ['type', 'vmid', 'status', 'cores', 'memory_gb', 'cpu_pct', 'memory_used_gb', 'disk_gb', 'disk_used_gb'];
 
     protected const WINDOWS_ROLLEN = [
         'AD-Domain-Services' => 'AD',
@@ -1765,6 +1765,9 @@ class AgentController extends Controller
             // Load of a running guest when the agent ran (since 26.10.12).
             'guests.*.cpu_pct' => ['nullable', 'numeric'],
             'guests.*.memory_used_gb' => ['nullable', 'numeric'],
+            // Root disk of a container; a VM's is not visible from outside.
+            'guests.*.disk_gb' => ['nullable', 'numeric'],
+            'guests.*.disk_used_gb' => ['nullable', 'numeric'],
             // Proxmox tags; only those matching a service of the catalog count.
             'guests.*.tags' => ['nullable', 'array', 'max:50'],
             'guests.*.tags.*' => ['string', 'max:100'],

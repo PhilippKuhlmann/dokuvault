@@ -80,6 +80,10 @@ class DemoProxmoxSeeder extends Seeder
             121 => [4.1, 9.7], 221 => [0.8, 0.2],
         ];
 
+        // Root disk of the running containers (used, size) - Proxmox sees
+        // inside a container, not inside a VM. CT-Grafana nearly full.
+        $platte = [201 => [3.1, 8], 211 => [18.6, 20], 221 => [1.4, 4]];
+
         foreach ($knoten as $name => $k) {
             $server = Server::where('name', $name)->whereNotNull('cluster_id')->first();
             if (! $server) {
@@ -111,6 +115,8 @@ class DemoProxmoxSeeder extends Seeder
                             'cores' => $kerne, 'memory_gb' => $ram,
                             'cpu_pct' => $last[$vmid][0] ?? null,
                             'memory_used_gb' => $last[$vmid][1] ?? null,
+                            'disk_used_gb' => $platte[$vmid][0] ?? null,
+                            'disk_gb' => $platte[$vmid][1] ?? null,
                         ], fn ($wert) => $wert !== null),
                         'agent_reported_at' => now()->subMinutes(12),
                     ]

@@ -110,17 +110,28 @@ LAST_QEMU="$(pvesh get "/nodes/$(hostname)/qemu" --output-format json 2>/dev/nul
 LAST_LXC="$(pvesh get "/nodes/$(hostname)/lxc" --output-format json 2>/dev/null | sed 's/},{/}\n{/g' || true)"
 
 # ',"cpu_pct":12.5,"memory_used_gb":1.2' for a running guest, else nothing.
+# Containers also get their root disk: ',"disk_gb":8,"disk_used_gb":2.4'.
+# A VM's disk shows 0 there - Proxmox cannot see inside it - and maxdisk is
+# only the boot disk, so VMs get none.
 # The VMID is a number for VMs and a string for containers.
 last() {
-  local zeile cpu mem
+  local zeile cpu="" mem="" disk="" maxdisk=""
   [ "$3" = running ] || return 0
   zeile="$(printf '%s\n' "$1" | grep -E "\"vmid\":\"?$2\"?[,}]" | head -n1 || true)"
   [ -n "$zeile" ] || return 0
   cpu="$(printf '%s' "$zeile" | grep -oE '"cpu":[0-9.eE+-]+' | head -n1 | cut -d: -f2 || true)"
   mem="$(printf '%s' "$zeile" | grep -oE '"mem":[0-9]+' | head -n1 | cut -d: -f2 || true)"
-  awk -v c="$cpu" -v m="$mem" 'BEGIN {
+  if [ "${4:-}" = lxc ]; then
+    disk="$(printf '%s' "$zeile" | grep -oE '"disk":[0-9]+' | head -n1 | cut -d: -f2 || true)"
+    maxdisk="$(printf '%s' "$zeile" | grep -oE '"maxdisk":[0-9]+' | head -n1 | cut -d: -f2 || true)"
+  fi
+  awk -v c="$cpu" -v m="$mem" -v d="$disk" -v md="$maxdisk" 'BEGIN {
     if (c != "") printf ",\"cpu_pct\":%.1f", c * 100
-    if (m != "") printf ",\"memory_used_gb\":%.1f", m / 1073741824 }'
+    if (m != "") printf ",\"memory_used_gb\":%.1f", m / 1073741824
+    if (md != "" && md > 0) {
+      printf ",\"disk_gb\":%.1f", md / 1073741824
+      if (d != "") printf ",\"disk_used_gb\":%.1f", d / 1073741824
+    } }'
 }
 
 # Betriebssystem des Gastes: ID und VERSION_ID aus /etc/os-release.
@@ -187,7 +198,7 @@ if command -v pct >/dev/null 2>&1; then
       OS_VERSION="$(printf '%s\n' "$osrelease" | sed -n 's/^VERSION_ID=//p' | tr -d '"' | head -n1)"
     fi
     tags="$(pct config "$vmid" 2>/dev/null | sed -n 's/^tags:[[:space:]]*//p' | head -n1)"
-    add_guest "{\"identifier\":$(json_str "${HOSTNAME}/lxc/${vmid}"),\"tags\":$(tags_json "$tags"),\"vmid\":$(num "$vmid"),\"name\":$(json_str "$name"),\"type\":\"lxc\",\"os_id\":$(json_str "$OS_ID"),\"os_version\":$(json_str "$OS_VERSION"),\"ip\":$(json_str "$ip"),\"status\":$(json_str "$status"),\"cores\":$(num "$cores"),\"memory_gb\":$memgb$(last "$LAST_LXC" "$vmid" "$status")}"
+    add_guest "{\"identifier\":$(json_str "${HOSTNAME}/lxc/${vmid}"),\"tags\":$(tags_json "$tags"),\"vmid\":$(num "$vmid"),\"name\":$(json_str "$name"),\"type\":\"lxc\",\"os_id\":$(json_str "$OS_ID"),\"os_version\":$(json_str "$OS_VERSION"),\"ip\":$(json_str "$ip"),\"status\":$(json_str "$status"),\"cores\":$(num "$cores"),\"memory_gb\":$memgb$(last "$LAST_LXC" "$vmid" "$status" lxc)}"
   done < <(pct list 2>/dev/null | awk 'NR>1{print $1}')
 fi
 

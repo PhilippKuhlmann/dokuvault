@@ -106,6 +106,10 @@ class AgentAnzeige
                 }],
                 [__('CPU'), $kernText, $cpuLast !== null ? ['pct' => $cpuLast, 'warnen' => true] : null],
                 [__('Arbeitsspeicher'), $ramText, $belegt !== null && $ram ? ['pct' => $belegt / $ram * 100, 'warnen' => true] : null],
+                // Containers only: Proxmox sees their root disk, not inside a VM.
+                [__('Speicherplatz'), empty($d['disk_gb']) ? null : __(':belegt von :limit', [
+                    'belegt' => self::gb($d['disk_used_gb'] ?? 0), 'limit' => self::gb($d['disk_gb']),
+                ]), empty($d['disk_gb']) ? null : ['pct' => ($d['disk_used_gb'] ?? 0) / $d['disk_gb'] * 100, 'warnen' => true]],
             ],
         ];
     }

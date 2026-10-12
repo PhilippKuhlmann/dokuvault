@@ -1560,5 +1560,6 @@
     "Gäste": "Guests",
     ":anzahl Kerne": ":anzahl cores",
     "alle Kerne": "all cores",
-    ":belegt von :limit": ":belegt of :limit"
+    ":belegt von :limit": ":belegt of :limit",
+    "Speicherplatz": "Disk space"
 }
