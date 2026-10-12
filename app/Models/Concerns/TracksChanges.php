@@ -52,6 +52,10 @@ trait TracksChanges
                 'checked_at',
                 'check_error',
                 'agent_reported_at',
+                // What an agent reports is the machine's state, replaced by
+                // every run: used storage and a guest's power state change
+                // all the time and would bury the real changes.
+                'agent_details',
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();

@@ -23,6 +23,10 @@ json_str() {
 }
 
 num() { local n="${1:-}"; [[ "$n" =~ ^[0-9]+$ ]] && printf '%s' "$n" || printf 'null'; }
+# MB -> GB with one decimal ("0.5", "8"): integer division made 0 of every
+# small container. Nothing configured (Proxmox default) stays null. LC_ALL=C:
+# a German locale would write "0,5" and break the JSON.
+gb() { LC_ALL=C awk -v m="${1:-}" 'BEGIN { if (m !~ /^[0-9]+$/) { printf "null"; exit } v = sprintf("%.1f", m / 1024); sub(/\.0$/, "", v); printf "%s", v }'; }
 
 # --- Host-Infos sammeln ---
 IDENTIFIER="$(cat /etc/machine-id 2>/dev/null || hostname)"
@@ -60,6 +64,15 @@ CPU_MODEL="$(lscpu 2>/dev/null | sed -n 's/^Model name:[[:space:]]*//p' | head -
 CORES="$(nproc 2>/dev/null || echo '')"
 CPU="${CPU_MODEL:-unbekannt} (${CORES:-?} Kerne)"
 MEM_GB="$(free -g 2>/dev/null | awk '/^Mem:/{print $2}')"
+
+# --- Cluster ---
+# Name from corosync.conf; a single node has none and reports it empty.
+# DokuVault creates the cluster from it and assigns node and guests.
+# "|| true": under set -e a failing sed would end the whole report.
+CLUSTER_NAME="$(sed -n 's/^[[:space:]]*cluster_name:[[:space:]]*//p' /etc/pve/corosync.conf 2>/dev/null | head -n1 || true)"
+# Storage replication jobs ("local: 100-0") - one hint for the cluster type.
+REPLICATION=false
+grep -qE '^[a-z]+:[[:space:]]+[0-9]+-[0-9]+' /etc/pve/replication.cfg 2>/dev/null && REPLICATION=true
 
 # --- Storage (pvesm status) ---
 STORAGES_JSON=""
@@ -106,7 +119,7 @@ if command -v qm >/dev/null 2>&1; then
     [ -z "${vmid:-}" ] && continue
     cores="$(qm config "$vmid" 2>/dev/null | sed -n 's/^cores:[[:space:]]*//p' | head -n1)"
     memmb="$(qm config "$vmid" 2>/dev/null | sed -n 's/^memory:[[:space:]]*//p' | head -n1)"
-    memgb=$(( ${memmb:-0} / 1024 ))
+    memgb="$(gb "$memmb")"
     ip="$(qm agent "$vmid" network-get-interfaces 2>/dev/null | grep -oE '"ip-address"[[:space:]]*:[[:space:]]*"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"' | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | grep -vE '^127\.' | head -n1 || true)"
     # Braucht den QEMU-Gastagenten. Fehlt er, bleibt das Betriebssystem leer.
     os_reset
@@ -116,7 +129,7 @@ if command -v qm >/dev/null 2>&1; then
       OS_VERSION="$(json_feld version-id "$osinfo")"
     fi
     tags="$(qm config "$vmid" 2>/dev/null | sed -n 's/^tags:[[:space:]]*//p' | head -n1)"
-    add_guest "{\"identifier\":$(json_str "${HOSTNAME}/qemu/${vmid}"),\"tags\":$(tags_json "$tags"),\"vmid\":$(num "$vmid"),\"name\":$(json_str "$name"),\"type\":\"qemu\",\"os_id\":$(json_str "$OS_ID"),\"os_version\":$(json_str "$OS_VERSION"),\"ip\":$(json_str "$ip"),\"status\":$(json_str "$status"),\"cores\":$(num "$cores"),\"memory_gb\":$(num "$memgb")}"
+    add_guest "{\"identifier\":$(json_str "${HOSTNAME}/qemu/${vmid}"),\"tags\":$(tags_json "$tags"),\"vmid\":$(num "$vmid"),\"name\":$(json_str "$name"),\"type\":\"qemu\",\"os_id\":$(json_str "$OS_ID"),\"os_version\":$(json_str "$OS_VERSION"),\"ip\":$(json_str "$ip"),\"status\":$(json_str "$status"),\"cores\":$(num "$cores"),\"memory_gb\":$memgb}"
   done < <(qm list 2>/dev/null | awk 'NR>1{print $1" "$2" "$3}')
 fi
 
@@ -127,7 +140,7 @@ if command -v pct >/dev/null 2>&1; then
     status="$(pct status "$vmid" 2>/dev/null | awk '{print $2}')"
     cores="$(pct config "$vmid" 2>/dev/null | sed -n 's/^cores:[[:space:]]*//p' | head -n1)"
     memmb="$(pct config "$vmid" 2>/dev/null | sed -n 's/^memory:[[:space:]]*//p' | head -n1)"
-    memgb=$(( ${memmb:-0} / 1024 ))
+    memgb="$(gb "$memmb")"
     ip="$(pct config "$vmid" 2>/dev/null | grep -oE 'ip=[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d= -f2 || true)"
     if [ -z "${ip:-}" ]; then
       ip="$(pct exec "$vmid" -- hostname -I 2>/dev/null | awk '{print $1}' || true)"
@@ -141,7 +154,7 @@ if command -v pct >/dev/null 2>&1; then
       OS_VERSION="$(printf '%s\n' "$osrelease" | sed -n 's/^VERSION_ID=//p' | tr -d '"' | head -n1)"
     fi
     tags="$(pct config "$vmid" 2>/dev/null | sed -n 's/^tags:[[:space:]]*//p' | head -n1)"
-    add_guest "{\"identifier\":$(json_str "${HOSTNAME}/lxc/${vmid}"),\"tags\":$(tags_json "$tags"),\"vmid\":$(num "$vmid"),\"name\":$(json_str "$name"),\"type\":\"lxc\",\"os_id\":$(json_str "$OS_ID"),\"os_version\":$(json_str "$OS_VERSION"),\"ip\":$(json_str "$ip"),\"status\":$(json_str "$status"),\"cores\":$(num "$cores"),\"memory_gb\":$(num "$memgb")}"
+    add_guest "{\"identifier\":$(json_str "${HOSTNAME}/lxc/${vmid}"),\"tags\":$(tags_json "$tags"),\"vmid\":$(num "$vmid"),\"name\":$(json_str "$name"),\"type\":\"lxc\",\"os_id\":$(json_str "$OS_ID"),\"os_version\":$(json_str "$OS_VERSION"),\"ip\":$(json_str "$ip"),\"status\":$(json_str "$status"),\"cores\":$(num "$cores"),\"memory_gb\":$memgb}"
   done < <(pct list 2>/dev/null | awk 'NR>1{print $1}')
 fi
 
@@ -188,10 +201,8 @@ job_lauf() {
 }
 
 if [ -f /etc/pve/jobs.cfg ]; then
-  # A single node has no corosync.conf - then the host name. "|| true":
-  # under set -e a failing sed would end the whole report.
-  CLUSTER="$(sed -n 's/^[[:space:]]*cluster_name:[[:space:]]*//p' /etc/pve/corosync.conf 2>/dev/null | head -n1 || true)"
-  CLUSTER="${CLUSTER:-$HOSTNAME}"
+  # A single node has no cluster name - then the host name.
+  CLUSTER="${CLUSTER_NAME:-$HOSTNAME}"
 
   TASKS="$(pvesh get "/nodes/$(hostname)/tasks" --typefilter vzdump --limit 200 --output-format json 2>/dev/null \
     | sed 's/},{/}\n{/g' \
@@ -225,7 +236,7 @@ if [ -f /etc/pve/jobs.cfg ]; then
 fi
 
 # --- Payload zusammenbauen ---
-HOST_JSON="{\"identifier\":$(json_str "$IDENTIFIER"),\"hostname\":$(json_str "$HOSTNAME"),\"manufacturer\":$(json_str "$MANUFACTURER"),\"model\":$(json_str "$MODEL"),\"serial\":$(json_str "$SERIAL"),\"ip\":$(json_str "$IP"),\"pve_version\":$(json_str "$PVE_VERSION"),\"kernel\":$(json_str "$KERNEL"),\"cpu\":$(json_str "$CPU"),\"memory_gb\":$(num "$MEM_GB"),\"storages\":[$STORAGES_JSON]}"
+HOST_JSON="{\"identifier\":$(json_str "$IDENTIFIER"),\"hostname\":$(json_str "$HOSTNAME"),\"manufacturer\":$(json_str "$MANUFACTURER"),\"model\":$(json_str "$MODEL"),\"serial\":$(json_str "$SERIAL"),\"ip\":$(json_str "$IP"),\"pve_version\":$(json_str "$PVE_VERSION"),\"kernel\":$(json_str "$KERNEL"),\"cpu\":$(json_str "$CPU"),\"memory_gb\":$(num "$MEM_GB"),\"storages\":[$STORAGES_JSON],\"cluster\":$(json_str "$CLUSTER_NAME"),\"replication\":$REPLICATION}"
 
 PAYLOAD="{\"host\":$HOST_JSON,\"guests\":[$GUESTS_JSON],\"backups\":[$BACKUPS_JSON]}"
 

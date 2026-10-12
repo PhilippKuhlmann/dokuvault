@@ -68,6 +68,21 @@
                     'Höheneinheiten' => $eintrag->form_factor === 'rack' ? $eintrag->height_units.' HE' : null,
                 ]" />
 
+                @php
+                    $details = $eintrag->agent_details ?? [];
+                @endphp
+                <x-agentcard :device="$eintrag" :title="__('System')" :werte="[
+                    'Proxmox VE' => $details['pve_version'] ?? null,
+                    'Kernel' => $details['kernel'] ?? null,
+                    'CPU' => $details['cpu'] ?? null,
+                    'Arbeitsspeicher' => isset($details['memory_gb']) ? $details['memory_gb'].' GB' : null,
+                ]" :listen="[
+                    __('Speicher') => collect($details['storages'] ?? [])->map(fn ($st) => [
+                        $st['name'].(! empty($st['type']) ? ' ('.$st['type'].')' : ''),
+                        isset($st['total_gb']) ? ($st['used_gb'] ?? 0).' / '.$st['total_gb'].' GB' : '',
+                    ])->all(),
+                ]" />
+
                 {{-- Betriebssystem steht jetzt in der Kopfzeile - hier waere es doppelt. --}}
                 <x-minitagcard :title="__('Dienste')" :array="$eintrag->services" />
 

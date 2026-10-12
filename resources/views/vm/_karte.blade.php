@@ -54,6 +54,26 @@
                     'Passwort' => [$eintrag, 'remotePassword'],
                 ]" />
 
+                @php
+                    $details = $eintrag->agent_details ?? [];
+                @endphp
+                <x-agentcard :device="$eintrag" :title="__('System')" :werte="[
+                    'Typ' => match ($details['type'] ?? null) {
+                        'qemu' => __('Virtuelle Maschine'),
+                        'lxc' => __('Container (LXC)'),
+                        default => $details['type'] ?? null,
+                    },
+                    'VMID' => $details['vmid'] ?? null,
+                    'Status' => match ($details['status'] ?? null) {
+                        'running' => __('läuft'),
+                        'stopped' => __('gestoppt'),
+                        'paused' => __('pausiert'),
+                        default => $details['status'] ?? null,
+                    },
+                    __('Kerne') => $details['cores'] ?? null,
+                    'Arbeitsspeicher' => isset($details['memory_gb']) ? $details['memory_gb'].' GB' : null,
+                ]" />
+
                 <x-minitagcard :title="__('Dienste')" :array="$eintrag->services" />
 
             </x-slot>

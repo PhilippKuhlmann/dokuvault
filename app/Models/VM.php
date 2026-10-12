@@ -22,6 +22,11 @@ class VM extends Model
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
+    protected $casts = [
+        'agent_details' => 'array',
+        'agent_reported_at' => 'datetime',
+    ];
+
     /**
      * Der Standort kommt vom Cluster oder vom Host, sobald einer gesetzt ist.
      *

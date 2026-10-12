@@ -1545,5 +1545,12 @@
     "VPNs (IPsec, OpenVPN, WireGuard) erscheinen mit Name und Gegenstelle – Pre-Shared Keys und andere Geheimnisse liest spcli zwar mit, das Script schickt sie aber nicht weiter. Portweiterleitungen (Regeln mit DESTNAT) stehen mit aufgelöstem Ziel und Port auf der Karte.": "VPNs (IPsec, OpenVPN, WireGuard) appear with name and peer – spcli also returns pre-shared keys and other secrets, but the script does not pass them on. Port forwards (rules with DESTNAT) are shown on the card with resolved target and port.",
     "Gebraucht wird ein SSH-Zugang, der spcli aufrufen darf (root). Kennwort oder Schlüssel werden beim Aufruf abgefragt bzw. mitgegeben und nicht in DokuVault gespeichert. SSH muss auf der UTM für den Rechner freigegeben sein.": "An SSH login that may call spcli (root) is needed. Password or key are asked for or passed when calling and not stored in DokuVault. SSH must be allowed on the UTM for the machine.",
     "Ausführen auf einem Windows-Rechner, der die UTM per SSH erreicht (OpenSSH-Client, ab Windows 10 dabei):": "Run on a Windows machine that can reach the UTM via SSH (OpenSSH client, included since Windows 10):",
-    "Ausführen auf einem Mac oder Linux-Rechner, der die UTM per SSH erreicht (braucht ssh und jq; das Kennwort wird abgefragt):": "Run on a Mac or Linux machine that can reach the UTM via SSH (needs ssh and jq; the password is prompted for):"
+    "Ausführen auf einem Mac oder Linux-Rechner, der die UTM per SSH erreicht (braucht ssh und jq; das Kennwort wird abgefragt):": "Run on a Mac or Linux machine that can reach the UTM via SSH (needs ssh and jq; the password is prompted for):",
+    "Speicher": "Storage",
+    "Container (LXC)": "Container (LXC)",
+    "läuft": "running",
+    "gestoppt": "stopped",
+    "pausiert": "paused",
+    "Kerne": "Cores",
+    "Im Cluster legt der erste Knoten den Cluster an (Name aus corosync.conf), jeder weitere findet ihn wieder; Knoten und Gäste werden ihm zugeordnet, solange sie noch keinem angehören. Ein von Hand angelegter Cluster gleichen Namens wird übernommen. Die Technik ergibt sich beim Anlegen aus Ceph, Replikation oder gemeinsamem Speicher und bleibt danach, wie man sie wählt.": "In a cluster the first node creates the cluster (name from corosync.conf), every other one finds it again; nodes and guests are assigned to it as long as they belong to none. A cluster of the same name created by hand is taken over. The technology follows from Ceph, replication or shared storage when it is created and stays as chosen afterwards."
 }

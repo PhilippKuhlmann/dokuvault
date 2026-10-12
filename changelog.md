@@ -2,6 +2,11 @@
 
 ## 26.10.12
 
+### Added
+
+- **Proxmox-Cluster legt der Agent selbst an.** Steht ein Knoten im Cluster, legt der erste Knoten den Cluster mit dem Namen aus `corosync.conf` an, jeder weitere findet ihn wieder. Knoten und Gäste werden ihm zugeordnet, solange sie noch keinem Cluster angehören. Ein von Hand angelegter Cluster gleichen Namens wird übernommen statt verdoppelt. Die Technik (Ceph, Replikation, gemeinsamer oder nur lokaler Speicher) ergibt sich beim Anlegen aus den Storages und bleibt danach, wie man sie wählt.
+- **Was der Agent über Server und VMs meldet, steht jetzt auf der Karte.** Am Host Proxmox-Version, Kernel, CPU, Arbeitsspeicher und die Storages mit Belegung, am Gast Typ (VM oder Container), VMID, Status, Kerne und Arbeitsspeicher. Das Script hat das schon länger geschickt, gespeichert wurde es bisher nicht. Der Hinweis „Vom Agent gemeldet am …“ zeigt wie bei den Firewalls, was von selbst kam und was von Hand gepflegt ist. CPU und Arbeitsspeicher kommen so auch von den Windows-Server- und Hyper-V-Agents auf die Karte. Diese Werte ändern sich mit jedem Lauf und landen deshalb nicht im Änderungsprotokoll.
+
 ### Changed
 
 - **Installierte Agenten stehen am Ende der Agent-Seite**, unter „Aktive Token“. Oben steht jetzt, was es gibt und wie man einen Token erzeugt.
@@ -11,6 +16,7 @@
 
 ### Fixed
 
+- **Container mit weniger als 1 GB Arbeitsspeicher** meldete das Proxmox-Script mit 0 GB. Jetzt mit einer Nachkommastelle („0.5“).
 - **Aktive Token rutschten aus der Karte.** Auf der Agent-Seite stand nur der erste Token in der Liste „Aktive Token“. Jeder weitere landete eine Ebene weiter außen, ab dem dritten außerhalb des Seitenrahmens. Ursache war ein `</div>` zu viel in jeder Zeile.
 - **Backup-Mail mit falschem Absender.** Die Mail zum Backup nahm den Absender aus der `.env` (`hello@example.com`) statt aus Einstellungen → Mail, und der Mailserver lehnte sie ab. Jetzt geht sie mit demselben Absender raus wie jede andere Mail.
 

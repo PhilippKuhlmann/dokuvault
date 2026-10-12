@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\AgentToken;
+use App\Models\Cluster;
 use App\Models\Customer;
 use App\Models\Network;
 use App\Models\OperatingSystem;
@@ -318,3 +319,132 @@ test('Proxmox tags that name a service of the catalog are added to the guest ser
     $this->withToken($plain)->postJson('/api/agent/proxmox', $meldung(['docker']))->assertOk();
     expect($vm->fresh()->getRawOriginal('services'))->toBe('DNS,Fileserver,docker');
 });
+
+/**
+ * Customer, site and token for a Proxmox report in one go.
+ */
+function proxmoxToken(): array
+{
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [, $plain] = AgentToken::generateFor($customer, $site, 'PVE');
+
+    return [$customer, $site, $plain];
+}
+
+test('what the host and its guests report beyond the columns is kept', function () {
+    [$customer, , $plain] = proxmoxToken();
+    $this->withToken($plain)->postJson('/api/agent/proxmox', proxmoxPayload())->assertOk();
+
+    $server = Server::where('agent_identifier', 'machine-abc')->sole();
+    expect($server->agent_details)->toMatchArray([
+        'pve_version' => '8.2.4', 'kernel' => '6.8.4-2-pve', 'cpu' => 'Intel Xeon Gold (40 Kerne)', 'memory_gb' => 256,
+    ])
+        ->and($server->agent_details['storages'][0]['name'])->toBe('local-lvm')
+        ->and($server->agent_reported_at)->not->toBeNull();
+
+    $vm = VM::where('agent_identifier', 'pve01/qemu/100')->sole();
+    expect($vm->agent_details)->toHaveCount(5)->toMatchArray(['type' => 'qemu', 'vmid' => 100, 'status' => 'running', 'cores' => 4, 'memory_gb' => 8]);
+
+    // Not sent: no entry instead of empty values.
+    expect(VM::where('agent_identifier', 'pve01/lxc/200')->sole()->agent_details)
+        ->not->toHaveKey('cores');
+});
+
+test('the server and VM cards show the report and say it came from the agent', function () {
+    [$customer, , $plain] = proxmoxToken();
+    $payload = proxmoxPayload();
+    $payload['guests'][1]['memory_gb'] = 0.5;
+    $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)->assertOk();
+
+    $this->actingAs(userWithPermissions(['server_viewAny', 'vm_viewAny']));
+    $this->get("/{$customer->slug}/server")
+        ->assertOk()
+        ->assertSee('6.8.4-2-pve')
+        ->assertSee('400 / 1000 GB')
+        ->assertSee('Vom Agent gemeldet am');
+    $this->get("/{$customer->slug}/vm")
+        ->assertOk()
+        ->assertSee('Container (LXC)')
+        ->assertSee('0.5 GB')
+        ->assertSee('Vom Agent gemeldet am');
+});
+
+test('a server entered by hand shows no agent note', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id, 'operating_system_id' => null, 'name' => 'Handarbeit']);
+
+    $this->actingAs(userWithPermissions(['server_viewAny']));
+    $this->get("/{$customer->slug}/server")
+        ->assertOk()
+        ->assertSee('Handarbeit')
+        ->assertDontSee('Vom Agent gemeldet am');
+});
+
+test('a node creates its cluster and puts itself and its guests in it', function () {
+    [$customer, $site, $plain] = proxmoxToken();
+    $payload = proxmoxPayload();
+    $payload['host']['cluster'] = 'pve-cluster';
+    $payload['host']['storages'][] = ['name' => 'ceph-vm', 'type' => 'rbd', 'total_gb' => 3000, 'used_gb' => 100];
+
+    $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)
+        ->assertOk()->assertJson(['cluster' => 'pve-cluster']);
+
+    $cluster = Cluster::where('customer_id', $customer->id)->sole();
+    expect($cluster->name)->toBe('pve-cluster')
+        ->and($cluster->type)->toBe('ceph')
+        ->and($cluster->site_id)->toBe($site->id)
+        ->and($cluster->agent_identifier)->toBe('proxmox/pve-cluster')
+        ->and(Server::where('agent_identifier', 'machine-abc')->sole()->cluster_id)->toBe($cluster->id)
+        ->and(VM::where('customer_id', $customer->id)->pluck('cluster_id')->unique()->all())->toBe([$cluster->id]);
+
+    // The second node finds the same cluster.
+    $payload['host']['identifier'] = 'machine-def';
+    $payload['host']['hostname'] = 'pve02';
+    $payload['guests'] = [];
+    $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)->assertOk();
+
+    expect(Cluster::where('customer_id', $customer->id)->count())->toBe(1)
+        ->and(Server::where('agent_identifier', 'machine-def')->sole()->cluster_id)->toBe($cluster->id);
+});
+
+test('a cluster created by hand is taken over, its type and assignments stay', function () {
+    [$customer, $site, $plain] = proxmoxToken();
+    $vonHand = Cluster::create(['customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'PVE-Cluster', 'type' => 'shared_storage']);
+    $anderer = Cluster::create(['customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'Anderer', 'type' => 'local']);
+    $server = Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id, 'operating_system_id' => null, 'agent_identifier' => 'machine-abc', 'cluster_id' => $anderer->id]);
+
+    $payload = proxmoxPayload();
+    $payload['host']['cluster'] = 'pve-cluster';
+    $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)->assertOk();
+
+    expect(Cluster::where('customer_id', $customer->id)->count())->toBe(2)
+        ->and($vonHand->fresh()->agent_identifier)->toBe('proxmox/pve-cluster')
+        ->and($vonHand->fresh()->type)->toBe('shared_storage')
+        ->and($server->fresh()->cluster_id)->toBe($anderer->id);
+});
+
+test('a single node without a cluster name creates no cluster', function () {
+    [$customer, , $plain] = proxmoxToken();
+    $payload = proxmoxPayload();
+    $payload['host']['cluster'] = '';
+
+    $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)->assertOk()->assertJson(['cluster' => null]);
+
+    expect(Cluster::where('customer_id', $customer->id)->exists())->toBeFalse();
+});
+
+test('the cluster type follows replication and storage', function (array $host, string $typ) {
+    [$customer, , $plain] = proxmoxToken();
+    $payload = proxmoxPayload();
+    $payload['host'] = array_merge($payload['host'], ['cluster' => 'c1'], $host);
+
+    $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)->assertOk();
+
+    expect(Cluster::where('customer_id', $customer->id)->sole()->type)->toBe($typ);
+})->with([
+    'replication' => [['replication' => true], 'replication'],
+    'nfs' => [['storages' => [['name' => 'nas', 'type' => 'nfs', 'total_gb' => 1, 'used_gb' => 0]]], 'shared_storage'],
+    'pbs only' => [['storages' => [['name' => 'pbs', 'type' => 'pbs', 'total_gb' => 1, 'used_gb' => 0]]], 'local'],
+]);

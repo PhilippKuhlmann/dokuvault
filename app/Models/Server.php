@@ -26,6 +26,8 @@ class Server extends Model
 
     protected $casts = [
         'full_depth' => 'boolean',
+        'agent_details' => 'array',
+        'agent_reported_at' => 'datetime',
     ];
 
     /** Nur diese Server lassen sich in einen Serverschrank einbauen. */

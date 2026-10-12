@@ -10,6 +10,7 @@ use App\Models\ADGroup;
 use App\Models\ADUser;
 use App\Models\AgentInstallation;
 use App\Models\Backup;
+use App\Models\Cluster;
 use App\Models\Computer;
 use App\Models\Domain;
 use App\Models\Firewall;
@@ -40,6 +41,12 @@ class AgentController extends Controller
      * der Dienstekatalog den Namen auch führt - der Agent legt keine neuen
      * Katalogeinträge an.
      */
+    /** What a host reports beyond its columns (agent_details). */
+    protected const HOST_DETAILS = ['pve_version', 'kernel', 'cpu', 'memory_gb', 'storages'];
+
+    /** What a guest reports beyond its columns (agent_details). */
+    protected const GAST_DETAILS = ['type', 'vmid', 'status', 'cores', 'memory_gb'];
+
     protected const WINDOWS_ROLLEN = [
         'AD-Domain-Services' => 'AD',
         'AD-Certificate' => 'PKI',
@@ -122,6 +129,9 @@ class AgentController extends Controller
             'host.storages.*.type' => ['nullable', 'string', 'max:255'],
             'host.storages.*.total_gb' => ['nullable', 'numeric'],
             'host.storages.*.used_gb' => ['nullable', 'numeric'],
+            // Name from corosync.conf, empty on a single node (since 26.10.12).
+            'host.cluster' => ['nullable', 'string', 'max:255'],
+            'host.replication' => ['nullable', 'boolean'],
         ], $this->backupRegeln('backups')));
 
         // Versionsspezifisch ("Proxmox VE 8" statt nur "Proxmox VE"): Version
@@ -137,6 +147,8 @@ class AgentController extends Controller
             nurKatalog: true
         );
 
+        $cluster = $this->proxmoxCluster($server, $data['guests'] ?? [], $data['host'], $customer, $site);
+
         // vzdump jobs of the cluster (since 26.10.03; older scripts send none).
         $backupCount = $this->backupsDokumentieren($customer->id, $data['backups'] ?? []);
 
@@ -146,6 +158,7 @@ class AgentController extends Controller
             'site' => $site->name,
             'server' => $server->name,
             'server_id' => $server->id,
+            'cluster' => $cluster?->name,
             'guests_documented' => $guestCount,
             'backups_documented' => $backupCount,
         ]);
@@ -1360,6 +1373,11 @@ class AgentController extends Controller
         $vorhanden = Server::where('customer_id', $customer->id)->where('agent_identifier', $host['identifier'])->first();
         $attribute += $this->hardwareFelder($host, $vorhanden);
 
+        if ($details = $this->agentDetails($host, self::HOST_DETAILS)) {
+            $attribute['agent_details'] = $details;
+            $attribute['agent_reported_at'] = now();
+        }
+
         $server = Server::updateOrCreate(
             ['customer_id' => $customer->id, 'agent_identifier' => $host['identifier']],
             $attribute
@@ -1388,6 +1406,11 @@ class AgentController extends Controller
                 $vmAttribute['operating_system_id'] = $gastOsId;
             }
 
+            if ($details = $this->agentDetails($gast, self::GAST_DETAILS)) {
+                $vmAttribute['agent_details'] = $details;
+                $vmAttribute['agent_reported_at'] = now();
+            }
+
             $vm = VM::updateOrCreate(
                 ['customer_id' => $customer->id, 'agent_identifier' => $gast['identifier']],
                 $vmAttribute
@@ -1411,6 +1434,85 @@ class AgentController extends Controller
         }
 
         return [$server, $anzahl];
+    }
+
+    /**
+     * The reported values that have no column of their own, for
+     * agent_details: only the keys listed, only those sent. null when none
+     * was sent - then the stored report stays as it is.
+     *
+     * @param  array<int, string>  $schluessel
+     */
+    protected function agentDetails(array $gemeldet, array $schluessel): ?array
+    {
+        $details = array_filter(
+            array_intersect_key($gemeldet, array_flip($schluessel)),
+            fn ($wert) => $wert !== null && $wert !== '' && $wert !== []
+        );
+
+        return $details === [] ? null : $details;
+    }
+
+    /**
+     * The Proxmox cluster a node belongs to (name from corosync.conf).
+     *
+     * Every node reports the same name and finds the same entry by its
+     * agent_identifier. A cluster of that name someone created by hand is
+     * taken over instead of creating a second one. The type is only set when
+     * creating - after that it is what someone chose.
+     *
+     * Node and guests get the cluster only while they have none: an
+     * assignment made by hand stays.
+     */
+    protected function proxmoxCluster(Server $server, array $gaeste, array $host, $customer, $site): ?Cluster
+    {
+        $name = trim((string) ($host['cluster'] ?? ''));
+        if ($name === '') {
+            return null;
+        }
+
+        $kennung = 'proxmox/'.$name;
+        $cluster = Cluster::where('customer_id', $customer->id)->where('agent_identifier', $kennung)->first()
+            ?? Cluster::where('customer_id', $customer->id)->whereNull('agent_identifier')
+                ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])->orderBy('id')->first()
+            ?? new Cluster([
+                'customer_id' => $customer->id,
+                'site_id' => $site->id,
+                'name' => $name,
+                'type' => $this->clusterTyp($host),
+            ]);
+
+        $cluster->agent_identifier = $kennung;
+        $cluster->save();
+
+        if (blank($server->cluster_id)) {
+            $server->update(['cluster_id' => $cluster->id]);
+        }
+
+        $kennungen = collect($gaeste)->pluck('identifier')->filter()->all();
+        if ($kennungen !== []) {
+            VM::where('customer_id', $customer->id)->whereIn('agent_identifier', $kennungen)
+                ->whereNull('cluster_id')->update(['cluster_id' => $cluster->id]);
+        }
+
+        return $cluster;
+    }
+
+    /**
+     * The cluster type from what the node reports: Ceph storage, then
+     * replication jobs, then shared storage, else local only. A PBS storage
+     * is a backup target, not where guests run - it does not count.
+     */
+    protected function clusterTyp(array $host): string
+    {
+        $typen = collect($host['storages'] ?? [])->pluck('type')->filter()->map(fn ($t) => mb_strtolower($t));
+
+        return match (true) {
+            $typen->intersect(['rbd', 'cephfs'])->isNotEmpty() => 'ceph',
+            (bool) ($host['replication'] ?? false) => 'replication',
+            $typen->intersect(['nfs', 'cifs', 'iscsi', 'iscsidirect', 'glusterfs', 'zfs'])->isNotEmpty() => 'shared_storage',
+            default => 'local',
+        };
     }
 
     /**
