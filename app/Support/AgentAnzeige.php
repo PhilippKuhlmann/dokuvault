@@ -98,12 +98,6 @@ class AgentAnzeige
         return [
             __('System') => [
                 [__('VMID'), isset($d['vmid']) ? (string) $d['vmid'] : null],
-                [__('Status'), match ($d['status'] ?? null) {
-                    'running' => __('läuft'),
-                    'stopped' => __('gestoppt'),
-                    'paused' => __('pausiert'),
-                    default => $d['status'] ?? null,
-                }],
                 [__('CPU'), $kernText, $cpuLast !== null ? ['pct' => $cpuLast, 'warnen' => true] : null],
                 [__('Arbeitsspeicher'), $ramText, $belegt !== null && $ram ? ['pct' => $belegt / $ram * 100, 'warnen' => true] : null],
                 // Containers only: Proxmox sees their root disk, not inside a VM.

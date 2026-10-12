@@ -28,6 +28,24 @@
                         <span title="{{ $gastTyp[1] }}" class="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:bg-gray-700 dark:text-gray-300">{{ $gastTyp[0] }}</span>
                     @endif
 
+                    {{-- Running or not, as of the last report - the first thing
+                         one wants to know about a guest. The dot alone would
+                         say it in color only; the word says it to everyone. --}}
+                    @php
+                        $gastStatus = match ($eintrag->agent_details['status'] ?? null) {
+                            'running' => [__('läuft'), 'bg-green-500', 'text-green-700 dark:text-green-400'],
+                            'stopped' => [__('gestoppt'), 'bg-gray-400 dark:bg-gray-500', 'text-gray-500 dark:text-gray-400'],
+                            'paused' => [__('pausiert'), 'bg-amber-500', 'text-amber-700 dark:text-amber-400'],
+                            default => null,
+                        };
+                    @endphp
+                    @if ($gastStatus)
+                        <span class="inline-flex items-center gap-1.5 text-sm font-normal {{ $gastStatus[2] }}">
+                            <span class="h-2 w-2 rounded-full {{ $gastStatus[1] }}" aria-hidden="true"></span>
+                            {{ $gastStatus[0] }}
+                        </span>
+                    @endif
+
                     @if ($eintrag->operatingSystem)
                         <span class="text-sm font-normal text-gray-500 dark:text-gray-400">{{ $eintrag->operatingSystem->name }}</span>
 

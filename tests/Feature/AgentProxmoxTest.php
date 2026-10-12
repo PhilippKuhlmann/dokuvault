@@ -386,6 +386,7 @@ test('the server and VM cards show the report and say it came from the agent', f
         ->assertSee('0,5 GB')
         ->assertDontSee('von 256 GB')
         ->assertSee('2,4 GB von 8 GB')
+        ->assertSeeInOrder(['title="Container (LXC)"', 'läuft'], false)
         ->assertSee('Vom Agent gemeldet am');
 });
 
