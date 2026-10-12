@@ -28,7 +28,6 @@ use App\Models\Server;
 use App\Models\Site;
 use App\Models\User;
 use Database\Seeders\PermissionRoleSeeder;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -124,9 +123,9 @@ test('ein fremdes Objekt lässt sich nicht über die eigene Liste bearbeiten', f
     // einem 404 statt einem 403, weil die Abfrage nach dem eigenen Kunden
     // sucht und nichts findet - fuer die Trennung ist beides gleichwertig,
     // und ein 404 verraet sogar weniger als ein 403.
-    expect(fn () => Livewire::test(ObjektFormular::class, ['typ' => 'networkswitch', 'customer' => $meins])
-        ->call('bearbeiten', 'networkswitch', $fremderSwitch->id))
-        ->toThrow(ModelNotFoundException::class);
+    Livewire::test(ObjektFormular::class, ['typ' => 'networkswitch', 'customer' => $meins])
+        ->call('bearbeiten', 'networkswitch', $fremderSwitch->id)
+        ->assertNotFound();
 
     expect($fremderSwitch->fresh()->name)->toBe('SW-GEHEIM');
 });

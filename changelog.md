@@ -4,6 +4,8 @@
 
 ### Changed
 
+- **Livewire 4.4.7** sowie kleinere Updates von flysystem-ftp, laravel-debugbar und Sail.
+
 - **Windows-Agent baut der Deploy mit.** Hat sich der Quellcode des Windows-Dienstes seit der eingecheckten exe geändert, baut `deploy.sh` sie neu, sofern auf dem Server Go installiert ist. Sonst bleibt die eingecheckte exe. Die Version stammt jetzt aus dem letzten Commit statt aus der Uhrzeit des Baus. Derselbe Stand ergibt also überall dieselbe Version, und installierte Dienste aktualisieren sich nur bei echten Änderungen.
 
 ### Fixed

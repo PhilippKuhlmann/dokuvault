@@ -8,7 +8,6 @@ use App\Models\Domain;
 use App\Models\Setting;
 use App\Support\CertificateCheck;
 use App\Support\DomainCheck;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 use Spatie\Activitylog\Models\Activity;
@@ -211,7 +210,7 @@ test('Jetzt prüfen auf der Karte prüft nur Einträge des eigenen Kunden', func
     $liste->call('check', $certificate->id)->assertDispatched('hinweis');
     expect($certificate->refresh()->expiry_date)->toBe('2027-01-01');
 
-    expect(fn () => $liste->call('check', $fremd->id))->toThrow(ModelNotFoundException::class);
+    $liste->call('check', $fremd->id)->assertNotFound();
     expect($fremd->refresh()->checked_at)->toBeNull();
 });
 

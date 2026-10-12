@@ -21,7 +21,6 @@ use App\Models\Server;
 use App\Models\Service;
 use App\Models\Site;
 use App\Models\VM;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ViewErrorBag;
@@ -106,9 +105,9 @@ test('eine fremde Domain laesst sich nicht bearbeiten', function () {
 
     // Die Id kommt vom Browser - sie wird deshalb immer ueber den Kunden
     // geladen, und eine fremde laeuft ins Leere statt fremde Daten zu oeffnen.
-    expect(fn () => Livewire::test(ObjektFormular::class, ['typ' => 'domain', 'customer' => $customer])
-        ->call('bearbeiten', 'domain', $fremdeDomain->id))
-        ->toThrow(ModelNotFoundException::class);
+    Livewire::test(ObjektFormular::class, ['typ' => 'domain', 'customer' => $customer])
+        ->call('bearbeiten', 'domain', $fremdeDomain->id)
+        ->assertNotFound();
 });
 
 test('ohne Recht kein Anlegen', function () {

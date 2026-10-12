@@ -5,7 +5,6 @@ use App\Livewire\NetworkQuickCreate;
 use App\Models\Customer;
 use App\Models\Network;
 use App\Models\Site;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
 
 /**
@@ -168,9 +167,9 @@ test('ein fremdes Netz laesst sich nicht ueber die ID oeffnen', function () {
     ]);
 
     // bearbeiteId kommt aus dem Browser - ohne Kundenpruefung waere das ein IDOR.
-    expect(fn () => Livewire::test(NetworkQuickCreate::class, ['customer' => $customer])
-        ->call('bearbeiten', $fremdesNetz->id))
-        ->toThrow(ModelNotFoundException::class);
+    Livewire::test(NetworkQuickCreate::class, ['customer' => $customer])
+        ->call('bearbeiten', $fremdesNetz->id)
+        ->assertNotFound();
 });
 
 test('im Bearbeiten-Modal laesst sich das VLAN loeschen', function () {
