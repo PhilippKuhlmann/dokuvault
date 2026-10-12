@@ -144,3 +144,15 @@ test('PowerShell variants say to unblock the downloaded file, bash variants do n
         ->assertSee('Unblock-File .\windows-server-doku.ps1', false)
         ->assertDontSee('Unblock-File .\proxmox-doku.sh', false);
 });
+
+test('jeder Token steht in der Liste, nicht darunter', function () {
+    $this->actingAs(userWithPermissions(['agent_manage']));
+    [$customer, $site] = agentKundeStandort();
+    AgentToken::generateFor($customer, $site, 'Erster', now()->addYear());
+    AgentToken::generateFor($customer, $site, 'Zweiter', now()->addYear());
+
+    // Each row closed one div too many: the first token sat in the card, the
+    // second below it, the third outside the page frame.
+    $html = $this->get(route('agent.index', $customer))->assertOk()->getContent();
+    expect(substr_count($html, '</div>'))->toBe(preg_match_all('/<div\b/', $html));
+});

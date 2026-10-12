@@ -517,7 +517,6 @@
                                     x-on:click="offen = true" :label="__('Widerrufen')" />
                             </x-slot:ausloeser>
                         </x-loeschdialog>
-                        </div>
                     </div>
                 </div>
             @empty

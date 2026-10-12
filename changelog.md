@@ -10,6 +10,7 @@
 
 ### Fixed
 
+- **Aktive Token rutschten aus der Karte.** Auf der Agent-Seite stand nur der erste Token in der Liste „Aktive Token“. Jeder weitere landete eine Ebene weiter außen, ab dem dritten außerhalb des Seitenrahmens. Ursache war ein `</div>` zu viel in jeder Zeile.
 - **Backup-Mail mit falschem Absender.** Die Mail zum Backup nahm den Absender aus der `.env` (`hello@example.com`) statt aus Einstellungen → Mail, und der Mailserver lehnte sie ab. Jetzt geht sie mit demselben Absender raus wie jede andere Mail.
 
 ## 26.10.10
