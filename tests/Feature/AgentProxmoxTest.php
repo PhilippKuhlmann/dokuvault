@@ -356,6 +356,8 @@ test('the server and VM cards show the report and say it came from the agent', f
     [$customer, , $plain] = proxmoxToken();
     $payload = proxmoxPayload();
     $payload['guests'][1]['memory_gb'] = 0.5;
+    $payload['guests'][0]['cpu_pct'] = 12.3;
+    $payload['guests'][0]['memory_used_gb'] = 6;
     $payload['host']['storages'][] = ['name' => 'nas-aus', 'type' => 'nfs', 'total_gb' => 0, 'used_gb' => 0];
     $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)->assertOk();
 
@@ -375,10 +377,13 @@ test('the server and VM cards show the report and say it came from the agent', f
         ->assertOk()
         ->assertSee('title="Container (LXC)"', false)
         ->assertSee('title="Virtuelle Maschine"', false)
-        ->assertSee('4 von 40')
-        ->assertSee('8 GB von 256 GB')
-        ->assertSee('0,5 GB von 256 GB')
-        ->assertSee('alle')
+        ->assertSee('4 Kerne')
+        ->assertSee('6 GB von 8 GB')
+        ->assertSee('75 %')
+        ->assertSee('12 %')
+        ->assertSee('alle Kerne')
+        ->assertSee('0,5 GB')
+        ->assertDontSee('von 256 GB')
         ->assertSee('Vom Agent gemeldet am');
 });
 

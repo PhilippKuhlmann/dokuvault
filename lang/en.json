@@ -932,7 +932,6 @@
     "Zwischen hellem und dunklem Erscheinungsbild wechseln": "Switch between light and dark appearance",
     "Zählt ab der ersten Dosennummer hoch und lässt Ausgefülltes stehen. Leeren wirkt erst mit „Ports speichern“.": "Counts up from the first outlet number and leaves filled fields untouched. Clearing only takes effect once you save.",
     "abgelaufen": "expired",
-    "alle": "all",
     "alles": "everything",
     "bitte wählen": "please choose",
     "dokumentiert": "documented",
@@ -1551,7 +1550,6 @@
     "läuft": "running",
     "gestoppt": "stopped",
     "pausiert": "paused",
-    "Kerne": "Cores",
     "Im Cluster legt der erste Knoten den Cluster an (Name aus corosync.conf), jeder weitere findet ihn wieder; Knoten und Gäste werden ihm zugeordnet, solange sie noch keinem angehören. Ein von Hand angelegter Cluster gleichen Namens wird übernommen. Die Technik ergibt sich beim Anlegen aus Ceph, Replikation oder gemeinsamem Speicher und bleibt danach, wie man sie wählt.": "In a cluster the first node creates the cluster (name from corosync.conf), every other one finds it again; nodes and guests are assigned to it as long as they belong to none. A cluster of the same name created by hand is taken over. The technology follows from Ceph, replication or shared storage when it is created and stays as chosen afterwards.",
     "nicht verfügbar": "not available",
     "Eingebaut": "Installed",
@@ -1559,7 +1557,8 @@
     ":gesamt (:vm VM, :lxc LXC)": ":gesamt (:vm VM, :lxc LXC)",
     "Laufen": "Running",
     "Gesamt": "Total",
-    ":anzahl von :host": ":anzahl of :host",
-    ":gast von :host": ":gast of :host",
-    "Gäste": "Guests"
+    "Gäste": "Guests",
+    ":anzahl Kerne": ":anzahl cores",
+    "alle Kerne": "all cores",
+    ":belegt von :limit": ":belegt of :limit"
 }

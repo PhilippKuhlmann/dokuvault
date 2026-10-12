@@ -66,27 +66,34 @@ class AgentAnzeige
         ];
     }
 
-    /** @return array<string, array<int, array>> */
+    /**
+     * The guest's load when the agent ran, against its own limits - not what
+     * the host could give it. A stopped guest (or a report from before
+     * 26.10.12) has no load: then only what is configured, without a bar.
+     *
+     * @return array<string, array<int, array>>
+     */
     public static function vm(VM $vm): array
     {
         $d = $vm->agent_details ?? [];
-        $host = $vm->host?->agent_details ?? [];
-        $hostKerne = self::hostKerne($host);
-        $hostRam = (float) ($host['memory_gb'] ?? 0);
 
-        // A container without a limit reports no cores: it may use all of
-        // the host's.
+        // A container without a core limit reports no cores: it may use all
+        // of the host's, and its load is measured against those.
         $kerne = $d['cores'] ?? null;
         $kernText = match (true) {
-            $kerne !== null => $hostKerne ? __(':anzahl von :host', ['anzahl' => $kerne, 'host' => $hostKerne]) : (string) $kerne,
-            ($d['type'] ?? null) === 'lxc' => __('alle'),
+            $kerne !== null => __(':anzahl Kerne', ['anzahl' => $kerne]),
+            ($d['type'] ?? null) === 'lxc' => __('alle Kerne'),
             default => null,
         };
+        $cpuLast = $d['cpu_pct'] ?? null;
 
         $ram = $d['memory_gb'] ?? null;
-        $ramText = $ram === null ? null : ($hostRam
-            ? __(':gast von :host', ['gast' => self::gb($ram), 'host' => self::gb($hostRam)])
-            : self::gb($ram));
+        $belegt = $d['memory_used_gb'] ?? null;
+        $ramText = match (true) {
+            $ram === null => null,
+            $belegt !== null => __(':belegt von :limit', ['belegt' => self::gb($belegt), 'limit' => self::gb($ram)]),
+            default => self::gb($ram),
+        };
 
         return [
             __('System') => [
@@ -97,23 +104,10 @@ class AgentAnzeige
                     'paused' => __('pausiert'),
                     default => $d['status'] ?? null,
                 }],
-                [__('Kerne'), $kernText, $kerne !== null && $hostKerne ? ['pct' => $kerne / $hostKerne * 100] : null],
-                [__('Arbeitsspeicher'), $ramText, $ram !== null && $hostRam ? ['pct' => $ram / $hostRam * 100] : null],
+                [__('CPU'), $kernText, $cpuLast !== null ? ['pct' => $cpuLast, 'warnen' => true] : null],
+                [__('Arbeitsspeicher'), $ramText, $belegt !== null && $ram ? ['pct' => $belegt / $ram * 100, 'warnen' => true] : null],
             ],
         ];
-    }
-
-    /**
-     * The host's cores: reported as a number since 26.10.12, before only
-     * inside the CPU text ("... (8 Kerne)").
-     */
-    protected static function hostKerne(array $host): ?int
-    {
-        if (! empty($host['cores'])) {
-            return (int) $host['cores'];
-        }
-
-        return preg_match('/\((\d+) Kerne\)\s*$/', (string) ($host['cpu'] ?? ''), $treffer) ? (int) $treffer[1] : null;
     }
 
     protected static function summe(Collection $gaeste): float

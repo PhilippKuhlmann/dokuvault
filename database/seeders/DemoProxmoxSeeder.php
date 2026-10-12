@@ -71,6 +71,15 @@ class DemoProxmoxSeeder extends Seeder
             ],
         ];
 
+        // Load of the running guests when the agent ran: CPU in percent of
+        // their own cores, memory in use. One amber (VM-Exchange, 86 % of its
+        // memory) and one red (VM-SQL01, 91 %).
+        $last = [
+            101 => [6.5, 6.1], 102 => [38.2, 27.4], 201 => [3.2, 0.6],
+            111 => [71.8, 58.3], 112 => [22.4, 11.8], 211 => [9.8, 3.1],
+            121 => [4.1, 9.7], 221 => [0.8, 0.2],
+        ];
+
         foreach ($knoten as $name => $k) {
             $server = Server::where('name', $name)->whereNotNull('cluster_id')->first();
             if (! $server) {
@@ -100,6 +109,8 @@ class DemoProxmoxSeeder extends Seeder
                         'agent_details' => array_filter([
                             'vmid' => $vmid, 'type' => $typ, 'status' => $status,
                             'cores' => $kerne, 'memory_gb' => $ram,
+                            'cpu_pct' => $last[$vmid][0] ?? null,
+                            'memory_used_gb' => $last[$vmid][1] ?? null,
                         ], fn ($wert) => $wert !== null),
                         'agent_reported_at' => now()->subMinutes(12),
                     ]
