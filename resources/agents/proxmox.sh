@@ -249,7 +249,7 @@ if [ -f /etc/pve/jobs.cfg ]; then
 fi
 
 # --- Payload zusammenbauen ---
-HOST_JSON="{\"identifier\":$(json_str "$IDENTIFIER"),\"hostname\":$(json_str "$HOSTNAME"),\"manufacturer\":$(json_str "$MANUFACTURER"),\"model\":$(json_str "$MODEL"),\"serial\":$(json_str "$SERIAL"),\"ip\":$(json_str "$IP"),\"pve_version\":$(json_str "$PVE_VERSION"),\"kernel\":$(json_str "$KERNEL"),\"cpu\":$(json_str "$CPU"),\"memory_gb\":$(num "$MEM_GB"),\"storages\":[$STORAGES_JSON],\"cluster\":$(json_str "$CLUSTER_NAME"),\"replication\":$REPLICATION}"
+HOST_JSON="{\"identifier\":$(json_str "$IDENTIFIER"),\"hostname\":$(json_str "$HOSTNAME"),\"manufacturer\":$(json_str "$MANUFACTURER"),\"model\":$(json_str "$MODEL"),\"serial\":$(json_str "$SERIAL"),\"ip\":$(json_str "$IP"),\"pve_version\":$(json_str "$PVE_VERSION"),\"kernel\":$(json_str "$KERNEL"),\"cpu\":$(json_str "$CPU"),\"cores\":$(num "$CORES"),\"memory_gb\":$(num "$MEM_GB"),\"storages\":[$STORAGES_JSON],\"cluster\":$(json_str "$CLUSTER_NAME"),\"replication\":$REPLICATION}"
 
 PAYLOAD="{\"host\":$HOST_JSON,\"guests\":[$GUESTS_JSON],\"backups\":[$BACKUPS_JSON]}"
 

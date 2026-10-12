@@ -9,6 +9,7 @@ use App\Models\Server;
 use App\Models\Service;
 use App\Models\Site;
 use App\Models\VM;
+use App\Support\AgentAnzeige;
 
 function proxmoxPayload(): array
 {
@@ -362,15 +363,22 @@ test('the server and VM cards show the report and say it came from the agent', f
     $this->get("/{$customer->slug}/server")
         ->assertOk()
         ->assertSee('6.8.4-2-pve')
-        ->assertSee('400 / 1000 GB')
+        ->assertSee('256 GB')
+        ->assertSee('8,5 GB laufend · 8,5 GB zugewiesen')
+        ->assertSee('2 (1 VM, 1 LXC)')
+        ->assertSee('400 GB / 1 TB')
+        ->assertSee('40 %')
         ->assertSee('nicht verfügbar')
-        ->assertDontSee('0 / 0 GB')
+        ->assertDontSee('0 GB / 0 GB')
         ->assertSee('Vom Agent gemeldet am');
     $this->get("/{$customer->slug}/vm")
         ->assertOk()
         ->assertSee('title="Container (LXC)"', false)
         ->assertSee('title="Virtuelle Maschine"', false)
-        ->assertSee('0.5 GB')
+        ->assertSee('4 von 40')
+        ->assertSee('8 GB von 256 GB')
+        ->assertSee('0,5 GB von 256 GB')
+        ->assertSee('alle')
         ->assertSee('Vom Agent gemeldet am');
 });
 
@@ -451,4 +459,30 @@ test('the cluster type follows replication and storage', function (array $host, 
     'replication' => [['replication' => true], 'replication'],
     'nfs' => [['storages' => [['name' => 'nas', 'type' => 'nfs', 'total_gb' => 1, 'used_gb' => 0]]], 'shared_storage'],
     'pbs only' => [['storages' => [['name' => 'pbs', 'type' => 'pbs', 'total_gb' => 1, 'used_gb' => 0]]], 'local'],
+]);
+
+test('storage turns amber from 80 % and red from 90 %', function () {
+    [$customer, , $plain] = proxmoxToken();
+    $payload = proxmoxPayload();
+    $payload['host']['storages'] = [
+        ['name' => 'fast-voll', 'type' => 'dir', 'total_gb' => 100, 'used_gb' => 85],
+        ['name' => 'voll', 'type' => 'dir', 'total_gb' => 100, 'used_gb' => 95],
+    ];
+    $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)->assertOk();
+
+    $this->actingAs(userWithPermissions(['server_viewAny']));
+    $this->get("/{$customer->slug}/server")
+        ->assertOk()
+        ->assertSee('bg-amber-500', false)
+        ->assertSee('bg-red-500', false);
+});
+
+test('sizes read like the rest of the app', function (float $gb, string $text) {
+    expect(AgentAnzeige::gb($gb))->toBe($text);
+})->with([
+    [8, '8 GB'],
+    [24.5, '24,5 GB'],
+    [0.5, '0,5 GB'],
+    [1006, '1 TB'],
+    [5440, '5,4 TB'],
 ]);

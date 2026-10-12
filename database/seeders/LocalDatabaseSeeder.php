@@ -921,6 +921,9 @@ class LocalDatabaseSeeder extends Seeder
             // Installed agents, backup runs, API statistics - so those pages
             // are not empty in the demo.
             DemoAgentSeeder::class,
+            // What the Proxmox agent reports about the demo cluster - the
+            // system blocks and usage bars on the server and VM cards.
+            DemoProxmoxSeeder::class,
             // 90 days of history for Statistik -> System and Datenwachstum.
             DemoStatistikSeeder::class,
             // Zum Schluss, damit die Historie auf fertigen Daten aufsetzt und

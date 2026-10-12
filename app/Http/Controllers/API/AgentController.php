@@ -42,7 +42,7 @@ class AgentController extends Controller
      * Katalogeinträge an.
      */
     /** What a host reports beyond its columns (agent_details). */
-    protected const HOST_DETAILS = ['pve_version', 'kernel', 'cpu', 'memory_gb', 'storages'];
+    protected const HOST_DETAILS = ['pve_version', 'kernel', 'cpu', 'cores', 'memory_gb', 'storages'];
 
     /** What a guest reports beyond its columns (agent_details). */
     protected const GAST_DETAILS = ['type', 'vmid', 'status', 'cores', 'memory_gb'];
@@ -123,6 +123,7 @@ class AgentController extends Controller
             'host.pve_version' => ['nullable', 'string', 'max:255'],
             'host.kernel' => ['nullable', 'string', 'max:255'],
             'host.cpu' => ['nullable', 'string', 'max:255'],
+            'host.cores' => ['nullable', 'integer'],
             'host.memory_gb' => ['nullable', 'numeric'],
             'host.storages' => ['nullable', 'array'],
             'host.storages.*.name' => ['nullable', 'string', 'max:255'],

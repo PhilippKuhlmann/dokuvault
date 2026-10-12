@@ -68,20 +68,7 @@
                     'Passwort' => [$eintrag, 'remotePassword'],
                 ]" />
 
-                @php
-                    $details = $eintrag->agent_details ?? [];
-                @endphp
-                <x-agentcard :device="$eintrag" :title="__('System')" :werte="[
-                    'VMID' => $details['vmid'] ?? null,
-                    'Status' => match ($details['status'] ?? null) {
-                        'running' => __('läuft'),
-                        'stopped' => __('gestoppt'),
-                        'paused' => __('pausiert'),
-                        default => $details['status'] ?? null,
-                    },
-                    __('Kerne') => $details['cores'] ?? null,
-                    'Arbeitsspeicher' => isset($details['memory_gb']) ? $details['memory_gb'].' GB' : null,
-                ]" />
+                <x-agentcard :device="$eintrag" :bloecke="\App\Support\AgentAnzeige::vm($eintrag)" />
 
                 <x-minitagcard :title="__('Dienste')" :array="$eintrag->services" />
 

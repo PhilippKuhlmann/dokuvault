@@ -68,22 +68,7 @@
                     'Höheneinheiten' => $eintrag->form_factor === 'rack' ? $eintrag->height_units.' HE' : null,
                 ]" />
 
-                @php
-                    $details = $eintrag->agent_details ?? [];
-                @endphp
-                {{-- pvesm reports 0 for a storage it cannot reach (disabled, NAS
-                     off) - "0 / 0 GB" read like an empty disk. --}}
-                <x-agentcard :device="$eintrag" :title="__('System')" :werte="[
-                    'Proxmox VE' => $details['pve_version'] ?? null,
-                    'Kernel' => $details['kernel'] ?? null,
-                    'CPU' => $details['cpu'] ?? null,
-                    'Arbeitsspeicher' => isset($details['memory_gb']) ? $details['memory_gb'].' GB' : null,
-                ]" :listen="[
-                    __('Speicher') => collect($details['storages'] ?? [])->map(fn ($st) => [
-                        $st['name'].(! empty($st['type']) ? ' ('.$st['type'].')' : ''),
-                        empty($st['total_gb']) ? __('nicht verfügbar') : ($st['used_gb'] ?? 0).' / '.$st['total_gb'].' GB',
-                    ])->all(),
-                ]" />
+                <x-agentcard :device="$eintrag" :bloecke="\App\Support\AgentAnzeige::server($eintrag)" />
 
                 {{-- Betriebssystem steht jetzt in der Kopfzeile - hier waere es doppelt. --}}
                 <x-minitagcard :title="__('Dienste')" :array="$eintrag->services" />

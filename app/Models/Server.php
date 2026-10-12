@@ -89,6 +89,12 @@ class Server extends Model
         return $this->belongsTo(Cluster::class);
     }
 
+    /** The VMs and containers running on this host (VM::host). */
+    public function gaeste()
+    {
+        return $this->hasMany(VM::class, 'server_id');
+    }
+
     public function customer()
     {
         return $this->belongsTo(Customer::class);

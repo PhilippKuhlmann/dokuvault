@@ -524,6 +524,9 @@ return [
         'model' => Server::class, 'request' => ServerRequest::class,
         'relation' => 'servers', 'einzahl' => 'Server', 'suchfelder' => ['name', 'serialNumber'],
         'bloecke' => true,
+        // The card sums the guests' memory - without preloading the list
+        // asks for them row by row.
+        'mitladen' => ['gaeste'],
         // Zwanzig Felder untereinander waeren eine Scrollstrecke.
         'spalten' => 2,
         // 'gruppe' teilt die zwanzig Felder in Abschnitte mit eigener
