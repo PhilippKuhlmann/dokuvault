@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.10.13
+
+### Fixed
+
+- **Nächtliches Backup scheiterte seit dem 9.10. mit „ZipArchive::close(): Permission denied“.** Ist ein Archivpasswort gesetzt, kommt die `.env` (APP_KEY) mit ins Archiv. Sie gehörte `root:root` mit den Rechten 640, und der Scheduler läuft als `www-data`, konnte sie also nicht lesen. `deploy.sh` gibt die `.env` jetzt der Gruppe des Webservers (`root:www-data`, 640).
+
 ## 26.10.12
 
 ### Added

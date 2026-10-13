@@ -99,6 +99,14 @@ WEB_USER="${WEB_USER:-www-data}"
 if [ "$(id -u)" -eq 0 ] && id "$WEB_USER" >/dev/null 2>&1; then
     echo "==> Rechte von storage/ und bootstrap/cache/ an $WEB_USER"
     chown -R "$WEB_USER:$WEB_USER" storage bootstrap/cache
+
+    # With an archive password the backup puts the .env in (APP_KEY). As
+    # root:root 640 the scheduler (www-data) could not read it, and every
+    # nightly backup failed with "ZipArchive::close(): Permission denied".
+    if [ -f .env ]; then
+        chgrp "$WEB_USER" .env
+        chmod 640 .env
+    fi
 fi
 
 echo "==> Fertig"
