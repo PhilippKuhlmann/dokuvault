@@ -6,6 +6,10 @@
 
 - **Nächtliches Backup scheiterte seit dem 9.10. mit „ZipArchive::close(): Permission denied“.** Ist ein Archivpasswort gesetzt, kommt die `.env` (APP_KEY) mit ins Archiv. Sie gehörte `root:root` mit den Rechten 640, und der Scheduler läuft als `www-data`, konnte sie also nicht lesen. `deploy.sh` gibt die `.env` jetzt der Gruppe des Webservers (`root:www-data`, 640).
 
+### Changed
+
+- **Vite 6.4.4, PostCSS 8.5.29 und Puppeteer 25.13.0.**
+
 ## 26.10.12
 
 ### Added
