@@ -146,7 +146,8 @@ test('ohne Recht auf die Geraeteart erscheint sie nicht auf der Karte', function
     // Dashboard Geraete, deren Liste sich nicht oeffnen laesst.
     $this->actingAs(userWithPermissions(['server_viewAny']));
 
+    // Nothing left the user may see - so no tile at all.
     $this->get(route('customer.dashboard', $customer))
-        ->assertSee('Ablaufende Garantien')
+        ->assertDontSee('Ablaufende Garantien')
         ->assertDontSee('PC-Verborgen');
 });

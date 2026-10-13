@@ -8,6 +8,7 @@
 
 ### Changed
 
+- **Ablauf-Kacheln auf dem Dashboard nur, wenn etwas fällig ist.** Ablaufende Lizenzen, Zertifikate, Garantien und Support-Ende erscheinen nur noch, wenn mindestens ein Eintrag zutrifft. Leere Kacheln wie „Keine ablaufenden Lizenzen 🎉“ fallen weg und lassen Platz für das, was Aufmerksamkeit braucht.
 - **Vite 6.4.4, PostCSS 8.5.29 und Puppeteer 25.13.0.**
 
 ## 26.10.12

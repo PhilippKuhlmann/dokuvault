@@ -77,11 +77,16 @@
              content. --}}
         <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
 
+            {{-- Expiry tiles (licences, certificates, warranties, support end)
+                 only when something is due - an empty "nothing expiring" tile
+                 took room from what needs attention. --}}
+
             {{-- Ablaufende Lizenzen --}}
+            @if ($expiringLicenses->isNotEmpty())
             @can('licensesoftware_viewAny')
                 <x-dashboard-tile :title="__('Ablaufende Lizenzen')">
                     <div class="divide-y divide-gray-100 dark:divide-gray-700">
-                        @forelse ($expiringLicenses as $license)
+                        @foreach ($expiringLicenses as $license)
                             @php
                                 $end = \Carbon\Carbon::parse($license->end_date)->startOfDay();
                                 $days = now()->startOfDay()->diffInDays($end, false);
@@ -99,18 +104,18 @@
                                     <span class="text-sm text-gray-500 dark:text-gray-400">in {{ $days }} Tagen</span>
                                 @endif
                             </a>
-                        @empty
-                            <div class="py-3 text-sm text-gray-400 dark:text-gray-500">{{ __('Keine ablaufenden Lizenzen 🎉') }}</div>
-                        @endforelse
+                        @endforeach
                     </div>
                 </x-dashboard-tile>
             @endcan
+            @endif
 
             {{-- Ablaufende Zertifikate --}}
+            @if ($expiringCertificates->isNotEmpty())
             @can('certificate_viewAny')
                 <x-dashboard-tile :title="__('Ablaufende Zertifikate')">
                     <div class="divide-y divide-gray-100 dark:divide-gray-700">
-                        @forelse ($expiringCertificates as $certificate)
+                        @foreach ($expiringCertificates as $certificate)
                             @php
                                 $end = \Carbon\Carbon::parse($certificate->expiry_date)->startOfDay();
                                 $days = now()->startOfDay()->diffInDays($end, false);
@@ -128,20 +133,20 @@
                                     <span class="text-sm text-gray-500 dark:text-gray-400">in {{ $days }} Tagen</span>
                                 @endif
                             </a>
-                        @empty
-                            <div class="py-3 text-sm text-gray-400 dark:text-gray-500">{{ __('Keine ablaufenden Zertifikate 🎉') }}</div>
-                        @endforelse
+                        @endforeach
                     </div>
                 </x-dashboard-tile>
             @endcan
+            @endif
 
             {{-- Ablaufende Garantien.
 
                  Über alle Gerätearten hinweg: Die Frage "ist die Kiste noch in
                  Garantie?" stellt sich nicht je Liste, sondern beim Kunden. --}}
+            @if ($expiringWarranties->isNotEmpty())
             <x-dashboard-tile :title="__('Ablaufende Garantien')">
                 <div class="divide-y divide-gray-100 dark:divide-gray-700">
-                    @forelse ($expiringWarranties as $garantie)
+                    @foreach ($expiringWarranties as $garantie)
                         <a href="{{ $garantie['url'] }}"
                             class="flex items-center justify-between gap-3 py-2.5 -mx-2 px-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <span class="min-w-0">
@@ -158,17 +163,17 @@
                                 <span class="shrink-0 text-sm text-gray-500 dark:text-gray-400">in {{ $garantie['tage'] }} Tagen</span>
                             @endif
                         </a>
-                    @empty
-                        <div class="py-3 text-sm text-gray-400 dark:text-gray-500">{{ __('Keine ablaufenden Garantien 🎉') }}</div>
-                    @endforelse
+                    @endforeach
                 </div>
             </x-dashboard-tile>
+            @endif
 
             {{-- Support ending: hardware and operating systems. Same row shape
                  as the warranties next to it. --}}
+            @if ($endOfSupport->isNotEmpty())
             <x-dashboard-tile :title="__('Support-Ende')">
                 <div class="divide-y divide-gray-100 dark:divide-gray-700">
-                    @forelse ($endOfSupport as $eol)
+                    @foreach ($endOfSupport as $eol)
                         <a href="{{ $eol['url'] }}"
                             class="flex items-center justify-between gap-3 py-2.5 -mx-2 px-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <span class="min-w-0">
@@ -185,11 +190,10 @@
                                 <span class="shrink-0 text-sm text-gray-500 dark:text-gray-400">{{ $eol['datum']->format('m/Y') }}</span>
                             @endif
                         </a>
-                    @empty
-                        <div class="py-3 text-sm text-gray-400 dark:text-gray-500">{{ __('Alles im Support 🎉') }}</div>
-                    @endforelse
+                    @endforeach
                 </div>
             </x-dashboard-tile>
+            @endif
 
             {{-- Standorte --}}
             <x-dashboard-tile :title="__('Standorte')">

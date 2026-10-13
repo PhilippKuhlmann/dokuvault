@@ -88,3 +88,18 @@ test('dashboard links highlight the entry like the global search', function () {
         ->assertViewHas('expiringWarranties', fn ($l) => $l->first()['url'] === $ziel)
         ->assertViewHas('recentChanges', fn ($l) => $l->first()['url'] === $ziel);
 });
+
+test('expiry tiles only appear when something is due', function () {
+    [$customer, $site] = dashboardKunde();
+    $this->actingAs(userWithPermissions(['server_viewAny', 'licensesoftware_viewAny', 'certificate_viewAny']));
+
+    Server::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id,
+        'operating_system_id' => OperatingSystem::factory()->create(['name' => 'Debian 13', 'eol_date' => null])->id,
+        'name' => 'SRV-GARANTIE', 'warranty_until' => now()->addDays(10)->format('Y-m-d')]);
+
+    $this->get(route('customer.dashboard', $customer))
+        ->assertSee('Ablaufende Garantien')
+        ->assertDontSee('Ablaufende Lizenzen')
+        ->assertDontSee('Ablaufende Zertifikate')
+        ->assertDontSee('Support-Ende');
+});
