@@ -86,12 +86,13 @@
     }
 
     if (Gate::denies('isCustomer')) {
-        $sammeln([
-            [null, __('Kundensuche'), 'customer.search'],
-            [null, __('Globale Suche'), 'search.global'],
-            ['remote_search', __('Rustdesk Suche'), 'search.remote'],
-        ]);
+        $sammeln([[null, __('Kundensuche'), 'customer.search']]);
     }
+    // Customer accounts too: both searches stay within their customer.
+    $sammeln([
+        [null, __('Globale Suche'), 'search.global'],
+        ['remote_search', __('Rustdesk Suche'), 'search.remote'],
+    ]);
 
     if (Gate::allows('admin_bereich')) {
         $adminPraefix = __('Admin').' · ';

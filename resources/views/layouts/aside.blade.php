@@ -7,18 +7,18 @@
                  768 px ausblendet - ohne Ersatz. Am Handy kam man damit weder
                  aufs Dashboard noch in eine der Suchen. Hier mit Beschriftung
                  statt nur als Symbol, in der Seitenleiste ist der Platz da. --}}
-            @cannot('isCustomer')
-                <li class="md:hidden">
+            <li class="md:hidden">
                     <ul class="space-y-1 pb-3 mb-2 border-b border-gray-200 dark:border-gray-700">
                         <x-aside.toplink :label="__('Dashboard')" svg="svg.home" :href="route('customer.dashboard', $customer)" />
-                        <x-aside.toplink :label="__('Kundensuche')" svg="svg.search" :href="route('customer.search')" />
+                        @cannot('isCustomer')
+                            <x-aside.toplink :label="__('Kundensuche')" svg="svg.search" :href="route('customer.search')" />
+                        @endcannot
                         <x-aside.toplink :label="__('Globale Suche')" svg="svg.db" :href="route('search.global')" />
                         @can('remote_search')
                             <x-aside.toplink :label="__('Rustdesk Suche')" svg="svg.software.rustdesk" :href="route('search.remote')" />
                         @endcan
                     </ul>
                 </li>
-            @endcannot
 
             <form method="post" action="{{ route('filter.site', $customer) }}" class="pb-3 mb-2 border-b border-gray-200 dark:border-gray-700">
                 @csrf

@@ -1,8 +1,11 @@
 <?php
 
 use App\Models\Customer;
+use App\Models\OperatingSystem;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\Server;
+use App\Models\Site;
 use App\Models\User;
 
 /**
@@ -31,7 +34,7 @@ test('die Seitenleiste fuehrt die Kopfzeilen-Wege fuer schmale Bildschirme', fun
     }
 });
 
-test('Kunden sehen die internen Suchen auch am Handy nicht', function () {
+test('customer accounts see the global search on mobile too, but not the customer search', function () {
     $customer = Customer::factory()->create();
 
     // isCustomer haengt an der gesetzten customer_id, nicht an einer festen
@@ -46,18 +49,19 @@ test('Kunden sehen die internen Suchen auch am Handy nicht', function () {
         'customer_id' => $customer->id,
     ]));
 
-    // Dieselbe Schranke wie in der Kopfleiste: @cannot('isCustomer').
+    // Same rule as in the header: only the customer search is internal.
     $inhalt = $this->get(route('customer.dashboard', $customer))->assertOk()->getContent();
 
-    expect($inhalt)->not->toContain(route('search.global'));
+    expect($inhalt)->toContain(route('search.global'));
+    expect($inhalt)->not->toContain(route('customer.search'));
     expect($inhalt)->not->toContain(route('search.remote'));
 });
 
-test('ein Kundennutzer sieht die internen Suchen auch mit einer frisch angelegten Rolle nicht', function () {
-    // Der eigentliche Fall: Rollen entstehen im Adminbereich und bekommen dort
-    // fortlaufende Nummern. Solange isCustomer nach der Id 98 oder 99 fragte,
-    // war das Gate in jeder echten Installation falsch - der Kundennutzer bekam
-    // Kundensuche und Fernwartung angeboten, beides fuehrte ins Leere.
+test('a customer account gets home and global search, but not the customer search', function () {
+    // Roles are created in the admin area with running ids. While isCustomer
+    // asked for id 98 or 99, the gate was false in every real installation.
+    // The customer search stays hidden (one customer only); home and the
+    // global search, which stays within the customer, are there.
     $customer = Customer::factory()->create();
     $rolle = Role::factory()->create(['name' => 'Kunde lesend']);
     $rolle->permissions()->attach(Permission::factory()->create(['name' => 'site_viewAny'])->id);
@@ -71,9 +75,41 @@ test('ein Kundennutzer sieht die internen Suchen auch mit einer frisch angelegte
 
     $inhalt = $this->get(route('customer.dashboard', $customer))->assertOk()->getContent();
 
-    expect($inhalt)->not->toContain(route('search.global'));
+    expect($inhalt)->toContain('href="'.route('customer.dashboard', $customer).'"');
+    expect($inhalt)->toContain(route('search.global'));
     expect($inhalt)->not->toContain(route('search.remote'));
     expect($inhalt)->not->toContain(route('customer.search'));
+    // The search page has its own header: home leads back to the dashboard.
+    $suche = $this->get(route('search.global'))->assertOk()->getContent();
+    expect($suche)->toContain('href="'.route('customer.dashboard', $customer).'"');
+    expect($suche)->not->toContain(route('customer.search'));
+});
+
+test('a customer account with remote_search only finds its own devices', function () {
+    $eigener = Customer::factory()->create(['name' => 'Eigen GmbH']);
+    $fremder = Customer::factory()->create(['name' => 'Fremd GmbH']);
+    $os = OperatingSystem::factory()->create(['name' => 'Windows Server 2022']);
+
+    foreach ([[$eigener, 'SRV-EIGEN'], [$fremder, 'SRV-FREMD']] as [$kunde, $name]) {
+        Server::factory()->create([
+            'customer_id' => $kunde->id,
+            'site_id' => Site::factory()->create(['customer_id' => $kunde->id])->id,
+            'operating_system_id' => $os->id,
+            'name' => $name, 'remoteID' => '123456789', 'remotePassword' => 'geheim',
+        ]);
+    }
+
+    $rolle = Role::factory()->create(['name' => 'Kunde Fernwartung']);
+    $rolle->permissions()->attach(Permission::factory()->create(['name' => 'remote_search'])->id);
+    $this->actingAs(User::factory()->create(['role_id' => $rolle->id, 'customer_id' => $eigener->id]));
+
+    expect($this->get(route('customer.dashboard', $eigener))->getContent())->toContain(route('search.remote'));
+
+    // Matches both by name - only the own one may come back.
+    $this->get(route('search.remote', ['search' => 'SRV']))->assertOk()
+        ->assertSee('SRV-EIGEN')
+        ->assertDontSee('SRV-FREMD')
+        ->assertDontSee('Fremd GmbH');
 });
 
 test('ohne das Recht auf Fernwartung gibt es den Verweis nirgends', function () {

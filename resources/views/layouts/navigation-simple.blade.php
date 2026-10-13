@@ -18,10 +18,15 @@
                 </a>
             </div>
 
-            @cannot('isCustomer')
-                <div class="hidden md:flex gap-1 dark:text-gray-100">
+            {{-- Customer accounts: home to their dashboard instead of the
+                 customer search. --}}
+            <div class="hidden md:flex gap-1 dark:text-gray-100">
 
-                    <x-nav.link url="{{ route('customer.search') }}" :name="__('Kundensuche')"><x-svg.search class="h-6 w-6" /> </x-nav.link>
+                    @can('isCustomer')
+                        <x-nav.link url="{{ route('customer.dashboard', auth()->user()->customer) }}" :name="__('Dashboard')"><x-svg.home class="h-6 w-6" /> </x-nav.link>
+                    @else
+                        <x-nav.link url="{{ route('customer.search') }}" :name="__('Kundensuche')"><x-svg.search class="h-6 w-6" /> </x-nav.link>
+                    @endcan
                     <x-nav.link url="{{ route('search.global') }}" :name="__('Globale Suche')"><x-svg.db class="h-6 w-6" /> </x-nav.link>
                     {{-- Nur mit dem Recht: Die Route verlangt es, der Verweis
                          fuehrte sonst auf eine 403-Seite. --}}
@@ -29,8 +34,7 @@
                         <x-nav.link url="{{ route('search.remote') }}" :name="__('Rustdesk Suche')" target="_blank"><x-svg.software.rustdesk class="h-6 w-6" /> </x-nav.link>
                     @endcan
 
-                </div>
-            @endcannot
+            </div>
 
             <div class="flex items-center">
                 <div class="flex items-center ml-3">

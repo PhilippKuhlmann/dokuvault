@@ -32,11 +32,15 @@
                 </a>
             </div>
 
-            @cannot('isCustomer')
-                <div class="hidden md:flex gap-1 dark:text-gray-100">
+            {{-- A customer account gets the same row, without the customer
+                 search: it only has its own customer. The global and the
+                 Rustdesk search stay within that customer. --}}
+            <div class="hidden md:flex gap-1 dark:text-gray-100">
 
                     <x-nav.link url="{{ route('customer.dashboard', $customer) }}" :name="__('Dashboard')"><x-svg.home class="h-6 w-6" /> </x-nav.link>
-                    <x-nav.link url="{{ route('customer.search') }}" :name="__('Kundensuche')"><x-svg.search class="h-6 w-6" /> </x-nav.link>
+                    @cannot('isCustomer')
+                        <x-nav.link url="{{ route('customer.search') }}" :name="__('Kundensuche')"><x-svg.search class="h-6 w-6" /> </x-nav.link>
+                    @endcannot
                     <x-nav.link url="{{ route('search.global') }}" :name="__('Globale Suche')"><x-svg.db class="h-6 w-6" /> </x-nav.link>
                     {{-- Nur mit dem Recht: Die Route verlangt es, der Verweis
                          fuehrte sonst auf eine 403-Seite. --}}
@@ -44,11 +48,7 @@
                         <x-nav.link url="{{ route('search.remote') }}" :name="__('Rustdesk Suche')" target="_blank"><x-svg.software.rustdesk class="h-6 w-6" /> </x-nav.link>
                     @endcan
 
-                </div>
-            <!--
-                <x-input.customersearch class="w-96 hidden md:block" value="{{ $customer->name }}" />
-            -->
-            @endcannot
+            </div>
 
 
 

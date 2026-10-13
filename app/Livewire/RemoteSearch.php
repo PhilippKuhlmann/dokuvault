@@ -14,47 +14,29 @@ class RemoteSearch extends Component
 
     public function render()
     {
-        if ($this->search) {
-            $search = $this->search;
+        // A customer account only finds its own devices - as in the global
+        // search, and as RemoteConnectController checks on connect.
+        $kunde = auth()->user()->customer_id;
 
-            $servers = Server::where('remoteID', '!=', '')->where('remotePassword', '!=', '')
+        $abfrage = function (string $klasse, string $tabelle) use ($kunde) {
+            return $klasse::where($tabelle.'.remoteID', '!=', '')
+                ->where($tabelle.'.remotePassword', '!=', '')
                 ->with('customer')
-                ->join('customers', 'servers.customer_id', '=', 'customers.id')
-                ->select('servers.*', 'customers.name as customerName')
+                ->join('customers', $tabelle.'.customer_id', '=', 'customers.id')
+                ->select($tabelle.'.*', 'customers.name as customerName')
+                ->when($kunde, fn ($q) => $q->where($tabelle.'.customer_id', $kunde))
                 // Kundenname oder Geraetename: Wer einen bestimmten Server
                 // fernwarten will, kennt meist dessen Namen und nicht den des
                 // Kunden. Vorher traf die Suche nur den Kunden - wer
                 // "SRV-DC01" eintippte, bekam nichts und hielt das Geraet fuer
                 // nicht eingerichtet.
-                ->whereEnthaelt(['customers.name', 'servers.name'], $search)
+                ->when($this->search, fn ($q) => $q->whereEnthaelt(['customers.name', $tabelle.'.name'], $this->search))
                 ->orderBy('customers.name')
                 ->get();
+        };
 
-            $vms = VM::where('remoteID', '!=', '')->where('remotePassword', '!=', '')
-                ->with('customer')
-                ->join('customers', 'vms.customer_id', '=', 'customers.id')
-                ->select('vms.*', 'customers.name as customerName')
-                ->whereEnthaelt(['customers.name', 'vms.name'], $search)
-                ->orderBy('customers.name')
-                ->get();
-
-        } else {
-            $servers = Server::where('remoteID', '!=', '')
-                ->where('remotePassword', '!=', '')
-                ->with('customer')
-                ->join('customers', 'servers.customer_id', '=', 'customers.id')
-                ->select('servers.*', 'customers.name as customerName')
-                ->orderBy('customers.name')
-                ->get();
-
-            $vms = VM::where('remoteID', '!=', '')
-                ->where('remotePassword', '!=', '')
-                ->with('customer')
-                ->join('customers', 'vms.customer_id', '=', 'customers.id')
-                ->select('vms.*', 'customers.name as customerName')
-                ->orderBy('customers.name')
-                ->get();
-        }
+        $servers = $abfrage(Server::class, 'servers');
+        $vms = $abfrage(VM::class, 'vms');
 
         $remotes = [];
 
