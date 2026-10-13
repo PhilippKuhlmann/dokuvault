@@ -128,5 +128,8 @@ class PermissionRoleSeeder extends Seeder
             $customerDelete->assignPermission($permission);
         }
 
+        // The Rustdesk search: for a customer account it only lists the
+        // devices of its own customer.
+        $customerDelete->assignPermission(Permission::where('name', 'remote_search')->firstOrFail());
     }
 }

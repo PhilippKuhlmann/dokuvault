@@ -8,7 +8,7 @@
 
 ### Changed
 
-- **Kundenkonten bekommen Home-Symbol, globale Suche und Rustdesk-Suche.** Wer als Kunde angemeldet ist, sah in der Kopfleiste keine Symbole, auch nicht den Weg zurück aufs Dashboard. Jetzt stehen dort das Home-Symbol und die globale Suche, mit dem Recht „Fernwartungs-Suche benutzen“ auch die Rustdesk-Suche. Das gilt ebenso in der Seitenleiste am Handy und in der Befehlspalette. Beide Suchen finden nur Geräte des eigenen Kunden. Die Kundensuche bleibt Technikern vorbehalten.
+- **Kundenkonten bekommen Home-Symbol, globale Suche und Rustdesk-Suche.** Wer als Kunde angemeldet ist, sah in der Kopfleiste keine Symbole, auch nicht den Weg zurück aufs Dashboard. Jetzt stehen dort das Home-Symbol und die globale Suche, mit dem Recht „Fernwartungs-Suche benutzen“ auch die Rustdesk-Suche. Das gilt ebenso in der Seitenleiste am Handy und in der Befehlspalette. Beide Suchen finden nur Geräte des eigenen Kunden. Die Kundensuche bleibt Technikern vorbehalten. Die Standardrolle „general_full“ (Kunde Lesen/Schreiben) bekommt das Recht bei neuen Installationen und auf der Demo gleich mit.
 - **Ablauf-Kacheln auf dem Dashboard nur, wenn etwas fällig ist.** Ablaufende Lizenzen, Zertifikate, Garantien und Support-Ende erscheinen nur noch, wenn mindestens ein Eintrag zutrifft. Leere Kacheln wie „Keine ablaufenden Lizenzen 🎉“ fallen weg und lassen Platz für das, was Aufmerksamkeit braucht.
 - **Vite 6.4.4, PostCSS 8.5.29 und Puppeteer 25.13.0.**
 
