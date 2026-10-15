@@ -15,6 +15,7 @@
                 'licensesoftware' => __('Software-Lizenzen'),
                 'firewall' => __('Firewall-Subscriptions'),
                 'warranty' => __('Garantien der Geräte'),
+                'agent' => __('Agenten, die nicht mehr melden'),
             ] as $kind => $label)
                 <label class="flex cursor-pointer select-none items-center gap-2" wire:key="kind-{{ $kind }}">
                     <input type="checkbox" value="{{ $kind }}" wire:model.live="kinds"

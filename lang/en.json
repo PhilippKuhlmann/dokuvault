@@ -1451,7 +1451,6 @@
     "Eine Mail am Morgen, wenn Zertifikate, Domains, Lizenzen oder Garantien bald ablaufen oder abgelaufen sind – über alle Kunden.": "A morning mail when certificates, domains, licences or warranties expire soon or have expired – across all customers.",
     "Dafür braucht Ihr Zugang eine Mailadresse.": "Your account needs an email address for this.",
     "… und :anzahl weitere. Die vollständige Liste steht auf den Dashboards der Kunden.": "… and :anzahl more. The full list is on the customer dashboards.",
-    ":abgelaufen abgelaufen, :bald laufen bald ab": ":abgelaufen expired, :bald expiring soon",
     ":name bekommt ablaufende Einträge per Mail.": ":name gets expiring entries by mail.",
     ":name bekommt keine Mail mehr zu ablaufenden Einträgen.": ":name no longer gets mails about expiring entries.",
     "Sie bekommen ablaufende Einträge per Mail.": "You will get expiring entries by mail.",
@@ -1574,5 +1573,12 @@
     "Kein Gerät trägt die Gateway-Adresse.": "No device holds the gateway address.",
     "kein Gateway": "no gateway",
     "Weitere Firewalls und Router": "Other firewalls and routers",
-    "Sie tragen weder ein VLAN-Gateway noch die WAN-IP eines Anschlusses.": "They hold neither a VLAN gateway nor the WAN IP of a connection."
+    "Sie tragen weder ein VLAN-Gateway noch die WAN-IP eines Anschlusses.": "They hold neither a VLAN gateway nor the WAN IP of a connection.",
+    "1 Agent meldet nicht": "1 agent not reporting",
+    ":anzahl Agenten melden nicht": ":anzahl agents not reporting",
+    "hat sich nie gemeldet": "never reported",
+    "zuletzt :datum": "last :datum",
+    "Ein Agent kommt einmal, wenn er verstummt, und erst wieder, wenn er sich zwischendurch gemeldet hat.": "An agent is mailed once when it goes silent, and again only after it has reported in between.",
+    "Agenten melden nicht": "Agents not reporting",
+    "Agenten, die nicht mehr melden": "Agents that stopped reporting"
 }

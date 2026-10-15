@@ -2,6 +2,7 @@
 
 use App\Livewire\AdminNotifications;
 use App\Livewire\NotificationProfile;
+use App\Models\AgentInstallation;
 use App\Models\Certificate;
 use App\Models\Customer;
 use App\Models\Domain;
@@ -177,4 +178,73 @@ test('the mail renders with customer, link and date', function () {
         ->toContain($cert->name)
         ->toContain(now()->addDays(3)->format('d.m.Y'))
         ->toContain('highlight='.$cert->id);
+});
+
+// --- Agents that stopped reporting ---
+
+function agentLastSeen(Customer $customer, ?DateTimeInterface $seen, string $host = 'SRV-DC01'): AgentInstallation
+{
+    return AgentInstallation::create([
+        'customer_id' => $customer->id, 'kind' => 'windows', 'machine_id' => 'm-'.$host,
+        'hostname' => $host, 'roles' => [], 'detected' => [], 'last_seen_at' => $seen,
+    ]);
+}
+
+test('a silent agent is in the morning mail, a reporting one is not', function () {
+    $user = expiryAdmin(['expiry_mail' => true]);
+    $customer = Customer::factory()->create();
+    agentLastSeen($customer, now()->subDay(), 'SRV-STILL');
+    agentLastSeen($customer, now()->subMinutes(10), 'SRV-OK');
+
+    $this->artisan('expiry:notify')->assertSuccessful();
+
+    Notification::assertSentTo($user, ExpiryNotice::class,
+        fn ($n) => $n->items->pluck('name')->all() === ['SRV-STILL']
+            && $n->items->first()['stage'] === ExpiringItems::SILENT);
+});
+
+test('a silent agent is mailed once, and again after it reported in between', function () {
+    $user = expiryAdmin(['expiry_mail' => true]);
+    $agent = agentLastSeen(Customer::factory()->create(), now()->subDay());
+
+    $this->artisan('expiry:notify');
+    $this->travel(1)->days();
+    $this->artisan('expiry:notify');
+    Notification::assertSentToTimes($user, ExpiryNotice::class, 1);
+
+    // Back for a while, then silent again: a new last contact, a new mail.
+    $agent->update(['last_seen_at' => now()]);
+    $this->travel(1)->days();
+    $this->artisan('expiry:notify');
+    Notification::assertSentToTimes($user, ExpiryNotice::class, 2);
+});
+
+test('silent agents need the agent permission and can be switched off', function () {
+    $user = expiryAdmin(['expiry_mail' => true]);
+    agentLastSeen(Customer::factory()->create(), now()->subDay());
+
+    Setting::setzen(Setting::EXPIRY_MAIL_KINDS, 'certificate');
+    $this->artisan('expiry:notify');
+    Notification::assertNotSentTo($user, ExpiryNotice::class);
+
+    $reader = User::factory()->create([
+        'email' => fake()->unique()->safeEmail(),
+        'role_id' => Role::factory()->create()->id,
+    ]);
+    expect(ExpiringItems::forUser($reader, Setting::EXPIRY_KINDS))->toBeEmpty();
+});
+
+test('the mail names the silent agent and since when', function () {
+    $user = expiryAdmin();
+    agentLastSeen(Customer::factory()->create(['name' => 'Muster GmbH']), now()->subHours(30), 'SRV-STILL');
+
+    $items = ExpiringItems::forUser($user, Setting::EXPIRY_KINDS);
+    $mail = (new ExpiryNotice($items))->toMail($user);
+    $html = (string) $mail->render();
+
+    expect($mail->subject)->toContain('1 Agent meldet nicht')
+        ->and($html)->toContain('SRV-STILL')
+        ->toContain('Muster GmbH')
+        ->toContain('meldet nicht seit')
+        ->toContain('Agenten melden nicht');
 });

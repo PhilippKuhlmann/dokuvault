@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\AgentInstallation;
 use App\Models\Certificate;
 use App\Models\Concerns\HatBeschaffung;
 use App\Models\Domain;
@@ -29,6 +30,9 @@ class ExpiringItems
     public const SOON = 'soon';
 
     public const EXPIRED = 'expired';
+
+    /** An agent that stopped reporting - nothing expires, but someone has to look. */
+    public const SILENT = 'silent';
 
     /**
      * @param  array<int, string>  $kinds  from Setting::EXPIRY_KINDS
@@ -71,7 +75,47 @@ class ExpiringItems
             }
         }
 
+        if (in_array('agent', $kinds, true) && $gate->allows('agent_manage')) {
+            $items = $items->merge(self::silentAgents($user));
+        }
+
         return $items->sortBy([['customer', 'asc'], ['date', 'asc']])->values();
+    }
+
+    /**
+     * Agents that have not reported for longer than the threshold under
+     * Admin -> Agenten - the same rule as the warning on the dashboard.
+     *
+     * The date is the last contact: it is part of what NotifyExpiry
+     * remembers, so an agent is mailed once when it falls silent and again
+     * only after it reported in between and fell silent anew.
+     */
+    private static function silentAgents(User $user): Collection
+    {
+        $query = AgentInstallation::query()->with('customer')
+            ->where(fn ($q) => $q->whereNull('last_seen_at')
+                ->orWhere('last_seen_at', '<', now()->subHours(Setting::agentStillStunden())));
+
+        return self::scoped($query, $user)->get()
+            ->filter(fn (AgentInstallation $a) => $a->customer)
+            ->map(function (AgentInstallation $a) {
+                $seen = $a->last_seen_at ?? $a->created_at;
+
+                return [
+                    'kind' => 'agent',
+                    'label' => __('Agent'),
+                    'name' => $a->hostname,
+                    'customer' => $a->customer->name,
+                    'date' => $seen->copy()->startOfDay(),
+                    'seen' => $a->last_seen_at,
+                    'days' => (int) $seen->copy()->startOfDay()->diffInDays(now()->startOfDay(), false) * -1,
+                    'stage' => self::SILENT,
+                    'url' => route('agent.index', $a->customer),
+                    'subject_type' => $a->getMorphClass(),
+                    'subject_id' => $a->id,
+                ];
+            })
+            ->values();
     }
 
     private static function scoped($query, User $user)

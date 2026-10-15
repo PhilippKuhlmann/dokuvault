@@ -35,11 +35,21 @@ class ExpiryNotice extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $expired = $this->items->where('stage', ExpiringItems::EXPIRED)->count();
-        $soon = $this->items->count() - $expired;
+        $silent = $this->items->where('stage', ExpiringItems::SILENT)->count();
+        $soon = $this->items->count() - $expired - $silent;
 
+        $silentText = $silent === 1 ? __('1 Agent meldet nicht') : __(':anzahl Agenten melden nicht', ['anzahl' => $silent]);
+
+        // One kind: the full sentence. Several: the short forms side by side,
+        // in the order of urgency.
         $subject = match (true) {
-            $expired && $soon => __(':abgelaufen abgelaufen, :bald laufen bald ab', ['abgelaufen' => $expired, 'bald' => $soon]),
+            (bool) $expired + (bool) $soon + (bool) $silent > 1 => collect([
+                $expired ? __(':anzahl abgelaufen', ['anzahl' => $expired]) : null,
+                $soon ? __(':anzahl laufen bald ab', ['anzahl' => $soon]) : null,
+                $silent ? $silentText : null,
+            ])->filter()->implode(', '),
             $expired > 0 => ($expired === 1 ? __('1 Eintrag ist abgelaufen') : __(':anzahl Einträge sind abgelaufen', ['anzahl' => $expired])),
+            $silent > 0 => $silentText,
             default => ($soon === 1 ? __('1 Eintrag läuft bald ab') : __(':anzahl Einträge laufen bald ab', ['anzahl' => $soon])),
         };
 
@@ -51,6 +61,7 @@ class ExpiryNotice extends Notification
                 'app' => Setting::appName(),
                 'expired' => $expired,
                 'soon' => $soon,
+                'silent' => $silent,
                 'groups' => $this->items->take(self::MAX_ROWS)->groupBy('customer'),
                 'rest' => max(0, $this->items->count() - self::MAX_ROWS),
                 'home' => url('/'),
