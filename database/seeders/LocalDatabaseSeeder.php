@@ -119,16 +119,12 @@ class LocalDatabaseSeeder extends Seeder
             'customer_id' => $customer->id,
         ]);
 
-        Router::factory(2)->create([
-            'customer_id' => $customer->id,
-            'site_id' => $site1->id,
-        ]);
-
         // Eine Securepoint mit ihren Sonderfeldern, damit in der Demo zu sehen
         // ist, dass sie nur bei diesem Hersteller erscheinen.
         Firewall::factory(1)->create([
             'customer_id' => $customer->id,
             'site_id' => $site1->id,
+            'name' => 'FW-HH',
             'manufacturer' => 'Securepoint',
             'model' => 'RC300 G5',
             'form_factor' => 'appliance',
@@ -847,7 +843,10 @@ class LocalDatabaseSeeder extends Seeder
             'connection_type' => 'Kabel',
             'bandwidth_down' => '500',
             'bandwidth_up' => '50',
+            'wan_ip' => '198.51.100.24',
         ]);
+
+        $this->networkMapTopology($customer, $site1, $site2);
 
         // USV
         Ups::factory(2)->create([
@@ -930,5 +929,79 @@ class LocalDatabaseSeeder extends Seeder
             // im Protokoll ganz oben steht.
             DemoProtokollSeeder::class,
         ]);
+    }
+
+    /**
+     * Ties the demo network together so the network map reads like a real
+     * one: each VLAN hangs below the device holding its gateway, each
+     * internet connection above the device holding its WAN address, and the
+     * devices sit in the VLAN that matches their job.
+     *
+     * Hamburg: the Securepoint FW-HH is the edge and the gateway of the
+     * factory VLANs; RTR-Core keeps Clients and Server & Management.
+     * Munich: a branch router does both.
+     */
+    private function networkMapTopology(Customer $customer, Site $hamburg, Site $munich): void
+    {
+        $address = fn ($device, string $ip, string $label, ?Network $network = null) => $device->ipAddresses()->create([
+            'customer_id' => $customer->id,
+            'network_id' => $network?->id,
+            'address' => $ip,
+            'label' => $label,
+        ]);
+
+        $vlan = fn (Site $site, string $name) => Network::where('customer_id', $customer->id)
+            ->where('site_id', $site->id)->where('description', $name)->first();
+
+        $firewall = Firewall::where('customer_id', $customer->id)->where('name', 'FW-HH')->first();
+        $address($firewall, '203.0.113.2', 'WAN');
+
+        foreach (Network::where('customer_id', $customer->id)->where('site_id', $hamburg->id)
+            ->whereNotIn('description', ['Clients', 'Server & Management'])->get() as $network) {
+            $address($firewall, $network->gateway, 'Gateway '.$network->description, $network);
+        }
+
+        $router = Router::factory()->create([
+            'customer_id' => $customer->id, 'site_id' => $munich->id, 'name' => 'RTR-MUC',
+            'manufacturer' => 'Lancom', 'model' => '1900EF',
+        ]);
+        $address($router, '198.51.100.24', 'WAN');
+
+        foreach (Network::where('customer_id', $customer->id)->where('site_id', $munich->id)->get() as $network) {
+            $address($router, $network->gateway, 'Gateway '.$network->description, $network);
+        }
+
+        // Fixed addresses from .20 upwards, below the DHCP range of the
+        // factory VLANs (.100 to .250).
+        $place = function (string $class, ?Network $network) use ($customer, $hamburg, $address) {
+            if (! $network) {
+                return;
+            }
+
+            $prefix = substr($network->network, 0, strrpos($network->network, '.'));
+
+            $class::where('customer_id', $customer->id)->where('site_id', $hamburg->id)->orderBy('id')->get()
+                ->each(function ($device, int $i) use ($address, $network, $prefix) {
+                    $address($device, $prefix.'.'.(20 + $i), 'Primär', $network);
+                });
+        };
+
+        $place(PhoneSystem::class, $vlan($hamburg, 'VoIP'));
+        $place(Phone::class, $vlan($hamburg, 'VoIP'));
+        $place(Printer::class, $vlan($hamburg, 'Drucker'));
+        $place(Recorder::class, $vlan($hamburg, 'Kameras'));
+        $place(Camera::class, $vlan($hamburg, 'Kameras'));
+
+        // The clients get their address from the pool: they hang on the VLAN,
+        // not on an address - as in IPAM.
+        $clients = $vlan($hamburg, 'Clients');
+        Computer::where('customer_id', $customer->id)->where('site_id', $hamburg->id)
+            ->where('name', '!=', 'PC-Empfang')->get()
+            ->each(fn (Computer $computer) => $computer->ipAddresses()->create([
+                'customer_id' => $customer->id,
+                'network_id' => $clients->id,
+                'address' => null,
+                'dhcp' => true,
+            ]));
     }
 }

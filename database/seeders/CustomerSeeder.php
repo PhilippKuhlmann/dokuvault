@@ -57,9 +57,16 @@ class CustomerSeeder extends Seeder
                 'site_id' => $site1->id,
             ]);
 
-            Firewall::factory(1)->create([
+            // The firewall holds the VLAN's gateway, so the network map shows
+            // the VLAN below it instead of below an undocumented gateway.
+            Firewall::factory()->create([
                 'customer_id' => $customer->id,
                 'site_id' => $site1->id,
+            ])->ipAddresses()->create([
+                'customer_id' => $customer->id,
+                'network_id' => $network->id,
+                'address' => $network->gateway,
+                'label' => 'Gateway',
             ]);
 
             NetworkSwitch::factory(2)->create([
