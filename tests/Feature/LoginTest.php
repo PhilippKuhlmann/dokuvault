@@ -74,3 +74,36 @@ test('Kunde wird beim Login direkt zum eigenen Kunden-Dashboard geleitet', funct
     $this->assertAuthenticatedAs($user);
     $response->assertRedirect('/'.$customer->slug);
 });
+
+test('Admin wird beim Login direkt ins Admin-Dashboard geleitet', function () {
+    $role = Role::find(Role::IS_ADMIN) ?? Role::factory()->create(['id' => Role::IS_ADMIN]);
+    $user = User::factory()->create([
+        'username' => 'admin-login-test',
+        'password' => bcrypt('password'),
+        'role_id' => $role->id,
+        'customer_id' => null,
+    ]);
+
+    $response = $this->post('/login', [
+        'username' => 'admin-login-test',
+        'password' => 'password',
+    ]);
+
+    $this->assertAuthenticatedAs($user);
+    $response->assertRedirect(route('admin.dashboard'));
+});
+
+test('Admin mit gemerkter Zielseite landet dort statt im Admin-Dashboard', function () {
+    $role = Role::find(Role::IS_ADMIN) ?? Role::factory()->create(['id' => Role::IS_ADMIN]);
+    User::factory()->create([
+        'username' => 'admin-deeplink-test',
+        'password' => bcrypt('password'),
+        'role_id' => $role->id,
+    ]);
+    $customer = Customer::factory()->create();
+
+    $this->get('/'.$customer->slug.'/network-map')->assertRedirect('/login');
+
+    $this->post('/login', ['username' => 'admin-deeplink-test', 'password' => 'password'])
+        ->assertRedirect('/'.$customer->slug.'/network-map');
+});
