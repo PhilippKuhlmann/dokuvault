@@ -1557,5 +1557,22 @@
     ":anzahl Kerne": ":anzahl cores",
     "alle Kerne": "all cores",
     ":belegt von :limit": ":belegt of :limit",
-    "Speicherplatz": "Disk space"
+    "Speicherplatz": "Disk space",
+    "Netzplan": "Network map",
+    "Internet, Gateway, VLANs und Geräte – zusammengesetzt aus IP-Adressen und Gateways der VLANs.": "Internet, gateway, VLANs and devices – put together from IP addresses and VLAN gateways.",
+    "Für diesen Standort sind weder Firewall, Router noch VLANs dokumentiert.": "No firewall, router or VLAN is documented for this site.",
+    "Internet": "Internet",
+    "Gateway nicht dokumentiert": "Gateway not documented",
+    "+ :count weitere": "+ :count more",
+    "Keine Geräte mit Adresse in diesem Netz": "No devices with an address in this network",
+    "Internetanschlüsse ohne Zuordnung": "Unassigned internet connections",
+    "Keine Firewall und kein Router trägt die WAN-IP, und am Standort steht nicht genau eines dieser Geräte.": "No firewall or router holds the WAN IP, and the site does not have exactly one of them.",
+    "Geräte ohne passendes VLAN": "Devices without a matching VLAN",
+    "Ihre Adresse liegt in keinem dokumentierten Netz.": "Their address lies in no documented network.",
+    "Noch kein Standort angelegt.": "No site created yet.",
+    "VM": "VM",
+    "Kein Gerät trägt die Gateway-Adresse.": "No device holds the gateway address.",
+    "kein Gateway": "no gateway",
+    "Weitere Firewalls und Router": "Other firewalls and routers",
+    "Sie tragen weder ein VLAN-Gateway noch die WAN-IP eines Anschlusses.": "They hold neither a VLAN gateway nor the WAN IP of a connection."
 }

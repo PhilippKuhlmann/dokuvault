@@ -39,6 +39,7 @@ use App\Http\Controllers\MailboxProviderController;
 use App\Http\Controllers\MailSettingController;
 use App\Http\Controllers\NASController;
 use App\Http\Controllers\NetworkController;
+use App\Http\Controllers\NetworkMapController;
 use App\Http\Controllers\NetworkSwitchController;
 use App\Http\Controllers\OperatingSystemController;
 use App\Http\Controllers\OtherClientController;
@@ -335,6 +336,9 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
 
             // IP-Plan je VLAN
             Route::get('ip-plan', [IpPlanController::class, 'index'])->name('ipplan.index');
+
+            // Logical network map per site
+            Route::get('network-map', [NetworkMapController::class, 'index'])->name('networkmap.index');
 
             // Papierkorb
             Route::get('trash', [TrashController::class, 'index'])->name('trash.index');

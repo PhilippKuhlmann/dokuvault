@@ -67,6 +67,7 @@
                         @can('network_viewAny')
                             <x-aside.dropdownlink :label="__('VLAN')" href="{{ route('network.index', $customer) }}" />
                             <x-aside.dropdownlink :label="__('IPAM')" href="{{ route('ipplan.index', $customer) }}" />
+                            <x-aside.dropdownlink :label="__('Netzplan')" href="{{ route('networkmap.index', $customer) }}" />
                         @endcan
                         @can('wifi_viewAny')
                             <x-aside.dropdownlink :label="__('WLAN Netze')" href="{{ route('wifi.index', $customer) }}" />

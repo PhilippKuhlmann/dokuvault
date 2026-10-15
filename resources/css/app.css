@@ -391,3 +391,67 @@ textarea::placeholder {
 .dark .markdown h2 {
     color: var(--color-cerulean-400);
 }
+
+/*
+  Network map: the lines between gateway and VLANs. Each child draws its own
+  stub upwards and its share of the crossbar, so the bar runs exactly from the
+  first to the last child, however many there are. An only child gets just
+  the stub.
+*/
+.network-map-branches {
+    display: flex;
+    justify-content: center;
+}
+
+.network-map-branch {
+    position: relative;
+    padding: 1.25rem 0.5rem 0;
+}
+
+.network-map-branch::before,
+.network-map-branch::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    border-color: var(--color-gray-300);
+}
+
+.network-map-branch::before {
+    left: 50%;
+    height: 1.25rem;
+    border-left-width: 1px;
+}
+
+.network-map-branch::after {
+    left: 0;
+    right: 0;
+    border-top-width: 1px;
+}
+
+.network-map-branch:first-child::after {
+    left: 50%;
+}
+
+.network-map-branch:last-child::after {
+    right: 50%;
+}
+
+.network-map-branch:only-child::after {
+    display: none;
+}
+
+.network-map-stem {
+    width: 1px;
+    height: 1.25rem;
+    margin: 0 auto;
+    background-color: var(--color-gray-300);
+}
+
+.dark .network-map-branch::before,
+.dark .network-map-branch::after {
+    border-color: var(--color-gray-600);
+}
+
+.dark .network-map-stem {
+    background-color: var(--color-gray-600);
+}

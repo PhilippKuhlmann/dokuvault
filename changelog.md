@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.10.15
+
+### Added
+
+- **Netzplan je Standort.** Unter Netzwerk → Netzplan steht für jeden Standort der Weg vom Internetanschluss über Firewall oder Router zu den VLANs und den Geräten darin. Der Plan entsteht ganz aus dem, was schon dokumentiert ist, ohne neue Eingaben: Ein VLAN hängt unter dem Gerät, das seine Gateway-Adresse trägt, ein Gerät im VLAN, in dem seine IP liegt (oder dem es per DHCP zugeordnet ist). Ein Internetanschluss hängt über der Firewall bzw. dem Router mit seiner WAN-IP, sonst über dem einzigen am Standort. Jede Karte springt auf das Gerät. Je Gerätetyp stehen höchstens fünf Namen in der VLAN-Karte, der Rest als „+ n weitere“ mit Link ins IPAM. Was sich nicht zuordnen lässt, bleibt sichtbar: VLANs, deren Gateway kein Gerät trägt, unter einem gestrichelten Kasten „Gateway nicht dokumentiert“, dazu Internetanschlüsse ohne Zuordnung, Geräte mit einer Adresse außerhalb jedes VLANs und Firewalls oder Router ohne VLAN. So zeigt der Plan auch die Lücken in der Doku. Er folgt dem Standortfilter der Seitenleiste und braucht dasselbe Recht wie VLAN und IPAM. Physische Verbindungen (Uplinks, Switch-Ports) kommen in einer späteren Stufe.
+
 ## 26.10.13
 
 ### Fixed

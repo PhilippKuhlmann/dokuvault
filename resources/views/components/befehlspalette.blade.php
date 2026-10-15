@@ -40,6 +40,7 @@
             ['router_viewAny', __('Router'), 'router.index'],
             ['network_viewAny', __('VLAN'), 'network.index'],
             ['network_viewAny', __('IPAM'), 'ipplan.index'],
+            ['network_viewAny', __('Netzplan'), 'networkmap.index'],
             ['wifi_viewAny', __('WLAN Netze'), 'wifi.index'],
             ['networkswitch_viewAny', __('Switch'), 'networkswitch.index'],
             ['accesspoint_viewAny', __('Accesspoint'), 'accesspoint.index'],
