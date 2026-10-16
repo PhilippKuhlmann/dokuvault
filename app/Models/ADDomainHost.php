@@ -20,7 +20,11 @@ class ADDomainHost extends Model
     public const TYPES = [
         'server' => Server::class,
         'vm' => VM::class,
+        'nas' => NAS::class,
     ];
+
+    /** Shown behind the name in the selects. */
+    private const LABELS = ['server' => 'Server', 'vm' => 'VM', 'nas' => 'NAS'];
 
     public function host()
     {
@@ -34,19 +38,20 @@ class ADDomainHost extends Model
     }
 
     /**
-     * All servers and VMs of a customer as key => label, for the selects.
+     * The machines of a customer as key => label, for the selects. Servers
+     * and VMs by default; a form field may allow more (a network drive also
+     * sits on a NAS).
      *
+     * @param  array<int, string>  $types  prefixes from TYPES
      * @return array<string, string>
      */
-    public static function options(int $customerId): array
+    public static function options(int $customerId, array $types = ['server', 'vm']): array
     {
         $optionen = [];
 
-        foreach (self::TYPES as $prefix => $klasse) {
-            $typ = $prefix === 'vm' ? 'VM' : 'Server';
-
+        foreach (array_intersect_key(self::TYPES, array_flip($types)) as $prefix => $klasse) {
             foreach ($klasse::where('customer_id', $customerId)->orderBy('name')->get() as $host) {
-                $optionen[$prefix.':'.$host->id] = $host->name.' ('.$typ.')';
+                $optionen[$prefix.':'.$host->id] = $host->name.' ('.self::LABELS[$prefix].')';
             }
         }
 

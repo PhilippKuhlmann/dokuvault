@@ -50,6 +50,7 @@
             ['cluster_viewAny', __('Cluster'), 'cluster.index'],
             ['vm_viewAny', __('VMs'), 'vm.index'],
             ['nas_viewAny', __('NAS'), 'nas.index'],
+            ['networkshare_viewAny', __('Netzlaufwerke'), 'networkshare.index'],
             ['computer_viewAny', __('Computer'), 'computer.index'],
             ['printer_viewAny', __('Drucker'), 'printer.index'],
             ['scanner_viewAny', __('Scanner'), 'scanner.index'],

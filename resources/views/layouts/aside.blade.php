@@ -39,7 +39,7 @@
                 </div>
             </form>
 
-            @canany(['site_viewAny', 'contactperson_viewAny'])
+            @canany(['site_viewAny', 'contactperson_viewAny', 'checklist_manage', 'checklist_request', 'checklist_approve'])
                 <x-aside.dropdown :label="__('Kunde')" svg="svg.office">
                     <x-slot:links>
                         @can('site_viewAny')
@@ -48,6 +48,9 @@
                         @can('contactperson_viewAny')
                             <x-aside.dropdownlink :label="__('Ansprechpartner')" href="{{ route('contactperson.index', $customer) }}" />
                         @endcan
+                        @canany(['checklist_manage', 'checklist_request', 'checklist_approve'])
+                            <x-aside.dropdownlink :label="__('Checklisten')" href="{{ route('checklist.index', $customer) }}" />
+                        @endcanany
                     </x-slot:links>
                 </x-aside.dropdown>
             @endcanany
@@ -88,7 +91,7 @@
                 </x-aside.dropdown>
             @endcanany
 
-            @canany(['server_viewAny', 'vm_viewAny', 'nas_viewAny', 'cluster_viewAny'])
+            @canany(['server_viewAny', 'vm_viewAny', 'nas_viewAny', 'cluster_viewAny', 'networkshare_viewAny'])
                 <x-aside.dropdown :label="__('Server')" svg="svg.servers">
                     <x-slot:links>
                         @can('server_viewAny')
@@ -102,6 +105,9 @@
                         @endcan
                         @can('nas_viewAny')
                             <x-aside.dropdownlink :label="__('NAS')" href="{{ route('nas.index', $customer) }}" />
+                        @endcan
+                        @can('networkshare_viewAny')
+                            <x-aside.dropdownlink :label="__('Netzlaufwerke')" href="{{ route('networkshare.index', $customer) }}" />
                         @endcan
                     </x-slot:links>
                 </x-aside.dropdown>

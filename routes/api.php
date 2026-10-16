@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\API\AccesspointController;
 use App\Http\Controllers\API\AgentController;
+use App\Http\Controllers\API\ChecklistReportController;
 use App\Http\Controllers\API\CustomerController;
 use App\Http\Controllers\API\ServerController;
 use App\Http\Controllers\API\SiteController;
@@ -50,6 +51,10 @@ Route::middleware(['throttle:agent', 'agent'])->withoutMiddleware('throttle:api'
     // Installed agents update themselves (the agent program, not only the script).
     Route::get('/update/{dienst}', [AgentController::class, 'update'])->where('dienst', 'windows|proxmox|linux');
 });
+
+// The AD script of a checklist reports back. Its own key (one checklist,
+// limited time) instead of a user token - see ChecklistReportController.
+Route::post('/checklist-report', ChecklistReportController::class)->middleware('throttle:30,1');
 
 Route::middleware(['auth:sanctum', 'aktiv'])->group(function () {
 

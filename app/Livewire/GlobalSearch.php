@@ -14,6 +14,7 @@ use App\Models\InternetConnection;
 use App\Models\IoTDevice;
 use App\Models\Machine;
 use App\Models\NAS;
+use App\Models\NetworkShare;
 use App\Models\NetworkSwitch;
 use App\Models\OtherClient;
 use App\Models\PatchPanel;
@@ -50,6 +51,7 @@ class GlobalSearch extends Component
         'server' => [Server::class, 'Server', 'server', ['name', 'serialNumber']],
         'vm' => [VM::class, 'VMs', 'vm', ['name']],
         'nas' => [NAS::class, 'NAS', 'nas', ['name', 'serialNumber']],
+        'networkshare' => [NetworkShare::class, 'Netzlaufwerke', 'networkshare', ['name', 'path']],
         'computer' => [Computer::class, 'Computer', 'computer', ['name', 'serialNumber']],
         'printer' => [Printer::class, 'Drucker', 'printer', ['name', 'serialNumber']],
         'scanner' => [Scanner::class, 'Scanner', 'scanner', ['name', 'serialNumber']],

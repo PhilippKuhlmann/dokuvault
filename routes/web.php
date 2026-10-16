@@ -12,6 +12,7 @@ use App\Http\Controllers\BrandingController;
 use App\Http\Controllers\CameraController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\ChangelogController;
+use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\ClusterController;
 use App\Http\Controllers\ComputerController;
 use App\Http\Controllers\ContactPersonController;
@@ -40,6 +41,7 @@ use App\Http\Controllers\MailSettingController;
 use App\Http\Controllers\NASController;
 use App\Http\Controllers\NetworkController;
 use App\Http\Controllers\NetworkMapController;
+use App\Http\Controllers\NetworkShareController;
 use App\Http\Controllers\NetworkSwitchController;
 use App\Http\Controllers\OperatingSystemController;
 use App\Http\Controllers\OtherClientController;
@@ -340,6 +342,16 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             // Logical network map per site
             Route::get('network-map', [NetworkMapController::class, 'index'])->name('networkmap.index');
 
+            // On- and offboarding checklists
+            Route::get('checklists', [ChecklistController::class, 'index'])->name('checklist.index');
+            Route::get('checklists/settings', [ChecklistController::class, 'settings'])->name('checklist.settings');
+            Route::get('checklists/onboarding/create', [ChecklistController::class, 'createOnboarding'])->name('checklist.onboarding.create');
+            Route::get('checklists/offboarding/create', [ChecklistController::class, 'createOffboarding'])->name('checklist.offboarding.create');
+            Route::post('checklists/offboarding', [ChecklistController::class, 'storeOffboarding'])->name('checklist.offboarding.store');
+            Route::get('checklists/{checklist}', [ChecklistController::class, 'show'])->name('checklist.show');
+            Route::get('checklists/{checklist}/ad-script', [ChecklistController::class, 'adScript'])->name('checklist.ad-script');
+            Route::delete('checklists/{checklist}', [ChecklistController::class, 'destroy'])->name('checklist.destroy');
+
             // Papierkorb
             Route::get('trash', [TrashController::class, 'index'])->name('trash.index');
             Route::post('trash/{type}/{id}/restore', [TrashController::class, 'restore'])->name('trash.restore');
@@ -374,6 +386,7 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::resource('rack', RackController::class)->except(['show']);
             Route::resource('patchpanel', PatchPanelController::class, ['parameters' => ['patchpanel' => 'patchpanel']])->except(['show']);
             Route::resource('nas', NASController::class, ['parameters' => ['nas' => 'nas']])->only(['index']);
+            Route::get('networkshare', [NetworkShareController::class, 'index'])->name('networkshare.index');
             Route::resource('addomain', ADDomainController::class)->only(['index']);
             Route::resource('aduser', ADUserController::class)->only(['index']);
             Route::resource('adgroup', ADGroupController::class)->only(['index']);

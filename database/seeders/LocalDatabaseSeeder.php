@@ -9,6 +9,7 @@ use App\Models\ADUser;
 use App\Models\Backup;
 use App\Models\Camera;
 use App\Models\Certificate;
+use App\Models\ChecklistOption;
 use App\Models\Cluster;
 use App\Models\Computer;
 use App\Models\ContactPerson;
@@ -30,6 +31,7 @@ use App\Models\Machine;
 use App\Models\Mailbox;
 use App\Models\NAS;
 use App\Models\Network;
+use App\Models\NetworkShare;
 use App\Models\NetworkSwitch;
 use App\Models\OperatingSystem;
 use App\Models\OtherClient;
@@ -870,6 +872,45 @@ class LocalDatabaseSeeder extends Seeder
             'registrar' => 'united-domains',
             'expiry_date' => now()->addYear()->toDateString(),
         ]);
+
+        // Network drives on the file server. Each has an AD group for read and
+        // one for write access; the onboarding form offers all but Scans.
+        foreach ([
+            ['Gemeinsam', 'S', 'Gemeinsam', false, true],
+            ['Vorlagen', 'V', 'Vorlagen', false, true],
+            ['Projekte', 'P', 'Projekte', false, true],
+            ['Buchhaltung', 'B', 'Buchhaltung', true, true],
+            ['Geschäftsführung', 'G', 'GF', true, true],
+            ['Scans', 'X', 'Scans', false, false],
+        ] as [$name, $letter, $folder, $sensitive, $offered]) {
+            $groups = collect(['R' => 'lesen', 'RW' => 'ändern'])->map(fn ($wording, $suffix) => ADGroup::firstOrCreate(
+                ['customer_id' => $customer->id, 'name' => "DL_{$folder}_{$suffix}"],
+                ['description' => "Fileserver \\\\SRV-FS01\\{$folder} – {$wording}"],
+            ));
+
+            NetworkShare::create([
+                'customer_id' => $customer->id, 'host_type' => Server::class,
+                'host_id' => Server::where('customer_id', $customer->id)->where('name', 'SRV-FS01')->value('id'),
+                'name' => $name, 'drive_letter' => $letter,
+                'path' => "\\\\SRV-FS01\\{$folder}", 'ad_group_read_id' => $groups['R']->id,
+                'ad_group_write_id' => $groups['RW']->id, 'sensitive' => $sensitive, 'in_onboarding_form' => $offered,
+            ]);
+        }
+
+        // Checklists: programs the customer can tick for a new employee.
+        foreach ([
+            ['app', 'Microsoft 365', 'M365-Standard', 'Postfach, Teams, Office', 'it'],
+            ['app', 'Nextcloud', null, 'cloud.mustermann.de', 'it'],
+            ['app', 'Wiki', null, 'wiki.mustermann.de', 'it'],
+            ['app', 'VPN', 'VPN-Benutzer', 'Securepoint SSL-VPN', 'it'],
+            ['app', 'DATEV', null, 'beantragt der Kunde selbst', 'customer'],
+        ] as $sort => [$kind, $name, $group, $detail, $assignee]) {
+            ChecklistOption::create([
+                'customer_id' => $customer->id, 'kind' => $kind, 'name' => $name,
+                'ad_group_id' => $group ? ADGroup::where('customer_id', $customer->id)->where('name', $group)->value('id') : null,
+                'detail' => $detail, 'assignee' => $assignee, 'sort' => $sort,
+            ]);
+        }
 
         // SSL/TLS-Zertifikate (eines läuft demnächst ab -> Dashboard-Warnung)
         Certificate::factory()->create([

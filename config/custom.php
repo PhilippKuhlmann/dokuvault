@@ -44,6 +44,7 @@ use App\Models\Machine;
 use App\Models\Mailbox;
 use App\Models\NAS;
 use App\Models\Network;
+use App\Models\NetworkShare;
 use App\Models\NetworkSwitch;
 use App\Models\OtherClient;
 use App\Models\PatchPanel;
@@ -93,6 +94,7 @@ return [
         'Server',
         'VM',
         'NAS',
+        'NetworkShare',
         'Firewall',
         'Router',
         'Network',
@@ -145,7 +147,7 @@ return [
     'rechte_menue' => [
         'Kunde' => ['site', 'contactperson'],
         'Netzwerk' => ['internetconnection', 'firewall', 'router', 'network', 'wifi', 'networkswitch', 'accesspoint', 'rack', 'patchpanel'],
-        'Server' => ['server', 'cluster', 'vm', 'nas'],
+        'Server' => ['server', 'cluster', 'vm', 'nas', 'networkshare'],
         'Clients' => ['computer', 'printer', 'scanner', 'scantarget', 'iotdevice', 'machine', 'otherclient'],
         'AD' => ['addomain', 'aduser', 'adgroup'],
         'Telefon' => ['phonesystem', 'sipaccount', 'phone', 'dect'],
@@ -168,6 +170,7 @@ return [
         'cluster' => [Cluster::class, 'Cluster'],
         'vm' => [VM::class, 'VM'],
         'nas' => [NAS::class, 'NAS'],
+        'networkshare' => [NetworkShare::class, 'Netzlaufwerk'],
         'securepointuma' => [SecurepointUMA::class, 'E-Mail-Archivierung'],
         'firewall' => [Firewall::class, 'Firewall'],
         'router' => [Router::class, 'Router'],
@@ -226,6 +229,7 @@ return [
         'printer' => 'Drucker',
         'scanner' => 'Scanner',
         'scantarget' => 'Scan-Ziele',
+        'networkshare' => 'Netzlaufwerke',
         'addomain' => 'AD-Domänen',
         'aduser' => 'AD-Benutzer',
         'adgroup' => 'AD-Gruppen',
@@ -1333,6 +1337,11 @@ return [
         // Agent page: tokens, downloads, installed agents. Was "see_hidden"
         // ("Verstecke Objekte sehen") before - a different matter.
         'agent_manage' => 'Agenten verwalten',
+        // On- and offboarding checklists: IT works through them, the
+        // customer reports new employees and approves sensitive drives.
+        'checklist_manage' => 'Checklisten bearbeiten',
+        'checklist_request' => 'Neue Mitarbeiter melden',
+        'checklist_approve' => 'Berechtigungen freigeben',
     ],
 
     /*

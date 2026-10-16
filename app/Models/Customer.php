@@ -307,6 +307,27 @@ class Customer extends Model
         return $this->hasMany(Domain::class);
     }
 
+    public function networkshares()
+    {
+        return $this->hasMany(NetworkShare::class);
+    }
+
+    public function checklists()
+    {
+        return $this->hasMany(Checklist::class);
+    }
+
+    public function checklistOptions()
+    {
+        return $this->hasMany(ChecklistOption::class);
+    }
+
+    /** Standard checklist steps this customer has switched off. */
+    public function hiddenChecklistItems()
+    {
+        return $this->belongsToMany(ChecklistTemplateItem::class, 'checklist_template_item_hidden');
+    }
+
     public function certificates()
     {
         return $this->hasMany(Certificate::class);

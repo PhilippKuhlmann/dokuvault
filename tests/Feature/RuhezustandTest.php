@@ -65,6 +65,7 @@ test('was nach einem Geheimnis klingt, liegt verschlüsselt oder steht mit Grund
         'agent_tokens.token' => 'gehasht, siehe AgentToken::hashToken()',
         'password_resets.token' => 'gehasht vom Broker',
         'personal_access_tokens.token' => 'gehasht von Sanctum',
+        'checklists.script_token_hash' => 'SHA-256 des Skript-Schlüssels, siehe Checklist::issueScriptToken()',
 
         // Sitzungsmerkmale, keine Geheimnisse im eigentlichen Sinn.
         'users.remember_token' => 'wechselt bei jeder Anmeldung',
@@ -81,6 +82,8 @@ test('was nach einem Geheimnis klingt, liegt verschlüsselt oder steht mit Grund
 
         // Tragen "key" oder "credential" im Namen, meinen aber etwas anderes.
         'settings.key' => 'Name einer Einstellung',
+        'checklists.script_token_expires_at' => 'Ablaufzeit des Skript-Schlüssels',
+        'checklists.force_password_change' => 'Schalter, kein Kennwort',
         'device_models.manufacturer_key' => 'normalisierter Suchschlüssel',
         'device_models.model_key' => 'normalisierter Suchschlüssel',
         'login_generals.key_type' => 'Verfahren, etwa ed25519',

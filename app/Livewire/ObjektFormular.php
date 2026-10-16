@@ -130,6 +130,9 @@ class ObjektFormular extends Component
             $this->form[$feld['name']] = match (true) {
                 $feld['type'] === 'host' && ($feld['mehrfach'] ?? false) => [],
                 $feld['type'] === 'verknuepfung' => [],
+                // A real boolean: the browser takes the string '0' for a
+                // ticked checkbox.
+                $feld['type'] === 'schalter' => (bool) ($feld['default'] ?? false),
                 $feld['type'] === 'optionen' => (string) array_key_first($feld['werte'] ?? config($feld['quelle'])),
                 isset($feld['default']) => (string) $feld['default'],
                 default => '',
@@ -186,6 +189,8 @@ class ObjektFormular extends Component
             // Dienste kommen als Array aus dem Model (explode beim Lesen),
             // gespeichert wird die Komma-Liste - deshalb wieder zusammenfuegen.
             $this->form[$feld['name']] = match (true) {
+                // Switches stay booleans - '0' would show as ticked.
+                $feld['type'] === 'schalter' => (bool) $wert,
                 $wert instanceof \DateTimeInterface => $wert->format('Y-m-d'),
                 is_array($wert) => implode(',', $wert),
                 // (string) false ergibt '' und nicht '0': Ein deaktivierter
@@ -325,6 +330,18 @@ class ObjektFormular extends Component
     }
 
     /**
+     * Which machines the 'host' fields of this type offer: servers and VMs,
+     * unless a field names its own ('typen' => ['server', 'vm', 'nas']).
+     *
+     * @return array<int, string>
+     */
+    protected function hostTypen(): array
+    {
+        return collect($this->einstellung()['felder'])->where('type', 'host')
+            ->pluck('typen')->flatten()->filter()->unique()->values()->all() ?: ['server', 'vm'];
+    }
+
+    /**
      * Rules for 'host' and 'verknuepfung' fields: only machines and entries
      * of this customer. The request cannot say that - it does not know the
      * customer.
@@ -346,7 +363,7 @@ class ObjektFormular extends Component
             return $regeln;
         }
 
-        $erlaubt = Rule::in(array_keys(ADDomainHost::options($this->customerId)));
+        $erlaubt = Rule::in(array_keys(ADDomainHost::options($this->customerId, $this->hostTypen())));
 
         foreach ($felder as $feld) {
             if ($feld['mehrfach'] ?? false) {
@@ -473,6 +490,54 @@ class ObjektFormular extends Component
      * alten Stand - ein neuer Standort waere erst nach einem Neuladen zu
      * gebrauchen.
      */
+    /**
+     * A 'host' field may prefill another field from the chosen machine, e.g.
+     * the path of a network drive: 'fuellt' => ['path' => '\\\\{name}\\'].
+     *
+     * An empty field gets the prefix. One that starts with the previous
+     * machine's prefix gets it swapped ("\\SRV-FS01\Buchhaltung" becomes
+     * "\\NAS01\Buchhaltung"). Anything else was typed on purpose and stays.
+     */
+    public function updatingForm($wert, $schluessel): void
+    {
+        $feld = $this->fuellendesHostFeld($schluessel);
+        if (! $feld) {
+            return;
+        }
+
+        $alt = $this->hostName($this->form[$schluessel] ?? null);
+        $neu = $this->hostName($wert);
+
+        foreach ($feld['fuellt'] as $ziel => $vorlage) {
+            $aktuell = (string) ($this->form[$ziel] ?? '');
+            $altPrefix = $alt !== null ? str_replace('{name}', $alt, $vorlage) : null;
+            $neuPrefix = $neu !== null ? str_replace('{name}', $neu, $vorlage) : '';
+
+            if ($aktuell === '' || $aktuell === $altPrefix) {
+                $this->form[$ziel] = $neuPrefix;
+            } elseif ($altPrefix !== null && $neu !== null && stripos($aktuell, $altPrefix) === 0) {
+                $this->form[$ziel] = $neuPrefix.substr($aktuell, strlen($altPrefix));
+            }
+        }
+    }
+
+    /** The 'host' field with this name, if it prefills other fields. */
+    protected function fuellendesHostFeld(string $name): ?array
+    {
+        $feld = collect($this->einstellung()['felder'])->firstWhere('name', $name);
+
+        return $feld && $feld['type'] === 'host' && ! empty($feld['fuellt']) && ! ($feld['mehrfach'] ?? false) ? $feld : null;
+    }
+
+    /** Name of the machine behind a form key ("server:5"), only this customer's. */
+    protected function hostName(mixed $schluessel): ?string
+    {
+        [$prefix, $id] = array_pad(explode(':', (string) $schluessel, 2), 2, null);
+        $klasse = ADDomainHost::TYPES[$prefix] ?? null;
+
+        return $klasse ? $klasse::where('customer_id', $this->customerId)->whereKey($id)->value('name') : null;
+    }
+
     /**
      * Nach der Dateiwahl die Bezeichnung vorschlagen - aber nur, solange das
      * Feld leer ist. Wer schon etwas eingetragen hat, hat sich dabei etwas
@@ -779,9 +844,9 @@ class ObjektFormular extends Component
             'einzahl' => $einstellung['einzahl'],
             'spalten' => $einstellung['spalten'] ?? 1,
             'kunde' => $this->kunde(),
-            // Servers and VMs of the customer, only where a 'host' field exists.
+            // Machines of the customer, only where a 'host' field exists.
             'hosts' => collect($einstellung['felder'])->contains('type', 'host')
-                ? ADDomainHost::options($this->customerId)
+                ? ADDomainHost::options($this->customerId, $this->hostTypen())
                 : [],
             // Options of many-to-many fields, only this customer's entries.
             'verknuepfungen' => collect($einstellung['felder'])

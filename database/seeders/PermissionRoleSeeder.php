@@ -131,5 +131,10 @@ class PermissionRoleSeeder extends Seeder
         // The Rustdesk search: for a customer account it only lists the
         // devices of its own customer.
         $customerDelete->assignPermission(Permission::where('name', 'remote_search')->firstOrFail());
+
+        // Checklists: the customer reports new employees and approves
+        // sensitive drives; working through the list stays with IT.
+        $customerDelete->assignPermission(Permission::where('name', 'checklist_request')->firstOrFail());
+        $customerDelete->assignPermission(Permission::where('name', 'checklist_approve')->firstOrFail());
     }
 }

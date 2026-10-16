@@ -356,7 +356,9 @@ class ObjektListe extends Component
         } else {
             [$beschriftung, $spalte, $richtung] = $gewaehlt;
 
-            if (str_ends_with($spalte, '_date') || str_ends_with($spalte, '_at')) {
+            // Empty values last: dates as before, other columns on request
+            // (a fourth entry true - network drives without a letter).
+            if (str_ends_with($spalte, '_date') || str_ends_with($spalte, '_at') || ($gewaehlt[3] ?? false)) {
                 $abfrage->orderByRaw($spalte.' IS NULL');
             }
 

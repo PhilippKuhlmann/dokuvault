@@ -25,6 +25,7 @@ use App\Http\Requests\LoginWebsiteRequest;
 use App\Http\Requests\MachineRequest;
 use App\Http\Requests\MailboxRequest;
 use App\Http\Requests\NASRequest;
+use App\Http\Requests\NetworkShareRequest;
 use App\Http\Requests\NetworkSwitchRequest;
 use App\Http\Requests\OtherClientRequest;
 use App\Http\Requests\PhoneRequest;
@@ -69,6 +70,7 @@ use App\Models\Mailbox;
 use App\Models\MailboxProvider;
 use App\Models\NAS;
 use App\Models\Network;
+use App\Models\NetworkShare;
 use App\Models\NetworkSwitch;
 use App\Models\OperatingSystem;
 use App\Models\OtherClient;
@@ -714,6 +716,33 @@ return [
             ['name' => 'warranty_until', 'label' => 'Garantie bis', 'type' => 'date'],
             ['name' => 'eol_date', 'label' => 'Support-Ende (EOL)', 'type' => 'date'],
             ['name' => 'supplier', 'label' => 'Lieferant', 'type' => 'text'],
+        ],
+    ],
+    'networkshare' => [
+        'model' => NetworkShare::class, 'request' => NetworkShareRequest::class,
+        'relation' => 'networkshares', 'einzahl' => 'Netzlaufwerk', 'suchfelder' => ['name', 'path', 'drive_letter'],
+        'mitladen' => ['host', 'readGroup', 'writeGroup'],
+        'sortierungen' => [
+            'buchstabe' => ['Laufwerksbuchstabe', 'drive_letter', 'asc', true],
+            'name' => ['Name', 'name', 'asc'],
+        ],
+        'verweise' => [['route' => 'adgroup.index', 'label' => 'AD-Gruppen', 'recht' => 'adgroup_viewAny']],
+        'felder' => [
+            ['name' => 'name', 'label' => 'Name', 'type' => 'text', 'platzhalter' => 'z. B. Buchhaltung'],
+            ['name' => 'drive_letter', 'label' => 'Laufwerksbuchstabe', 'type' => 'text', 'platzhalter' => 'S'],
+            // The machine that holds the share - file servers are often VMs.
+            // Choosing the machine prefills the path with \\\\name\\.
+            ['name' => 'host', 'label' => 'Server / NAS', 'type' => 'host', 'rolle' => 'share', 'typen' => ['server', 'vm', 'nas'],
+                'fuellt' => ['path' => '\\\\{name}\\']],
+            ['name' => 'path', 'label' => 'Pfad', 'type' => 'text', 'platzhalter' => '\\\\srv-fs01\\buchhaltung'],
+            // The groups the onboarding checklist assigns for read or write access.
+            ['name' => 'ad_group_read_id', 'label' => 'AD-Gruppe Lesen', 'type' => 'auswahl',
+                'quelle' => ADGroup::class, 'anzeige' => '{name}'],
+            ['name' => 'ad_group_write_id', 'label' => 'AD-Gruppe Schreiben', 'type' => 'auswahl',
+                'quelle' => ADGroup::class, 'anzeige' => '{name}'],
+            // Sensitive drives need the approval of the customer's management in the checklist.
+            ['name' => 'sensitive', 'label' => 'Sensibel (Freigabe nötig)', 'type' => 'schalter'],
+            ['name' => 'description', 'label' => 'Beschreibung', 'type' => 'text'],
         ],
     ],
     'nas' => [
