@@ -94,7 +94,7 @@
                     <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100">{{ __('Im AD erledigen') }}</div>
                     @if ($planned->isNotEmpty())
                         <div class="text-gray-600 dark:text-gray-300">
-                            {{ __('Das PowerShell-Skript erledigt :count offene Punkte', ['count' => $planned->count()]) }}:
+                            {{ __('Das AD-Skript (zum Doppelklicken auf dem DC) erledigt :count offene Punkte', ['count' => $planned->count()]) }}:
                             {{ collect([
                                 $planned->contains('action', 'create_ad_user') ? __('Benutzer :name anlegen', ['name' => $checklist->username]) : null,
                                 $planned->contains('action', 'disable_ad_user') ? __('Benutzer :name deaktivieren', ['name' => $checklist->username]) : null,
@@ -127,7 +127,7 @@
                     @endif
                     <a href="{{ route('checklist.ad-script', [$checklist->customer, $checklist]) }}"
                         class="inline-flex items-center gap-1.5 rounded-lg bg-cerulean-600 px-4 py-2 text-sm font-DINPro-bold text-white shadow-xs hover:bg-cerulean-700 focus:outline-hidden focus:ring-2 focus:ring-cerulean-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
-                        {{ __('PowerShell-Skript herunterladen') }}
+                        {{ __('AD-Skript herunterladen') }}
                     </a>
                     </div>
                 @endif

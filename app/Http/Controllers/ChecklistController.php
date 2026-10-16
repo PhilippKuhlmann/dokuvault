@@ -61,7 +61,7 @@ class ChecklistController extends Controller
             ->log('AD-Skript heruntergeladen');
 
         return response($script, 200, [
-            'Content-Type' => 'text/plain; charset=utf-8',
+            'Content-Type' => 'application/octet-stream',
             'Content-Disposition' => 'attachment; filename="'.ChecklistAdScript::filename($checklist).'"',
             'Cache-Control' => 'no-store',
         ]);

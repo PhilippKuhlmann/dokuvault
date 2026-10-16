@@ -13,10 +13,9 @@
   beim AD-Benutzer abgelegt. Der Schluessel in diesem Skript gilt nur fuer
   diese eine Checkliste und nur bis __EXPIRES__.
 
-  Auf einem Domaincontroller (oder Rechner mit RSAT-AD-Modul) ausfuehren:
-    .\onboarding.ps1
-  oder per Rechtsklick "Mit PowerShell ausfuehren". Ohne Administratorrechte
-  startet es sich erhoeht neu. Das Fenster bleibt am Ende offen.
+  Die heruntergeladene .cmd auf einem Domaincontroller (oder Rechner mit
+  RSAT-AD-Modul) doppelklicken. Ohne Administratorrechte startet sie sich
+  erhoeht neu. Das Fenster bleibt am Ende offen.
 #>
 param(
     [string]$ApiUrl = "__API_URL__"
@@ -28,15 +27,13 @@ function Wait-ForClose {
     Read-Host "`nEnter zum Schliessen" | Out-Null
 }
 
-# Right-click "Run with PowerShell" starts without admin rights - creating a
-# user then fails with "access denied". Restart elevated (one UAC prompt).
+# The .cmd wrapper restarts itself elevated. Started any other way without
+# admin rights, stop with a hint instead of failing halfway.
 $principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
 if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host "Keine Administratorrechte - starte neu mit Administratorrechten ..." -ForegroundColor Yellow
-    Start-Process powershell.exe -Verb RunAs -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`" -ApiUrl `"$ApiUrl`""
-    Write-Host "Es geht im neuen Fenster weiter."
-    Start-Sleep -Seconds 3
-    exit
+    Write-Host "Keine Administratorrechte - bitte als Administrator ausfuehren." -ForegroundColor Red
+    Wait-ForClose
+    exit 1
 }
 
 # Any uncaught error: show it and keep the window open.

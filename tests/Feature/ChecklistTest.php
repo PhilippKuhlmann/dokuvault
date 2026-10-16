@@ -525,10 +525,16 @@ test('das Skript enthält Benutzer und freigegebene Gruppen, aber keine wartende
 
     $response = $this->actingAs($user)->get("/{$customer->slug}/checklists/{$checklist->id}/ad-script")
         ->assertOk()
-        ->assertHeader('Content-Disposition', 'attachment; filename="onboarding-sophie.kraemer.ps1"');
+        ->assertHeader('Content-Disposition', 'attachment; filename="onboarding-sophie.kraemer.cmd"');
 
     $script = $response->getContent();
-    expect($script)->toStartWith("\u{FEFF}")
+    // A .cmd: no BOM (cmd.exe), elevates itself, runs the PowerShell part as a
+    // script block - the execution policy does not apply to that.
+    expect($script)->toStartWith('<# :')
+        ->toContain('net session')
+        ->toContain('-Verb RunAs')
+        ->toContain('[scriptblock]::Create')
+        ->not->toContain('#Requires')
         ->toContain('New-ADUser')
         ->toContain('-Verb RunAs')
         ->toContain('Wait-ForClose')

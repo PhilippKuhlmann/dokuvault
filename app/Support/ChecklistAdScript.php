@@ -15,6 +15,12 @@ use App\Models\ChecklistSetting;
  * /api/checklist-report; the documentation ticks the items off and stores
  * the AD user with its password.
  *
+ * The download is a .cmd that carries the PowerShell part. Windows marks a
+ * downloaded .ps1 as "from the internet", and the default execution policy
+ * (RemoteSigned) refuses to run it unsigned - no line of it would run. The
+ * policy applies to script files only: the .cmd elevates itself, reads the
+ * PowerShell part and runs it as a script block.
+ *
  * What the script may touch is fixed here: open items with an action whose
  * approval (if needed) is given. The data goes in as JSON, so no value from
  * the documentation ends up as PowerShell code.
@@ -23,8 +29,28 @@ class ChecklistAdScript
 {
     public static function filename(Checklist $checklist): string
     {
-        return $checklist->type.'-'.($checklist->username ?: 'benutzer').'.ps1';
+        return $checklist->type.'-'.($checklist->username ?: 'benutzer').'.cmd';
     }
+
+    /**
+     * cmd.exe runs this part; for PowerShell it is a comment block. The
+     * first line is a no-op for cmd ("<#" as input, ":" as label).
+     */
+    private const CMD_HEADER = <<<'CMD'
+<# : DokuVault - der Teil fuer cmd.exe, PowerShell ueberspringt ihn
+@echo off
+net session >nul 2>&1
+if errorlevel 1 (
+    echo Starte neu mit Administratorrechten ...
+    powershell -NoProfile -Command "Start-Process -FilePath '%~f0' -Verb RunAs"
+    exit /b
+)
+set "DOKUVAULT_SCRIPT=%~f0"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "& ([scriptblock]::Create([IO.File]::ReadAllText($env:DOKUVAULT_SCRIPT)))"
+exit /b
+#>
+
+CMD;
 
     /** Items the script would do, and those it leaves out because they wait for approval. */
     public static function plan(Checklist $checklist): array
@@ -78,9 +104,12 @@ class ChecklistAdScript
             '__DATA__' => json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT),
         ]);
 
-        // Windows PowerShell 5.1 reads a file without BOM as ANSI - umlauts
-        // in names would break. CRLF, as Notepad expects.
-        return "\u{FEFF}".preg_replace("/\r?\n/", "\r\n", $script);
+        // #Requires is for script files; in a script block Import-Module does it.
+        $script = preg_replace('/^#Requires[^\n]*\n/', '', $script);
+
+        // No BOM: cmd.exe would choke on it in the first line. PowerShell
+        // reads the file as UTF-8 itself. CRLF, as cmd.exe expects.
+        return preg_replace("/\r?\n/", "\r\n", self::CMD_HEADER.$script);
     }
 
     /**
