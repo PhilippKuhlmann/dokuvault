@@ -9,6 +9,7 @@ use App\Models\ADGroup;
 use App\Models\ADUser;
 use App\Models\Checklist;
 use App\Models\ChecklistOption;
+use App\Models\ChecklistSetting;
 use App\Models\ChecklistTemplate;
 use App\Models\Customer;
 use App\Models\Domain;
@@ -529,6 +530,8 @@ test('das Skript enthält Benutzer und freigegebene Gruppen, aber keine wartende
     $script = $response->getContent();
     expect($script)->toStartWith("\u{FEFF}")
         ->toContain('New-ADUser')
+        ->toContain('-Verb RunAs')
+        ->toContain('Wait-ForClose')
         ->toContain('proxyAddresses')
         ->toContain('"email": "sophie.kraemer@kunde.de"')
         ->toContain('"username": "sophie.kraemer"')
@@ -672,4 +675,88 @@ test('der Kunde kann die Kennwortoption nicht umschalten', function () {
         ->assertForbidden();
 
     expect($checklist->fresh()->force_password_change)->toBeFalse();
+});
+
+/*
+|--------------------------------------------------------------------------
+| Start-Kennwort je Kunde
+|--------------------------------------------------------------------------
+*/
+
+test('die Kennwort-Regel des Kunden steht im Skript, ohne Kennwort', function () {
+    $customer = checklistCustomer();
+    Livewire::actingAs(userWithPermissions(['checklist_manage']))
+        ->test(ChecklistSettings::class, ['customer' => $customer])
+        ->set('passwordLength', 8)
+        ->set('passwordUppercase', 2)
+        ->set('passwordSpecialCount', 2)
+        ->set('passwordDigits', 3)
+        ->set('passwordSpecials', '!-!')
+        ->call('savePasswordRule')
+        ->assertHasNoErrors();
+
+    $setting = ChecklistSetting::for($customer);
+    expect($setting->password_specials)->toBe('!-');
+
+    $example = $setting->example();
+    expect(strlen($example))->toBe(8)
+        ->and(preg_match_all('/[A-Z]/', $example))->toBe(2)
+        ->and(preg_match_all('/[!\-]/', $example))->toBe(2)
+        ->and(preg_match_all('/[0-9]/', $example))->toBe(3)
+        ->and(preg_match_all('/[a-z]/', $example))->toBe(1)
+        ->and($example)->not->toMatch('/[lIO01]/');
+
+    $checklist = onboardingWithDrives($customer);
+    $script = $this->actingAs(userWithPermissions(['checklist_manage']))
+        ->get("/{$customer->slug}/checklists/{$checklist->id}/ad-script")->getContent();
+    expect($script)->toContain('"mode": "generated"')->toContain('"uppercase": 2')->toContain('"specialCount": 2')->toContain('"digits": 3')->toContain('"specials": "!-"')
+        ->toContain('New-StartPassword $Data.password');
+});
+
+test('ein festes Start-Kennwort wird verschlüsselt gespeichert und erzwingt die Änderung', function () {
+    $customer = checklistCustomer();
+    Livewire::actingAs(userWithPermissions(['checklist_manage']))
+        ->test(ChecklistSettings::class, ['customer' => $customer])
+        ->set('passwordMode', 'fixed')
+        ->call('savePasswordRule')
+        ->assertHasErrors('fixedPassword')
+        ->set('fixedPassword', 'Willkommen2026!')
+        ->call('savePasswordRule')
+        ->assertHasNoErrors();
+
+    $setting = ChecklistSetting::for($customer);
+    expect($setting->fixed_password)->toBe('Willkommen2026!')
+        ->and($setting->getRawOriginal('fixed_password'))->not->toContain('Willkommen');
+
+    $checklist = onboardingWithDrives($customer);
+    expect($checklist->force_password_change)->toBeTrue();
+
+    $script = $this->actingAs(userWithPermissions(['checklist_manage']))
+        ->get("/{$customer->slug}/checklists/{$checklist->id}/ad-script")->getContent();
+    expect($script)->toContain('"fixed": "Willkommen2026!"')->toContain('"changePasswordAtLogon": true');
+});
+
+test('neue Checklisten übernehmen die Vorgabe zur Kennwortänderung', function () {
+    $customer = checklistCustomer();
+    ChecklistSetting::create(['customer_id' => $customer->id, 'force_change_default' => true]);
+
+    expect(onboardingWithDrives($customer)->force_password_change)->toBeTrue();
+});
+
+test('die Regel muss Platz für Großbuchstaben, Sonderzeichen und Ziffer lassen', function () {
+    Livewire::actingAs(userWithPermissions(['checklist_manage']))
+        ->test(ChecklistSettings::class, ['customer' => checklistCustomer()])
+        ->set('passwordLength', 6)
+        ->set('passwordUppercase', 4)
+        ->set('passwordSpecialCount', 2)
+        ->set('passwordDigits', 1)
+        ->set('passwordSpecials', 'ab')
+        ->call('savePasswordRule')
+        ->assertHasErrors('passwordSpecials')
+        ->set('passwordSpecials', '!')
+        ->call('savePasswordRule')
+        ->assertHasErrors('passwordLength')
+        ->set('passwordLength', 7)
+        ->call('savePasswordRule')
+        ->assertHasNoErrors();
 });

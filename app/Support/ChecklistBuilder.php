@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\ADUser;
 use App\Models\Checklist;
 use App\Models\ChecklistOption;
+use App\Models\ChecklistSetting;
 use App\Models\ChecklistTemplate;
 use App\Models\Customer;
 use App\Models\Mailbox;
@@ -143,6 +144,8 @@ class ChecklistBuilder
                 'reference_date' => $data['reference_date'],
                 'username' => $username,
                 'email' => $email,
+                // The customer's default; a fixed start password always forces the change.
+                'force_password_change' => ChecklistSetting::for($customer)->forcesChange(),
                 'request' => [
                     'drives' => array_filter($data['drives'] ?? [], fn ($level) => isset(self::LEVELS[$level])),
                     'options' => array_values(array_map('intval', $data['options'] ?? [])),

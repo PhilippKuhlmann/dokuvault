@@ -15,12 +15,46 @@
 
   Auf einem Domaincontroller (oder Rechner mit RSAT-AD-Modul) ausfuehren:
     .\onboarding.ps1
+  oder per Rechtsklick "Mit PowerShell ausfuehren". Ohne Administratorrechte
+  startet es sich erhoeht neu. Das Fenster bleibt am Ende offen.
 #>
 param(
     [string]$ApiUrl = "__API_URL__"
 )
 
 $ErrorActionPreference = "Stop"
+
+function Wait-ForClose {
+    Read-Host "`nEnter zum Schliessen" | Out-Null
+}
+
+# Right-click "Run with PowerShell" starts without admin rights - creating a
+# user then fails with "access denied". Restart elevated (one UAC prompt).
+$principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Host "Keine Administratorrechte - starte neu mit Administratorrechten ..." -ForegroundColor Yellow
+    Start-Process powershell.exe -Verb RunAs -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`" -ApiUrl `"$ApiUrl`""
+    Write-Host "Es geht im neuen Fenster weiter."
+    Start-Sleep -Seconds 3
+    exit
+}
+
+# Any uncaught error: show it and keep the window open.
+trap {
+    Write-Host "`nFEHLER: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Das Skript wurde abgebrochen. In DokuVault wurde nichts abgehakt." -ForegroundColor Red
+    Wait-ForClose
+    exit 1
+}
+
+function Write-Step([string]$Text) {
+    Write-Host "`n$Text" -ForegroundColor Cyan
+}
+
+function Write-Ok([string]$Text) { Write-Host "  OK      $Text" -ForegroundColor Green }
+function Write-Skip([string]$Text) { Write-Host "  SCHON   $Text" -ForegroundColor Yellow }
+function Write-Fail([string]$Text) { Write-Host "  FEHLER  $Text" -ForegroundColor Red }
+
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $Token = "__TOKEN__"
 
@@ -30,20 +64,30 @@ __DATA__
 
 Import-Module ActiveDirectory
 
-# Start-Kennwort: 16 Zeichen aus einem kryptografischen Zufallsgenerator,
-# je Zeichenklasse mindestens eines - erfuellt die Standard-Komplexitaet.
-function New-StartPassword {
-    $sets = @('ABCDEFGHJKLMNPQRSTUVWXYZ', 'abcdefghijkmnopqrstuvwxyz', '23456789', '!$%&?#+-')
-    $all = -join $sets
+# Start password as set for this customer in DokuVault: either a fixed one,
+# or built from the rule - the upper case letters, special characters and
+# digits, the rest lower case letters (no l/I/O/0/1).
+function New-StartPassword($rule) {
+    if ($rule.mode -eq 'fixed') { return $rule.fixed }
+
     $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
-    $bytes = New-Object byte[] 16
-    $rng.GetBytes($bytes)
-    $chars = @()
-    for ($i = 0; $i -lt 16; $i++) {
-        $pool = if ($i -lt 4) { $sets[$i] } else { $all }
-        $chars += $pool[$bytes[$i] % $pool.Length]
+    function Pick([string]$set) {
+        $b = New-Object byte[] 4
+        $rng.GetBytes($b)
+        return $set[[BitConverter]::ToUInt32($b, 0) % $set.Length]
     }
-    # Die festen Klassen nicht immer vorne lassen.
+
+    $upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
+    $lower = 'abcdefghijkmnopqrstuvwxyz'
+    $digits = '23456789'
+    $specials = if ($rule.specials) { [string]$rule.specials } else { '!' }
+
+    $chars = @()
+    for ($i = 0; $i -lt [int]$rule.uppercase; $i++) { $chars += Pick $upper }
+    for ($i = 0; $i -lt [int]$rule.specialCount; $i++) { $chars += Pick $specials }
+    for ($i = 0; $i -lt [int]$rule.digits; $i++) { $chars += Pick $digits }
+    while ($chars.Count -lt [int]$rule.length) { $chars += Pick $lower }
+
     return -join ($chars | Sort-Object { Get-Random })
 }
 
@@ -52,11 +96,19 @@ $done = @()
 $errors = @()
 $password = $null
 
+Write-Host "DokuVault - Onboarding $($u.displayName)" -ForegroundColor White
+Write-Host "Benutzer:  $($u.username)"
+Write-Host "Anmeldung: $($u.upn)"
+if ($u.email) { Write-Host "E-Mail:    $($u.email)" }
+Write-Host "Domaene:   $((Get-ADDomain).DNSRoot)"
+
+# --- 1. Benutzer -------------------------------------------------------------
+Write-Step "[1/4] Benutzer anlegen"
 $existing = Get-ADUser -Filter "SamAccountName -eq '$($u.username)'" -ErrorAction SilentlyContinue
 if ($existing) {
-    Write-Host "Benutzer $($u.username) gibt es schon - wird nicht neu angelegt." -ForegroundColor Yellow
+    Write-Skip "$($u.username) gibt es schon - wird nicht neu angelegt."
 } else {
-    $password = New-StartPassword
+    $password = New-StartPassword $Data.password
     $params = @{
         Name                  = $u.displayName
         DisplayName           = $u.displayName
@@ -70,39 +122,55 @@ if ($existing) {
     }
     if ($u.email) { $params.EmailAddress = $u.email }
     New-ADUser @params
-    Write-Host "Benutzer $($u.username) angelegt." -ForegroundColor Green
+    Write-Ok "$($u.username) angelegt, aktiv, mit Start-Kennwort$(if ($Data.password.mode -eq 'fixed') { ' (festes Kennwort des Kunden)' })."
+    if ($u.changePasswordAtLogon) {
+        Write-Ok "Kennwort muss bei der ersten Anmeldung geaendert werden."
+    }
     $done += $Data.createItems
 }
 
 $adUser = Get-ADUser -Identity $u.username -Properties EmailAddress, proxyAddresses
 
+# --- 2. proxyAddresses -------------------------------------------------------
 # The address also under proxyAddresses (Exchange, Entra Connect): primary
 # (SMTP:) unless the user already has one, then as an alias (smtp:).
-if ($u.email) {
+Write-Step "[2/4] E-Mail-Adresse unter proxyAddresses"
+if (-not $u.email) {
+    Write-Skip "Keine E-Mail-Adresse angegeben - nichts zu tun."
+} else {
     $addresses = @($adUser.proxyAddresses)
-    if (-not ($addresses | Where-Object { $_ -ieq "smtp:$($u.email)" })) {
+    if ($addresses | Where-Object { $_ -ieq "smtp:$($u.email)" }) {
+        Write-Skip "$($u.email) steht schon drin."
+    } else {
         $prefix = if ($addresses | Where-Object { $_ -cmatch '^SMTP:' }) { 'smtp:' } else { 'SMTP:' }
         try {
             Set-ADUser -Identity $adUser -Add @{ proxyAddresses = "$prefix$($u.email)" }
-            Write-Host "proxyAddresses: $prefix$($u.email) eingetragen." -ForegroundColor Green
+            Write-Ok "$prefix$($u.email) eingetragen."
         } catch {
             $errors += "proxyAddresses: $($_.Exception.Message)"
-            Write-Warning "proxyAddresses: $($_.Exception.Message)"
+            Write-Fail "proxyAddresses: $($_.Exception.Message)"
         }
     }
 }
 
+# --- 3. Gruppen --------------------------------------------------------------
+Write-Step "[3/4] Gruppen ($(@($Data.groups).Count))"
+if (@($Data.groups).Count -eq 0) {
+    Write-Skip "Keine Gruppen in dieser Checkliste."
+}
 foreach ($g in $Data.groups) {
     try {
         Add-ADGroupMember -Identity $g.name -Members $adUser
         $done += $g.item
-        Write-Host "Gruppe $($g.name): aufgenommen." -ForegroundColor Green
+        Write-Ok "$($g.name)"
     } catch {
         $errors += "Gruppe $($g.name): $($_.Exception.Message)"
-        Write-Warning "Gruppe $($g.name): $($_.Exception.Message)"
+        Write-Fail "$($g.name): $($_.Exception.Message)"
     }
 }
 
+# --- 4. Rueckmeldung ---------------------------------------------------------
+Write-Step "[4/4] Ergebnis an DokuVault melden"
 $report = @{
     identifier = $adUser.ObjectGUID.Guid
     username   = $adUser.SamAccountName
@@ -115,13 +183,26 @@ $report = @{
     errors     = @($errors)
 } | ConvertTo-Json -Depth 4
 
+$reported = $false
 try {
     Invoke-RestMethod -Method Post -Uri $ApiUrl -Headers @{ Authorization = "Bearer $Token" } `
         -ContentType "application/json; charset=utf-8" -Body ([Text.Encoding]::UTF8.GetBytes($report)) | Out-Null
-    Write-Host "Ergebnis an DokuVault gemeldet. Das Start-Kennwort steht dort beim AD-Benutzer." -ForegroundColor Green
+    $reported = $true
+    Write-Ok "Gemeldet. Die Punkte sind abgehakt, das Start-Kennwort steht beim AD-Benutzer."
 } catch {
-    Write-Warning "Meldung an DokuVault fehlgeschlagen: $($_.Exception.Message)"
-    if ($password) {
-        Write-Host "Start-Kennwort bitte von Hand dokumentieren: $password" -ForegroundColor Yellow
-    }
+    Write-Fail "Meldung fehlgeschlagen: $($_.Exception.Message)"
 }
+
+# --- Zusammenfassung ---------------------------------------------------------
+Write-Host "`n----------------------------------------"
+if ($errors.Count -eq 0) {
+    Write-Host "Fertig ohne Fehler. $(@($done).Count) Punkte erledigt." -ForegroundColor Green
+} else {
+    Write-Host "Fertig mit $($errors.Count) Fehler(n). $(@($done).Count) Punkte erledigt:" -ForegroundColor Yellow
+    $errors | ForEach-Object { Write-Host "  - $_" -ForegroundColor Yellow }
+}
+if (-not $reported -and $password) {
+    Write-Host "`nStart-Kennwort bitte von Hand in DokuVault eintragen: $password" -ForegroundColor Yellow
+}
+
+Wait-ForClose

@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
+use App\Models\ChecklistSetting;
 
 /**
  * The PowerShell script that does the AD part of a checklist.
@@ -43,6 +44,8 @@ class ChecklistAdScript
         $groups = $plan->whereIn('action', ['add_group', 'remove_group'])->filter(fn ($item) => filled($item->reference))
             ->map(fn ($item) => ['name' => $item->reference, 'item' => $item->id])->values()->all();
 
+        $setting = ChecklistSetting::for($checklist->customer);
+
         $data = $checklist->isOnboarding()
             ? [
                 'user' => [
@@ -52,8 +55,9 @@ class ChecklistAdScript
                     'displayName' => $checklist->fullName(),
                     'upn' => self::upn($checklist),
                     'email' => $checklist->email,
-                    'changePasswordAtLogon' => (bool) $checklist->force_password_change,
+                    'changePasswordAtLogon' => $setting->isFixed() || $checklist->force_password_change,
                 ],
+                'password' => $setting->scriptRule(),
                 'createItems' => $ids(['create_ad_user', 'set_password']),
                 'groups' => $groups,
             ]

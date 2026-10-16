@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Livewire\Concerns\GehoertZumKunden;
 use App\Models\ADGroup;
 use App\Models\ChecklistOption;
+use App\Models\ChecklistSetting;
 use App\Models\ChecklistTemplate;
 use App\Models\ChecklistTemplateItem;
 use App\Models\Customer;
@@ -39,6 +40,24 @@ class ChecklistSettings extends Component
 
     public bool $needs_approval = false;
 
+    /** Start password of new AD users: 'generated' by rule or 'fixed'. */
+    public string $passwordMode = 'generated';
+
+    public int|string $passwordLength = 8;
+
+    public int|string $passwordUppercase = 1;
+
+    public int|string $passwordSpecialCount = 1;
+
+    public int|string $passwordDigits = 2;
+
+    public string $passwordSpecials = '!-';
+
+    /** Never loaded into the form - empty means "keep the stored one". */
+    public string $fixedPassword = '';
+
+    public bool $forceChangeDefault = false;
+
     /** @var array<string, array{section: string, title: string, assignee: string, due_offset: int|string}> */
     public array $steps = [];
 
@@ -49,6 +68,65 @@ class ChecklistSettings extends Component
 
         $this->customerId = $customer->id;
         $this->resetSteps();
+
+        $setting = ChecklistSetting::for($customer);
+        $this->passwordMode = $setting->password_mode;
+        $this->passwordLength = $setting->password_length;
+        $this->passwordUppercase = $setting->password_uppercase;
+        $this->passwordSpecialCount = $setting->password_special_count;
+        $this->passwordDigits = $setting->password_digits;
+        $this->passwordSpecials = $setting->password_specials;
+        $this->forceChangeDefault = $setting->force_change_default;
+    }
+
+    public function savePasswordRule(): void
+    {
+        $customer = $this->customer();
+        $setting = ChecklistSetting::for($customer);
+
+        $data = $this->validate([
+            'passwordMode' => ['required', Rule::in(['generated', 'fixed'])],
+            'passwordLength' => ['required', 'integer', 'between:6,32'],
+            'passwordUppercase' => ['required', 'integer', 'between:1,4'],
+            'passwordSpecialCount' => ['required', 'integer', 'between:1,4'],
+            'passwordDigits' => ['required', 'integer', 'between:0,8'],
+            'passwordSpecials' => ['required', 'string', 'max:20', 'regex:/^[^A-Za-z0-9\s]+$/'],
+            'fixedPassword' => [$this->passwordMode === 'fixed' && ! $setting->fixed_password ? 'required' : 'nullable', 'string', 'min:4', 'max:128'],
+            'forceChangeDefault' => ['boolean'],
+        ], [], [
+            'passwordLength' => __('Länge'),
+            'passwordUppercase' => __('Großbuchstaben'),
+            'passwordSpecialCount' => __('Anzahl Sonderzeichen'),
+            'passwordDigits' => __('Anzahl Ziffern'),
+            'passwordSpecials' => __('Erlaubte Sonderzeichen'),
+            'fixedPassword' => __('Festes Start-Kennwort'),
+        ]);
+
+        if (! ChecklistSetting::fits((int) $data['passwordLength'], (int) $data['passwordUppercase'], (int) $data['passwordSpecialCount'], (int) $data['passwordDigits'])) {
+            $this->addError('passwordLength', __('Zu kurz für :upper Großbuchstaben, :special Sonderzeichen und :digits Ziffern.', [
+                'upper' => $data['passwordUppercase'], 'special' => $data['passwordSpecialCount'], 'digits' => $data['passwordDigits'],
+            ]));
+
+            return;
+        }
+
+        $setting->fill([
+            'password_mode' => $data['passwordMode'],
+            'password_length' => (int) $data['passwordLength'],
+            'password_uppercase' => (int) $data['passwordUppercase'],
+            'password_special_count' => (int) $data['passwordSpecialCount'],
+            'password_digits' => (int) $data['passwordDigits'],
+            'password_specials' => count_chars($data['passwordSpecials'], 3),
+            'force_change_default' => $data['forceChangeDefault'],
+        ]);
+        if (filled($data['fixedPassword'])) {
+            $setting->fixed_password = $data['fixedPassword'];
+        }
+        $setting->save();
+
+        $this->passwordSpecials = $setting->password_specials;
+        $this->fixedPassword = '';
+        $this->dispatch('hinweis', text: __('Kennwort-Regel gespeichert.'));
     }
 
     private function customer(): Customer
@@ -203,8 +281,19 @@ class ChecklistSettings extends Component
                 ->get(),
         ]);
 
+        $setting = ChecklistSetting::for($customer);
+        $preview = new ChecklistSetting([
+            'password_length' => max(6, min(32, (int) $this->passwordLength)),
+            'password_uppercase' => max(1, min(4, (int) $this->passwordUppercase)),
+            'password_special_count' => max(1, min(4, (int) $this->passwordSpecialCount)),
+            'password_digits' => max(0, min(8, (int) $this->passwordDigits)),
+            'password_specials' => preg_replace('/[A-Za-z0-9\s]/', '', $this->passwordSpecials) ?: '!',
+        ]);
+
         return view('livewire.checklist-settings', [
             'customer' => $customer,
+            'hasFixedPassword' => filled($setting->fixed_password),
+            'passwordExample' => ChecklistSetting::fits($preview->password_length, $preview->password_uppercase, $preview->password_special_count, $preview->password_digits) ? $preview->example() : null,
             'shares' => NetworkShare::where('customer_id', $customer->id)->with(['readGroup', 'writeGroup'])
                 ->orderBy('drive_letter')->orderBy('name')->get(),
             'options' => $customer->checklistOptions()->whereIn('kind', ChecklistOption::KINDS)->ordered()->with('adGroup')->get()->groupBy('kind'),

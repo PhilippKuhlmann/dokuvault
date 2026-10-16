@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Livewire\Concerns\GehoertZumKunden;
 use App\Models\Checklist;
+use App\Models\ChecklistSetting;
 use App\Models\Customer;
 use App\Models\NetworkShare;
 use App\Support\ChecklistAdScript;
@@ -132,6 +133,7 @@ class ChecklistProgress extends Component
                 ->filter()->values(),
             'requestedOptions' => collect($request['options'] ?? [])->map(fn ($id) => $options->get((int) $id))->filter()->values(),
             'scriptPlan' => ChecklistAdScript::plan($checklist),
+            'fixedPassword' => ChecklistSetting::for($checklist->customer)->isFixed(),
             'canManage' => Gate::allows('checklist_manage'),
             'canApprove' => Gate::allows('checklist_approve'),
         ]);

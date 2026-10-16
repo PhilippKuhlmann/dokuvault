@@ -116,10 +116,14 @@
                 @if ($planned->isNotEmpty())
                     <div class="flex flex-wrap items-center gap-4">
                     @if ($checklist->isOnboarding() && $planned->contains('action', 'create_ad_user'))
-                        <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                            <input type="checkbox" wire:model.live="forcePasswordChange" class="h-4 w-4 rounded-sm border-gray-300 text-cerulean-600 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700">
-                            {{ __('Kennwort bei der ersten Anmeldung ändern lassen') }}
-                        </label>
+                        @if ($fixedPassword)
+                            <span class="text-sm text-gray-500 dark:text-gray-400" title="{{ __('Festes Start-Kennwort des Kunden') }}">✓ {{ __('Kennwortänderung bei der ersten Anmeldung (festes Start-Kennwort)') }}</span>
+                        @else
+                            <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                <input type="checkbox" wire:model.live="forcePasswordChange" class="h-4 w-4 rounded-sm border-gray-300 text-cerulean-600 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700">
+                                {{ __('Kennwort bei der ersten Anmeldung ändern lassen') }}
+                            </label>
+                        @endif
                     @endif
                     <a href="{{ route('checklist.ad-script', [$checklist->customer, $checklist]) }}"
                         class="inline-flex items-center gap-1.5 rounded-lg bg-cerulean-600 px-4 py-2 text-sm font-DINPro-bold text-white shadow-xs hover:bg-cerulean-700 focus:outline-hidden focus:ring-2 focus:ring-cerulean-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
