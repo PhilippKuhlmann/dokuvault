@@ -8,10 +8,22 @@
     x-init="$nextTick(() => {
         const w = $el.querySelector('[data-highlight]');
         if (! w) return;
-        // The wrapper div has no box of its own - the visible card is the inner
-        // panel (with its own margin and rounding), a table row likewise sits
-        // inside the contents wrapper. Ring the inner element so the frame hugs
-        // the card and follows its corner radius instead of the wrapper's edge.
+        // Tables: the marker sits on the table wrapper with the row number - a
+        // div between tbody and tr is no valid HTML, the browser moved it out of
+        // the table, empty, and nothing lit up. A row takes no box-shadow in
+        // every browser, so it gets a tint instead.
+        if (w.dataset.highlightRow !== undefined) {
+            const row = w.querySelector('tbody')?.rows[w.dataset.highlightRow];
+            if (! row) return;
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            row.style.transition = 'background-color .3s';
+            row.style.backgroundColor = 'rgb(56 152 236 / .2)';
+            setTimeout(() => { row.style.backgroundColor = ''; }, 2200);
+            return;
+        }
+        // Cards: the wrapper div has no box of its own - the visible card is the
+        // inner panel (with its own margin and rounding). Ring the inner element
+        // so the frame hugs the card and follows its corner radius.
         const target = w.firstElementChild || w;
         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
         target.style.transition = 'box-shadow .3s';
@@ -114,12 +126,13 @@
     @php ($alsTabelle = view()->exists($typ.'._zeile'))
 
     @if ($alsTabelle && $eintraege->isNotEmpty())
-        <div class="m-3">
+        @php ($zeile = $highlight ? $eintraege->getCollection()->search(fn ($eintrag) => $eintrag->id === $highlight) : false)
+        <div class="m-3" @if ($zeile !== false) data-highlight data-highlight-row="{{ $zeile }}" @endif>
             <x-table.main>
                 @include($typ.'._spalten')
                 <x-table.body>
                     @foreach ($eintraege as $eintrag)
-                        <div wire:key="{{ $typ }}-{{ $eintrag->id }}" class="contents" @if (($highlight ?? null) === $eintrag->id) data-highlight @endif>
+                        <div wire:key="{{ $typ }}-{{ $eintrag->id }}" class="contents">
                             @include($typ.'._zeile', ['eintrag' => $eintrag, 'customer' => $customer])
                         </div>
                     @endforeach

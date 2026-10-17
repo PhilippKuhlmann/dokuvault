@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\ADUser;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
 use App\Models\Server;
@@ -104,4 +105,32 @@ test('the global search finds a VM on page two even when all VMs were created in
     $this->get("/{$customer->slug}/vm?highlight={$ziel->id}")
         ->assertSee('VM-020')
         ->assertSee('data-highlight', false);
+});
+
+// Tabellenlisten (AD-Benutzer, Logins ...): Die Markierung stand auf einem div
+// zwischen tbody und tr. Der Browser schob das div leer vor die Tabelle, der
+// Treffer leuchtete nicht auf. Jetzt traegt die Tabelle die Zeilennummer.
+test('the global search highlights the matching row in a table list', function () {
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['aduser_viewAny']));
+
+    $benutzer = collect(['anna.alt', 'bernd.berg', 'clara.cort'])->map(fn ($name) => ADUser::create([
+        'customer_id' => $customer->id, 'username' => $name, 'enabled' => true,
+    ]));
+
+    $html = $this->get("/{$customer->slug}/aduser?highlight={$benutzer[1]->id}")->assertOk()->getContent();
+
+    $dom = new DOMDocument;
+    @$dom->loadHTML($html);
+    $xpath = new DOMXPath($dom);
+
+    $marker = $xpath->query('//*[@data-highlight-row]');
+    expect($marker)->toHaveCount(1);
+
+    $zeilen = $xpath->query('.//tbody//tr', $marker->item(0));
+    $zeile = $zeilen->item((int) $marker->item(0)->getAttribute('data-highlight-row'));
+    expect($zeile->textContent)->toContain('bernd.berg');
+
+    // Kein Marker mehr innerhalb der Tabelle.
+    expect($xpath->query('//tbody//*[@data-highlight]'))->toHaveCount(0);
 });
