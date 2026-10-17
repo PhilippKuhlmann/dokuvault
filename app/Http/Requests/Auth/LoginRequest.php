@@ -116,7 +116,7 @@ class LoginRequest extends FormRequest
      *
      * @throws ValidationException
      */
-    private function fehlversuch(): void
+    protected function fehlversuch(): void
     {
         $sperre = Setting::anmeldungSperreSekunden();
 

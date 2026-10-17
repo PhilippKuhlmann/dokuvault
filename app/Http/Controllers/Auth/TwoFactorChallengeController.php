@@ -4,14 +4,11 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Concerns\LeitetNachAnmeldungWeiter;
 use App\Http\Controllers\Controller;
-use App\Models\Setting;
 use App\Models\User;
-use App\Support\ZweiteStufe;
+use App\Support\ZweiteStufePruefung;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -30,7 +27,7 @@ class TwoFactorChallengeController extends Controller
 
     public const GEMERKT = 'zweite-stufe.gemerkt';
 
-    public function __construct(private ZweiteStufe $zweiteStufe) {}
+    public function __construct(private ZweiteStufePruefung $pruefung) {}
 
     public function create(Request $request): View|RedirectResponse
     {
@@ -85,49 +82,9 @@ class TwoFactorChallengeController extends Controller
             return $abweisung;
         }
 
-        $this->nichtGesperrt($nutzer);
-
-        $eingabe = trim((string) $request->input('code'));
-
-        if ($eingabe === '') {
-            throw ValidationException::withMessages(['code' => __('Bitte einen Code eingeben.')]);
-        }
-
-        // Erst der Einmalcode, dann der Wiederherstellungscode: Ein
-        // sechsstelliger Code aus der App kann kein Wiederherstellungscode
-        // sein, und andersherum genauso - die Reihenfolge kostet also nichts
-        // und spart eine Zweitunterscheidung an der Eingabe.
-        $mitCode = $this->zweiteStufe->stimmt($nutzer->two_factor_secret, $eingabe);
-        $mitZettel = ! $mitCode && $nutzer->wiederherstellungscodeVerbrauchen($eingabe);
-
-        $stimmt = $mitCode || $mitZettel;
-
-        if (! $stimmt) {
-            RateLimiter::hit($this->schluessel($nutzer), Setting::anmeldungSperreSekunden());
-
-            // Ein falscher zweiter Faktor loest kein Auth\Events\Failed aus -
-            // das Kennwort stimmte ja. Genau dieser Fall ist aber der
-            // interessante: Jemand kennt das Kennwort und kommt trotzdem nicht
-            // herein.
-            activity()
-                ->event('anmeldung_gescheitert')
-                ->performedOn($nutzer)
-                ->causedBy($nutzer)
-                ->withProperties([
-                    'objekt' => $nutzer->name,
-                    'attributes' => array_filter([
-                        'Schritt' => __('Zweite Stufe'),
-                        'IP' => $request->ip(),
-                    ]),
-                ])
-                ->log('Anmeldung gescheitert');
-
-            throw ValidationException::withMessages([
-                'code' => __('Der Code stimmt nicht.'),
-            ]);
-        }
-
-        RateLimiter::clear($this->schluessel($nutzer));
+        // Code, Bremse und Protokoll der Fehlversuche - dieselbe Pruefung wie
+        // bei der Anmeldung aus der App, siehe ZweiteStufePruefung.
+        $mitZettel = $this->pruefung->pruefen($nutzer, (string) $request->input('code'), $request->ip());
 
         $gemerkt = (bool) $request->session()->get(self::GEMERKT);
 
@@ -193,35 +150,5 @@ class TwoFactorChallengeController extends Controller
         $id = $request->session()->get(self::WARTET);
 
         return $id ? User::find($id) : null;
-    }
-
-    private function schluessel(User $nutzer): string
-    {
-        return 'zweite-stufe|'.$nutzer->id.'|'.request()->ip();
-    }
-
-    /**
-     * Ohne diese Bremse waere die zweite Stufe sechs Ziffern, die sich in
-     * Ruhe durchprobieren lassen - eine Million Moeglichkeiten sind schnell
-     * durch, wenn niemand mitzaehlt.
-     *
-     * Dieselben Zahlen wie bei der Anmeldung, und jetzt auch dieselbe Quelle:
-     * Sie standen hier ein zweites Mal, mit einem Kommentar, der behauptete,
-     * es seien dieselben. Ein Kommentar haelt zwei Zahlen nicht zusammen.
-     */
-    private function nichtGesperrt(User $nutzer): void
-    {
-        if (! RateLimiter::tooManyAttempts($this->schluessel($nutzer), Setting::anmeldungVersuche())) {
-            return;
-        }
-
-        $sekunden = RateLimiter::availableIn($this->schluessel($nutzer));
-
-        throw ValidationException::withMessages([
-            'code' => trans('auth.throttle', [
-                'seconds' => $sekunden,
-                'minutes' => ceil($sekunden / 60),
-            ]),
-        ]);
     }
 }

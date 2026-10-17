@@ -2,10 +2,8 @@
 
 namespace App\Livewire;
 
-use App\Models\Setting;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\RateLimiter;
+use App\Exceptions\ZuVieleKennwortabrufe;
+use App\Support\Kennwortabruf;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -79,52 +77,18 @@ class GeheimFeld extends Component
 
     /**
      * Holt den Klartext - mit Feld-Whitelist, Rechteprüfung, Bremse und
-     * Protokolleintrag. Gemeinsamer Kern von zeigen() und kopieren().
+     * Protokolleintrag, siehe App\Support\Kennwortabruf. Gemeinsamer Kern von
+     * zeigen() und kopieren().
      */
     private function wertHolen(): ?string
     {
-        // Feld-Whitelist: Nur echte Geheimnis-Spalten, nie ein beliebiges
-        // Attribut. Modell muss ein Eloquent-Model sein.
-        if (! in_array($this->feld, config('custom.secret_columns'), true)
-            || ! is_subclass_of($this->modell, Model::class)) {
-            return null;
-        }
-
-        // Dasselbe Recht wie die Liste/Karte, auf der das Feld steht.
-        Gate::authorize('viewAny', $this->modell);
-
-        // Dieselbe Bremse wie beim Kennwort - ein gemeinsames Budget je
-        // Benutzer gegen das reihenweise Abgreifen.
-        $schluessel = 'kennwort-ansehen:'.auth()->id();
-
-        if (RateLimiter::tooManyAttempts($schluessel, Setting::kennwortAbrufe())) {
-            $this->addError('kennwort', __('Zu viele Kennwortabrufe in kurzer Zeit. Bitte einen Moment warten.'));
+        try {
+            return app(Kennwortabruf::class)->ausFeld($this->modell, $this->id, $this->feld, auth()->user());
+        } catch (ZuVieleKennwortabrufe $bremse) {
+            $this->addError('kennwort', $bremse->getMessage());
 
             return null;
         }
-
-        RateLimiter::hit($schluessel, 60);
-
-        $objekt = $this->modell::find($this->id);
-
-        if (! $objekt) {
-            return null;
-        }
-
-        activity()
-            ->event('kennwort_angesehen')
-            ->performedOn($objekt)
-            ->causedBy(auth()->user())
-            ->withProperties([
-                'objekt' => $objekt->name ?? $objekt->host ?? (class_basename($objekt).' #'.$objekt->id),
-                'attributes' => array_filter([
-                    'Feld' => config('custom.secret_field_labels')[$this->feld] ?? $this->feld,
-                    'IP' => request()->ip(),
-                ]),
-            ])
-            ->log('Kennwort angesehen');
-
-        return $objekt->{$this->feld};
     }
 
     public function verbergen(): void

@@ -2,10 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Exceptions\ZuVieleKennwortabrufe;
 use App\Models\CredentialLink;
-use App\Models\Setting;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\RateLimiter;
+use App\Support\Kennwortabruf;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -71,51 +70,24 @@ class KennwortFeld extends Component
     }
 
     /**
-     * Holt den Klartext - mit Rechteprüfung, Bremse und Protokolleintrag.
-     * Gemeinsamer Kern von zeigen() und kopieren(); der Wert verlässt den Server
-     * nur hierüber, und jeder Abruf steht danach im Protokoll.
+     * Holt den Klartext - mit Rechteprüfung, Bremse und Protokolleintrag, siehe
+     * App\Support\Kennwortabruf. Gemeinsamer Kern von zeigen() und kopieren().
      */
     private function wertHolen(): ?string
     {
-        $link = CredentialLink::with('login')->find($this->linkId);
+        $link = CredentialLink::find($this->linkId);
 
-        if (! $link || ! $link->login) {
+        if (! $link) {
             return null;
         }
 
-        // Dasselbe Recht wie die Liste, auf der das Feld steht: Kennwort und
-        // Schlüssel liegen in derselben Tabelle, haben aber getrennte Rechte.
-        Gate::authorize($link->login->istSchluessel() ? 'sshkey_viewAny' : 'logingeneral_viewAny');
-
-        // Bremse gegen das reihenweise Abgreifen: Eine Handvoll Kennwörter
-        // nachzusehen ist normal, hundert in einer Minute nicht.
-        $schluessel = 'kennwort-ansehen:'.auth()->id();
-
-        if (RateLimiter::tooManyAttempts($schluessel, Setting::kennwortAbrufe())) {
-            $this->addError('kennwort', __('Zu viele Kennwortabrufe in kurzer Zeit. Bitte einen Moment warten.'));
+        try {
+            return app(Kennwortabruf::class)->ausVerknuepfung($link, auth()->user());
+        } catch (ZuVieleKennwortabrufe $bremse) {
+            $this->addError('kennwort', $bremse->getMessage());
 
             return null;
         }
-
-        RateLimiter::hit($schluessel, 60);
-
-        // Die Tatsache der Einsicht gehört ins Protokoll, der Wert nie. Deshalb
-        // der activity()-Helfer statt der Model-Ereignisse: Er schreibt genau
-        // das Ereignis, das wir angeben, und keine Attribute.
-        activity()
-            ->event('kennwort_angesehen')
-            ->performedOn($link->login)
-            ->causedBy(auth()->user())
-            ->withProperties([
-                'objekt' => $link->zielBezeichnung(),
-                'attributes' => array_filter([
-                    'Zugang' => $link->note ?: $link->login->name,
-                    'IP' => request()->ip(),
-                ]),
-            ])
-            ->log('Kennwort angesehen');
-
-        return $link->login->password;
     }
 
     public function verbergen(): void

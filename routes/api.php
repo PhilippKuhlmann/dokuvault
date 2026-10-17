@@ -4,8 +4,11 @@ use App\Http\Controllers\API\AccesspointController;
 use App\Http\Controllers\API\AgentController;
 use App\Http\Controllers\API\ChecklistReportController;
 use App\Http\Controllers\API\CustomerController;
+use App\Http\Controllers\API\Mobile\AnmeldungController;
+use App\Http\Controllers\API\Mobile\DatenController;
 use App\Http\Controllers\API\ServerController;
 use App\Http\Controllers\API\SiteController;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -55,6 +58,32 @@ Route::middleware(['throttle:agent', 'agent'])->withoutMiddleware('throttle:api'
 // The AD script of a checklist reports back. Its own key (one checklist,
 // limited time) instead of a user token - see ChecklistReportController.
 Route::post('/checklist-report', ChecklistReportController::class)->middleware('throttle:30,1');
+
+// Die iOS-App. Vor der Kundenroute unten: "/{customer}" passt auf jedes
+// einzelne Segment und fing sonst "/api/mobile" ab - siehe die Server-Routen.
+// Nur lesen; Kennwoerter einzeln ueber POST, damit kein Zwischenspeicher sie
+// als Antwort auf ein GET aufhebt.
+Route::prefix('mobile')->group(function () {
+    Route::middleware(SetLocale::class)->group(function () {
+        Route::post('/login', [AnmeldungController::class, 'anmelden']);
+        Route::post('/login/two-factor', [AnmeldungController::class, 'zweiteStufe']);
+    });
+
+    Route::middleware(['auth:sanctum', 'aktiv', SetLocale::class])->group(function () {
+        Route::post('/logout', [AnmeldungController::class, 'abmelden']);
+        Route::get('/me', [AnmeldungController::class, 'ich']);
+
+        Route::get('/customers', [DatenController::class, 'kunden']);
+        Route::get('/customers/{customer}', [DatenController::class, 'kunde'])->middleware('isCustomer');
+        Route::get('/customers/{customer}/{typ}', [DatenController::class, 'liste'])->middleware('isCustomer');
+
+        Route::get('/search', [DatenController::class, 'suche']);
+
+        Route::get('/objects/{typ}/{id}', [DatenController::class, 'objekt'])->whereNumber('id');
+        Route::post('/objects/{typ}/{id}/secret/{feld}', [DatenController::class, 'geheimnis'])->whereNumber('id');
+        Route::post('/credentials/{link}/password', [DatenController::class, 'kennwort']);
+    });
+});
 
 Route::middleware(['auth:sanctum', 'aktiv'])->group(function () {
 

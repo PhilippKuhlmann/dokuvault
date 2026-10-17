@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\GlobalSearch;
+use App\Support\GlobaleSuche;
 use App\Livewire\ObjektFormular;
 use App\Models\ContactPerson;
 use App\Models\Customer;
@@ -93,7 +94,7 @@ test('jede Trefferart der Suche kann sich benennen', function () {
     // Die Ansicht ruft protokollName() auf jedem Treffer auf. Ein Model ohne
     // die Methode brach die Seite nicht, zeigte aber eine Nummer - so kam die
     // Netzwerkdose beinahe abhanden.
-    $spiegel = new ReflectionClass(GlobalSearch::class);
+    $spiegel = new ReflectionClass(GlobaleSuche::class);
     $typen = collect($spiegel->getConstants())->first(fn ($wert) => is_array($wert) && count($wert) > 5);
 
     expect($typen)->not->toBeEmpty();

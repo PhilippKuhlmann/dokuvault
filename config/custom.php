@@ -1216,6 +1216,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Anmeldung aus der iOS-App
+    |--------------------------------------------------------------------------
+    |
+    | Die App bekommt bei der Anmeldung ein eigenes Token. Kuerzer als ein
+    | Skript-Token: Ein Telefon geht eher verloren als ein Server, und neu
+    | anmelden kostet in der App einen Blick (Face ID haelt nur das Token).
+    | Die Anmeldung mit zweiter Stufe hat dazwischen wenige Minuten Zeit.
+    |
+    */
+    'mobil' => [
+        'token_tage' => 30,
+        'zweite_stufe_minuten' => 5,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Fristen: wie lange vorher gewarnt wird
     |--------------------------------------------------------------------------
     |

@@ -32,7 +32,8 @@ class SetLocale
 
         $sprache = collect([
             auth()->user()?->locale,
-            $request->session()->get('locale'),
+            // Die App kommt ohne Sitzung - dort zaehlen Nutzer und Browsersprache.
+            $request->hasSession() ? $request->session()->get('locale') : null,
             $vomBrowser,
         ])->first(fn ($wert) => $wert && in_array($wert, $erlaubt, true));
 

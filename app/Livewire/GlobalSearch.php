@@ -2,36 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Models\Accesspoint;
-use App\Models\Camera;
-use App\Models\Certificate;
-use App\Models\Computer;
-use App\Models\Concerns\HasIpAddresses;
-use App\Models\DECT;
-use App\Models\Domain;
-use App\Models\Firewall;
-use App\Models\InternetConnection;
-use App\Models\IoTDevice;
-use App\Models\Machine;
-use App\Models\NAS;
-use App\Models\NetworkShare;
-use App\Models\NetworkSwitch;
-use App\Models\OtherClient;
-use App\Models\PatchPanel;
-use App\Models\PatchPort;
-use App\Models\Phone;
-use App\Models\PhoneSystem;
-use App\Models\Printer;
-use App\Models\Rack;
-use App\Models\Recorder;
-use App\Models\Router;
-use App\Models\Scanner;
-use App\Models\ScanTarget;
-use App\Models\Server;
-use App\Models\Ups;
-use App\Models\VM;
-use App\Models\Wifi;
-use Illuminate\Support\Facades\Gate;
+use App\Support\GlobaleSuche;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -42,154 +13,17 @@ class GlobalSearch extends Component
     public $search;
 
     /**
-     * Durchsuchbare Typen: Slug => [Model, Anzeigename, Permission-Prefix, Suchspalten]
-     * und optional als fuenftes Element der Routen-Slug, falls der Treffer auf eine
-     * andere Liste zeigt als sein eigener Schluessel (Patchfeld-Ports -> Patchfelder).
-     * Die Spalten sind gegen die Migrationen verifiziert (ip vs. ip1 etc.).
-     */
-    protected const TYPES = [
-        'server' => [Server::class, 'Server', 'server', ['name', 'serialNumber']],
-        'vm' => [VM::class, 'VMs', 'vm', ['name']],
-        'nas' => [NAS::class, 'NAS', 'nas', ['name', 'serialNumber']],
-        'networkshare' => [NetworkShare::class, 'Netzlaufwerke', 'networkshare', ['name', 'path']],
-        'computer' => [Computer::class, 'Computer', 'computer', ['name', 'serialNumber']],
-        'printer' => [Printer::class, 'Drucker', 'printer', ['name', 'serialNumber']],
-        'scanner' => [Scanner::class, 'Scanner', 'scanner', ['name', 'serialNumber']],
-        'scantarget' => [ScanTarget::class, 'Scan-Ziele', 'scantarget', ['name', 'target']],
-        'camera' => [Camera::class, 'Kameras', 'camera', ['name', 'serialNumber']],
-        'recorder' => [Recorder::class, 'Recorder', 'recorder', ['name', 'serialNumber']],
-        'phone' => [Phone::class, 'Telefone', 'phone', ['serialNumber', 'mac']],
-        'dect' => [DECT::class, 'DECT', 'dect', ['serialNumber', 'mac']],
-        'phonesystem' => [PhoneSystem::class, 'TK-Anlagen', 'phonesystem', ['serialNumber']],
-        'networkswitch' => [NetworkSwitch::class, 'Switches', 'networkswitch', ['name', 'serialNumber']],
-        'accesspoint' => [Accesspoint::class, 'Accesspoints', 'accesspoint', ['name', 'serialNumber']],
-        'firewall' => [Firewall::class, 'Firewalls', 'firewall', ['name', 'serialNumber']],
-        'router' => [Router::class, 'Router', 'router', ['name', 'serialNumber']],
-        'wifi' => [Wifi::class, 'WLAN', 'wifi', ['ssid']],
-        'iotdevice' => [IoTDevice::class, 'IoT-Geräte', 'iotdevice', ['name', 'serialNumber']],
-        'machine' => [Machine::class, 'Maschinen', 'machine', ['name']],
-        'otherclient' => [OtherClient::class, 'Sonstige Clients', 'otherclient', ['name', 'serialNumber']],
-        'ups' => [Ups::class, 'USV', 'ups', ['name', 'serialNumber']],
-        'internetconnection' => [InternetConnection::class, 'Internet / WAN', 'internetconnection', ['wan_ip']],
-        'domain' => [Domain::class, 'Domains', 'domain', ['name']],
-        'certificate' => [Certificate::class, 'Zertifikate', 'certificate', ['name', 'common_name', 'issuer']],
-        'patchpanel' => [PatchPanel::class, 'Patchfelder', 'patchpanel', ['name', 'manufacturer', 'model']],
-        'patchport' => [PatchPort::class, 'Netzwerkdosen', 'patchpanel', ['outlet', 'label', 'switch_port'], 'patchpanel'],
-        'rack' => [Rack::class, 'Serverschränke', 'rack', ['name', 'location']],
-    ];
-
-    /**
-     * Typen, deren Tabellen so gross werden, dass nur die Praefix-Suche traegt.
-     *
-     * Gemessen an einem Bestand mit 10 Millionen Datensaetzen: 4 Mio
-     * AD-Benutzer, 2 Mio Computer, 1,5 Mio Adressen, 1 Mio VMs. Alles andere
-     * bleibt bei der Suche mitten im Wort - dort ist ein Tabellendurchlauf
-     * billiger als der Verlust an Treffern.
-     */
-    private const MASSENHAFT = ['aduser', 'computer', 'vm', 'phone', 'camera'];
-
-    /**
-     * Wie viele Treffer je Objektart hoechstens gezeigt werden.
-     *
-     * Die Suche laeuft ueber knapp vierzig Arten; ohne Deckel waere eine
-     * Anfrage nach "a" eine Liste des ganzen Bestands. Wer etwas sucht, tippt
-     * ohnehin weiter - der Hinweis unter der Gruppe sagt, dass es mehr gibt.
-     */
-    private const JE_ART = 20;
-
-    /**
      * Die Treffer, nach Typ gruppiert.
      *
      * Als computed property statt inline in render(): So laesst sich die Suche
      * einzeln pruefen, ohne die View mitzurendern, und render() sagt wieder in
-     * einer Zeile, was es tut.
+     * einer Zeile, was es tut. Die Suche selbst steht in App\Support\GlobaleSuche -
+     * die App stellt dieselbe Frage.
      */
     #[Computed]
     public function groups()
     {
-        $groups = collect();
-
-        if (strlen((string) $this->search) >= 2) {
-            // Roh: Die Maskierung der LIKE-Platzhalter macht whereEnthaelt.
-            // Zweimal maskiert wuerde aus "srv_01" ein Suchbegriff, der den
-            // Backslash selbst sucht - und nichts mehr findet.
-            $roh = (string) $this->search;
-            $user = auth()->user();
-
-            foreach (self::TYPES as $slug => $entry) {
-                [$class, $label, $permission, $columns] = $entry;
-                $routeSlug = $entry[4] ?? $slug;
-                if (! Gate::allows($permission.'_viewAny')) {
-                    continue;
-                }
-
-                $query = $class::query()->with('customer');
-
-                // Kunden-Nutzer sehen nur Objekte des eigenen Kunden
-                if ($user->customer_id) {
-                    $query->where('customer_id', $user->customer_id);
-                }
-
-                // Die zusaetzlich dokumentierten Adressen zaehlen mit. Seit die
-                // Server-Formulare ip1/ip2 nicht mehr fuehren, stehen IP-Adressen
-                // neuer Geraete ausschliesslich dort - ohne das hier faende die
-                // Suche sie nicht mehr.
-                $hatIpBlock = in_array(HasIpAddresses::class, class_uses_recursive($class), true);
-
-                // Wie gesucht wird, haengt an der Tabellengroesse.
-                //
-                // "%begriff%" kann keinen Index nutzen, MySQL liest die ganze
-                // Tabelle. Bei 4 Millionen AD-Benutzern kostete das 2788 ms,
-                // die Praefix-Form auf indizierter Spalte 3 ms. Bei ein paar
-                // tausend Raecken oder Patchfeldern ist derselbe Scan dagegen
-                // in Millisekunden erledigt.
-                //
-                // Deshalb Praefix nur fuer die Massentabellen. Sonst ginge
-                // genau das verloren, wofuer die Suche da ist: Die Dose steht
-                // als "EG 2.14" drin und wird als "2.14" gesucht, das Rack
-                // heisst "Rack HH-01" und wird als "HH-01" gesucht.
-                $nurAnfang = in_array($slug, self::MASSENHAFT, true);
-
-                // whereBeginntMit / whereEnthaelt statt like: Ohne Maskierung
-                // stand ein Unterstrich im Suchbegriff fuer ein beliebiges
-                // Zeichen - "SRV_01" fand auch "SRV101" - und ein
-                // Prozentzeichen fuer den ganzen Bestand.
-                $query->where(function ($q) use ($columns, $roh, $nurAnfang, $hatIpBlock) {
-                    $nurAnfang
-                        ? $q->whereBeginntMit($columns, $roh)
-                        : $q->whereEnthaelt($columns, $roh);
-
-                    if ($hatIpBlock) {
-                        $q->orWhereHas('ipAddresses', fn ($ip) => $nurAnfang
-                            ? $ip->whereBeginntMit('address', $roh)
-                            : $ip->whereEnthaelt('address', $roh));
-                    }
-                });
-
-                // Einen mehr holen als angezeigt wird: Damit steht fest, ob
-                // es weitere gibt, ohne dafuer ein zweites Mal zu zaehlen -
-                // dasselbe Vorgehen wie in der Kundensuche. Vorher wurde bei
-                // zwanzig stillschweigend abgeschnitten, und wer den
-                // einundzwanzigsten Server suchte, hielt ihn fuer nicht
-                // vorhanden.
-                $treffer = $query->limit(self::JE_ART + 1)->get();
-
-                if ($treffer->isNotEmpty()) {
-                    $groups->push([
-                        'slug' => $routeSlug,
-                        'label' => $label,
-                        'results' => $treffer->take(self::JE_ART),
-                        'weitere' => max(0, $treffer->count() - self::JE_ART),
-                        // Only highlightable when the match points at its own list.
-                        // Patch-panel ports land on the patch-panel list - there their
-                        // id matches no row, so a ?highlight would point nowhere.
-                        'highlightable' => $routeSlug === $slug,
-                    ]);
-                }
-            }
-        }
-
-        return $groups;
+        return app(GlobaleSuche::class)->gruppen(auth()->user(), (string) $this->search);
     }
 
     public function render()

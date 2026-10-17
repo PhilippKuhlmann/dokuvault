@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\GlobalSearch;
+use App\Support\GlobaleSuche;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
 use App\Models\Rack;
@@ -47,7 +48,7 @@ test('kleine Tabellen werden weiter mitten im Wort durchsucht', function () {
 test('die Massentabellen stehen in der Praefix-Liste', function () {
     // Die Zuordnung selbst ist die Entscheidung: 4 Mio AD-Benutzer, 2 Mio
     // Computer, 1 Mio VMs - dort kostete "%begriff%" Sekunden.
-    $spiegel = new ReflectionClass(GlobalSearch::class);
+    $spiegel = new ReflectionClass(GlobaleSuche::class);
 
     expect($spiegel->getConstant('MASSENHAFT'))
         ->toContain('aduser')->toContain('computer')->toContain('vm');
