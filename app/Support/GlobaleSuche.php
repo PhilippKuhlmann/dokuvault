@@ -3,6 +3,8 @@
 namespace App\Support;
 
 use App\Models\Accesspoint;
+use App\Models\ADGroup;
+use App\Models\ADUser;
 use App\Models\Camera;
 use App\Models\Certificate;
 use App\Models\Computer;
@@ -55,6 +57,8 @@ class GlobaleSuche
         'vm' => [VM::class, 'VMs', 'vm', ['name']],
         'nas' => [NAS::class, 'NAS', 'nas', ['name', 'serialNumber']],
         'networkshare' => [NetworkShare::class, 'Netzlaufwerke', 'networkshare', ['name', 'path']],
+        'aduser' => [ADUser::class, 'AD-Benutzer', 'aduser', ['username', 'firstName', 'lastName', 'email']],
+        'adgroup' => [ADGroup::class, 'AD-Gruppen', 'adgroup', ['name']],
         'computer' => [Computer::class, 'Computer', 'computer', ['name', 'serialNumber']],
         'printer' => [Printer::class, 'Drucker', 'printer', ['name', 'serialNumber']],
         'scanner' => [Scanner::class, 'Scanner', 'scanner', ['name', 'serialNumber']],

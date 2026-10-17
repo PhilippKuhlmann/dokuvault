@@ -5,6 +5,7 @@
 ### Fixed
 
 - **iOS-App: Listen von AD-Benutzern, AD-Gruppen und weiteren Typen.** Die Liste brach mit einem Serverfehler ab, weil zehn Typen ihren Kunden nicht kannten (AD-Benutzer, AD-Gruppen, AD-Domänen, Logins allgemein und Webseiten, SSH-Schlüssel, DynDNS, Kontakte, Securepoint UMA, Postfächer). In der Detailansicht fehlte bei ihnen der Kunde.
+- **Globale Suche findet AD-Benutzer und AD-Gruppen.** Beide fehlten in der Suche, im Browser wie in der iOS-App. AD-Benutzer werden über Benutzername, Vor- und Nachname und E-Mail gefunden (Suche am Wortanfang, wie bei Computern und VMs), AD-Gruppen über ihren Namen.
 
 ## 26.10.16
 

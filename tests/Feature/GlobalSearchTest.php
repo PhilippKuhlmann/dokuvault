@@ -1,6 +1,8 @@
 <?php
 
 use App\Livewire\GlobalSearch;
+use App\Models\ADGroup;
+use App\Models\ADUser;
 use App\Models\Computer;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
@@ -49,6 +51,31 @@ test('Typ ohne viewAny-Permission erscheint nicht', function () {
     Livewire::test(GlobalSearch::class)
         ->set('search', 'PC-Suchtest')
         ->assertDontSee('PC-Suchtest');
+});
+
+test('findet AD-Benutzer und AD-Gruppen', function () {
+    $this->actingAs(userWithPermissions(['aduser_viewAny', 'adgroup_viewAny']));
+    $customer = Customer::factory()->create(['name' => 'Suchkunde']);
+    ADUser::create([
+        'customer_id' => $customer->id,
+        'username' => 'sophie.kraemer',
+        'firstName' => 'Sophie',
+        'lastName' => 'Kraemer',
+        'email' => 'sophie.kraemer@example.com',
+    ]);
+    ADGroup::create(['customer_id' => $customer->id, 'name' => 'GG-Buchhaltung']);
+
+    // AD-Benutzer sind eine Massentabelle: gesucht wird am Anfang der Spalte.
+    foreach (['sophie.k', 'Kraemer', 'sophie.kraemer@'] as $term) {
+        Livewire::test(GlobalSearch::class)
+            ->set('search', $term)
+            ->assertSee('Suchkunde')
+            ->assertSee('AD-Benutzer');
+    }
+
+    Livewire::test(GlobalSearch::class)
+        ->set('search', 'Buchhaltung')
+        ->assertSee('GG-Buchhaltung');
 });
 
 test('Kunden-Nutzer sieht nur Objekte des eigenen Kunden', function () {
