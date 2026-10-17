@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\ADGroup;
+use App\Models\ADUser;
 use App\Models\Customer;
 use App\Models\LoginGeneral;
 use App\Models\OperatingSystem;
@@ -7,6 +9,7 @@ use App\Models\Server;
 use App\Models\Setting;
 use App\Models\Site;
 use App\Models\User;
+use App\Support\MobilObjekte;
 use App\Support\ZweiteStufe;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
@@ -273,6 +276,30 @@ test('die Liste einer Art zeigt die Objekte des Kunden', function () {
         ->getJson('/api/mobile/customers/'.$kunde->slug.'/server')
         ->assertOk()
         ->assertJsonPath('eintraege.0.name', 'SRV-A');
+});
+
+test('AD-Benutzer und AD-Gruppen lassen sich auflisten und oeffnen', function () {
+    $kunde = Customer::factory()->create();
+    $benutzer = ADUser::create(['customer_id' => $kunde->id, 'username' => 'max.muster', 'enabled' => true]);
+    $gruppe = ADGroup::create(['customer_id' => $kunde->id, 'name' => 'GG-Buchhaltung']);
+    $token = mobilToken(mobilNutzer(['aduser_viewAny', 'adgroup_viewAny']));
+
+    $this->withToken($token)->getJson('/api/mobile/customers/'.$kunde->slug.'/aduser')
+        ->assertOk()->assertJsonPath('eintraege.0.name', 'max.muster');
+    $this->withToken($token)->getJson('/api/mobile/customers/'.$kunde->slug.'/adgroup')
+        ->assertOk()->assertJsonPath('eintraege.0.name', 'GG-Buchhaltung');
+    $this->withToken($token)->getJson('/api/mobile/objects/aduser/'.$benutzer->id)
+        ->assertOk()->assertJsonPath('kunde.slug', $kunde->slug);
+    $this->withToken($token)->getJson('/api/mobile/objects/adgroup/'.$gruppe->id)
+        ->assertOk()->assertJsonPath('kunde.slug', $kunde->slug);
+});
+
+// Liste und Detail laden den Kunden mit - ohne die Beziehung brach die Liste
+// mit einem 500er ab (AD-Benutzer, Logins, Kontakte ...).
+test('jede Art der App kennt ihren Kunden', function () {
+    foreach ((new MobilObjekte)->typen() as $slug => [$klasse]) {
+        expect(method_exists($klasse, 'customer'))->toBeTrue("{$slug} ohne customer()");
+    }
 });
 
 test('die Liste einer Art braucht das Recht dazu', function () {

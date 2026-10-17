@@ -23,4 +23,9 @@ class ADGroup extends Model
             ->withTimestamps()
             ->orderBy('username');
     }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
 }

@@ -90,4 +90,9 @@ class LoginGeneral extends Model
     {
         return $this->verwendungen()->map->zielBezeichnung()->sort()->implode(', ');
     }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
 }

@@ -23,4 +23,9 @@ class LoginWebsite extends Model
             set: fn ($value) => Crypt::encryptString($value),
         );
     }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
 }

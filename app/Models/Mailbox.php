@@ -34,4 +34,9 @@ class Mailbox extends Model
     {
         return $this->belongsTo(MailboxProvider::class);
     }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
 }

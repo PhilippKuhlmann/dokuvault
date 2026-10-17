@@ -37,4 +37,9 @@ class ADUser extends Model
             ->withTimestamps()
             ->orderBy('name');
     }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
 }

@@ -89,4 +89,9 @@ class SshKey extends LoginGeneral
             set: fn ($value) => filled($value) ? Crypt::encryptString($value) : null,
         );
     }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
 }

@@ -25,4 +25,9 @@ class ContactPerson extends Model
     {
         return trim($this->first_name.' '.$this->last_name) ?: null;
     }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
 }

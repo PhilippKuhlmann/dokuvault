@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.10.17
+
+### Fixed
+
+- **iOS-App: Listen von AD-Benutzern, AD-Gruppen und weiteren Typen.** Die Liste brach mit einem Serverfehler ab, weil zehn Typen ihren Kunden nicht kannten (AD-Benutzer, AD-Gruppen, AD-Domänen, Logins allgemein und Webseiten, SSH-Schlüssel, DynDNS, Kontakte, Securepoint UMA, Postfächer). In der Detailansicht fehlte bei ihnen der Kunde.
+
 ## 26.10.16
 
 ### Added

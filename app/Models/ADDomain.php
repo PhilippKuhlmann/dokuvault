@@ -94,4 +94,9 @@ class ADDomain extends Model
             set: fn ($value) => filled($value) ? Crypt::encryptString($value) : '',
         );
     }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
 }
