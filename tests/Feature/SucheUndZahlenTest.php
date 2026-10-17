@@ -1,7 +1,6 @@
 <?php
 
 use App\Livewire\GlobalSearch;
-use App\Support\GlobaleSuche;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
 use App\Models\Rack;
@@ -9,6 +8,7 @@ use App\Models\Role;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\User;
+use App\Support\GlobaleSuche;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;

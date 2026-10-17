@@ -1,7 +1,6 @@
 <?php
 
 use App\Livewire\GlobalSearch;
-use App\Support\GlobaleSuche;
 use App\Livewire\ObjektFormular;
 use App\Models\ContactPerson;
 use App\Models\Customer;
@@ -12,6 +11,7 @@ use App\Models\Phone;
 use App\Models\PhoneSystem;
 use App\Models\Printer;
 use App\Models\Site;
+use App\Support\GlobaleSuche;
 use Livewire\Livewire;
 
 /**
