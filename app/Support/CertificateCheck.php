@@ -53,7 +53,7 @@ class CertificateCheck
         $client = @stream_socket_client('ssl://'.$host.':'.$port, $errno, $errstr, 10, STREAM_CLIENT_CONNECT, $context);
 
         if ($client === false) {
-            throw new RuntimeException(__('Keine Verbindung zu :ziel: :fehler', ['ziel' => $host.':'.$port, 'fehler' => $errstr ?: $errno]));
+            throw new RuntimeException(self::connectionError($host, $port, $errno, $errstr));
         }
 
         $cert = stream_context_get_params($client)['options']['ssl']['peer_certificate'] ?? null;
@@ -66,5 +66,30 @@ class CertificateCheck
         }
 
         return $parsed;
+    }
+
+    /**
+     * What went wrong, in words the customer understands.
+     *
+     * The socket error is the operating system's ("php_network_getaddresses:
+     * getaddrinfo for mail.example.com failed: nodename nor servname provided")
+     * and differs between Linux and macOS - so match on the parts both share.
+     * Whatever is not recognised still names host and port, without the
+     * technical text.
+     */
+    public static function connectionError(string $host, int $port, int $errno, string $errstr): string
+    {
+        $fehler = strtolower($errstr);
+        $hat = fn (string ...$teile) => collect($teile)->contains(fn ($teil) => str_contains($fehler, $teil));
+        $werte = ['host' => $host, 'port' => $port];
+
+        return match (true) {
+            $hat('getaddrinfo', 'not known', 'no address associated', 'name resolution') => __(':host ist im öffentlichen DNS nicht bekannt. Läuft der Dienst nur intern, unter „Prüfen an Host“ einen von außen erreichbaren Namen eintragen.', $werte),
+            $hat('refused') => __(':host nimmt auf Port :port keine Verbindung an.', $werte),
+            $hat('timed out', 'timeout') => __(':host antwortet auf Port :port nicht – vermutlich nur intern erreichbar oder durch eine Firewall gesperrt.', $werte),
+            $hat('unreachable', 'no route') => __(':host ist von hier aus nicht erreichbar.', $werte),
+            $errno === 0 || $hat('ssl', 'tls', 'handshake', 'crypto') => __(':host spricht auf Port :port kein TLS – ist der Port richtig?', $werte),
+            default => __('Keine Verbindung zu :host auf Port :port.', $werte),
+        };
     }
 }

@@ -164,6 +164,23 @@ test('nicht erreichbarer Host lässt das Zertifikat unverändert', function () {
         ->and($certificate->expiry_date)->toBe('2026-12-01');
 });
 
+// Die Texte, wie sie das Betriebssystem liefert - macOS und Linux.
+test('Verbindungsfehler stehen in verständlichen Worten da', function (int $errno, string $errstr, string $erwartet) {
+    $text = CertificateCheck::connectionError('mail.example.com', 443, $errno, $errstr);
+
+    expect($text)->toContain($erwartet)
+        ->and($text)->not->toContain('getaddrinfo')
+        ->and($text)->not->toContain('php_network');
+})->with([
+    'DNS macOS' => [0, 'php_network_getaddresses: getaddrinfo for mail.example.com failed: nodename nor servname provided, or not known', 'im öffentlichen DNS nicht bekannt'],
+    'DNS Linux' => [0, 'php_network_getaddresses: getaddrinfo for mail.example.com failed: Name or service not known', 'im öffentlichen DNS nicht bekannt'],
+    'abgelehnt' => [111, 'Connection refused', 'keine Verbindung an'],
+    'Zeitüberschreitung' => [110, 'Connection timed out', 'antwortet auf Port 443 nicht'],
+    'kein Weg' => [113, 'No route to host', 'nicht erreichbar'],
+    'kein TLS' => [0, '', 'kein TLS'],
+    'Unbekanntes' => [99, 'Something odd', 'Keine Verbindung zu mail.example.com auf Port 443'],
+]);
+
 test('ausgenommene Einträge und abgeschaltete Prüfung werden übersprungen', function () {
     fakeCertificate(null);
 

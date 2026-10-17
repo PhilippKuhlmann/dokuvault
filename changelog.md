@@ -7,6 +7,7 @@
 - **iOS-App: Listen von AD-Benutzern, AD-Gruppen und weiteren Typen.** Die Liste brach mit einem Serverfehler ab, weil zehn Typen ihren Kunden nicht kannten (AD-Benutzer, AD-Gruppen, AD-Domänen, Logins allgemein und Webseiten, SSH-Schlüssel, DynDNS, Kontakte, Securepoint UMA, Postfächer). In der Detailansicht fehlte bei ihnen der Kunde.
 - **Globale Suche findet AD-Benutzer und AD-Gruppen.** Beide fehlten in der Suche, im Browser wie in der iOS-App. AD-Benutzer werden über Benutzername, Vor- und Nachname und E-Mail gefunden (Suche am Wortanfang, wie bei Computern und VMs), AD-Gruppen über ihren Namen.
 - **Treffer aus der Suche leuchten auch in Tabellen auf.** Wer einen AD-Benutzer, ein Login, einen Kontakt oder einen anderen Eintrag einer Tabellenliste in der Suche anklickte, landete auf der Liste, aber die Zeile wurde weder angesprungen noch markiert. Bei Kartenlisten (Server, Computer …) ging es schon.
+- **Zertifikatsprüfung meldet Verbindungsfehler verständlich.** Statt „php_network_getaddresses: getaddrinfo … failed: nodename nor servname provided“ steht jetzt z. B. „mail.mustermann.de ist im öffentlichen DNS nicht bekannt. Läuft der Dienst nur intern, unter „Prüfen an Host“ einen von außen erreichbaren Namen eintragen.“ Ebenso für abgelehnte Verbindungen, Zeitüberschreitung, nicht erreichbare Hosts und Ports ohne TLS. Bestehende Meldungen ändern sich beim nächsten Prüflauf oder mit „Jetzt prüfen“.
 
 ## 26.10.16
 
