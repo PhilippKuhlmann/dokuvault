@@ -23,3 +23,34 @@ test('die Palette ist im Admin-Bereich eingebunden', function () {
         ->assertOk()
         ->assertSee(__('Seite suchen … (z. B. „Server“)'));
 });
+
+/** Wie die URL in der Zielliste steht: @js kodiert jeden Schraegstrich als \\\/. */
+function paletteUrl(string $url): string
+{
+    return str_replace('/', '\\\\\\/', $url);
+}
+
+test('die Checklisten stehen in der Palette, die Einstellungen nur fuer die IT', function () {
+    $customer = Customer::factory()->create();
+    $liste = route('checklist.index', $customer);
+    $einstellungen = route('checklist.settings', $customer);
+
+    // Wer neue Mitarbeiter meldet, findet die Checklisten, aber nicht die Einstellungen.
+    $this->actingAs(userWithPermissions(['server_viewAny', 'checklist_request']))
+        ->get("/{$customer->slug}/server")
+        ->assertOk()
+        ->assertSee(paletteUrl($liste), false)
+        ->assertDontSee(paletteUrl($einstellungen), false);
+
+    $this->flushSession();
+    $this->actingAs(userWithPermissions(['server_viewAny', 'checklist_manage']))
+        ->get("/{$customer->slug}/server")
+        ->assertOk()
+        ->assertSee(paletteUrl($einstellungen), false);
+
+    $this->flushSession();
+    $this->actingAs(userWithPermissions(['server_viewAny']))
+        ->get("/{$customer->slug}/server")
+        ->assertOk()
+        ->assertDontSee(paletteUrl($liste), false);
+});

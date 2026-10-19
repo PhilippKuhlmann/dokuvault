@@ -35,6 +35,8 @@
             [null, __('Dashboard'), 'customer.dashboard'],
             ['site_viewAny', __('Standort'), 'site.index'],
             ['contactperson_viewAny', __('Ansprechpartner'), 'contactperson.index'],
+            ['checklist_viewAny', __('Checklisten'), 'checklist.index'],
+            ['checklist_manage', __('Checklisten').' · '.__('Einstellungen'), 'checklist.settings'],
             ['internetconnection_viewAny', __('Internet / WAN'), 'internetconnection.index'],
             ['firewall_viewAny', __('Firewall'), 'firewall.index'],
             ['router_viewAny', __('Router'), 'router.index'],
