@@ -3,6 +3,7 @@
 use App\Livewire\GlobalSearch;
 use App\Models\ADGroup;
 use App\Models\ADUser;
+use App\Models\Checklist;
 use App\Models\Computer;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
@@ -193,4 +194,40 @@ test('Treffer sind für die Tastatursteuerung verdrahtet', function () {
         ->assertSee('keydown.arrow-down', false)
         ->assertSee('keydown.enter', false)
         ->assertSee('keydown.escape', false);
+});
+
+test('findet Checklisten und oeffnet sie direkt', function () {
+    $customer = Customer::factory()->create(['name' => 'Suchkunde']);
+    $checklist = Checklist::create([
+        'customer_id' => $customer->id, 'type' => 'onboarding',
+        'first_name' => 'Sophie', 'last_name' => 'Kraemer', 'reference_date' => '2026-11-01',
+        'username' => 'sophie.kraemer',
+    ]);
+
+    // Wer neue Mitarbeiter meldet, sieht sie - wie auf der Checklisten-Seite.
+    $this->actingAs(userWithPermissions(['checklist_request']));
+
+    foreach (['Sophie', 'Kraemer', 'sophie.kr'] as $term) {
+        Livewire::test(GlobalSearch::class)
+            ->set('search', $term)
+            ->assertSee('Sophie Kraemer (Onboarding)')
+            ->assertSee(route('checklist.show', [$customer, $checklist]), false);
+    }
+
+    $this->actingAs(userWithPermissions(['server_viewAny']));
+    Livewire::test(GlobalSearch::class)->set('search', 'Kraemer')->assertDontSee('Sophie Kraemer');
+});
+
+test('die App-Suche zeigt keine Checklisten, die sie nicht oeffnen kann', function () {
+    $customer = Customer::factory()->create();
+    Checklist::create([
+        'customer_id' => $customer->id, 'type' => 'onboarding',
+        'first_name' => 'Sophie', 'last_name' => 'Kraemer', 'reference_date' => '2026-11-01',
+    ]);
+    $user = userWithPermissions(['checklist_manage']);
+
+    $this->withToken($user->createToken('App', ['mobil'])->plainTextToken)
+        ->getJson('/api/mobile/search?q=Kraemer')
+        ->assertOk()
+        ->assertJsonCount(0);
 });

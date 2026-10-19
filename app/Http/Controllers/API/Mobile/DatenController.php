@@ -86,6 +86,7 @@ class DatenController extends Controller
     public function suche(Request $request, GlobaleSuche $suche): JsonResponse
     {
         $gruppen = $suche->gruppen($request->user(), (string) $request->query('q'))
+            ->reject(fn ($gruppe) => $gruppe['detailseite'])
             ->map(fn ($gruppe) => [
                 'typ' => $gruppe['typ'],
                 'titel' => __($gruppe['label']),

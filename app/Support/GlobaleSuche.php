@@ -7,6 +7,7 @@ use App\Models\ADGroup;
 use App\Models\ADUser;
 use App\Models\Camera;
 use App\Models\Certificate;
+use App\Models\Checklist;
 use App\Models\Computer;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\DECT;
@@ -59,6 +60,7 @@ class GlobaleSuche
         'networkshare' => [NetworkShare::class, 'Netzlaufwerke', 'networkshare', ['name', 'path']],
         'aduser' => [ADUser::class, 'AD-Benutzer', 'aduser', ['username', 'firstName', 'lastName', 'email']],
         'adgroup' => [ADGroup::class, 'AD-Gruppen', 'adgroup', ['name']],
+        'checklist' => [Checklist::class, 'Checklisten', 'checklist', ['first_name', 'last_name', 'username', 'email']],
         'computer' => [Computer::class, 'Computer', 'computer', ['name', 'serialNumber']],
         'printer' => [Printer::class, 'Drucker', 'printer', ['name', 'serialNumber']],
         'scanner' => [Scanner::class, 'Scanner', 'scanner', ['name', 'serialNumber']],
@@ -103,6 +105,13 @@ class GlobaleSuche
      * ohnehin weiter - der Hinweis unter der Gruppe sagt, dass es mehr gibt.
      */
     public const JE_ART = 20;
+
+    /**
+     * Types whose hit opens the entry itself instead of jumping into a list.
+     * A checklist is worked through on its own page; its list only shows
+     * the open ones and has no row to highlight.
+     */
+    public const ZUR_DETAILSEITE = ['checklist'];
 
     /**
      * Die Treffer, nach Typ gruppiert.
@@ -190,6 +199,7 @@ class GlobaleSuche
                     // Patch-panel ports land on the patch-panel list - there their
                     // id matches no row, so a ?highlight would point nowhere.
                     'highlightable' => $routeSlug === $slug,
+                    'detailseite' => in_array($slug, self::ZUR_DETAILSEITE, true),
                 ]);
             }
         }

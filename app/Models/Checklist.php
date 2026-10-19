@@ -66,6 +66,12 @@ class Checklist extends Model
         return trim("{$this->first_name} {$this->last_name}");
     }
 
+    /** For the global search: the person, and whether they come or go. */
+    public function protokollName(): ?string
+    {
+        return $this->fullName().' ('.($this->isOnboarding() ? __('Onboarding') : __('Offboarding')).')';
+    }
+
     /**
      * A new key for the AD script; the previous one stops working. Only the
      * hash is kept - the plain key exists in the downloaded file alone.

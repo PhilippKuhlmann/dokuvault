@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.10.19
+
+### Added
+
+- **Checklisten in der Suche (Cmd+K).** On- und Offboardings werden über Vor- und Nachname, Benutzername und E-Mail gefunden, der Treffer öffnet die Checkliste direkt. Sehen kann sie, wer Checklisten bearbeiten, neue Mitarbeiter melden oder Berechtigungen freigeben darf; Kundennutzer nur die eigenen. In der iOS-App erscheinen sie noch nicht.
+
 ## 26.10.17
 
 ### Fixed

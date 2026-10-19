@@ -68,6 +68,13 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('admin_bereich', fn (User $user) => collect(array_keys(config('custom.admin_permissions')))
             ->contains(fn ($recht) => Gate::forUser($user)->allows($recht)));
 
+        // Checklists have no policy of their own: whoever may work on them,
+        // report a new employee or approve rights may see them - the same
+        // rule as ChecklistController::VIEW_RIGHTS. Named like the others so
+        // the global search finds them.
+        Gate::define('checklist_viewAny', fn (User $user) => collect(['checklist_manage', 'checklist_request', 'checklist_approve'])
+            ->contains(fn ($recht) => Gate::forUser($user)->allows($recht)));
+
         $resources = config('custom.permissions');
 
         foreach ($resources as $resource) {

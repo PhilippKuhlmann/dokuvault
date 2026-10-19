@@ -109,7 +109,9 @@
                             @foreach ($gruppe['results'] as $treffer)
                                 @php($idx = $i++)
                                 <li>
-                                    <a href="{{ route($gruppe['slug'] . '.index', ($gruppe['highlightable'] ?? false) ? [$treffer->customer, 'highlight' => $treffer->id] : [$treffer->customer]) }}"
+                                    <a href="{{ ($gruppe['detailseite'] ?? false)
+                                        ? route($gruppe['slug'] . '.show', [$treffer->customer, $treffer])
+                                        : route($gruppe['slug'] . '.index', ($gruppe['highlightable'] ?? false) ? [$treffer->customer, 'highlight' => $treffer->id] : [$treffer->customer]) }}"
                                         data-result
                                         x-on:mouseenter="active = {{ $idx }}"
                                         x-bind:class="active === {{ $idx }} && 'bg-chathams-blue-50 ring-2 ring-inset ring-cerulean-500 dark:bg-gray-700/50'"

@@ -47,7 +47,9 @@ class MobilObjekte
             $typen[$slug] = [$formular['model'], $slug, $formular['felder']];
         }
 
-        foreach (GlobaleSuche::TYPES as $slug => $eintrag) {
+        // Not the types with a page of their own (checklists): the app has no
+        // view for them yet and would list entries it cannot open.
+        foreach (array_diff_key(GlobaleSuche::TYPES, array_flip(GlobaleSuche::ZUR_DETAILSEITE)) as $slug => $eintrag) {
             $typen[$slug] ??= [$eintrag[0], $eintrag[2], null];
         }
 
