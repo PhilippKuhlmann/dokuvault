@@ -6,6 +6,7 @@ use App\Http\Controllers\API\ChecklistReportController;
 use App\Http\Controllers\API\CustomerController;
 use App\Http\Controllers\API\Mobile\AnmeldungController;
 use App\Http\Controllers\API\Mobile\DatenController;
+use App\Http\Controllers\API\Mobile\RackController as MobileRackController;
 use App\Http\Controllers\API\ServerController;
 use App\Http\Controllers\API\SiteController;
 use App\Http\Middleware\SetLocale;
@@ -61,8 +62,8 @@ Route::post('/checklist-report', ChecklistReportController::class)->middleware('
 
 // Die iOS-App. Vor der Kundenroute unten: "/{customer}" passt auf jedes
 // einzelne Segment und fing sonst "/api/mobile" ab - siehe die Server-Routen.
-// Nur lesen; Kennwoerter einzeln ueber POST, damit kein Zwischenspeicher sie
-// als Antwort auf ein GET aufhebt.
+// Nur lesen - bis auf die Racks; Kennwoerter einzeln ueber POST, damit kein
+// Zwischenspeicher sie als Antwort auf ein GET aufhebt.
 Route::prefix('mobile')->group(function () {
     Route::middleware(SetLocale::class)->group(function () {
         Route::post('/login', [AnmeldungController::class, 'anmelden']);
@@ -75,6 +76,21 @@ Route::prefix('mobile')->group(function () {
 
         Route::get('/customers', [DatenController::class, 'kunden']);
         Route::get('/customers/{customer}', [DatenController::class, 'kunde'])->middleware('isCustomer');
+
+        // Racks: the list is the "rack" type below, these show and edit one.
+        // Scoped bindings: a rack of another customer (and an item of another
+        // rack) is a 404, not just hidden.
+        Route::prefix('/customers/{customer}/racks')->middleware('isCustomer')->scopeBindings()->group(function () {
+            Route::post('/', [MobileRackController::class, 'store']);
+            Route::get('/{rack}', [MobileRackController::class, 'show']);
+            Route::put('/{rack}', [MobileRackController::class, 'update']);
+            Route::delete('/{rack}', [MobileRackController::class, 'destroy']);
+            Route::get('/{rack}/palette', [MobileRackController::class, 'palette']);
+            Route::post('/{rack}/items', [MobileRackController::class, 'storeItem']);
+            Route::patch('/{rack}/items/{item}', [MobileRackController::class, 'updateItem']);
+            Route::delete('/{rack}/items/{item}', [MobileRackController::class, 'destroyItem']);
+        });
+
         Route::get('/customers/{customer}/{typ}', [DatenController::class, 'liste'])->middleware('isCustomer');
 
         Route::get('/search', [DatenController::class, 'suche']);

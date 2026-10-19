@@ -19,6 +19,11 @@ class Rack extends Model
         return $this->belongsTo(Customer::class);
     }
 
+    public function site()
+    {
+        return $this->belongsTo(Site::class);
+    }
+
     public function items()
     {
         // Absteigend nach Position: oberstes Geraet zuerst, wie in der Frontansicht.

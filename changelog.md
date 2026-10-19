@@ -4,6 +4,8 @@
 
 ### Added
 
+- **iOS-App-Schnittstelle: Serverschränke ansehen und bearbeiten.** Unter `/api/mobile/customers/{kunde}/racks` lassen sich Racks mit ihren Einbauten (Vorder- und Rückseite, Höheneinheiten, verknüpftes Gerät) abrufen, anlegen, ändern und löschen. Geräte und Katalogelemente lassen sich einbauen (ohne Position auf die unterste freie HE), verschieben, in der Höhe ändern und entfernen; die Palette nennt die noch freien Geräte des Kunden und den Katalog. Es gelten dieselben Rechte und Kollisionsregeln wie im Rack-Editor im Browser. Fotos von Katalog und Gerätemodellen liefert die Schnittstelle noch nicht.
+
 - **Checklisten in der Suche (Cmd+K).** On- und Offboardings werden über Vor- und Nachname, Benutzername und E-Mail gefunden, der Treffer öffnet die Checkliste direkt. Sehen kann sie, wer Checklisten bearbeiten, neue Mitarbeiter melden oder Berechtigungen freigeben darf; Kundennutzer nur die eigenen. In der iOS-App erscheinen sie noch nicht.
 - **Checklisten in der Seitensuche (Cmd/Strg+K).** „Checklisten“ und – für die IT – „Checklisten · Einstellungen“ stehen jetzt in der Palette, sodass „check“ die Seite findet.
 
