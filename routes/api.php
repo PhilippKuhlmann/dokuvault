@@ -6,6 +6,7 @@ use App\Http\Controllers\API\ChecklistReportController;
 use App\Http\Controllers\API\CustomerController;
 use App\Http\Controllers\API\Mobile\AnmeldungController;
 use App\Http\Controllers\API\Mobile\DatenController;
+use App\Http\Controllers\API\Mobile\ObjectController;
 use App\Http\Controllers\API\Mobile\RackController as MobileRackController;
 use App\Http\Controllers\API\ServerController;
 use App\Http\Controllers\API\SiteController;
@@ -62,8 +63,9 @@ Route::post('/checklist-report', ChecklistReportController::class)->middleware('
 
 // Die iOS-App. Vor der Kundenroute unten: "/{customer}" passt auf jedes
 // einzelne Segment und fing sonst "/api/mobile" ab - siehe die Server-Routen.
-// Nur lesen - bis auf die Racks; Kennwoerter einzeln ueber POST, damit kein
-// Zwischenspeicher sie als Antwort auf ein GET aufhebt.
+// Lesen und Bearbeiten wie im Browser, mit denselben Rechten; Kennwoerter
+// einzeln ueber POST, damit kein Zwischenspeicher sie als Antwort auf ein GET
+// aufhebt.
 Route::prefix('mobile')->group(function () {
     Route::middleware(SetLocale::class)->group(function () {
         Route::post('/login', [AnmeldungController::class, 'anmelden']);
@@ -92,6 +94,18 @@ Route::prefix('mobile')->group(function () {
         });
 
         Route::get('/customers/{customer}/{typ}', [DatenController::class, 'liste'])->middleware('isCustomer');
+
+        // Every type of config/forms.php: the form to build, then create,
+        // edit, delete. POST on an object as well as PUT - a file upload
+        // (multipart) only arrives with POST.
+        Route::middleware('isCustomer')->group(function () {
+            Route::get('/customers/{customer}/forms/{typ}', [ObjectController::class, 'createForm']);
+            Route::post('/customers/{customer}/forms/{typ}/generate', [ObjectController::class, 'generate']);
+            Route::post('/customers/{customer}/{typ}', [ObjectController::class, 'store']);
+        });
+        Route::get('/objects/{typ}/{id}/form', [ObjectController::class, 'editForm'])->whereNumber('id');
+        Route::match(['put', 'patch', 'post'], '/objects/{typ}/{id}', [ObjectController::class, 'update'])->whereNumber('id');
+        Route::delete('/objects/{typ}/{id}', [ObjectController::class, 'destroy'])->whereNumber('id');
 
         Route::get('/search', [DatenController::class, 'suche']);
 

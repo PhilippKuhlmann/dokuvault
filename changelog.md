@@ -4,6 +4,8 @@
 
 ### Added
 
+- **iOS-App-Schnittstelle: anlegen, bearbeiten, löschen.** Jede Objektart, die im Browser über das Formular-Modal gepflegt wird (Server, VMs, Computer, Lizenzen, Logins, AD-Benutzer und über 35 weitere), lässt sich jetzt auch aus der App anlegen, ändern und löschen. Die App holt sich das Formular samt Feldarten, Pflichtfeldern und Auswahllisten vom Server und baut es selbst auf – ein neues Feld erscheint so ohne App-Update. Geprüft und gespeichert wird genau wie im Browser, mit denselben Rechten. Kennwörter gehen dabei nie mit hinaus, und eine Änderung schreibt nur die Felder, die die App schickt. Dateien (Lizenzdokumente) lassen sich mit hochladen.
+
 - **iOS-App: mehr von der Gerätekarte.** Die Detailansicht liefert jetzt auch die Gruppen eines AD-Benutzers und die Mitglieder einer AD-Gruppe, die Geräte hinter Host-Feldern (Domänencontroller, Zertifizierungsstelle, Entra-Connect-Server, Server/NAS eines Netzlaufwerks – mit Typ und Id zum Weiterspringen), die Dienste von Server und VM, den Fingerprint von SSH-Schlüsseln (am Schlüssel und unter den Zugängen eines Geräts), den Einbauort im Serverschrank und das Support-Ende des Betriebssystems mit Zustand („abgelaufen“, „bald“, „ok“). Alles kommt auch als fertiger Text, sodass eine ältere App es ohne Änderung anzeigt.
 
 ## 26.10.19

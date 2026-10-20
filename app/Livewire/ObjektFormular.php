@@ -9,17 +9,11 @@ use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
 use App\Models\DeviceModel;
-use App\Models\Setting;
 use App\Models\Site;
-use App\Rules\BelongsToCustomer;
-use App\Support\Dateiname;
+use App\Support\ObjectForm;
 use App\Support\Zeit;
 use Carbon\Carbon;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -110,6 +104,12 @@ class ObjektFormular extends Component
         return config('forms.'.$this->typ);
     }
 
+    /** Rules, choices and storing - shared with the iOS app. */
+    protected function objektForm(): ObjectForm
+    {
+        return new ObjectForm($this->typ, $this->customerId);
+    }
+
     protected function kunde(): Customer
     {
         return Customer::findOrFail($this->customerId);
@@ -117,27 +117,7 @@ class ObjektFormular extends Component
 
     protected function formularLeeren(): void
     {
-        $this->form = [];
-
-        foreach ($this->einstellung()['felder'] as $feld) {
-            // Eine feste Optionsliste zeigt immer ihren ersten Eintrag an. Ohne
-            // denselben Wert im Formular sieht man eine Auswahl und bekommt
-            // trotzdem "ist erforderlich".
-            // 'default' wie im Assistenten (config/custom.php): Ein Feld, das
-            // fast immer denselben Wert hat, soll ihn schon anbieten. Ohne das
-            // muesste man bei jedem Rackserver die 1 fuer die Hoeheneinheit
-            // tippen - das Seitenformular belegt sie laengst vor.
-            $this->form[$feld['name']] = match (true) {
-                $feld['type'] === 'host' && ($feld['mehrfach'] ?? false) => [],
-                $feld['type'] === 'verknuepfung' => [],
-                // A real boolean: the browser takes the string '0' for a
-                // ticked checkbox.
-                $feld['type'] === 'schalter' => (bool) ($feld['default'] ?? false),
-                $feld['type'] === 'optionen' => (string) array_key_first($feld['werte'] ?? config($feld['quelle'])),
-                isset($feld['default']) => (string) $feld['default'],
-                default => '',
-            };
-        }
+        $this->form = $this->objektForm()->emptyValues();
 
         $this->datei = null;
         $this->modellbild = null;
@@ -167,40 +147,7 @@ class ObjektFormular extends Component
 
         $objekt = $this->objektHolen($id);
 
-        foreach ($this->einstellung()['felder'] as $feld) {
-            // No column: the machines sit in their own table (ADDomain::hosts).
-            if ($feld['type'] === 'host') {
-                $schluessel = $objekt->hostKeys($feld['rolle']);
-                $this->form[$feld['name']] = ($feld['mehrfach'] ?? false) ? $schluessel : ($schluessel[0] ?? '');
-
-                continue;
-            }
-
-            // Many-to-many (e.g. AD user <-> group): the ids of the linked
-            // entries, as strings like the options of the select.
-            if ($feld['type'] === 'verknuepfung') {
-                $this->form[$feld['name']] = array_map('strval', $objekt->{$feld['relation']}->modelKeys());
-
-                continue;
-            }
-
-            $wert = $objekt->{$feld['name']};
-            // Datumsfelder kommen je nach Model als Carbon oder als Text.
-            // Dienste kommen als Array aus dem Model (explode beim Lesen),
-            // gespeichert wird die Komma-Liste - deshalb wieder zusammenfuegen.
-            $this->form[$feld['name']] = match (true) {
-                // Switches stay booleans - '0' would show as ticked.
-                $feld['type'] === 'schalter' => (bool) $wert,
-                $wert instanceof \DateTimeInterface => $wert->format('Y-m-d'),
-                is_array($wert) => implode(',', $wert),
-                // (string) false ergibt '' und nicht '0': Ein deaktivierter
-                // AD-Benutzer kam so als leeres Feld im Formular an und wurde
-                // von der Auswahl als "Aktiv" angezeigt - der gespeicherte Wert
-                // war das Gegenteil dessen, was dastand.
-                is_bool($wert) => $wert ? '1' : '0',
-                default => (string) $wert,
-            };
-        }
+        $this->form = $this->objektForm()->values($objekt);
 
         $this->bearbeiteId = $objekt->id;
         $this->loeschenGefragt = false;
@@ -215,63 +162,13 @@ class ObjektFormular extends Component
      */
     protected function objektHolen(int $id)
     {
-        $klasse = $this->einstellung()['model'];
-
-        return $klasse::where('customer_id', $this->customerId)->findOrFail($id);
+        return $this->objektForm()->find($id);
     }
 
     public function abbrechen(): void
     {
         $this->offen = false;
         $this->formularLeeren();
-    }
-
-    /**
-     * Verweise auf andere Felder in den Praefix des Formulars heben.
-     *
-     * Hier heissen die Felder "form.server_id", in den Requests aber
-     * "server_id" - eine Regel wie required_without:server_id suchte deshalb
-     * ein Feld, das es hier nicht gibt, und griff nie. Betraf schon vorher
-     * required_if:form_factor,rack am Server: Hoeheneinheiten und Einbautiefe
-     * waren im Modal nie Pflicht, ohne dass es auffiel.
-     *
-     * Bei required_if/required_unless ist nur der erste Parameter ein Feld,
-     * dahinter stehen Werte. Bei required_with/without sind es alle.
-     */
-    protected function feldverweiseUmschreiben(mixed $regel): mixed
-    {
-        $nurErstesFeld = ['required_if', 'required_unless'];
-        $alleFelder = ['required_with', 'required_with_all', 'required_without', 'required_without_all', 'same', 'different', 'prohibits'];
-
-        $einzelne = function ($teil) use ($nurErstesFeld, $alleFelder) {
-            if (! is_string($teil) || ! str_contains($teil, ':')) {
-                return $teil;
-            }
-
-            [$name, $parameter] = explode(':', $teil, 2);
-
-            if (! in_array($name, [...$nurErstesFeld, ...$alleFelder], true)) {
-                return $teil;
-            }
-
-            $werte = explode(',', $parameter);
-
-            $werte = in_array($name, $nurErstesFeld, true)
-                ? array_merge(['form.'.$werte[0]], array_slice($werte, 1))
-                : array_map(fn ($feld) => 'form.'.$feld, $werte);
-
-            return $name.':'.implode(',', $werte);
-        };
-
-        if (is_array($regel)) {
-            return array_map($einzelne, $regel);
-        }
-
-        // Die Kurzschreibweise "required_if:...|boolean" haengt mehrere Regeln
-        // mit | aneinander.
-        return is_string($regel)
-            ? implode('|', array_map($einzelne, explode('|', $regel)))
-            : $regel;
     }
 
     /**
@@ -298,114 +195,17 @@ class ObjektFormular extends Component
     }
 
     /**
-     * Die Regeln des Objekttyps, mit "form." davor.
-     *
-     * Eine Quelle fuer das Speichern und fuer die laufende Pruefung waehrend
-     * der Eingabe - zwei Listen liefen frueher oder spaeter auseinander.
+     * Die Regeln des Objekttyps, mit "form." davor - dieselben, mit denen die
+     * App speichert, siehe ObjectForm.
      */
     protected function regeln(): array
     {
-        $request = $this->request();
-
-        // Die Mandantenregel holt den Kunden sonst aus der Route - die heisst
-        // hier livewire.update und kennt ihn nicht.
-        $regelnMitKunde = collect($request->rules())->map(function ($regel) {
-            if (! is_array($regel)) {
-                return $regel;
-            }
-
-            return array_map(
-                fn ($einzeln) => $einzeln instanceof BelongsToCustomer
-                    ? new BelongsToCustomer($einzeln->tabelle(), $this->customerId)
-                    : $einzeln,
-                $regel
-            );
-        })->all();
-
-        return collect($regelnMitKunde)
-            ->map(fn ($regel) => $this->feldverweiseUmschreiben($regel))
-            ->mapWithKeys(fn ($regel, $feld) => ['form.'.$feld => $regel])
-            ->merge($this->hostRegeln())
-            ->all();
+        return $this->objektForm()->rules($this->form, 'form.');
     }
 
-    /**
-     * Which machines the 'host' fields of this type offer: servers and VMs,
-     * unless a field names its own ('typen' => ['server', 'vm', 'nas']).
-     *
-     * @return array<int, string>
-     */
-    protected function hostTypen(): array
-    {
-        return collect($this->einstellung()['felder'])->where('type', 'host')
-            ->pluck('typen')->flatten()->filter()->unique()->values()->all() ?: ['server', 'vm'];
-    }
-
-    /**
-     * Rules for 'host' and 'verknuepfung' fields: only machines and entries
-     * of this customer. The request cannot say that - it does not know the
-     * customer.
-     */
-    protected function hostRegeln(): array
-    {
-        $regeln = [];
-
-        // Linked entries must belong to this customer.
-        foreach (collect($this->einstellung()['felder'])->where('type', 'verknuepfung') as $feld) {
-            $tabelle = (new $feld['quelle'])->getTable();
-            $regeln['form.'.$feld['name']] = ['nullable', 'array'];
-            $regeln['form.'.$feld['name'].'.*'] = [Rule::exists($tabelle, 'id')->where('customer_id', $this->customerId)->whereNull('deleted_at')];
-        }
-
-        $felder = collect($this->einstellung()['felder'])->where('type', 'host');
-
-        if ($felder->isEmpty()) {
-            return $regeln;
-        }
-
-        $erlaubt = Rule::in(array_keys(ADDomainHost::options($this->customerId, $this->hostTypen())));
-
-        foreach ($felder as $feld) {
-            if ($feld['mehrfach'] ?? false) {
-                $regeln['form.'.$feld['name']] = ['nullable', 'array'];
-                $regeln['form.'.$feld['name'].'.*'] = [$erlaubt];
-            } else {
-                $regeln['form.'.$feld['name']] = ['nullable', $erlaubt];
-            }
-        }
-
-        return $regeln;
-    }
-
-    /**
-     * Beschriftungen aus der eigenen Felddefinition.
-     *
-     * Nicht jeder Request nennt jedes Feld in attributes(), und dann stuende
-     * der interne Name in der Meldung ("Bitte form.form factor angeben").
-     */
     protected function feldnamen(): array
     {
-        return collect($this->einstellung()['felder'])
-            ->mapWithKeys(fn ($feld) => ['form.'.$feld['name'] => __($feld['label'])])
-            ->merge(collect($this->request()->attributes())->mapWithKeys(fn ($name, $feld) => ['form.'.$feld => $name]))
-            ->all();
-    }
-
-    /**
-     * Der Request des Objekttyps, mit den Formularwerten gefuellt.
-     *
-     * Gefuellt, weil manche Regel aus einem anderen Feld gebaut wird - "das
-     * Gateway muss im Netz liegen" liest dafuer $this->input('subnet'). Ohne
-     * die Werte bekaeme sie null und pruefte gegen nichts, ohne dass ein
-     * Fehler sichtbar wuerde.
-     */
-    private function request(): FormRequest
-    {
-        $klasse = $this->einstellung()['request'];
-        $request = new $klasse;
-        $request->merge($this->form);
-
-        return $request;
+        return $this->objektForm()->attributeNames('form.');
     }
 
     public function speichern(): void
@@ -414,61 +214,14 @@ class ObjektFormular extends Component
 
         $this->modellbildPruefen();
 
-        $klasse = $this->einstellung()['model'];
-
         $this->pruefungEinschalten();
 
         $daten = $this->validate($this->regeln(), [], $this->feldnamen())['form'];
 
-        // Leere Felder als null, nicht als Leerstring: MySQL lehnt '' fuer eine
-        // date-Spalte ab ("Incorrect date value"), waehrend SQLite es
-        // durchlaesst - in den Tests bleibt das deshalb unsichtbar. Fachlich ist
-        // null ohnehin richtig: kein Wert ist kein leerer Wert.
-        //
-        // Ausser die Spalte laesst kein null zu: height_units etwa ist NOT NULL
-        // mit Standardwert. Dort wird der Schluessel weggelassen, damit die
-        // Datenbank ihren Standard setzt, statt an null zu scheitern.
-        $tabelle = (new $klasse)->getTable();
-        $spalten = collect(Schema::getColumns($tabelle))->keyBy('name');
+        $bisher = $this->bearbeiteId ? $this->objektHolen($this->bearbeiteId) : null;
+        $this->objektForm()->save($daten, $bisher, $this->datei);
 
-        foreach ($daten as $feld => $wert) {
-            if ($wert !== '') {
-                continue;
-            }
-
-            $spalte = $spalten[$feld] ?? null;
-
-            if ($spalte && ! $spalte['nullable']) {
-                unset($daten[$feld]);
-            } else {
-                $daten[$feld] = null;
-            }
-        }
-
-        $daten = $this->dateiAblegen($daten);
-
-        // Not a column - written after the object exists, see below.
-        $hostFelder = collect($this->einstellung()['felder'])->where('type', 'host');
-        $verknuepfungen = collect($this->einstellung()['felder'])->where('type', 'verknuepfung');
-        $daten = array_diff_key($daten, $hostFelder->keyBy('name')->all(), $verknuepfungen->keyBy('name')->all());
-
-        if ($this->bearbeiteId) {
-            $objekt = $this->objektHolen($this->bearbeiteId);
-            $objekt->update($daten);
-            $meldung = $this->einstellung()['einzahl'].' gespeichert.';
-        } else {
-            $relation = $this->einstellung()['relation'];
-            $objekt = $this->kunde()->{$relation}()->create($daten);
-            $meldung = $this->einstellung()['einzahl'].' angelegt.';
-        }
-
-        foreach ($hostFelder as $feld) {
-            $objekt->syncHosts($feld['rolle'], (array) ($this->form[$feld['name']] ?? []));
-        }
-
-        foreach ($verknuepfungen as $feld) {
-            $objekt->{$feld['relation']}()->sync(array_map('intval', (array) ($this->form[$feld['name']] ?? [])));
-        }
+        $meldung = $this->einstellung()['einzahl'].($bisher ? ' gespeichert.' : ' angelegt.');
 
         // Nach dem Geraet, aber vor dem Leeren des Formulars: Die Zuordnung
         // braucht Hersteller und Modell, die dort stehen.
@@ -643,55 +396,6 @@ class ObjektFormular extends Component
         $this->modellbild = null;
     }
 
-    /**
-     * Eine hochgeladene Datei ablegen und ihren Pfad in die Daten schreiben.
-     *
-     * Der Ablageort folgt dem bisherigen Controller: {kunde}/{ordner}/ mit
-     * Zeitstempel im Dateinamen, damit zwei gleichnamige Dateien sich nicht
-     * ueberschreiben. Beim Ersetzen wird die alte geloescht - sonst sammeln
-     * sich Karteileichen auf der Platte, die niemand mehr zuordnen kann.
-     */
-    protected function dateiAblegen(array $daten): array
-    {
-        $feld = collect($this->einstellung()['felder'])->firstWhere('type', 'datei');
-
-        if (! $feld || ! $this->datei) {
-            return $daten;
-        }
-
-        // Bis hierher wurde die Datei ueberhaupt nicht geprueft: weder wie
-        // gross sie ist noch was sie ist. Eine 60-MB-Datei ging durch, eine
-        // .php auch.
-        $this->validate([
-            'datei' => [
-                'file',
-                'max:'.Setting::uploadMaxKb(),
-                'mimes:'.implode(',', Setting::dateiFormate()),
-            ],
-        ], [], ['datei' => __('Datei')]);
-
-        $kunde = $this->kunde();
-
-        // Der Name kommt aus einem Textfeld und die Endung aus dem Browser -
-        // beides bestimmt der Absender. Ungeprueft in den Ablagepfad gesetzt,
-        // schrieb "../../../../fremder-kunde/files/x" die Datei in das
-        // Verzeichnis eines anderen Kunden und ueberschrieb, was dort lag.
-        $dateiname = Dateiname::fuer($this->datei, $daten[$feld['name_feld']] ?? null);
-        $pfad = $this->datei->storeAs($kunde->slug.'/'.$feld['ordner'], $dateiname, 'local');
-
-        if ($this->bearbeiteId) {
-            $alt = $this->objektHolen($this->bearbeiteId)->{$feld['pfad_feld']};
-
-            if ($alt) {
-                Storage::disk('local')->delete($alt);
-            }
-        }
-
-        $daten[$feld['pfad_feld']] = $pfad;
-
-        return $daten;
-    }
-
     protected function seiteNeuLadenWennNoetig(): void
     {
         if ($this->einstellung()['seite_neu_laden'] ?? false) {
@@ -712,30 +416,6 @@ class ObjektFormular extends Component
         $this->dispatch('objekt-gespeichert', typ: $this->typ);
 
         $this->seiteNeuLadenWennNoetig();
-    }
-
-    /**
-     * Beschriftung eines Auswahleintrags. Entweder ein Feldname oder ein Muster
-     * mit Platzhaltern wie "VLAN {vlanId} · {description}".
-     *
-     * Ein Muster statt einer Closure, weil config/forms.php mit
-     * "php artisan config:cache" eingefroren wird - Closures ueberleben das
-     * nicht. Leere Platzhalter fallen mitsamt ihrem Trennzeichen weg, damit
-     * bei einem VLAN ohne Bezeichnung kein einsames Trennzeichen stehen bleibt.
-     */
-    protected function beschriftung($eintrag, string $muster): string
-    {
-        if (! str_contains($muster, '{')) {
-            return (string) $eintrag->{$muster};
-        }
-
-        $text = preg_replace_callback(
-            '/\{(\w+)\}/',
-            fn ($treffer) => (string) ($eintrag->{$treffer[1]} ?? ''),
-            $muster
-        );
-
-        return trim(preg_replace('/\s*·\s*·\s*/', ' · ', trim($text)), " ·\t");
     }
 
     /**
@@ -806,15 +486,7 @@ class ObjektFormular extends Component
         // gegenueber der Seite, die es ersetzt.
         $objekt = $this->bearbeiteId ? $this->objektHolen($this->bearbeiteId) : null;
 
-        $felder = array_map(function (array $feld) {
-            $feld['label'] = match ($feld['name']) {
-                'remoteID' => Setting::fernwartung()['id_label'],
-                'remotePassword' => Setting::fernwartung()['password_label'],
-                default => $feld['label'],
-            };
-
-            return $feld;
-        }, $einstellung['felder']);
+        $felder = $this->objektForm()->displayFields();
 
         return view('livewire.objekt-formular', [
             'objekt' => $objekt,
@@ -846,49 +518,20 @@ class ObjektFormular extends Component
             'kunde' => $this->kunde(),
             // Machines of the customer, only where a 'host' field exists.
             'hosts' => collect($einstellung['felder'])->contains('type', 'host')
-                ? ADDomainHost::options($this->customerId, $this->hostTypen())
+                ? ADDomainHost::options($this->customerId, $this->objektForm()->hostTypes())
                 : [],
             // Options of many-to-many fields, only this customer's entries.
             'verknuepfungen' => collect($einstellung['felder'])
                 ->where('type', 'verknuepfung')
-                ->mapWithKeys(fn ($feld) => [$feld['name'] => $feld['quelle']::where('customer_id', $this->customerId)
-                    ->orderBy($feld['anzeige'])
-                    ->get()
-                    ->mapWithKeys(fn ($eintrag) => [(string) $eintrag->id => $eintrag->{$feld['anzeige']} ?: '#'.$eintrag->id])
-                    ->all()]),
+                ->mapWithKeys(fn ($feld) => [$feld['name'] => $this->objektForm()->linkOptions($feld)]),
             // Nur laden, wenn ein Standortfeld vorkommt.
             'sites' => collect($einstellung['felder'])->contains('type', 'standort')
                 ? Site::where('customer_id', $this->customerId)->orderBy('name')->get()
                 : collect(),
-            // Auswahllisten aus einer Tabelle, z. B. die Postfach-Anbieter. Was
-            // dem Kunden gehoert, wird auf ihn eingeschraenkt; globale Kataloge
-            // wie die Anbieter haben keine customer_id.
+            // Auswahllisten aus einer Tabelle, siehe ObjectForm::selectOptions().
             'auswahlen' => collect($einstellung['felder'])
                 ->where('type', 'auswahl')
-                ->mapWithKeys(function ($feld) {
-                    $klasse = $feld['quelle'];
-                    $abfrage = $klasse::query();
-
-                    if (Schema::hasColumn((new $klasse)->getTable(), 'customer_id')) {
-                        $abfrage->where('customer_id', $this->customerId);
-                    }
-
-                    // Einschraenkung des Typs, z. B. "nur Windows" beim
-                    // Betriebssystem einer Windows-Lizenz: Debian oder Proxmox
-                    // gehoeren dort nicht zur Auswahl.
-                    foreach ($feld['einschraenkung'] ?? [] as [$spalte, $verhaeltnis, $wert]) {
-                        $abfrage->where($spalte, $verhaeltnis, $wert);
-                    }
-
-                    // Sortiert wird nach dem ersten genannten Feld - bei einem
-                    // Muster also nach dem, was vorne steht.
-                    $sortierung = preg_match('/\{(\w+)\}/', $feld['anzeige'], $t)
-                        ? $t[1]
-                        : $feld['anzeige'];
-
-                    return [$feld['name'] => $abfrage->orderBy($sortierung)->get()
-                        ->mapWithKeys(fn ($eintrag) => [$eintrag->id => $this->beschriftung($eintrag, $feld['anzeige'])])];
-                }),
+                ->mapWithKeys(fn ($feld) => [$feld['name'] => collect($this->objektForm()->selectOptions($feld))]),
         ]);
     }
 }
