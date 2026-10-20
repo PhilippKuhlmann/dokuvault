@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.10.20
+
+### Added
+
+- **iOS-App: mehr von der Gerätekarte.** Die Detailansicht liefert jetzt auch die Gruppen eines AD-Benutzers und die Mitglieder einer AD-Gruppe, die Geräte hinter Host-Feldern (Domänencontroller, Zertifizierungsstelle, Entra-Connect-Server, Server/NAS eines Netzlaufwerks – mit Typ und Id zum Weiterspringen), die Dienste von Server und VM, den Fingerprint von SSH-Schlüsseln (am Schlüssel und unter den Zugängen eines Geräts), den Einbauort im Serverschrank und das Support-Ende des Betriebssystems mit Zustand („abgelaufen“, „bald“, „ok“). Alles kommt auch als fertiger Text, sodass eine ältere App es ohne Änderung anzeigt.
+
 ## 26.10.19
 
 ### Added

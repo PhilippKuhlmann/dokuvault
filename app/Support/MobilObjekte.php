@@ -2,7 +2,9 @@
 
 namespace App\Support;
 
+use App\Models\ADDomainHost;
 use App\Models\Customer;
+use App\Models\SshKey;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -22,10 +24,10 @@ use Illuminate\Support\Facades\Gate;
 class MobilObjekte
 {
     /**
-     * Feldarten, die die App nicht zeigt: Dateien und Pfade sind dort nicht zu
-     * oeffnen, die Verknuepfungen und Dienste brauchen eigene Ansichten.
+     * Feldarten, die die App nicht zeigt: Dateien sind dort nicht zu oeffnen,
+     * versteckte Felder sind auch im Browser nicht zu sehen.
      */
-    private const OHNE = ['versteckt', 'datei', 'host', 'dienste', 'verknuepfung'];
+    private const OHNE = ['versteckt', 'datei'];
 
     /** Wie viele Eintraege eine Liste in der App hoechstens bekommt. */
     public const LISTE_HOECHSTENS = 500;
@@ -133,6 +135,44 @@ class MobilObjekte
                 ])->values()->all()
                 : [],
             'zugangsdaten' => $this->zugangsdaten($objekt, $nutzer),
+            'einbauort' => $this->einbauort($objekt),
+            'support_ende' => $this->supportEnde($objekt),
+        ];
+    }
+
+    /** Where the device is fitted - the way back from the rack view. */
+    private function einbauort(Model $objekt): ?array
+    {
+        if (! method_exists($objekt, 'einbauort') || ! ($text = $objekt->einbauort())) {
+            return null;
+        }
+
+        $rack = $objekt->rackItem->rack;
+
+        return ['text' => $text, 'rack_id' => $rack->id, 'kunde' => $this->kunde($rack->customer)];
+    }
+
+    /**
+     * Support end of the operating system with its state, as the badge in
+     * the browser (x-eol): "abgelaufen", "bald" (within the period from the
+     * settings) or "ok". Null without a maintained date.
+     */
+    private function supportEnde(Model $objekt): ?array
+    {
+        $os = method_exists($objekt, 'operatingSystem') ? $objekt->operatingSystem : null;
+
+        if (! $os?->eol_date) {
+            return null;
+        }
+
+        return [
+            'betriebssystem' => $os->name,
+            'datum' => $os->eol_date->toDateString(),
+            'zustand' => match (true) {
+                $os->istEol() => 'abgelaufen',
+                $os->laeuftAus() => 'bald',
+                default => 'ok',
+            },
         ];
     }
 
@@ -178,6 +218,12 @@ class MobilObjekte
             $gruppen[__($feld['gruppe'] ?? 'Allgemein')][] = $eintrag;
         }
 
+        // Derived from the public key and therefore no form field - but the
+        // value one compares on the server (x-fingerprint in the browser).
+        if ($objekt instanceof SshKey && filled($objekt->fingerprint)) {
+            $gruppen[__('Allgemein')][] = ['name' => 'fingerprint', 'label' => __('Fingerprint'), 'art' => 'text', 'wert' => $objekt->fingerprint];
+        }
+
         return collect($gruppen)
             ->map(fn ($eintraege, $titel) => ['titel' => $titel, 'felder' => $eintraege])
             ->values()
@@ -194,6 +240,43 @@ class MobilObjekte
     {
         $name = $feld['name'];
         $label = __($feld['label']);
+
+        // No column behind these three. They go out as plain text, so the app
+        // shows them without knowing them; "verweise" and "liste" carry the
+        // parts for a jump to the device or a folded list.
+        if ($feld['type'] === 'host') {
+            $verweise = $this->hostVerweise($objekt, $feld['rolle']);
+
+            return $verweise ? [
+                'name' => $name, 'label' => $label, 'art' => 'text',
+                'wert' => collect($verweise)->pluck('name')->implode(', '),
+                'verweise' => $verweise,
+            ] : null;
+        }
+
+        if ($feld['type'] === 'verknuepfung') {
+            $namen = $objekt->{$feld['relation']}
+                ->pluck($feld['anzeige'] ?? 'name')
+                ->filter()
+                ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+                ->values();
+
+            return $namen->isNotEmpty() ? [
+                'name' => $name, 'label' => $label, 'art' => 'text',
+                'wert' => $namen->implode(', '),
+                'liste' => $namen->all(),
+            ] : null;
+        }
+
+        if ($feld['type'] === 'dienste') {
+            $dienste = array_values(array_filter((array) $objekt->getAttribute($name), 'filled'));
+
+            return $dienste ? [
+                'name' => $name, 'label' => $label, 'art' => 'text',
+                'wert' => implode(' · ', $dienste),
+                'liste' => $dienste,
+            ] : null;
+        }
 
         if ($this->istGeheim($name)) {
             // Den Rohwert pruefen, nicht den entschluesselten: Die Frage ist
@@ -251,6 +334,26 @@ class MobilObjekte
         return true;
     }
 
+    /**
+     * The machines behind a 'host' field, to open with /objects/{typ}/{id}.
+     * The form keys ("server:5") carry the type already - the same slugs as
+     * the app's types. A machine in the trash drops out, as in the browser.
+     */
+    private function hostVerweise(Model $objekt, string $rolle): array
+    {
+        return collect($objekt->hostKeys($rolle))
+            ->map(function (string $schluessel) {
+                [$typ, $id] = array_pad(explode(':', $schluessel, 2), 2, null);
+                $klasse = ADDomainHost::TYPES[$typ] ?? null;
+                $geraet = $klasse ? $klasse::find($id) : null;
+
+                return $geraet ? ['typ' => $typ, 'id' => $geraet->getKey(), 'name' => $geraet->name] : null;
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
     /** Fuer Objekte ohne Formular (Schrank, Patchfeld, Dose): die Spalten selbst. */
     private function gruppenOhneFormular(Model $objekt): array
     {
@@ -292,6 +395,8 @@ class MobilObjekte
                 'art' => $link->login->istSchluessel() ? 'schluessel' : 'kennwort',
                 'notiz' => $link->note,
                 'hat_kennwort' => filled($link->login->getRawOriginal('password')),
+                // The value one compares on the server; null for a password.
+                'fingerprint' => $link->login->istSchluessel() ? $link->login->fingerprint : null,
             ])
             ->values()
             ->all();

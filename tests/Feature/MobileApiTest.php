@@ -1,13 +1,16 @@
 <?php
 
+use App\Models\ADDomain;
 use App\Models\ADGroup;
 use App\Models\ADUser;
 use App\Models\Customer;
 use App\Models\LoginGeneral;
 use App\Models\OperatingSystem;
+use App\Models\Rack;
 use App\Models\Server;
 use App\Models\Setting;
 use App\Models\Site;
+use App\Models\SshKey;
 use App\Models\User;
 use App\Support\MobilObjekte;
 use App\Support\ZweiteStufe;
@@ -449,4 +452,108 @@ test('ein Kundennutzer holt kein Geheimnis eines fremden Geraets', function () {
     $this->withToken(mobilToken(mobilNutzer(['server_viewAny'], $eigener)))
         ->postJson('/api/mobile/objects/server/'.$server->id.'/secret/bmcPassword')
         ->assertNotFound();
+});
+
+// --- Was ueber die Formularfelder hinausgeht -----------------------------------
+
+/** Die Felder der Detailansicht, nach Name. */
+function mobilFelder($antwort)
+{
+    return collect($antwort->json('gruppen'))->flatMap(fn ($gruppe) => $gruppe['felder'])->keyBy('name');
+}
+
+test('AD-Benutzer und -Gruppen zeigen ihre Verknuepfungen', function () {
+    $kunde = Customer::factory()->create();
+    $benutzer = ADUser::create(['customer_id' => $kunde->id, 'username' => 'max.muster', 'enabled' => true]);
+    $gruppen = collect(['GG-Vertrieb', 'GG-Buchhaltung'])
+        ->map(fn ($name) => ADGroup::create(['customer_id' => $kunde->id, 'name' => $name]));
+    $benutzer->groups()->sync($gruppen->pluck('id'));
+    $token = mobilToken(mobilNutzer(['aduser_viewAny', 'adgroup_viewAny']));
+
+    $felder = mobilFelder($this->withToken($token)->getJson('/api/mobile/objects/aduser/'.$benutzer->id)->assertOk());
+
+    // Als Text, damit die App sie ohne Aenderung zeigt; die Liste zum Falten.
+    expect($felder['groups']['art'])->toBe('text')
+        ->and($felder['groups']['wert'])->toBe('GG-Buchhaltung, GG-Vertrieb')
+        ->and($felder['groups']['liste'])->toBe(['GG-Buchhaltung', 'GG-Vertrieb']);
+
+    $felder = mobilFelder($this->withToken($token)->getJson('/api/mobile/objects/adgroup/'.$gruppen[0]->id)->assertOk());
+
+    expect($felder['users']['liste'])->toBe(['max.muster']);
+});
+
+test('ein Host-Feld verweist auf das Geraet', function () {
+    $kunde = Customer::factory()->create();
+    $server = mobilServer($kunde, 'SRV-DC01');
+    $domaene = ADDomain::factory()->create(['customer_id' => $kunde->id]);
+    $domaene->syncHosts('dc', ['server:'.$server->id]);
+
+    $felder = mobilFelder($this->withToken(mobilToken(mobilNutzer(['addomain_viewAny'])))
+        ->getJson('/api/mobile/objects/addomain/'.$domaene->id)
+        ->assertOk());
+
+    expect($felder['domain_controllers']['wert'])->toBe('SRV-DC01')
+        ->and($felder['domain_controllers']['verweise'])->toBe([['typ' => 'server', 'id' => $server->id, 'name' => 'SRV-DC01']]);
+});
+
+test('Dienste kommen als eine Zeile', function () {
+    $server = mobilServer(Customer::factory()->create());
+    $server->forceFill(['services' => 'AD,DNS,DHCP'])->save();
+
+    $felder = mobilFelder($this->withToken(mobilToken(mobilNutzer(['server_viewAny'])))
+        ->getJson('/api/mobile/objects/server/'.$server->id)
+        ->assertOk());
+
+    expect($felder['services']['wert'])->toBe('AD · DNS · DHCP');
+});
+
+test('der Fingerprint steht am Schluessel und unter den Zugaengen', function () {
+    $server = mobilServer(Customer::factory()->create());
+    $schluessel = SshKey::create([
+        'customer_id' => $server->customer_id, 'name' => 'Admin ed25519', 'username' => 'root',
+        'key_type' => 'ed25519', 'public_key' => 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExample admin@buero',
+    ]);
+    $server->credentialLinks()->create(['customer_id' => $server->customer_id, 'login_general_id' => $schluessel->id]);
+    $token = mobilToken(mobilNutzer(['server_viewAny', 'sshkey_viewAny']));
+
+    $this->withToken($token)->getJson('/api/mobile/objects/server/'.$server->id)
+        ->assertOk()
+        ->assertJsonPath('zugangsdaten.0.art', 'schluessel')
+        ->assertJsonPath('zugangsdaten.0.fingerprint', $schluessel->fingerprint);
+
+    $felder = mobilFelder($this->withToken($token)->getJson('/api/mobile/objects/sshkey/'.$schluessel->id)->assertOk());
+
+    expect($felder['fingerprint']['wert'])->toStartWith('SHA256:');
+});
+
+test('ein eingebautes Geraet nennt seinen Schrank', function () {
+    $kunde = Customer::factory()->create();
+    $server = mobilServer($kunde);
+    $rack = Rack::create(['customer_id' => $kunde->id, 'site_id' => $server->site_id, 'name' => 'Rack HH-01', 'height_units' => 42]);
+    $rack->items()->create(['side' => 'front', 'position' => 3, 'height_units' => 2, 'device_type' => Server::class, 'device_id' => $server->id]);
+
+    $this->withToken(mobilToken(mobilNutzer(['server_viewAny'])))
+        ->getJson('/api/mobile/objects/server/'.$server->id)
+        ->assertOk()
+        ->assertJsonPath('einbauort.text', 'Rack HH-01 · HE 3–4 · Vorderseite')
+        ->assertJsonPath('einbauort.rack_id', $rack->id)
+        ->assertJsonPath('einbauort.kunde.slug', $kunde->slug);
+});
+
+test('das Support-Ende kommt mit seinem Zustand', function () {
+    $server = mobilServer(Customer::factory()->create());
+    $server->operatingSystem->update(['eol_date' => now()->subMonth()->toDateString()]);
+    $token = mobilToken(mobilNutzer(['server_viewAny']));
+
+    $this->withToken($token)->getJson('/api/mobile/objects/server/'.$server->id)
+        ->assertOk()
+        ->assertJsonPath('support_ende.zustand', 'abgelaufen')
+        ->assertJsonPath('support_ende.betriebssystem', 'Debian 13');
+
+    $server->operatingSystem->update(['eol_date' => null]);
+
+    $this->withToken($token)->getJson('/api/mobile/objects/server/'.$server->id)
+        ->assertOk()
+        ->assertJsonPath('support_ende', null)
+        ->assertJsonPath('einbauort', null);
 });
