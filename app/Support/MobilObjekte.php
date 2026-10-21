@@ -4,6 +4,8 @@ namespace App\Support;
 
 use App\Models\ADDomainHost;
 use App\Models\Customer;
+use App\Models\Scanner;
+use App\Models\ScanTarget;
 use App\Models\SshKey;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -65,6 +67,23 @@ class MobilObjekte
             $this->typen(),
             fn ($typ) => Gate::forUser($nutzer)->allows($typ[1].'_viewAny'),
         );
+    }
+
+    /**
+     * Whether the app may offer "new" for a type: the right to create, and a
+     * way to do it - a form type (ObjectController), the rack or the patch
+     * panel. A network outlet comes with its panel; a button there would
+     * lead nowhere.
+     */
+    public function darfAnlegen(User $nutzer, string $slug): bool
+    {
+        $typ = $this->typen()[$slug] ?? null;
+
+        if ($typ === null || ($typ[2] === null && ! in_array($slug, ['rack', 'patchpanel'], true))) {
+            return false;
+        }
+
+        return Gate::forUser($nutzer)->allows($typ[1].'_create');
     }
 
     /** Mehrzahl fuer Ueberschriften, wie in der Seitenleiste. */
@@ -129,6 +148,9 @@ class MobilObjekte
                 : $this->gruppenOhneFormular($objekt),
             'ip_adressen' => method_exists($objekt, 'ipAddresses')
                 ? $objekt->ipAddresses()->with('network')->get()->map(fn ($ip) => [
+                    // id and dhcp to remove it again (DeviceController).
+                    'id' => $ip->id,
+                    'dhcp' => (bool) $ip->dhcp,
                     'adresse' => $ip->anzeige(),
                     'bezeichnung' => $ip->label,
                     'netz' => $ip->network?->protokollName(),
@@ -137,6 +159,22 @@ class MobilObjekte
             'zugangsdaten' => $this->zugangsdaten($objekt, $nutzer),
             'einbauort' => $this->einbauort($objekt),
             'support_ende' => $this->supportEnde($objekt),
+            'scan_ziele' => $objekt instanceof Scanner
+                ? $objekt->scanTargets()->with('login')->get()->map(fn ($ziel) => $this->scanZiel($ziel))->values()->all()
+                : [],
+        ];
+    }
+
+    /** A scan target of a scanner - where it scans to, and with which login. */
+    public function scanZiel(ScanTarget $ziel): array
+    {
+        return [
+            'id' => $ziel->id,
+            'name' => $ziel->name,
+            'art' => $ziel->kind,
+            'art_label' => __(ScanTarget::ARTEN[$ziel->kind] ?? ScanTarget::ARTEN['other']),
+            'ziel' => $ziel->target,
+            'login' => $ziel->login ? ['id' => $ziel->login->id, 'name' => $ziel->login->name] : null,
         ];
     }
 

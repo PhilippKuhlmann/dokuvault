@@ -6,7 +6,9 @@ use App\Http\Controllers\API\ChecklistReportController;
 use App\Http\Controllers\API\CustomerController;
 use App\Http\Controllers\API\Mobile\AnmeldungController;
 use App\Http\Controllers\API\Mobile\DatenController;
+use App\Http\Controllers\API\Mobile\DeviceController;
 use App\Http\Controllers\API\Mobile\ObjectController;
+use App\Http\Controllers\API\Mobile\PatchPanelController as MobilePatchPanelController;
 use App\Http\Controllers\API\Mobile\RackController as MobileRackController;
 use App\Http\Controllers\API\ServerController;
 use App\Http\Controllers\API\SiteController;
@@ -101,8 +103,35 @@ Route::prefix('mobile')->group(function () {
         Route::middleware('isCustomer')->group(function () {
             Route::get('/customers/{customer}/forms/{typ}', [ObjectController::class, 'createForm']);
             Route::post('/customers/{customer}/forms/{typ}/generate', [ObjectController::class, 'generate']);
-            Route::post('/customers/{customer}/{typ}', [ObjectController::class, 'store']);
+            // Only form types: "/{typ}" would otherwise catch "patchpanels"
+            // and every other fixed path below the customer.
+            Route::post('/customers/{customer}/{typ}', [ObjectController::class, 'store'])->whereIn('typ', array_keys(config('forms')));
         });
+        // Patch panels: like the racks, no form of their own - the list is
+        // the "patchpanel" type, these create, edit and label the ports.
+        Route::prefix('/customers/{customer}/patchpanels')->middleware('isCustomer')->scopeBindings()->group(function () {
+            Route::post('/', [MobilePatchPanelController::class, 'store']);
+            Route::get('/{patchpanel}', [MobilePatchPanelController::class, 'show']);
+            Route::put('/{patchpanel}', [MobilePatchPanelController::class, 'update']);
+            Route::delete('/{patchpanel}', [MobilePatchPanelController::class, 'destroy']);
+            Route::put('/{patchpanel}/ports', [MobilePatchPanelController::class, 'updatePorts']);
+        });
+
+        // What hangs on a device: credentials, IP addresses, scan targets.
+        Route::prefix('/objects/{typ}/{id}')->whereNumber('id')->group(function () {
+            Route::get('/credentials', [DeviceController::class, 'credentials']);
+            Route::post('/credentials', [DeviceController::class, 'attachCredential']);
+            Route::delete('/credentials/{link}', [DeviceController::class, 'detachCredential'])->whereNumber('link');
+            Route::get('/ip-addresses', [DeviceController::class, 'ipAddresses']);
+            Route::post('/ip-addresses', [DeviceController::class, 'addIpAddress']);
+            Route::delete('/ip-addresses/{ip}', [DeviceController::class, 'removeIpAddress'])->whereNumber('ip');
+        });
+        Route::prefix('/objects/scanner/{id}/scan-targets')->whereNumber('id')->group(function () {
+            Route::get('/', [DeviceController::class, 'scanTargets']);
+            Route::post('/', [DeviceController::class, 'addScanTarget']);
+            Route::delete('/{ziel}', [DeviceController::class, 'removeScanTarget'])->whereNumber('ziel');
+        });
+
         Route::get('/objects/{typ}/{id}/form', [ObjectController::class, 'editForm'])->whereNumber('id');
         Route::match(['put', 'patch', 'post'], '/objects/{typ}/{id}', [ObjectController::class, 'update'])->whereNumber('id');
         Route::delete('/objects/{typ}/{id}', [ObjectController::class, 'destroy'])->whereNumber('id');

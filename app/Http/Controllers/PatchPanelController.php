@@ -55,19 +55,9 @@ class PatchPanelController extends Controller
 
         $data = $request->validated();
 
-        // Portanzahl verkleinern wuerde die oberen Portzeilen loeschen. Solange
-        // dort etwas dokumentiert ist, lieber ablehnen als still verwerfen.
-        $betroffen = $patchpanel->documentedPortsAbove((int) $data['port_count']);
-        if ($betroffen) {
-            // "Port 5 ist" vs. "Ports 5, 6 und 12 sind"
-            $liste = count($betroffen) === 1
-                ? 'Port '.$betroffen[0].' ist'
-                : 'Ports '.implode(', ', array_slice($betroffen, 0, -1)).' und '.end($betroffen).' sind';
-
-            return back()->withErrors([
-                'port_count' => 'Die Portanzahl kann nicht auf '.$data['port_count'].' verkleinert werden – '
-                    .$liste.' noch dokumentiert.',
-            ])->withInput();
+        $fehler = $patchpanel->shrinkError((int) $data['port_count']);
+        if ($fehler) {
+            return back()->withErrors(['port_count' => $fehler])->withInput();
         }
 
         $patchpanel->update($data);

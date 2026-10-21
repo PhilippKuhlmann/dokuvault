@@ -7,9 +7,8 @@ use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
 use App\Models\LoginGeneral;
 use App\Models\Scanner;
 use App\Models\ScanTarget;
-use App\Rules\BelongsToCustomer;
+use App\Support\ScanTargetLinking;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -53,27 +52,12 @@ class ScanTargets extends Component
 
     protected function regeln(): array
     {
-        if (! $this->neu) {
-            return [
-                'zielId' => ['required', Rule::exists('scan_targets', 'id')
-                    ->where('customer_id', $this->customerId)->whereNull('deleted_at')],
-            ];
-        }
-
-        return [
-            'name' => ['nullable', 'max:255'],
-            'kind' => ['required', Rule::in(array_keys(ScanTarget::ARTEN))],
-            'target' => ['required', 'max:255'],
-            'login_general_id' => ['nullable', new BelongsToCustomer('login_generals', $this->customerId)],
-        ];
+        return app(ScanTargetLinking::class)->rules($this->customerId, $this->neu);
     }
 
     protected function feldnamen(): array
     {
-        return [
-            'zielId' => __('Scan-Ziel'), 'name' => __('Bezeichnung'), 'kind' => __('Art'),
-            'target' => __('Ziel'), 'login_general_id' => __('Zugangsdaten'),
-        ];
+        return app(ScanTargetLinking::class)->attributeNames();
     }
 
     public function mount($model, $customer, bool $eingebettet = false, bool $randlos = false): void
@@ -122,17 +106,7 @@ class ScanTargets extends Component
         $this->pruefungEinschalten();
         $validated = $this->validate($this->regeln(), [], $this->feldnamen());
 
-        $ziel = $this->neu
-            ? ScanTarget::create([
-                'customer_id' => $this->customerId,
-                'name' => $validated['name'] ?: null,
-                'kind' => $validated['kind'],
-                'target' => $validated['target'],
-                'login_general_id' => $validated['login_general_id'] ?: null,
-            ])
-            : ScanTarget::findOrFail($validated['zielId']);
-
-        $scanner->scanTargets()->syncWithoutDetaching([$ziel->id]);
+        app(ScanTargetLinking::class)->add($scanner, $validated, $this->neu);
 
         // Die Art bleibt stehen: Wer zwanzig Ordner eintraegt, will sie nicht
         // zwanzigmal neu waehlen.
@@ -142,7 +116,7 @@ class ScanTargets extends Component
 
     public function remove(int $id): void
     {
-        $this->scanner()->scanTargets()->detach($id);
+        app(ScanTargetLinking::class)->remove($this->scanner(), $id);
         $this->dispatch('geraet-geaendert');
     }
 

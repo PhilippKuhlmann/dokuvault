@@ -79,6 +79,7 @@ class DatenController extends Controller
             'titel' => $this->objekte->titel($typ),
             'eintraege' => $zeilen,
             'weitere' => $objekte->count() > MobilObjekte::LISTE_HOECHSTENS,
+            'darf_anlegen' => $this->objekte->darfAnlegen($request->user(), $typ),
         ]);
     }
 

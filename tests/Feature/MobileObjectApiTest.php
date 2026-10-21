@@ -264,3 +264,36 @@ test('ohne Erzeuger gibt es nichts zu erzeugen', function () {
         ->postJson("/api/mobile/customers/{$kunde->slug}/forms/server/generate")
         ->assertNotFound();
 });
+
+// --- Liste ---------------------------------------------------------------------
+
+test('die Liste sagt, ob die App anlegen darf', function () {
+    $kunde = Customer::factory()->create();
+
+    $this->withToken(objektAppToken(['server_viewAny', 'server_create']))
+        ->getJson("/api/mobile/customers/{$kunde->slug}/server")
+        ->assertOk()
+        ->assertJsonPath('darf_anlegen', true);
+});
+
+test('ohne Anlegen-Recht kein Plus', function () {
+    $kunde = Customer::factory()->create();
+
+    $this->withToken(objektAppToken(['server_viewAny']))
+        ->getJson("/api/mobile/customers/{$kunde->slug}/server")
+        ->assertOk()
+        ->assertJsonPath('darf_anlegen', false);
+});
+
+test('Schrank und Patchfeld haben einen Anlege-Weg, die Netzwerkdose nicht', function () {
+    $kunde = Customer::factory()->create();
+    $token = objektAppToken(['rack_viewAny', 'rack_create', 'patchpanel_viewAny', 'patchpanel_create']);
+
+    $this->withToken($token)->getJson("/api/mobile/customers/{$kunde->slug}/rack")
+        ->assertOk()->assertJsonPath('darf_anlegen', true);
+    $this->withToken($token)->getJson("/api/mobile/customers/{$kunde->slug}/patchpanel")
+        ->assertOk()->assertJsonPath('darf_anlegen', true);
+    // Eine Dose entsteht mit ihrem Patchfeld - ein Plus dort fuehrte ins Leere.
+    $this->withToken($token)->getJson("/api/mobile/customers/{$kunde->slug}/patchport")
+        ->assertOk()->assertJsonPath('darf_anlegen', false);
+});

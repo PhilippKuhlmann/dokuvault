@@ -6,10 +6,9 @@ use App\Livewire\Concerns\GehoertZumKunden;
 use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
 use App\Models\Customer;
 use App\Models\LoginGeneral;
-use App\Models\SshKey;
+use App\Support\CredentialLinking;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -67,32 +66,17 @@ class DeviceCredentials extends Component
      */
     protected function regeln(): array
     {
+        $verknuepfung = app(CredentialLinking::class);
+
         return [
-            // Kundengebunden geprüft: sonst hängt man sich mit einer geratenen ID
-            // fremde Zugangsdaten an das eigene Gerät.
-            'login_id' => ['required', Rule::exists('login_generals', 'id')
-                ->where('customer_id', $this->customerId)
-                // Nur die Arten, die dieser Benutzer sehen darf: sonst haengt
-                // er mit einer geratenen Id einen Schluessel an, den er in
-                // seiner eigenen Liste gar nicht zu sehen bekaeme.
-                ->whereIn('kind', $this->sichtbareArten())
-                ->whereNull('deleted_at')],
-            'name' => ['required', 'max:255'],
-            'username' => ['nullable', 'max:255'],
-            'password' => ['nullable', 'max:255'],
-            'note' => ['nullable', 'max:255'],
+            ...$verknuepfung->attachRules($this->customerId, auth()->user()),
+            ...$verknuepfung->createRules(),
         ];
     }
 
     protected function feldnamen(): array
     {
-        return [
-            'login_id' => __('Zugangsdaten'),
-            'name' => __('Bezeichnung'),
-            'username' => __('Benutzername'),
-            'password' => __('Kennwort'),
-            'note' => __('Notiz'),
-        ];
+        return app(CredentialLinking::class)->attributeNames();
     }
 
     public function mount($model, $customer, bool $eingebettet = false, bool $randlos = false): void
@@ -126,10 +110,7 @@ class DeviceCredentials extends Component
      */
     protected function sichtbareArten(): array
     {
-        return collect([
-            LoginGeneral::KIND => 'logingeneral_viewAny',
-            SshKey::KIND => 'sshkey_viewAny',
-        ])->filter(fn ($recht) => Gate::allows($recht))->keys()->all();
+        return app(CredentialLinking::class)->visibleKinds(auth()->user());
     }
 
     protected function device()
@@ -175,14 +156,8 @@ class DeviceCredentials extends Component
             Arr::only($this->regeln(), ['name', 'username', 'password', 'note']), [], $this->feldnamen()
         );
 
-        $login = LoginGeneral::create([
-            'customer_id' => $this->customerId,
-            'name' => $validated['name'],
-            'username' => $validated['username'] ?: null,
-            'password' => $validated['password'] ?: null,
-        ]);
-
-        $this->verknuepfen($device, $login->id, $validated['note']);
+        app(CredentialLinking::class)->create($device, $validated);
+        $this->reset('login_id', 'note');
         $this->reset('name', 'username', 'password', 'neu');
         // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
         // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
@@ -192,10 +167,7 @@ class DeviceCredentials extends Component
     /** Doppelte Verknüpfungen still übergehen - der Unique-Index würde sonst 500 werfen. */
     protected function verknuepfen($device, int $loginId, ?string $note): void
     {
-        $device->credentialLinks()->firstOrCreate(
-            ['login_general_id' => $loginId],
-            ['customer_id' => $this->customerId, 'note' => $note ?: null],
-        );
+        app(CredentialLinking::class)->attach($device, $loginId, $note);
 
         $this->reset('login_id', 'note');
     }
@@ -205,7 +177,7 @@ class DeviceCredentials extends Component
     {
         $device = $this->device();
 
-        $device->credentialLinks()->whereKey($id)->delete();
+        app(CredentialLinking::class)->detach($device, $id);
         // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
         // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
         $this->dispatch('geraet-geaendert');

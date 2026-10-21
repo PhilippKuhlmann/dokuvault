@@ -5,8 +5,8 @@ namespace App\Livewire;
 use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
 use App\Models\NetworkSwitch;
 use App\Models\PatchPanel;
+use App\Support\PatchPortEditing;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -49,20 +49,14 @@ class PatchPanelPorts extends Component
      */
     protected function regeln(): array
     {
+        $regeln = app(PatchPortEditing::class)->rules($this->customerId);
+
         return [
-            // Schreibweise ist je Kunde verschieden ("EG 1.01", "A.12", "2.23") -
-            // deshalb kein Format erzwingen, nur die Laenge begrenzen.
-            'outlet.*' => 'nullable|string|max:50',
-            'label.*' => 'nullable|string|max:255',
-            'switchPort.*' => 'nullable|string|max:50',
-            'note.*' => 'nullable|string|max:255',
-            // Kundengebunden: der Switch eines fremden Kunden wird abgelehnt.
-            'switchId.*' => [
-                'nullable',
-                Rule::exists('network_switches', 'id')
-                    ->where('customer_id', $this->customerId)
-                    ->whereNull('deleted_at'),
-            ],
+            'outlet.*' => $regeln['outlet'],
+            'label.*' => $regeln['label'],
+            'switchPort.*' => $regeln['switch_port'],
+            'note.*' => $regeln['note'],
+            'switchId.*' => $regeln['network_switch_id'],
         ];
     }
 
@@ -109,15 +103,13 @@ class PatchPanelPorts extends Component
 
         $this->validate($this->regeln(), [], $this->fehlerNamen($ports));
 
-        foreach ($ports as $id => $port) {
-            $port->update([
-                'outlet' => $this->leerZuNull($this->outlet[$id] ?? null),
-                'label' => $this->leerZuNull($this->label[$id] ?? null),
-                'network_switch_id' => $this->leerZuNull($this->switchId[$id] ?? null),
-                'switch_port' => $this->leerZuNull($this->switchPort[$id] ?? null),
-                'note' => $this->leerZuNull($this->note[$id] ?? null),
-            ]);
-        }
+        app(PatchPortEditing::class)->save($panel, $ports->map(fn ($port, $id) => [
+            'outlet' => $this->outlet[$id] ?? null,
+            'label' => $this->label[$id] ?? null,
+            'network_switch_id' => $this->switchId[$id] ?? null,
+            'switch_port' => $this->switchPort[$id] ?? null,
+            'note' => $this->note[$id] ?? null,
+        ])->all());
 
         $this->saved = true;
     }
@@ -190,10 +182,7 @@ class PatchPanelPorts extends Component
     public function clearPort(int $portId): void
     {
         $panel = $this->panel();
-        $panel->ports()->whereKey($portId)->update([
-            'outlet' => null, 'label' => null,
-            'network_switch_id' => null, 'switch_port' => null, 'note' => null,
-        ]);
+        app(PatchPortEditing::class)->clear($panel, $portId);
 
         $this->outlet[$portId] = null;
         $this->label[$portId] = null;
@@ -215,11 +204,6 @@ class PatchPanelPorts extends Component
         }
 
         return $namen;
-    }
-
-    private function leerZuNull($wert)
-    {
-        return $wert === '' ? null : $wert;
     }
 
     public function render()

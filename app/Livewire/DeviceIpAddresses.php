@@ -6,9 +6,8 @@ use App\Livewire\Concerns\GehoertZumKunden;
 use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
 use App\Models\Customer;
 use App\Models\Network;
+use App\Support\IpAssignment;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Unique;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -91,33 +90,15 @@ class DeviceIpAddresses extends Component
     /** Im Modal bringt der Rahmen das Padding mit - dann keins vom Block. */
     public bool $randlos = false;
 
-    /** Eine Quelle fuer das Anlegen und fuer die Pruefung waehrend der Eingabe. */
+    /** Eine Quelle fuer das Anlegen und fuer die Pruefung waehrend der Eingabe, siehe IpAssignment. */
     protected function regeln(): array
     {
-        return [
-            // Eine Adresse gibt es beim selben Kunden nur einmal. Vorher liess
-            // sich dieselbe IP zweimal am selben Geraet und zusaetzlich an
-            // einem zweiten eintragen - danach stand in der Doku, sie gehoere
-            // zu beiden, und der IP-Plan zeigte sie doppelt als belegt.
-            // Bei DHCP keine Adresse: Welche das Geraet gerade hat, ist
-            // morgen eine andere. Dafuer dann das Netz - ohne es saehe die
-            // Zuordnung so aus: "haengt irgendwo per DHCP", und das hilft
-            // niemandem.
-            'address' => $this->dhcp
-                ? ['nullable', 'prohibited']
-                : ['required', 'ip', $this->nochNichtVergeben()],
-            'network_id' => [
-                $this->dhcp ? 'required' : 'nullable',
-                Rule::exists('networks', 'id')->where('customer_id', $this->customerId),
-            ],
-            'label' => ['nullable', 'max:255'],
-            'dhcp' => ['boolean'],
-        ];
+        return app(IpAssignment::class)->rules($this->customerId, $this->dhcp);
     }
 
     protected function feldnamen(): array
     {
-        return ['address' => __('Adresse'), 'network_id' => __('Netz'), 'label' => __('Bezeichnung'), 'dhcp' => __('DHCP')];
+        return app(IpAssignment::class)->attributeNames();
     }
 
     public function mount($model, $customer, bool $eingebettet = false, bool $randlos = false): void
@@ -153,36 +134,15 @@ class DeviceIpAddresses extends Component
         return $device;
     }
 
-    /**
-     * Die Adresse darf beim Kunden noch nicht vergeben sein.
-     *
-     * Geloeschte Eintraege zaehlen nicht mit: Was im Papierkorb liegt, belegt
-     * keine Adresse - sonst blieben Adressen nach dem Aufraeumen gesperrt.
-     */
-    protected function nochNichtVergeben(): Unique
-    {
-        return Rule::unique('ip_addresses', 'address')
-            ->where('customer_id', $this->customerId)
-            ->whereNull('deleted_at');
-    }
-
     public function add(): void
     {
         $device = $this->device();
 
         $this->pruefungEinschalten();
 
-        $validated = $this->validate($this->regeln(), [
-            'address.unique' => __('Diese Adresse ist bei diesem Kunden schon vergeben.'),
-        ], $this->feldnamen());
+        $validated = $this->validate($this->regeln(), app(IpAssignment::class)->messages(), $this->feldnamen());
 
-        $device->ipAddresses()->create([
-            'customer_id' => $this->customerId,
-            'network_id' => $validated['network_id'] ?: null,
-            'address' => $this->dhcp ? null : $validated['address'],
-            'label' => $validated['label'] ?: null,
-            'dhcp' => $this->dhcp,
-        ]);
+        app(IpAssignment::class)->add($device, $validated, $this->dhcp);
 
         $this->reset('address', 'network_id', 'label', 'dhcp');
         // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
@@ -211,7 +171,7 @@ class DeviceIpAddresses extends Component
     {
         $device = $this->device();
 
-        $device->ipAddresses()->whereKey($id)->delete();
+        app(IpAssignment::class)->remove($device, $id);
         // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
         // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
         $this->dispatch('geraet-geaendert');

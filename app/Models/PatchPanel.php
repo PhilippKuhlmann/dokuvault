@@ -26,6 +26,11 @@ class PatchPanel extends Model
         return $this->belongsTo(Customer::class);
     }
 
+    public function site()
+    {
+        return $this->belongsTo(Site::class);
+    }
+
     public function ports()
     {
         return $this->hasMany(PatchPort::class)->orderBy('number');
@@ -68,5 +73,27 @@ class PatchPanel extends Model
             ->filter(fn (PatchPort $port) => $port->isDocumented())
             ->pluck('number')
             ->all();
+    }
+
+    /**
+     * Why the port count cannot shrink to $portCount, or null if it can.
+     *
+     * Verkleinern wuerde die oberen Portzeilen loeschen. Solange dort etwas
+     * dokumentiert ist, lieber ablehnen als still verwerfen.
+     */
+    public function shrinkError(int $portCount): ?string
+    {
+        $betroffen = $this->documentedPortsAbove($portCount);
+
+        if (! $betroffen) {
+            return null;
+        }
+
+        // "Port 5 ist" vs. "Ports 5, 6 und 12 sind"
+        $liste = count($betroffen) === 1
+            ? 'Port '.$betroffen[0].' ist'
+            : 'Ports '.implode(', ', array_slice($betroffen, 0, -1)).' und '.end($betroffen).' sind';
+
+        return 'Die Portanzahl kann nicht auf '.$portCount.' verkleinert werden – '.$liste.' noch dokumentiert.';
     }
 }

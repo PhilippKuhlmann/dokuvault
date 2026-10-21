@@ -74,7 +74,7 @@ Kunde  = { slug, name }
 |---|---|---|
 | GET | `customers?suche=` | `[Kunde]` (max. 500; Kundennutzer: nur der eigene) |
 | GET | `customers/{slug}` | `{slug, name, typen: [{typ, titel, anzahl}]}` (nur Typen mit `anzahl > 0`) |
-| GET | `customers/{slug}/{typ}` | `{typ, titel, eintraege: [ObjektKurz], weitere: bool}` |
+| GET | `customers/{slug}/{typ}` | `{typ, titel, eintraege: [ObjektKurz], weitere: bool, darf_anlegen: bool}` |
 | GET | `search?q=` | `[{typ, titel, weitere: int, treffer: [ObjektKurz]}]` |
 | GET | `objects/{typ}/{id}` | `ObjektDetail` |
 | POST | `objects/{typ}/{id}/secret/{feld}` | `{wert}` / 404 „Kein Kennwort hinterlegt.“ |
@@ -86,11 +86,15 @@ ObjektKurz   = { typ, id, name, untertitel|null, kunde: Kunde|null }
 ObjektDetail = ObjektKurz + {
   einzahl,
   gruppen:      [{ titel, felder: [Feld] }],
-  ip_adressen:  [{ adresse, bezeichnung|null, netz|null }],
+  ip_adressen:  [{ id, dhcp: bool, adresse, bezeichnung|null, netz|null }],
   zugangsdaten: [Zugang],
   einbauort:    { text, rack_id, kunde: Kunde } | null,
-  support_ende: { betriebssystem, datum, zustand: "abgelaufen"|"bald"|"ok" } | null
+  support_ende: { betriebssystem, datum, zustand: "abgelaufen"|"bald"|"ok" } | null,
+  scan_ziele:   [ScanZiel]                                 // nur beim Scanner gefüllt, sonst []
 }
+
+ScanZiel = { id, name|null, art: "smb"|"email"|"ftp"|"cloud"|"other", art_label,
+             ziel, login: { id, name } | null }
 
 Feld = {
   name, label,
@@ -105,6 +109,12 @@ Zugang = { id (= link_id), name, benutzer|null, art: "kennwort"|"schluessel",
 ```
 
 Leere Felder werden **nicht** ausgeliefert.
+
+`darf_anlegen` ist `true`, wenn der Nutzer das Recht `{typ}_create` hat **und**
+es in der App einen Weg zum Anlegen gibt: Formular-Typen (`customers/{slug}/forms/{typ}`)
+`rack` (`POST customers/{slug}/racks`) und `patchpanel`
+(`POST customers/{slug}/patchpanels`). Für Netzwerkdosen (`patchport`) usw.
+immer `false` – eine Dose entsteht mit ihrem Patchfeld.
 
 **Bewusste Lücke – Dateien:** Felder der Art `datei` fehlen in `gruppen`
 (`MobilObjekte::OHNE`). Solange nicht geklärt ist, wie die App eine geschützte
@@ -140,6 +150,64 @@ Palette = { geraete: [{ typ, titel, eintraege: [{id, name, hoehe}] }],
 
 `position` ist die unterste belegte HE, `oberste_he` rechnet der Server.
 Ohne `position` beim Einbauen → unterste freie HE.
+
+## Patchfelder
+
+Alle unter `customers/{slug}/patchpanels`; fremde Patchfelder → 404 (scoped bindings).
+Die Liste kommt über `customers/{slug}/patchpanel`, die Ports entstehen mit dem Patchfeld.
+
+| Methode | Pfad | Body | Antwort |
+|---|---|---|---|
+| POST | `/` | `PatchfeldKoerper` | 201 `Patchfeld` (mit allen Ports) |
+| GET | `/{patchpanel}` | – | `Patchfeld` |
+| PUT | `/{patchpanel}` | `PatchfeldKoerper` (vollständig) | `Patchfeld` / 422 `port_count`, wenn oberhalb noch Ports dokumentiert sind |
+| DELETE | `/{patchpanel}` | – | 204 (Papierkorb) |
+| PUT | `/{patchpanel}/ports` | `{ ports: [{ id, outlet?, label?, network_switch_id?, switch_port?, note? }] }` | `Patchfeld` |
+
+```
+PatchfeldKoerper = { site_id, name, port_count (1–96), height_units (1–10),
+                     manufacturer|null, model|null, note|null }
+
+Patchfeld = { id, name, ports_anzahl, hoehe, hersteller|null, modell|null, notiz|null,
+              standort: {id,name}|null, kunde, einbauort: string|null,
+              darf_bearbeiten, darf_loeschen,
+              ports: [{ id, nummer, dose|null, raum|null, switch: {id,name}|null,
+                        switch_port|null, notiz|null }],
+              switches: [{ id, name }] }        // Auswahl für network_switch_id
+```
+
+Ports: Nur gesendete Ports und Spalten werden geschrieben, `""` leert. Eine
+Port-Id eines anderen Patchfelds wird übergangen. `network_switch_id` nur
+Switches desselben Kunden (sonst 422). „Durchnummerieren“ macht die App selbst
+und schickt das Ergebnis.
+
+## Am Gerät: Zugänge, IP-Adressen, Scan-Ziele
+
+Ändert das Gerät, braucht also immer `{typ}_update` – auch die GETs, die die
+Auswahl liefern. Ein Typ ohne den Block → 404 (z. B. Domain hat keine IP-Adressen,
+nur der Scanner hat Scan-Ziele). Die Antwort auf POST ist die neue Liste.
+
+| Methode | Pfad | Body | Antwort |
+|---|---|---|---|
+| GET | `objects/{typ}/{id}/credentials` | – | `{ eintraege: [Zugang], verfuegbar: [{id, name, benutzer\|null, art}], darf_neu: bool }` |
+| POST | `objects/{typ}/{id}/credentials` | `{login_id, note?}` **oder** `{name, username?, password?, note?}` | 201 `[Zugang]` |
+| DELETE | `objects/{typ}/{id}/credentials/{link_id}` | – | 204 (nur die Verknüpfung; der Zugang bleibt) |
+| GET | `objects/{typ}/{id}/ip-addresses` | – | `{ eintraege: [IP], netze: [{id, name, naechste_freie\|null}] }` |
+| POST | `objects/{typ}/{id}/ip-addresses` | `{address, network_id?, label?}` **oder** `{dhcp: true, network_id, label?}` | 201 `[IP]` |
+| DELETE | `objects/{typ}/{id}/ip-addresses/{ip_id}` | – | 204 |
+| GET | `objects/scanner/{id}/scan-targets` | – | `{ eintraege: [ScanZiel], verfuegbar: [ScanZiel], arten: [{wert, label}], logins: [{id, name}], darf_neu, darf_verknuepfen }` |
+| POST | `objects/scanner/{id}/scan-targets` | `{ziel_id}` **oder** `{kind, target, name?, login_general_id?}` | 201 `[ScanZiel]` |
+| DELETE | `objects/scanner/{id}/scan-targets/{ziel_id}` | – | 204 (nur die Verknüpfung) |
+
+Regeln:
+- Zugänge: nur Arten, die der Nutzer sehen darf (Kennwort: `logingeneral_viewAny`,
+  Schlüssel: `sshkey_viewAny`; keins von beiden → 403). Neu anlegen braucht
+  `logingeneral_create`. Fremder Zugang → 422 `login_id`.
+- IP: Eine Adresse gibt es je Kunde nur einmal → 422 `address`. Bei `dhcp: true`
+  ist `network_id` Pflicht und `address` verboten. `naechste_freie` ist der
+  Vorschlag, den auch der Browser bei Wahl des Netzes einträgt.
+- Scan-Ziele: neu anlegen braucht `scantarget_create`, vorhandene verknüpfen
+  `scantarget_viewAny` (sonst ist `verfuegbar` leer).
 
 ## Objekte anlegen / bearbeiten / löschen
 
@@ -207,3 +275,7 @@ Regeln:
 | 2026-10-20 | Formular-API gegengelesen: `pflicht`/`geheim`/`mehrfach` kommen immer (auch `false`); Ausnahmen beim Leeren, 422 auf ungesendeten Feldern, Multipart ergänzt | Backend |
 | 2026-10-20 | Dateien (`datei`) beim Lesen als bewusste Lücke vermerkt | beide |
 | 2026-10-20 | Formular-API (`forms/{typ}`, `POST customers/{slug}/{typ}`, `objects/{typ}/{id}` PUT/PATCH/POST/DELETE, `…/form`, `…/generate`) committed und auf Produktion | Backend |
+| 2026-10-20 | Liste `customers/{slug}/{typ}`: neues Feld `darf_anlegen` (additiv) | Backend |
+| 2026-10-20 | Neu: Patchfelder (`customers/{slug}/patchpanels`, inkl. Ports), Zugänge/IP-Adressen am Gerät, Scan-Ziele am Scanner | Backend |
+| 2026-10-20 | `ObjektDetail`: `ip_adressen[]` + `id`, `dhcp`; neues `scan_ziele` (additiv). `darf_anlegen` jetzt auch für `patchpanel` | Backend |
+| 2026-10-20 | `POST customers/{slug}/{typ}` nimmt nur noch Formular-Typen an (unbekannter Typ weiterhin 404) | Backend |
