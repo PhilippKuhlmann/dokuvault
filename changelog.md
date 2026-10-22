@@ -4,6 +4,8 @@
 
 ### Added
 
+- **iOS-App: Dienste in Farbe.** Die Dienste an Server und VM kommen jetzt mit ihrer Kachelfarbe aus dem Dienste-Katalog und der passenden Schriftfarbe, sodass die App sie so zeigt wie der Browser. Dienste ohne Farbe bleiben grau.
+
 - **iOS-App-Schnittstelle: IPAM.** Die App bekommt die VLANs eines Kunden mit ihrer Auslastung (belegt, DHCP, reserviert, frei), auf Wunsch je Standort, und je VLAN den vollständigen IP-Plan wie im Browser: belegte Adressen mit dem Gerät dahinter (zum Weiterspringen, wo der Nutzer die Liste sehen darf), Gateway, DHCP-Bereich samt der Geräte, die daraus versorgt werden, freie Läufe und reservierte Bereiche in ihrer Farbe. VLANs lassen sich aus der App anlegen, ändern und löschen, reservierte Bereiche anlegen und entfernen. Es gelten dieselben Regeln wie im Browser – ein Bereich muss im Netz liegen und darf sich mit keinem anderen überschneiden; Maske oder CIDR genügt, das andere wird ergänzt.
 
 ## 26.10.20

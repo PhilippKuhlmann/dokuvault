@@ -6,6 +6,7 @@ use App\Models\ADDomainHost;
 use App\Models\Customer;
 use App\Models\Scanner;
 use App\Models\ScanTarget;
+use App\Models\Service;
 use App\Models\SshKey;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -309,10 +310,18 @@ class MobilObjekte
         if ($feld['type'] === 'dienste') {
             $dienste = array_values(array_filter((array) $objekt->getAttribute($name), 'filled'));
 
+            // The colours as in the browser: from the service catalogue, text
+            // colour computed here (Service::kachelFarben). Without a colour
+            // in the catalogue both are null - the app shows it grey.
+            $katalog = Service::farbzuordnung();
+
             return $dienste ? [
                 'name' => $name, 'label' => $label, 'art' => 'text',
                 'wert' => implode(' · ', $dienste),
                 'liste' => $dienste,
+                'kacheln' => array_map(fn ($dienst) => ['name' => $dienst]
+                    + (Service::kachelFarben($katalog[mb_strtolower(trim($dienst))] ?? null) ?? ['farbe' => null, 'schrift' => null]),
+                    $dienste),
             ] : null;
         }
 

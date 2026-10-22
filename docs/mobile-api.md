@@ -102,6 +102,7 @@ Feld = {
   wert: string|null,                                       // bei "geheim" immer null
   verweise?: [{ typ, id, name }],                          // Host-Felder: Sprung zu objects/{typ}/{id}
   liste?:    [string]                                      // Verknüpfungen, Dienste: aufklappbare Liste
+  kacheln?:  [{name, farbe: "#rrggbb"|null, schrift: "#rrggbb"|null}]  // nur Dienste: Farbe aus dem Dienste-Katalog, Schrift vom Server berechnet (Helligkeit > 0,6 → #111827, sonst #ffffff); ohne Katalogfarbe beide null = grau
 }
 
 Zugang = { id (= link_id), name, benutzer|null, art: "kennwort"|"schluessel",
@@ -328,3 +329,4 @@ Regeln:
 | 2026-10-20 | `ObjektDetail`: `ip_adressen[]` + `id`, `dhcp`; neues `scan_ziele` (additiv). `darf_anlegen` jetzt auch für `patchpanel` | Backend |
 | 2026-10-20 | `POST customers/{slug}/{typ}` nimmt nur noch Formular-Typen an (unbekannter Typ weiterhin 404) | Backend |
 | 2026-10-22 | Neu: IPAM – VLANs (`customers/{slug}/networks`, anlegen/ändern/löschen), IP-Plan je VLAN, reservierte Bereiche (`…/ip-ranges`) | Backend |
+| 2026-10-22 | Feld `dienste`: neues `kacheln` mit `farbe`/`schrift` je Dienst (additiv, neben `liste`) | Backend |

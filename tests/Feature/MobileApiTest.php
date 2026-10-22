@@ -8,6 +8,7 @@ use App\Models\LoginGeneral;
 use App\Models\OperatingSystem;
 use App\Models\Rack;
 use App\Models\Server;
+use App\Models\Service;
 use App\Models\Setting;
 use App\Models\Site;
 use App\Models\SshKey;
@@ -505,6 +506,23 @@ test('Dienste kommen als eine Zeile', function () {
         ->assertOk());
 
     expect($felder['services']['wert'])->toBe('AD · DNS · DHCP');
+});
+
+test('Dienste kommen mit ihren Kachelfarben', function () {
+    Service::create(['name' => 'DNS', 'color' => '#1f73d6']);
+    Service::create(['name' => 'DHCP', 'color' => '#fde68a']);
+    $server = mobilServer(Customer::factory()->create());
+    $server->forceFill(['services' => 'AD,dns,DHCP'])->save();
+
+    $felder = mobilFelder($this->withToken(mobilToken(mobilNutzer(['server_viewAny'])))
+        ->getJson('/api/mobile/objects/server/'.$server->id)
+        ->assertOk());
+
+    expect($felder['services']['kacheln'])->toBe([
+        ['name' => 'AD', 'farbe' => null, 'schrift' => null],
+        ['name' => 'dns', 'farbe' => '#1f73d6', 'schrift' => '#ffffff'],
+        ['name' => 'DHCP', 'farbe' => '#fde68a', 'schrift' => '#111827'],
+    ])->and($felder['services']['liste'])->toBe(['AD', 'dns', 'DHCP']);
 });
 
 test('der Fingerprint steht am Schluessel und unter den Zugaengen', function () {

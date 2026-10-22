@@ -85,6 +85,19 @@ class Service extends Model
      */
     public static function kachelStil(?string $hex): ?string
     {
+        $farben = static::kachelFarben($hex);
+
+        return $farben ? 'background-color: '.$farben['farbe'].'; color: '.$farben['schrift'].';' : null;
+    }
+
+    /**
+     * Dieselbe Rechnung als Werte statt als CSS - fuer die iOS-App, die sonst
+     * die Regel nachbauen muesste und beim ersten Anfassen abwiche.
+     *
+     * @return array{farbe: string, schrift: string}|null
+     */
+    public static function kachelFarben(?string $hex): ?array
+    {
         if (! is_string($hex) || ! preg_match('/^#[0-9a-fA-F]{6}$/', $hex)) {
             return null;
         }
@@ -92,6 +105,6 @@ class Service extends Model
         [$r, $g, $b] = array_map(fn ($teil) => hexdec($teil) / 255, str_split(substr($hex, 1), 2));
         $helligkeit = 0.299 * $r + 0.587 * $g + 0.114 * $b;
 
-        return 'background-color: '.$hex.'; color: '.($helligkeit > 0.6 ? '#111827' : '#ffffff').';';
+        return ['farbe' => $hex, 'schrift' => $helligkeit > 0.6 ? '#111827' : '#ffffff'];
     }
 }
