@@ -6,8 +6,8 @@ use App\Livewire\Concerns\GehoertZumKunden;
 use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
 use App\Models\Network;
 use App\Models\Site;
+use App\Support\NetworkEditing;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -210,45 +210,15 @@ class NetworkQuickCreate extends Component
      */
     protected function regeln(): array
     {
-        $regeln = [
-            'description' => ['required', 'max:255'],
-            'vlanId' => ['nullable', 'integer', 'min:1', 'max:4094'],
-            'network' => ['required', 'ipv4'],
-            'subnetmask' => ['required', 'ipv4'],
-            'cidr' => ['nullable', 'integer', 'min:0', 'max:32'],
-            'gateway' => ['nullable', 'ipv4'],
-            'dns1' => ['nullable', 'ipv4'],
-            'dns2' => ['nullable', 'ipv4'],
-            'dhcpStart' => ['nullable', 'ipv4'],
-            'dhcpEnd' => ['nullable', 'ipv4'],
-        ];
-
-        // Ohne vorgegebenen Standort muss einer gewaehlt werden - und zwar einer
-        // dieses Kunden, sonst haengt das Netz an einem fremden Standort.
-        if (! $this->siteId || $this->bearbeiteId) {
-            $regeln['site_id'] = ['required', Rule::exists('sites', 'id')
-                ->where('customer_id', $this->customerId)->whereNull('deleted_at')];
-        }
-
-        return $regeln;
+        // Ohne vorgegebenen Standort muss einer gewaehlt werden. Die Regeln
+        // stehen in NetworkEditing - dieselben fuer die iOS-App.
+        return app(NetworkEditing::class)->rules($this->customerId, ! $this->siteId || $this->bearbeiteId);
     }
 
     /** Die Beschriftungen fuer die Meldungen - "Bitte Bezeichnung angeben.". */
     protected function feldnamen(): array
     {
-        return [
-            'site_id' => __('Standort'),
-            'description' => __('Bezeichnung'),
-            'vlanId' => __('VLAN-ID'),
-            'network' => __('Netz'),
-            'subnetmask' => __('Subnetzmaske'),
-            'cidr' => __('CIDR'),
-            'gateway' => __('Gateway'),
-            'dns1' => __('DNS 1'),
-            'dns2' => __('DNS 2'),
-            'dhcpStart' => __('DHCP-Start'),
-            'dhcpEnd' => __('DHCP-Ende'),
-        ];
+        return app(NetworkEditing::class)->attributeNames();
     }
 
     public function speichern(): void
@@ -259,19 +229,9 @@ class NetworkQuickCreate extends Component
 
         $daten = $this->validate($this->regeln(), [], $this->feldnamen());
 
-        $werte = [
-            'site_id' => $this->siteId && ! $this->bearbeiteId ? $this->siteId : $daten['site_id'],
-            'description' => $daten['description'],
-            'vlanId' => $daten['vlanId'] ?: null,
-            'network' => $daten['network'],
-            'subnetmask' => $daten['subnetmask'],
-            'cidr' => $daten['cidr'] ?: null,
-            'gateway' => $daten['gateway'] ?: null,
-            'dns1' => $daten['dns1'] ?: null,
-            'dns2' => $daten['dns2'] ?: null,
-            'dhcpStart' => $daten['dhcpStart'] ?: null,
-            'dhcpEnd' => $daten['dhcpEnd'] ?: null,
-        ];
+        $werte = app(NetworkEditing::class)->values(
+            $daten, $this->siteId && ! $this->bearbeiteId ? $this->siteId : (int) $daten['site_id']
+        );
 
         if ($this->bearbeiteId) {
             // Erneut gegen den Kunden geprueft: bearbeiteId ist zwischen dem

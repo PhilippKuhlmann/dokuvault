@@ -5,10 +5,9 @@ namespace App\Livewire;
 use App\Livewire\Concerns\GehoertZumKunden;
 use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
 use App\Models\Customer;
-use App\Models\IpRange;
 use App\Models\Network;
+use App\Support\IpRangeEditing;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 /**
@@ -54,24 +53,15 @@ class IpBereiche extends Component
         $this->networkId = $network->id;
     }
 
+    /** Die Regeln stehen in IpRangeEditing - dieselben fuer die iOS-App. */
     protected function regeln(): array
     {
-        return [
-            'from_ip' => ['required', 'ipv4'],
-            'to_ip' => ['required', 'ipv4'],
-            'label' => ['required', 'string', 'max:255'],
-            'note' => ['nullable', 'string', 'max:255'],
-        ];
+        return app(IpRangeEditing::class)->rules();
     }
 
     protected function feldnamen(): array
     {
-        return [
-            'from_ip' => __('Von'),
-            'to_ip' => __('Bis'),
-            'label' => __('Wofür'),
-            'note' => __('Notiz'),
-        ];
+        return app(IpRangeEditing::class)->attributeNames();
     }
 
     public function oeffnen(): void
@@ -94,54 +84,9 @@ class IpBereiche extends Component
         Gate::authorize('network_update');
 
         $this->pruefungEinschalten();
-        $this->validate($this->regeln(), [], $this->feldnamen());
+        $daten = $this->validate($this->regeln(), [], $this->feldnamen());
 
-        $netz = $this->netz();
-        $von = IpRange::alsLong($this->from_ip);
-        $bis = IpRange::alsLong($this->to_ip);
-
-        // Die Reihenfolge zuerst: Ohne sie waere jede weitere Meldung Rauschen.
-        if ($bis < $von) {
-            throw ValidationException::withMessages([
-                'to_ip' => __('Die Endadresse liegt vor der Anfangsadresse.'),
-            ]);
-        }
-
-        // Im Netz, nicht daneben. Geprueft ueber dieselbe Funktion, mit der die
-        // Anwendung sonst entscheidet, ob eine Adresse zu einem Netz gehoert.
-        foreach (['from_ip' => $this->from_ip, 'to_ip' => $this->to_ip] as $feld => $adresse) {
-            if (! $netz->enthaeltAdresse($adresse)) {
-                throw ValidationException::withMessages([
-                    $feld => __('Diese Adresse liegt nicht in :netz.', ['netz' => $netz->anzeige() ?: $netz->network]),
-                ]);
-            }
-        }
-
-        // Zwei Reservierungen fuer dieselbe Adresse waeren ein Widerspruch in
-        // der Doku, kein Zustand, den man abbilden will.
-        $ueberschneidung = $this->bereiche()->first(
-            fn (IpRange $b) => $b->vonLong() !== null && $b->bisLong() !== null
-                && $von <= $b->bisLong() && $bis >= $b->vonLong()
-        );
-
-        if ($ueberschneidung) {
-            throw ValidationException::withMessages([
-                'from_ip' => __('Überschneidet sich mit „:label" (:von – :bis).', [
-                    'label' => $ueberschneidung->label,
-                    'von' => $ueberschneidung->from_ip,
-                    'bis' => $ueberschneidung->to_ip,
-                ]),
-            ]);
-        }
-
-        IpRange::create([
-            'customer_id' => $this->customerId,
-            'network_id' => $this->networkId,
-            'from_ip' => $this->from_ip,
-            'to_ip' => $this->to_ip,
-            'label' => trim($this->label),
-            'note' => trim($this->note) ?: null,
-        ]);
+        app(IpRangeEditing::class)->create($this->netz(), $daten);
 
         $this->abbrechen();
 
@@ -157,7 +102,7 @@ class IpBereiche extends Component
 
         // Nur Bereiche dieses Netzes - eine untergeschobene fremde Id waere
         // sonst loeschbar.
-        $this->bereiche()->firstWhere('id', $id)?->delete();
+        app(IpRangeEditing::class)->delete($this->netz(), $id);
 
         $this->redirect(request()->header('Referer') ?: route('ipplan.index', $this->customerId), navigate: true);
     }
@@ -167,21 +112,10 @@ class IpBereiche extends Component
         return Network::where('customer_id', $this->customerId)->findOrFail($this->networkId);
     }
 
-    private function bereiche()
-    {
-        // Eingefaerbt und sortiert wie im Plan darueber - die Liste ist dessen
-        // Legende, und zwei Zuordnungen wuerden auseinanderlaufen.
-        return IpRange::eingefaerbt(
-            IpRange::where('network_id', $this->networkId)
-                ->where('customer_id', $this->customerId)
-                ->get()
-        );
-    }
-
     public function render()
     {
         return view('livewire.ip-bereiche', [
-            'bereiche' => $this->bereiche(),
+            'bereiche' => app(IpRangeEditing::class)->ranges($this->netz()),
             'darfPflegen' => Gate::allows('network_update'),
         ]);
     }

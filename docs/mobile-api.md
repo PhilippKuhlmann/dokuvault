@@ -209,6 +209,54 @@ Regeln:
 - Scan-Ziele: neu anlegen braucht `scantarget_create`, vorhandene verknüpfen
   `scantarget_viewAny` (sonst ist `verfuegbar` leer).
 
+## IPAM: VLANs, IP-Plan, reservierte Bereiche
+
+Im Browser zwei Seiten (VLAN-Liste und IP-Plan), in der App eine Liste mit
+Auslastung je Netz und ein Detail mit dem Plan. Rechte: `network_viewAny`
+(lesen), `network_create`, `network_update` (auch für Bereiche),
+`network_delete`. Alles unter dem Kunden mit Scoped Bindings: fremdes Netz
+oder Bereich eines anderen Netzes → 404.
+
+| Methode | Pfad | Body | Antwort |
+|---|---|---|---|
+| GET | `customers/{slug}/networks?standort={site_id}` | – | `{ eintraege: [Netz], summe: {belegt, adressen}, standorte: [{id, name}], darf_anlegen }` |
+| POST | `customers/{slug}/networks` | `{site_id, description, network, subnetmask\|cidr, vlanId?, gateway?, dns1?, dns2?, dhcpStart?, dhcpEnd?}` | 201 `NetzDetail` |
+| GET | `customers/{slug}/networks/{id}` | – | `NetzDetail` |
+| PUT/PATCH | `customers/{slug}/networks/{id}` | nur die geänderten Felder | `NetzDetail` |
+| DELETE | `customers/{slug}/networks/{id}` | – | 204 (Papierkorb) |
+| POST | `customers/{slug}/networks/{id}/ip-ranges` | `{from_ip, to_ip, label, note?}` | 201 `NetzDetail` |
+| DELETE | `customers/{slug}/networks/{id}/ip-ranges/{range_id}` | – | 204 |
+
+`Netz`: `id, name` („Server · VLAN 10“), `bezeichnung, vlan` (Int|null),
+`netz, subnetzmaske, cidr` (Int|null), `gateway, standort {id, name}|null`,
+`auslastung {belegt, dhcp, reserviert, frei, gesamt}|null`, `fehler`
+(Text, wenn Netz/Maske nicht auswertbar – dann `auslastung: null`).
+
+`NetzDetail` = `Netz` plus:
+- `dns1, dns2, dhcp_start, dhcp_ende, naechste_freie, kunde, darf_bearbeiten, darf_loeschen`
+- `bereiche: [{id, von, bis, label, notiz, anzahl, farbe}]` – sortiert nach Anfangsadresse
+- `zeilen: [{art, von, bis, label, gateway, reservierung, farbe, geraete}]` – der Plan
+  von oben nach unten. `art`: `geraet` (eine belegte Adresse), `frei`, `dhcp`,
+  `reserviert` (zusammengefasste Läufe). `reservierung`: an einer belegten Adresse
+  der Name des Bereichs, in dem sie liegt.
+- `geraete: [{name, typ, id, im_pool}]` – `typ`/`id` nur, wenn der Nutzer die Liste
+  des Typs sehen darf (sonst `null`, dann nur Text). `im_pool: true` = feste Adresse
+  mitten im DHCP-Bereich (möglicher Konflikt; steht an der DHCP-Zeile).
+- `gekuerzt` – über 8192 Hosts endet der Plan dort.
+- `dhcp_ohne_bereich: [Gerät]` – per DHCP versorgte Geräte eines Netzes ohne
+  DHCP-Bereich.
+
+`farbe` ist ein Farbname aus der Tailwind-Palette („amber“, „sky“, …) oder `null`;
+gleiche Farbe = gleicher Bereich in Liste und Plan.
+
+Regeln:
+- Maske **oder** CIDR genügt, das andere wird ergänzt. Bei PATCH nur eines von
+  beiden geschickt → das andere wird daraus neu berechnet.
+- `site_id` muss ein Standort des Kunden sein → sonst 422 `site_id`.
+- `""` leert ein optionales Feld (z. B. `gateway`).
+- Bereich: beide Adressen im Netz (sonst 422 am betroffenen Feld), Ende nicht vor
+  Anfang (422 `to_ip`), keine Überschneidung mit einem anderen Bereich (422 `from_ip`).
+
 ## Objekte anlegen / bearbeiten / löschen
 
 Für jeden Typ aus `config/forms.php`. Die App baut ihr Formular aus der
@@ -279,3 +327,4 @@ Regeln:
 | 2026-10-20 | Neu: Patchfelder (`customers/{slug}/patchpanels`, inkl. Ports), Zugänge/IP-Adressen am Gerät, Scan-Ziele am Scanner | Backend |
 | 2026-10-20 | `ObjektDetail`: `ip_adressen[]` + `id`, `dhcp`; neues `scan_ziele` (additiv). `darf_anlegen` jetzt auch für `patchpanel` | Backend |
 | 2026-10-20 | `POST customers/{slug}/{typ}` nimmt nur noch Formular-Typen an (unbekannter Typ weiterhin 404) | Backend |
+| 2026-10-22 | Neu: IPAM – VLANs (`customers/{slug}/networks`, anlegen/ändern/löschen), IP-Plan je VLAN, reservierte Bereiche (`…/ip-ranges`) | Backend |

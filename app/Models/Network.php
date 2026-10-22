@@ -19,6 +19,22 @@ class Network extends Model
         return $this->hasMany(Wifi::class);
     }
 
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function site()
+    {
+        return $this->belongsTo(Site::class);
+    }
+
+    /** Reserved ranges - also the scoped binding of {ipRange} in the app routes. */
+    public function ipRanges()
+    {
+        return $this->hasMany(IpRange::class);
+    }
+
     /**
      * Netz fuer die Anzeige: Beschreibung und VLAN-Nummer zusammen, weil beides
      * gebraucht wird - der Name sagt wofuer, die Nummer braucht man am Switch.

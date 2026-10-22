@@ -7,6 +7,7 @@ use App\Http\Controllers\API\CustomerController;
 use App\Http\Controllers\API\Mobile\AnmeldungController;
 use App\Http\Controllers\API\Mobile\DatenController;
 use App\Http\Controllers\API\Mobile\DeviceController;
+use App\Http\Controllers\API\Mobile\NetworkController as MobileNetworkController;
 use App\Http\Controllers\API\Mobile\ObjectController;
 use App\Http\Controllers\API\Mobile\PatchPanelController as MobilePatchPanelController;
 use App\Http\Controllers\API\Mobile\RackController as MobileRackController;
@@ -93,6 +94,18 @@ Route::prefix('mobile')->group(function () {
             Route::post('/{rack}/items', [MobileRackController::class, 'storeItem']);
             Route::patch('/{rack}/items/{item}', [MobileRackController::class, 'updateItem']);
             Route::delete('/{rack}/items/{item}', [MobileRackController::class, 'destroyItem']);
+        });
+
+        // IPAM: VLANs with their IP plan and reserved ranges. Before the
+        // list route below - "/{typ}" would catch "networks".
+        Route::prefix('/customers/{customer}/networks')->middleware('isCustomer')->scopeBindings()->group(function () {
+            Route::get('/', [MobileNetworkController::class, 'index']);
+            Route::post('/', [MobileNetworkController::class, 'store']);
+            Route::get('/{network}', [MobileNetworkController::class, 'show']);
+            Route::match(['put', 'patch'], '/{network}', [MobileNetworkController::class, 'update']);
+            Route::delete('/{network}', [MobileNetworkController::class, 'destroy']);
+            Route::post('/{network}/ip-ranges', [MobileNetworkController::class, 'storeRange']);
+            Route::delete('/{network}/ip-ranges/{ipRange}', [MobileNetworkController::class, 'destroyRange']);
         });
 
         Route::get('/customers/{customer}/{typ}', [DatenController::class, 'liste'])->middleware('isCustomer');
