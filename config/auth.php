@@ -103,15 +103,17 @@ return [
         ],
 
         /*
-         * Einladungen laufen ueber dieselbe Maschinerie, aber mit anderer
-         * Frist: Eine Stunde reicht fuer "ich habe mein Kennwort vergessen" -
-         * eine Einladung geht an jemanden, der vielleicht im Urlaub ist. Eine
-         * Woche. Und ohne Drossel, weil ein Administrator eine Einladung
-         * durchaus zweimal hintereinander verschicken darf.
+         * Invitations use the same machinery with a different expiry: an
+         * hour is enough for "I forgot my password", an invitation goes to
+         * someone who may be on holiday - a week. No throttle, because an
+         * administrator may well send an invitation twice in a row.
+         *
+         * Own table: sharing password_resets made every "forgot password"
+         * link a week-long invitation link as well.
          */
         'einladung' => [
             'provider' => 'users',
-            'table' => 'password_resets',
+            'table' => 'invitation_tokens',
             'expire' => 60 * 24 * 7,
             'throttle' => 0,
         ],

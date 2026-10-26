@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -11,12 +12,11 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 
 /**
- * Der eingeladene Benutzer gibt sich sein Kennwort.
+ * The invited user sets their own password.
  *
- * Laeuft ueber denselben Token-Mechanismus wie "Kennwort vergessen", aber
- * ueber den Broker "einladung" mit langer Frist - siehe config/auth.php. Wer
- * hier ankommt, hat bewiesen, dass er das Postfach hat, in das die Einladung
- * ging.
+ * Same token mechanism as "forgot password", but through the broker
+ * "einladung" with its own table and a long expiry - see config/auth.php.
+ * Whoever gets here has proven access to the mailbox the invitation went to.
  */
 class InvitationController extends Controller
 {
@@ -36,23 +36,30 @@ class InvitationController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        // Only an account with an open invitation. An accepted one sets its
+        // password in the profile or via "forgot password", not here.
+        $invitationOpen = User::where('username', $request->input('username'))->first()?->einladungOffen() ?? false;
+        if (! $invitationOpen) {
+            return back()
+                ->withInput($request->only('username'))
+                ->withErrors(['username' => __(Password::INVALID_TOKEN)]);
+        }
+
         $status = Password::broker('einladung')->reset(
             $request->only('username', 'password', 'password_confirmation', 'token'),
-            function ($nutzer) use ($request) {
-                $nutzer->forceFill([
+            function ($user) use ($request) {
+                $user->forceFill([
                     'password' => Hash::make($request->password),
                     'remember_token' => Str::random(60),
-                    // Die Einladung ist eingeloest - sie steht ab jetzt nicht
-                    // mehr als offen in der Benutzerliste, sondern als
-                    // abgeschlossen. Den Zeitpunkt haelt eine eigene Spalte
-                    // fest: invited_at zu leeren macht einen eingeloesten
-                    // Zugang sonst ununterscheidbar von einem, der nie eine
-                    // Einladung bekam.
+                    // The invitation is redeemed - the user list shows it as
+                    // done from now on, not as open. Its own column keeps the
+                    // time: clearing invited_at alone would make a redeemed
+                    // account look like one that was never invited.
                     'invited_at' => null,
                     'invitation_accepted_at' => now(),
                 ])->save();
 
-                event(new PasswordReset($nutzer));
+                event(new PasswordReset($user));
             }
         );
 
@@ -62,9 +69,9 @@ class InvitationController extends Controller
                 ->withErrors(['username' => __($status)]);
         }
 
-        // Bewusst nicht direkt anmelden: Wer ab jetzt hereinkommt, soll den
-        // Weg gehen, den er kuenftig immer geht - samt zweiter Stufe, falls
-        // sein Administrator sie verlangt.
+        // Deliberately not logged in right away: the first login takes the
+        // way every later one takes - including the second factor, if the
+        // administrator requires it.
         return redirect()->route('login')->with('status', __('Kennwort festgelegt. Sie können sich jetzt anmelden.'));
     }
 }

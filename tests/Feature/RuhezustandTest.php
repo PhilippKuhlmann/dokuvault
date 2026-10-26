@@ -64,6 +64,7 @@ test('was nach einem Geheimnis klingt, liegt verschlüsselt oder steht mit Grund
         'users.password' => 'bcrypt-Hash',
         'agent_tokens.token' => 'gehasht, siehe AgentToken::hashToken()',
         'password_resets.token' => 'gehasht vom Broker',
+        'invitation_tokens.token' => 'gehasht vom Broker, wie password_resets',
         'personal_access_tokens.token' => 'gehasht von Sanctum',
         'checklists.script_token_hash' => 'SHA-256 des Skript-Schlüssels, siehe Checklist::issueScriptToken()',
 
