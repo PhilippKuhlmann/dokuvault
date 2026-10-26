@@ -17,6 +17,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -35,8 +36,10 @@ class DocumentationWizard extends Component
 {
     use PrueftWaehrendDerEingabe;
 
+    #[Locked]
     public int $customerId;
 
+    #[Locked]
     public int $runId;
 
     /** @var array<string,mixed> */

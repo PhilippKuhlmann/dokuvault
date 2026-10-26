@@ -9,6 +9,7 @@ use App\Models\Customer;
 use App\Models\NetworkShare;
 use App\Support\ChecklistAdScript;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
@@ -19,8 +20,10 @@ class ChecklistProgress extends Component
 {
     use GehoertZumKunden;
 
+    #[Locked]
     public int $customerId;
 
+    #[Locked]
     public int $checklistId;
 
     public string $username = '';

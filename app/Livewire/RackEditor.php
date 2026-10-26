@@ -8,6 +8,7 @@ use App\Models\RackItem;
 use App\Support\RackLayout;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
@@ -19,8 +20,10 @@ use Livewire\Component;
 class RackEditor extends Component
 {
     // Skalare statt Model-Instanzen: robust bei Livewire-Hydration (wie DeviceIpAddresses).
+    #[Locked]
     public int $rackId;
 
+    #[Locked]
     public int $customerId;
 
     /** Welche Seite gerade bearbeitet wird - 'front' oder 'rear'. */

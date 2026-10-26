@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\Network;
 use App\Support\IpRangeEditing;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
@@ -26,8 +27,12 @@ class IpBereiche extends Component
     use GehoertZumKunden;
     use PrueftWaehrendDerEingabe;
 
+    // Locked: set in mount() after the tenant check. Changed in the browser,
+    // they pointed every action at another customer's network.
+    #[Locked]
     public int $customerId;
 
+    #[Locked]
     public int $networkId;
 
     public bool $offen = false;
@@ -109,6 +114,10 @@ class IpBereiche extends Component
 
     private function netz(): Network
     {
+        // Every action and every render binds to the user's customer again -
+        // not only mount(). The ids are locked as well, see above.
+        $this->nurEigenerKunde($this->customerId);
+
         return Network::where('customer_id', $this->customerId)->findOrFail($this->networkId);
     }
 

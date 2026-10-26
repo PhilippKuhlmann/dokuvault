@@ -6,6 +6,7 @@ use App\Livewire\Concerns\GehoertZumKunden;
 use App\Models\Customer;
 use App\Support\ChecklistBuilder;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
@@ -17,6 +18,7 @@ class OnboardingForm extends Component
 {
     use GehoertZumKunden;
 
+    #[Locked]
     public int $customerId;
 
     public string $first_name = '';

@@ -14,6 +14,7 @@
 
 - **App-Anmeldungen enden, wenn sich der Schutz des Kontos ändert.** Ein Token der iOS-App blieb bis zu 30 Tage gültig, auch nach einer Kennwortänderung, einem Zurücksetzen per Mail oder dem Zurücksetzen der zweiten Stufe durch den Administrator. Das sind genau die Schritte, mit denen man ein verlorenes Telefon aussperrt. Jetzt werden die App-Anmeldungen des Benutzers dabei beendet, ebenso, wenn die zweite Stufe für jemanden verlangt wird, der sie noch nicht eingerichtet hat. Zusätzlich weist die API jedes Token mit 403 ab, solange die verlangte zweite Stufe fehlt. API-Tokens, die ein Administrator für Integrationen anlegt, bleiben davon unberührt.
 - **Die E-Mail-Adresse im Profil lässt sich nur noch mit dem aktuellen Kennwort ändern.** An diese Adresse geht der Link zum Zurücksetzen des Kennworts. Wer kurz an einer fremden Sitzung saß, konnte sie umstellen und sich danach ein neues Kennwort setzen. Die alte Adresse bekommt außerdem eine Nachricht über die Änderung.
+- **Reservierte IP-Bereiche anderer Kunden waren über eine manipulierte Anfrage erreichbar.** Die Komponente prüfte den Kunden nur beim Öffnen. Kunde und Netz ließen sich danach im Browser umstellen, und ein Kundennutzer konnte so Bereiche eines anderen Kunden lesen, anlegen und löschen. Kunde und Netz sind jetzt gesperrt und werden bei jeder Aktion erneut geprüft. Dieselbe Sperre gilt jetzt auch für Checklisten, Checklisten-Einstellungen, Onboarding-Formular, Rack-Editor und Dokumentations-Assistent. Ein Schutz-Test fängt künftige Komponenten mit demselben Muster ab.
 
 ### Internal
 

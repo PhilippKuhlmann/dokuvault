@@ -12,6 +12,7 @@ use App\Models\Customer;
 use App\Models\NetworkShare;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
@@ -23,6 +24,7 @@ class ChecklistSettings extends Component
 {
     use GehoertZumKunden;
 
+    #[Locked]
     public int $customerId;
 
     public ?int $editingId = null;
