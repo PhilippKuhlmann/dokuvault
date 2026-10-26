@@ -7,6 +7,7 @@ use App\Support\ExpiringItems;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 /**
  * The daily expiry mail: what newly expires soon or has just expired.
@@ -22,7 +23,18 @@ class ExpiryNotice extends Notification
     /** More rows than this do not belong in a mail - the rest is in DokuVault. */
     public const MAX_ROWS = 100;
 
-    public function __construct(public Collection $items) {}
+    public function __construct(public Collection $items)
+    {
+        // Names come from users and agents (a hostname is whatever the agent
+        // reports). A blank line inside one ended the HTML block of the mail,
+        // and the rest was read as markdown: a link or a tracking image in a
+        // genuine mail. One line each, then they stay text in the HTML.
+        $this->items = $items->map(fn (array $item) => array_merge($item, [
+            'name' => Str::squish((string) ($item['name'] ?? '')),
+            'customer' => Str::squish((string) ($item['customer'] ?? '')),
+            'label' => Str::squish((string) ($item['label'] ?? '')),
+        ]));
+    }
 
     /**
      * @return array<int, string>

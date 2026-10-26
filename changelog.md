@@ -21,6 +21,7 @@
 - **Der Schlüssel im AD-Skript gilt nur noch für den Benutzer seiner Checkliste.** Ein Bericht konnte einen beliebigen anderen AD-Benutzer des Kunden nennen und dessen dokumentiertes Kennwort, E-Mail und Gruppen überschreiben. Jetzt muss der Benutzername zur Checkliste passen, sonst wird der Bericht abgewiesen.
 - **Einladungs-Links und „Kennwort vergessen“ getrennt.** Beide teilten sich eine Token-Tabelle, ein Link zum Zurücksetzen (gültig eine Stunde) funktionierte deshalb über die Einladungsseite eine Woche lang. Einladungen haben jetzt eine eigene Tabelle, offene Einladungen werden übernommen. Die Einladungsseite nimmt nur noch Konten mit offener Einladung an.
 - **PDF-Exporte verschwinden auch, wenn der Besteller gelöscht wird.** Wurde der Benutzer gelöscht, verschwand der Auftrag, die Datei mit allen Kennwörtern des Kunden blieb aber für immer liegen und wanderte in jedes Backup. Jetzt geht die Datei mit ihrem Auftrag, auch beim Löschen eines Benutzers oder endgültigen Löschen eines Kunden. Die stündliche Aufräumung entfernt außerdem verwaiste Dateien nach Ablauf der Frist, auch solche, die schon herumliegen.
+- **Keine fremden Links mehr in den Ablauf-Mails.** Eine Leerzeile in einem Namen oder Agent-Hostnamen beendete den HTML-Teil der Mail, und der Rest wurde als Markdown gelesen, also auch als Link oder Bild. Namen stehen jetzt immer auf einer Zeile und bleiben Text.
 
 ### Internal
 
