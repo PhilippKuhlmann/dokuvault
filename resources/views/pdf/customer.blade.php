@@ -117,6 +117,8 @@
     </div>
 
     @php
+        // The parts drawn outside x-pdf.section check the same right.
+        $mayView = fn (string $class) => ($pdfOwner ?? null) && \Illuminate\Support\Facades\Gate::forUser($pdfOwner)->allows('viewAny', $class);
         $deviceTitle = fn ($x) => $x->name ?: (trim(($x->manufacturer ?? '') . ' ' . ($x->model ?? '')) ?: '#' . $x->id);
         $date = fn ($d) => $d ? \Carbon\Carbon::parse($d)->format('d.m.Y') : '';
     @endphp
@@ -176,8 +178,8 @@
             'Ports' => 'port_count', 'Höheneinheiten' => fn($p) => $p->height_units . ' HE', 'Notiz' => 'note'],
     ]" />
 
-    {{-- Dosenbelegung je Feld: nur beschriftete Ports, sonst stehen hier 48 leere Zeilen. --}}
-    @foreach ($patchpanels as $panel)
+    {{-- Outlets per panel: only labelled ports, otherwise 48 empty rows. --}}
+    @foreach ($mayView(\App\Models\PatchPanel::class) ? $patchpanels : [] as $panel)
         @php $belegt = $panel->ports->filter(fn ($p) => $p->isDocumented()); @endphp
         @if ($belegt->isNotEmpty())
             <div class="ports-block">
@@ -209,7 +211,7 @@
 
     {{-- Die Belegung steht als Zeichnung statt als Aufzählung: im Schrank vor
          Ort sucht man nach dem Bild, nicht nach einer Liste. --}}
-    @foreach ($racks as $rack)
+    @foreach ($mayView(\App\Models\Rack::class) ? $racks : [] as $rack)
         <div class="rack-block">
             <div class="rack-caption">{{ $rack->name }} – {{ __('Frontansicht') }}</div>
             @include('pdf._rack', ['rack' => $rack, 'svgDir' => $svgDir, 'seite' => 'front'])

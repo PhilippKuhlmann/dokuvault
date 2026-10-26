@@ -8,6 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -37,7 +38,7 @@ class KundenPdfErzeugen implements ShouldQueue
 
     public function handle(): void
     {
-        $export = PdfExport::with('customer')->find($this->exportId);
+        $export = PdfExport::with('customer', 'user')->find($this->exportId);
 
         if (! $export || ! $export->customer) {
             return;
@@ -45,17 +46,22 @@ class KundenPdfErzeugen implements ShouldQueue
 
         $export->update(['status' => PdfExport::LAEUFT]);
 
-        // Der Bedarf waechst mit dem Kunden: 370 MB waren gemessen, der
-        // naechste groessere Kunde braucht mehr. Im Hintergrundprozess stoert
-        // ein hohes Limit niemanden - anders als im Webserver, wo es fuer jede
-        // Anfrage gelten wuerde.
+        // The need grows with the customer: 370 MB were measured, the next
+        // larger customer needs more. In the background process a high limit
+        // bothers nobody - unlike in the web server, where it would apply to
+        // every request.
         ini_set('memory_limit', '1G');
 
-        // Die Rack-Frontansichten sind SVG. DomPDF rendert sie nur aus einer
-        // Bilddatei innerhalb seines chroot, deshalb ein kurzlebiger Ordner -
-        // der auch verschwindet, wenn das Rendern fehlschlaegt.
+        // The rack front views are SVG. DomPDF renders them only from an
+        // image file inside its chroot, hence a short-lived folder - which
+        // also goes away when rendering fails.
         $svgDir = storage_path('app/pdf-svg/'.Str::uuid());
         File::ensureDirectoryExists($svgDir);
+
+        // Whoever ordered the export sees only what they may see in the
+        // browser: every section checks this user's viewAny right (see
+        // components/pdf/section). Without an owner, sections stay empty.
+        View::share('pdfOwner', $export->user);
 
         try {
             $pdf = Pdf::loadView('pdf.customer', [
@@ -63,21 +69,21 @@ class KundenPdfErzeugen implements ShouldQueue
                 'svgDir' => $svgDir,
             ])->output();
 
-            $pfad = 'pdf-exports/'.$export->customer_id.'/'
+            $path = 'pdf-exports/'.$export->customer_id.'/'
                 .now()->format('Y-m-d_His').'_dokumentation.pdf';
 
-            Storage::disk('local')->put($pfad, $pdf);
+            Storage::disk('local')->put($path, $pdf);
 
             $export->update([
                 'status' => PdfExport::FERTIG,
-                'path' => $pfad,
+                'path' => $path,
                 'size' => strlen($pdf),
                 'finished_at' => now(),
                 'error' => null,
             ]);
         } catch (Throwable $e) {
-            // Die Meldung landet auf der Seite - deshalb gekuerzt und ohne
-            // Stacktrace, der gehoert ins Log.
+            // The message ends up on the page - so shortened and without a
+            // stack trace, that belongs in the log.
             $export->update([
                 'status' => PdfExport::FEHLER,
                 'error' => Str::limit($e->getMessage(), 300),
@@ -87,6 +93,7 @@ class KundenPdfErzeugen implements ShouldQueue
             throw $e;
         } finally {
             File::deleteDirectory($svgDir);
+            View::share('pdfOwner', null);
         }
     }
 
