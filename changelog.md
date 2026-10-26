@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.10.26
+
+### Security
+
+- **Teil-Admins konnten sich zum Volladmin machen.** Wer nur „Benutzer verwalten“ hatte, konnte sich selbst die Rolle 1 geben oder einem Volladmin ein neues Kennwort setzen und dessen Konto übernehmen. Wer nur „Rollen und Rechte verwalten“ hatte, konnte an der eigenen Rolle alle Rechte anhaken. Jetzt gilt eine Obergrenze: Teil-Admins vergeben nur Rechte, die sie selbst haben. Rolle 1 und Rollen mit mehr Rechten können sie weder vergeben noch bearbeiten. Benutzer mit solchen Rollen können sie weder bearbeiten noch löschen, auch die zweite Stufe lässt sich bei ihnen nicht zurücksetzen, und eine Einladung können sie nicht mehr schicken. In der Rollen-Auswahl erscheinen nur noch die Rollen, die sie vergeben dürfen. Für die Rolle 1 ändert sich nichts.
+
 ## 26.10.22
 
 ### Added

@@ -80,6 +80,51 @@ class User extends Authenticatable
         return false;
     }
 
+    /**
+     * Privilege ceiling for delegated admins: whoever holds admin_user or
+     * admin_role without being role 1 may only hand out what they hold
+     * themselves. Otherwise a delegate could give themselves role 1, or tick
+     * every right on their own role, and own the whole installation.
+     *
+     * @param  iterable<string>  $permissionNames
+     */
+    public function mayGrant(iterable $permissionNames): bool
+    {
+        if ((int) $this->role_id === Role::IS_ADMIN) {
+            return true;
+        }
+
+        $own = $this->role?->permissions->pluck('name') ?? collect();
+
+        return collect($permissionNames)->diff($own)->isEmpty();
+    }
+
+    /**
+     * May assign or edit this role. Role 1 is above every delegate: its
+     * rights come from Gate::before, not from its ticked permissions.
+     */
+    public function mayAssign(Role $role): bool
+    {
+        if ((int) $this->role_id === Role::IS_ADMIN) {
+            return true;
+        }
+
+        return (int) $role->id !== Role::IS_ADMIN && $this->mayGrant($role->permissions->pluck('name'));
+    }
+
+    /**
+     * May edit, delete or reset this user. A delegate who could set the
+     * password of a higher-ranked user could simply log in as them.
+     */
+    public function mayManage(User $other): bool
+    {
+        if ((int) $this->role_id === Role::IS_ADMIN) {
+            return true;
+        }
+
+        return (int) $other->role_id !== Role::IS_ADMIN && (! $other->role || $this->mayAssign($other->role));
+    }
+
     public function hasCustomer()
     {
         if ($this->customer_id) {

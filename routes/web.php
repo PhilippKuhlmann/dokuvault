@@ -248,7 +248,6 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             Route::get('/role/create', [RoleController::class, 'create'])->name('admin.role.create');
             Route::get('/role/{role}/edit', [RoleController::class, 'edit'])->name('admin.role.edit');
             Route::patch('/role/{role}', [RoleController::class, 'update'])->name('admin.role.update');
-            Route::delete('/role/{role}', [RoleController::class, 'destroy'])->name('admin.role.destroy');
         });
 
         // Operating Systems. Die Liste steht im Menue unter "Auswahlmenues",

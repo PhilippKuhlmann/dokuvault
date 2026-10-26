@@ -27,7 +27,7 @@ class UserController extends Controller
 
     public function create()
     {
-        $roles = Role::all();
+        $roles = $this->assignableRoles();
         $customers = Customer::all();
 
         return view('admin.user.create', compact('roles', 'customers'));
@@ -36,6 +36,7 @@ class UserController extends Controller
     public function store(UserRequest $request)
     {
         $daten = $request->validated();
+        $this->authorizeRole($daten['role_id']);
         $einladen = (bool) ($daten['einladen'] ?? false);
         unset($daten['einladen']);
 
@@ -62,6 +63,8 @@ class UserController extends Controller
      */
     public function einladen(User $user)
     {
+        abort_unless(auth()->user()->mayManage($user), 403);
+
         return $this->einladungSenden($user, route('admin.user.edit', $user));
     }
 
@@ -103,7 +106,9 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        $roles = Role::all();
+        abort_unless(auth()->user()->mayManage($user), 403);
+
+        $roles = $this->assignableRoles();
         $customers = Customer::all();
 
         return view('admin.user.edit', compact('user', 'roles', 'customers'));
@@ -111,7 +116,10 @@ class UserController extends Controller
 
     public function update(User $user, UserRequest $request)
     {
+        abort_unless(auth()->user()->mayManage($user), 403);
+
         $userData = $request->validated();
+        $this->authorizeRole($userData['role_id']);
 
         // Auf der Demo sind die vordefinierten Zugaenge vollstaendig gesperrt.
         // Nicht nur Passwort und Rolle: Der Schutz erkennt sie am Benutzernamen,
@@ -162,6 +170,8 @@ class UserController extends Controller
      */
     public function zweiteStufeZuruecksetzen(User $user)
     {
+        abort_unless(auth()->user()->mayManage($user), 403);
+
         if ($user->istDemoGeschuetzt()) {
             return redirect(route('admin.user.edit', $user))
                 ->withErrors(['demo' => __('Dieser Demo-Zugang ist gesperrt und lässt sich nicht ändern.')]);
@@ -188,6 +198,8 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        abort_unless(auth()->user()->mayManage($user), 403);
+
         if ($user->istDemoGeschuetzt()) {
             return redirect(route('admin.user.edit', $user))
                 ->withErrors(['demo' => __('Dieser Zugang gehört zur Demo und lässt sich nicht löschen. Selbst angelegte Benutzer schon.')]);
@@ -196,5 +208,21 @@ class UserController extends Controller
         $user->delete();
 
         return redirect(route('admin.user.index'));
+    }
+
+    /**
+     * Only the roles the current admin may hand out - a delegate does not
+     * get role 1 or anything above their own rights in the dropdown.
+     */
+    private function assignableRoles()
+    {
+        return Role::with('permissions')->get()
+            ->filter(fn (Role $role) => auth()->user()->mayAssign($role))
+            ->values();
+    }
+
+    private function authorizeRole(int|string $roleId): void
+    {
+        abort_unless(auth()->user()->mayAssign(Role::with('permissions')->findOrFail($roleId)), 403);
     }
 }

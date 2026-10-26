@@ -97,6 +97,8 @@ class RoleController extends Controller
             'description' => '',
         ]);
 
+        $this->authorizePermissions($request);
+
         $role = Role::create($validatedData);
 
         $role->permissions()->attach($request->permissions);
@@ -106,6 +108,8 @@ class RoleController extends Controller
 
     public function edit(Role $role)
     {
+        abort_unless(auth()->user()->mayAssign($role), 403);
+
         [$matrix, $others, $actions, $adminRechte] = $this->groupPermissions();
         $selected = $role->permissions->pluck('id')->all();
 
@@ -114,6 +118,9 @@ class RoleController extends Controller
 
     public function update(Role $role, Request $request)
     {
+        abort_unless(auth()->user()->mayAssign($role), 403);
+        $this->authorizePermissions($request);
+
         $validatedData = $request->validate([
             'name' => 'required|max:255',
             'description' => '',
@@ -124,5 +131,16 @@ class RoleController extends Controller
         $role->permissions()->sync($request->permissions);
 
         return redirect(route('admin.role.index'));
+    }
+
+    /**
+     * A delegate with admin_role may only tick rights they hold themselves -
+     * otherwise they could tick everything on their own role.
+     */
+    private function authorizePermissions(Request $request): void
+    {
+        $names = Permission::whereIn('id', (array) $request->permissions)->pluck('name');
+
+        abort_unless(auth()->user()->mayGrant($names), 403);
     }
 }
