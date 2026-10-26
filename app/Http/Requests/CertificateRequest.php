@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Support\CertificateCheck;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CertificateRequest extends FormRequest
@@ -15,13 +17,13 @@ class CertificateRequest extends FormRequest
     {
         return [
             'name' => 'required|max:255',
-            'common_name' => 'nullable|max:255',
+            'common_name' => ['nullable', 'max:255', $this->noInternalTarget()],
             'issuer' => 'nullable|max:255',
             'type' => 'nullable|max:255',
             'issued_date' => 'nullable|date',
             'expiry_date' => 'nullable|date',
             'auto_check' => 'nullable|boolean',
-            'check_host' => 'nullable|max:255',
+            'check_host' => ['nullable', 'max:255', $this->noInternalTarget()],
             'check_port' => 'nullable|integer|min:1|max:65535',
             'notes' => 'nullable',
         ];
@@ -41,5 +43,19 @@ class CertificateRequest extends FormRequest
             'check_port' => 'Port',
             'notes' => 'Notizen',
         ];
+    }
+
+    /**
+     * A customer account may not point the check at an internal address: the
+     * nightly run would probe it on their behalf and show the result. Staff
+     * keep checking internal certificates.
+     */
+    private function noInternalTarget(): Closure
+    {
+        return function (string $attribute, mixed $value, Closure $fail) {
+            if (auth()->user()?->hasCustomer() && filled($value) && ! CertificateCheck::isPublicTarget((string) $value)) {
+                $fail(__('Interne Adressen lassen sich nicht prüfen.'));
+            }
+        };
     }
 }

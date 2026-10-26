@@ -219,7 +219,8 @@ class ObjektListe extends Component
 
         $this->typ === 'domain'
             ? app(AutoCheck::class)->checkDomain($eintrag)
-            : app(AutoCheck::class)->checkCertificate($eintrag);
+            // Customer accounts only reach public targets - see CertificateCheck.
+            : app(AutoCheck::class)->checkCertificate($eintrag, auth()->user()->hasCustomer());
 
         $this->dispatch('hinweis', text: $eintrag->check_error
             ? __('Prüfung fehlgeschlagen: :fehler', ['fehler' => $eintrag->check_error])

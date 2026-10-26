@@ -73,7 +73,8 @@ class AutoCheck
         });
     }
 
-    public function checkCertificate(Certificate $certificate): void
+    /** @param  bool  $publicOnly  see CertificateCheck::check() */
+    public function checkCertificate(Certificate $certificate, bool $publicOnly = false): void
     {
         $host = trim((string) ($certificate->check_host ?: $certificate->common_name));
 
@@ -84,7 +85,7 @@ class AutoCheck
         }
 
         try {
-            $found = $this->certificates->check($host, (int) ($certificate->check_port ?: 443));
+            $found = $this->certificates->check($host, (int) ($certificate->check_port ?: 443), $publicOnly);
         } catch (Throwable $e) {
             $this->finish($certificate, Str::limit($e->getMessage(), 250));
 
