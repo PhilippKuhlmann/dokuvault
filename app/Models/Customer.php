@@ -19,10 +19,14 @@ class Customer extends Model
     {
         parent::boot();
 
+        // Only on the final delete - a customer in the trash keeps its data.
+        // Through Eloquent, so the files go too (see PdfExport).
+        static::forceDeleting(fn ($customer) => PdfExport::where('customer_id', $customer->id)->get()->each->delete());
+
         static::creating(function ($customer) {
             $baseSlug = Str::slug($customer->name);
 
-            // Eindeutigkeit sicherstellen
+            // Keep it unique
             $slug = $baseSlug;
             $counter = 1;
             while (static::where('slug', $slug)->exists()) {

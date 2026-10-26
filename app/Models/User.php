@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Crypt;
@@ -60,6 +61,10 @@ class User extends Authenticatable
      */
     protected static function booted(): void
     {
+        // The database cascade would drop the export rows but leave their
+        // files - with every password of a customer - on disk for good.
+        static::deleting(fn (User $user) => $user->pdfExports()->get()->each->delete());
+
         static::updated(function (User $user) {
             $twoFactorRemoved = $user->wasChanged('two_factor_confirmed_at') && $user->two_factor_confirmed_at === null;
             $twoFactorDemanded = $user->wasChanged('two_factor_required') && $user->mussZweiteStufeEinrichten();
@@ -68,6 +73,11 @@ class User extends Authenticatable
                 $user->revokeAppTokens();
             }
         });
+    }
+
+    public function pdfExports(): HasMany
+    {
+        return $this->hasMany(PdfExport::class);
     }
 
     public function revokeAppTokens(): void

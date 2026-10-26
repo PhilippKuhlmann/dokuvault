@@ -54,12 +54,11 @@ Schedule::command('queue:work --stop-when-empty --max-time=55 --tries=1 --memory
     ->everyMinute()
     ->withoutOverlapping(10);
 
-// Fertige PDF wieder loeschen: Sie enthalten alle Zugangsdaten des Kunden und
-// haben nach dem Abholen keinen Grund, liegen zu bleiben.
-// Stuendlich, nicht einmal nachts: Die Frist steht in Stunden, und eine Frist,
-// die nur um 03:30 durchgesetzt wird, ist keine. Ein PDF von 04:00 Uhr lag mit
-// 24 Stunden Frist bis zum uebernaechsten Lauf - fast zwei Tage statt einem.
-Schedule::command('pdf:aufraeumen')->hourly();
+// Delete finished PDFs again: they hold every password of the customer and
+// have no reason to stay once collected. Hourly, not once a night: the
+// retention is set in hours, and one enforced only at 03:30 is none - a PDF
+// from 04:00 with 24 hours retention stayed until the run after next.
+Schedule::command('pdf:purge')->hourly();
 
 // Das Protokoll nach der eingestellten Frist kuerzen, samt der daran
 // haengenden Kennwoerter. Taeglich, nicht stuendlich: Die Frist wird in Tagen

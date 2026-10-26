@@ -144,12 +144,12 @@ test('die PDF-Frist entscheidet, was aufgeräumt wird', function () {
     $auftrag->forceFill(['created_at' => now()->subHours(10)])->save();
 
     // 24 Stunden Aufbewahrung: zehn Stunden alt bleibt liegen.
-    $this->artisan('pdf:aufraeumen');
+    $this->artisan('pdf:purge');
     expect(PdfExport::find($auftrag->id))->not->toBeNull();
 
     Setting::setzen(Setting::PDF_STUNDEN, 6);
 
-    $this->artisan('pdf:aufraeumen');
+    $this->artisan('pdf:purge');
     expect(PdfExport::find($auftrag->id))->toBeNull();
 });
 

@@ -20,11 +20,13 @@
 - **Session-Cookie wieder nur über HTTPS.** `.env.example` enthielt `SESSION_SECURE_COOKIE=` mit leerem Wert. Laravel las das als „aus“, die Automatik (an bei `APP_ENV=production` oder einer https-Adresse) griff nicht mehr. Jede Installation, deren `.env` aus der Vorlage stammt, schickte das Sitzungs-Cookie damit auch über http. Ein leerer Wert gilt jetzt als „nicht gesetzt“, die Zeile in der Vorlage ist auskommentiert.
 - **Der Schlüssel im AD-Skript gilt nur noch für den Benutzer seiner Checkliste.** Ein Bericht konnte einen beliebigen anderen AD-Benutzer des Kunden nennen und dessen dokumentiertes Kennwort, E-Mail und Gruppen überschreiben. Jetzt muss der Benutzername zur Checkliste passen, sonst wird der Bericht abgewiesen.
 - **Einladungs-Links und „Kennwort vergessen“ getrennt.** Beide teilten sich eine Token-Tabelle, ein Link zum Zurücksetzen (gültig eine Stunde) funktionierte deshalb über die Einladungsseite eine Woche lang. Einladungen haben jetzt eine eigene Tabelle, offene Einladungen werden übernommen. Die Einladungsseite nimmt nur noch Konten mit offener Einladung an.
+- **PDF-Exporte verschwinden auch, wenn der Besteller gelöscht wird.** Wurde der Benutzer gelöscht, verschwand der Auftrag, die Datei mit allen Kennwörtern des Kunden blieb aber für immer liegen und wanderte in jedes Backup. Jetzt geht die Datei mit ihrem Auftrag, auch beim Löschen eines Benutzers oder endgültigen Löschen eines Kunden. Die stündliche Aufräumung entfernt außerdem verwaiste Dateien nach Ablauf der Frist, auch solche, die schon herumliegen.
 
 ### Internal
 
 - **Schutz-Tests gegen beide Lücken.** Jede Admin-Route, die auf einen einzelnen Benutzer oder eine Rolle zielt, muss einen Teil-Admin von der Rolle 1 fernhalten. Eine neue Aktion ohne diese Prüfung fällt im Test auf. Jeder Formulartyp mit Datei-Upload darf den Ablagepfad weder annehmen noch einen fremden Pfad ausliefern. Jeder Download aus dem Speicher muss den Pfad mit `StoragePath` prüfen, Ausnahmen stehen mit Begründung im Test. Der Datei-Download prüft den Pfad jetzt ebenfalls. Die unbenutzte Route zum Löschen von Rollen ist entfernt, sie hätte nur einen Fehler 500 geliefert.
 - **Testsuite wieder vollständig grün.** 33 Tests riefen Hilfsfunktionen auf, die in einer anderen Testdatei standen, und liefen nur, wenn diese zufällig vorher geladen war. Diese Hilfsfunktionen stehen jetzt in `tests/Pest.php`, die drei fast gleichen Admin-Helfer sind zu `adminUser()` zusammengelegt. Der Demo-Nutzungstest schreibt in einen eigenen Speicherpfad je Prozess und fällt beim parallelen Lauf nicht mehr zufällig aus.
+- **`pdf:aufraeumen` heißt jetzt `pdf:purge`.** Der Zeitplan ist angepasst, an der Server-Einrichtung ändert sich nichts (der Cron ruft `schedule:run`).
 
 ## 26.10.22
 

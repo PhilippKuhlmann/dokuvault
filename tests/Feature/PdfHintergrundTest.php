@@ -109,7 +109,7 @@ test('der Aufraeumbefehl loescht alte Ausgaben mitsamt Datei', function () {
     ]);
     $alt->forceFill(['created_at' => now()->subHours(Setting::pdfStunden() + 1)])->save();
 
-    $this->artisan('pdf:aufraeumen')->assertSuccessful();
+    $this->artisan('pdf:purge')->assertSuccessful();
 
     expect(PdfExport::find($alt->id))->toBeNull();
     expect(Storage::disk('local')->exists('pdf-exports/test.pdf'))->toBeFalse();
