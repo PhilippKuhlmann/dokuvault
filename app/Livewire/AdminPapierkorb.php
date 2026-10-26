@@ -6,6 +6,7 @@ use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Concerns\TracksChanges;
 use App\Models\Customer;
+use App\Support\StoragePath;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -188,7 +189,10 @@ class AdminPapierkorb extends Component
      */
     protected function endgueltig($objekt): void
     {
-        if (! empty($objekt->file_path)) {
+        // Only inside the owner's folder - a path that was taken from a form
+        // could point at another customer's files.
+        $kunde = $objekt->customer_id ? Customer::withTrashed()->find($objekt->customer_id) : null;
+        if (StoragePath::belongsTo($objekt->file_path ?? null, $kunde)) {
             Storage::disk('local')->delete($objekt->file_path);
         }
 

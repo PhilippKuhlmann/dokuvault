@@ -25,7 +25,6 @@ class LicenseAccessRequest extends FormRequest
         return [
             'name' => 'required|max:255',
             'key' => 'required|max:255',
-            'file_path' => 'nullable',
             'file_name' => 'nullable',
         ];
     }

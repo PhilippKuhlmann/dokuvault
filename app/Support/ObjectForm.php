@@ -229,6 +229,12 @@ class ObjectForm
             }
         }
 
+        // The stored path is server-owned: only storeFile sets it. Taken from
+        // the form, it pointed a licence at another customer's files.
+        if ($dateiFeld = collect($this->fields())->firstWhere('type', 'datei')) {
+            unset($daten[$dateiFeld['pfad_feld']]);
+        }
+
         $daten = $this->storeFile($daten, $objekt, $datei);
 
         // Not a column - written after the object exists, see below.
@@ -493,8 +499,9 @@ class ObjectForm
         $dateiname = Dateiname::fuer($datei, $daten[$feld['name_feld']] ?? null);
         $pfad = $datei->storeAs($this->customer()->slug.'/'.$feld['ordner'], $dateiname, 'local');
 
-        if ($objekt?->{$feld['pfad_feld']}) {
-            Storage::disk('local')->delete($objekt->{$feld['pfad_feld']});
+        $alterPfad = $objekt?->{$feld['pfad_feld']};
+        if (StoragePath::belongsTo($alterPfad, $this->customer(), $feld['ordner'])) {
+            Storage::disk('local')->delete($alterPfad);
         }
 
         $daten[$feld['pfad_feld']] = $pfad;

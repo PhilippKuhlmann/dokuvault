@@ -30,7 +30,6 @@ class LicenseSoftwareRequest extends FormRequest
             'start_date' => 'nullable',
             'end_date' => 'nullable',
             'abo' => 'nullable',
-            'file_path' => 'nullable',
             'file_name' => 'nullable',
         ];
     }

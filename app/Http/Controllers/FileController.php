@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\File;
 use App\Models\Setting;
 use App\Support\Dateiname;
+use App\Support\StoragePath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -64,6 +65,8 @@ class FileController extends Controller
     public function download(Customer $customer, File $file)
     {
         $this->authorize('viewAny', File::class);
+
+        abort_unless(StoragePath::belongsTo($file->file_path, $customer, 'files'), 404);
 
         $name = $file->name.'.'.$file->extension;
 

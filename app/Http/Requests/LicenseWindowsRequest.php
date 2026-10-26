@@ -27,7 +27,6 @@ class LicenseWindowsRequest extends FormRequest
             // Auswahl in einem Datenbankfehler statt in einer Meldung.
             'operating_system_id' => 'required',
             'key' => 'required|max:255',
-            'file_path' => 'nullable',
             'file_name' => 'nullable',
         ];
     }

@@ -6,6 +6,12 @@
 
 - **Teil-Admins konnten sich zum Volladmin machen.** Wer nur „Benutzer verwalten“ hatte, konnte sich selbst die Rolle 1 geben oder einem Volladmin ein neues Kennwort setzen und dessen Konto übernehmen. Wer nur „Rollen und Rechte verwalten“ hatte, konnte an der eigenen Rolle alle Rechte anhaken. Jetzt gilt eine Obergrenze: Teil-Admins vergeben nur Rechte, die sie selbst haben. Rolle 1 und Rollen mit mehr Rechten können sie weder vergeben noch bearbeiten. Benutzer mit solchen Rollen können sie weder bearbeiten noch löschen, auch die zweite Stufe lässt sich bei ihnen nicht zurücksetzen, und eine Einladung können sie nicht mehr schicken. In der Rollen-Auswahl erscheinen nur noch die Rollen, die sie vergeben dürfen. Für die Rolle 1 ändert sich nichts.
 
+- **Lizenz-Dateien konnten auf fremde Kundendateien zeigen.** Das Lizenzformular (Software, Windows, Zugriffslizenz) nahm den Ablagepfad der Datei aus dem Formular an. Ein Kundennutzer konnte seine Lizenz so auf Dateien eines anderen Kunden richten, etwa auf einen PDF-Export mit allen Zugangsdaten. Er konnte sie herunterladen und beim Ersetzen der Datei löschen. Den Pfad setzt jetzt nur noch der Server beim Hochladen. Zusätzlich liefern Download, Ersetzen und endgültiges Löschen aus dem Papierkorb nur noch Dateien im Ordner des eigenen Kunden aus bzw. löschen nur dort, sodass auch Altdaten mit einem fremden Pfad nichts mehr ausrichten.
+
+### Internal
+
+- **Schutz-Tests gegen beide Lücken.** Jede Admin-Route, die auf einen einzelnen Benutzer oder eine Rolle zielt, muss einen Teil-Admin von der Rolle 1 fernhalten. Eine neue Aktion ohne diese Prüfung fällt im Test auf. Jeder Formulartyp mit Datei-Upload darf den Ablagepfad weder annehmen noch einen fremden Pfad ausliefern. Jeder Download aus dem Speicher muss den Pfad mit `StoragePath` prüfen, Ausnahmen stehen mit Begründung im Test. Der Datei-Download prüft den Pfad jetzt ebenfalls. Die unbenutzte Route zum Löschen von Rollen ist entfernt, sie hätte nur einen Fehler 500 geliefert.
+
 ## 26.10.22
 
 ### Added
