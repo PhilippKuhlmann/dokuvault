@@ -443,7 +443,7 @@ Danach mit einem der Demo-Zugänge anmelden.
 ### Produktiv-Betrieb (ohne Demo-Daten)
 
 Für einen echten Server – **kein** Faker, keine Demo-Daten, nur die Startdaten
-(Admin-Benutzer, Rollen/Rechte, Betriebssystem- & Mail-Anbieter-Listen):
+(Rollen/Rechte, Betriebssystem- & Mail-Anbieter-Listen) – und **kein** Standard-Administrator:
 
 ```bash
 composer install --no-dev --optimize-autoloader
@@ -456,6 +456,12 @@ php artisan key:generate
 php artisan migrate --force
 php artisan db:seed --force          # führt den ProductionDatabaseSeeder aus
 ```
+
+Der Seeder gibt einen einmaligen **Einrichtungscode** aus. Dann die Instanz im Browser öffnen: Jede
+Seite führt zu `/setup`, dort legt man mit dem Code den ersten Administrator samt eigenem Kennwort
+an. Sobald es einen Administrator gibt, ist die Seite endgültig weg. Code verloren?
+`php artisan setup:code` erzeugt einen neuen. Wer ihn vorab festlegen will (etwa für automatische
+Installationen), setzt `SETUP_TOKEN` in der `.env`.
 
 > Der Seeder verzweigt anhand von `APP_ENV`: bei `local` die Demo-Daten, bei `production`
 > nur die Startdaten. Steht `APP_ENV` auf `local`, aber ohne Dev-Pakete installiert, schlägt

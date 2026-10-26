@@ -12,6 +12,7 @@ use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RecordApiRequest;
 use App\Http\Middleware\RecordDemoUsage;
 use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Middleware\RedirectToInitialSetup;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\SicherheitsHeader;
 use App\Http\Middleware\TrimStrings;
@@ -102,6 +103,10 @@ class Kernel extends HttpKernel
 
             // Zaehlt Aufrufe, aber nur bei DEMO_MODE=true - siehe Middleware.
             RecordDemoUsage::class,
+
+            // Fresh install without an administrator: everything leads to
+            // /setup. In the group so Livewire is covered as well.
+            RedirectToInitialSetup::class,
         ],
 
         'api' => [

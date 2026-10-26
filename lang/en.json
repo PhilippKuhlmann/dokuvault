@@ -1586,5 +1586,13 @@
     "zuletzt :datum": "last :datum",
     "Ein Agent kommt einmal, wenn er verstummt, und erst wieder, wenn er sich zwischendurch gemeldet hat.": "An agent is mailed once when it goes silent, and again only after it has reported in between.",
     "Agenten melden nicht": "Agents not reporting",
-    "Agenten, die nicht mehr melden": "Agents that stopped reporting"
+    "Agenten, die nicht mehr melden": "Agents that stopped reporting",
+    "Der Einrichtungscode stimmt nicht.": "The setup code is not correct.",
+    "DokuVault ist eingerichtet. Sie können sich jetzt anmelden.": "DokuVault is set up. You can log in now.",
+    "Ersteinrichtung": "Initial setup",
+    "Willkommen bei DokuVault. Legen Sie hier den ersten Administrator an.": "Welcome to DokuVault. Create the first administrator here.",
+    "Einrichtungscode": "Setup code",
+    "Der Wert von SETUP_TOKEN aus der .env.": "The value of SETUP_TOKEN from the .env.",
+    "Steht in der Ausgabe der Installation bzw. im Container-Log. Neu erzeugen mit „php artisan setup:code“.": "Shown in the installation output or the container log. Create a new one with “php artisan setup:code”.",
+    "Administrator anlegen": "Create administrator"
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
+use App\Http\Controllers\Auth\InitialSetupController;
 use App\Http\Controllers\Auth\InvitationController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
@@ -41,6 +42,15 @@ Route::middleware('guest')->group(function () {
     Route::post('einladung', [InvitationController::class, 'store'])
         ->middleware('throttle:5,15')
         ->name('einladung.speichern');
+
+    // First administrator of a fresh install - only while setup is pending,
+    // otherwise 404. Throttled: the setup code can be guessed.
+    Route::get('setup', [InitialSetupController::class, 'create'])
+        ->name('setup');
+
+    Route::post('setup', [InitialSetupController::class, 'store'])
+        ->middleware('throttle:5,15')
+        ->name('setup.store');
 
     // Zwischen Kennwort und Einmalcode ist der Nutzer nicht angemeldet -
     // deshalb steht der zweite Schritt hier bei den Gaesten und nicht bei den

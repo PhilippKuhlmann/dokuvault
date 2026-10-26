@@ -29,6 +29,9 @@ class Setting extends Model
     /** Eigener Name der Installation, statt des Namens aus der .env. */
     public const APP_NAME = 'app_name';
 
+    /** Hash of the one-time code for /setup - see App\Support\InitialSetup. */
+    public const SETUP_CODE = 'setup_code';
+
     /** Groesste erlaubte Datei in Kilobyte - siehe uploadMaxKb(). */
     public const UPLOAD_MAX_KB = 'upload_max_kb';
 

@@ -25,7 +25,7 @@ setze_env() {
 }
 
 for schluessel in APP_ENV APP_DEBUG APP_URL APP_KEY LOG_CHANNEL \
-                  DB_CONNECTION DB_HOST DB_PORT DB_DATABASE DB_USERNAME DB_PASSWORD; do
+                  DB_CONNECTION DB_HOST DB_PORT DB_DATABASE DB_USERNAME DB_PASSWORD SETUP_TOKEN; do
     setze_env "$schluessel"
 done
 
@@ -73,7 +73,7 @@ echo "==> Migrationen"
 php artisan migrate --force --no-interaction
 
 if [ "$FRISCH" = "1" ]; then
-    echo "==> Erststart: Demo-Daten anlegen"
+    echo "==> Erststart: Startdaten anlegen (bei APP_ENV=production mit Einrichtungscode, siehe unten)"
     php artisan db:seed --force --no-interaction
 fi
 

@@ -798,6 +798,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | First start
+    |--------------------------------------------------------------------------
+    |
+    | Optional fixed setup code for /setup, where the first administrator is
+    | created. Without it, the production seeder generates one and prints it.
+    | Has no effect once an administrator exists.
+    |
+    */
+
+    'setup_token' => env('SETUP_TOKEN'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Sprueche auf den Fehlerseiten
     |--------------------------------------------------------------------------
     |

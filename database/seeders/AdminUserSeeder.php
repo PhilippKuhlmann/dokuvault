@@ -9,7 +9,9 @@ use Illuminate\Database\Seeder;
 class AdminUserSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * The documented admin/password login of the demo and local development.
+     * Only LocalDatabaseSeeder calls this - a production install creates its
+     * first administrator under /setup instead.
      */
     public function run(): void
     {

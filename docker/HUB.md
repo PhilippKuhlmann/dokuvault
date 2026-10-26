@@ -58,9 +58,14 @@ Der Container wartet auf die Datenbank, migriert und startet. Ist die Datenbank
 noch leer, werden Startdaten angelegt — mit `APP_ENV=local` zusätzlich ein
 vollständiger Demo-Kunde.
 
-**Die Demo-Anmeldung lautet `admin` / `password`.** Sie ist zum Ansehen
-gedacht. Wer das Bild über einen Probelauf hinaus betreibt, setzt
-`APP_ENV=production` und legt einen eigenen Zugang an.
+**Die Demo-Anmeldung lautet `admin` / `password`** (nur mit `APP_ENV=local`).
+Sie ist zum Ansehen gedacht.
+
+Mit `APP_ENV=production` gibt es keinen Standard-Zugang: Beim ersten Start
+steht im Container-Log (`docker compose logs`) ein **Einrichtungscode**. Die
+Anwendung führt auf `/setup`, dort legt man damit den ersten Administrator an.
+Den Code kann man auch vorab über `SETUP_TOKEN` festlegen; ein neuer entsteht
+mit `docker compose exec app php artisan setup:code`.
 
 ## Umgebungsvariablen
 

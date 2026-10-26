@@ -434,8 +434,8 @@ Then sign in with one of the demo accounts.
 
 ### Production (without demo data)
 
-For a real server — **no** Faker, no demo data, only the seed data (admin user, roles/permissions,
-operating-system and mail-provider lists):
+For a real server — **no** Faker, no demo data, only the seed data (roles/permissions,
+operating-system and mail-provider lists) — and **no** default administrator:
 
 ```bash
 composer install --no-dev --optimize-autoloader
@@ -448,6 +448,11 @@ php artisan key:generate
 php artisan migrate --force
 php artisan db:seed --force          # runs the ProductionDatabaseSeeder
 ```
+
+The seeder prints a one-time **setup code**. Open the instance in the browser: every page leads to
+`/setup`, where you create the first administrator with that code and your own password. The page
+is gone for good once an administrator exists. Lost the code? `php artisan setup:code` makes a new
+one. To fix it in advance (e.g. for automated installs), set `SETUP_TOKEN` in the `.env`.
 
 > The seeder branches on `APP_ENV`: demo data for `local`, only the seed data for `production`.
 > With `APP_ENV=local` but installed without dev packages, seeding fails (`fake()` not found) —
