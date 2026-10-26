@@ -46,6 +46,11 @@ class ChecklistReportController extends Controller
             'errors.*' => ['string', 'max:1000'],
         ]);
 
+        // The key belongs to one checklist and so to one user. Without this,
+        // a report could name any other AD user of the customer and overwrite
+        // their documented password, email and groups.
+        abort_unless($this->sameUsername($data['username'], $checklist->username), 422, 'Der Bericht gehört zu einem anderen Benutzer.');
+
         $done = DB::transaction(function () use ($checklist, $data) {
             $adUser = $this->documentUser($checklist, $data);
 
@@ -85,7 +90,12 @@ class ChecklistReportController extends Controller
         $customerId = $checklist->customer_id;
 
         $adUser = ($checklist->ad_user_id ? ADUser::where('customer_id', $customerId)->find($checklist->ad_user_id) : null)
-            ?? (filled($data['identifier'] ?? null) ? ADUser::where('customer_id', $customerId)->where('agent_identifier', $data['identifier'])->first() : null)
+            // By objectGUID only if it is the same user - an identifier of
+            // someone else must not redirect the write.
+            ?? (filled($data['identifier'] ?? null)
+                ? ADUser::where('customer_id', $customerId)->where('agent_identifier', $data['identifier'])->get()
+                    ->first(fn (ADUser $found) => $this->sameUsername($found->username, $checklist->username))
+                : null)
             ?? ADUser::where('customer_id', $customerId)->where('username', $data['username'])->first()
             ?? new ADUser(['customer_id' => $customerId]);
 
@@ -111,5 +121,11 @@ class ChecklistReportController extends Controller
             : $adUser->groups()->detach($groups);
 
         return $adUser;
+    }
+
+    /** SamAccountName comes back from AD in its own spelling. */
+    private function sameUsername(?string $a, ?string $b): bool
+    {
+        return filled($a) && mb_strtolower($a) === mb_strtolower((string) $b);
     }
 }
