@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
 use App\Models\ChecklistSetting;
+use RuntimeException;
 
 /**
  * The PowerShell script that does the AD part of a checklist.
@@ -23,7 +24,9 @@ use App\Models\ChecklistSetting;
  *
  * What the script may touch is fixed here: open items with an action whose
  * approval (if needed) is given. The data goes in as JSON, so no value from
- * the documentation ends up as PowerShell code.
+ * the documentation ends up as PowerShell code. The one exception is the
+ * name in the comment block at the top - see commentText() and
+ * assertStructure(), which keep it from ever leaving that comment.
  */
 class ChecklistAdScript
 {
@@ -98,11 +101,19 @@ CMD;
         $script = strtr($template, [
             '__API_URL__' => rtrim(config('app.url'), '/').'/api/checklist-report',
             '__TOKEN__' => $token,
-            // Stands in a comment block: no line break, no "#>" that would end it.
-            '__TITLE__' => str_replace(['#>', "\r", "\n"], '', $checklist->fullName()),
+            '__TITLE__' => self::commentText($checklist->fullName()),
             '__EXPIRES__' => $checklist->script_token_expires_at?->format('d.m.Y H:i') ?? '',
-            '__DATA__' => json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT),
         ]);
+        self::assertStructure($template, $script);
+
+        $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        // The JSON sits in a @' ... '@ here-string, which only a line starting
+        // with '@ ends. Pretty-printed JSON never starts a line that way -
+        // checked anyway, since this script runs elevated.
+        if (preg_match("/^'@/m", $json)) {
+            throw new RuntimeException('Checklist data would end the here-string of the AD script.');
+        }
+        $script = str_replace('__DATA__', $json, $script);
 
         // #Requires is for script files; in a script block Import-Module does it.
         $script = preg_replace('/^#Requires[^\n]*\n/', '', $script);
@@ -110,6 +121,34 @@ CMD;
         // No BOM: cmd.exe would choke on it in the first line. PowerShell
         // reads the file as UTF-8 itself. CRLF, as cmd.exe expects.
         return preg_replace("/\r?\n/", "\r\n", self::CMD_HEADER.$script);
+    }
+
+    /**
+     * Text for the comment block at the top of the script. An allowlist, not
+     * a blocklist: removing "#>" once turned "##>>" back into "#>", which
+     * ended the comment - and the rest of a customer-entered name ran as
+     * code, elevated, on a domain controller. Letters (with umlauts and
+     * accents), digits, space and . _ - ' are all a name needs.
+     */
+    public static function commentText(?string $text): string
+    {
+        $text = preg_replace('/[^\p{L}\p{M}\p{N} ._\'-]/u', '', (string) $text) ?? '';
+
+        return mb_substr(trim(preg_replace('/ {2,}/', ' ', $text)), 0, 200);
+    }
+
+    /**
+     * Last line of defence: filling in the values must not add or remove a
+     * single comment delimiter. If it did, a value has changed what is code
+     * and what is comment - better no script than that one.
+     */
+    private static function assertStructure(string $template, string $script): void
+    {
+        foreach (['<#', '#>'] as $delimiter) {
+            if (substr_count($script, $delimiter) !== substr_count($template, $delimiter)) {
+                throw new RuntimeException('A value would change the comment structure of the AD script.');
+            }
+        }
     }
 
     /**
