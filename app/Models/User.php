@@ -46,6 +46,38 @@ class User extends Authenticatable
     ];
 
     /**
+     * App sign-ins end when the account's protection changes: a new password,
+     * the second factor removed (lost phone, admin reset), or the second
+     * factor newly required for someone who has not set it up. Otherwise a
+     * token on a lost or stolen phone kept working for its full 30 days -
+     * past exactly the steps meant to cut that device off.
+     *
+     * Only the app tokens ("mobil"). Tokens an administrator creates for an
+     * integration are credentials of their own and managed in the admin area.
+     *
+     * In the model, not in the controllers: password reset, profile, admin
+     * and invitation all write here, and a new path is covered as well.
+     */
+    protected static function booted(): void
+    {
+        static::updated(function (User $user) {
+            $twoFactorRemoved = $user->wasChanged('two_factor_confirmed_at') && $user->two_factor_confirmed_at === null;
+            $twoFactorDemanded = $user->wasChanged('two_factor_required') && $user->mussZweiteStufeEinrichten();
+
+            if ($user->wasChanged('password') || $twoFactorRemoved || $twoFactorDemanded) {
+                $user->revokeAppTokens();
+            }
+        });
+    }
+
+    public function revokeAppTokens(): void
+    {
+        $this->tokens()->get()
+            ->filter(fn ($token) => $token->can('mobil') && ! $token->can('*'))
+            ->each->delete();
+    }
+
+    /**
      * Das TOTP-Geheimnis. Wer es liest, kann jeden Code erzeugen - es ist
      * damit so schuetzenswert wie ein Kennwort und liegt verschluesselt.
      */

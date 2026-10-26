@@ -16,6 +16,10 @@ use Symfony\Component\HttpFoundation\Response;
  * In der Gruppe "web", damit es auch fuer Livewire gilt: Sonst waere jede
  * Liste und jedes Formular dieser Anwendung ueber /livewire/update weiterhin
  * erreichbar, und die Pflicht waere eine Anzeige.
+ *
+ * Also on the auth:sanctum groups of the API: a token issued before the
+ * second factor was required would otherwise keep working. There the answer
+ * is a 403 - an app or script cannot set up the second factor anyway.
  */
 class VerlangtZweiteStufe
 {
@@ -40,6 +44,10 @@ class VerlangtZweiteStufe
 
         if (! $nutzer || ! $nutzer->mussZweiteStufeEinrichten()) {
             return $next($request);
+        }
+
+        if ($request->is('api/*')) {
+            abort(403, __('Ihr Administrator verlangt die zweite Stufe. Richten Sie sie zuerst im Browser in Ihrem Profil ein.'));
         }
 
         // Livewire laeuft ueber eine eigene Route. Sie hier zu sperren hiesse,

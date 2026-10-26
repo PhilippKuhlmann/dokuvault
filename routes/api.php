@@ -14,6 +14,7 @@ use App\Http\Controllers\API\Mobile\RackController as MobileRackController;
 use App\Http\Controllers\API\ServerController;
 use App\Http\Controllers\API\SiteController;
 use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\VerlangtZweiteStufe;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -32,7 +33,7 @@ use Illuminate\Support\Facades\Route;
 // aufgeloest haben, sonst sieht die Middleware niemanden und laesst alles
 // durch. Damit arbeitet das Script eines gesperrten Benutzers nicht weiter -
 // die Agent-Token oben haengen an keinem Benutzer und bleiben unberuehrt.
-Route::middleware(['auth:sanctum', 'aktiv'])->get('/user', function (Request $request) {
+Route::middleware(['auth:sanctum', 'aktiv', VerlangtZweiteStufe::class])->get('/user', function (Request $request) {
     return $request->user();
 });
 
@@ -75,7 +76,7 @@ Route::prefix('mobile')->group(function () {
         Route::post('/login/two-factor', [AnmeldungController::class, 'zweiteStufe']);
     });
 
-    Route::middleware(['auth:sanctum', 'aktiv', SetLocale::class])->group(function () {
+    Route::middleware(['auth:sanctum', 'aktiv', SetLocale::class, VerlangtZweiteStufe::class])->group(function () {
         Route::post('/logout', [AnmeldungController::class, 'abmelden']);
         Route::get('/me', [AnmeldungController::class, 'ich']);
 
@@ -157,7 +158,7 @@ Route::prefix('mobile')->group(function () {
     });
 });
 
-Route::middleware(['auth:sanctum', 'aktiv'])->group(function () {
+Route::middleware(['auth:sanctum', 'aktiv', VerlangtZweiteStufe::class])->group(function () {
 
     Route::get('/customers', [CustomerController::class, 'index']);
     Route::post('/customers', [CustomerController::class, 'store']);

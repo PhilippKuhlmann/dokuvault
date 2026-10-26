@@ -52,6 +52,8 @@ test('die Einstellung des Benutzers schlägt Sitzung und Browser', function () {
 
 test('das Profil speichert die Sprache', function () {
     $nutzer = userWithPermissions([]);
+    // The same address it already has: only the language changes here.
+    $nutzer->forceFill(['email' => 'test@example.test'])->save();
 
     $this->actingAs($nutzer)->patch('/profile', [
         'name' => $nutzer->name, 'email' => 'test@example.test', 'locale' => 'en',
@@ -62,6 +64,8 @@ test('das Profil speichert die Sprache', function () {
 
 test('eine leere Auswahl bedeutet Browsersprache, nicht Leerstring', function () {
     $nutzer = userWithPermissions([]);
+    // The same address it already has: only the language changes here.
+    $nutzer->forceFill(['email' => 'test@example.test'])->save();
     $nutzer->update(['locale' => 'en']);
 
     $this->actingAs($nutzer)->patch('/profile', [
@@ -73,6 +77,8 @@ test('eine leere Auswahl bedeutet Browsersprache, nicht Leerstring', function ()
 
 test('eine unbekannte Sprache im Profil wird abgelehnt', function () {
     $nutzer = userWithPermissions([]);
+    // The same address it already has: only the language changes here.
+    $nutzer->forceFill(['email' => 'test@example.test'])->save();
 
     $this->actingAs($nutzer)->patch('/profile', [
         'name' => $nutzer->name, 'email' => 'test@example.test', 'locale' => 'kl',

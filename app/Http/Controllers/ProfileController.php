@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Notifications\EmailChanged;
 use App\Support\ZweiteStufe;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use Throwable;
 
 class ProfileController extends Controller
 {
@@ -49,16 +53,37 @@ class ProfileController extends Controller
                 ->withErrors(['demo' => __('Dieser Demo-Zugang ist gesperrt und lässt sich nicht ändern.')]);
         }
 
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $oldEmail = $user->email;
+
+        $user->fill(Arr::except($request->validated(), 'current_password'));
 
         // Kein E-Mail-Bestaetigungsverfahren in diesem Projekt: User
         // implementiert MustVerifyEmail nicht, und users hat keine Spalte
         // email_verified_at. Der Breeze-Rest davon liess jede Aenderung der
         // E-Mail-Adresse in einen 500er laufen.
 
-        $request->user()->save();
+        $user->save();
+
+        // Only a real change of the reset target - not "Max@" to "max@".
+        if (filled($oldEmail) && mb_strtolower($oldEmail) !== mb_strtolower((string) $user->email)) {
+            $this->noticeToOldEmail($oldEmail, $user->name, (string) $user->email);
+        }
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    /**
+     * The old address learns about the change. A mail server that is down
+     * must not undo a change that is already saved - so it is only reported.
+     */
+    private function noticeToOldEmail(string $oldEmail, string $name, string $newEmail): void
+    {
+        try {
+            Notification::route('mail', $oldEmail)->notify(new EmailChanged($name, $newEmail));
+        } catch (Throwable $error) {
+            report($error);
+        }
     }
 
     /**

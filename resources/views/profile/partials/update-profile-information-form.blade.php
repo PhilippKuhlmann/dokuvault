@@ -22,6 +22,14 @@
             <x-input.fehler class="mt-2" :messages="$errors->get('email')" />
         </div>
 
+        {{-- The email is where password resets go - changing it needs the current password. --}}
+        <div>
+            <x-input.feldname for="profile_current_password" :value="__('Aktuelles Passwort')" />
+            <x-input.text id="profile_current_password" name="current_password" type="password" class="mt-1.5 block w-full" autocomplete="current-password" />
+            <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ __('Nur nötig, wenn Sie die E-Mail-Adresse ändern.') }}</p>
+            <x-input.fehler class="mt-2" :messages="$errors->get('current_password')" />
+        </div>
+
         <div>
             <x-input.feldname for="locale" :value="__('Sprache')" />
             <x-input.select id="locale" name="locale" class="mt-1.5 block w-full">
