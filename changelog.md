@@ -11,6 +11,7 @@
 ### Internal
 
 - **Schutz-Tests gegen beide Lücken.** Jede Admin-Route, die auf einen einzelnen Benutzer oder eine Rolle zielt, muss einen Teil-Admin von der Rolle 1 fernhalten. Eine neue Aktion ohne diese Prüfung fällt im Test auf. Jeder Formulartyp mit Datei-Upload darf den Ablagepfad weder annehmen noch einen fremden Pfad ausliefern. Jeder Download aus dem Speicher muss den Pfad mit `StoragePath` prüfen, Ausnahmen stehen mit Begründung im Test. Der Datei-Download prüft den Pfad jetzt ebenfalls. Die unbenutzte Route zum Löschen von Rollen ist entfernt, sie hätte nur einen Fehler 500 geliefert.
+- **Testsuite wieder vollständig grün.** 33 Tests riefen Hilfsfunktionen auf, die in einer anderen Testdatei standen, und liefen nur, wenn diese zufällig vorher geladen war. Diese Hilfsfunktionen stehen jetzt in `tests/Pest.php`, die drei fast gleichen Admin-Helfer sind zu `adminUser()` zusammengelegt. Der Demo-Nutzungstest schreibt in einen eigenen Speicherpfad je Prozess und fällt beim parallelen Lauf nicht mehr zufällig aus.
 
 ## 26.10.22
 

@@ -5,20 +5,11 @@ use App\Livewire\RackKatalogVorschau;
 use App\Models\Customer;
 use App\Models\Rack;
 use App\Models\RackCatalogItem;
-use App\Models\Role;
 use App\Models\Site;
-use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
-
-function adminUser(): User
-{
-    $role = Role::factory()->create(['id' => Role::IS_ADMIN]);
-
-    return User::factory()->create(['role_id' => $role->id]);
-}
 
 test('Migration legt die Standard-Katalogelemente an', function () {
     expect(RackCatalogItem::count())->toBe(11);

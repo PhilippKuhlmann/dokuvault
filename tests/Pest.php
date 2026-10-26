@@ -2,11 +2,15 @@
 
 use App\Livewire\ObjektFormular;
 use App\Models\Customer;
+use App\Models\OperatingSystem;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\Server;
+use App\Models\Site;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Features\SupportTesting\Testable;
+use PragmaRX\Google2FA\Google2FA;
 use Tests\TestCase;
 
 /*
@@ -50,6 +54,35 @@ expect()->extend('toBeOne', function () {
 | global functions to help you to reduce the number of lines of code in your test files.
 |
 */
+
+/**
+ * A role-1 administrator. Shared here, not in one test file: a helper defined
+ * in another file only exists if that file happens to load first.
+ */
+function adminUser(): User
+{
+    // The role must exist: the isAdmin middleware reads $user->role->id.
+    $role = Role::find(Role::IS_ADMIN) ?? Role::factory()->create(['id' => Role::IS_ADMIN]);
+
+    return User::factory()->create(['role_id' => $role->id]);
+}
+
+/** Server ohne Factory: die wuerfelt eine operating_system_id, die es im Test nicht gibt. */
+function rackTestServer(Customer $customer, Site $site, string $name = 'SRV-01'): Server
+{
+    $os = OperatingSystem::factory()->create(['name' => 'Windows Server 2025 Standard']);
+
+    return Server::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'name' => $name, 'operating_system_id' => $os->id,
+    ]);
+}
+
+/** Ein gültiger Code zum gegebenen Geheimnis - so, wie ihn die App zeigen würde. */
+function gueltigerCode(string $geheimnis): string
+{
+    return (new Google2FA)->getCurrentOtp($geheimnis);
+}
 
 /**
  * Legt einen authentifizierbaren Nutzer mit den angegebenen Permissions an

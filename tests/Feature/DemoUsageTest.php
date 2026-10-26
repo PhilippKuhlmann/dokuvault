@@ -3,8 +3,15 @@
 use App\Http\Middleware\RecordDemoUsage;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\ParallelTesting;
 
-beforeEach(fn () => File::deleteDirectory(RecordDemoUsage::verzeichnis()));
+// Own storage per test process: in a parallel run, other tests with the demo
+// mode on write to storage/app/demo-usage at the same time, and "nothing was
+// recorded" then failed at random.
+beforeEach(function () {
+    $this->app->useStoragePath(sys_get_temp_dir().'/dokuvault-demo-usage-'.(ParallelTesting::token() ?: 'serial'));
+    File::deleteDirectory(RecordDemoUsage::verzeichnis());
+});
 afterEach(fn () => File::deleteDirectory(RecordDemoUsage::verzeichnis()));
 
 function usageZeilen(): array

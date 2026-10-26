@@ -2,21 +2,11 @@
 
 use App\Models\Customer;
 use App\Models\OperatingSystem;
-use App\Models\Role;
 use App\Models\Server;
 use App\Models\Setting;
 use App\Models\Site;
-use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\Models\Activity;
-
-function adminNutzer(): User
-{
-    // Die Rolle muss es geben: Die isAdmin-Middleware liest $user->role->id.
-    $rolle = Role::find(Role::IS_ADMIN) ?? Role::factory()->create(['id' => Role::IS_ADMIN]);
-
-    return User::factory()->create(['role_id' => $rolle->id]);
-}
 
 test('ohne Einstellung bleibt es bei RustDesk', function () {
     // Die Loesung war fest verdrahtet, bevor es die Einstellung gab - eine
@@ -112,7 +102,7 @@ test('connecting needs the right of the list', function () {
 });
 
 test('ein eigenes Muster mit javascript wird abgelehnt', function () {
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     // Aus dem Muster wird ein anklickbarer Link in jeder Geraeteliste. Ohne
     // diese Pruefung waere das ausfuehrbarer Code.
@@ -128,7 +118,7 @@ test('ein eigenes Muster mit javascript wird abgelehnt', function () {
 });
 
 test('ein eigenes Muster ohne Kennung wird abgelehnt', function () {
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     $this->patch(route('admin.setting.update'), [
         'remote_tool' => 'custom',
@@ -137,7 +127,7 @@ test('ein eigenes Muster ohne Kennung wird abgelehnt', function () {
 });
 
 test('ein gueltiges eigenes Muster wird uebernommen', function () {
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     $this->patch(route('admin.setting.update'), [
         'remote_tool' => 'custom',
@@ -206,7 +196,7 @@ test('die Einstellung kostet keine Abfrage je Geraet', function () {
 });
 
 test('die Einstellungen stehen im Admin-Menue', function () {
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     // Als Aufklappmenue angelegt, weil weitere Einstellungen folgen werden -
     // eine Kachel im Dashboard-Raster ohne Zahl war dafuer der falsche Ort.

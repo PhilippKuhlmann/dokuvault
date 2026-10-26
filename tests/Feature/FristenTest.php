@@ -5,19 +5,10 @@ use App\Models\Certificate;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
 use App\Models\PdfExport;
-use App\Models\Role;
 use App\Models\Server;
 use App\Models\Setting;
 use App\Models\Site;
-use App\Models\User;
 use Livewire\Livewire;
-
-function admin(): User
-{
-    $rolle = Role::factory()->create(['id' => Role::IS_ADMIN]);
-
-    return User::factory()->create(['role_id' => $rolle->id]);
-}
 
 test('ohne Einstellung gilt die Konfiguration', function () {
     expect(Setting::fristVertraege())->toBe(config('custom.fristen.vertraege_tage'))
@@ -50,7 +41,7 @@ test('die Vorwarnzeit entscheidet, was auf dem Kundendashboard steht', function 
         'expiry_date' => now()->addDays(90),
     ]);
 
-    $this->actingAs(admin());
+    $this->actingAs(adminUser());
 
     // 60 Tage Vorwarnzeit: 90 Tage sind zu weit weg.
     $this->get(route('customer.dashboard', $customer))
@@ -70,7 +61,7 @@ test('die Vorwarnzeit entscheidet, was in der Übersicht über alle Kunden steht
         'expiry_date' => now()->addDays(90),
     ]);
 
-    $this->actingAs(admin());
+    $this->actingAs(adminUser());
 
     $this->get('/admin')->assertDontSee('global.example.test');
 
@@ -90,7 +81,7 @@ test('die Garantiefrist hat ihre eigene Zahl', function () {
         'operating_system_id' => OperatingSystem::factory()->create(['name' => 'Debian 12'])->id,
     ]);
 
-    $this->actingAs(admin());
+    $this->actingAs(adminUser());
 
     $this->get(route('customer.dashboard', $customer))
         ->assertViewHas('expiringWarranties', fn ($l) => ! $l->pluck('name')->contains('SRV-GARANTIE'));
@@ -132,7 +123,7 @@ test('Abzeichen und EOL-Liste folgen derselben Frist', function () {
         'name' => 'SRV-BALD-EOL', 'operating_system_id' => $os->id,
     ]);
 
-    $this->actingAs(admin());
+    $this->actingAs(adminUser());
 
     $this->get(route('admin.eol.index'))->assertDontSee('SRV-BALD-EOL');
 
@@ -143,7 +134,7 @@ test('Abzeichen und EOL-Liste folgen derselben Frist', function () {
 
 test('die PDF-Frist entscheidet, was aufgeräumt wird', function () {
     $customer = Customer::factory()->create();
-    $nutzer = admin();
+    $nutzer = adminUser();
 
     $auftrag = PdfExport::create([
         'customer_id' => $customer->id,
@@ -169,7 +160,7 @@ test('die PDF-Frist entscheidet, was aufgeräumt wird', function () {
 */
 
 test('die Seite speichert beim Ändern, ohne Knopf', function () {
-    $this->actingAs(admin());
+    $this->actingAs(adminUser());
 
     Livewire::test(AdminFristen::class)
         ->set('vertraege', 90)
@@ -185,7 +176,7 @@ test('die Seite speichert beim Ändern, ohne Knopf', function () {
 });
 
 test('null Tage wäre keine Frist, sondern eine abgeschaltete Warnung', function () {
-    $this->actingAs(admin());
+    $this->actingAs(adminUser());
 
     Livewire::test(AdminFristen::class)
         ->set('vertraege', 0)
@@ -196,7 +187,7 @@ test('null Tage wäre keine Frist, sondern eine abgeschaltete Warnung', function
 });
 
 test('ein vertippter Wert wird abgewiesen', function () {
-    $this->actingAs(admin());
+    $this->actingAs(adminUser());
 
     // Wer 60 meint und 6000 tippt, warnt ab sofort vor allem.
     Livewire::test(AdminFristen::class)
@@ -205,7 +196,7 @@ test('ein vertippter Wert wird abgewiesen', function () {
 });
 
 test('eine PDF-Frist unter einer Stunde wäre eine Zahl ohne Wirkung', function () {
-    $this->actingAs(admin());
+    $this->actingAs(adminUser());
 
     // Aufgeraeumt wird stuendlich - kuerzer geht nicht, egal was dasteht.
     Livewire::test(AdminFristen::class)

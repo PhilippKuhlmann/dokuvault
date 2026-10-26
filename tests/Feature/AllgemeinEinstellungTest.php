@@ -11,7 +11,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
-// adminNutzer() steht schon in FernwartungTest - Pest teilt Helfer testweit.
+// adminUser() steht schon in FernwartungTest - Pest teilt Helfer testweit.
 
 test('ohne eigenen Namen bleibt der Name aus der Konfiguration', function () {
     config(['app.name' => 'DokuVault']);
@@ -21,7 +21,7 @@ test('ohne eigenen Namen bleibt der Name aus der Konfiguration', function () {
 
 test('der Name wird beim Tippen gespeichert, ohne Speichern-Knopf', function () {
     config(['app.name' => 'DokuVault']);
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     Livewire::test(AdminAllgemein::class)
         ->set('name', 'Musterfirma IT')
@@ -36,7 +36,7 @@ test('der Name wird beim Tippen gespeichert, ohne Speichern-Knopf', function () 
 
 test('ein leeres Namensfeld heisst zurueck zur Konfiguration, nicht leerer Name', function () {
     config(['app.name' => 'DokuVault']);
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
     Setting::setzen(Setting::APP_NAME, 'Alter Name');
 
     Livewire::test(AdminAllgemein::class)->set('name', '');
@@ -45,7 +45,7 @@ test('ein leeres Namensfeld heisst zurueck zur Konfiguration, nicht leerer Name'
 });
 
 test('ein zu langer Name wird abgelehnt und nicht gespeichert', function () {
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     Livewire::test(AdminAllgemein::class)
         ->set('name', str_repeat('a', 61))
@@ -56,7 +56,7 @@ test('ein zu langer Name wird abgelehnt und nicht gespeichert', function () {
 
 test('ein ausgewaehltes Logo ist damit schon gesetzt', function () {
     Storage::fake('local');
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     Livewire::test(AdminAllgemein::class)
         ->set('logo_header', UploadedFile::fake()->image('k.png', 200, 40))
@@ -68,7 +68,7 @@ test('ein ausgewaehltes Logo ist damit schon gesetzt', function () {
 
 test('jede der drei Stellen laesst sich einzeln belegen', function () {
     Storage::fake('local');
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     // Anmeldeseite gross und breit, Kopfzeile schmal, Favicon quadratisch -
     // drei verschiedene Dateien.
@@ -87,7 +87,7 @@ test('jede der drei Stellen laesst sich einzeln belegen', function () {
 
 test('jede Stelle nutzt ihr eigenes Logo, nicht das der anderen', function () {
     Storage::fake('local');
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
     Livewire::test(AdminAllgemein::class)->set('logo_login', UploadedFile::fake()->image('a.png'));
     Livewire::test(AdminAllgemein::class)->set('logo_header', UploadedFile::fake()->image('k.png'));
     Livewire::test(AdminAllgemein::class)->set('logo_favicon', UploadedFile::fake()->image('f.png'));
@@ -105,7 +105,7 @@ test('jede Stelle nutzt ihr eigenes Logo, nicht das der anderen', function () {
 
 test('ein neues Logo laesst keine Leiche zurueck', function () {
     Storage::fake('local');
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
     Livewire::test(AdminAllgemein::class)->set('logo_header', UploadedFile::fake()->image('alt.png'));
     $alt = Setting::logoPfad('header');
 
@@ -117,7 +117,7 @@ test('ein neues Logo laesst keine Leiche zurueck', function () {
 
 test('der Entfernen-Knopf raeumt Einstellung und Datei weg', function () {
     Storage::fake('local');
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
     Livewire::test(AdminAllgemein::class)->set('logo_header', UploadedFile::fake()->image('k.png'));
     Livewire::test(AdminAllgemein::class)->set('logo_login', UploadedFile::fake()->image('a.png'));
     $kopfzeile = Setting::logoPfad('header');
@@ -133,7 +133,7 @@ test('der Entfernen-Knopf raeumt Einstellung und Datei weg', function () {
 
 test('SVG wird abgelehnt', function () {
     Storage::fake('local');
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     // Eine SVG-Datei darf Skript enthalten - von derselben Herkunft
     // ausgeliefert waere das ausfuehrbarer Code auf jeder Seite.
@@ -145,7 +145,7 @@ test('SVG wird abgelehnt', function () {
 });
 
 test('eine unbekannte Stelle beim Entfernen ergibt 404', function () {
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     // Die Stelle kommt aus der Whitelist, nie roh aus der Anfrage - sonst
     // waere der Einstellungs-Schluessel von aussen bestimmbar.
@@ -159,7 +159,7 @@ test('eine unbekannte Stelle in der Adresse ergibt 404', function () {
 
 test('das Logo geht ohne Anmeldung heraus, mit nosniff', function () {
     Storage::fake('local');
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
     Livewire::test(AdminAllgemein::class)->set('logo_login', UploadedFile::fake()->image('a.png'));
 
     auth()->logout();
@@ -169,7 +169,7 @@ test('das Logo geht ohne Anmeldung heraus, mit nosniff', function () {
 });
 
 test('ohne eigene Logos bleibt ueberall das eingebaute Motiv stehen', function () {
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     // Mit Anfuehrungszeichen vergleichen: "/logo.png" enthaelt "/logo" und
     // wuerde sonst als Treffer gelten.
@@ -295,7 +295,7 @@ test('die eingestellte Seitengröße wirkt in den Kundenlisten', function () {
     Setting::setzen(Setting::SEITE_LISTE, 5);
 
     $customer = Customer::factory()->create();
-    $nutzer = adminNutzer();
+    $nutzer = adminUser();
     $this->actingAs($nutzer);
 
     Site::factory()->count(7)->create(['customer_id' => $customer->id]);
@@ -317,7 +317,7 @@ test('die eingestellte Seitengröße wirkt in den Kundenlisten', function () {
 */
 
 test('Sprache, Hinweis und Seitengrößen speichern beim Ändern', function () {
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     Livewire::test(AdminAllgemein::class)
         ->set('sprache', 'en')
@@ -333,7 +333,7 @@ test('Sprache, Hinweis und Seitengrößen speichern beim Ändern', function () {
 });
 
 test('eine erfundene Sprache wird abgewiesen', function () {
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     Livewire::test(AdminAllgemein::class)
         ->set('sprache', 'kl')
@@ -341,7 +341,7 @@ test('eine erfundene Sprache wird abgewiesen', function () {
 });
 
 test('ein zu langer Hinweis wird abgewiesen', function () {
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     // Es ist ein Satz, kein Aushang.
     Livewire::test(AdminAllgemein::class)
@@ -350,7 +350,7 @@ test('ein zu langer Hinweis wird abgewiesen', function () {
 });
 
 test('eine Seite mit einer Zeile wird abgewiesen', function () {
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     Livewire::test(AdminAllgemein::class)
         ->set('seiteListe', 1)
@@ -370,7 +370,7 @@ test('der Logo-Hinweis nennt die Bildformate, nicht die Dokumentformate', functi
     // genauso wie eine neue Eigenschaft der Komponente - die Eigenschaft
     // ueberdeckte sie, und unter den Logos standen ploetzlich PDF, DOCX und
     // ZIP. Im Browser gesehen; kein Test hat es gemerkt.
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     Livewire::test(AdminAllgemein::class)
         ->assertSee('Erlaubt sind PNG, JPG, JPEG, WEBP')
@@ -409,7 +409,7 @@ test('eine abgewählte Endung wird beim Hochladen abgewiesen', function () {
     Setting::setzen(Setting::DATEI_FORMATE, 'pdf');
 
     $customer = Customer::factory()->create();
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     $antwort = $this->post(route('file.store', $customer), [
         'name' => 'Ein Bild',
@@ -426,7 +426,7 @@ test('eine erlaubte Endung geht durch', function () {
     Setting::setzen(Setting::DATEI_FORMATE, 'pdf');
 
     $customer = Customer::factory()->create();
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     $this->post(route('file.store', $customer), [
         'name' => 'Ein Vertrag',
@@ -435,7 +435,7 @@ test('eine erlaubte Endung geht durch', function () {
 });
 
 test('die Seite speichert die Auswahl in der Reihenfolge der Konfiguration', function () {
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     Livewire::test(AdminAllgemein::class)
         ->set('endungen', ['png', 'pdf'])
@@ -447,7 +447,7 @@ test('die Seite speichert die Auswahl in der Reihenfolge der Konfiguration', fun
 });
 
 test('eine Endung außerhalb der Konfiguration wird abgewiesen', function () {
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     Livewire::test(AdminAllgemein::class)
         ->set('endungen', ['pdf', 'php'])
@@ -455,7 +455,7 @@ test('eine Endung außerhalb der Konfiguration wird abgewiesen', function () {
 });
 
 test('gar keine Endung wird abgewiesen', function () {
-    $this->actingAs(adminNutzer());
+    $this->actingAs(adminUser());
 
     Livewire::test(AdminAllgemein::class)
         ->set('endungen', [])

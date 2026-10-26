@@ -67,7 +67,7 @@ test('recent changes show this customer only and only visible types', function (
 
 test('the counter row stays at twelve tiles at most', function () {
     [$customer] = dashboardKunde();
-    $this->actingAs(admin());
+    $this->actingAs(adminUser());
 
     $this->get(route('customer.dashboard', $customer))
         ->assertViewHas('tiles', fn ($tiles) => count($tiles) <= 12);

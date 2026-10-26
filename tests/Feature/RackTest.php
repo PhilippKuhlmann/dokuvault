@@ -25,17 +25,6 @@ function customerWithRack(int $heightUnits = 42): array
     return [$customer, $site, $rack];
 }
 
-/** Server ohne Factory: die wuerfelt eine operating_system_id, die es im Test nicht gibt. */
-function rackTestServer(Customer $customer, Site $site, string $name = 'SRV-01'): Server
-{
-    $os = OperatingSystem::factory()->create(['name' => 'Windows Server 2025 Standard']);
-
-    return Server::create([
-        'customer_id' => $customer->id, 'site_id' => $site->id,
-        'name' => $name, 'operating_system_id' => $os->id,
-    ]);
-}
-
 // --- CRUD ---
 
 test('store legt ein Rack an und leitet in den Editor', function () {

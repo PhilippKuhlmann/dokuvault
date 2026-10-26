@@ -5,18 +5,11 @@ use App\Http\Controllers\TwoFactorController;
 use App\Support\ZweiteStufe;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use PragmaRX\Google2FA\Google2FA;
 use Spatie\Activitylog\Models\Activity;
 
 function stufe(): ZweiteStufe
 {
     return app(ZweiteStufe::class);
-}
-
-/** Ein gültiger Code zum gegebenen Geheimnis - so, wie ihn die App zeigen würde. */
-function gueltigerCode(string $geheimnis): string
-{
-    return (new Google2FA)->getCurrentOtp($geheimnis);
 }
 
 function nutzerMitZweiterStufe(string $kennwort = 'Ein-Gutes-Kennwort-2026'): array
