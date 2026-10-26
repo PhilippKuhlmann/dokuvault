@@ -18,6 +18,9 @@ class SiteController extends Controller
 
     public function show(Customer $customer, Site $site)
     {
+        // Besides scopeBindings on the route: never a site of another customer.
+        abort_unless($site->customer_id === $customer->id, 404);
+
         return $site;
     }
 

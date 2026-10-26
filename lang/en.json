@@ -1599,5 +1599,6 @@
     "Ihre E-Mail-Adresse bei :anwendung wurde geändert": "Your email address at :anwendung was changed",
     "die E-Mail-Adresse Ihres Zugangs zu :anwendung wurde gerade auf :neu geändert.": "the email address of your :anwendung account was just changed to :neu.",
     "Waren Sie das nicht, wenden Sie sich bitte sofort an Ihren Administrator.": "If this was not you, please contact your administrator right away.",
-    "Ihr Administrator verlangt die zweite Stufe. Richten Sie sie zuerst im Browser in Ihrem Profil ein.": "Your administrator requires two-factor authentication. Set it up in your profile in the browser first."
+    "Ihr Administrator verlangt die zweite Stufe. Richten Sie sie zuerst im Browser in Ihrem Profil ein.": "Your administrator requires two-factor authentication. Set it up in your profile in the browser first.",
+    "Dieser Token gilt nur für die App, nicht für die Schnittstelle.": "This token is for the app only, not for the API."
 }

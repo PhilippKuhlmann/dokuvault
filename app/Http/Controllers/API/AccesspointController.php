@@ -30,13 +30,9 @@ class AccesspointController extends Controller
 
     public function show(Customer $customer, Accesspoint $accesspoint)
     {
-        if ($accesspoint->customer_id == $customer->id) {
-            // Der Accesspoint gehört zum Kunden
-            return $accesspoint;
-        } else {
-            // Der Accesspoint gehört nicht zum Kunden
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
+        $this->ensureOwnedBy($customer, $accesspoint);
+
+        return $accesspoint;
     }
 
     public function store(Customer $customer, AccesspointRequest $request)
@@ -48,6 +44,8 @@ class AccesspointController extends Controller
 
     public function update(Customer $customer, AccesspointRequest $request, Accesspoint $accesspoint)
     {
+        $this->ensureOwnedBy($customer, $accesspoint);
+
         $accesspoint->update($request->validated());
 
         return response()->json($accesspoint, 200);
@@ -55,8 +53,16 @@ class AccesspointController extends Controller
 
     public function delete(Customer $customer, Accesspoint $accesspoint)
     {
+        $this->ensureOwnedBy($customer, $accesspoint);
+
         $accesspoint->delete();
 
         return response()->json(null, 204);
+    }
+
+    /** Besides scopeBindings on the route: never a record of another customer. */
+    private function ensureOwnedBy(Customer $customer, Accesspoint $accesspoint): void
+    {
+        abort_unless($accesspoint->customer_id === $customer->id, 404);
     }
 }

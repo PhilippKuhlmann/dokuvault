@@ -13,8 +13,12 @@ use App\Http\Controllers\API\Mobile\PatchPanelController as MobilePatchPanelCont
 use App\Http\Controllers\API\Mobile\RackController as MobileRackController;
 use App\Http\Controllers\API\ServerController;
 use App\Http\Controllers\API\SiteController;
+use App\Http\Middleware\RequireIntegrationToken;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\VerlangtZweiteStufe;
+use App\Models\Accesspoint;
+use App\Models\Server;
+use App\Models\Site;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -158,36 +162,41 @@ Route::prefix('mobile')->group(function () {
     });
 });
 
-Route::middleware(['auth:sanctum', 'aktiv', VerlangtZweiteStufe::class])->group(function () {
+// The legacy REST API for integrations. Every route checks the same right
+// as the browser (->can(), before any validation), only integration tokens from
+// the admin area get in, and records resolve within the customer of the URL.
+Route::middleware(['auth:sanctum', 'aktiv', VerlangtZweiteStufe::class, RequireIntegrationToken::class])->group(function () {
 
     Route::get('/customers', [CustomerController::class, 'index']);
-    Route::post('/customers', [CustomerController::class, 'store']);
+    Route::post('/customers', [CustomerController::class, 'store'])->can('admin_customer');
 
     // Vor der Kundenroute: "/{customer}" passt auf jedes einzelne Segment und
     // fing "GET /api/servers" ab - die Anfrage suchte einen Kunden namens
     // "servers" und endete in einem 404. Die Server-Schnittstelle war damit
     // nicht erreichbar, ohne dass es jemandem auffiel.
-    Route::get('servers', [ServerController::class, 'index']);
-    Route::get('servers/{server}', [ServerController::class, 'show']);
-    Route::post('servers', [ServerController::class, 'store']);
-    Route::put('servers/{server}', [ServerController::class, 'update']);
-    Route::delete('servers/{server}', [ServerController::class, 'delete']);
+    Route::get('servers', [ServerController::class, 'index'])->can('viewAny', Server::class);
+    Route::get('servers/{server}', [ServerController::class, 'show'])->can('viewAny', Server::class);
+    Route::post('servers', [ServerController::class, 'store'])->can('create', Server::class);
+    Route::put('servers/{server}', [ServerController::class, 'update'])->can('update', Server::class);
+    Route::delete('servers/{server}', [ServerController::class, 'delete'])->can('delete', Server::class);
     // isCustomer: verhindert, dass ein auf einen Kunden beschraenkter Token
     // (customer_id gesetzt) Daten eines anderen Kunden ueber die Route
     // abruft. Admin-/Techniker-Token (kein customer_id) bleiben unbeschraenkt.
     Route::get('/{customer}', [CustomerController::class, 'show'])->middleware('isCustomer');
 
-    Route::prefix('{customer}')->middleware('isCustomer')->group(function () {
+    // scopeBindings: {site} and {accesspoint} resolve through the customer -
+    // a foreign id behind the own customer's URL is a 404.
+    Route::prefix('{customer}')->middleware('isCustomer')->scopeBindings()->group(function () {
 
-        Route::get('/sites', [SiteController::class, 'index']);
-        Route::post('/sites', [SiteController::class, 'store']);
-        Route::get('/sites/{site}', [SiteController::class, 'show']);
+        Route::get('/sites', [SiteController::class, 'index'])->can('viewAny', Site::class);
+        Route::post('/sites', [SiteController::class, 'store'])->can('create', Site::class);
+        Route::get('/sites/{site}', [SiteController::class, 'show'])->can('viewAny', Site::class);
 
-        Route::get('/accesspoints', [AccesspointController::class, 'index']);
-        Route::get('/accesspoints/{accesspoint}', [AccesspointController::class, 'show']);
-        Route::post('/accesspoints', [AccesspointController::class, 'store']);
-        Route::put('/accesspoints/{accesspoint}', [AccesspointController::class, 'update']);
-        Route::delete('/accesspoints/{accesspoint}', [AccesspointController::class, 'delete']);
+        Route::get('/accesspoints', [AccesspointController::class, 'index'])->can('viewAny', Accesspoint::class);
+        Route::get('/accesspoints/{accesspoint}', [AccesspointController::class, 'show'])->can('viewAny', Accesspoint::class);
+        Route::post('/accesspoints', [AccesspointController::class, 'store'])->can('create', Accesspoint::class);
+        Route::put('/accesspoints/{accesspoint}', [AccesspointController::class, 'update'])->can('update', Accesspoint::class);
+        Route::delete('/accesspoints/{accesspoint}', [AccesspointController::class, 'delete'])->can('delete', Accesspoint::class);
 
     });
 
