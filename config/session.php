@@ -173,8 +173,13 @@ return [
     // ist oeffentlich erreichbar, auch wenn sie sich "staging" nennt; ohne das
     // wanderte das Sitzungs-Cookie dort ungesichert. Wer es ausdruecklich
     // anders will, setzt SESSION_SECURE_COOKIE.
-    'secure' => env('SESSION_SECURE_COOKIE', env('APP_ENV') === 'production'
-        || str_starts_with((string) env('APP_URL'), 'https://')),
+    //
+    // An empty "SESSION_SECURE_COOKIE=" counts as not set. env() reads it as
+    // an empty string, which turned the Secure flag off - and .env.example
+    // shipped exactly that line, so every install copied from it lost it.
+    'secure' => filled(env('SESSION_SECURE_COOKIE'))
+        ? (bool) env('SESSION_SECURE_COOKIE')
+        : (env('APP_ENV') === 'production' || str_starts_with((string) env('APP_URL'), 'https://')),
 
     /*
     |--------------------------------------------------------------------------

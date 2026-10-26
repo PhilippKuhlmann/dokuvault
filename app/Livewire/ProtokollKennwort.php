@@ -2,7 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Exceptions\ZuVieleKennwortabrufe;
 use App\Models\PasswordHistory;
+use App\Support\Kennwortabruf;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -32,18 +34,27 @@ class ProtokollKennwort extends Component
 
     public function zeigen(): void
     {
-        // Dasselbe Recht wie die Seite, auf der die Komponente steht: Wer das
-        // Protokoll sehen darf, sieht auch, was vorher im Feld stand. Geprueft
+        // Dasselbe Recht wie die Seite, auf der die Komponente steht. Geprueft
         // wird trotzdem hier - der Aufruf kommt aus dem Browser.
         Gate::authorize('admin_activity');
 
-        $this->werte = PasswordHistory::whereIn('id', $this->ids)
-            ->get()
-            ->map(fn ($eintrag) => [
-                'feld' => config('custom.secret_field_labels')[$eintrag->field] ?? $eintrag->field,
-                'wert' => $eintrag->value,
-            ])
-            ->all();
+        // Every value through Kennwortabruf: brake, log entry, customer and
+        // the right to see that kind of object - like every other reveal.
+        try {
+            $this->werte = PasswordHistory::whereIn('id', $this->ids)
+                ->get()
+                ->map(fn ($eintrag) => [
+                    'feld' => config('custom.secret_field_labels')[$eintrag->field] ?? $eintrag->field,
+                    'wert' => app(Kennwortabruf::class)->ausVerlauf($eintrag, auth()->user()),
+                ])
+                ->filter(fn ($eintrag) => $eintrag['wert'] !== null)
+                ->values()
+                ->all();
+        } catch (ZuVieleKennwortabrufe $bremse) {
+            $this->addError('kennwort', $bremse->getMessage());
+
+            return;
+        }
 
         $this->offen = true;
     }

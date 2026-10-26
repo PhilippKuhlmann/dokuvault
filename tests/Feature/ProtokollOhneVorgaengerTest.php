@@ -42,7 +42,7 @@ test('ohne Vorgaenger nennt die Zeile nur das Feld, nicht den Wert', function ()
 });
 
 test('mit Vorgaenger laesst sich das bisherige Kennwort aufdecken', function () {
-    $this->actingAs(userWithPermissions(['admin_activity']));
+    $this->actingAs(userWithPermissions(['admin_activity', 'wifi_viewAny']));
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     $wlan = Wifi::create([

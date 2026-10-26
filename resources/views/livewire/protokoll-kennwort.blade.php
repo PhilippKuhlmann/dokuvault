@@ -7,6 +7,7 @@
         class="text-cerulean-600 hover:text-cerulean-700 text-sm">
         {{ $offen ? __('verbergen') : __('anzeigen') }}
     </button>
+    @error('kennwort') <span class="text-xs text-red-600 dark:text-red-400">{{ $message }}</span> @enderror
 
     @if ($offen)
         <div class="mt-2 space-y-1">

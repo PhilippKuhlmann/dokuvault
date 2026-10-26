@@ -3,6 +3,7 @@
 namespace App\Models\Concerns;
 
 use App\Models\PasswordHistory;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\Activitylog\Facades\CauserResolver;
@@ -184,6 +185,13 @@ trait TracksChanges
 
         // Beim ersten Setzen gibt es nichts aufzuheben.
         if (blank($alt)) {
+            return null;
+        }
+
+        // An account password is a bcrypt hash: useless for getting the old
+        // password back, but crackable offline by whoever may read the log.
+        // The change itself is still logged.
+        if ($this instanceof User) {
             return null;
         }
 

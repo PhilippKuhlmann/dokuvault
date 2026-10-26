@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Exceptions\ZuVieleKennwortabrufe;
 use App\Models\CredentialLink;
+use App\Models\PasswordHistory;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -103,6 +104,43 @@ class Kennwortabruf
             ->log('Kennwort angesehen');
 
         return $objekt->{$feld};
+    }
+
+    /**
+     * A previous password from the history, shown in the activity log.
+     *
+     * Was a way of its own before: no brake, no log entry, no customer check -
+     * a customer-bound log viewer read old passwords of every customer in
+     * bulk. Now the same rules as every other reveal, plus the right to see
+     * the kind of object the password belonged to.
+     */
+    public function ausVerlauf(PasswordHistory $eintrag, User $nutzer): ?string
+    {
+        // Account passwords are hashes, never shown - see TracksChanges.
+        if ($eintrag->subject_type === User::class || ! is_subclass_of($eintrag->subject_type, Model::class)) {
+            return null;
+        }
+
+        Gate::forUser($nutzer)->authorize('admin_activity');
+        Gate::forUser($nutzer)->authorize('viewAny', $eintrag->subject_type);
+        $this->nurEigenerKunde($nutzer, $eintrag->customer_id);
+
+        $this->bremsen($nutzer);
+
+        activity()
+            ->event('kennwort_angesehen')
+            ->performedOn($eintrag->subject_type::withoutGlobalScopes()->find($eintrag->subject_id) ?? $eintrag)
+            ->causedBy($nutzer)
+            ->withProperties([
+                'objekt' => $eintrag->subject_name,
+                'attributes' => array_filter([
+                    'Feld' => (config('custom.secret_field_labels')[$eintrag->field] ?? $eintrag->field).' (bisheriges)',
+                    'IP' => request()->ip(),
+                ]),
+            ])
+            ->log('Kennwort angesehen');
+
+        return $eintrag->value;
     }
 
     /**
