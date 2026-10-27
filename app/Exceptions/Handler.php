@@ -33,8 +33,12 @@ class Handler extends ExceptionHandler
      */
     protected $dontFlash = [
         'current_password',
-        // 'password',
-        // 'password_confirmation',
+        // Were commented out for the old object forms, so a documented
+        // password survived a validation error. Those forms are Livewire now
+        // and flash nothing; what is left are account passwords - which then
+        // sat in plain text in the session after every failed validation.
+        'password',
+        'password_confirmation',
     ];
 
     /**
@@ -44,6 +48,14 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
+        // Every secret column as well (BMC password, mail password, ...): a
+        // classic form with such a field would otherwise flash it, and the
+        // session would hold it in plain text.
+        $this->dontFlash = array_values(array_unique([
+            ...$this->dontFlash,
+            ...config('custom.secret_columns', []),
+        ]));
+
         $this->reportable(function (Throwable $e) {
             //
         });

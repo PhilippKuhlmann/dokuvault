@@ -5,6 +5,7 @@
 ### Security
 
 - **Der Link in der „Kennwort vergessen“-Mail zeigt immer auf die eigene Adresse.** Er wurde aus dem Host-Header der Anfrage gebaut. Wer die Anfrage mit seiner eigenen Domain als Host schickte, ließ dem Opfer eine echte Mail zukommen, deren Link den Reset-Token zum Angreifer trug. Jetzt beginnen alle Links, ob in Mails, Weiterleitungen oder Einladungen, immer mit `APP_URL`, samt Schema.
+- **Kennwörter landen bei einem Eingabefehler nicht mehr in der Session.** Schlug die Prüfung eines Formulars fehl, wurde das eingetippte Kennwort im Klartext in der Session aufgehoben und beim erneuten Anzeigen wieder ins Feld geschrieben, also in den Quelltext der Seite. Das galt für Benutzer anlegen, Kennwort zurücksetzen, Einladung und Ersteinrichtung. Kennwort-Felder und alle Geheimnis-Felder werden jetzt nie mehr aufgehoben und nie wieder eingesetzt.
 
 ## 26.10.26
 
