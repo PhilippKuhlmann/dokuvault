@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.10.27
+
+### Security
+
+- **Der Link in der „Kennwort vergessen“-Mail zeigt immer auf die eigene Adresse.** Er wurde aus dem Host-Header der Anfrage gebaut. Wer die Anfrage mit seiner eigenen Domain als Host schickte, ließ dem Opfer eine echte Mail zukommen, deren Link den Reset-Token zum Angreifer trug. Jetzt beginnen alle Links, ob in Mails, Weiterleitungen oder Einladungen, immer mit `APP_URL`, samt Schema.
+
 ## 26.10.26
 
 ### Security

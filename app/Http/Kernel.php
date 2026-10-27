@@ -8,6 +8,7 @@ use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\isAdmin;
 use App\Http\Middleware\isCustomer;
 use App\Http\Middleware\isTechniker;
+use App\Http\Middleware\PinRootUrl;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RecordApiRequest;
 use App\Http\Middleware\RecordDemoUsage;
@@ -51,6 +52,8 @@ class Kernel extends HttpKernel
         SicherheitsHeader::class,
         // \App\Http\Middleware\TrustHosts::class,
         TrustProxies::class,
+        // Links always start with APP_URL, never with the request's Host.
+        PinRootUrl::class,
         HandleCors::class,
         PreventRequestsDuringMaintenance::class,
         ValidatePostSize::class,
