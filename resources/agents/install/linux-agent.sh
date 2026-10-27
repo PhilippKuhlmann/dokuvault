@@ -25,6 +25,17 @@ set -euo pipefail
 
 BASE_URL="__BASE_URL__"
 TOKEN="__AGENT_TOKEN__"
+
+# The agent runs as root and later applies newer installers from this
+# address. Over plain http anyone on the network path could send their own -
+# so https only, except for the machine itself.
+case "$BASE_URL" in
+  https://*|http://localhost|http://localhost[:/]*|http://127.0.0.1|http://127.0.0.1[:/]*) ;;
+  *)
+    echo "Unsichere Adresse $BASE_URL: DokuVault muss per https erreichbar sein." >&2
+    exit 1
+    ;;
+esac
 # Set by DokuVault from the content of this file - run.sh compares it before
 # every run and applies a newer installer with --update.
 AGENT_VERSION="__AGENT_VERSION__"

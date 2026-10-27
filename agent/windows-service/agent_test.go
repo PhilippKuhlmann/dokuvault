@@ -41,10 +41,19 @@ func TestConfigRoundTripAndValidation(t *testing.T) {
 		{URL: "https://doku.example", Token: "x", Agents: []string{"windows-ad"}, IntervalMinutes: 60},
 		{URL: "https://doku.example", Token: "doc_x", Agents: []string{"unifi"}, IntervalMinutes: 60},
 		{URL: "https://doku.example", Token: "doc_x", Agents: []string{"windows-ad"}, IntervalMinutes: 1},
+		// Plain http to another host: exe and scripts could be swapped on the way.
+		{URL: "http://doku.example", Token: "doc_x", Agents: []string{"windows-ad"}, IntervalMinutes: 60},
+		{URL: "http://10.10.250.91", Token: "doc_x", Agents: []string{"windows-ad"}, IntervalMinutes: 60},
 	}
 	for i, c := range bad {
 		if c.Validate() == nil {
 			t.Errorf("case %d should be rejected", i)
+		}
+	}
+	// The machine itself may stay on http.
+	for _, u := range []string{"http://localhost:8000", "http://127.0.0.1:8000", "http://[::1]:8000"} {
+		if err := validConfig(u).Validate(); err != nil {
+			t.Errorf("%s should be allowed: %v", u, err)
 		}
 	}
 }

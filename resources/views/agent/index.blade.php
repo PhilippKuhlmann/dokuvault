@@ -9,6 +9,15 @@
             </p>
         </x-panel>
 
+        {{-- Agents refuse a plain-http address (except localhost): they run as
+             SYSTEM/root and apply updates from it. Say so before anyone
+             installs one and wonders why it will not start. --}}
+        @unless (str_starts_with((string) config('app.url'), 'https://') || preg_match('#^http://(localhost|127\.0\.0\.1)([:/]|$)#', (string) config('app.url')))
+            <div class="p-4 rounded-xl border border-red-300 bg-red-50 text-sm text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300">
+                {{ __('DokuVault ist unter :url ohne https erreichbar. Agenten laufen mit Administratorrechten und holen Updates von dieser Adresse – sie verweigern deshalb eine http-Adresse. Richten Sie https ein und tragen Sie die Adresse als APP_URL ein.', ['url' => config('app.url')]) }}
+            </div>
+        @endunless
+
         {{-- Frisch erzeugter Token + Scripts (nur einmalig sichtbar).
 
              Ein Block fuer alle Agenten, gespeist aus config('custom.agenten').

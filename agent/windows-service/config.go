@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -52,6 +53,13 @@ func (c Config) Validate() error {
 	if err != nil || (u.Scheme != "https" && u.Scheme != "http") || u.Host == "" {
 		return fmt.Errorf("ungueltige URL %q (erwartet z. B. https://doku.firma.de)", c.URL)
 	}
+	// The service runs as LocalSystem and replaces its own exe and scripts
+	// with what this address sends. Over plain http anyone on the network
+	// path could send their own - so https only, except for the machine
+	// itself (local tests, a DokuVault on the same host).
+	if u.Scheme == "http" && !isLoopback(u.Hostname()) {
+		return fmt.Errorf("unsichere URL %q: DokuVault muss per https erreichbar sein", c.URL)
+	}
 	if !strings.HasPrefix(c.Token, "doc_") {
 		return errors.New("ungueltiger Token (beginnt mit doc_)")
 	}
@@ -67,6 +75,14 @@ func (c Config) Validate() error {
 		}
 	}
 	return validateInterval(c.IntervalMinutes)
+}
+
+func isLoopback(host string) bool {
+	if host == "localhost" {
+		return true
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
 }
 
 func validateInterval(minutes int) error {

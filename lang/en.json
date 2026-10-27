@@ -1603,5 +1603,6 @@
     "Dieser Token gilt nur für die App, nicht für die Schnittstelle.": "This token is for the app only, not for the API.",
     ":host zeigt auf eine interne Adresse und wird nicht geprüft.": ":host points to an internal address and is not checked.",
     "Interne Adressen lassen sich nicht prüfen.": "Internal addresses cannot be checked.",
-    ":host ist im öffentlichen DNS nicht bekannt.": ":host is not known in public DNS."
+    ":host ist im öffentlichen DNS nicht bekannt.": ":host is not known in public DNS.",
+    "DokuVault ist unter :url ohne https erreichbar. Agenten laufen mit Administratorrechten und holen Updates von dieser Adresse – sie verweigern deshalb eine http-Adresse. Richten Sie https ein und tragen Sie die Adresse als APP_URL ein.": "DokuVault is reachable at :url without https. Agents run with administrator rights and fetch updates from this address – so they refuse an http address. Set up https and enter the address as APP_URL."
 }
