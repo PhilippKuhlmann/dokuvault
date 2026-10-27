@@ -78,18 +78,21 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 
-    // Die zweite Stufe im eigenen Profil. Nur fuer den eigenen Zugang - einen
-    // fremden richtet niemand ein.
+    // The second factor in the own profile. Only for the own account -
+    // nobody sets one up for someone else.
     Route::post('two-factor', [TwoFactorController::class, 'begin'])
         ->name('two-factor.begin');
 
-    Route::post('two-factor/verwerfen', [TwoFactorController::class, 'cancel'])
+    Route::post('two-factor/cancel', [TwoFactorController::class, 'cancel'])
         ->name('two-factor.verwerfen');
 
-    Route::post('two-factor/bestaetigen', [TwoFactorController::class, 'confirm'])
+    // Throttled like every other place a code is typed: without it, whoever
+    // holds the session could guess the six digits for a pending secret.
+    Route::post('two-factor/confirm', [TwoFactorController::class, 'confirm'])
+        ->middleware('throttle:5,15')
         ->name('two-factor.confirm');
 
-    Route::post('two-factor/wiederherstellungscodes', [TwoFactorController::class, 'regenerate'])
+    Route::post('two-factor/recovery-codes', [TwoFactorController::class, 'regenerate'])
         ->name('two-factor.codes');
 
     Route::delete('two-factor', [TwoFactorController::class, 'destroy'])
