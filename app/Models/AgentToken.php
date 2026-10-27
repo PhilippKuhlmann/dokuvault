@@ -16,7 +16,29 @@ class AgentToken extends Model
     protected $casts = [
         'last_used_at' => 'datetime',
         'expires_at' => 'datetime',
+        'locked_at' => 'datetime',
     ];
+
+    /** Locked in the agent list: refused until unlocked, nothing reinstalled. */
+    public function isLocked(): bool
+    {
+        return $this->locked_at !== null;
+    }
+
+    /**
+     * One token per agent: binds the token to the machine of its first
+     * check-in. Returns false if it already belongs to another machine.
+     * Atomic - two machines checking in at once cannot both win.
+     */
+    public function bindTo(string $machineId): bool
+    {
+        if ($this->machine_id === null) {
+            static::whereKey($this->id)->whereNull('machine_id')->update(['machine_id' => $machineId]);
+            $this->refresh();
+        }
+
+        return $this->machine_id === $machineId;
+    }
 
     /**
      * Abgelaufen ist ein Token nur, wenn er eine Frist hat und sie vorbei ist.

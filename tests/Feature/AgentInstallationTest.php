@@ -47,18 +47,21 @@ test('the first check-in records the machine and assigns what it detected', func
 });
 
 test('the second DC of a domain reports as server but not AD', function () {
-    [, $plain] = installationToken();
+    // One token per agent - each DC has its own.
+    [$token, $plain] = installationToken();
+    [, $plain2] = installationToken($token->customer);
 
     checkinAls($plain, 'dc01', ['windows-server', 'windows-ad']);
-    checkinAls($plain, 'dc02', ['windows-server', 'windows-ad'])
+    checkinAls($plain2, 'dc02', ['windows-server', 'windows-ad'])
         ->assertJsonPath('roles', ['windows-server']);
 });
 
 test('a DC of another domain gets AD as well', function () {
-    [, $plain] = installationToken();
+    [$token, $plain] = installationToken();
+    [, $plain2] = installationToken($token->customer);
 
     checkinAls($plain, 'dc01', ['windows-server', 'windows-ad'], 'firma.local');
-    checkinAls($plain, 'dc-tochter', ['windows-server', 'windows-ad'], 'tochter.local')
+    checkinAls($plain2, 'dc-tochter', ['windows-server', 'windows-ad'], 'tochter.local')
         ->assertJsonPath('roles', ['windows-server', 'windows-ad']);
 });
 
@@ -202,7 +205,8 @@ test('the dashboard warns about silent agents, failed runs and expiring tokens',
 
     checkinAls($plain, 'dc01', ['windows-server', 'windows-ad']);
     reportAls($plain, 'dc01', [['role' => 'windows-ad', 'ok' => false, 'message' => 'kaputt']]);
-    checkinAls($plain, 'srv-alt', ['windows-server']);
+    [, $plainAlt] = installationToken($customer);
+    checkinAls($plainAlt, 'srv-alt', ['windows-server']);
     AgentInstallation::where('machine_id', 'srv-alt')->update(['last_seen_at' => now()->subDays(2)]);
 
     $this->get(route('customer.dashboard', $customer))

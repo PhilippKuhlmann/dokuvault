@@ -1396,6 +1396,8 @@ return [
         'anmeldung_gescheitert' => ['Anmeldung gescheitert', 'text-amber-700 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/30'],
         'anmeldung_gesperrt' => ['Anmeldung gesperrt', 'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-900/30'],
         'zweite_stufe' => ['Zweite Stufe zurückgesetzt', 'text-purple-700 bg-purple-50 dark:text-purple-300 dark:bg-purple-900/30'],
+        'agent_locked' => ['Agent gesperrt', 'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-900/30'],
+        'agent_unlocked' => ['Agent entsperrt', 'text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-900/30'],
     ],
 
     /*

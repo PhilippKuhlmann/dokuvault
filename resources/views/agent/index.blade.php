@@ -266,7 +266,7 @@
         <x-panel>
             <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">{{ __('Agenten und Scripte') }}</div>
             <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">
-                {{ __('Ein Token gilt für alle – nach dem Anlegen steht jeder Agent und jedes Script zum Herunterladen bereit. Der Name ist nur für dich, damit du den Token später wiedererkennst.') }}
+                {{ __('Ein Token gehört zu genau einem Agenten oder Script – für jeden Rechner einen eigenen erzeugen, dann lässt sich jeder einzeln sperren. Nach dem Anlegen steht jeder Agent und jedes Script zum Herunterladen bereit. Benenne den Token nach dem Rechner, damit du ihn später wiedererkennst.') }}
             </p>
 
             <div class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ __('Agenten – einmal installieren, melden automatisch') }}</div>
@@ -362,6 +362,9 @@
                             {{ $token->name ?: 'Token #'.$token->id }}
                             {{-- Sofort sichtbar, welcher Token tot ist und welcher
                                  noch aus der Zeit ohne Ablauf stammt. --}}
+                            @if ($token->isLocked())
+                                <span class="ml-1 rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-700 dark:bg-red-900/30 dark:text-red-400">{{ __('gesperrt') }}</span>
+                            @endif
                             @if ($token->istAbgelaufen())
                                 <span class="ml-1 rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-700 dark:bg-red-900/30 dark:text-red-400">{{ __('abgelaufen') }}</span>
                             @elseif ($token->expires_at === null)
@@ -370,11 +373,19 @@
                         </div>
                         <div class="text-xs text-gray-500 dark:text-gray-400">
                             {{ __('Standort') }}: {{ $token->site?->name ?? '—' }} ·
+                            {{-- One token per agent: which one it belongs to. --}}
+                            {{ __('Agent') }}: {{ $token->machine_id ? ($boundHosts[$token->machine_id] ?? $token->machine_id) : __('noch keiner') }} ·
                             {{ __('Zuletzt genutzt') }}: {{ Zeit::anzeigen($token->last_used_at, 'd.m.Y H:i', __('noch nie')) }} ·
                             {{ __('Läuft ab') }}: {{ Zeit::anzeigen($token->expires_at, 'd.m.Y', __('unbegrenzt')) }}
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
+                        {{-- Lock: the agent stops at once and runs again when
+                             unlocked - nothing to reinstall, unlike revoking. --}}
+                        <form method="POST" action="{{ route($token->isLocked() ? 'agent.unlock' : 'agent.lock', [$customer, $token]) }}">
+                            @csrf
+                            <x-input.button type="submit" size="sm" :color="$token->isLocked() ? 'gray' : 'red'" :label="$token->isLocked() ? __('Entsperren') : __('Sperren')" />
+                        </form>
                         {{-- Erneuern: neuer Klartext, alter sofort ungültig -
                              der Weg, einen verbrannten oder ablaufenden Token zu
                              wechseln, ohne Kunde und Standort neu einzurichten. --}}
@@ -446,6 +457,9 @@
                             {{ __('Zuletzt erreichbar') }}: {{ Zeit::anzeigen($installation->last_seen_at, 'd.m.Y H:i', __('noch nie')) }} ·
                             {{ __('Version') }}: {{ $installation->version ?? '—' }} ·
                             {{ __('Token') }}: {{ $installation->agentToken ? ($installation->agentToken->name ?: 'Token #'.$installation->agentToken->id) : __('widerrufen') }}
+                            @if ($installation->agentToken?->isLocked())
+                                <span class="ml-1 rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-700 dark:bg-red-900/30 dark:text-red-400">{{ __('gesperrt') }}</span>
+                            @endif
                         </div>
                         {{-- Failed roles with the end of their output - visible
                              without hovering, the full text folded. --}}
@@ -499,6 +513,12 @@
                                 @endforeach
                             </x-input.select>
                             <x-input.button type="submit" form="agent-{{ $installation->id }}" class="h-9" :label="__('Speichern')" />
+                        @if ($installation->agentToken)
+                            <form method="POST" action="{{ route($installation->agentToken->isLocked() ? 'agent.unlock' : 'agent.lock', [$customer, $installation->agentToken]) }}">
+                                @csrf
+                                <x-input.button type="submit" :color="$installation->agentToken->isLocked() ? 'gray' : 'red'" class="h-9" :label="$installation->agentToken->isLocked() ? __('Entsperren') : __('Sperren')" />
+                            </form>
+                        @endif
                         {{-- Picked up on the next checkin, within five minutes. --}}
                         <form method="POST" action="{{ route('agent.installation.run', [$customer, $installation]) }}">
                             @csrf

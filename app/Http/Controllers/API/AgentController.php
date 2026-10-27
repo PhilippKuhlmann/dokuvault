@@ -710,10 +710,25 @@ class AgentController extends Controller
             'interval' => ['nullable', 'integer', 'min:5', 'max:10080'],
         ]);
 
+        $token = $request->attributes->get('agentToken');
+        $machineId = strtolower($data['machine_id']);
+
+        // One token per agent: the first machine to check in owns it. A second
+        // one is refused - otherwise locking the token would stop every agent
+        // that happened to be installed with it.
+        if (! $token->bindTo($machineId)) {
+            $owner = AgentInstallation::where('customer_id', $token->customer_id)
+                ->where('machine_id', $token->machine_id)->value('hostname');
+
+            abort(409, __('Dieser Token gehört bereits zum Agenten :host. Erzeugen Sie für diesen Agenten einen eigenen Token.', [
+                'host' => $owner ?? $token->machine_id,
+            ]));
+        }
+
         $installation = AgentInstallation::checkin(
-            $request->attributes->get('agentToken'),
+            $token,
             $data['kind'],
-            strtolower($data['machine_id']),
+            $machineId,
             $data['hostname'],
             $data['domain'] ?? null,
             $data['version'] ?? null,

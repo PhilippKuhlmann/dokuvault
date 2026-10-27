@@ -359,6 +359,8 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::post('agent', [AgentTokenController::class, 'store'])->name('agent.store');
             Route::delete('agent/{agentToken}', [AgentTokenController::class, 'destroy'])->name('agent.destroy');
             Route::post('agent/{agentToken}/erneuern', [AgentTokenController::class, 'erneuern'])->name('agent.erneuern');
+            Route::post('agent/{agentToken}/lock', [AgentTokenController::class, 'lock'])->name('agent.lock');
+            Route::post('agent/{agentToken}/unlock', [AgentTokenController::class, 'unlock'])->name('agent.unlock');
             Route::get('agent/dienst.exe', [AgentTokenController::class, 'dienstExe'])->name('agent.dienst');
             Route::put('agent/installation/{agentInstallation}', [AgentTokenController::class, 'updateInstallation'])->name('agent.installation.update');
             Route::post('agent/installation/{agentInstallation}/run', [AgentTokenController::class, 'runInstallation'])->name('agent.installation.run');

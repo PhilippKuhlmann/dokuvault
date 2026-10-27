@@ -67,7 +67,7 @@ MSPs lose time to scattered spreadsheets, stale wikis and “where did we write 
     <td width="50%"><img src="docs/screenshots/en/ipam.png" alt="IPAM"><br><sub><b>IPAM</b> – used, free and reserved addresses per VLAN, each range in its own colour</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/screenshots/en/autodoc.png" alt="Auto-documentation"><br><sub><b>Auto-documentation</b> – one token for agents and scripts: create, install, done</sub></td>
+    <td width="50%"><img src="docs/screenshots/en/autodoc.png" alt="Auto-documentation"><br><sub><b>Auto-documentation</b> – one token per agent: create, install, done</sub></td>
     <td width="50%"><img src="docs/screenshots/en/certificates.png" alt="Certificates"><br><sub><b>SSL/TLS certificates</b> – with an expiry warning on the dashboard</sub></td>
   </tr>
   <tr>
@@ -148,7 +148,7 @@ Start under **Other → Initial survey wizard**, or from the card on the custome
 
 No more typing things over. Create an **agent token bound to a customer and site** in the
 interface, install an agent or run a script — the inventory lands in the documentation by itself.
-**One token covers every agent**, and repeated runs update instead of duplicating.
+**Every agent has its own token** and can be locked on its own; repeated runs update instead of duplicating.
 
 <img src="docs/screenshots/en/agenten.png" alt="The agents on offer" width="900">
 

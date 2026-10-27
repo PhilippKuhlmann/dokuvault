@@ -285,7 +285,7 @@
     "Ein Kennwort ist hinterlegt. Leer lassen heißt: unverändert.": "A password is stored. Leaving this empty means: unchanged.",
     "Ein Satz unter dem Anmeldeformular — etwa, wer bei Fragen zum Zugang hilft.": "One sentence under the sign-in form — who to ask about access, for instance.",
     "Ein Schrank mit :max HE – so viel darf ein Katalogelement höchstens hoch sein.": "A cabinet of :max U – the tallest a catalogue item may be.",
-    "Ein Token gilt für alle – nach dem Anlegen steht jeder Agent und jedes Script zum Herunterladen bereit. Der Name ist nur für dich, damit du den Token später wiedererkennst.": "One token covers all of them – once created, every agent and every script is ready to download. The name is just for you, so you can recognise the token later.",
+    "Ein Token gehört zu genau einem Agenten oder Script – für jeden Rechner einen eigenen erzeugen, dann lässt sich jeder einzeln sperren. Nach dem Anlegen steht jeder Agent und jedes Script zum Herunterladen bereit. Benenne den Token nach dem Rechner, damit du ihn später wiedererkennst.": "A token belongs to exactly one agent or script – create one for each machine, so each can be locked on its own. Once created, every agent and script is ready to download. Name the token after the machine so you recognise it later.",
     "Ein Token spricht mit deinen Rechten. Er ersetzt Benutzername und Kennwort für Skripte und den Agenten — gib ihn entsprechend sparsam heraus und widerrufe ihn, sobald er nicht mehr gebraucht wird.": "A token acts with your permissions. It replaces username and password for scripts and the agent — hand it out sparingly and revoke it once it is no longer needed.",
     "Einbauen": "Mount",
     "Einbauten": "Mounted devices",
@@ -1604,5 +1604,13 @@
     ":host zeigt auf eine interne Adresse und wird nicht geprüft.": ":host points to an internal address and is not checked.",
     "Interne Adressen lassen sich nicht prüfen.": "Internal addresses cannot be checked.",
     ":host ist im öffentlichen DNS nicht bekannt.": ":host is not known in public DNS.",
-    "DokuVault ist unter :url ohne https erreichbar. Agenten laufen mit Administratorrechten und holen Updates von dieser Adresse – sie verweigern deshalb eine http-Adresse. Richten Sie https ein und tragen Sie die Adresse als APP_URL ein.": "DokuVault is reachable at :url without https. Agents run with administrator rights and fetch updates from this address – so they refuse an http address. Set up https and enter the address as APP_URL."
+    "DokuVault ist unter :url ohne https erreichbar. Agenten laufen mit Administratorrechten und holen Updates von dieser Adresse – sie verweigern deshalb eine http-Adresse. Richten Sie https ein und tragen Sie die Adresse als APP_URL ein.": "DokuVault is reachable at :url without https. Agents run with administrator rights and fetch updates from this address – so they refuse an http address. Set up https and enter the address as APP_URL.",
+    "gesperrt": "locked",
+    "Sperren": "Lock",
+    "Entsperren": "Unlock",
+    "noch keiner": "none yet",
+    "Dieser Agent ist in DokuVault gesperrt.": "This agent is locked in DokuVault.",
+    "Dieser Token gehört bereits zum Agenten :host. Erzeugen Sie für diesen Agenten einen eigenen Token.": "This token already belongs to the agent :host. Create a token of its own for this agent.",
+    "Agent gesperrt": "Agent locked",
+    "Agent entsperrt": "Agent unlocked"
 }

@@ -26,22 +26,27 @@ class AuthenticateAgent
             ->where('token', AgentToken::hashToken($plain))
             ->first();
 
-        // Abgelaufen wird wie ungültig behandelt - dieselbe Meldung, damit von
-        // außen nicht unterscheidbar ist, ob ein Token nie existierte oder nur
-        // seine Frist vorbei ist.
+        // Expired is treated like invalid - the same message, so from outside
+        // nobody can tell whether a token never existed or only ran out.
         if (! $token || ! $token->customer || ! $token->site || $token->istAbgelaufen()) {
             abort(401, __('Ungültiger Agent-Token.'));
+        }
+
+        // Locked in the agent list. Its own message: it lands in the agent's
+        // log, and whoever reads it there should know it was done on purpose.
+        if ($token->isLocked()) {
+            abort(401, __('Dieser Agent ist in DokuVault gesperrt.'));
         }
 
         $token->forceFill(['last_used_at' => now()])->saveQuietly();
 
         /*
-         * Der Token ist der Verursacher im Protokoll.
+         * The token is the causer in the activity log.
          *
-         * Ohne das stand dort "System": Ein Agent hat keinen angemeldeten
-         * Benutzer, und wer nachsah, wer die WLANs angelegt hat, fand
-         * niemanden. Der Token beantwortet die Frage - er traegt den Namen,
-         * den jemand ihm gegeben hat, und haengt an Kunde und Standort.
+         * Without it the log said "System": an agent has no logged-in user,
+         * and whoever looked up who created the WLANs found nobody. The token
+         * answers that - it carries the name someone gave it and belongs to
+         * a customer and a site.
          */
         CauserResolver::setCauser($token);
 

@@ -21,9 +21,11 @@ function agentLimitToken(): string
 test('agents of one site are not stopped by the API limit per IP', function () {
     $plain = agentLimitToken();
 
+    // One agent (one token per agent) checking in often - the limit is per
+    // token, not the API limit per IP.
     foreach (range(1, 70) as $i) {
         $antwort = $this->withToken($plain)->postJson('/api/agent/checkin', [
-            'kind' => 'windows', 'machine_id' => 'm-'.$i, 'hostname' => 'PC-'.$i,
+            'kind' => 'windows', 'machine_id' => 'm-1', 'hostname' => 'PC-1',
         ]);
         expect($antwort->status())->toBe(200);
     }

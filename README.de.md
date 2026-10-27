@@ -68,7 +68,7 @@ immer aktuell.
     <td width="50%"><img src="docs/screenshots/ipam.png" alt="IPAM"><br><sub><b>IPAM</b> – belegte, freie und reservierte Adressen je VLAN, jeder Bereich in eigener Farbe</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/screenshots/autodoc.png" alt="Auto-Dokumentation"><br><sub><b>Auto-Dokumentation</b> – ein Token für Agenten und Scripte: erzeugen, installieren, fertig</sub></td>
+    <td width="50%"><img src="docs/screenshots/autodoc.png" alt="Auto-Dokumentation"><br><sub><b>Auto-Dokumentation</b> – ein Token je Agent: erzeugen, installieren, fertig</sub></td>
     <td width="50%"><img src="docs/screenshots/certificates.png" alt="Zertifikate"><br><sub><b>SSL/TLS-Zertifikate</b> – mit Ablauf-Warnung im Dashboard</sub></td>
   </tr>
   <tr>
@@ -150,8 +150,8 @@ Einstieg über **Sonstiges → Erstaufnahme-Assistent** oder die Karte auf dem K
 
 Schluss mit Abtippen. Erzeuge in der Oberfläche einen **an Kunde und Standort gebundenen
 Agent-Token**, installiere einen Agenten oder führe ein Script aus – der Bestand landet von selbst
-in der Doku. **Ein Token gilt für alle Agenten**, und wiederholte Läufe aktualisieren, statt zu
-verdoppeln.
+in der Doku. **Jeder Agent hat seinen eigenen Token** und lässt sich einzeln sperren; wiederholte
+Läufe aktualisieren, statt zu verdoppeln.
 
 <img src="docs/screenshots/agenten.png" alt="Übersicht der Agenten" width="900">
 

@@ -42,7 +42,12 @@ class AgentTokenController extends Controller
 
         $agentenGesamt = AgentInstallation::where('customer_id', $customer->id)->count();
 
-        return view('agent.index', compact('customer', 'tokens', 'sites', 'installations', 'suche', 'agentenGesamt'));
+        // Which agent each token belongs to (one token per agent).
+        $boundHosts = AgentInstallation::where('customer_id', $customer->id)
+            ->whereIn('machine_id', $tokens->pluck('machine_id')->filter())
+            ->pluck('hostname', 'machine_id');
+
+        return view('agent.index', compact('customer', 'tokens', 'sites', 'installations', 'suche', 'agentenGesamt', 'boundHosts'));
     }
 
     /**
@@ -94,6 +99,11 @@ class AgentTokenController extends Controller
         Gate::authorize('agent_manage');
         abort_if($agentInstallation->customer_id !== $customer->id, 403);
 
+        // Its token becomes free again - for a reinstall on another machine.
+        AgentToken::whereKey($agentInstallation->agent_token_id)
+            ->where('machine_id', $agentInstallation->machine_id)
+            ->update(['machine_id' => null]);
+
         $agentInstallation->delete();
 
         return $this->zurListe($customer);
@@ -137,6 +147,37 @@ class AgentTokenController extends Controller
         );
 
         return $this->mitNeuemToken($customer, $token, $plain);
+    }
+
+    /**
+     * Lock an agent: it gets a 401 from its next request on and documents
+     * nothing until unlocked. Unlike revoking, nothing has to be reinstalled.
+     */
+    public function lock(Customer $customer, AgentToken $agentToken)
+    {
+        return $this->setLocked($customer, $agentToken, true);
+    }
+
+    public function unlock(Customer $customer, AgentToken $agentToken)
+    {
+        return $this->setLocked($customer, $agentToken, false);
+    }
+
+    private function setLocked(Customer $customer, AgentToken $agentToken, bool $locked)
+    {
+        Gate::authorize('agent_manage');
+        abort_if($agentToken->customer_id !== $customer->id, 403);
+
+        $agentToken->forceFill(['locked_at' => $locked ? now() : null])->save();
+
+        activity()
+            ->event($locked ? 'agent_locked' : 'agent_unlocked')
+            ->performedOn($customer)
+            ->causedBy(auth()->user())
+            ->withProperties(['objekt' => $agentToken->name ?: 'Token #'.$agentToken->id])
+            ->log($locked ? 'Agent gesperrt' : 'Agent entsperrt');
+
+        return $this->zurListe($customer);
     }
 
     public function destroy(Customer $customer, AgentToken $agentToken)

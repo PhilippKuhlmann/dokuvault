@@ -2,6 +2,11 @@
 
 ## 26.10.27
 
+### Added
+
+- **Ein Token je Agent, und Agenten lassen sich sperren.** Ein Agent-Token gehört jetzt genau einem Agenten: Der erste Rechner, der sich damit meldet, behält ihn, ein zweiter wird mit einem klaren Hinweis abgewiesen. In der Token-Liste und an jedem installierten Agenten gibt es „Sperren“ und „Entsperren“. Ein gesperrter Agent kann ab seiner nächsten Anfrage nichts mehr senden und läuft nach dem Entsperren ohne Neuinstallation weiter. Beides steht im Protokoll. Die Liste zeigt, zu welchem Agenten ein Token gehört. Wird ein Agent aus der Liste entfernt, ist sein Token wieder frei.
+  - Bestehende Agenten, die sich einen Token teilen: Der erste, der sich nach dem Update meldet, behält ihn; die übrigen brauchen einen eigenen Token und eine Neuinstallation.
+
 ### Security
 
 - **Der Link in der „Kennwort vergessen“-Mail zeigt immer auf die eigene Adresse.** Er wurde aus dem Host-Header der Anfrage gebaut. Wer die Anfrage mit seiner eigenen Domain als Host schickte, ließ dem Opfer eine echte Mail zukommen, deren Link den Reset-Token zum Angreifer trug. Jetzt beginnen alle Links, ob in Mails, Weiterleitungen oder Einladungen, immer mit `APP_URL`, samt Schema.
