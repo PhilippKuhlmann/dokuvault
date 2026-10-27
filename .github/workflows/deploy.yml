@@ -19,8 +19,18 @@ concurrency:
 
 jobs:
   deploy:
-    # Bei workflow_run nur nach gruenem Testlauf; bei Handstart immer.
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    # On workflow_run only after a green run of a push to this repository's
+    # main. "branches: [main]" above matches the branch *name* only: a pull
+    # request from a fork whose branch is called main ran the tests too and
+    # triggered a deploy - with this repository's secrets. Manual start
+    # always works.
+    if: >-
+      github.event_name == 'workflow_dispatch' || (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository
+      )
     runs-on: ubuntu-latest
 
     # Secrets bewusst als Umgebungsvariablen statt per ${{ }} direkt in die

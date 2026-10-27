@@ -8,6 +8,9 @@
 - **Kennwörter landen bei einem Eingabefehler nicht mehr in der Session.** Schlug die Prüfung eines Formulars fehl, wurde das eingetippte Kennwort im Klartext in der Session aufgehoben und beim erneuten Anzeigen wieder ins Feld geschrieben, also in den Quelltext der Seite. Das galt für Benutzer anlegen, Kennwort zurücksetzen, Einladung und Ersteinrichtung. Kennwort-Felder und alle Geheimnis-Felder werden jetzt nie mehr aufgehoben und nie wieder eingesetzt.
 - **Agenten sprechen nur noch https.** Windows-Dienst und Linux/Proxmox-Agent laufen mit Administrator- bzw. root-Rechten und holen Updates und Skripte von DokuVault. Über eine http-Adresse hätte sie jeder auf dem Netzweg austauschen können. Agenten verweigern deshalb eine http-Adresse (außer `localhost`), und die Agenten-Seite warnt, wenn DokuVault ohne https erreichbar ist. Installationen mit https merken davon nichts.
 
+### Internal
+
+- **Der Demo-Deploy startet nur noch nach einem Push auf `main` im eigenen Repository.** Die Bedingung prüfte nur den Namen des Branches. Ein Pull Request aus einem Fork, dessen Branch `main` hieß, konnte so einen Deploy mit den Secrets dieses Repositorys auslösen. Fremder Code kam dabei nicht auf den Server, aber die Demo ließ sich beliebig oft neu aufsetzen.
 
 ## 26.10.26
 
