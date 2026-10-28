@@ -1,6 +1,8 @@
 @props(['href', 'label'])
 
-@php $active = request()->url() === $href; @endphp
+{{-- Auch auf den Seiten unterhalb dieses Links markiert: Unterseiten wie
+     .../checklists/settings stehen nicht selbst in der Seitenleiste. --}}
+@php $active = \App\Support\NavigationState::isActive($href); @endphp
 
 <li>
     <a href="{{ $href }}"

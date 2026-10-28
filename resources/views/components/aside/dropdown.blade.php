@@ -1,9 +1,9 @@
 @props(['label', 'svg', 'links'])
 
 @php
-    // Gruppe automatisch geöffnet, wenn ein Link exakt auf die aktuelle Seite zeigt
-    // (exakter href-Treffer, damit Präfix-URLs wie /admin nicht alle Gruppen öffnen)
-    $open = str_contains((string) $links, 'href="' . request()->url() . '"');
+    // Gruppe automatisch geöffnet, wenn ein Link auf die aktuelle Seite zeigt -
+    // oder auf eine Seite darunter, etwa .../checklists/settings unter Checklisten.
+    $open = \App\Support\NavigationState::groupIsOpen((string) $links);
 @endphp
 
 <li>

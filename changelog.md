@@ -2,6 +2,10 @@
 
 ## 26.10.28
 
+### Fixed
+
+- **Die Seitenleiste zeigt auch auf Unterseiten, wo man ist.** In der Seitenleiste stehen nur die Übersichtsseiten. Auf einer Seite darunter, etwa den Einstellungen der Checklisten oder einem Detail-Eintrag, klappte die Gruppe zu und kein Eintrag war markiert. Jetzt bleibt die Gruppe offen und die zugehörige Übersicht markiert, solange man sich unterhalb davon bewegt.
+
 ### Security
 
 - **Der Schlüssel im AD-Skript einer Checkliste gilt nur noch für einen Bericht.** Bisher blieb er nach dem ersten Bericht noch 48 Stunden gültig, und jeder weitere Bericht konnte den verknüpften AD-Benutzer erneut überschreiben, also Kennwort, E-Mail und Gruppen. Jetzt ist der Schlüssel nach dem Bericht verbraucht. Soll das Skript noch einmal laufen, lädt man es in DokuVault neu herunter.
