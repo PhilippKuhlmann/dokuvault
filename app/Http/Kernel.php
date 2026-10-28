@@ -17,6 +17,7 @@ use App\Http\Middleware\RedirectToInitialSetup;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\SicherheitsHeader;
 use App\Http\Middleware\TrimStrings;
+use App\Http\Middleware\TrustHosts;
 use App\Http\Middleware\TrustProxies;
 use App\Http\Middleware\ValidateSignature;
 use App\Http\Middleware\VerifyCsrfToken;
@@ -50,7 +51,11 @@ class Kernel extends HttpKernel
     protected $middleware = [
         // Schutz-Header auf jede Antwort - auch auf Fehlerseiten und die API.
         SicherheitsHeader::class,
-        // \App\Http\Middleware\TrustHosts::class,
+        // Only requests for APP_URL's host (and its subdomains). The Host
+        // header comes from the client; the reverse proxy passes it on
+        // unchanged (Nginx Proxy Manager, "Host $host"). Laravel skips this
+        // with APP_ENV=local and in tests.
+        TrustHosts::class,
         TrustProxies::class,
         // Links always start with APP_URL, never with the request's Host.
         PinRootUrl::class,

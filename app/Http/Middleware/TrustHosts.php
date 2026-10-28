@@ -7,7 +7,8 @@ use Illuminate\Http\Middleware\TrustHosts as Middleware;
 class TrustHosts extends Middleware
 {
     /**
-     * Get the host patterns that should be trusted.
+     * APP_URL's host and its subdomains - any other Host header is refused
+     * with a 400 before the application sees the request.
      *
      * @return array<int, string|null>
      */

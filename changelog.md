@@ -14,6 +14,8 @@
 - **Dokumentations-Assistent: „Schon erfasst“ nur mit dem Recht zum Sehen.** Für einen Schritt genügt das Recht zum Anlegen. Eine Rolle, die nur anlegen darf, sah in der Liste trotzdem die Namen aller vorhandenen Einträge dieser Art. Jetzt erscheint die Liste nur mit dem Recht, diese Art zu sehen.
 - **Kleinere Härtungen.** Die Domain-Prüfung schickt nur noch gültige Domainnamen an RDAP, Umlaut-Domains in ihrer ASCII-Form, sodass Zeichen wie `/`, `?` oder `#` die angefragte Adresse nicht mehr verändern. Die Dateiendung eines Uploads wird bereinigt gespeichert, wie der Name. Den Kurznamen eines Kunden, der zugleich Ablageordner und Adresse ist, kann kein Formular mehr setzen.
 
+- **Nur noch Anfragen an die eigene Adresse.** Mit `APP_ENV=production` weist DokuVault jede Anfrage mit einem fremden Host ab (400) und nimmt nur die Adresse aus `APP_URL` und ihre Subdomains an. Das ist die zweite Absicherung hinter den fest auf `APP_URL` gesetzten Links. Wer DokuVault unter einer anderen Adresse aufruft, etwa über die IP, muss sie als `APP_URL` eintragen.
+
 ### Internal
 
 - **npm-Abhängigkeiten aktualisiert.** `npm audit fix` hebt `zod` (über Puppeteer), `follow-redirects` und `picomatch` auf Versionen ohne bekannte Lücke mit hoher Schwere. Übrig sind vier Meldungen mit niedriger Schwere zu `deepmerge` in einem Build-Werkzeug; ihr Fix verlangte ein Downgrade von Flowbite und bleibt deshalb aus.

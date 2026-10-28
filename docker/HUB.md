@@ -72,7 +72,7 @@ mit `docker compose exec app php artisan setup:code`.
 | Variable | Bedeutung |
 |---|---|
 | `APP_ENV` | `local` legt Demo-Daten an, `production` nur die Startdaten |
-| `APP_URL` | Adresse, unter der die Anwendung erreichbar ist |
+| `APP_URL` | Adresse, unter der die Anwendung erreichbar ist. Mit `APP_ENV=production` werden Anfragen an eine andere Adresse abgewiesen |
 | `APP_KEY` | Verschlüsselungsschlüssel. Ohne Angabe wird beim ersten Start einer erzeugt |
 | `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | Datenbank (MySQL oder MariaDB) |
 | `LOG_CHANNEL` | `stderr` empfohlen, damit `docker logs` die Fehler zeigt |
