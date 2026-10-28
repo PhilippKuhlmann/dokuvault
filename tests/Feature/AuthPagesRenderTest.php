@@ -31,9 +31,10 @@ test('es gibt keine Selbstregistrierung', function () {
     expect(User::where('username', 'eindringling')->exists())->toBeFalse();
 });
 
-test('confirm-password rendert für angemeldete Nutzer', function () {
+test('es gibt keine Seite zum Kennwort bestätigen mehr', function () {
+    // Unused, and it checked the password by e-mail instead of by user.
     $this->actingAs(User::factory()->create());
-    $this->get('/confirm-password')->assertStatus(200);
+    $this->get('/confirm-password')->assertNotFound();
 });
 
 /*

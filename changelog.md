@@ -23,6 +23,8 @@
 - **Kleinere Härtungen.** Die Statistik-Seiten prüfen das Recht bei jeder Aktualisierung, nicht nur beim Öffnen. Die Aufbewahrung der PDF-Ausgaben ist auch beim Lesen auf ein Jahr begrenzt. Interne Links mit Tabulator oder Zeilenumbruch werden verworfen. Namen in der Einladungs-Mail bleiben auf einer Zeile. Beim Löschen eines Benutzers verschwinden seine API-Tokens. Der Dateiname des AD-Skripts enthält nur noch einfache Zeichen. Zwei PDF-Exporte in derselben Sekunde überschreiben sich nicht mehr. Logos und Rack-Bilder gehen nur mit festen Bildtypen hinaus. Der Anmeldevorgang der App trägt einen eigenen Zweck in der Verschlüsselung.
 - **Hand-Skripte senden nur an https.** Alle Skripte, die Ergebnisse an DokuVault hochladen, brechen bei einer http-Adresse ab (außer `localhost`), bevor der Token unterwegs ist.
 
+- **Die Seite „Kennwort bestätigen“ ist entfernt.** Sie wurde nirgends benutzt und prüfte das Kennwort über die E-Mail-Adresse statt über den angemeldeten Benutzer. Bei Benutzern ohne E-Mail hätte sie den Hash eines anderen Benutzers prüfen können.
+
 - **Nur noch Anfragen an die eigene Adresse.** Mit `APP_ENV=production` weist DokuVault jede Anfrage mit einem fremden Host ab (400) und nimmt nur die Adresse aus `APP_URL` und ihre Subdomains an. Das ist die zweite Absicherung hinter den fest auf `APP_URL` gesetzten Links. Wer DokuVault unter einer anderen Adresse aufruft, etwa über die IP, muss sie als `APP_URL` eintragen.
 
 ### Internal
