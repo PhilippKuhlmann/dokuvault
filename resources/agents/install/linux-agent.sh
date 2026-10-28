@@ -123,7 +123,7 @@ ROLE="${ROLE:-proxmox}"
 if [ -z "${DOKUVAULT_UPDATED:-}" ]; then
   installer=/var/lib/dokuvault/installer.neu
   status="$(curl -sS -o "$installer" -w '%{http_code}' \
-    -H "Authorization: Bearer $TOKEN" \
+    -K <(printf 'header = "Authorization: Bearer %s"\n' "$TOKEN") \
     -H "User-Agent: DokuVault-Agent-$KIND" \
     "$URL/api/agent/update/$KIND?version=$(cat /usr/local/lib/dokuvault/version 2>/dev/null)")" || status=000
 
@@ -146,7 +146,7 @@ fi
 # agent page in DokuVault. An older DokuVault without checkin: just run.
 antwort=/var/lib/dokuvault/checkin.json
 status="$(curl -sS -o "$antwort" -w '%{http_code}' -X POST \
-  -H "Authorization: Bearer $TOKEN" \
+  -K <(printf 'header = "Authorization: Bearer %s"\n' "$TOKEN") \
   -H "User-Agent: DokuVault-Agent-$KIND" \
   -H "Content-Type: application/json" -H "Accept: application/json" \
   -d "{\"kind\":\"$KIND\",\"machine_id\":\"$(cat /etc/machine-id 2>/dev/null)\",\"hostname\":\"$(hostname)\",\"version\":\"$(cat /usr/local/lib/dokuvault/version 2>/dev/null)\",\"detected\":[\"$ROLE\"],\"interval\":${INTERVAL:-60}}" \
@@ -188,7 +188,7 @@ date +%s > "$letzter"
 
 ziel="/var/lib/dokuvault/$ROLE.sh"
 status="$(curl -sS -o "$ziel.neu" -w '%{http_code}' \
-  -H "Authorization: Bearer $TOKEN" \
+  -K <(printf 'header = "Authorization: Bearer %s"\n' "$TOKEN") \
   -H "User-Agent: DokuVault-Agent-$KIND" \
   "$URL/api/agent/script/$ROLE?shell=bash")" || {
   echo "DokuVault nicht erreichbar ($URL)." >&2
@@ -211,7 +211,7 @@ printf '%s\n' "$ausgabe"
 nachricht="$(printf '%s' "$ausgabe" | tail -c 4000 | tr -d '\000-\010\013\014\016-\037\r' \
   | sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/ /g' | awk 'NR > 1 { printf "\\n" } { printf "%s", $0 }')"
 curl -sS -o /dev/null -X POST \
-  -H "Authorization: Bearer $TOKEN" \
+  -K <(printf 'header = "Authorization: Bearer %s"\n' "$TOKEN") \
   -H "User-Agent: DokuVault-Agent-$KIND" \
   -H "Content-Type: application/json" -H "Accept: application/json" \
   -d "{\"machine_id\":\"$(cat /etc/machine-id 2>/dev/null)\",\"results\":[{\"role\":\"$ROLE\",\"ok\":$ok,\"message\":\"$nachricht\"}]}" \

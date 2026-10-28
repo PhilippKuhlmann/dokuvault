@@ -119,11 +119,14 @@ func removeUninstallEntry() {
 	_ = registry.DeleteKey(registry.LOCAL_MACHINE, uninstallKey)
 }
 
+// The System32 paths carry no spaces and go into the cmd line unquoted -
+// the line is otherwise built exactly as before.
+//
 // restartServiceLater starts the service again a few seconds after this
 // process has stopped - so the new exe runs. A detached cmd, because a
 // service cannot start itself while it is still stopping.
 func restartServiceLater() error {
-	cmd := exec.Command("cmd.exe", "/C", "ping -n 6 127.0.0.1 >nul & sc start "+serviceName)
+	cmd := exec.Command(systemTool("cmd.exe"), "/C", systemTool("PING.EXE")+" -n 6 127.0.0.1 >nul & "+systemTool("sc.exe")+" start "+serviceName)
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: 0x00000008} // DETACHED_PROCESS
 	return cmd.Start()
 }
@@ -132,7 +135,7 @@ func restartServiceLater() error {
 // process has ended: uninstall usually runs from the copy inside it, and a
 // running exe cannot delete itself.
 func removeDataDirLater() error {
-	cmd := exec.Command("cmd.exe", "/C", "ping -n 4 127.0.0.1 >nul & rmdir /S /Q \""+dataDir+"\"")
+	cmd := exec.Command(systemTool("cmd.exe"), "/C", systemTool("PING.EXE")+" -n 4 127.0.0.1 >nul & rmdir /S /Q \""+dataDir+"\"")
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: 0x00000008} // DETACHED_PROCESS
 	return cmd.Start()
 }
@@ -176,17 +179,34 @@ func installBinary() (string, error) {
 // none at all - "Access is denied" even for administrators. Files from such
 // a run are reset to inheriting first; as owner (Administrators) we may.
 func prepareDataDir() error {
+	// The path is predictable, and any local user may create folders in
+	// ProgramData. A link there would point the SYSTEM service somewhere
+	// else - refuse it instead of following it.
+	if fi, err := os.Lstat(dataDir); err == nil {
+		if fi.Mode()&(os.ModeSymlink|os.ModeIrregular) != 0 || !fi.IsDir() {
+			return fmt.Errorf("%s ist kein normaler Ordner (Verweis?) - Installation abgebrochen", dataDir)
+		}
+	}
+
 	if err := os.MkdirAll(dataDir, 0o700); err != nil {
 		return err
 	}
 
+	// Owner first: a folder a standard user created beforehand stays theirs,
+	// and an owner can always grant themselves access again - to read the
+	// token or swap the exe that runs as SYSTEM. Changing permissions alone
+	// is not enough.
+	if out, err := exec.Command(systemTool("icacls.exe"), dataDir, "/setowner", "*S-1-5-32-544", "/T", "/C", "/Q").CombinedOutput(); err != nil {
+		return fmt.Errorf("Eigentuemer von %s nicht setzbar: %v %s", dataDir, err, out)
+	}
+
 	if entries, _ := os.ReadDir(dataDir); len(entries) > 0 {
-		if out, err := exec.Command("icacls", filepath.Join(dataDir, "*"), "/reset", "/T", "/C", "/Q").CombinedOutput(); err != nil {
+		if out, err := exec.Command(systemTool("icacls.exe"), filepath.Join(dataDir, "*"), "/reset", "/T", "/C", "/Q").CombinedOutput(); err != nil {
 			appendLog("warn", fmt.Sprintf("Rechte der vorhandenen Dateien nicht zuruecksetzbar: %v %s", err, out))
 		}
 	}
 
-	out, err := exec.Command("icacls", dataDir,
+	out, err := exec.Command(systemTool("icacls.exe"), dataDir,
 		"/inheritance:r",
 		"/grant:r", "*S-1-5-18:(OI)(CI)F",
 		"/grant:r", "*S-1-5-32-544:(OI)(CI)F",
@@ -195,6 +215,17 @@ func prepareDataDir() error {
 		return fmt.Errorf("Rechte auf %s nicht setzbar: %v %s", dataDir, err, out)
 	}
 	return nil
+}
+
+// systemTool is a tool from System32 by its full path. Looked up through
+// PATH, a writable directory early in PATH could hand the SYSTEM service its
+// own icacls.exe or powershell.exe.
+func systemTool(name string) string {
+	root := os.Getenv("SystemRoot")
+	if root == "" {
+		root = `C:\Windows`
+	}
+	return filepath.Join(root, "System32", name)
 }
 
 func uninstallService() error {

@@ -75,7 +75,7 @@ var runScript = func(path string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), scriptTimeout)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, "powershell.exe", "-NoProfile", "-NonInteractive", "-File", path)
+	cmd := exec.CommandContext(ctx, systemTool(`WindowsPowerShell\v1.0\powershell.exe`), "-NoProfile", "-NonInteractive", "-File", path)
 	out, err := cmd.CombinedOutput()
 	if ctx.Err() == context.DeadlineExceeded {
 		return string(out), fmt.Errorf("Abbruch nach %s", scriptTimeout)

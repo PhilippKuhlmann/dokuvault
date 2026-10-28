@@ -90,7 +90,7 @@ PAYLOAD="{\"server\":{\"identifier\":$(json_str "$IDENTIFIER"),\"hostname\":$(js
 
 echo "Sende Dokumentation an $API_URL ..."
 curl -fsS -X POST "$API_URL" \
-  -H "Authorization: Bearer $TOKEN" \
+  -K <(printf 'header = "Authorization: Bearer %s"\n' "$TOKEN") \
   -H "Content-Type: application/json" \
   -d "$PAYLOAD"
 echo ""

@@ -88,7 +88,7 @@ graph_alle() {
   local url="$1" datei="$2" antwort
   : > "$datei"
   while [ -n "$url" ]; do
-    antwort="$(curl -fsS -H "Authorization: Bearer $ZUGANG" "$url")"
+    antwort="$(curl -fsS -K <(printf 'header = "Authorization: Bearer %s"\n' "$ZUGANG") "$url")"
     jq '.value' <<<"$antwort" >> "$datei"
     url="$(jq -r '."@odata.nextLink" // empty' <<<"$antwort")"
   done
@@ -126,7 +126,7 @@ jq -n --arg tenant "$TENANT" \
 # uebrig. DokuVault schreibt aber hinein, was ihm fehlt.
 echo "Sende Dokumentation an $API_URL ..."
 antwort="$(curl -sS -X POST "$API_URL" -w $'\n%{http_code}' \
-  -H "Authorization: Bearer $TOKEN" \
+  -K <(printf 'header = "Authorization: Bearer %s"\n' "$TOKEN") \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
   --data-binary @"$NUTZLAST_DATEI")"

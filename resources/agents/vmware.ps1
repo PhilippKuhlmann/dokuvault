@@ -44,7 +44,10 @@ public class AlleZertifikate : ICertificatePolicy {
     public bool CheckValidationResult(ServicePoint sp, X509Certificate cert, WebRequest req, int problem) { return true; }
 }
 "@
-        [System.Net.ServicePointManager]::CertificatePolicy = New-Object AlleZertifikate
+        # Kept to switch back before talking to DokuVault - see the upload.
+        $OriginalCertificatePolicy = [System.Net.ServicePointManager]::CertificatePolicy
+        $IgnoreCertificatePolicy = New-Object AlleZertifikate
+        [System.Net.ServicePointManager]::CertificatePolicy = $IgnoreCertificatePolicy
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
     }
 }
@@ -119,10 +122,17 @@ foreach ($h in $hosts) {
         guests = $guests
     } | ConvertTo-Json -Depth 5
 
+    # Back to the normal certificate check for DokuVault. On Windows PowerShell
+    # 5.1 -ZertifikatIgnorieren switched it off for the whole process - the
+    # agent token would otherwise go to whoever answers in between.
+    if ($OriginalCertificatePolicy) { [System.Net.ServicePointManager]::CertificatePolicy = $OriginalCertificatePolicy }
     Invoke-RestMethod -Method Post -Uri $ApiUrl `
         -Headers @{ Authorization = "Bearer $Token" } `
         -ContentType "application/json; charset=utf-8" `
         -Body ([System.Text.Encoding]::UTF8.GetBytes($payload)) | Out-Null
+
+    # The next host is asked from the vCenter again - with its own certificate.
+    if ($IgnoreCertificatePolicy) { [System.Net.ServicePointManager]::CertificatePolicy = $IgnoreCertificatePolicy }
 
     Write-Host "  $($h.name): $($guests.Count) VMs gemeldet."
     $gemeldet++

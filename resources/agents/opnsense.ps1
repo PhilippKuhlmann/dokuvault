@@ -54,6 +54,8 @@ public class AlleZertifikate : ICertificatePolicy {
     public bool CheckValidationResult(ServicePoint sp, X509Certificate cert, WebRequest req, int problem) { return true; }
 }
 "@
+        # Kept to switch back before talking to DokuVault - see the upload.
+        $OriginalCertificatePolicy = [System.Net.ServicePointManager]::CertificatePolicy
         [System.Net.ServicePointManager]::CertificatePolicy = New-Object AlleZertifikate
     }
 }
@@ -273,6 +275,10 @@ $payload = [PSCustomObject]@{
 } | ConvertTo-Json -Depth 5
 
 Write-Host "Sende Dokumentation an $ApiUrl ..."
+# Back to the normal certificate check for DokuVault. On Windows PowerShell
+# 5.1 -ZertifikatIgnorieren switched it off for the whole process - the
+# agent token would otherwise go to whoever answers in between.
+if ($OriginalCertificatePolicy) { [System.Net.ServicePointManager]::CertificatePolicy = $OriginalCertificatePolicy }
 Invoke-RestMethod -Method Post -Uri $ApiUrl `
     -Headers @{ Authorization = "Bearer $Token" } `
     -ContentType "application/json; charset=utf-8" `

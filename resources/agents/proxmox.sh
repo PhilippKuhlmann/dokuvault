@@ -291,7 +291,7 @@ PAYLOAD="{\"host\":$HOST_JSON,\"guests\":[$GUESTS_JSON],\"backups\":[$BACKUPS_JS
 
 echo "Sende Dokumentation an $API_URL ..."
 curl -fsS -X POST "$API_URL" \
-  -H "Authorization: Bearer $TOKEN" \
+  -K <(printf 'header = "Authorization: Bearer %s"\n' "$TOKEN") \
   -H "Content-Type: application/json" \
   -d "$PAYLOAD"
 echo ""

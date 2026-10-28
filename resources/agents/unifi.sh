@@ -332,7 +332,7 @@ jq -n --arg site "$SITE" --slurpfile geraete "$GERAETE_DATEI" --slurpfile wlans 
 
 echo "Sende Dokumentation an $API_URL ..."
 antwort="$(curl -sS -X POST "$API_URL" -w $'\n%{http_code}' \
-  -H "Authorization: Bearer $TOKEN" \
+  -K <(printf 'header = "Authorization: Bearer %s"\n' "$TOKEN") \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
   --data-binary @"$NUTZLAST_DATEI")"

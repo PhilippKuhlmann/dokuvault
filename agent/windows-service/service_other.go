@@ -5,6 +5,8 @@ package main
 import (
 	"errors"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 // Stubs so the platform-neutral part (config, fetch, run loop) builds and is
@@ -21,6 +23,9 @@ func runService() error       { return errNotWindows }
 
 func removeUninstallEntry()     {}
 func removeDataDirLater() error { return errNotWindows }
+
+// Tools by full path are a Windows matter; elsewhere the bare name (tests).
+func systemTool(name string) string { return filepath.Base(strings.ReplaceAll(name, `\`, "/")) }
 
 // Permissions are a Windows matter; elsewhere just the folder (tests).
 func prepareDataDir() error { return os.MkdirAll(dataDir, 0o700) }
