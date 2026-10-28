@@ -61,6 +61,12 @@ class Adresse
     {
         $pfad = trim((string) $wert);
 
+        // Browsers drop tabs and line breaks inside a URL, so "/<tab>/host"
+        // would turn into "//host".
+        if (preg_match('/[\x00-\x1f\x7f]/', $pfad)) {
+            return null;
+        }
+
         if (! str_starts_with($pfad, '/')
             || str_starts_with($pfad, '//')
             || str_starts_with($pfad, '/\\')) {

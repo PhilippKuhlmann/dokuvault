@@ -141,8 +141,20 @@ class RackEditor extends Component
 
         return view('livewire.rack-editor', [
             'rack' => $rack,
-            'palette' => $this->layout()->palette($this->customerId),
+            // Only device kinds the role may see; the palette lists names.
+            'palette' => $this->layout()->palette($this->customerId)
+                ->filter(fn (array $gruppe) => $this->darfSehen($gruppe['key']))
+                ->values(),
             'catalog' => RackCatalogItem::ordered()->get(),
         ]);
+    }
+
+    private function darfSehen(string $schluessel): bool
+    {
+        $klasse = config('custom.rack_device_types')[$schluessel][0];
+        $recht = strtolower(class_basename($klasse)).'_viewAny';
+
+        // A kind without a right of its own (patch panel) stays visible.
+        return ! Gate::has($recht) || Gate::allows($recht);
     }
 }

@@ -98,10 +98,17 @@ class CredentialLinking
         return $this->attach($device, $login->id, $daten['note'] ?? null);
     }
 
-    /** Löst nur die Verknüpfung - der Login-Eintrag selbst bleibt bestehen. */
-    public function detach(Model $device, int $linkId): void
+    /**
+     * Löst nur die Verknüpfung - der Login-Eintrag selbst bleibt bestehen.
+     * Nur Verknüpfungen von Arten, die der Nutzer sehen darf: Wer keine
+     * SSH-Schlüssel sieht, löst auch keine.
+     */
+    public function detach(Model $device, int $linkId, User $nutzer): void
     {
-        $device->credentialLinks()->whereKey($linkId)->delete();
+        $device->credentialLinks()
+            ->whereKey($linkId)
+            ->whereHas('login', fn ($q) => $q->whereIn('kind', $this->visibleKinds($nutzer)))
+            ->delete();
     }
 
     /**

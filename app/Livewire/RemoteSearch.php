@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Server;
 use App\Models\VM;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -18,7 +19,13 @@ class RemoteSearch extends Component
         // search, and as RemoteConnectController checks on connect.
         $kunde = auth()->user()->customer_id;
 
-        $abfrage = function (string $klasse, string $tabelle) use ($kunde) {
+        $abfrage = function (string $klasse, string $tabelle, string $recht) use ($kunde) {
+            // The remote search right alone must not reveal device names the
+            // role may not see in the lists.
+            if (Gate::denies($recht)) {
+                return collect();
+            }
+
             return $klasse::where($tabelle.'.remoteID', '!=', '')
                 ->where($tabelle.'.remotePassword', '!=', '')
                 ->with('customer')
@@ -35,8 +42,8 @@ class RemoteSearch extends Component
                 ->get();
         };
 
-        $servers = $abfrage(Server::class, 'servers');
-        $vms = $abfrage(VM::class, 'vms');
+        $servers = $abfrage(Server::class, 'servers', 'server_viewAny');
+        $vms = $abfrage(VM::class, 'vms', 'vm_viewAny');
 
         $remotes = [];
 

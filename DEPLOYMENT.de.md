@@ -209,7 +209,9 @@ Der Proxy gehört deshalb in die `.env`:
 TRUSTED_PROXIES=172.18.0.0/16
 ```
 
-Mehrere Einträge mit Komma trennen, CIDR ist erlaubt. Welche Adresse einzutragen ist, verrät
+Mehrere Einträge mit Komma trennen, CIDR ist erlaubt. Kein `*` eintragen: Die Anwendung glaubte
+dann jedem `X-Forwarded-For`-Header, und wer sie direkt erreicht, könnte eine beliebige Herkunftsadresse
+vortäuschen – das hebelt die Anmeldebremse und das Protokoll aus. Welche Adresse einzutragen ist, verrät
 die Aufzeichnung selbst – solange der Proxy nicht vertraut wird, steht dort seine:
 
 ```bash

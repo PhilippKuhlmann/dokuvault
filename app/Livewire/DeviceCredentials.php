@@ -177,7 +177,7 @@ class DeviceCredentials extends Component
     {
         $device = $this->device();
 
-        app(CredentialLinking::class)->detach($device, $id);
+        app(CredentialLinking::class)->detach($device, $id, auth()->user());
         // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
         // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
         $this->dispatch('geraet-geaendert');

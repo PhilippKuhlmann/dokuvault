@@ -29,13 +29,15 @@ class Einladung extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $name = Setting::appName();
+        // Names come from the admin form; keep them on one line in the mail.
+        $empfaenger = preg_replace('/\s+/', ' ', trim((string) $notifiable->name));
 
         // "Kennwort festlegen" heisst es hier, auf dem Formular dahinter und
         // in der Bestaetigung. Die Mail sagte "vergeben", das Formular
         // "setzen" - dreimal dieselbe Handlung unter drei Namen.
         return (new MailMessage)
             ->subject(__('Ihr Zugang zu :anwendung', ['anwendung' => $name]))
-            ->greeting(__('Hallo :name,', ['name' => $notifiable->name]))
+            ->greeting(__('Hallo :name,', ['name' => $empfaenger]))
             ->line(__('Sie haben jetzt Zugang zu :anwendung. Es fehlt nur noch Ihr Kennwort.', ['anwendung' => $name]))
             ->action(__('Kennwort festlegen'), route('einladung.formular', [
                 'token' => $this->token,

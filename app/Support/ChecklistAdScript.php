@@ -32,7 +32,10 @@ class ChecklistAdScript
 {
     public static function filename(Checklist $checklist): string
     {
-        return $checklist->type.'-'.($checklist->username ?: 'benutzer').'.cmd';
+        // Only plain characters: the name ends up in the Content-Disposition header.
+        $benutzer = preg_replace('/[^A-Za-z0-9._-]+/', '_', (string) $checklist->username) ?: 'benutzer';
+
+        return $checklist->type.'-'.$benutzer.'.cmd';
     }
 
     /**

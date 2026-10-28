@@ -618,7 +618,9 @@ class Setting extends Model
      */
     public static function pdfStunden(): int
     {
-        return self::frist(self::PDF_STUNDEN, 'pdf_stunden');
+        // Capped on read as well: a value written past the form (database,
+        // import) must not keep exports for years.
+        return min(self::frist(self::PDF_STUNDEN, 'pdf_stunden'), 8760);
     }
 
     /**

@@ -289,6 +289,11 @@ HOST_JSON="{\"identifier\":$(json_str "$IDENTIFIER"),\"hostname\":$(json_str "$H
 
 PAYLOAD="{\"host\":$HOST_JSON,\"guests\":[$GUESTS_JSON],\"backups\":[$BACKUPS_JSON]}"
 
+# The token travels with the upload: https only, except for the machine itself.
+case "$API_URL" in
+  https://*|http://localhost|http://localhost[:/]*|http://127.0.0.1|http://127.0.0.1[:/]*) ;;
+  *) echo "Unsichere Adresse $API_URL: DokuVault muss per https erreichbar sein." >&2; exit 1 ;;
+esac
 echo "Sende Dokumentation an $API_URL ..."
 curl -fsS -X POST "$API_URL" \
   -K <(printf 'header = "Authorization: Bearer %s"\n' "$TOKEN") \

@@ -122,6 +122,12 @@ foreach ($h in $hosts) {
         guests = $guests
     } | ConvertTo-Json -Depth 5
 
+    # The token travels with the upload: https only, except for the machine itself.
+    if ($ApiUrl -notmatch '^(https://|http://(localhost|127\.0\.0\.1)([:/]|$))') {
+        Write-Error "Unsichere Adresse ${ApiUrl}: DokuVault muss per https erreichbar sein."
+        exit 1
+    }
+
     # Back to the normal certificate check for DokuVault. On Windows PowerShell
     # 5.1 -ZertifikatIgnorieren switched it off for the whole process - the
     # agent token would otherwise go to whoever answers in between.

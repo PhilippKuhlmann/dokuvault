@@ -63,7 +63,11 @@ class User extends Authenticatable
     {
         // The database cascade would drop the export rows but leave their
         // files - with every password of a customer - on disk for good.
-        static::deleting(fn (User $user) => $user->pdfExports()->get()->each->delete());
+        static::deleting(function (User $user) {
+            $user->pdfExports()->get()->each->delete();
+            // Tokens would otherwise stay behind as rows of a user that is gone.
+            $user->tokens()->delete();
+        });
 
         static::updated(function (User $user) {
             $twoFactorRemoved = $user->wasChanged('two_factor_confirmed_at') && $user->two_factor_confirmed_at === null;

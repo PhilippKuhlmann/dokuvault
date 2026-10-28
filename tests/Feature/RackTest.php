@@ -343,7 +343,7 @@ test('jeder Eintrag in rack_device_types zeigt auf ein Model mit customer_id und
 });
 
 test('a phone system can be mounted and is labelled even without a name', function () {
-    $this->actingAs(userWithPermissions(['rack_update']));
+    $this->actingAs(userWithPermissions(['rack_update', 'phonesystem_viewAny']));
     [$customer, $site, $rack] = customerWithRack();
     $anlage = PhoneSystem::factory()->create([
         'customer_id' => $customer->id, 'site_id' => $site->id,

@@ -101,6 +101,10 @@ test('a customer account with remote_search only finds its own devices', functio
 
     $rolle = Role::factory()->create(['name' => 'Kunde Fernwartung']);
     $rolle->permissions()->attach(Permission::factory()->create(['name' => 'remote_search'])->id);
+    // The search lists device names, so it also needs the right to see them.
+    foreach (['server_viewAny', 'vm_viewAny'] as $recht) {
+        $rolle->permissions()->attach((Permission::where('name', $recht)->first() ?? Permission::factory()->create(['name' => $recht]))->id);
+    }
     $this->actingAs(User::factory()->create(['role_id' => $rolle->id, 'customer_id' => $eigener->id]));
 
     expect($this->get(route('customer.dashboard', $eigener))->getContent())->toContain(route('search.remote'));

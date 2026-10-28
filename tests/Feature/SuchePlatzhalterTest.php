@@ -10,6 +10,7 @@ use App\Models\Customer;
 use App\Models\Domain;
 use App\Models\Network;
 use App\Models\OperatingSystem;
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Server;
 use App\Models\Site;
@@ -123,6 +124,10 @@ test('die globale Suche behaelt ihre Praefix-Form fuer Massentabellen', function
 test('die Fernwartungs-Suche findet ueber den Kundennamen', function () {
     $rolle = Role::find(Role::IS_TECHNIKER)
         ?? Role::factory()->create(['id' => Role::IS_TECHNIKER]);
+    // The search lists device names, so it needs the right to see them.
+    foreach (['server_viewAny', 'vm_viewAny'] as $recht) {
+        $rolle->permissions()->attach((Permission::where('name', $recht)->first() ?? Permission::factory()->create(['name' => $recht]))->id);
+    }
     $this->actingAs(User::factory()->create(['role_id' => $rolle->id]));
 
     $kunde = Customer::factory()->create(['name' => 'Firma_Eins GmbH']);

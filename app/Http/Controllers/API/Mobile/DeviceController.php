@@ -74,7 +74,7 @@ class DeviceController extends Controller
         $geraet = $this->geraet($request, $typ, $id, 'credentialLinks');
         abort_if($verknuepfung->visibleKinds($request->user()) === [], 403);
 
-        $verknuepfung->detach($geraet, $link);
+        $verknuepfung->detach($geraet, $link, $request->user());
 
         return response()->json(null, 204);
     }

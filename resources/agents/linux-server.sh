@@ -88,6 +88,11 @@ done
 
 PAYLOAD="{\"server\":{\"identifier\":$(json_str "$IDENTIFIER"),\"hostname\":$(json_str "$HOSTNAME"),\"manufacturer\":$(json_str "$MANUFACTURER"),\"model\":$(json_str "$MODEL"),\"serial\":$(json_str "$SERIAL"),\"ip\":$(json_str "$IP"),\"os_id\":$(json_str "$OS_ID"),\"os_version\":$(json_str "$OS_VERSION"),\"virtual\":$VIRTUAL,\"cpu\":$(json_str "$CPU"),\"memory_gb\":$(num "$MEM_GB"),\"services\":[$SERVICES_JSON]}}"
 
+# The token travels with the upload: https only, except for the machine itself.
+case "$API_URL" in
+  https://*|http://localhost|http://localhost[:/]*|http://127.0.0.1|http://127.0.0.1[:/]*) ;;
+  *) echo "Unsichere Adresse $API_URL: DokuVault muss per https erreichbar sein." >&2; exit 1 ;;
+esac
 echo "Sende Dokumentation an $API_URL ..."
 curl -fsS -X POST "$API_URL" \
   -K <(printf 'header = "Authorization: Bearer %s"\n' "$TOKEN") \

@@ -21,6 +21,9 @@ class AdminAgentenStatistik extends Component
 
     public function render()
     {
+        // Not only in mount(): the component keeps answering updates.
+        Gate::authorize('admin_statistik');
+
         // Current version per kind: the Windows exe, for Linux/Proxmox the
         // shared installer (see AgentController::update).
         $aktuell = [

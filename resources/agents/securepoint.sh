@@ -213,6 +213,11 @@ jq -n \
     dhcp_ranges: $dhcp[0]
   }' > "$NUTZLAST_DATEI"
 
+# The token travels with the upload: https only, except for the machine itself.
+case "$API_URL" in
+  https://*|http://localhost|http://localhost[:/]*|http://127.0.0.1|http://127.0.0.1[:/]*) ;;
+  *) echo "Unsichere Adresse $API_URL: DokuVault muss per https erreichbar sein." >&2; exit 1 ;;
+esac
 echo "Sende Dokumentation an $API_URL ..."
 antwort="$(curl -sS -X POST "$API_URL" -w $'\n%{http_code}' \
   -K <(printf 'header = "Authorization: Bearer %s"\n' "$TOKEN") \

@@ -44,6 +44,9 @@ class AnmeldungController extends Controller
             return response()->json([
                 'zweite_stufe' => true,
                 'vorgang' => Crypt::encryptString(json_encode([
+                    // Purpose: the key encrypts other values too; a ciphertext
+                    // from elsewhere must not pass as a login step.
+                    'zweck' => 'mobil-anmeldung',
                     'id' => $nutzer->id,
                     'bis' => now()->addMinutes(config('custom.mobil.zweite_stufe_minuten'))->timestamp,
                     'geraet' => $geraet,
@@ -145,7 +148,7 @@ class AnmeldungController extends Controller
             throw $this->abgelaufen();
         }
 
-        if (! is_array($vorgang) || ! isset($vorgang['id'], $vorgang['bis']) || $vorgang['bis'] < now()->timestamp) {
+        if (! is_array($vorgang) || ($vorgang['zweck'] ?? null) !== 'mobil-anmeldung' || ! isset($vorgang['id'], $vorgang['bis']) || $vorgang['bis'] < now()->timestamp) {
             throw $this->abgelaufen();
         }
 

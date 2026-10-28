@@ -95,7 +95,7 @@ test('Bestandsserver gelten als 19-Zoll in voller Tiefe', function () {
 });
 
 test('die Rack-Auswahl zeigt nur 19-Zoll-Server', function () {
-    $this->actingAs(userWithPermissions(['rack_update']));
+    $this->actingAs(userWithPermissions(['rack_update', 'server_viewAny']));
     [$customer, $site] = serverUmgebung();
     $rack = Rack::create([
         'customer_id' => $customer->id, 'site_id' => $site->id,

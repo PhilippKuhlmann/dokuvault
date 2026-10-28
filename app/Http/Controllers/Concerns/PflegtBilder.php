@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Concerns;
 
+use App\Support\BildTyp;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Arr;
@@ -58,7 +59,7 @@ trait PflegtBilder
         abort_if($pfad === null || ! Storage::disk('local')->exists($pfad), 404);
 
         return response(Storage::disk('local')->get($pfad), Response::HTTP_OK, [
-            'Content-Type' => Storage::disk('local')->mimeType($pfad),
+            'Content-Type' => BildTyp::fuer($pfad),
             'X-Content-Type-Options' => 'nosniff',
             // Aendert sich selten, steht aber in jedem Rack.
             'Cache-Control' => 'private, max-age=86400',

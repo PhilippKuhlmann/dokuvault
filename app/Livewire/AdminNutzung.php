@@ -33,6 +33,9 @@ class AdminNutzung extends Component
 
     public function render()
     {
+        // Not only in mount(): the component keeps answering updates.
+        Gate::authorize('admin_statistik');
+
         $tage = (int) $this->zeitraum;
         $von = now()->subDays($tage - 1)->startOfDay();
 

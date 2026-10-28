@@ -22,6 +22,9 @@ class AdminSystem extends Component
 
     public function render()
     {
+        // Not only in mount(): the component keeps answering updates.
+        Gate::authorize('admin_statistik');
+
         $verlauf = DB::table('statistik_werte')
             ->where('customer_id', 0)
             ->whereIn('kennzahl', ['db_bytes', 'dateien_bytes', 'backup_bytes', 'disk_frei_bytes'])

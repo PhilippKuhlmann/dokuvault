@@ -100,6 +100,11 @@ foreach ($job in Get-VBRJob) {
 
 $payload = [PSCustomObject]@{ jobs = $jobs } | ConvertTo-Json -Depth 6
 
+# The token travels with the upload: https only, except for the machine itself.
+if ($ApiUrl -notmatch '^(https://|http://(localhost|127\.0\.0\.1)([:/]|$))') {
+    Write-Error "Unsichere Adresse ${ApiUrl}: DokuVault muss per https erreichbar sein."
+    exit 1
+}
 Write-Host "Sende Dokumentation an $ApiUrl ..."
 Invoke-RestMethod -Method Post -Uri $ApiUrl `
     -Headers @{ Authorization = "Bearer $Token" } `

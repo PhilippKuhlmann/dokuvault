@@ -70,7 +70,7 @@ class KundenPdfErzeugen implements ShouldQueue
             ])->output();
 
             $path = 'pdf-exports/'.$export->customer_id.'/'
-                .now()->format('Y-m-d_His').'_dokumentation.pdf';
+                .now()->format('Y-m-d_His').'_'.$export->id.'_dokumentation.pdf';
 
             Storage::disk('local')->put($path, $pdf);
 

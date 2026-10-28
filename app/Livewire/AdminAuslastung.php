@@ -36,6 +36,9 @@ class AdminAuslastung extends Component
 
     public function render()
     {
+        // Not only in mount(): the component keeps answering updates.
+        Gate::authorize('admin_statistik');
+
         // Hours of the day in the display zone: "most load at 8" means 8
         // o'clock local time, not UTC. Stored is UTC (app.timezone).
         $zone = Zeit::zone();

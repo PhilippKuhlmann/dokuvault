@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Setting;
+use App\Support\BildTyp;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -39,7 +40,7 @@ class BrandingController extends Controller
         abort_if($pfad === null || ! Storage::disk('local')->exists($pfad), 404);
 
         return response(Storage::disk('local')->get($pfad), Response::HTTP_OK, [
-            'Content-Type' => Storage::disk('local')->mimeType($pfad),
+            'Content-Type' => BildTyp::fuer($pfad),
             'X-Content-Type-Options' => 'nosniff',
             // Das Logo aendert sich selten, steht aber auf jeder Seite.
             'Cache-Control' => 'public, max-age=86400',

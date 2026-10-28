@@ -219,7 +219,9 @@ The proxy therefore belongs in `.env`:
 TRUSTED_PROXIES=172.18.0.0/16
 ```
 
-Separate several entries with commas; CIDR is allowed. Which address to enter is revealed by the
+Separate several entries with commas; CIDR is allowed. Do not enter `*`: the app would then believe
+any `X-Forwarded-For` header, and anyone reaching it directly could claim any origin address — which
+undermines the login throttling and the audit log. Which address to enter is revealed by the
 recording itself — as long as the proxy is not trusted, its address is what ends up there:
 
 ```bash

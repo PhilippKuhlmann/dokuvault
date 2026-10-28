@@ -18,10 +18,17 @@
 - **Admin-Rechte gelten nie für Kundennutzer.** Die `admin_*`-Rechte wirken über alle Kunden. Eine Rolle mit angehaktem Admin-Recht gab einem Nutzer, der auf einen Kunden festgelegt ist, trotzdem Zugriff auf fremde Kunden. Jetzt greifen diese Rechte bei Nutzern mit Kunde nie. Die Fernwartungs-Suche bleibt für Kundennutzer möglich.
 - **Backups ohne PDF-Exporte.** Kennwort-PDFs, die noch in ihrer Frist lagen, landeten im Backup-Archiv. `storage/app/pdf-exports` ist jetzt ausgeschlossen.
 
+- **Fernwartungs-Suche und Rack-Palette zeigen nur, was man sehen darf.** Das Recht zur Fernwartungs-Suche allein zeigte die Namen aller Server und VMs mit Fernwartung, auch ohne das Recht, Server oder VMs zu sehen. Ebenso listete die Auswahl im Rack-Editor Geräte jeder Art. Jetzt erscheinen nur Arten, die die Rolle sehen darf. Rollen, die die Fernwartungs-Suche nutzen, brauchen also auch „Server sehen“ bzw. „VMs sehen“.
+- **Zugangsdaten lösen nur für sichtbare Arten.** Wer keine SSH-Schlüssel sehen darf, kann ihre Verknüpfung an einem Gerät auch nicht mehr lösen, im Browser wie in der App.
+- **Kleinere Härtungen.** Die Statistik-Seiten prüfen das Recht bei jeder Aktualisierung, nicht nur beim Öffnen. Die Aufbewahrung der PDF-Ausgaben ist auch beim Lesen auf ein Jahr begrenzt. Interne Links mit Tabulator oder Zeilenumbruch werden verworfen. Namen in der Einladungs-Mail bleiben auf einer Zeile. Beim Löschen eines Benutzers verschwinden seine API-Tokens. Der Dateiname des AD-Skripts enthält nur noch einfache Zeichen. Zwei PDF-Exporte in derselben Sekunde überschreiben sich nicht mehr. Logos und Rack-Bilder gehen nur mit festen Bildtypen hinaus. Der Anmeldevorgang der App trägt einen eigenen Zweck in der Verschlüsselung.
+- **Hand-Skripte senden nur an https.** Alle Skripte, die Ergebnisse an DokuVault hochladen, brechen bei einer http-Adresse ab (außer `localhost`), bevor der Token unterwegs ist.
+
 - **Nur noch Anfragen an die eigene Adresse.** Mit `APP_ENV=production` weist DokuVault jede Anfrage mit einem fremden Host ab (400) und nimmt nur die Adresse aus `APP_URL` und ihre Subdomains an. Das ist die zweite Absicherung hinter den fest auf `APP_URL` gesetzten Links. Wer DokuVault unter einer anderen Adresse aufruft, etwa über die IP, muss sie als `APP_URL` eintragen.
 
 ### Internal
 
+- **Docker: nginx mit `default_server`.** Der Server-Block ist ausdrücklich der Standard für alle Anfragen.
+- **Doku warnt vor `TRUSTED_PROXIES=*`** in der Installationsanleitung.
 - **npm-Abhängigkeiten aktualisiert.** `npm audit fix` hebt `zod` (über Puppeteer), `follow-redirects` und `picomatch` auf Versionen ohne bekannte Lücke mit hoher Schwere. Übrig sind vier Meldungen mit niedriger Schwere zu `deepmerge` in einem Build-Werkzeug; ihr Fix verlangte ein Downgrade von Flowbite und bleibt deshalb aus.
 
 ## 26.10.27

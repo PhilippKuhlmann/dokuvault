@@ -34,6 +34,9 @@ class AdminDatenwachstum extends Component
 
     public function render()
     {
+        // Not only in mount(): the component keeps answering updates.
+        Gate::authorize('admin_statistik');
+
         $arten = collect(config('custom.trashables'))->mapWithKeys(fn ($e, $slug) => [$slug => $e[1]]);
         if (! $arten->has($this->kennzahl)) {
             $this->kennzahl = 'server';
