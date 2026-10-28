@@ -378,6 +378,10 @@ test('the server and VM cards show the report and say it came from the agent', f
         ->assertOk()
         ->assertSee('title="Container (LXC)"', false)
         ->assertSee('title="Virtuelle Maschine"', false)
+        // Symbol und Farbe je Typ: Zwei gleich graue Abzeichen unterschieden
+        // sich nur im Wort, und man las in einer Liste jedes einzeln.
+        ->assertSee('bg-cerulean-50', false)
+        ->assertSee('bg-violet-50', false)
         ->assertSee('4 Kerne')
         ->assertSee('6 GB von 8 GB')
         ->assertDontSee('75 %')

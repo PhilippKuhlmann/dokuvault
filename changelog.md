@@ -2,6 +2,10 @@
 
 ## 26.10.28
 
+### Changed
+
+- **VM oder Container ist auf einen Blick zu sehen.** Das Kennzeichen neben dem Namen trägt jetzt ein Symbol und eine eigene Farbe: ein Bildschirm in Blau für „VM“, ein Würfel in Violett für „LXC“. Vorher waren beide grau und unterschieden sich nur im Wort, sodass man in einer gemischten Liste jedes einzeln lesen musste. Das Wort bleibt daneben stehen.
+
 ### Fixed
 
 - **VLAN-Modal: DNS 1 / DNS 2 und DHCP-Start / DHCP-Ende passen wieder ins Fenster.** Die beiden Felder einer Zeile waren breiter als das Modal, sodass das rechte Feld außerhalb stand und man im Modal nach rechts scrollen musste.

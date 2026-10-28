@@ -17,15 +17,37 @@
                     {{-- VM or container, as the agent reported it: decides how
                          to get in (console vs. pct enter) and what a backup
                          holds. Not stored for entries made by hand. --}}
+                    {{-- Symbol und Farbe je Typ: In einer Liste mit beiden
+                         Arten waren zwei gleich graue Abzeichen nur am Wort zu
+                         unterscheiden, und man las jedes einzeln. Bildschirm
+                         und Blau heisst VM, Wuerfel und Violett heisst
+                         Container. Das Wort bleibt daneben stehen - Farbe
+                         allein traegt die Aussage nicht. --}}
                     @php
                         $gastTyp = match ($eintrag->agent_details['type'] ?? null) {
-                            'qemu' => ['VM', __('Virtuelle Maschine')],
-                            'lxc' => ['LXC', __('Container (LXC)')],
+                            'qemu' => ['VM', __('Virtuelle Maschine'), 'bg-cerulean-50 text-cerulean-700 ring-cerulean-200 dark:bg-cerulean-400/10 dark:text-cerulean-300 dark:ring-cerulean-400/30'],
+                            'lxc' => ['LXC', __('Container (LXC)'), 'bg-violet-50 text-violet-700 ring-violet-200 dark:bg-violet-400/10 dark:text-violet-300 dark:ring-violet-400/30'],
                             default => null,
                         };
                     @endphp
                     @if ($gastTyp)
-                        <span title="{{ $gastTyp[1] }}" class="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:bg-gray-700 dark:text-gray-300">{{ $gastTyp[0] }}</span>
+                        <span title="{{ $gastTyp[1] }}"
+                            class="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset {{ $gastTyp[2] }}">
+                            @if ($gastTyp[0] === 'VM')
+                                {{-- Bildschirm: das, was eine VM mitbringt und ein Container nicht. --}}
+                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="3" y="4" width="18" height="12" rx="2" />
+                                    <path stroke-linecap="round" d="M12 16v4m-4 0h8" />
+                                </svg>
+                            @else
+                                {{-- Wuerfel: ein Container, der auf dem Kern des Hosts sitzt. --}}
+                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linejoin="round" d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" />
+                                    <path stroke-linejoin="round" d="M12 21v-9m0 0l8-4.5M12 12L4 7.5" />
+                                </svg>
+                            @endif
+                            {{ $gastTyp[0] }}
+                        </span>
                     @endif
 
                     {{-- Running or not, as of the last report - the first thing
