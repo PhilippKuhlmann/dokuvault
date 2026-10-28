@@ -5,6 +5,7 @@
 ### Security
 
 - **Der Schlüssel im AD-Skript einer Checkliste gilt nur noch für einen Bericht.** Bisher blieb er nach dem ersten Bericht noch 48 Stunden gültig, und jeder weitere Bericht konnte den verknüpften AD-Benutzer erneut überschreiben, also Kennwort, E-Mail und Gruppen. Jetzt ist der Schlüssel nach dem Bericht verbraucht. Soll das Skript noch einmal laufen, lädt man es in DokuVault neu herunter.
+- **Agenten legen keine Betriebssysteme mehr an.** Der Katalog der Betriebssysteme ist für alle Kunden gemeinsam. Bisher landete jeder Name, den ein Agent meldete, dort als neuer Eintrag, auch erfundene oder ein Sammel-Eintrag „Unbekannt“, und das ohne Support-Ende. Agenten wählen jetzt nur noch aus vorhandenen Einträgen. Kennt der Katalog den gemeldeten Namen nicht, bleibt das Feld leer, oder es bleibt das von Hand gewählte Betriebssystem stehen. Neue Einträge legt nur der Admin-Bereich an.
 
 ## 26.10.27
 

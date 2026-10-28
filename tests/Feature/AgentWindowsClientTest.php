@@ -24,6 +24,10 @@ function windowsClientPayload(): array
 }
 
 test('Windows-Client-Agent legt den Rechner beim Kunden des Tokens an', function () {
+    // Agents only pick from the catalog - the entry exists, as it does on
+    // a real installation (seeder or admin area).
+    OperatingSystem::firstOrCreate(['name' => 'Windows 11 Pro']);
+
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     [$token, $plain] = AgentToken::generateFor($customer, $site, 'Rollout-Skript');
@@ -97,4 +101,40 @@ test('ohne gültigen Agent-Token: 401', function () {
     $this->withToken('doc_falsch')
         ->postJson('/api/agent/windows-client', windowsClientPayload())
         ->assertUnauthorized();
+});
+
+test('an agent never adds an operating system to the shared catalog', function () {
+    // The catalog is shared by every customer: a name an agent (or whoever
+    // holds an agent token) makes up must not appear there.
+    [$token, $plain] = AgentToken::generateFor(
+        $customer = Customer::factory()->create(),
+        Site::factory()->create(['customer_id' => $customer->id]),
+    );
+    $before = OperatingSystem::count();
+
+    $this->withToken($plain)->postJson('/api/agent/windows-client', ['client' => [
+        'identifier' => 'pc-unbekannt', 'hostname' => 'PC-UNBEKANNT', 'os' => 'Microsoft Erfundenes OS 3000',
+    ]])->assertOk();
+
+    expect(OperatingSystem::count())->toBe($before)
+        ->and(OperatingSystem::where('name', 'Erfundenes OS 3000')->exists())->toBeFalse()
+        ->and(Computer::where('agent_identifier', 'pc-unbekannt')->sole()->operating_system_id)->toBeNull();
+});
+
+test('an operating system chosen by hand survives an unknown name from the agent', function () {
+    $os = OperatingSystem::firstOrCreate(['name' => 'Windows 11 Pro']);
+    [$token, $plain] = AgentToken::generateFor(
+        $customer = Customer::factory()->create(),
+        $site = Site::factory()->create(['customer_id' => $customer->id]),
+    );
+    Computer::create([
+        'customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'PC-1',
+        'agent_identifier' => 'pc-1', 'operating_system_id' => $os->id,
+    ]);
+
+    $this->withToken($plain)->postJson('/api/agent/windows-client', ['client' => [
+        'identifier' => 'pc-1', 'hostname' => 'PC-1', 'os' => 'Microsoft Erfundenes OS 3000',
+    ]])->assertOk();
+
+    expect(Computer::where('agent_identifier', 'pc-1')->sole()->operating_system_id)->toBe($os->id);
 });

@@ -2,6 +2,7 @@
 
 use App\Models\AgentToken;
 use App\Models\Customer;
+use App\Models\OperatingSystem;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\VM;
@@ -44,6 +45,12 @@ function vmwarePayload(): array
 }
 
 test('VMware-Agent legt Host und VMs beim Kunden des Tokens an', function () {
+    // Agents only pick from the catalog - the entry exists, as it does on
+    // a real installation (seeder or admin area).
+    OperatingSystem::firstOrCreate(['name' => 'VMware ESXi']);
+    OperatingSystem::firstOrCreate(['name' => 'Windows']);
+    OperatingSystem::firstOrCreate(['name' => 'Linux']);
+
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     [$token, $plain] = AgentToken::generateFor($customer, $site, 'vCenter');

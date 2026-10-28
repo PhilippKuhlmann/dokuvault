@@ -49,6 +49,11 @@ function hypervPayload(): array
 }
 
 test('Hyper-V-Agent legt Host und VMs beim Kunden des Tokens an', function () {
+    // Agents only pick from the catalog - the entry exists, as it does on
+    // a real installation (seeder or admin area).
+    OperatingSystem::firstOrCreate(['name' => 'Windows Server 2022 Standard']);
+    OperatingSystem::firstOrCreate(['name' => 'Windows Server 2019 Standard']);
+
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     [$token, $plain] = AgentToken::generateFor($customer, $site, 'HV-Host');
@@ -74,7 +79,9 @@ test('Hyper-V-Agent legt Host und VMs beim Kunden des Tokens an', function () {
     expect($datei->operatingSystem->name)->toBe('Windows Server 2019 Standard');
 
     // Ohne gemeldetes Betriebssystem wird nicht geraten.
-    expect($vms->firstWhere('agent_identifier', 'vm-guid-2')->operatingSystem->name)->toBe('Unbekannt');
+    // No OS reported: no catalog entry "Unbekannt" any more - the field stays empty.
+    expect($vms->firstWhere('agent_identifier', 'vm-guid-2')->operatingSystem)->toBeNull()
+        ->and(OperatingSystem::where('name', 'Unbekannt')->exists())->toBeFalse();
 
     expect(IpAddress::where('ipable_type', Server::class)->where('ipable_id', $server->id)->first()->address)
         ->toBe('10.0.0.10');

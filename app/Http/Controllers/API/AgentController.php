@@ -135,17 +135,16 @@ class AgentController extends Controller
             'host.replication' => ['nullable', 'boolean'],
         ], $this->backupRegeln('backups')));
 
-        // Versionsspezifisch ("Proxmox VE 8" statt nur "Proxmox VE"): Version
-        // 7/8/9 haben unterschiedliche Support-Enden, ein Sammel-Eintrag
-        // haette das nicht abbilden koennen.
+        // Version-specific ("Proxmox VE 8" rather than just "Proxmox VE"):
+        // 7/8/9 have different support ends, one catch-all entry could not
+        // show that.
         //
-        // nurKatalog: Dieser Agent legt keine Betriebssysteme an. Er meldet
-        // Bausteine ('debian', '12'), keine fertigen Namen - was sich nicht
-        // eindeutig einem Katalogeintrag zuordnen laesst, bleibt leer.
+        // fromOsRelease: the guests report building blocks ('debian', '12')
+        // from /etc/os-release rather than finished names.
         [$server, $guestCount] = $this->hostUndGaeste(
             $data['host'], $data['guests'] ?? [], $customer, $site,
             $this->mapPveVersion($data['host']['pve_version'] ?? null),
-            nurKatalog: true
+            fromOsRelease: true
         );
 
         $cluster = $this->proxmoxCluster($server, $data['guests'] ?? [], $data['host'], $customer, $site);
@@ -183,7 +182,7 @@ class AgentController extends Controller
 
         [$server, $guestCount] = $this->hostUndGaeste(
             $data['host'], $data['guests'] ?? [], $customer, $site,
-            $this->osKatalogName($data['host']['os'] ?? null, 'Windows')
+            $this->osCatalogName($data['host']['os'] ?? null, 'Windows')
         );
 
         return response()->json([
@@ -217,7 +216,7 @@ class AgentController extends Controller
 
         [$server, $guestCount] = $this->hostUndGaeste(
             $data['host'], $data['guests'] ?? [], $customer, $site,
-            $this->osKatalogName($data['host']['os'] ?? null, 'VMware ESXi')
+            $this->osCatalogName($data['host']['os'] ?? null, 'VMware ESXi')
         );
 
         return response()->json([
@@ -260,7 +259,7 @@ class AgentController extends Controller
 
         [$server] = $this->hostUndGaeste(
             $data['server'], [], $customer, $site,
-            $this->osKatalogName($data['server']['os'] ?? null, 'Windows')
+            $this->osCatalogName($data['server']['os'] ?? null, 'Windows')
         );
 
         $dienste = $this->diensteAusRollen($data['server']['roles'] ?? []);
@@ -335,13 +334,13 @@ class AgentController extends Controller
                     'agent_identifier' => $meldung['identifier'],
                 ]);
 
-            if ($osId = $this->betriebssystemId($osName, true)) {
+            if ($osId = $this->catalogOsId($osName)) {
                 $geraet->operating_system_id = $osId;
             }
             $geraet->save();
             $this->meldeAdresse($geraet, $customer->id, $site->id, $meldung['ip'] ?? null);
         } else {
-            [$geraet] = $this->hostUndGaeste($meldung, [], $customer, $site, (string) $osName, nurKatalog: true);
+            [$geraet] = $this->hostUndGaeste($meldung, [], $customer, $site, (string) $osName, fromOsRelease: true);
         }
 
         // As with Windows: only into an empty field - whoever maintained the
@@ -945,17 +944,19 @@ class AgentController extends Controller
 
         $client = $data['client'];
 
-        $os = OperatingSystem::firstOrCreate(['name' => $this->osKatalogName($client['os'] ?? null, 'Windows')]);
+        // Only an entry the catalog already has - an agent never creates one.
+        // Without a match the field keeps whatever was chosen by hand.
+        $osId = $this->catalogOsId($this->osCatalogName($client['os'] ?? null, 'Windows'));
 
         $vorhanden = Computer::where('customer_id', $customer->id)->where('agent_identifier', $client['identifier'])->first();
 
         $computer = Computer::updateOrCreate(
             ['customer_id' => $customer->id, 'agent_identifier' => $client['identifier']],
-            [
+            array_filter([
                 'site_id' => $site->id,
-                'operating_system_id' => $os->id,
+                'operating_system_id' => $osId,
                 'name' => $client['hostname'],
-            ] + $this->hardwareFelder($client, $vorhanden)
+            ], fn ($value) => $value !== null) + $this->hardwareFelder($client, $vorhanden)
         );
 
         $this->meldeAdresse($computer, $customer->id, $site->id, $client['ip'] ?? null);
@@ -1367,7 +1368,7 @@ class AgentController extends Controller
      *
      * @return array{0: Server, 1: int} Server und Zahl der gemeldeten Gäste
      */
-    protected function hostUndGaeste(array $host, array $gaeste, $customer, $site, string $hostOs, bool $nurKatalog = false): array
+    protected function hostUndGaeste(array $host, array $gaeste, $customer, $site, string $hostOs, bool $fromOsRelease = false): array
     {
         // Hinweis: 'services' wird hier NICHT gesetzt - das Feld pflegt der
         // Nutzer manuell (Rollen wie AD, FS, DNS, DHCP ...). Allein
@@ -1377,9 +1378,9 @@ class AgentController extends Controller
             'name' => $host['hostname'],
         ];
 
-        // Nur eintragen, wenn es einen Treffer gibt. Ein null loeschte sonst
-        // bei jedem Lauf, was jemand von Hand nachgetragen hat.
-        if ($osId = $this->betriebssystemId($hostOs, $nurKatalog)) {
+        // Only set on a match. A null would wipe, on every run, what someone
+        // entered by hand.
+        if ($osId = $this->catalogOsId($hostOs)) {
             $attribute['operating_system_id'] = $osId;
         }
 
@@ -1412,13 +1413,13 @@ class AgentController extends Controller
                 // 'services' bleibt manuell (Rollen der VM)
             ];
 
-            // Proxmox meldet, was im Gast in /etc/os-release steht ('debian',
-            // '12'); die anderen einen fertigen Namen ("Windows Server 2022").
-            $gastOsName = $nurKatalog
+            // Proxmox reports what /etc/os-release says in the guest ('debian',
+            // '12'); the others a finished name ("Windows Server 2022").
+            $gastOsName = $fromOsRelease
                 ? $this->osReleaseKatalogName($gast['os_id'] ?? null, $gast['os_version'] ?? null)
-                : $this->osKatalogName($gast['os'] ?? null, 'Unbekannt');
+                : $this->osCatalogName($gast['os'] ?? null, 'Unbekannt');
 
-            if ($gastOsId = $this->betriebssystemId($gastOsName, $nurKatalog)) {
+            if ($gastOsId = $this->catalogOsId($gastOsName)) {
                 $vmAttribute['operating_system_id'] = $gastOsId;
             }
 
@@ -1790,42 +1791,34 @@ class AgentController extends Controller
     }
 
     /**
-     * Bringt einen gemeldeten Betriebssystemnamen auf die Schreibweise des
-     * Katalogs.
+     * The catalog name for an operating system name an agent reports.
      *
-     * Win32_OperatingSystem.Caption liefert immer "Microsoft Windows ...";
-     * der Katalog fuehrt Windows-Systeme ohne dieses Praefix (siehe Seeder,
-     * z. B. "Windows Server 2012 R2 Standard"). Ohne das Kappen legte
-     * firstOrCreate bei jedem Kunden eine zweite, nie zusammengefuehrte
-     * Katalogzeile an statt die vorhandene "Windows 11 Pro" zu treffen.
+     * Win32_OperatingSystem.Caption always says "Microsoft Windows ..."; the
+     * catalog lists Windows without that prefix (see the seeder, e.g.
+     * "Windows Server 2012 R2 Standard"). Without trimming it nothing would
+     * match the existing "Windows 11 Pro".
      */
-    protected function osKatalogName(?string $name, string $ersatz): string
+    protected function osCatalogName(?string $name, string $fallback): string
     {
-        $sauber = trim(preg_replace('/^Microsoft\s+/i', '', (string) $name));
+        $clean = trim(preg_replace('/^Microsoft\s+/i', '', (string) $name));
 
-        return $sauber !== '' ? $sauber : $ersatz;
+        return $clean !== '' ? $clean : $fallback;
     }
 
     /**
-     * Die Id des Katalogeintrags zu einem Betriebssystemnamen.
+     * The id of an existing catalog entry for an operating system name.
      *
-     * $nurKatalog trennt zwei Faelle: Ein Agent, der einen fertigen,
-     * eindeutigen Namen meldet ("Windows Server 2022 Standard"), darf den
-     * Katalog ergaenzen. Der Proxmox-Agent darf das nicht - er meldet
-     * Bausteine, und aus ihnen entstuenden Sammel-Eintraege wie "Linux", die
-     * kein Support-Ende haben und die niemand mehr auseinanderdividiert.
+     * Agents only pick from the catalog, they never add to it. It is shared
+     * by all customers: what an agent - or someone holding a customer's agent
+     * token - reported used to land there for everyone, with names nobody
+     * curated and no support end. An unknown name gives null, and the device
+     * keeps what was chosen by hand.
      */
-    protected function betriebssystemId(?string $name, bool $nurKatalog): ?int
+    protected function catalogOsId(?string $name): ?int
     {
         $name = trim((string) $name);
 
-        if ($name === '') {
-            return null;
-        }
-
-        return $nurKatalog
-            ? OperatingSystem::where('name', $name)->value('id')
-            : OperatingSystem::firstOrCreate(['name' => $name])->id;
+        return $name === '' ? null : OperatingSystem::where('name', $name)->value('id');
     }
 
     /**

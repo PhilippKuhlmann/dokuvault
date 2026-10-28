@@ -3,6 +3,7 @@
 use App\Models\AgentToken;
 use App\Models\Computer;
 use App\Models\Customer;
+use App\Models\OperatingSystem;
 use App\Models\Server;
 use App\Models\Service;
 use App\Models\Site;
@@ -26,6 +27,10 @@ function windowsServerPayload(array $rollen = []): array
 }
 
 test('Windows-Server-Agent legt einen Server an, keinen Computer', function () {
+    // Agents only pick from the catalog - the entry exists, as it does on
+    // a real installation (seeder or admin area).
+    OperatingSystem::firstOrCreate(['name' => 'Windows Server 2022 Standard']);
+
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     [$token, $plain] = AgentToken::generateFor($customer, $site, 'DC');
