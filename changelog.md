@@ -6,6 +6,7 @@
 
 - **Der Schlüssel im AD-Skript einer Checkliste gilt nur noch für einen Bericht.** Bisher blieb er nach dem ersten Bericht noch 48 Stunden gültig, und jeder weitere Bericht konnte den verknüpften AD-Benutzer erneut überschreiben, also Kennwort, E-Mail und Gruppen. Jetzt ist der Schlüssel nach dem Bericht verbraucht. Soll das Skript noch einmal laufen, lädt man es in DokuVault neu herunter.
 - **Agenten legen keine Betriebssysteme mehr an.** Der Katalog der Betriebssysteme ist für alle Kunden gemeinsam. Bisher landete jeder Name, den ein Agent meldete, dort als neuer Eintrag, auch erfundene oder ein Sammel-Eintrag „Unbekannt“, und das ohne Support-Ende. Agenten wählen jetzt nur noch aus vorhandenen Einträgen. Kennt der Katalog den gemeldeten Namen nicht, bleibt das Feld leer, oder es bleibt das von Hand gewählte Betriebssystem stehen. Neue Einträge legt nur der Admin-Bereich an.
+- **Ein Agent ändert nur noch Geräte an seinem eigenen Standort.** Ein Agent-Token war an den Kunden gebunden, nicht an den Standort. Er fand Geräte aller Standorte über ihre Hardware-Kennung, überschrieb sie und verschob sie an seinen eigenen Standort. Jetzt sieht und ändert ein Agent nur Server, VMs, Computer, Firewalls, Netze, WLANs, Cluster und UniFi-Geräte seines Standorts. Ein Gerät, das an einem anderen Standort dokumentiert ist, bleibt unangetastet, und der Agent legt am eigenen Standort einen eigenen Eintrag an. AD, Microsoft 365 und Backups gehören zum ganzen Kunden und bleiben kundenweit.
 
 ## 26.10.27
 

@@ -28,6 +28,16 @@ use App\Support\AgentSkript;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
+/**
+ * What the agents report.
+ *
+ * Every device an agent finds or updates is looked up within the site of its
+ * token, not the whole customer: a token belongs to one agent at one site and
+ * must not overwrite or move devices documented at another one. A device
+ * already documented at another site is left alone - the agent documents it
+ * at its own site. Kinds without a site (AD, Microsoft 365, backups) stay
+ * customer-wide.
+ */
 class AgentController extends Controller
 {
     /**
@@ -321,8 +331,8 @@ class AgentController extends Controller
 
         if ($meldung['virtual'] ?? false) {
             $kurz = mb_strtolower(explode('.', $meldung['hostname'])[0]);
-            $geraet = VM::where('customer_id', $customer->id)->where('agent_identifier', $meldung['identifier'])->first()
-                ?? VM::where('customer_id', $customer->id)
+            $geraet = VM::where('customer_id', $customer->id)->where('site_id', $site->id)->where('agent_identifier', $meldung['identifier'])->first()
+                ?? VM::where('customer_id', $customer->id)->where('site_id', $site->id)
                     ->where(fn ($q) => $q->whereRaw('LOWER(name) = ?', [$kurz])
                         ->orWhereRaw('LOWER(name) = ?', [mb_strtolower($meldung['hostname'])]))
                     ->orderBy('id')
@@ -948,10 +958,10 @@ class AgentController extends Controller
         // Without a match the field keeps whatever was chosen by hand.
         $osId = $this->catalogOsId($this->osCatalogName($client['os'] ?? null, 'Windows'));
 
-        $vorhanden = Computer::where('customer_id', $customer->id)->where('agent_identifier', $client['identifier'])->first();
+        $vorhanden = Computer::where('customer_id', $customer->id)->where('site_id', $site->id)->where('agent_identifier', $client['identifier'])->first();
 
         $computer = Computer::updateOrCreate(
-            ['customer_id' => $customer->id, 'agent_identifier' => $client['identifier']],
+            ['customer_id' => $customer->id, 'site_id' => $site->id, 'agent_identifier' => $client['identifier']],
             array_filter([
                 'site_id' => $site->id,
                 'operating_system_id' => $osId,
@@ -1025,6 +1035,7 @@ class AgentController extends Controller
         foreach ($data['wifis'] ?? [] as $w) {
             $wlan = Wifi::firstOrNew([
                 'customer_id' => $customer->id,
+                'site_id' => $site->id,
                 'agent_identifier' => $w['identifier'],
             ]);
 
@@ -1122,11 +1133,11 @@ class AgentController extends Controller
             'gateways.*.address' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $firewall = Firewall::where('customer_id', $customer->id)
+        $firewall = Firewall::where('customer_id', $customer->id)->where('site_id', $site->id)
             ->where('agent_identifier', $data['identifier'])->first();
 
         if (! $firewall && filled($data['serial'] ?? null)) {
-            $firewall = Firewall::where('customer_id', $customer->id)
+            $firewall = Firewall::where('customer_id', $customer->id)->where('site_id', $site->id)
                 ->whereNull('agent_identifier')
                 ->where('serialNumber', $data['serial'])->first();
         }
@@ -1387,7 +1398,7 @@ class AgentController extends Controller
         // Nur gemeldete Felder schreiben. vCenter gibt Hersteller, Modell und
         // Seriennummer nicht heraus - wuerde hier stur null eingetragen, loeschte
         // jeder Lauf, was jemand von Hand nachgetragen hat.
-        $vorhanden = Server::where('customer_id', $customer->id)->where('agent_identifier', $host['identifier'])->first();
+        $vorhanden = Server::where('customer_id', $customer->id)->where('site_id', $site->id)->where('agent_identifier', $host['identifier'])->first();
         $attribute += $this->hardwareFelder($host, $vorhanden);
 
         if ($details = $this->agentDetails($host, self::HOST_DETAILS)) {
@@ -1396,7 +1407,7 @@ class AgentController extends Controller
         }
 
         $server = Server::updateOrCreate(
-            ['customer_id' => $customer->id, 'agent_identifier' => $host['identifier']],
+            ['customer_id' => $customer->id, 'site_id' => $site->id, 'agent_identifier' => $host['identifier']],
             $attribute
         );
 
@@ -1429,7 +1440,7 @@ class AgentController extends Controller
             }
 
             $vm = VM::updateOrCreate(
-                ['customer_id' => $customer->id, 'agent_identifier' => $gast['identifier']],
+                ['customer_id' => $customer->id, 'site_id' => $site->id, 'agent_identifier' => $gast['identifier']],
                 $vmAttribute
             );
 
@@ -1489,8 +1500,8 @@ class AgentController extends Controller
         }
 
         $kennung = 'proxmox/'.$name;
-        $cluster = Cluster::where('customer_id', $customer->id)->where('agent_identifier', $kennung)->first()
-            ?? Cluster::where('customer_id', $customer->id)->whereNull('agent_identifier')
+        $cluster = Cluster::where('customer_id', $customer->id)->where('site_id', $site->id)->where('agent_identifier', $kennung)->first()
+            ?? Cluster::where('customer_id', $customer->id)->where('site_id', $site->id)->whereNull('agent_identifier')
                 ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])->orderBy('id')->first()
             ?? new Cluster([
                 'customer_id' => $customer->id,
@@ -1508,7 +1519,7 @@ class AgentController extends Controller
 
         $kennungen = collect($gaeste)->pluck('identifier')->filter()->all();
         if ($kennungen !== []) {
-            VM::where('customer_id', $customer->id)->whereIn('agent_identifier', $kennungen)
+            VM::where('customer_id', $customer->id)->where('site_id', $site->id)->whereIn('agent_identifier', $kennungen)
                 ->whereNull('cluster_id')->update(['cluster_id' => $cluster->id]);
         }
 
@@ -1540,7 +1551,7 @@ class AgentController extends Controller
     protected function meldeNetzwerkgeraet(string $klasse, array $g, $customer, $site): void
     {
         $geraet = $klasse::updateOrCreate(
-            ['customer_id' => $customer->id, 'agent_identifier' => $g['identifier']],
+            ['customer_id' => $customer->id, 'site_id' => $site->id, 'agent_identifier' => $g['identifier']],
             [
                 'site_id' => $site->id,
                 'name' => $g['name'],
