@@ -595,14 +595,17 @@ class DocumentationWizard extends Component
         $selectOptions = [];
 
         if ($step) {
-            // Alles, was der Kunde schon hat - nicht nur die Eintraege des
-            // laufenden Durchlaufs und nicht nur die am gewaehlten Standort.
-            // Wer den Assistenten oeffnet, will sehen, was bereits dokumentiert
-            // ist, und Luecken darin nachtragen koennen.
-            $entries = $step['model']::where('customer_id', $customer->id)
-                ->latest()
-                ->limit(50)
-                ->get();
+            // Everything the customer already has - not only this run's entries
+            // and not only those at the chosen site: whoever opens the wizard
+            // wants to see what is documented and fill the gaps.
+            //
+            // But only with the right to see that kind. A step needs only the
+            // _create right, and a create-only role must not read the names
+            // of everything documented through it.
+            $viewRight = str_replace('_create', '_viewAny', $step['permission']);
+            $entries = Gate::allows($viewRight)
+                ? $step['model']::where('customer_id', $customer->id)->latest()->limit(50)->get()
+                : collect();
 
             foreach ($step['fields'] as $field) {
                 if (($field['type'] ?? null) === 'select' && is_string($field['options'] ?? null)) {

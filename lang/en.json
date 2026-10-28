@@ -1612,5 +1612,6 @@
     "Dieser Agent ist in DokuVault gesperrt.": "This agent is locked in DokuVault.",
     "Dieser Token gehört bereits zum Agenten :host. Erzeugen Sie für diesen Agenten einen eigenen Token.": "This token already belongs to the agent :host. Create a token of its own for this agent.",
     "Agent gesperrt": "Agent locked",
-    "Agent entsperrt": "Agent unlocked"
+    "Agent entsperrt": "Agent unlocked",
+    "Kein gültiger Domainname.": "Not a valid domain name."
 }

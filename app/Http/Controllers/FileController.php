@@ -53,7 +53,7 @@ class FileController extends Controller
         $customer->files()->create([
             'file_path' => $filePath,
             'name' => $validated['name'],
-            'extension' => $file->getClientOriginalExtension(),
+            'extension' => Dateiname::extension($file),
             // Beim Hochladen mitschreiben: Sie spaeter von der Platte zu lesen
             // waere ein Dateizugriff je Zeile der Liste.
             'size' => $file->getSize(),

@@ -37,8 +37,17 @@ class Dateiname
     public static function fuer(UploadedFile $datei, ?string $bezeichnung = null): string
     {
         $name = self::bereinigen((string) ($bezeichnung ?: pathinfo($datei->getClientOriginalName(), PATHINFO_FILENAME)));
-        $endung = self::bereinigen($datei->getClientOriginalExtension());
 
-        return time().'_'.$name.'.'.strtolower($endung);
+        return time().'_'.$name.'.'.self::extension($datei);
+    }
+
+    /**
+     * The extension as stored - cleaned like the name. It comes from the
+     * browser and later ends up in the download file name; taken raw, it
+     * could carry quotes or line breaks into that header.
+     */
+    public static function extension(UploadedFile $file): string
+    {
+        return strtolower(self::bereinigen($file->getClientOriginalExtension()));
     }
 }

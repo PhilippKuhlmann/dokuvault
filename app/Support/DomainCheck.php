@@ -205,8 +205,19 @@ class DomainCheck
             return ['error' => __('Kein RDAP-Server für diese Endung bekannt.')];
         }
 
+        // Only a real host name goes into the URL path: "/", "?" or "#" in a
+        // stored name would otherwise change which RDAP address is asked.
+        // Umlaut domains as their ASCII form, which is what RDAP expects.
+        $ascii = function_exists('idn_to_ascii')
+            ? (idn_to_ascii($domain, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46) ?: $domain)
+            : $domain;
+
+        if (filter_var($ascii, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) === false || ! str_contains($ascii, '.')) {
+            return ['error' => __('Kein gültiger Domainname.')];
+        }
+
         try {
-            $response = Http::timeout(10)->acceptJson()->get(rtrim($base, '/').'/domain/'.$domain);
+            $response = Http::timeout(10)->acceptJson()->get(rtrim($base, '/').'/domain/'.rawurlencode($ascii));
         } catch (Throwable) {
             return ['error' => __('RDAP nicht erreichbar.')];
         }

@@ -70,7 +70,7 @@ test('die Liste zeigt Titel, Groesse und Anzahl', function () {
 
 test('der Papierkorb zeigt Anzahl und Art der Eintraege', function () {
     $customer = Customer::factory()->create();
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['see_hidden', 'domain_viewAny']));
 
     $domain = Domain::factory()->create([
         'customer_id' => $customer->id, 'name' => 'geloescht.de',
@@ -88,7 +88,7 @@ test('der Papierkorb zeigt Anzahl und Art der Eintraege', function () {
 
 test('der Papierkorb sagt es, wenn er die Liste kuerzt', function () {
     $customer = Customer::factory()->create();
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['see_hidden', 'domain_viewAny']));
 
     // Eine stille Kuerzung liest sich wie "mehr ist nicht da".
     Domain::factory()->count(101)->create(['customer_id' => $customer->id])

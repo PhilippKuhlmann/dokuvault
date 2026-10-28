@@ -13,11 +13,17 @@ class TrashController extends Controller
 
         $items = collect();
 
-        // Je Typ hoechstens hundert Eintraege. Wird gekuerzt, sagt die Seite es
-        // - eine stille Kuerzung liest sich wie "mehr ist nicht da".
+        // At most a hundred entries per kind. When cut, the page says so - a
+        // silent cut reads like "there is no more".
         $gekuerzt = [];
 
         foreach (config('custom.trashables') as $slug => [$class, $label]) {
+            // Only kinds this user may see at all: the trash would otherwise
+            // list names of objects they have no right to know about.
+            if (Gate::denies($slug.'_viewAny')) {
+                continue;
+            }
+
             $vorhanden = $class::onlyTrashed()->where('customer_id', $customer->id)->count();
 
             if ($vorhanden > 100) {
@@ -50,12 +56,16 @@ class TrashController extends Controller
     {
         Gate::authorize('see_hidden');
 
-        // Klasse ausschließlich aus der Config-Whitelist auflösen — nie aus User-Input.
+        // The class only ever comes from the config allowlist, never from input.
         $entry = config("custom.trashables.$type");
         abort_unless($entry, 404);
         [$class] = $entry;
 
-        // customer_id-Scoping verhindert Cross-Tenant-Restore (IDOR).
+        // Restoring undoes a delete - so it takes the right to delete that
+        // kind, not only the right to look into the trash.
+        Gate::authorize($type.'_delete');
+
+        // Scoped to the customer: no restore across tenants (IDOR).
         $item = $class::onlyTrashed()
             ->where('customer_id', $customer->id)
             ->findOrFail($id);

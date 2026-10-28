@@ -373,7 +373,7 @@ test('AD-Domäne und Backup werden ohne site_id angelegt (Modelle haben keine Sp
 });
 
 test('schon erfasste Eintraege öffnen mit Änderungsrecht das Bearbeiten-Modal', function () {
-    $this->actingAs(userWithPermissions(['site_create', 'router_create', 'router_update']));
+    $this->actingAs(userWithPermissions(['site_create', 'router_create', 'router_update', 'router_viewAny']));
     $customer = Customer::factory()->create();
 
     $inhalt = Livewire::test(DocumentationWizard::class, ['customer' => $customer])
@@ -552,7 +552,7 @@ test('vorhandene Einträge öffnen im Assistenten das Bearbeiten-Modal, wenn man
     // die Liste zu öffnen, lösen sie objekt-bearbeiten aus und das eingebettete
     // ObjektFormular-Modal (dieselbe config-getriebene Komponente wie in den Listen)
     // öffnet mit dem Datensatz - sofern der Nutzer das _update-Recht hat.
-    $this->actingAs(userWithPermissions(['contactperson_create', 'contactperson_update']));
+    $this->actingAs(userWithPermissions(['contactperson_create', 'contactperson_update', 'contactperson_viewAny']));
     $customer = Customer::factory()->create();
     ContactPerson::factory()->create(['customer_id' => $customer->id, 'last_name' => 'Musterfrau']);
 
@@ -571,7 +571,7 @@ test('vorhandene Einträge öffnen im Assistenten das Bearbeiten-Modal, wenn man
 });
 
 test('ohne Änderungsrecht bettet der Assistent kein Bearbeiten-Modal ein', function () {
-    $this->actingAs(userWithPermissions(['contactperson_create'])); // nur anlegen, nicht ändern
+    $this->actingAs(userWithPermissions(['contactperson_create', 'contactperson_viewAny'])); // sehen und anlegen, nicht ändern
     $customer = Customer::factory()->create();
     ContactPerson::factory()->create(['customer_id' => $customer->id, 'last_name' => 'Musterfrau']);
 
@@ -623,7 +623,7 @@ test('Netzwerk-Einträge öffnen im Assistenten das VLAN-Modal, wenn man ändern
     // 'network' hat keinen forms.php-Typ, sondern sein eigenes Modal
     // (NetworkQuickCreate). Der Chip loest deshalb vlan-bearbeiten aus und das
     // eingebettete VLAN-Modal oeffnet mit dem Datensatz.
-    $this->actingAs(userWithPermissions(['network_create', 'network_update']));
+    $this->actingAs(userWithPermissions(['network_create', 'network_update', 'network_viewAny']));
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     Network::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id]);
@@ -775,4 +775,25 @@ test('a contact is named with first and last name in the wizard', function () {
 
     expect(DocumentationWizard::bezeichnung($contact, 'last_name'))->toBe('Petra Kruse')
         ->and(DocumentationWizard::bezeichnung($server, 'name'))->toBe('SRV-01');
+});
+
+// Security audit hardening note: the "Schon erfasst" list showed the names of
+// every entry to a role that may only create that kind, not see it.
+// (Routers, not sites: the site step lists sites on purpose, to pick one.)
+test('the already-documented list needs the right to see that kind', function () {
+    $customer = Customer::factory()->create();
+    Router::factory()->create(['customer_id' => $customer->id, 'site_id' => Site::factory()->create(['customer_id' => $customer->id])->id, 'name' => 'RTR-GEHEIM']);
+
+    $this->actingAs(userWithPermissions(['router_create']));
+    Livewire::test(DocumentationWizard::class, ['customer' => $customer])
+        ->assertDontSee('RTR-GEHEIM');
+});
+
+test('with the right to see, the already-documented list shows the entries', function () {
+    $customer = Customer::factory()->create();
+    Router::factory()->create(['customer_id' => $customer->id, 'site_id' => Site::factory()->create(['customer_id' => $customer->id])->id, 'name' => 'RTR-SICHTBAR']);
+
+    $this->actingAs(userWithPermissions(['router_create', 'router_viewAny']));
+    Livewire::test(DocumentationWizard::class, ['customer' => $customer])
+        ->assertSee('RTR-SICHTBAR');
 });

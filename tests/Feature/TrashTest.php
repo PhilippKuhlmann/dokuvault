@@ -19,7 +19,7 @@ function trashedCamera(Customer $customer): Camera
 }
 
 test('gelöschtes Objekt erscheint im Papierkorb', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['see_hidden', 'camera_viewAny', 'camera_delete']));
 
     $customer = Customer::factory()->create();
     trashedCamera($customer);
@@ -31,7 +31,7 @@ test('gelöschtes Objekt erscheint im Papierkorb', function () {
 });
 
 test('Wiederherstellen stellt das Objekt wieder her', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['see_hidden', 'camera_viewAny', 'camera_delete']));
 
     $customer = Customer::factory()->create();
     $camera = trashedCamera($customer);
@@ -43,7 +43,7 @@ test('Wiederherstellen stellt das Objekt wieder her', function () {
 });
 
 test('Restore eines fremden Kunden-Objekts wird verweigert (IDOR)', function () {
-    $this->actingAs(userWithPermissions(['see_hidden']));
+    $this->actingAs(userWithPermissions(['see_hidden', 'camera_viewAny', 'camera_delete']));
 
     $customerA = Customer::factory()->create();
     $customerB = Customer::factory()->create();
