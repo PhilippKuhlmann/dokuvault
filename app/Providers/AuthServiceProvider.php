@@ -58,8 +58,17 @@ class AuthServiceProvider extends ServiceProvider
         // Ein Recht je Admin-Menuepunkt, dazu die Fernwartungs-Suche. Vorher
         // hingen beide Bereiche an einer festen Rollen-Id: entweder ganz oder
         // gar nicht.
+        //
+        // Die admin_*-Rechte nie fuer einen Nutzer, der auf einen Kunden
+        // festgelegt ist: Sie gelten ueber alle Kunden. Eine versehentlich angehakte Rolle
+        // gaebe einem Kundennutzer sonst den Zugriff auf fremde Kunden.
         foreach (array_merge(config('custom.admin_permissions'), config('custom.extra_permissions')) as $recht => $beschreibung) {
-            Gate::define($recht, fn (User $user) => $user->hasPermission($recht));
+            // The remote search is meant for customer users too; only the
+            // admin_* rights are cross-customer.
+            $kundenNutzerAusschliessen = array_key_exists($recht, config('custom.admin_permissions'));
+
+            Gate::define($recht, fn (User $user) => ! ($kundenNutzerAusschliessen && $user->customer_id !== null)
+                && $user->hasPermission($recht));
         }
 
         // "Darf ueberhaupt hinein" - fuer die Middleware und den Link im

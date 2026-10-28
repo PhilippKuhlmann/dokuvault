@@ -54,6 +54,10 @@ return [
                      */
                     base_path('.env'),
                     base_path('auth.json'),
+
+                    // Password PDFs still within their retention period; they
+                    // are exports, not data, and should not sit in the archive.
+                    storage_path('app/pdf-exports'),
                 ],
 
                 /*

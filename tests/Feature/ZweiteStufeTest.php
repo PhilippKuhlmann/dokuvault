@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\TwoFactorController;
+use App\Models\Customer;
 use App\Support\ZweiteStufe;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Activitylog\Models\Activity;
 
@@ -421,4 +423,49 @@ test('die Benutzerliste zeigt die zweite Stufe als drei unterscheidbare Zeichen'
 
     expect($eingerichtet->hatZweiteStufe())->toBeTrue();
     expect($offen->fresh()->hatZweiteStufe())->toBeFalse();
+});
+
+test('ein angenommener Einmalcode gilt nicht ein zweites Mal', function () {
+    [$nutzer, $geheimnis] = nutzerMitZweiterStufe();
+    $code = gueltigerCode($geheimnis);
+
+    $this->post('/login', ['username' => $nutzer->username, 'password' => 'Ein-Gutes-Kennwort-2026']);
+    $this->post(route('two-factor.login'), ['code' => $code]);
+    $this->assertAuthenticatedAs($nutzer);
+
+    // Someone who watched the code being typed tries it inside its window.
+    $this->post('/logout');
+    $this->post('/login', ['username' => $nutzer->username, 'password' => 'Ein-Gutes-Kennwort-2026']);
+    $this->post(route('two-factor.login'), ['code' => $code])->assertSessionHasErrors('code');
+
+    $this->assertGuest();
+});
+
+test('die Bremse zählt über alle Adressen eines Nutzers', function () {
+    [$nutzer, $geheimnis] = nutzerMitZweiterStufe();
+
+    $this->post('/login', ['username' => $nutzer->username, 'password' => 'Ein-Gutes-Kennwort-2026']);
+
+    // 20 wrong guesses, each from another address (5 per address would pass
+    // the per-address limit).
+    foreach (range(1, 20) as $i) {
+        $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.'.$i])
+            ->post(route('two-factor.login'), ['code' => '000000']);
+    }
+
+    $this->withServerVariables(['REMOTE_ADDR' => '10.0.1.1'])
+        ->post(route('two-factor.login'), ['code' => gueltigerCode($geheimnis)]);
+
+    expect(session('errors')->first('code'))->toContain('Zu viele');
+    $this->assertGuest();
+});
+
+test('ein Kundennutzer bekommt auch mit angehaktem admin-Recht keinen Admin-Zugriff', function () {
+    $nutzer = userWithPermissions(['admin_customer', 'admin_user']);
+    expect(Gate::forUser($nutzer)->allows('admin_customer'))->toBeTrue();
+
+    $nutzer->forceFill(['customer_id' => Customer::factory()->create()->id])->save();
+
+    expect(Gate::forUser($nutzer->fresh())->allows('admin_customer'))->toBeFalse()
+        ->and(Gate::forUser($nutzer->fresh())->allows('admin_bereich'))->toBeFalse();
 });

@@ -192,7 +192,12 @@ test('ein Vorgang gibt nur ein einziges Token', function () {
     $code = (new Google2FA)->getCurrentOtp($geheimnis);
 
     $this->postJson('/api/mobile/login/two-factor', ['vorgang' => $vorgang, 'code' => $code])->assertOk();
-    $this->postJson('/api/mobile/login/two-factor', ['vorgang' => $vorgang, 'code' => $code])
+
+    // The next code, since the same one is refused as a replay.
+    $google2fa = new Google2FA;
+    $naechster = $google2fa->oathTotp($geheimnis, $google2fa->getTimestamp() + 1);
+
+    $this->postJson('/api/mobile/login/two-factor', ['vorgang' => $vorgang, 'code' => $naechster])
         ->assertStatus(422)->assertJsonValidationErrors('vorgang');
 
     expect($nutzer->tokens()->count())->toBe(1);

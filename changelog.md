@@ -14,6 +14,10 @@
 - **Dokumentations-Assistent: „Schon erfasst“ nur mit dem Recht zum Sehen.** Für einen Schritt genügt das Recht zum Anlegen. Eine Rolle, die nur anlegen darf, sah in der Liste trotzdem die Namen aller vorhandenen Einträge dieser Art. Jetzt erscheint die Liste nur mit dem Recht, diese Art zu sehen.
 - **Kleinere Härtungen.** Die Domain-Prüfung schickt nur noch gültige Domainnamen an RDAP, Umlaut-Domains in ihrer ASCII-Form, sodass Zeichen wie `/`, `?` oder `#` die angefragte Adresse nicht mehr verändern. Die Dateiendung eines Uploads wird bereinigt gespeichert, wie der Name. Den Kurznamen eines Kunden, der zugleich Ablageordner und Adresse ist, kann kein Formular mehr setzen.
 
+- **Zweite Stufe: Ein Code gilt nur einmal.** Bisher ließ sich ein mitgelesener Einmalcode innerhalb seines Zeitfensters (rund eine Minute) erneut verwenden. Jetzt wird ein Code nur angenommen, wenn er neuer ist als der zuletzt angenommene, in Browser und App. Die Bremse zählt außerdem über alle Adressen eines Nutzers: Wer von vielen IP-Adressen aus rät, stößt trotzdem an die Grenze (das Vierfache der Versuche je Adresse).
+- **Admin-Rechte gelten nie für Kundennutzer.** Die `admin_*`-Rechte wirken über alle Kunden. Eine Rolle mit angehaktem Admin-Recht gab einem Nutzer, der auf einen Kunden festgelegt ist, trotzdem Zugriff auf fremde Kunden. Jetzt greifen diese Rechte bei Nutzern mit Kunde nie. Die Fernwartungs-Suche bleibt für Kundennutzer möglich.
+- **Backups ohne PDF-Exporte.** Kennwort-PDFs, die noch in ihrer Frist lagen, landeten im Backup-Archiv. `storage/app/pdf-exports` ist jetzt ausgeschlossen.
+
 - **Nur noch Anfragen an die eigene Adresse.** Mit `APP_ENV=production` weist DokuVault jede Anfrage mit einem fremden Host ab (400) und nimmt nur die Adresse aus `APP_URL` und ihre Subdomains an. Das ist die zweite Absicherung hinter den fest auf `APP_URL` gesetzten Links. Wer DokuVault unter einer anderen Adresse aufruft, etwa über die IP, muss sie als `APP_URL` eintragen.
 
 ### Internal

@@ -39,11 +39,12 @@ class ZweiteStufePruefung
         // sechsstelliger Code aus der App kann kein Wiederherstellungscode
         // sein, und andersherum genauso - die Reihenfolge kostet also nichts
         // und spart eine Zweitunterscheidung an der Eingabe.
-        $mitCode = $this->zweiteStufe->stimmt($nutzer->two_factor_secret, $eingabe);
+        $mitCode = $this->codeAnnehmen($nutzer, $eingabe);
         $mitZettel = ! $mitCode && $nutzer->wiederherstellungscodeVerbrauchen($eingabe);
 
         if (! $mitCode && ! $mitZettel) {
             RateLimiter::hit($this->schluessel($nutzer, $ip), Setting::anmeldungSperreSekunden());
+            RateLimiter::hit($this->nutzerSchluessel($nutzer), Setting::anmeldungSperreSekunden());
 
             // Ein falscher zweiter Faktor loest kein Auth\Events\Failed aus -
             // das Kennwort stimmte ja. Genau dieser Fall ist aber der
@@ -68,13 +69,42 @@ class ZweiteStufePruefung
         }
 
         RateLimiter::clear($this->schluessel($nutzer, $ip));
+        RateLimiter::clear($this->nutzerSchluessel($nutzer));
 
         return $mitZettel;
+    }
+
+    /**
+     * Accepts a code only once: its time step must be newer than the last
+     * accepted one. The conditional update makes the check atomic, so two
+     * requests with the same code cannot both pass.
+     */
+    private function codeAnnehmen(User $nutzer, string $eingabe): bool
+    {
+        $schritt = $this->zweiteStufe->neuerSchritt(
+            $nutzer->two_factor_secret,
+            $eingabe,
+            $nutzer->two_factor_last_step,
+        );
+
+        if ($schritt === false) {
+            return false;
+        }
+
+        return User::whereKey($nutzer->id)
+            ->where(fn ($q) => $q->whereNull('two_factor_last_step')->orWhere('two_factor_last_step', '<', $schritt))
+            ->update(['two_factor_last_step' => $schritt]) === 1;
     }
 
     private function schluessel(User $nutzer, string $ip): string
     {
         return 'zweite-stufe|'.$nutzer->id.'|'.$ip;
+    }
+
+    /** Counts across all addresses, so guessing from many IPs is slowed down too. */
+    private function nutzerSchluessel(User $nutzer): string
+    {
+        return 'zweite-stufe|'.$nutzer->id;
     }
 
     /**
@@ -88,11 +118,17 @@ class ZweiteStufePruefung
      */
     private function nichtGesperrt(User $nutzer, string $ip): void
     {
-        if (! RateLimiter::tooManyAttempts($this->schluessel($nutzer, $ip), Setting::anmeldungVersuche())) {
+        $schluessel = $this->schluessel($nutzer, $ip);
+
+        // Per user the limit is higher, so one noisy address does not lock out
+        // the real owner, but a distributed guess still runs into it.
+        if (RateLimiter::tooManyAttempts($this->nutzerSchluessel($nutzer), Setting::anmeldungVersuche() * 4)) {
+            $schluessel = $this->nutzerSchluessel($nutzer);
+        } elseif (! RateLimiter::tooManyAttempts($schluessel, Setting::anmeldungVersuche())) {
             return;
         }
 
-        $sekunden = RateLimiter::availableIn($this->schluessel($nutzer, $ip));
+        $sekunden = RateLimiter::availableIn($schluessel);
 
         throw ValidationException::withMessages([
             'code' => trans('auth.throttle', [

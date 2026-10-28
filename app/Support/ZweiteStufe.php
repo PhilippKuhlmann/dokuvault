@@ -41,6 +41,17 @@ class ZweiteStufe
     }
 
     /**
+     * Like stimmt(), but only accepts a code from a later time step than the
+     * last accepted one.
+     *
+     * @return int|false the time step of the code, to be stored by the caller
+     */
+    public function neuerSchritt(string $geheimnis, string $code, ?int $letzter): int|false
+    {
+        return $this->google2fa->verifyKeyNewer($geheimnis, trim($code), $letzter ?? 0);
+    }
+
+    /**
      * Die Adresse, die im QR-Code steht. Der Name vor dem Doppelpunkt
      * erscheint in der App als Ueberschrift - deshalb der Anwendungsname und
      * nicht die nackte Kennung.
