@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.10.28
+
+### Security
+
+- **Der Schlüssel im AD-Skript einer Checkliste gilt nur noch für einen Bericht.** Bisher blieb er nach dem ersten Bericht noch 48 Stunden gültig, und jeder weitere Bericht konnte den verknüpften AD-Benutzer erneut überschreiben, also Kennwort, E-Mail und Gruppen. Jetzt ist der Schlüssel nach dem Bericht verbraucht. Soll das Skript noch einmal laufen, lädt man es in DokuVault neu herunter.
+
 ## 26.10.27
 
 ### Added

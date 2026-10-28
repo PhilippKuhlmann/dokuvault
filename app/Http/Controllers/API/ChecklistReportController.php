@@ -28,7 +28,7 @@ class ChecklistReportController extends Controller
     public function __invoke(Request $request)
     {
         $checklist = Checklist::forScriptToken($request->bearerToken());
-        abort_unless($checklist, 401, 'Unbekannter oder abgelaufener Schlüssel.');
+        abort_unless($checklist, 401, 'Unbekannter, abgelaufener oder schon benutzter Schlüssel. Das Skript in DokuVault neu herunterladen.');
 
         $data = $request->validate([
             'identifier' => ['nullable', 'string', 'max:64'],
@@ -61,7 +61,15 @@ class ChecklistReportController extends Controller
                 $item->update(['done_at' => now(), 'done_by' => $checklist->script_requested_by]);
             }
 
-            $checklist->update(['ad_user_id' => $adUser->id, 'script_reported_at' => now()]);
+            // One key, one report: afterwards the key is gone. It stayed valid
+            // for 48 hours before, and every further report could rewrite the
+            // linked AD user again. A rerun needs a freshly downloaded script.
+            $checklist->update([
+                'ad_user_id' => $adUser->id,
+                'script_reported_at' => now(),
+                'script_token_hash' => null,
+                'script_token_expires_at' => null,
+            ]);
             $checklist->refreshCompletion();
 
             return $items->count();

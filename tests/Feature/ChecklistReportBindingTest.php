@@ -63,3 +63,21 @@ test('the own user is documented, whatever spelling AD sends back', function () 
 
     expect(ADUser::find($checklist->fresh()->ad_user_id)->password)->toBe('Start-123');
 });
+
+test('a script key reports once - a second report is refused', function () {
+    [$checklist, , $token] = reportSetup();
+
+    $this->withToken($token)->postJson('/api/checklist-report', [
+        'username' => $checklist->username, 'password' => 'Start-123',
+    ])->assertOk();
+
+    app('auth')->forgetGuards();
+    $this->withToken($token)->postJson('/api/checklist-report', [
+        'username' => $checklist->username, 'password' => 'Ueberschrieben', 'email' => 'angreifer@example.test',
+    ])->assertUnauthorized();
+
+    $adUser = ADUser::find($checklist->fresh()->ad_user_id);
+    expect($adUser->password)->toBe('Start-123')
+        ->and($adUser->email)->not->toBe('angreifer@example.test')
+        ->and($checklist->fresh()->script_token_hash)->toBeNull();
+});
