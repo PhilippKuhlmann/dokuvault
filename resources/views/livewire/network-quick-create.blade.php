@@ -68,7 +68,7 @@
                             <x-input.fehler feld="vlanId" />
                         </div>
 
-                        <div class="flex flex-1 flex-col">
+                        <div class="flex min-w-0 flex-1 flex-col">
                             <x-input.label :value="__('Netz')" />
                             <x-input.text feld="network" wire:model.live.blur="network" type="text" class="mt-1" placeholder="10.10.20.0" />
                             <x-input.fehler feld="network" />
@@ -76,7 +76,7 @@
                     </div>
 
                     <div class="flex gap-3">
-                        <div class="flex flex-1 flex-col">
+                        <div class="flex min-w-0 flex-1 flex-col">
                             <x-input.label :value="__('Subnetzmaske')" />
                             {{-- .live.blur, nicht nur .blur: .blur allein schreibt
                                  den Wert nur in den Browser, der Hook auf dem
@@ -100,14 +100,20 @@
                         <x-input.fehler feld="gateway" />
                     </div>
 
+                    {{-- min-w-0 an jeder Spalte: Ein Eingabefeld bringt eine
+                         Eigenbreite von rund 220 px mit (size=20). Ohne das
+                         wuchsen zwei gleich breite Spalten ueber das Modal
+                         hinaus (456 statt 408 px), und man musste im Modal nach
+                         rechts scrollen, um DNS 2 und DHCP-Ende zu sehen.
+                         Spalten mit fester Breite (w-1/3) trifft es nicht. --}}
                     <div class="flex gap-3">
-                        <div class="flex flex-1 flex-col">
+                        <div class="flex min-w-0 flex-1 flex-col">
                             <x-input.label :value="__('DNS 1')" />
                             <x-input.text feld="dns1" wire:model.live.blur="dns1" type="text" class="mt-1" />
                             <x-input.fehler feld="dns1" />
                         </div>
 
-                        <div class="flex flex-1 flex-col">
+                        <div class="flex min-w-0 flex-1 flex-col">
                             <x-input.label :value="__('DNS 2')" />
                             <x-input.text feld="dns2" wire:model.live.blur="dns2" type="text" class="mt-1" />
                             <x-input.fehler feld="dns2" />
@@ -115,13 +121,13 @@
                     </div>
 
                     <div class="flex gap-3">
-                        <div class="flex flex-1 flex-col">
+                        <div class="flex min-w-0 flex-1 flex-col">
                             <x-input.label :value="__('DHCP-Start')" />
                             <x-input.text feld="dhcpStart" wire:model.live.blur="dhcpStart" type="text" class="mt-1" />
                             <x-input.fehler feld="dhcpStart" />
                         </div>
 
-                        <div class="flex flex-1 flex-col">
+                        <div class="flex min-w-0 flex-1 flex-col">
                             <x-input.label :value="__('DHCP-Ende')" />
                             <x-input.text feld="dhcpEnd" wire:model.live.blur="dhcpEnd" type="text" class="mt-1" />
                             <x-input.fehler feld="dhcpEnd" />

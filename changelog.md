@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- **VLAN-Modal: DNS 1 / DNS 2 und DHCP-Start / DHCP-Ende passen wieder ins Fenster.** Die beiden Felder einer Zeile waren breiter als das Modal, sodass das rechte Feld außerhalb stand und man im Modal nach rechts scrollen musste.
+
 - **Die Seitenleiste zeigt auch auf Unterseiten, wo man ist.** In der Seitenleiste stehen nur die Übersichtsseiten. Auf einer Seite darunter, etwa den Einstellungen der Checklisten oder einem Detail-Eintrag, klappte die Gruppe zu und kein Eintrag war markiert. Jetzt bleibt die Gruppe offen und die zugehörige Übersicht markiert, solange man sich unterhalb davon bewegt.
 
 ### Security
