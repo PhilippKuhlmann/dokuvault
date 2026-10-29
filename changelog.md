@@ -4,6 +4,8 @@
 
 ### Security
 
+- **Muss jemand die zweite Stufe noch einrichten, erreicht er über Livewire nur das Profil.** Bis dahin lässt DokuVault nur die Livewire-Komponenten der Profilseite durch. Ein Kennwortfeld von einer Seite, die vor der Pflicht geladen wurde, zeigt seinen Wert damit nicht mehr an. Die Prüfung erkannte die Livewire-Route seit Livewire 4 nicht mehr (sie heißt dort `default-livewire.update`). Dadurch wurden auch die Benachrichtigungs-Schalter im Profil umgeleitet und funktionierten bis zur Einrichtung nicht.
+
 - **Das Backup von DokuVault gehört nur noch der Admin-Rolle.** Bisher genügte das Recht „Einstellungen der Installation“. Wer es hatte, konnte das Backup-Ziel auf einen eigenen Server legen, das Archiv-Kennwort setzen und die Sicherung herunterladen, also die Daten aller Kunden mitnehmen. Seite, Download und „Jetzt sichern“ stehen jetzt nur der Admin-Rolle offen. Die übrigen Einstellungen bleiben beim bisherigen Recht.
 
 ### Fixed

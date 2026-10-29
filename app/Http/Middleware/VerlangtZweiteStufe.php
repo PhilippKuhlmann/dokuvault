@@ -38,6 +38,11 @@ class VerlangtZweiteStufe
         'changelog',
     ];
 
+    /** Livewire components on the profile page (profile/edit.blade.php). */
+    private const PROFIL_KOMPONENTEN = [
+        'notification-profile',
+    ];
+
     public function handle(Request $request, Closure $next): Response
     {
         $nutzer = $request->user();
@@ -50,11 +55,14 @@ class VerlangtZweiteStufe
             abort(403, __('Ihr Administrator verlangt die zweite Stufe. Richten Sie sie zuerst im Browser in Ihrem Profil ein.'));
         }
 
-        // Livewire laeuft ueber eine eigene Route. Sie hier zu sperren hiesse,
-        // auch das Profilformular lahmzulegen - der Kopierknopf und die
-        // Sprachumschaltung haengen daran. Die Seiten dahinter sind ohnehin
-        // gesperrt, weil man sie nicht aufrufen kann.
-        if ($request->routeIs('livewire.*')) {
+        // Livewire runs over a route of its own. Only the components of the
+        // profile page get through: a snapshot from a page loaded before the
+        // requirement was set would otherwise still work - a password field
+        // could reveal its value without the second factor.
+        // Livewire 4 names the route default-livewire.update, hence the wildcard.
+        if ($request->routeIs('*livewire.*')) {
+            abort_unless($this->nurProfilKomponenten($request), 403, __('Ihr Administrator verlangt die zweite Stufe. Richten Sie sie zuerst in Ihrem Profil ein.'));
+
             return $next($request);
         }
 
@@ -63,5 +71,30 @@ class VerlangtZweiteStufe
         }
 
         return redirect()->route('profile.edit')->withFragment('zweite-stufe');
+    }
+
+    /**
+     * Whether every component of this Livewire update belongs to the profile
+     * page. The name sits in the snapshot; the snapshot is signed, so it
+     * cannot be renamed - Livewire rejects a changed one itself. Anything
+     * other than an update (file upload) is refused.
+     */
+    private function nurProfilKomponenten(Request $request): bool
+    {
+        $komponenten = $request->input('components');
+
+        if (! $request->routeIs('*livewire.update') || ! is_array($komponenten) || $komponenten === []) {
+            return false;
+        }
+
+        foreach ($komponenten as $komponente) {
+            $snapshot = json_decode((string) ($komponente['snapshot'] ?? ''), true);
+
+            if (! in_array($snapshot['memo']['name'] ?? null, self::PROFIL_KOMPONENTEN, true)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

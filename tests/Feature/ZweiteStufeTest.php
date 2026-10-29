@@ -469,3 +469,35 @@ test('ein Kundennutzer bekommt auch mit angehaktem admin-Recht keinen Admin-Zugr
     expect(Gate::forUser($nutzer->fresh())->allows('admin_customer'))->toBeFalse()
         ->and(Gate::forUser($nutzer->fresh())->allows('admin_bereich'))->toBeFalse();
 });
+
+/** A Livewire update request as the browser sends it, for one component. */
+function livewireUpdate(string $komponente): array
+{
+    return ['components' => [[
+        'snapshot' => json_encode(['data' => [], 'memo' => ['id' => 'x', 'name' => $komponente], 'checksum' => 'x']),
+        'updates' => [],
+        'calls' => [],
+    ]]];
+}
+
+test('wer die zweite Stufe einrichten muss, erreicht über Livewire nur die Profil-Komponenten', function () {
+    $nutzer = userWithPermissions(['logingeneral_viewAny']);
+    $nutzer->forceFill(['two_factor_required' => true])->save();
+    $this->actingAs($nutzer);
+
+    $update = route('default-livewire.update');
+
+    // A password field from a page loaded before the requirement was set.
+    $this->postJson($update, livewireUpdate('kennwort-feld'))->assertForbidden();
+    $this->postJson($update, livewireUpdate('geheim-feld'))->assertForbidden();
+
+    // The profile component passes the middleware (Livewire itself then
+    // rejects the made-up checksum - anything but our 403).
+    expect($this->postJson($update, livewireUpdate('notification-profile'))->status())->not->toBe(403);
+});
+
+test('ohne Pflicht bleibt Livewire unberührt', function () {
+    $this->actingAs(userWithPermissions(['logingeneral_viewAny']));
+
+    expect($this->postJson(route('default-livewire.update'), livewireUpdate('kennwort-feld'))->status())->not->toBe(403);
+});
