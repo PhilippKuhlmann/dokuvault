@@ -2,6 +2,7 @@
 
 use App\Models\Accesspoint;
 use App\Models\Customer;
+use App\Models\OperatingSystem;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\User;
@@ -165,4 +166,79 @@ test('every legacy API route refuses a token without rights', function () {
     }
 
     expect($unprotected)->toBe([], 'Legacy routes without a right check: '.implode(', ', $unprotected));
+});
+
+// --- Servers ------------------------------------------------------------------
+
+/** The fields the browser form requires for a server. */
+function legacyServerData(Site $site, array $extra = []): array
+{
+    return array_merge([
+        'site_id' => $site->id,
+        'name' => 'SRV-API',
+        'form_factor' => 'tower',
+        'operating_system_id' => OperatingSystem::firstOrCreate(['name' => 'Debian 13'])->id,
+    ], $extra);
+}
+
+test('a server can be created and changed over the API', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $token = legacyToken(['server_create', 'server_update']);
+
+    $created = legacyRequest($token, 'POST', '/api/servers', legacyServerData($site, ['customer_id' => $customer->id]))
+        ->assertCreated();
+
+    $server = Server::find($created->json('id'));
+    expect($server->customer_id)->toBe($customer->id)
+        ->and($server->site_id)->toBe($site->id);
+
+    legacyRequest($token, 'PUT', "/api/servers/{$server->id}", legacyServerData($site, ['name' => 'SRV-NEU']))
+        ->assertOk();
+
+    expect($server->fresh()->name)->toBe('SRV-NEU');
+});
+
+test('a token without customer must name the customer', function () {
+    $site = Site::factory()->create(['customer_id' => Customer::factory()->create()->id]);
+
+    legacyRequest(legacyToken(['server_create']), 'POST', '/api/servers', legacyServerData($site))
+        ->assertStatus(422)->assertJsonValidationErrors('customer_id');
+});
+
+test('a site of another customer is refused when creating a server', function () {
+    [$own, , $otherSite] = foreignSetup();
+
+    legacyRequest(legacyToken(['server_create']), 'POST', '/api/servers', legacyServerData($otherSite, ['customer_id' => $own->id]))
+        ->assertStatus(422)->assertJsonValidationErrors('site_id');
+
+    expect(Server::count())->toBe(0);
+});
+
+test('a customer token creates servers only for its own customer', function () {
+    [$own, $ownSite, $otherSite] = foreignSetup();
+    $token = legacyToken(['server_create'], $own);
+
+    // customer_id in the body is ignored, and the foreign site does not pass.
+    legacyRequest($token, 'POST', '/api/servers', legacyServerData($otherSite, ['customer_id' => $otherSite->customer_id]))
+        ->assertStatus(422)->assertJsonValidationErrors('site_id');
+
+    $created = legacyRequest($token, 'POST', '/api/servers', legacyServerData($ownSite, ['customer_id' => $otherSite->customer_id]))
+        ->assertCreated();
+
+    expect(Server::find($created->json('id'))->customer_id)->toBe($own->id);
+});
+
+test('changing a server keeps its customer and checks the site against it', function () {
+    [$own, $ownSite, $otherSite] = foreignSetup();
+    $server = rackTestServer($own, $ownSite);
+    $token = legacyToken(['server_update']);
+
+    legacyRequest($token, 'PUT', "/api/servers/{$server->id}", legacyServerData($otherSite))
+        ->assertStatus(422)->assertJsonValidationErrors('site_id');
+
+    legacyRequest($token, 'PUT', "/api/servers/{$server->id}", legacyServerData($ownSite, ['customer_id' => $otherSite->customer_id]))
+        ->assertOk();
+
+    expect($server->fresh()->customer_id)->toBe($own->id);
 });
