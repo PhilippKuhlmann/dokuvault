@@ -71,7 +71,7 @@ test('FTP without keeping local writes only to the target', function () {
 });
 
 test('the settings page saves, keeps secrets when left empty and needs the settings right', function () {
-    $this->actingAs(userWithPermissions(['admin_setting']));
+    $this->actingAs(adminUser());
 
     Livewire::test(AdminBackupEinstellungen::class)
         ->set('form.backup_uhrzeit', '03:15')
@@ -97,7 +97,7 @@ test('the settings page saves, keeps secrets when left empty and needs the setti
 });
 
 test('a target without server or user is refused', function () {
-    $this->actingAs(userWithPermissions(['admin_setting']));
+    $this->actingAs(adminUser());
 
     Livewire::test(AdminBackupEinstellungen::class)
         ->set('form.backup_ziel_art', 'sftp')
@@ -105,8 +105,8 @@ test('a target without server or user is refused', function () {
         ->assertHasErrors(['form.backup_ziel_host', 'form.backup_ziel_benutzer']);
 });
 
-test('without the settings right the backup page stays closed', function () {
-    $this->actingAs(userWithPermissions(['admin_statistik']));
+test('without the admin role the backup page stays closed, even with admin_setting', function () {
+    $this->actingAs(userWithPermissions(['admin_setting']));
 
     $this->get(route('admin.backup.einstellungen'))->assertForbidden();
 });
@@ -117,7 +117,7 @@ test('an existing backup can be downloaded, other paths cannot', function () {
     Storage::disk('local')->put("$name/2026-10-06-01-30-00.zip", 'zip');
     Storage::disk('local')->put('.env', 'geheim');
     config(['backup.backup.destination.disks' => ['local']]);
-    $this->actingAs(userWithPermissions(['admin_setting']));
+    $this->actingAs(adminUser());
 
     $this->get(route('admin.backup.download', ['disk' => 'local', 'pfad' => "$name/2026-10-06-01-30-00.zip"]))
         ->assertOk()->assertDownload('2026-10-06-01-30-00.zip');
@@ -125,8 +125,14 @@ test('an existing backup can be downloaded, other paths cannot', function () {
     $this->get(route('admin.backup.download', ['disk' => 'public', 'pfad' => "$name/2026-10-06-01-30-00.zip"]))->assertNotFound();
 });
 
-test('without the settings right no backup can be downloaded', function () {
-    $this->actingAs(userWithPermissions(['admin_statistik']));
+test('without the admin role no backup can be downloaded, even with admin_setting', function () {
+    $this->actingAs(userWithPermissions(['admin_setting']));
 
     $this->get(route('admin.backup.download', ['disk' => 'local', 'pfad' => 'x.zip']))->assertForbidden();
+});
+
+test('the backup component refuses admin_setting alone', function () {
+    $this->actingAs(userWithPermissions(['admin_setting']));
+
+    Livewire::test(AdminBackupEinstellungen::class)->assertForbidden();
 });

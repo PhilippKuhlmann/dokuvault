@@ -60,6 +60,8 @@
                             <x-aside.dropdownlink :label="__('Fristen')" href="{{ route('admin.fristen.index') }}" />
                             <x-aside.dropdownlink :label="__('Benachrichtigungen')" href="{{ route('admin.notifications') }}" />
                             <x-aside.dropdownlink :label="__('Agenten')" href="{{ route('admin.agenten.einstellungen') }}" />
+                        @endcan
+                        @can('isAdmin')
                             <x-aside.dropdownlink :label="__('Backup')" href="{{ route('admin.backup.einstellungen') }}" />
                         @endcan
                         {{-- Die Aufbewahrungsfrist gehoert zum Protokoll, nicht zu

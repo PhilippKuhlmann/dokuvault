@@ -104,8 +104,9 @@ class AppServiceProvider extends ServiceProvider
 
         $this->sitzungEinstellungenAnwenden();
 
+        // role_id, not role->id: a user without a role would throw here.
         Gate::define('isAdmin', function (User $user) {
-            return $user->role->id == Role::IS_ADMIN;
+            return (int) $user->role_id === Role::IS_ADMIN;
         });
 
         /*

@@ -2,6 +2,10 @@
 
 ## 26.10.29
 
+### Security
+
+- **Das Backup von DokuVault gehört nur noch der Admin-Rolle.** Bisher genügte das Recht „Einstellungen der Installation“. Wer es hatte, konnte das Backup-Ziel auf einen eigenen Server legen, das Archiv-Kennwort setzen und die Sicherung herunterladen, also die Daten aller Kunden mitnehmen. Seite, Download und „Jetzt sichern“ stehen jetzt nur der Admin-Rolle offen. Die übrigen Einstellungen bleiben beim bisherigen Recht.
+
 ### Fixed
 
 - **`POST` und `PUT /api/servers` funktionieren wieder.** Beide Endpunkte antworteten immer mit 422, egal was man schickte: Die Prüfung, ob der Standort zum Kunden gehört, suchte den Kunden in der Adresse, und `/api/servers` hat keinen. Jetzt gilt beim Anlegen der Kunde des Tokens. Ein Token ohne Kunde gibt ihn als `customer_id` mit. Beim Ändern bleibt der Kunde des Servers, auch wenn die Anfrage einen anderen nennt. Standort und Cluster müssen zu diesem Kunden gehören, das Betriebssystem muss im Katalog stehen.

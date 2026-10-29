@@ -14,6 +14,9 @@ use Spatie\Backup\BackupDestination\BackupDestination;
  * Admin -> Einstellungen -> Backup: the backup of DokuVault itself -
  * schedule, external target (SFTP / FTP / FTPS), retention, archive
  * password, notifications, the existing backups and "back up now".
+ *
+ * Admin role only (isAdmin), not admin_setting: the target, the archive
+ * password and the download together hand over every customer's data.
  */
 class AdminBackupEinstellungen extends Component
 {
@@ -31,7 +34,7 @@ class AdminBackupEinstellungen extends Component
 
     public function mount(): void
     {
-        Gate::authorize('admin_setting');
+        Gate::authorize('isAdmin');
 
         $this->form = BackupEinstellungen::werte();
         // Secrets are never sent to the browser - an empty field keeps them.
@@ -84,7 +87,7 @@ class AdminBackupEinstellungen extends Component
 
     public function speichern(): void
     {
-        Gate::authorize('admin_setting');
+        Gate::authorize('isAdmin');
         $this->validate($this->regeln(), [], ['form.backup_ziel_host' => __('Server'), 'form.backup_ziel_benutzer' => __('Benutzer')]);
 
         BackupEinstellungen::speichern($this->zuSpeichern());
@@ -105,7 +108,7 @@ class AdminBackupEinstellungen extends Component
     /** Clears a stored secret (password, key, archive password). */
     public function geheimnisLoeschen(string $schluessel): void
     {
-        Gate::authorize('admin_setting');
+        Gate::authorize('isAdmin');
         abort_unless(str_contains($schluessel, '_geheim_') && array_key_exists($schluessel, BackupEinstellungen::STANDARD), 404);
 
         Setting::setzen($schluessel, '');
@@ -120,7 +123,7 @@ class AdminBackupEinstellungen extends Component
      */
     public function verbindungTesten(): void
     {
-        Gate::authorize('admin_setting');
+        Gate::authorize('isAdmin');
         $this->validate($this->regeln());
 
         $werte = array_merge(BackupEinstellungen::werte(), $this->zuSpeichern());
@@ -150,7 +153,7 @@ class AdminBackupEinstellungen extends Component
     /** Starts a backup in the background (queue, picked up within a minute). */
     public function jetztSichern(): void
     {
-        Gate::authorize('admin_setting');
+        Gate::authorize('isAdmin');
 
         dispatch(function () {
             Artisan::call('backup:run');
@@ -190,6 +193,8 @@ class AdminBackupEinstellungen extends Component
 
     public function render()
     {
+        Gate::authorize('isAdmin');
+
         return view('livewire.admin-backup-einstellungen', [
             'arten' => BackupEinstellungen::ARTEN,
             'gespeichert' => BackupEinstellungen::werte(),

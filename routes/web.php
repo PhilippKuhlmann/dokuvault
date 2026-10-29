@@ -169,8 +169,12 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             // Defaults for the agents of all customers.
             Route::get('/agents', AdminAgentenEinstellungen::class)->name('admin.agenten.einstellungen');
 
-            Route::get('/backup', AdminBackupEinstellungen::class)->name('admin.backup.einstellungen');
-            Route::get('/backup/download', BackupDownloadController::class)->name('admin.backup.download');
+            // Admin role only, not admin_setting: whoever sets the target and
+            // the archive password can take every customer's data with them.
+            Route::middleware('can:isAdmin')->group(function () {
+                Route::get('/backup', AdminBackupEinstellungen::class)->name('admin.backup.einstellungen');
+                Route::get('/backup/download', BackupDownloadController::class)->name('admin.backup.download');
+            });
 
             Route::get('/setting', [SettingController::class, 'index'])->name('admin.setting.index');
             Route::patch('/setting', [SettingController::class, 'update'])->name('admin.setting.update');
