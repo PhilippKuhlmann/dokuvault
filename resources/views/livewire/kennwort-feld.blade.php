@@ -1,5 +1,5 @@
 <div class="flex items-center gap-2" x-data="{ copied: false }"
-    x-on:kennwort-bereit="copyText($event.detail.wert); copied = true; setTimeout(() => copied = false, 1500)">
+    x-on:kennwort-bereit="$kopieren($event.detail.wert)">
     {{-- Immer dasselbe Feld und dieselben zwei Knöpfe - ob verdeckt oder offen.
          So springt die Spalte beim Aufdecken nicht: Vorher kam offen ein
          zweiter Knopf (Kopieren) dazu, und die Zelle wuchs.
@@ -30,7 +30,7 @@
          aufzudecken. --}}
     <button type="button" tabindex="-1" title="{{ __('Passwort kopieren') }}"
         @if ($offen)
-            x-on:click="copyText($refs.pw.value); copied = true; setTimeout(() => copied = false, 1500)"
+            x-on:click="$kopieren($refs.pw.value)"
         @else
             wire:click="kopieren"
         @endif

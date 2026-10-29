@@ -49,7 +49,7 @@
                     x-data="{ show: true }"
                     x-show="show"
                     x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
+                    x-init="$nachher(2000, 'show', false)"
                     class="text-sm text-gray-600"
                 >{{ __('Gespeichert!') }}</p>
             @endif

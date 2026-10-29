@@ -50,7 +50,7 @@
     <div class="grid" style="grid-template-columns: 2.5rem minmax(0, 1fr);"
         @if ($interactive)
             {{-- Vorschau nur ausblenden, wenn der Zeiger den Schrank wirklich verlaesst --}}
-            x-on:dragleave="if (! $el.contains($event.relatedTarget)) hover = null"
+            x-on:dragleave="verlassen($event, $el)"
         @endif>
 
         {{-- HE-Skala links --}}
@@ -71,8 +71,8 @@
                 <div wire:key="rack-free-{{ $u }}" data-unit="{{ $u }}"
                     style="grid-column: 2; grid-row: {{ $he - $u + 1 }}; min-height: {{ $rowHeight }};"
                     @if ($interactive)
-                        x-on:dragover.prevent="hover = Number($el.dataset.unit)"
-                        x-on:drop.prevent="handleDrop(Number($el.dataset.unit))"
+                        x-on:dragover.prevent="ueber($el)"
+                        x-on:drop.prevent="ablegen($el)"
                     @endif
                     class="bg-white dark:bg-gray-800"></div>
             @endunless
@@ -97,14 +97,14 @@
                 style="grid-column: 2; grid-row: {{ $he - $item->topUnit() + 1 }} / span {{ $item->height_units }}; min-height: {{ $rowHeight }};"
                 @if ($bearbeitbar)
                     draggable="true"
-                    x-on:dragstart="drag = { kind: 'move', id: Number($el.dataset.itemId), he: Number($el.dataset.he) }"
-                    x-on:dragend="drag = null; hover = null"
+                    x-on:dragstart="ziehen('move', $el)"
+                    x-on:dragend="loslassen()"
                     {{-- Auch belegte Zeilen melden sich: so zeigt die Vorschau dort rot statt gar nichts --}}
-                    x-on:dragover.prevent="hover = Number($el.dataset.unit)"
-                    x-on:drop.prevent="handleDrop(Number($el.dataset.unit))"
+                    x-on:dragover.prevent="ueber($el)"
+                    x-on:drop.prevent="ablegen($el)"
                 @elseif ($interactive)
                     {{-- Auch der Geist meldet sich, sonst zeigt die Vorschau dort nichts --}}
-                    x-on:dragover.prevent="hover = Number($el.dataset.unit)"
+                    x-on:dragover.prevent="ueber($el)"
                 @endif
                 class="flex items-center justify-between gap-2 rounded border px-2 text-xs
                        {{ $geist ? 'border-dashed bg-gray-50 text-gray-400 dark:bg-gray-800/60 dark:border-gray-600 dark:text-gray-500' : $color }}

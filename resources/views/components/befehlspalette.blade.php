@@ -133,35 +133,7 @@
 @endphp
 
 <div
-    x-data="{
-        offen: false,
-        suche: '',
-        aktiv: 0,
-        ziele: @js($ziele),
-        gefiltert() {
-            const q = this.suche.trim().toLowerCase();
-            const liste = q ? this.ziele.filter(z => z.label.toLowerCase().includes(q)) : this.ziele;
-            if (this.aktiv >= liste.length) this.aktiv = Math.max(0, liste.length - 1);
-            return liste;
-        },
-        tippt(e) {
-            const t = e.target;
-            return t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
-        },
-        oeffnen() {
-            this.offen = true;
-            this.suche = '';
-            this.aktiv = 0;
-            this.$nextTick(() => this.$refs.feld && this.$refs.feld.focus());
-        },
-        schliessen() { this.offen = false; },
-        runter() { const n = this.gefiltert().length; if (n) this.aktiv = (this.aktiv + 1) % n; },
-        hoch() { const n = this.gefiltert().length; if (n) this.aktiv = (this.aktiv - 1 + n) % n; },
-        waehlen() { const z = this.gefiltert()[this.aktiv]; if (z) window.location = z.url; },
-        taste(e) {
-            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); this.oeffnen(); return; }
-        },
-    }"
+    x-data="befehlspalette(@alpineJson($ziele))"
     x-on:keydown.window="taste($event)"
     x-on:keydown.escape.window="schliessen()"
     x-on:palette-open.window="oeffnen()"

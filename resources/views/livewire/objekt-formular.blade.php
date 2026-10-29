@@ -22,7 +22,7 @@
              versteckte <select>: Das oeffnet die Liste beim Fokus, und sie
              stand beim Oeffnen jedes Dialogs mit Standort aufgeklappt da. --}}
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-            x-init="$nextTick(() => $el.querySelector('input:not([type=hidden]):not([type=search]), select:not([aria-hidden=true]), textarea, [role=combobox]')?.focus())"
+            x-init="$fokusErstesFeld()"
             x-on:keydown.escape.window="$wire.abbrechen()"
             x-on:keydown.meta.enter.prevent="$wire.speichern()"
             x-on:keydown.ctrl.enter.prevent="$wire.speichern()">

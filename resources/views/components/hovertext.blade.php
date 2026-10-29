@@ -17,14 +17,14 @@
     {{-- $attributes durchreichen: Wird der Inhalt per x-show ausgeblendet, muss
          der Wrapper mitgehen, sonst bleibt eine Luecke in der Reihe stehen. --}}
     <span {{ $attributes->merge(['class' => 'inline-block']) }} x-data="{ offen: false, x: 0, y: 0 }"
-        x-on:mouseenter="const r = $el.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top; offen = true"
+        x-on:mouseenter="$tooltipZeigen()"
         x-on:mouseleave="offen = false"
-        x-on:focusin="const r = $el.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top; offen = true"
+        x-on:focusin="$tooltipZeigen()"
         x-on:focusout="offen = false">
 
         {{ $slot }}
 
-        <span x-show="offen" x-cloak x-bind:style="`left: ${x}px; top: ${y - 8}px`"
+        <span x-show="offen" x-cloak x-bind:style="{ left: x + 'px', top: (y - 8) + 'px' }"
             @class([
                 'fixed z-50 -translate-x-1/2 -translate-y-full',
                 'w-56 rounded border border-gray-200 bg-white p-2 text-left text-xs font-normal leading-snug text-gray-700 shadow-lg dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200' => ! $dunkel,

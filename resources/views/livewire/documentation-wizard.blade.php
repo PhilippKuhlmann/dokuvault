@@ -253,13 +253,13 @@
                      "dirty" geschuetzten (gerade getippten) Eingaben wieder her -
                      sofort geleert waeren sie danach wieder voll. Erst nach dem
                      Morph leeren. --}}
-                @assistent-formular-geleert.window="$nextTick(() => $el.querySelectorAll('input, textarea, select').forEach(feld => feld.value = ''))"
+                @assistent-formular-geleert.window="$felderLeeren()"
                 {{-- Enter in einem Textfeld fügt hinzu (kein Mausklick nötig); in
                      select/textarea bleibt Enter, was es ist. --}}
-                x-on:keydown.enter.prevent="if ($event.target.matches('input')) $wire.save()"
+                x-on:keydown.enter.prevent="$event.target.matches('input') && $wire.save()"
                 {{-- Beim Schrittwechsel ans erste Feld springen und nach oben
                      scrollen - siehe DocumentationWizard::dispatch('assistent-schritt'). --}}
-                @assistent-schritt.window="$nextTick(() => { $el.querySelector('input:not([type=hidden]):not([type=search]), [role=combobox]')?.focus(); window.scrollTo({ top: 0, behavior: 'smooth' }) })">
+                @assistent-schritt.window="$schrittZeigen()">
                 @foreach ($step['fields'] as $field)
                     <div class="flex flex-col" wire:key="{{ $step['key'] }}-{{ $field['name'] }}">
                         <x-input.label :value="__($field['label'])" />

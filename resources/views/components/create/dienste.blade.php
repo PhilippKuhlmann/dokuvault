@@ -24,34 +24,7 @@
 @endphp
 
 <div class="mt-2 sm:col-span-2"
-    x-data="{
-        gewaehlt: @js($gewaehlt->all()),
-        neu: '',
-        stile: @js($stile),
-        stil(name) {
-            return this.stile[name.toLowerCase()] ?? '';
-        },
-        hat(name) {
-            return this.gewaehlt.some(d => d.toLowerCase() === name.toLowerCase());
-        },
-        dazu(name) {
-            name = (name || '').trim();
-            if (name && ! this.hat(name)) {
-                this.gewaehlt.push(name);
-            }
-            this.neu = '';
-            this.melden();
-        },
-        weg(name) {
-            this.gewaehlt = this.gewaehlt.filter(d => d !== name);
-            this.melden();
-        },
-        melden() {
-            @if ($wireModel)
-                $wire.set(@js($wireModel), this.gewaehlt.join(','));
-            @endif
-        },
-    }">
+    x-data="dienstauswahl(@alpineJson($gewaehlt->all()), @alpineJson((object) $stile), @js($wireModel))">
 
     @if ($wireModel)
         {{-- Im Modal gibt es kein Formular, das abgeschickt wird: Jede Aenderung

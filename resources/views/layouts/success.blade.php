@@ -9,18 +9,7 @@
     Deshalb steht das Element immer im DOM und wartet auf das Ereignis, statt
     nur bei vorhandener Session-Meldung gerendert zu werden.
 --}}
-<div x-data="{
-        show: @js((bool) session('success')),
-        text: @js((string) session('success')),
-        timer: null,
-        zeigen(nachricht) {
-            this.text = nachricht;
-            this.show = true;
-            clearTimeout(this.timer);
-            this.timer = setTimeout(() => this.show = false, 4000);
-        },
-    }"
-    x-init="if (show) timer = setTimeout(() => show = false, 4000)"
+<div x-data="erfolgsmeldung(@js((bool) session('success')), @js((string) session('success')))"
     x-on:hinweis.window="zeigen($event.detail.text)"
     x-show="show" x-cloak
     x-transition:enter="transition ease-out duration-200"

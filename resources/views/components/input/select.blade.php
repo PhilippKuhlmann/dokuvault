@@ -65,106 +65,11 @@
 @endphp
 
 <div @class(['relative', $rahmenklassen->implode(' ') => $rahmenklassen->isNotEmpty()])
-    x-data="{
-        offen: false,
-        suche: '',
-        markiert: -1,
-        optionen: [],
-        eigenerWert: '',
-        x: 0,
-        y: 0,
-        breite: 0,
-        nachOben: false,
-        mitSuche: @js($mitSuche),
-        init() {
-            this.lesen();
-            {{-- Livewire tauscht bei einem Re-Render auch Optionslisten aus -
-                 etwa die Switches eines Patchfelds. Ein einmal beim Init
-                 gemerkter Bestand waere danach veraltet. --}}
-            new MutationObserver(() => this.lesen())
-                .observe(this.$refs.select, { childList: true, subtree: true });
-        },
-        lesen() {
-            this.optionen = Array.from(this.$refs.select.options)
-                .map(o => ({ wert: o.value, text: o.text }));
-            @unless ($modell)
-                this.eigenerWert = this.$refs.select.value;
-            @endunless
-        },
-        get wert() {
-            @if ($modell)
-                return String($wire.get(@js($modell)) ?? '');
-            @else
-                return this.eigenerWert;
-            @endif
-        },
-        get gefiltert() {
-            const suche = this.suche.trim().toLowerCase();
-            if (! suche) {
-                return this.optionen;
-            }
-            return this.optionen.filter(o => o.text.toLowerCase().includes(suche));
-        },
-        get beschriftung() {
-            return this.optionen.find(o => o.wert === this.wert)?.text ?? '';
-        },
-        platzieren() {
-            const r = this.$refs.ausloeser.getBoundingClientRect();
-            const platzUnten = window.innerHeight - r.bottom;
-            this.x = r.left;
-            this.breite = r.width;
-            {{-- Nach oben klappen, wenn unten kein Platz mehr ist - sonst
-                 haengt die Liste unter dem Bildschirmrand. --}}
-            this.nachOben = platzUnten < 300 && r.top > platzUnten;
-            this.y = this.nachOben ? window.innerHeight - r.top : r.bottom;
-        },
-        oeffnen() {
-            if (this.offen) {
-                return;
-            }
-            this.offen = true;
-            this.suche = '';
-            this.markiert = this.gefiltert.findIndex(o => o.wert === this.wert);
-            this.platzieren();
-            {{-- Nur mit Suchfeld wandert der Fokus; ohne bleibt er am
-                 Ausloeser, der die Pfeiltasten selbst behandelt. --}}
-            if (this.mitSuche) {
-                this.$nextTick(() => this.$refs.suchfeld?.focus());
-            }
-        },
-        schliessen() {
-            this.offen = false;
-            this.$refs.ausloeser.focus();
-        },
-        bewegen(schritte) {
-            const anzahl = this.gefiltert.length;
-            if (! anzahl) {
-                this.markiert = -1;
-                return;
-            }
-            this.markiert = (this.markiert + schritte + anzahl) % anzahl;
-            this.$nextTick(() => this.$refs.liste
-                ?.querySelector('[data-markiert]')
-                ?.scrollIntoView({ block: 'nearest' }));
-        },
-        waehle(wert) {
-            this.$refs.select.value = wert;
-            @if ($modell)
-                $wire.set(@js($modell), wert);
-            @else
-                this.eigenerWert = wert;
-                {{-- 'change', nicht 'input': Darauf hoeren die
-                     onchange-Handler der klassischen Formulare. Mit 'input'
-                     sieht die Auswahl richtig aus, kommt aber nirgends an. --}}
-                this.$refs.select.dispatchEvent(new Event('change', { bubbles: true }));
-            @endif
-            this.schliessen();
-        },
-    }"
-    x-on:keydown.escape="if (offen) { $event.stopPropagation(); schliessen() }"
+    x-data="auswahlfeld(@js($mitSuche), @js($modell ?: null))"
+    x-on:keydown.escape="escapeTaste($event)"
     x-on:click.outside="offen = false"
-    x-on:scroll.window.capture="if (offen) platzieren()"
-    x-on:resize.window="if (offen) platzieren()">
+    x-on:scroll.window.capture="neuPlatzieren()"
+    x-on:resize.window="neuPlatzieren()">
 
     {{-- aria-hidden und tabindex=-1: Bedient wird der Ausloeser. Der Fokus
          kann hier trotzdem landen, wenn jemand die Beschriftung anklickt -
@@ -187,7 +92,7 @@
         x-on:click="offen ? schliessen() : oeffnen()"
         x-on:keydown.down.prevent="offen ? bewegen(1) : oeffnen()"
         x-on:keydown.up.prevent="offen ? bewegen(-1) : oeffnen()"
-        x-on:keydown.enter.prevent="offen &amp;&amp; gefiltert[markiert] ? waehle(gefiltert[markiert].wert) : oeffnen()"
+        x-on:keydown.enter.prevent="enterTaste()"
         role="combobox"
         aria-haspopup="listbox"
         x-bind:aria-expanded="offen"
@@ -209,7 +114,7 @@
         {{-- Mindestens so breit wie das Feld, aber mitwachsend: In schmalen
              Tabellenspalten braechen lange Namen sonst auf drei Zeilen um.
              Ein natives Select-Popup wird auch breiter als sein Feld. --}}
-        x-bind:style="`left: ${x}px; min-width: ${breite}px; ` + (nachOben ? `bottom: ${y + 4}px` : `top: ${y + 4}px`)"
+        x-bind:style="listenStil()"
         {{-- Einen Ton neben der Flaeche darunter: Karten und Modale stehen auf
              bg-white bzw. dark:bg-gray-800. Waere die Liste dieselbe Flaeche,
              trennte sie nur der Schatten. Im Hellen also etwas gedeckter, im
@@ -223,7 +128,7 @@
             x-on:input="markiert = gefiltert.length ? 0 : -1"
             x-on:keydown.down.prevent="bewegen(1)"
             x-on:keydown.up.prevent="bewegen(-1)"
-            x-on:keydown.enter.prevent="if (gefiltert[markiert]) waehle(gefiltert[markiert].wert)"
+            x-on:keydown.enter.prevent="enterImSuchfeld()"
             x-on:keydown.tab="offen = false"
             placeholder="{{ __('Suchen') }}"
             class="w-full rounded-t-lg border-0 border-b border-gray-200 bg-transparent px-3 py-2 text-sm text-gray-900 focus:ring-0 dark:border-gray-600 dark:text-gray-300" />

@@ -6,11 +6,13 @@ use App\Models\Customer;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\AlpineJson;
 use App\Support\BackupEinstellungen;
 use App\Support\BackupZustand;
 use App\Support\Changelog;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
@@ -41,6 +43,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        // @alpineJson($wert): an Alpine argument the CSP build can read, see
+        // AlpineJson. For strings and numbers @js stays fine.
+        Blade::directive('alpineJson', fn (string $ausdruck) => '<?php echo '.AlpineJson::class."::attribut({$ausdruck}); ?>");
+
         // The DokuVault backup is configured in the admin area; its settings
         // replace config/backup.php at runtime. Never at the price of booting.
         try {

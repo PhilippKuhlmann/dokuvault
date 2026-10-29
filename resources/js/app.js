@@ -25,9 +25,21 @@ window.copyText = function (text) {
 // davor erzeugte zwei konkurrierende Alpine/Livewire-Instanzen auf jeder Seite (Konsolen-
 // warnungen "Detected multiple instances of ..." und ein Crash bei der zweiten Registrierung
 // von Alpine-Magics wie $persist), wodurch wire:click/wire:model teils gar nicht mehr feuerten.
-import { Livewire, Alpine } from '../../vendor/livewire/livewire/dist/livewire.esm';
+//
+// The CSP build: Alpine evaluates its expressions with its own parser instead
+// of new Function, so the Content-Security-Policy needs no 'unsafe-eval'. An
+// expression in the HTML is then one JavaScript expression - whatever needs
+// more is registered below (resources/js/alpine/) and only called there.
+import { Livewire, Alpine } from '../../vendor/livewire/livewire/dist/livewire.csp.esm';
+import { hilfenRegistrieren } from './alpine/hilfen';
+import { komponentenRegistrieren, rackRegistrieren, auswahlRegistrieren } from './alpine/komponenten';
 
 window.Alpine = Alpine;
+
+hilfenRegistrieren(Alpine);
+komponentenRegistrieren(Alpine);
+rackRegistrieren(Alpine);
+auswahlRegistrieren(Alpine);
 
 // Abgelaufene Seite abfangen (HTTP 419). Livewire zeigt sonst einen blockierenden
 // confirm()-Dialog "This page has expired." - ein Sackgassen-Erlebnis, das besonders

@@ -1,5 +1,5 @@
 @if (session('errors'))
-<div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
+<div x-data="{ show: true }" x-show="show" x-init="$nachher(3000, 'show', false)"
     id="toast-errors"
     class="z-50 fixed bottom-4 right-4 flex items-center p-4 w-full max-w-xs text-gray-700 bg-white border border-gray-100 rounded-xl shadow-lg dark:text-gray-200 dark:bg-gray-800 dark:border-gray-700"
     role="alert">

@@ -1,61 +1,10 @@
 {{-- Breiter als das Formular darüber (max-w-3xl): Palette, Schema und Frontansicht
      brauchen nebeneinander Platz. Bleibt wie das Formular mittig. --}}
 <div class="mx-auto max-w-5xl px-3">
+{{-- {{ }} rather than @js: on a component tag (x-panel) directives stay
+     uncompiled in $attributes, an echo does not. --}}
 <x-panel class="my-3 sm:p-6"
-    x-data="{
-        drag: null,        // { kind, he, ... } - was gerade gezogen wird
-        hover: null,       // unterste HE unter dem Zeiger
-        rackHeight: {{ $rack->height_units }},
-
-        span() { return this.drag?.he ?? 1 },
-
-        /* Belegung immer frisch aus dem DOM lesen. Ein einmal in x-data
-           gebackener Plan wäre nach jeder Livewire-Änderung (z. B. HE
-           vergrößern) veraltet und die Vorschau würde lügen. */
-        placed() {
-            return [...this.$root.querySelectorAll('[data-item-id]')].map(el => ({
-                id: Number(el.dataset.itemId),
-                unit: Number(el.dataset.unit),
-                he: Number(el.dataset.he),
-            }));
-        },
-
-        /* Passt der gezogene Einbau an die Position unter dem Zeiger? */
-        fits() {
-            if (! this.drag || this.hover === null) return false;
-            const top = this.hover + this.span() - 1;
-            if (this.hover < 1 || top > this.rackHeight) return false;
-            // Beim Verschieben zählen die eigenen Höheneinheiten nicht als belegt.
-            const self = this.drag.kind === 'move' ? this.drag.id : null;
-            return ! this.placed().some(i =>
-                i.id !== self && this.hover <= i.unit + i.he - 1 && top >= i.unit
-            );
-        },
-
-        /* Vorschau deckt genau die HE ab, die belegt würden - oben am Rack abgeschnitten. */
-        previewStyle() {
-            if (this.hover === null) return {};
-            const top = Math.min(this.hover + this.span() - 1, this.rackHeight);
-            const rows = Math.max(1, top - this.hover + 1);
-            return { gridColumn: '2', gridRow: `${this.rackHeight - top + 1} / span ${rows}` };
-        },
-
-        previewLabel() {
-            if (! this.drag || this.hover === null) return '';
-            const top = this.hover + this.span() - 1;
-            const range = this.span() > 1 ? `U${this.hover}–U${top}` : `U${this.hover}`;
-            return this.fits() ? range : `${range} · kein Platz`;
-        },
-
-        handleDrop(position) {
-            if (! this.drag) return;
-            if (this.drag.kind === 'device') $wire.placeDevice(this.drag.type, this.drag.id, position);
-            if (this.drag.kind === 'catalog') $wire.placeCatalog(this.drag.id, position);
-            if (this.drag.kind === 'move') $wire.move(this.drag.id, position);
-            this.drag = null;
-            this.hover = null;
-        },
-    }">
+    x-data="rackeditor({{ (int) $rack->height_units }})">
 
     {{-- id: Anker fuer das Screenshot-Werkzeug. Ohne ihn zeigte das Bild
          hauptsaechlich das Formular darueber und vom Rack nur die Oberkante. --}}
@@ -105,7 +54,7 @@
                             <li wire:key="palette-{{ $group['key'] }}-{{ $device->id }}"
                                 draggable="true"
                                 x-on:dragstart="drag = { kind: 'device', type: '{{ $group['key'] }}', id: {{ $device->id }}, he: 1 }"
-                                x-on:dragend="drag = null; hover = null"
+                                x-on:dragend="loslassen()"
                                 class="flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm cursor-grab active:cursor-grabbing dark:border-gray-600 dark:bg-gray-700/60 dark:text-gray-200">
                                 <span class="truncate">{{ method_exists($device, 'rackName') ? $device->rackName() : $device->name }}</span>
                                 <button type="button" wire:click="quickPlaceDevice('{{ $group['key'] }}', {{ $device->id }})"
@@ -125,8 +74,8 @@
                         <li wire:key="catalog-{{ $entry->id }}"
                             data-he="{{ $entry->height_units }}" data-catalog-id="{{ $entry->id }}"
                             draggable="true"
-                            x-on:dragstart="drag = { kind: 'catalog', id: Number($el.dataset.catalogId), he: Number($el.dataset.he) }"
-                            x-on:dragend="drag = null; hover = null"
+                            x-on:dragstart="ziehen('catalog', $el)"
+                            x-on:dragend="loslassen()"
                             class="flex items-center justify-between gap-2 rounded-lg border border-dashed border-gray-300 px-2 py-1.5 text-sm text-gray-500 cursor-grab active:cursor-grabbing dark:border-gray-600 dark:text-gray-400">
                             <span class="truncate">{{ $entry->name }}</span>
                             <span class="flex shrink-0 items-center gap-2">

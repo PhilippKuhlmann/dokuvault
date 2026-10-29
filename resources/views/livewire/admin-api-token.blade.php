@@ -34,7 +34,7 @@
                 <code x-ref="tok"
                     class="min-w-0 flex-1 break-all rounded-lg border border-amber-200 bg-white px-3 py-2 font-mono text-xs text-gray-900 dark:border-amber-900/60 dark:bg-gray-900 dark:text-gray-100">{{ $frischerToken }}</code>
                 <button type="button"
-                    x-on:click="copyText($refs.tok.textContent); kopiert = true; setTimeout(() => kopiert = false, 1500)"
+                    x-on:click="$kopieren($refs.tok.textContent, 'kopiert')"
                     class="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-cerulean-600 px-3 py-2 text-sm font-DINPro-bold text-white shadow-xs transition-colors hover:bg-cerulean-700">
                     <span x-show="! kopiert">{{ __('Kopieren') }}</span>
                     <span x-show="kopiert" x-cloak>{{ __('Kopiert') }}</span>

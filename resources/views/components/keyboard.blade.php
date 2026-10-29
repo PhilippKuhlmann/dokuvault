@@ -7,25 +7,7 @@
     Rein clientseitig (Alpine), kein Livewire. Neuer Code englisch, sichtbare
     Texte deutsch mit en.json-Übersetzung.
 --}}
-<div x-data="{
-        helpOpen: false,
-        typing(e) {
-            const t = e.target;
-            return t instanceof Element && (t.closest('input, textarea, select') !== null || t.isContentEditable);
-        },
-        onKey(e) {
-            if (e.metaKey || e.ctrlKey || e.altKey || this.typing(e)) return;
-            if (e.key === '/') {
-                e.preventDefault();
-                const feld = document.querySelector('input[type=search]');
-                if (feld) { feld.focus(); }
-                else { window.dispatchEvent(new CustomEvent('palette-open')); }
-            } else if (e.key === '?') {
-                e.preventDefault();
-                this.helpOpen = true;
-            }
-        },
-    }"
+<div x-data="tastenkuerzel"
     x-on:keydown.window="onKey($event)">
 
     @php

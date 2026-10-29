@@ -13,23 +13,7 @@
     $bild = $item?->bildUrl();
 @endphp
 
-<div x-data="{
-    {{-- @js statt '{{ }}': Alle drei kommen ueber old() zurueck, also roh
-         wie eingetippt. Im Attribut entschluesselt der Browser den Wert,
-         bevor Alpine ihn auswertet - das HTML-Escaping schuetzt hier nicht. --}}
-    typ: @js($gewaehlt),
-    he: @js((int) $he),
-    drawing: @js(old('drawing', $item->drawing ?? '')),
-    neuesBild: null,
-    weg: false,
-    zeichnungen: {{ Illuminate\Support\Js::from($zeichnungen) }},
-    melden() {
-        $dispatch('rack-vorschau', {
-            appearance: this.zeichnungen[this.typ], he: this.he,
-            drawing: this.drawing,
-        })
-    },
-}">
+<div x-data="geraetemodell(@js($gewaehlt), @js((int) $he), @js(old('drawing', $item->drawing ?? '')), @alpineJson($zeichnungen))">
 
     <div class="flex flex-col mt-2">
         <x-input.label for="device_type" :value="__('Gerätetyp')" />
@@ -94,7 +78,7 @@
         <div class="mt-1 flex flex-wrap items-start gap-4">
             <x-input.file id="image" name="image"
                 accept="{{ collect(config('custom.bild_formate'))->map(fn ($e) => '.'.$e)->join(',') }}"
-                x-on:change="neuesBild = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : null" />
+                x-on:change="bildWaehlen($event)" />
 
             @if ($bild)
                 <input type="hidden" name="image_remove" :value="weg ? 1 : 0">

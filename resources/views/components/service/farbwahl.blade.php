@@ -18,12 +18,7 @@
             class="w-32 rounded-lg border-gray-300 font-mono text-sm shadow-xs focus:border-cerulean-500 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
 
         <span class="px-3 py-1 text-sm rounded"
-            x-bind:style="(() => {
-                if (! hex.match(/^#[0-9a-fA-F]{6}$/)) { return 'background-color:#e5e7eb;color:#111827'; }
-                const [r, gr, b] = [1, 3, 5].map(i => parseInt(hex.substr(i, 2), 16) / 255);
-                const hell = 0.299 * r + 0.587 * gr + 0.114 * b;
-                return 'background-color:' + hex + ';color:' + (hell > 0.6 ? '#111827' : '#ffffff');
-            })()">{{ $name ?: __('Vorschau') }}</span>
+            x-bind:style="$kachelStil(hex)">{{ $name ?: __('Vorschau') }}</span>
     </div>
 
     <x-input.fehler feld="color" />

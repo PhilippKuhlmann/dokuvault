@@ -33,7 +33,7 @@ test('script-src trägt eine Nonce statt unsafe-inline', function () {
     $scriptSrc = $treffer[1] ?? '';
 
     expect($scriptSrc)->toContain("'nonce-")
-        ->and($scriptSrc)->toContain("'unsafe-eval'")        // Alpine wertet zur Laufzeit aus
+        ->and($scriptSrc)->not->toContain("'unsafe-eval'")    // Alpine laeuft im CSP-Build
         ->and($scriptSrc)->not->toContain("'unsafe-inline'"); // eingeschleustes Inline-JS bleibt draußen
 });
 

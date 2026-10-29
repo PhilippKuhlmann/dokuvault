@@ -20,17 +20,7 @@
     {{-- Keyboard navigation: arrow keys move the active result, Enter opens it.
          The active index lives on the persistent Alpine root (survives Livewire
          re-renders) and resets to the first hit when the query changes. --}}
-    <div x-data="{
-            active: 0,
-            items() { return [...$root.querySelectorAll('[data-result]')] },
-            move(step) {
-                const list = this.items()
-                if (! list.length) return
-                this.active = Math.max(0, Math.min(this.active + step, list.length - 1))
-                list[this.active]?.scrollIntoView({ block: 'nearest' })
-            },
-            choose() { this.items()[this.active]?.click() },
-        }"
+    <div x-data="trefferliste"
         class="relative z-10 mx-auto w-full max-w-2xl rounded-lg border border-chathams-blue-200
                 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
 
@@ -64,7 +54,7 @@
                     x-on:keydown.arrow-down.prevent="move(1)"
                     x-on:keydown.arrow-up.prevent="move(-1)"
                     x-on:keydown.enter.prevent="choose()"
-                    x-on:keydown.escape.prevent="window.history.length > 1 ? window.history.back() : window.location.assign('/')"
+                    x-on:keydown.escape.prevent="$zurueck()"
                     x-on:input="active = 0" />
             </div>
 

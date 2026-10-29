@@ -15,7 +15,7 @@
         <div class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ __('Berechtigungen') }}</div>
         <label class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 cursor-pointer select-none">
             <input type="checkbox"
-                x-data x-on:change="const an = $el.checked; $el.closest('[data-perm-root]').querySelectorAll('.perm-cb').forEach(c => c.checked = an)"
+                x-data x-on:change="$hakenUebernehmen('[data-perm-root]')"
                 class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700">
             {{ __('Alle auswählen') }}
         </label>
@@ -47,7 +47,7 @@
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                         <td class="px-4 py-1.5 whitespace-nowrap">
                             <button type="button" title="{{ __('Ganze Zeile umschalten') }}"
-                                x-data x-on:click="const cbs = $el.closest('tr').querySelectorAll('.perm-cb'); const all = [...cbs].every(c => c.checked); cbs.forEach(c => c.checked = !all)"
+                                x-data x-on:click="$zeileUmschalten()"
                                 class="text-gray-800 dark:text-gray-200 hover:text-cerulean-600 dark:hover:text-cerulean-400 font-medium">
                                 {{ $row['label'] }}
                             </button>
@@ -94,7 +94,7 @@
                 </div>
                 <label class="flex shrink-0 cursor-pointer select-none items-center gap-2 text-xs text-amber-800 dark:text-amber-400">
                     <input type="checkbox"
-                        x-data x-on:change="const an = $el.checked; $el.closest('[data-admin-block]').querySelectorAll('.perm-cb').forEach(c => c.checked = an)"
+                        x-data x-on:change="$hakenUebernehmen('[data-admin-block]')"
                         class="h-4 w-4 rounded border-amber-300 dark:border-amber-700 dark:bg-gray-700">
                     {{ __('Alle auswählen') }}
                 </label>

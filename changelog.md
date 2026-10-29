@@ -4,6 +4,8 @@
 
 ### Security
 
+- **Content-Security-Policy ohne `unsafe-eval`.** Die Oberfläche durfte bisher JavaScript zur Laufzeit aus Text erzeugen, weil Alpine seine Ausdrücke so auswertete. Eingeschleuster Code hätte das ebenfalls nutzen können. Alpine läuft jetzt im CSP-Build von Livewire und wertet mit einem eigenen Parser aus, und die Richtlinie verbietet `eval` ganz. Die Logik, die bisher direkt in den Seiten stand (Auswahlfelder, Befehlspalette, Rack-Editor, Kopierknöpfe und andere), liegt jetzt in `resources/js/alpine/`. Für Anwender ändert sich nichts.
+
 - **Die zweite Stufe einrichten braucht einen Code aus der Mail.** Bisher genügte das Kennwort: Wer es kannte, konnte als Erster seine eigene App einrichten und den echten Inhaber aussperren, gerade dann, wenn ein Administrator die zweite Stufe gerade verlangt hatte. Hat der Zugang eine E-Mail-Adresse, kommt beim Einrichten ein sechsstelliger Code dorthin. Er gilt 15 Minuten und gehört zusammen mit dem Code aus der App ins Formular. Nach der Einrichtung geht eine Mail „Zweite Stufe eingerichtet“ an dieselbe Adresse. Zugänge ohne E-Mail richten wie bisher ein. Lässt sich die Mail nicht senden, beginnt die Einrichtung nicht, und die Seite sagt, warum.
 
 - **Muss jemand die zweite Stufe noch einrichten, erreicht er über Livewire nur das Profil.** Bis dahin lässt DokuVault nur die Livewire-Komponenten der Profilseite durch. Ein Kennwortfeld von einer Seite, die vor der Pflicht geladen wurde, zeigt seinen Wert damit nicht mehr an. Die Prüfung erkannte die Livewire-Route seit Livewire 4 nicht mehr (sie heißt dort `default-livewire.update`). Dadurch wurden auch die Benachrichtigungs-Schalter im Profil umgeleitet und funktionierten bis zur Einrichtung nicht.

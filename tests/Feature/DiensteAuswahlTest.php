@@ -76,10 +76,10 @@ test('die bereits gepflegten Dienste stehen vorbelegt im Feld', function () {
     $inhalt = modalHtml('server', $customer, $server->id);
 
     // Alpine bekommt die Auswahl als JSON - inklusive des freien Dienstes, den
-    // es im Katalog nicht gibt. @js() schreibt JSON.parse('["…"]'),
-    // die Anfuehrungszeichen stehen also als Escape-Folge im Attribut.
-    expect($inhalt)->toContain('\u0022AD\u0022');
-    expect($inhalt)->toContain('\u0022Nextcloud\u0022');
+    // es im Katalog nicht gibt. @alpineJson schreibt reines JSON, die
+    // Anfuehrungszeichen stehen HTML-kodiert im Attribut.
+    expect($inhalt)->toContain('&quot;AD&quot;');
+    expect($inhalt)->toContain('&quot;Nextcloud&quot;');
 });
 
 test('gespeichert wird weiterhin eine Komma-Liste, auch mit freien Diensten', function () {

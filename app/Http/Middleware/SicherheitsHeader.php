@@ -15,13 +15,12 @@ use Symfony\Component\HttpFoundation\Response;
  * (Clickjacking), keine vollen Adressen an fremde Ziele weitergeben und
  * Kamera/Mikrofon/Standort gar nicht erst anbieten.
  *
- * Die Content-Security-Policy ist der fuenfte. Sie ist hier bewusst keine
- * strenge Skript-Positivliste: Alpine wertet Ausdruecke zur Laufzeit aus
- * ('unsafe-eval') und Livewire wie Alpine schreiben Handler inline
- * ('unsafe-inline') - eine strengere Regel legte die Oberflaeche lahm. Ihr Wert
- * liegt daher im Verbot fremder Herkuenfte: Skripte, Rahmen, Formularziele und
- * Basis-URL nur von der eigenen Domain. Damit kann eingeschleustes HTML keine
- * Daten an einen fremden Server schicken und die Seite niemand einrahmen.
+ * Die Content-Security-Policy ist der fuenfte. Skripte nur von der eigenen
+ * Domain oder mit der Nonce dieser Anfrage, ohne 'unsafe-eval': Alpine laeuft
+ * im CSP-Build und wertet seine Ausdruecke mit einem eigenen Parser aus statt
+ * mit new Function (resources/js/app.js). Dazu Rahmen, Formularziele und
+ * Basis-URL nur von der eigenen Domain - eingeschleustes HTML kann keine Daten
+ * an einen fremden Server schicken, und die Seite rahmt niemand ein.
  */
 class SicherheitsHeader
 {
@@ -56,11 +55,11 @@ class SicherheitsHeader
      */
     private function csp(string $nonce): string
     {
-        // 'unsafe-eval' bleibt: Alpine wertet seine Ausdruecke zur Laufzeit
-        // aus (new Function). 'unsafe-inline' ist raus - an seine Stelle tritt
-        // die Nonce, damit nur unsere eigenen Inline-Skripte laufen und kein
-        // eingeschleustes. Alpines @click sind echte Listener, kein Inline-JS.
-        $skript = "'self' 'unsafe-eval' 'nonce-{$nonce}'";
+        // Kein 'unsafe-eval' mehr: Alpine laeuft im CSP-Build. Kein
+        // 'unsafe-inline' - an seine Stelle tritt die Nonce, damit nur unsere
+        // eigenen Inline-Skripte laufen und kein eingeschleustes. Alpines
+        // @click sind echte Listener, kein Inline-JS.
+        $skript = "'self' 'nonce-{$nonce}'";
         $stil = "'self' 'unsafe-inline'";
         $verbindung = "'self'";
 

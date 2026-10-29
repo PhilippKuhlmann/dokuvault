@@ -32,7 +32,7 @@
                     <div @class(['relative', 'ml-2' => $loop->iteration % 6 === 1 && ! $loop->first])
                         @if ($istBelegt)
                             x-data="{ offen: false, x: 0, y: 0 }"
-                            x-on:mouseenter="const r = $el.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top; offen = true"
+                            x-on:mouseenter="$tooltipZeigen()"
                             x-on:mouseleave="offen = false"
                         @endif>
 
@@ -51,7 +51,7 @@
                                  absolut positioniert verschwand das Fenster dahinter.
                                  position: fixed entkommt jedem Rahmen. --}}
                             <div x-show="offen" x-cloak
-                                x-bind:style="`left: ${x}px; top: ${y - 8}px`"
+                                x-bind:style="{ left: x + 'px', top: (y - 8) + 'px' }"
                                 class="fixed z-50 w-56 -translate-x-1/2 -translate-y-full rounded border border-gray-200 bg-white p-2.5 text-left shadow-lg dark:border-gray-600 dark:bg-gray-800">
                                 <div class="mb-1 font-mono text-xs font-semibold text-cerulean-700 dark:text-cerulean-400">
                                     {{ __('Port') }} {{ $nummer }}

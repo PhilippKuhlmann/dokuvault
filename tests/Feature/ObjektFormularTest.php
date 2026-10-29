@@ -1044,7 +1044,7 @@ test('das Modal ist per Tastatur bedienbar (Autofokus, Cmd/Strg+Enter)', functio
 
     expect($html)->toContain('keydown.meta.enter');
     expect($html)->toContain('keydown.ctrl.enter');
-    expect($html)->toContain('.focus()'); // Autofokus-x-init aufs erste Feld
+    expect($html)->toContain('$fokusErstesFeld()'); // Autofokus-x-init aufs erste Feld
 });
 
 test('die Tastaturkürzel-Hilfe rendert Handler und Kürzelliste', function () {

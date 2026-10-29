@@ -21,82 +21,18 @@
 @endphp
 
 <div {{ $attributes->whereDoesntStartWith('wire:model')->merge(['class' => 'relative']) }}
-    x-data="{
-        offen: false,
-        suche: '',
-        markiert: -1,
-        optionen: @js($liste),
-        x: 0,
-        y: 0,
-        breite: 0,
-        nachOben: false,
-        mitSuche: @js($mitSuche),
-        get werte() {
-            return Array.from($wire.get(@js($modell)) ?? []).map(String);
-        },
-        get gefiltert() {
-            const suche = this.suche.trim().toLowerCase();
-            if (! suche) {
-                return this.optionen;
-            }
-            return this.optionen.filter(o => o.text.toLowerCase().includes(suche));
-        },
-        get beschriftung() {
-            return this.optionen.filter(o => this.werte.includes(o.wert)).map(o => o.text).join(', ');
-        },
-        platzieren() {
-            const r = this.$refs.ausloeser.getBoundingClientRect();
-            const platzUnten = window.innerHeight - r.bottom;
-            this.x = r.left;
-            this.breite = r.width;
-            this.nachOben = platzUnten < 300 && r.top > platzUnten;
-            this.y = this.nachOben ? window.innerHeight - r.top : r.bottom;
-        },
-        oeffnen() {
-            if (this.offen) {
-                return;
-            }
-            this.offen = true;
-            this.suche = '';
-            this.markiert = this.gefiltert.length ? 0 : -1;
-            this.platzieren();
-            if (this.mitSuche) {
-                this.$nextTick(() => this.$refs.suchfeld?.focus());
-            }
-        },
-        schliessen() {
-            this.offen = false;
-            this.$refs.ausloeser.focus();
-        },
-        bewegen(schritte) {
-            const anzahl = this.gefiltert.length;
-            if (! anzahl) {
-                this.markiert = -1;
-                return;
-            }
-            this.markiert = (this.markiert + schritte + anzahl) % anzahl;
-            this.$nextTick(() => this.$refs.liste
-                ?.querySelector('[data-markiert]')
-                ?.scrollIntoView({ block: 'nearest' }));
-        },
-        umschalten(wert) {
-            const werte = this.werte;
-            $wire.set(@js($modell), werte.includes(wert)
-                ? werte.filter(w => w !== wert)
-                : [...werte, wert]);
-        },
-    }"
-    x-on:keydown.escape="if (offen) { $event.stopPropagation(); schliessen() }"
+    x-data="mehrfachauswahl(@alpineJson($liste), @js($mitSuche), @js($modell))"
+    x-on:keydown.escape="escapeTaste($event)"
     x-on:click.outside="offen = false"
-    x-on:scroll.window.capture="if (offen) platzieren()"
-    x-on:resize.window="if (offen) platzieren()">
+    x-on:scroll.window.capture="neuPlatzieren()"
+    x-on:resize.window="neuPlatzieren()">
 
     <button type="button"
         x-ref="ausloeser"
         x-on:click="offen ? schliessen() : oeffnen()"
         x-on:keydown.down.prevent="offen ? bewegen(1) : oeffnen()"
         x-on:keydown.up.prevent="offen ? bewegen(-1) : oeffnen()"
-        x-on:keydown.enter.prevent="offen &amp;&amp; gefiltert[markiert] ? umschalten(gefiltert[markiert].wert) : oeffnen()"
+        x-on:keydown.enter.prevent="enterTaste()"
         role="combobox"
         aria-haspopup="listbox"
         x-bind:aria-expanded="offen"
@@ -118,8 +54,8 @@
          longer reached this component (which closes only the list) but the
          dialog - and closed the whole form with what was typed. --}}
     <div x-show="offen" x-cloak
-        x-on:mousedown="if ($event.target !== $refs.suchfeld) $event.preventDefault()"
-        x-bind:style="`left: ${x}px; min-width: ${breite}px; ` + (nachOben ? `bottom: ${y + 4}px` : `top: ${y + 4}px`)"
+        x-on:mousedown="mausDown($event)"
+        x-bind:style="listenStil()"
         class="fixed z-50 w-max max-w-[min(24rem,calc(100vw-2rem))] rounded-lg border border-gray-200 bg-gray-50 shadow-lg dark:border-gray-600 dark:bg-gray-700">
 
         @if ($mitSuche)
@@ -129,7 +65,7 @@
             x-on:input="markiert = gefiltert.length ? 0 : -1"
             x-on:keydown.down.prevent="bewegen(1)"
             x-on:keydown.up.prevent="bewegen(-1)"
-            x-on:keydown.enter.prevent="if (gefiltert[markiert]) umschalten(gefiltert[markiert].wert)"
+            x-on:keydown.enter.prevent="enterImSuchfeld()"
             x-on:keydown.tab="offen = false"
             placeholder="{{ __('Suchen') }}"
             class="w-full rounded-t-lg border-0 border-b border-gray-200 bg-transparent px-3 py-2 text-sm text-gray-900 focus:ring-0 dark:border-gray-600 dark:text-gray-300" />

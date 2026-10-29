@@ -27,13 +27,7 @@
 </head>
 
 <body class="antialiased font-DINPro bg-gray-100 dark:bg-gray-900"
-    x-data="{
-        menuEin: (() => { try { return localStorage.getItem('menu-eingeklappt') === '1'; } catch (e) { return false; } })(),
-        menuUmschalten() {
-            this.menuEin = ! this.menuEin;
-            try { localStorage.setItem('menu-eingeklappt', this.menuEin ? '1' : '0'); } catch (e) {}
-        },
-    }">
+    x-data="seitenlayout">
 
     @include('layouts.navigation')
     @include('layouts.aside')

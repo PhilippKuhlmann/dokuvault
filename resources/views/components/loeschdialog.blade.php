@@ -33,7 +33,7 @@
 @endphp
 
 <div x-data="{ offen: false }"
-    x-init="$watch('offen', gezeigt => gezeigt && $nextTick(() => $refs.abbrechen?.focus()))"
+    x-effect="offen && $fokus($refs.abbrechen)"
     class="contents">
 
     {{ $ausloeser }}

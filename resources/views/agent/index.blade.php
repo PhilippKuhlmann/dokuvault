@@ -186,13 +186,13 @@
                                     </div>
                                     <div class="flex gap-2">
                                         <button type="button"
-                                            @click="copyText($refs.skript.textContent); copied = true; setTimeout(() => copied = false, 1500)"
+                                            @click="$kopieren($refs.skript.textContent)"
                                             class="text-sm px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
                                             <span x-show="!copied">{{ __('Kopieren') }}</span>
                                             <span x-show="copied" x-cloak class="text-green-600 dark:text-green-400">{{ __('Kopiert ✓') }}</span>
                                         </button>
                                         <button type="button"
-                                            @click="const blob = new Blob([$refs.skript.textContent], {type:'{{ $typ }}'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '{{ $fassung['datei'] }}'; a.click();"
+                                            @click="$herunterladen($refs.skript.textContent, @js($typ), @js($fassung['datei']))"
                                             class="text-sm px-3 py-1.5 rounded-lg bg-cerulean-600 text-white hover:bg-cerulean-700">
                                             {{ __('Download') }} .{{ $endung }}
                                         </button>

@@ -10,14 +10,7 @@
     $bild = $item?->bildUrl();
 @endphp
 
-<div x-data="{
-    {{-- @js statt '{{ }}': Beide kommen ueber old() zurueck - siehe
-         admin/devicemodel/_form. --}}
-    appearance: @js($gewaehlt),
-    he: @js((int) $he),
-    neuesBild: null,
-    melden() { $dispatch('rack-vorschau', { appearance: this.appearance, he: this.he }) },
-}">
+<div x-data="katalogelement(@js($gewaehlt), @js((int) $he))">
 
     <x-create.singlerow :label="__('Bezeichnung')" name="name" :default="$item->name ?? ''" />
 
@@ -59,7 +52,7 @@
         <div class="mt-1 flex flex-wrap items-start gap-4">
             <x-input.file id="image" name="image"
                 accept="{{ collect(config('custom.bild_formate'))->map(fn ($e) => '.'.$e)->join(',') }}"
-                x-on:change="neuesBild = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : null" />
+                x-on:change="bildWaehlen($event)" />
 
             @if ($bild)
                 {{-- Das hinterlegte Bild mit einem Knopf daran, statt einer

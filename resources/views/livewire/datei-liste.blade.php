@@ -19,25 +19,7 @@
         {{-- Der Upload bleibt ein gewoehnliches Formular: Es laedt die Seite
              neu, und die Liste zeigt die neue Datei danach von selbst. --}}
         <x-panel polster="eng" class="mx-3 mt-3"
-            x-data="{
-                dateiname: '',
-                groesse: null,
-                uebernehmen(feld) {
-                    const datei = feld.files[0];
-                    if (! datei) return;
-                    this.groesse = datei.size;
-                    if (! this.dateiname) {
-                        this.dateiname = datei.name.replace(/\.[^.]+$/, '');
-                    }
-                },
-                lesbar() {
-                    if (this.groesse === null) return '';
-                    const e = ['B', 'KB', 'MB', 'GB'];
-                    let w = this.groesse, i = 0;
-                    while (w >= 1024 && i < e.length - 1) { w /= 1024; i++; }
-                    return (i === 0 ? w : w.toFixed(1).replace('.', ',')) + ' ' + e[i];
-                },
-            }">
+            x-data="dateiupload">
 
             <form method="POST" action="/{{ $customer->slug }}/file" enctype="multipart/form-data">
                 @csrf

@@ -24,10 +24,10 @@ test('die Palette ist im Admin-Bereich eingebunden', function () {
         ->assertSee(__('Seite suchen … (z. B. „Server“)'));
 });
 
-/** Wie die URL in der Zielliste steht: @js kodiert jeden Schraegstrich als \\\/. */
+/** How the URL stands in the target list: plain JSON via @alpineJson, slashes unescaped. */
 function paletteUrl(string $url): string
 {
-    return str_replace('/', '\\\\\\/', $url);
+    return $url;
 }
 
 test('die Checklisten stehen in der Palette, die Einstellungen nur fuer die IT', function () {

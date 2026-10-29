@@ -1,35 +1,9 @@
 {{-- Kopfzeile mit Suche und Anlegen-Knopf, darunter die Karten des Typs.
      Suchfeld wie in der VLAN-Liste: Lupe im Feld, sucht waehrend des Tippens. --}}
 <div x-data
-    {{-- Jumped in from the global search: scroll to the highlighted entry and
-         flash it briefly. Runs once on load (x-init); the inline style is allowed
-         under the CSP. In tables the contents wrapper has no box of its own, so
-         target its first real child. --}}
-    x-init="$nextTick(() => {
-        const w = $el.querySelector('[data-highlight]');
-        if (! w) return;
-        // Tables: the marker sits on the table wrapper with the row number - a
-        // div between tbody and tr is no valid HTML, the browser moved it out of
-        // the table, empty, and nothing lit up. A row takes no box-shadow in
-        // every browser, so it gets a tint instead.
-        if (w.dataset.highlightRow !== undefined) {
-            const row = w.querySelector('tbody')?.rows[w.dataset.highlightRow];
-            if (! row) return;
-            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            row.style.transition = 'background-color .3s';
-            row.style.backgroundColor = 'rgb(56 152 236 / .2)';
-            setTimeout(() => { row.style.backgroundColor = ''; }, 2200);
-            return;
-        }
-        // Cards: the wrapper div has no box of its own - the visible card is the
-        // inner panel (with its own margin and rounding). Ring the inner element
-        // so the frame hugs the card and follows its corner radius.
-        const target = w.firstElementChild || w;
-        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        target.style.transition = 'box-shadow .3s';
-        target.style.boxShadow = '0 0 0 3px rgb(56 152 236)';
-        setTimeout(() => { target.style.boxShadow = ''; }, 2200);
-    })">
+    {{-- Jumped in from the global search: scroll to the highlighted entry
+         and flash it briefly - see $treffer in resources/js/alpine/hilfen.js. --}}
+    x-init="$treffer()">
     {{-- Titel wie in der Seitenleiste (list_titles, Mehrzahl) - vorher stand
          hier das Papierkorb-Label in der Einzahl: "Maschine" statt "Maschinen". --}}
     <x-sitetopmenu :neu="false" :titel="__(config('custom.list_titles')[$typ] ?? config('custom.trashables')[$typ][1] ?? $einzahl)">
