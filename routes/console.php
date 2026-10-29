@@ -50,6 +50,12 @@ Artisan::command('inspire', function () {
 // memory_limit auf 1G, damit auch ein Kunde mit vielen Serverschraenken
 // durchlaeuft. Diese Zahl hier entscheidet nur, ab wann der Worker sich fuer
 // verbraucht haelt.
+// The demo rebuilds its database at every full hour (demo:reset, its own
+// cron line). A job started in the same minute found its tables gone and
+// failed - twice an hour in the log. On the demo, jobs that would run at a
+// full hour move to minute 20.
+$demo = (bool) config('app.demo');
+
 Schedule::command('queue:work --stop-when-empty --max-time=55 --tries=1 --memory=512')
     ->everyMinute()
     ->withoutOverlapping(10);
@@ -58,7 +64,7 @@ Schedule::command('queue:work --stop-when-empty --max-time=55 --tries=1 --memory
 // have no reason to stay once collected. Hourly, not once a night: the
 // retention is set in hours, and one enforced only at 03:30 is none - a PDF
 // from 04:00 with 24 hours retention stayed until the run after next.
-Schedule::command('pdf:purge')->hourly();
+Schedule::command('pdf:purge')->hourlyAt($demo ? 20 : 0);
 
 // Das Protokoll nach der eingestellten Frist kuerzen, samt der daran
 // haengenden Kennwoerter. Taeglich, nicht stuendlich: Die Frist wird in Tagen
@@ -74,7 +80,7 @@ Schedule::call(fn () => DB::table('api_request_stats')
 
 // Domains and certificates checked against the internet (RDAP, DNS, TLS) -
 // before the expiry mail, so it already reports the dates found tonight.
-Schedule::command('domains:check')->dailyAt('05:00')->withoutOverlapping(60);
+Schedule::command('domains:check')->dailyAt($demo ? '05:20' : '05:00')->withoutOverlapping(60);
 
 // Expiry mails (Admin -> Einstellungen -> Benachrichtigungen). In the morning, so
 // the list is there when the day starts; the scheduler runs in UTC.

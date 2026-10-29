@@ -2,6 +2,10 @@
 
 ## 26.10.29
 
+### Internal
+
+- **Demo: Geplante Aufgaben nicht mehr zur vollen Stunde.** Die Demo baut ihre Datenbank jede volle Stunde neu auf. Das Aufräumen der PDF-Ausgaben (stündlich) und die Domain-Prüfung (morgens) starteten in derselben Minute, fanden ihre Tabellen nicht und schrieben zweimal pro Stunde einen Fehler ins Log. Auf der Demo laufen sie jetzt zur Minute 20, sonst bleibt alles wie bisher.
+
 ### Security
 
 - **Content-Security-Policy ohne `unsafe-eval`.** Die Oberfläche durfte bisher JavaScript zur Laufzeit aus Text erzeugen, weil Alpine seine Ausdrücke so auswertete. Eingeschleuster Code hätte das ebenfalls nutzen können. Alpine läuft jetzt im CSP-Build von Livewire und wertet mit einem eigenen Parser aus, und die Richtlinie verbietet `eval` ganz. Die Logik, die bisher direkt in den Seiten stand (Auswahlfelder, Befehlspalette, Rack-Editor, Kopierknöpfe und andere), liegt jetzt in `resources/js/alpine/`. Für Anwender ändert sich nichts.
