@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Notifications\ZweiteStufeCode;
+use App\Notifications\ZweiteStufeEingerichtet;
 use App\Support\ZweiteStufe;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 /**
  * Die zweite Stufe im eigenen Profil einrichten, bestaetigen und abschalten.
@@ -20,6 +23,12 @@ class TwoFactorController extends Controller
 {
     /** Wo das noch unbestaetigte Geheimnis liegt, solange es nicht gilt. */
     public const IN_ARBEIT = 'zweite-stufe.geheimnis';
+
+    /** The mail code for this setup: its hash and until when it holds. */
+    public const MAILCODE = 'zweite-stufe.mailcode';
+
+    /** How long the mail code holds, in minutes. */
+    public const MAILCODE_MINUTEN = 15;
 
     public function __construct(private ZweiteStufe $zweiteStufe)
     {
@@ -37,15 +46,71 @@ class TwoFactorController extends Controller
             return $fehler;
         }
 
+        $request->session()->forget(self::MAILCODE);
+
+        // With an email address the setup also needs a code from the mail:
+        // the password alone would let anyone who knows it set up their own
+        // app and lock the owner out. Without an address there is no second
+        // way to reach the owner - the info mail after setup is skipped too.
+        if ($request->user()->email) {
+            $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+            try {
+                $request->user()->notify(new ZweiteStufeCode($code));
+            } catch (Throwable $fehler) {
+                report($fehler);
+
+                return Redirect::route('profile.edit')
+                    ->withErrors(['einrichtung' => __('Die Mail mit dem Bestätigungscode ließ sich nicht senden. Bitte wenden Sie sich an Ihre Administration.')], 'zweiteStufe')
+                    ->withFragment('zweite-stufe');
+            }
+
+            $request->session()->put(self::MAILCODE, [
+                'hash' => $this->mailcodeHash($code),
+                'bis' => now()->addMinutes(self::MAILCODE_MINUTEN)->timestamp,
+            ]);
+        }
+
         $request->session()->put(self::IN_ARBEIT, $this->zweiteStufe->geheimnisErzeugen());
 
         return Redirect::route('profile.edit')->withFragment('zweite-stufe');
     }
 
+    private function mailcodeHash(string $code): string
+    {
+        return hash_hmac('sha256', $code, (string) config('app.key'));
+    }
+
+    /**
+     * Checks the mail code, if this user needs one. A setup begun without
+     * one (no address back then) has to start over once there is one.
+     */
+    private function mailcodePruefen(Request $request): void
+    {
+        if (! $request->user()->email) {
+            return;
+        }
+
+        $erwartet = $request->session()->get(self::MAILCODE);
+        $eingabe = preg_replace('/\s+/', '', (string) $request->input('mail_code'));
+
+        if (! $erwartet || $erwartet['bis'] < now()->timestamp) {
+            throw ValidationException::withMessages([
+                'mail_code' => __('Der Code aus der Mail ist abgelaufen. Bitte die Einrichtung abbrechen und neu beginnen.'),
+            ])->errorBag('zweiteStufe');
+        }
+
+        if (! hash_equals($erwartet['hash'], $this->mailcodeHash($eingabe))) {
+            throw ValidationException::withMessages([
+                'mail_code' => __('Der Code aus der Mail stimmt nicht.'),
+            ])->errorBag('zweiteStufe');
+        }
+    }
+
     /** Einrichtung abbrechen, ohne etwas zu ändern. */
     public function cancel(Request $request): RedirectResponse
     {
-        $request->session()->forget(self::IN_ARBEIT);
+        $request->session()->forget([self::IN_ARBEIT, self::MAILCODE]);
 
         return Redirect::route('profile.edit')->withFragment('zweite-stufe');
     }
@@ -70,6 +135,8 @@ class TwoFactorController extends Controller
 
         $request->validateWithBag('zweiteStufe', ['code' => ['required', 'string']]);
 
+        $this->mailcodePruefen($request);
+
         if (! $this->zweiteStufe->stimmt($geheimnis, $request->input('code'))) {
             throw ValidationException::withMessages([
                 'code' => __('Der Code stimmt nicht. Steht in der App die richtige Uhrzeit?'),
@@ -85,7 +152,16 @@ class TwoFactorController extends Controller
             'two_factor_last_step' => null,
         ])->save();
 
-        $request->session()->forget(self::IN_ARBEIT);
+        $request->session()->forget([self::IN_ARBEIT, self::MAILCODE]);
+
+        if ($request->user()->email) {
+            try {
+                $request->user()->notify(new ZweiteStufeEingerichtet);
+            } catch (Throwable $fehler) {
+                // The setup itself worked - a failed info mail must not undo it.
+                report($fehler);
+            }
+        }
 
         // Einmal anzeigen, danach nie wieder: Sie liegen verschluesselt, aber
         // sie noch einmal herzuzeigen hiesse, sie noch einmal preiszugeben.

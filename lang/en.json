@@ -1610,5 +1610,16 @@
     "Dieser Token gehört bereits zum Agenten :host. Erzeugen Sie für diesen Agenten einen eigenen Token.": "This token already belongs to the agent :host. Create a token of its own for this agent.",
     "Agent gesperrt": "Agent locked",
     "Agent entsperrt": "Agent unlocked",
-    "Kein gültiger Domainname.": "Not a valid domain name."
+    "Kein gültiger Domainname.": "Not a valid domain name.",
+    "Code aus der Mail": "Code from the email",
+    "Der Code aus der Mail ist abgelaufen. Bitte die Einrichtung abbrechen und neu beginnen.": "The code from the email has expired. Please cancel the setup and start again.",
+    "Der Code aus der Mail stimmt nicht.": "The code from the email is not correct.",
+    "Die Mail mit dem Bestätigungscode ließ sich nicht senden. Bitte wenden Sie sich an Ihre Administration.": "The email with the confirmation code could not be sent. Please contact your administrator.",
+    "Er gilt 15 Minuten. Haben Sie nichts eingerichtet, kennt jemand Ihr Kennwort – ändern Sie es und wenden Sie sich an Ihren Administrator.": "It is valid for 15 minutes. If you did not set anything up, someone knows your password – change it and contact your administrator.",
+    "Ihr Code für die zweite Stufe bei :anwendung": "Your code for the second factor at :anwendung",
+    "Wir haben ihn an Ihre hinterlegte E-Mail-Adresse geschickt. Er gilt 15 Minuten.": "We sent it to your email address on file. It is valid for 15 minutes.",
+    "Zweite Stufe bei :anwendung eingerichtet": "Second factor set up at :anwendung",
+    "für Ihren Zugang zu :anwendung wurde gerade die zweite Stufe eingerichtet.": "the second factor was just set up for your account at :anwendung.",
+    "mit diesem Code bestätigen Sie, dass Sie die zweite Stufe für Ihren Zugang einrichten:": "with this code you confirm that you are setting up the second factor for your account:",
+    "Ihr Administrator verlangt die zweite Stufe. Richten Sie sie zuerst in Ihrem Profil ein.": "Your administrator requires the second factor. Set it up in your profile first."
 }

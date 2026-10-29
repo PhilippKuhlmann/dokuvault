@@ -3,10 +3,14 @@
 use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\TwoFactorController;
 use App\Models\Customer;
+use App\Models\User;
+use App\Notifications\ZweiteStufeCode;
+use App\Notifications\ZweiteStufeEingerichtet;
 use App\Support\ZweiteStufe;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Spatie\Activitylog\Models\Activity;
 
 function stufe(): ZweiteStufe
@@ -500,4 +504,77 @@ test('ohne Pflicht bleibt Livewire unberührt', function () {
     $this->actingAs(userWithPermissions(['logingeneral_viewAny']));
 
     expect($this->postJson(route('default-livewire.update'), livewireUpdate('kennwort-feld'))->status())->not->toBe(403);
+});
+
+// --- Mail code when setting up --------------------------------------------------
+
+/** Begins the setup for a user with an address and returns the mailed code. */
+function einrichtungMitMail(User $nutzer): string
+{
+    Notification::fake();
+
+    test()->actingAs($nutzer)->post(route('two-factor.begin'));
+
+    $code = null;
+    Notification::assertSentTo($nutzer, ZweiteStufeCode::class, function ($mail) use (&$code) {
+        $code = $mail->code;
+
+        return true;
+    });
+
+    return $code;
+}
+
+test('mit E-Mail-Adresse braucht die Einrichtung den Code aus der Mail', function () {
+    $nutzer = userWithPermissions([]);
+    $nutzer->forceFill(['email' => 'nutzer@example.test'])->save();
+    $code = einrichtungMitMail($nutzer);
+    $geheimnis = session(TwoFactorController::IN_ARBEIT);
+
+    // Whoever only knows the password has no mail code.
+    $this->post(route('two-factor.confirm'), ['code' => gueltigerCode($geheimnis)])
+        ->assertSessionHasErrors('mail_code', null, 'zweiteStufe');
+    $this->post(route('two-factor.confirm'), ['code' => gueltigerCode($geheimnis), 'mail_code' => $code === '000000' ? '111111' : '000000'])
+        ->assertSessionHasErrors('mail_code', null, 'zweiteStufe');
+    expect($nutzer->fresh()->hatZweiteStufe())->toBeFalse();
+
+    $this->post(route('two-factor.confirm'), ['code' => gueltigerCode($geheimnis), 'mail_code' => $code]);
+
+    expect($nutzer->fresh()->hatZweiteStufe())->toBeTrue();
+    Notification::assertSentTo($nutzer, ZweiteStufeEingerichtet::class);
+});
+
+test('der Code aus der Mail läuft ab', function () {
+    $nutzer = userWithPermissions([]);
+    $nutzer->forceFill(['email' => 'nutzer@example.test'])->save();
+    $code = einrichtungMitMail($nutzer);
+    $geheimnis = session(TwoFactorController::IN_ARBEIT);
+
+    $this->travel(TwoFactorController::MAILCODE_MINUTEN + 1)->minutes();
+
+    $this->post(route('two-factor.confirm'), ['code' => gueltigerCode($geheimnis), 'mail_code' => $code])
+        ->assertSessionHasErrors('mail_code', null, 'zweiteStufe');
+    expect($nutzer->fresh()->hatZweiteStufe())->toBeFalse();
+});
+
+test('ohne E-Mail-Adresse geht die Einrichtung ohne Mail', function () {
+    Notification::fake();
+    $nutzer = userWithPermissions([]);
+
+    $this->actingAs($nutzer)->post(route('two-factor.begin'));
+    $this->post(route('two-factor.confirm'), ['code' => gueltigerCode(session(TwoFactorController::IN_ARBEIT))]);
+
+    expect($nutzer->fresh()->hatZweiteStufe())->toBeTrue();
+    Notification::assertNothingSent();
+});
+
+test('lässt sich die Mail nicht senden, beginnt die Einrichtung nicht', function () {
+    $nutzer = userWithPermissions([]);
+    $nutzer->forceFill(['email' => 'nutzer@example.test'])->save();
+    Notification::shouldReceive('send')->andThrow(new RuntimeException('SMTP weg'));
+
+    $this->actingAs($nutzer)->post(route('two-factor.begin'))
+        ->assertSessionHasErrors('einrichtung', null, 'zweiteStufe');
+
+    expect(session(TwoFactorController::IN_ARBEIT))->toBeNull();
 });

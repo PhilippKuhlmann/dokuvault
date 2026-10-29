@@ -17,6 +17,7 @@
     @endif
 
     <x-input.fehler :messages="$errors->zweiteStufe->get('demo')" class="mt-4" />
+    <x-input.fehler :messages="$errors->zweiteStufe->get('einrichtung')" class="mt-4" />
 
     {{-- Frisch erzeugte Wiederherstellungscodes. Sie stehen genau einmal hier
          und danach nie wieder - sie liegen verschlüsselt, und sie noch einmal
@@ -97,6 +98,14 @@
                     <x-input.text id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code"
                         autofocus class="mt-1.5 block w-full font-mono tracking-widest" />
                     <x-input.fehler :messages="$errors->zweiteStufe->get('code')" />
+
+                    @if ($user->email)
+                        <x-input.feldname for="mail_code" :value="__('Code aus der Mail')" />
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('Wir haben ihn an Ihre hinterlegte E-Mail-Adresse geschickt. Er gilt 15 Minuten.') }}</p>
+                        <x-input.text id="mail_code" name="mail_code" type="text" inputmode="numeric" autocomplete="off"
+                            class="mt-1.5 block w-full font-mono tracking-widest" />
+                        <x-input.fehler :messages="$errors->zweiteStufe->get('mail_code')" />
+                    @endif
 
                     <div class="flex items-center gap-3">
                         <x-input.button :label="__('Bestätigen und einschalten')" />
