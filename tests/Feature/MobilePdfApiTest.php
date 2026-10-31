@@ -5,6 +5,7 @@ use App\Models\Customer;
 use App\Models\PdfExport;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Activitylog\Models\Activity;
 
 /**
  * Die Dokumentation als PDF, aus der App bestellt.
@@ -83,7 +84,7 @@ test('die fertige Datei kommt heraus und steht im Protokoll', function () {
         ->assertOk()
         ->assertDownload();
 
-    expect(Spatie\Activitylog\Models\Activity::where('event', 'pdf_heruntergeladen')->exists())->toBeTrue();
+    expect(Activity::where('event', 'pdf_heruntergeladen')->exists())->toBeTrue();
 });
 
 /** Das PDF traegt alle Kennwoerter - es gehoert dem, der es bestellt hat. */

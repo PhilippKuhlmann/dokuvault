@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\ADUser;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
 use App\Models\Customer;
@@ -184,7 +185,7 @@ test('das Formular nennt Laufwerke, Programme und AD-Benutzer', function () {
     $kunde = checklistCustomer();
     onboardingShare($kunde, ['name' => 'Gemeinsam']);
     checklistOption($kunde, ['name' => 'Nextcloud']);
-    App\Models\ADUser::factory()->create([
+    ADUser::factory()->create([
         'customer_id' => $kunde->id, 'username' => 'max.muster',
         'firstName' => 'Max', 'lastName' => 'Muster', 'enabled' => true,
     ]);
@@ -204,7 +205,7 @@ test('das Formular nennt Laufwerke, Programme und AD-Benutzer', function () {
 /** Ein Offboarding anzustossen ist Sache der IT. */
 test('wer nur melden darf, bekommt keine AD-Benutzer', function () {
     $kunde = checklistCustomer();
-    App\Models\ADUser::factory()->create(['customer_id' => $kunde->id, 'enabled' => true]);
+    ADUser::factory()->create(['customer_id' => $kunde->id, 'enabled' => true]);
 
     $antwort = test()->withToken(checklistenToken(['checklist_request']))
         ->getJson("/api/mobile/customers/{$kunde->slug}/checklists/form")
@@ -231,7 +232,7 @@ test('ein Onboarding entsteht mit Benutzername aus dem Namen', function () {
     expect($antwort->json('checkliste.name'))->toBe('Sophie Krämer');
     expect($antwort->json('checkliste.art'))->toBe('onboarding');
 
-    $liste = App\Models\Checklist::firstOrFail();
+    $liste = Checklist::firstOrFail();
     expect($liste->username)->toBe('sophie.kraemer');
     expect($liste->items()->where('section', 'Laufwerke')->exists())->toBeTrue();
 });
@@ -251,7 +252,7 @@ test('eine unbekannte Stufe wird abgewiesen', function () {
 
 test('ein Offboarding braucht das Verwaltungsrecht', function () {
     $kunde = checklistCustomer();
-    $benutzer = App\Models\ADUser::factory()->create(['customer_id' => $kunde->id, 'enabled' => true]);
+    $benutzer = ADUser::factory()->create(['customer_id' => $kunde->id, 'enabled' => true]);
 
     test()->withToken(checklistenToken(['checklist_request']))
         ->postJson("/api/mobile/customers/{$kunde->slug}/checklists/offboarding", [
@@ -263,7 +264,7 @@ test('ein Offboarding braucht das Verwaltungsrecht', function () {
 
 test('mit dem Recht entsteht das Offboarding zum AD-Benutzer', function () {
     $kunde = checklistCustomer();
-    $benutzer = App\Models\ADUser::factory()->create([
+    $benutzer = ADUser::factory()->create([
         'customer_id' => $kunde->id, 'username' => 'jens.ott',
         'firstName' => 'Jens', 'lastName' => 'Ott', 'enabled' => true,
     ]);
@@ -283,7 +284,7 @@ test('mit dem Recht entsteht das Offboarding zum AD-Benutzer', function () {
 /** Ein AD-Benutzer eines anderen Kunden ist nicht dieser. */
 test('ein fremder AD-Benutzer ergibt 404', function () {
     $kunde = checklistCustomer();
-    $fremder = App\Models\ADUser::factory()->create([
+    $fremder = ADUser::factory()->create([
         'customer_id' => Customer::factory()->create()->id, 'enabled' => true,
     ]);
 

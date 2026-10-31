@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Controllers\API\Mobile\ProfilController;
 use App\Models\User;
 use App\Notifications\EmailChanged;
+use App\Notifications\ZweiteStufeCode;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use PragmaRX\Google2FA\Google2FA;
@@ -177,7 +180,7 @@ test('ein langes Changelog kommt gekürzt und an einer Überschrift geschnitten'
         ->getJson('/api/mobile/changelog')
         ->assertOk();
 
-    $grenze = App\Http\Controllers\API\Mobile\ProfilController::CHANGELOG_ZEICHEN;
+    $grenze = ProfilController::CHANGELOG_ZEICHEN;
 
     expect(mb_strlen($antwort->json('text')))->toBeLessThanOrEqual($grenze);
 
@@ -206,7 +209,7 @@ test('die Einrichtung liefert Geheimnis, Adresse und einen Vorgang', function ()
     // Mit Adresse braucht es den Code aus der Mail.
     expect($antwort->json('braucht_mail_code'))->toBeTrue();
     expect($antwort->json('vorgang'))->not->toBeEmpty();
-    Notification::assertSentTo($nutzer, App\Notifications\ZweiteStufeCode::class);
+    Notification::assertSentTo($nutzer, ZweiteStufeCode::class);
 });
 
 test('ein falscher Code aus der App wird abgewiesen', function () {
@@ -255,7 +258,7 @@ test('ein fremder Vorgang wird abgewiesen', function () {
 
     test()->withToken(profilToken($nutzer))
         ->postJson('/api/mobile/profile/two-factor/confirm', [
-            'vorgang' => Illuminate\Support\Facades\Crypt::encryptString(json_encode([
+            'vorgang' => Crypt::encryptString(json_encode([
                 'zweck' => 'mobil-anmeldung', 'id' => $nutzer->id, 'bis' => now()->addHour()->timestamp,
             ])),
             'code' => '123456',
