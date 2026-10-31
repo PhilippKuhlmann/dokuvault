@@ -25,6 +25,7 @@
                 <x-ipcard :device="$eintrag" />
 
                 <x-minitablecard :title="__('Allgemein')" :array="[
+                    'Montageort' => $eintrag->location,
                     'Hersteller' => $eintrag->manufacturer,
                     'Model' => $eintrag->model,
                     'Seriennummer' => $eintrag->serialNumber,

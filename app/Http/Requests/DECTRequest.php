@@ -28,6 +28,7 @@ class DECTRequest extends FormRequest
     {
         return [
             'site_id' => ['required', new BelongsToCustomer('sites')],
+            'location' => 'max:255',
             'role' => 'max:255',
             'manufacturer' => 'max:255',
             'model' => 'max:255',
@@ -42,6 +43,7 @@ class DECTRequest extends FormRequest
     {
         return [
             'site_id' => 'Standort',
+            'location' => 'Montageort',
             'role' => 'Rolle',
             'manufacturer' => 'Hersteller',
             'model' => 'Modell',

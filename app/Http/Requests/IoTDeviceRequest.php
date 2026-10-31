@@ -28,6 +28,7 @@ class IoTDeviceRequest extends FormRequest
     {
         return [
             'site_id' => ['required', new BelongsToCustomer('sites')],
+            'location' => 'max:255',
             'name' => 'required|max:255',
             'manufacturer' => 'max:255',
             'model' => 'max:255',
@@ -42,6 +43,7 @@ class IoTDeviceRequest extends FormRequest
     {
         return [
             'site_id' => 'Standort',
+            'location' => 'Montageort',
             'name' => 'Name',
             'manufavtuter' => 'Hersteller',
             'model' => 'Modell',

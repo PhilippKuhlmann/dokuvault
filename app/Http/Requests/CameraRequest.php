@@ -28,6 +28,7 @@ class CameraRequest extends FormRequest
     {
         return [
             'site_id' => ['required', new BelongsToCustomer('sites')],
+            'location' => 'max:255',
             'name' => 'required',
             'manufacturer' => '',
             'model' => '',
@@ -41,6 +42,7 @@ class CameraRequest extends FormRequest
     {
         return [
             'site_id' => 'Standort',
+            'location' => 'Montageort',
             'name' => 'Name',
             'manufacturer' => 'Hersteller',
             'model' => 'Modell',

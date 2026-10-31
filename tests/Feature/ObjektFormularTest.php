@@ -7,6 +7,7 @@ use App\Models\ADUser;
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
+use App\Models\DECT;
 use App\Models\Domain;
 use App\Models\Firewall;
 use App\Models\InternetConnection;
@@ -1053,4 +1054,52 @@ test('die Tastaturkürzel-Hilfe rendert Handler und Kürzelliste', function () {
     expect($html)->toContain('onKey($event)');   // globaler Tastenhandler (/ und ?)
     expect($html)->toContain('helpOpen');         // Overlay-Schalter
     expect($html)->toContain('Befehlspalette');   // ein Kürzel-Eintrag
+});
+
+test('der Montageort laesst sich speichern, steht in der Liste und ist suchbar', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    $this->actingAs(userWithPermissions(['dect_viewAny', 'dect_create']));
+
+    // Ein DECT-Sender unter der Decke ist ohne diese Notiz nicht wiederzufinden.
+    Livewire::test(ObjektFormular::class, ['typ' => 'dect', 'customer' => $customer])
+        ->set('form.site_id', $site->id)
+        ->set('form.role', 'Basis')
+        ->set('form.location', 'Halle 1, über der Tür')
+        ->call('speichern')
+        ->assertHasNoErrors();
+
+    $dect = DECT::firstOrFail();
+    expect($dect->location)->toBe('Halle 1, über der Tür');
+
+    Livewire::test(ObjektListe::class, ['typ' => 'dect', 'customer' => $customer])
+        ->assertSee('Halle 1, über der Tür')
+        // Suchbar, denn danach fragt man: "was hängt in Halle 1?"
+        ->set('search', 'Halle 1')
+        ->assertSee('Basis')
+        ->set('search', 'Halle 9')
+        ->assertDontSee('Basis');
+});
+
+test('jede verbaute Geraeteart hat den Montageort', function () {
+    // Wer eine weitere Art ergaenzt (Drucker, Telefone), soll hier merken,
+    // dass Spalte, Formular und Suche zusammengehoeren.
+    $luecken = [];
+
+    foreach (['dect', 'accesspoint', 'camera', 'networkswitch', 'iotdevice'] as $typ) {
+        $felder = array_column(config("forms.$typ.felder"), 'name');
+        $modell = config("forms.$typ.model");
+
+        if (! in_array('location', $felder, true)) {
+            $luecken[] = "$typ: kein Feld im Formular";
+        }
+        if (! in_array('location', config("forms.$typ.suchfelder"), true)) {
+            $luecken[] = "$typ: nicht in den Suchfeldern";
+        }
+        if (! Illuminate\Support\Facades\Schema::hasColumn((new $modell)->getTable(), 'location')) {
+            $luecken[] = "$typ: keine Spalte location";
+        }
+    }
+
+    expect($luecken)->toBe([], 'Montageort fehlt: '.implode(', ', $luecken));
 });

@@ -2,6 +2,10 @@
 
 ## 26.10.31
 
+### Added
+
+- **Montageort: wo ein Gerät hängt.** DECT-Sender, Accesspoints, Kameras, Switches und IoT-Geräte haben ein neues Feld „Montageort" für eine Notiz wie „Halle 1, über der Tür". Der Standort sagt bisher nur, in welchem Gebäude ein Gerät steht – wer einen DECT-Sender unter der Decke sucht, hat davon nichts. Das Feld steht im Formular direkt unter dem Standort, als erste Zeile unter „Allgemein" in der Liste und im Kunden-PDF, und die Suche der Liste findet darüber: „Halle 1" zeigt alles, was dort hängt. Freitext, kein Raum-Katalog.
+
 ### Security
 
 - **HSTS: Wer DokuVault einmal über https erreicht hat, kommt nicht mehr über http hin.** Läuft die Installation unter einer https-Adresse, schickt jede Antwort `Strict-Transport-Security` mit einem Jahr Gültigkeit, für die Adresse und ihre Subdomains. Der Browser wechselt danach von allein auf https, auch wenn ein Link oder eine eingetippte Adresse auf http zeigt – ein Angreifer im Netzweg kann die erste Anfrage nicht mehr abfangen. Der Header kommt nur mit, wenn die Anfrage über https läuft oder `APP_URL` mit `https://` beginnt; eine reine http-Installation merkt davon nichts.

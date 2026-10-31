@@ -630,10 +630,11 @@ return [
     ],
     'accesspoint' => [
         'model' => Accesspoint::class, 'request' => AccesspointRequest::class,
-        'relation' => 'accesspoints', 'einzahl' => 'Accesspoint', 'suchfelder' => ['name', 'model', 'serialNumber'],
+        'relation' => 'accesspoints', 'einzahl' => 'Accesspoint', 'suchfelder' => ['name', 'model', 'serialNumber', 'location'],
         'bloecke' => true,
         'felder' => [
             ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'location', 'label' => 'Montageort', 'type' => 'text', 'platzhalter' => 'z. B. Halle 1, über der Tür'],
             ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
             ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
             ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
@@ -647,10 +648,11 @@ return [
     ],
     'camera' => [
         'model' => Camera::class, 'request' => CameraRequest::class,
-        'relation' => 'cameras', 'einzahl' => 'Kamera', 'suchfelder' => ['name', 'model', 'serialNumber'],
+        'relation' => 'cameras', 'einzahl' => 'Kamera', 'suchfelder' => ['name', 'model', 'serialNumber', 'location'],
         'bloecke' => true,
         'felder' => [
             ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'location', 'label' => 'Montageort', 'type' => 'text', 'platzhalter' => 'z. B. Halle 1, über der Tür'],
             ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
             ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
             ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
@@ -684,10 +686,11 @@ return [
     ],
     'dect' => [
         'model' => DECT::class, 'request' => DECTRequest::class,
-        'relation' => 'dects', 'einzahl' => 'DECT', 'suchfelder' => ['model', 'serialNumber'],
+        'relation' => 'dects', 'einzahl' => 'DECT', 'suchfelder' => ['model', 'serialNumber', 'location'],
         'bloecke' => true,
         'felder' => [
             ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'location', 'label' => 'Montageort', 'type' => 'text', 'platzhalter' => 'z. B. Halle 1, über der Tür'],
             ['name' => 'role', 'label' => 'Rolle', 'type' => 'text'],
             ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
             ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
@@ -702,10 +705,11 @@ return [
     ],
     'iotdevice' => [
         'model' => IoTDevice::class, 'request' => IoTDeviceRequest::class,
-        'relation' => 'iotdevices', 'einzahl' => 'IoT-Gerät', 'suchfelder' => ['name', 'model', 'serialNumber'],
+        'relation' => 'iotdevices', 'einzahl' => 'IoT-Gerät', 'suchfelder' => ['name', 'model', 'serialNumber', 'location'],
         'bloecke' => true,
         'felder' => [
             ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'location', 'label' => 'Montageort', 'type' => 'text', 'platzhalter' => 'z. B. Halle 1, über der Tür'],
             ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
             ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
             ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],
@@ -764,10 +768,11 @@ return [
     ],
     'networkswitch' => [
         'model' => NetworkSwitch::class, 'request' => NetworkSwitchRequest::class,
-        'relation' => 'networkswitches', 'einzahl' => 'Switch', 'suchfelder' => ['name', 'model', 'serialNumber'],
+        'relation' => 'networkswitches', 'einzahl' => 'Switch', 'suchfelder' => ['name', 'model', 'serialNumber', 'location'],
         'bloecke' => true,
         'felder' => [
             ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort'],
+            ['name' => 'location', 'label' => 'Montageort', 'type' => 'text', 'platzhalter' => 'z. B. Halle 1, über der Tür'],
             ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
             ['name' => 'manufacturer', 'label' => 'Hersteller', 'type' => 'text'],
             ['name' => 'model', 'label' => 'Modell', 'type' => 'text'],

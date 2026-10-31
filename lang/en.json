@@ -1621,5 +1621,7 @@
     "Zweite Stufe bei :anwendung eingerichtet": "Second factor set up at :anwendung",
     "für Ihren Zugang zu :anwendung wurde gerade die zweite Stufe eingerichtet.": "the second factor was just set up for your account at :anwendung.",
     "mit diesem Code bestätigen Sie, dass Sie die zweite Stufe für Ihren Zugang einrichten:": "with this code you confirm that you are setting up the second factor for your account:",
-    "Ihr Administrator verlangt die zweite Stufe. Richten Sie sie zuerst in Ihrem Profil ein.": "Your administrator requires the second factor. Set it up in your profile first."
+    "Ihr Administrator verlangt die zweite Stufe. Richten Sie sie zuerst in Ihrem Profil ein.": "Your administrator requires the second factor. Set it up in your profile first.",
+    "Montageort": "Mounting location",
+    "z. B. Halle 1, über der Tür": "e.g. hall 1, above the door"
 }

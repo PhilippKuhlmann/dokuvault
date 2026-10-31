@@ -28,6 +28,7 @@ class NetworkSwitchRequest extends FormRequest
     {
         return [
             'site_id' => ['required', new BelongsToCustomer('sites')],
+            'location' => 'max:255',
             'name' => 'required|max:255',
             'manufacturer' => 'nullable',
             'model' => 'nullable|max:255',
@@ -41,6 +42,7 @@ class NetworkSwitchRequest extends FormRequest
     {
         return [
             'site_id' => 'Standort',
+            'location' => 'Montageort',
             'name' => 'Name',
             'manufacturer' => 'Hersteller',
             'model' => 'Modell',
