@@ -1303,7 +1303,7 @@ return [
         // Before username: a phone is named after its extension, a DECT
         // device after its role. Both carry a username beside that, often
         // "admin" - as a label that would be worse than a number.
-        // schlimmer als eine Nummer.
+        // worse than a number.
         'extension',
         'role',
         'username',

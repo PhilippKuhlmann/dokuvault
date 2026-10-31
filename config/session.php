@@ -168,11 +168,11 @@ return [
     |
     */
 
-    // Standardmaessig sicher, sobald die Anwendung ueber HTTPS laeuft - nicht
-    // erst bei APP_ENV=production. Eine Installation unter einer https-Adresse
-    // ist oeffentlich erreichbar, auch wenn sie sich "staging" nennt; ohne das
-    // wanderte das Sitzungs-Cookie dort ungesichert. Wer es ausdruecklich
-    // anders will, setzt SESSION_SECURE_COOKIE.
+    // Secure by default as soon as the application runs over HTTPS - not only
+    // at APP_ENV=production. An installation under an https address is
+    // publicly reachable even when it calls itself "staging"; without this the
+    // session cookie travelled unsecured there. Whoever wants it off
+    // sets SESSION_SECURE_COOKIE.
     //
     // An empty "SESSION_SECURE_COOKIE=" counts as not set. env() reads it as
     // an empty string, which turned the Secure flag off - and .env.example
