@@ -24,13 +24,13 @@ class Role extends Model
     }
 
     /**
-     * Ein Recht zuweisen - und die Rolle zurueckgeben, nicht das Recht.
+     * Assign a permission - and return the role, not the permission.
      *
-     * Vorher kam das Permission-Model zurueck. Ein
-     * "Role::factory()->create()->assignPermission($p)" lieferte damit ein
-     * Recht, und wer das Ergebnis fuer die Rolle hielt, setzte eine
-     * Rechte-Id als role_id. In den Tests fiel das jahrelang nicht auf, weil
-     * beide Tabellen bei 1 anfingen und die Ids sich deckten.
+     * The Permission model used to come back. A
+     * "Role::factory()->create()->assignPermission($p)" therefore returned a
+     * permission, and whoever took the result for the role set a permission
+     * id as role_id. In the tests that went unnoticed for years, because both
+     * tables started at 1 and the ids coincided.
      */
     public function assignPermission($permission): static
     {

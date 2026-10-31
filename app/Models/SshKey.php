@@ -7,17 +7,17 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Facades\Crypt;
 
 /**
- * Ein SSH-Schluessel.
+ * An SSH key.
  *
- * Liegt in derselben Tabelle wie die Logins und erbt von ihnen alles, was
- * beide gemeinsam haben: Name, Benutzer, Verknuepfung zu Geraeten,
- * "Verwendet bei". Die Passphrase ist das geerbte Kennwortfeld - inhaltlich
- * ist sie genau das.
+ * Sits in the same table as the logins and inherits from them everything
+ * the two have in common: name, user, link to devices, "used at". The
+ * passphrase is the inherited password field - and that is exactly what it
+ * is.
  *
- * Getrennt sind die beiden nur ueber 'kind', und zwar in beide Richtungen:
- * Diese Klasse sieht ausschliesslich Schluessel, LoginGeneral in seiner Liste
- * ausschliesslich Kennwoerter. Die Verknuepfung (CredentialLink::login) laedt
- * bewusst ungefiltert - sonst haette ein Server, an dem ein Schluessel haengt,
+ * The two are kept apart through 'kind' alone, and in both directions: this
+ * class sees keys only, LoginGeneral in its list sees passwords only. The
+ * link (CredentialLink::login) loads deliberately unfiltered - otherwise a
+ * server with a key attached would suddenly have no credentials at all.
  * ploetzlich keine Zugangsdaten mehr.
  */
 class SshKey extends LoginGeneral
@@ -30,33 +30,33 @@ class SshKey extends LoginGeneral
     {
         static::addGlobalScope('sshkey', fn (Builder $abfrage) => $abfrage->where('kind', self::KIND));
 
-        // Ohne das entstuende ueber die Kunden-Relation ein Eintrag mit
-        // 'password' - und waere sofort wieder unsichtbar.
+        // Without it the customer relation would create an entry with
+        // 'password' - and it would be invisible again at once.
         static::creating(function (self $schluessel) {
             $schluessel->kind = self::KIND;
         });
 
-        // Bei jedem Speichern neu: Der Fingerprint ergibt sich vollstaendig aus
-        // dem oeffentlichen Schluessel. Als abgeleiteter Wert kann er so nicht
-        // von ihm abweichen - ein Eingabefeld koennte das.
+        // Recomputed on every save: the fingerprint follows entirely from the
+        // public key. As a derived value it cannot drift from it - an input
+        // field could.
         static::saving(function (self $schluessel) {
             $schluessel->fingerprint = self::fingerprintVon($schluessel->public_key);
         });
     }
 
     /**
-     * Der SHA256-Fingerprint, wie ihn "ssh-keygen -lf" ausgibt.
+     * The SHA256 fingerprint, as "ssh-keygen -lf" prints it.
      *
-     * In PHP gerechnet und nicht ueber ssh-keygen: Es ist der Base64-Hash des
-     * Schluesselblocks, mehr nicht - ein Unterprozess je Listenzeile waere
-     * dafuer unverhaeltnismaessig. Geprueft gegen ssh-keygen im Test.
+     * Computed in PHP and not through ssh-keygen: it is the base64 hash of
+     * the key block, no more - a subprocess per list row would be out of
+     * proportion for that. Verified against ssh-keygen in the test.
      */
     public static function fingerprintVon(?string $oeffentlich): ?string
     {
         $teile = preg_split('/\s+/', trim((string) $oeffentlich), -1, PREG_SPLIT_NO_EMPTY);
 
-        // Ohne Verfahren und Block ist es kein Schluessel, sondern Text - dann
-        // gaebe es zwar einen Hash, aber keinen Fingerprint.
+        // Without an algorithm and a block it is not a key but text - then
+        // there would be a hash but no fingerprint.
         if (count($teile) < 2) {
             return null;
         }
@@ -70,17 +70,17 @@ class SshKey extends LoginGeneral
         return 'SHA256:'.rtrim(base64_encode(hash('sha256', $block, true)), '=');
     }
 
-    /** Das Verfahren, wie es in der Liste steht - "ed25519" statt eines leeren Felds. */
+    /** The algorithm as it stands in the list - "ed25519" instead of an empty field. */
     public function algorithmName(): string
     {
         return config('custom.ssh_key_types')[$this->key_type] ?? '—';
     }
 
     /**
-     * Der private Teil wird verschluesselt abgelegt, wie jedes Kennwort.
+     * The private part is stored encrypted, like every password.
      *
-     * Der oeffentliche nicht: Er ist zum Verteilen da und muss sich
-     * durchsuchen lassen, etwa wenn man ihn in einer authorized_keys wiederfindet.
+     * The public one is not: it is there to be handed out and has to be
+     * searchable, for instance when finding it again in an authorized_keys.
      */
     protected function privateKey(): Attribute
     {

@@ -92,8 +92,8 @@ class User extends Authenticatable
     }
 
     /**
-     * Das TOTP-Geheimnis. Wer es liest, kann jeden Code erzeugen - es ist
-     * damit so schuetzenswert wie ein Kennwort und liegt verschluesselt.
+     * The TOTP secret. Whoever reads it can generate every code - it is
+     * therefore as worth protecting as a password and is stored encrypted.
      */
     protected function twoFactorSecret(): Attribute
     {
@@ -104,8 +104,8 @@ class User extends Authenticatable
     }
 
     /**
-     * Die Wiederherstellungscodes. Jeder einzelne ersetzt den Einmalcode -
-     * also ebenfalls verschluesselt.
+     * The recovery codes. Each one replaces the one-time code - so they are
+     * encrypted as well.
      */
     protected function twoFactorRecoveryCodes(): Attribute
     {
@@ -181,9 +181,9 @@ class User extends Authenticatable
     }
 
     /**
-     * Die zweite Stufe zaehlt erst, wenn der Nutzer einen Code eingegeben hat.
-     * Ein Geheimnis allein heisst nur, dass eine Einrichtung begonnen wurde -
-     * vielleicht hat die App es nie uebernommen.
+     * The second factor only counts once the user has entered a code. A
+     * secret on its own only means that an enrollment was begun - maybe the
+     * app never took it over.
      */
     public function hasTwoFactor(): bool
     {
@@ -191,11 +191,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Ein Administrator verlangt die zweite Stufe, sie ist aber noch nicht
-     * eingerichtet. So lange kommt dieser Zugang nur bis zum eigenen Profil.
+     * An administrator demands the second factor, but it is not set up yet.
+     * Until it is, this account gets no further than its own profile.
      *
-     * Demo-Zugaenge sind ausgenommen: Dort teilen sich alle Besucher einen
-     * Zugang - der erste, der eine App verbindet, sperrt alle uebrigen aus.
+     * Demo accounts are exempt: there all visitors share one account - the
+     * first to connect an app would lock everyone else out.
      */
     public function mustEnrollTwoFactor(): bool
     {
@@ -204,20 +204,19 @@ class User extends Authenticatable
             && ! $this->isDemoProtected();
     }
 
-    /** Eine Einladung ist unterwegs und wurde noch nicht eingelöst. */
+    /** An invitation is on its way and has not been redeemed yet. */
     public function invitationPending(): bool
     {
         return $this->invited_at !== null;
     }
 
     /**
-     * Der Zugang ist gesperrt: keine Anmeldung, keine laufende Sitzung, keine
+     * The account is locked: no sign-in, no running session, no API tokens.
      * API-Token.
      *
-     * Absichtlich kein Loeschen: An einem Benutzer haengen Protokolleintraege,
-     * und ein geloeschter Benutzer macht aus "Rita hat den Serverschrank
-     * geaendert" ein "jemand". Wer das Haus verlaesst, wird gesperrt - was er
-     * getan hat, bleibt lesbar.
+     * Deliberately no deletion: activity entries hang on a user, and a
+     * deleted user turns "Rita changed the rack" into "somebody". Whoever
+     * leaves the company gets locked - what they did stays readable.
      */
     public function isDisabled(): bool
     {
@@ -225,12 +224,12 @@ class User extends Authenticatable
     }
 
     /**
-     * Der Eingeladene hat sein Kennwort gesetzt - die Einladung ist
-     * abgeschlossen und ihr Link traegt nicht mehr.
+     * The invited person has set their password - the invitation is complete
+     * and its link no longer carries.
      *
-     * Nicht dasselbe wie "keine offene Einladung": Wer nie eingeladen wurde,
-     * hat hier ebenfalls nichts stehen. Genau diese beiden Faelle sahen in der
-     * Benutzerliste frueher gleich aus.
+     * Not the same as "no open invitation": whoever was never invited has
+     * nothing here either. Those two cases used to look alike in the user
+     * list.
      */
     public function invitationRedeemed(): bool
     {
@@ -238,11 +237,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Die offene Einladung ist abgelaufen.
+     * The open invitation has expired.
      *
-     * Die Frist steht beim Broker "einladung" in config/auth.php - hier wird
-     * sie gelesen und nicht noch einmal aufgeschrieben, sonst laufen die
-     * beiden Zahlen irgendwann auseinander.
+     * The deadline sits with the broker "invitation" in config/auth.php -
+     * here it is read and not written down a second time, or the two numbers
+     * drift apart sooner or later.
      */
     public function invitationExpired(): bool
     {
@@ -251,8 +250,8 @@ class User extends Authenticatable
     }
 
     /**
-     * Verbraucht einen Wiederherstellungscode. Jeder gilt genau einmal -
-     * sonst waere ein abgelesener Zettel ein Dauerzugang.
+     * Uses up a recovery code. Each one is valid exactly once - otherwise a
+     * note someone read over your shoulder would be permanent access.
      */
     public function useRecoveryCode(string $code): bool
     {
@@ -283,12 +282,12 @@ class User extends Authenticatable
     }
 
     /**
-     * Ein vom Seeder angelegter Demo-Zugang, der auf der Demo-Instanz nicht
-     * veraendert werden darf: Wer das Admin-Passwort aendert oder das Konto
-     * loescht, sperrt alle uebrigen Besucher aus.
+     * A demo account created by the seeder that must not be changed on the
+     * demo instance: whoever changes the admin password or deletes the
+     * account locks out every other visitor.
      *
-     * Ausserhalb des Demo-Modus ist niemand geschuetzt - auf einer echten
-     * Installation soll ein Admin seine Benutzer natuerlich verwalten koennen.
+     * Outside demo mode nobody is protected - on a real installation an
+     * admin should of course be able to manage their users.
      */
     public function isDemoProtected(): bool
     {

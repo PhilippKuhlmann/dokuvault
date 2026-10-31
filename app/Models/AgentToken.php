@@ -41,11 +41,11 @@ class AgentToken extends Model
     }
 
     /**
-     * Abgelaufen ist ein Token nur, wenn er eine Frist hat und sie vorbei ist.
+     * A token has expired only when it has a deadline and that has passed.
      *
-     * Kein Ablaufdatum bedeutet Altbestand - vor Einfuehrung der Pflicht-Frist
-     * angelegt. Solche Token bleiben gueltig, sonst waeren mit der Migration
-     * alle laufenden Agenten stehengeblieben.
+     * No expiry date means legacy - created before the mandatory deadline was
+     * introduced. Such tokens stay valid, or the migration would have brought
+     * every running agent to a halt.
      */
     public function isExpired(): bool
     {
@@ -63,7 +63,7 @@ class AgentToken extends Model
     }
 
     /**
-     * sha256-Hash für die Speicherung/Suche (kein Klartext in der DB).
+     * sha256 hash for storage and lookup (no plain text in the database).
      */
     public static function hashToken(string $plain): string
     {
@@ -71,8 +71,8 @@ class AgentToken extends Model
     }
 
     /**
-     * Erzeugt einen neuen Token-Datensatz und gibt den Klartext-Token zurück
-     * (wird nur einmalig angezeigt).
+     * Creates a new token record and returns the plain-text token (shown
+     * once only).
      */
     public static function generateFor(Customer $customer, Site $site, ?string $name = null, ?DateTimeInterface $expiresAt = null): array
     {
@@ -90,13 +90,13 @@ class AgentToken extends Model
     }
 
     /**
-     * Erneuert den Token an Ort und Stelle: neuer Klartext, neue Frist, der
-     * alte Wert ist ab sofort ungültig. Kunde, Standort und Name bleiben - so
-     * kann ein verbrannter Token gewechselt werden, ohne die Zuordnung und den
-     * Protokoll-Verlauf zu verlieren.
+     * Renews the token in place: new plain text, new deadline, the old value
+     * is invalid from now on. Customer, site and name stay - that way a burnt
+     * token can be swapped without losing the assignment and the activity
+     * history.
      *
-     * last_used_at wird zurückgesetzt: Die Angabe gehört zum alten Wert, der
-     * neue wurde noch nie benutzt.
+     * last_used_at is reset: that figure belongs to the old value, the new
+     * one has never been used.
      */
     public function renew(DateTimeInterface $expiresAt): string
     {

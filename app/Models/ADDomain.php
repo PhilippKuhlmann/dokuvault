@@ -77,20 +77,20 @@ class ADDomain extends Model
     }
 
     /**
-     * Das DSRM-Kennwort verschluesselt, wie die uebrigen Geraetekennwoerter.
+     * The DSRM password encrypted, like the other device passwords.
      *
-     * Hier stand vorher ein Accessor namens password(). Eine Spalte dieses
-     * Namens gibt es in ad_domains nicht - er lief ins Leere, und das Kennwort
-     * stand im Klartext in der Datenbank. Der Methodenname muss zur Spalte
-     * passen, sonst wiederholt sich genau das.
+     * An accessor named password() used to stand here. There is no column of
+     * that name in ad_domains - it ran into nothing, and the password stood
+     * in plain text in the database. The method name has to match the column,
+     * or exactly that repeats itself.
      */
     protected function dsrmpassword(): Attribute
     {
         return new Attribute(
             get: fn ($value) => filled($value) ? Crypt::decryptString($value) : null,
-            // Leer bleibt leer statt zu einem Chiffrat ueber nichts zu werden.
-            // Kein null: Die Spalte ist NOT NULL, und das Feld ist Pflicht -
-            // leer kommt hier ohnehin nur ueber den Seeder oder einen Test an.
+            // Empty stays empty instead of becoming a cipher over nothing.
+            // No null: the column is NOT NULL and the field is required -
+            // empty only ever arrives here through the seeder or a test.
             set: fn ($value) => filled($value) ? Crypt::encryptString($value) : '',
         );
     }

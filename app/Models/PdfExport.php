@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Ein Auftrag fuer die PDF-Ausgabe eines Kunden.
+ * A job for a customer's PDF export.
  *
- * Kein Inventar-Objekt, daher kein SoftDelete und kein Papierkorb: Ein
+ * Not an inventory object, hence no soft delete and no trash: a
  * abgeholtes oder abgelaufenes PDF verschwindet einfach.
  */
 class PdfExport extends Model
@@ -63,10 +63,10 @@ class PdfExport extends Model
     }
 
     /**
-     * Wartet der Auftrag schon zu lange, ohne dass ihn jemand abarbeitet?
+     * Has the job been waiting too long without anyone working on it?
      *
-     * Fehlt die Cron-Zeile auf dem Server, bleibt er fuer immer auf "offen"
-     * liegen - dann soll die Anzeige das sagen statt endlos zu drehen.
+     * If the cron line is missing on the server it stays on "open" forever -
+     * then the display should say so instead of spinning endlessly.
      */
     public function haengt(): bool
     {

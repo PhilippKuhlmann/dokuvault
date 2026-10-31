@@ -26,7 +26,7 @@ class Scanner extends Model
     }
 
     /**
-     * Wohin dieser Scanner scannt. Viele zu viele: Dasselbe Ziel ist oft auf
+     * Where this scanner scans to. Many to many: the same target is often on
      * mehreren Geraeten eingerichtet.
      */
     public function scanTargets()

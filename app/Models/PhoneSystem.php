@@ -28,8 +28,8 @@ class PhoneSystem extends Model
     }
 
     /**
-     * Der Name ist optional - aeltere Anlagen haben nur Hersteller, Art und
-     * Modell. Ohne diese Methode stuende eine solche Anlage im Protokoll ohne
+     * The name is optional - older systems have only vendor, kind and model.
+     * Without this method such a system would stand in the log without
      * Namen da.
      */
     public function activityName(): ?string

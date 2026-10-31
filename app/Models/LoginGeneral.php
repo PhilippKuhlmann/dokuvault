@@ -17,17 +17,17 @@ class LoginGeneral extends Model
 
     public const KIND = 'password';
 
-    /** Name des Filters - wer ihn aufhebt, soll nicht raten muessen. */
+    /** Name of the filter - whoever lifts it should not have to guess. */
     public const SCOPE = 'kennwort';
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     /**
-     * In der eigenen Liste stehen nur Kennwoerter, keine SSH-Schluessel.
+     * The own list holds passwords only, no SSH keys.
      *
-     * SshKey erbt von dieser Klasse und ueberschreibt booted() ohne
-     * parent::booted() - dadurch gilt dort der eigene Filter statt diesem.
-     * Wer hier etwas ergaenzt, muss es deshalb auch dort tun.
+     * SshKey extends this class and overrides booted() without
+     * parent::booted() - so its own filter applies there instead of this one.
+     * Whoever adds something here has to add it there as well.
      */
     protected static function booted(): void
     {
@@ -43,15 +43,15 @@ class LoginGeneral extends Model
     }
 
     /**
-     * Fremdschluessel ausdruecklich: SshKey erbt diese Relation, und Eloquent
-     * wuerde den Namen sonst aus der Klasse ableiten - "ssh_key_id" gibt es nicht.
+     * Foreign key stated explicitly: SshKey inherits this relation, and
+     * Eloquent would otherwise derive the name from the class - there is no "ssh_key_id".
      */
     /**
-     * Ob dieser Eintrag ein SSH-Schluessel ist.
+     * Whether this entry is an SSH key.
      *
-     * Steht hier und nicht an SshKey: Ueber eine Verknuepfung kommt immer ein
-     * LoginGeneral zurueck, auch wenn dahinter ein Schluessel steckt (siehe
-     * CredentialLink::login). Die Anzeige am Geraet muss beides unterscheiden.
+     * It sits here and not on SshKey: through a link a LoginGeneral always
+     * comes back, even when a key is behind it (see CredentialLink::login).
+     * The display on the device has to tell the two apart.
      */
     public function istSchluessel(): bool
     {
@@ -64,15 +64,15 @@ class LoginGeneral extends Model
     }
 
     /**
-     * Verknüpfungen zu Objekten, die es noch gibt.
+     * Links to objects that still exist.
      *
-     * Ein Gerät im Papierkorb behält seine Verknüpfung - beim Wiederherstellen
-     * ist sie wieder da -, taucht hier aber nicht auf.
+     * A device in the trash keeps its link - it is back on restore - but does
+     * not show up here.
      */
     public function verwendungen()
     {
-        // Vorgeladene Relation benutzen, wenn es sie gibt - in der Liste haengt
-        // sonst je Zeile eine eigene Abfrage dran.
+        // Use the preloaded relation if there is one - in the list every row
+        // would otherwise carry a query of its own.
         $links = $this->relationLoaded('links')
             ? $this->links
             : $this->links()->with('credentialable')->get();
@@ -81,10 +81,10 @@ class LoginGeneral extends Model
     }
 
     /**
-     * Einzeiler für Liste und PDF: "SRV-01 (Server), VM-02 (VM)".
+     * One line for list and PDF: "SRV-01 (Server), VM-02 (VM)".
      *
-     * Sortiert, weil das polymorphe Vorladen nach Typ gruppiert und die Liste
-     * sonst je nach Aufruf eine andere Reihenfolge hätte.
+     * Sorted, because the polymorphic preloading groups by kind and the list
+     * would otherwise come out in a different order depending on the call.
      */
     public function verwendetBei(): string
     {

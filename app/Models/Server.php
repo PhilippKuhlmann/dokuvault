@@ -30,7 +30,7 @@ class Server extends Model
         'agent_reported_at' => 'datetime',
     ];
 
-    /** Nur diese Server lassen sich in einen Serverschrank einbauen. */
+    /** Only these servers can be mounted into a rack. */
     public function scopeRackMountable($query)
     {
         return $query->where('form_factor', 'rack');
@@ -42,12 +42,12 @@ class Server extends Model
     }
 
     /**
-     * Nicht in Antworten der Schnittstelle.
+     * Not in responses of the interface.
      *
-     * Das Model geht als JSON hinaus, und dort stand bisher der
-     * verschluesselte Wert - nutzlos fuer den Aufrufer und ein Leck in
-     * dem Moment, in dem jemand aus dem Attribut einen Cast macht.
-     * Wer das Kennwort braucht, holt es dort, wo es hingehoert.
+     * The model goes out as JSON, and the encrypted value used to stand there
+     * - useless for the caller and a leak the moment someone turns the
+     * attribute into a cast. Whoever needs the password fetches it where it
+     * belongs.
      *
      * @var array<int, string>
      */

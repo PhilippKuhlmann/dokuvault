@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * Ein dokumentiertes Patchfeld. Anders als der gleichnamige Katalog-Platzhalter
- * gehoert es einem Kunden und traegt seine Ports - erst dadurch laesst sich
- * beantworten, wo eine Netzwerkdose haengt.
+ * A documented patch panel. Unlike the catalog placeholder of the same name
+ * it belongs to a customer and carries its ports - only that makes it
+ * possible to answer where a network outlet sits.
  */
 class PatchPanel extends Model
 {
@@ -37,8 +37,8 @@ class PatchPanel extends Model
     }
 
     /**
-     * Legt fehlende Portzeilen an, damit 1..port_count lueckenlos existieren.
-     * Vorhandene Zeilen bleiben unangetastet - dort steht die Dokumentation.
+     * Creates missing port rows so that 1..port_count exist without gaps.
+     * Existing rows stay untouched - that is where the documentation is.
      */
     public function syncPorts(): void
     {
@@ -59,12 +59,12 @@ class PatchPanel extends Model
             PatchPort::insert($fehlende);
         }
 
-        // Ueberzaehlige Ports entfernen. Der PatchPanelController laesst das
-        // Verkleinern nur zu, wenn dort nichts dokumentiert ist.
+        // Remove surplus ports. The PatchPanelController allows shrinking
+        // only when nothing is documented there.
         $this->ports()->where('number', '>', $this->port_count)->delete();
     }
 
-    /** Portnummern oberhalb von $portCount, in denen etwas dokumentiert ist. */
+    /** Port numbers above $portCount that have something documented in them. */
     public function documentedPortsAbove(int $portCount): array
     {
         return $this->ports()
@@ -78,8 +78,8 @@ class PatchPanel extends Model
     /**
      * Why the port count cannot shrink to $portCount, or null if it can.
      *
-     * Verkleinern wuerde die oberen Portzeilen loeschen. Solange dort etwas
-     * dokumentiert ist, lieber ablehnen als still verwerfen.
+     * Shrinking would delete the upper port rows. As long as something is
+     * documented there, better refuse than discard silently.
      */
     public function shrinkError(int $portCount): ?string
     {
@@ -89,7 +89,7 @@ class PatchPanel extends Model
             return null;
         }
 
-        // "Port 5 ist" vs. "Ports 5, 6 und 12 sind"
+        // "Port 5 is" vs. "Ports 5, 6 and 12 are"
         $liste = count($betroffen) === 1
             ? 'Port '.$betroffen[0].' ist'
             : 'Ports '.implode(', ', array_slice($betroffen, 0, -1)).' und '.end($betroffen).' sind';

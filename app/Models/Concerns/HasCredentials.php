@@ -5,11 +5,11 @@ namespace App\Models\Concerns;
 use App\Models\CredentialLink;
 
 /**
- * Verknüpft ein Gerät mit beliebig vielen Logins aus "Logins Allgemein".
+ * Links a device with any number of logins from "Logins Allgemein".
  *
- * Dasselbe Passwort steckt oft in mehreren Systemen (ein root-Passwort für alle
- * Linux-VMs). Es soll deshalb einmal dokumentiert und mehrfach verknüpft sein,
- * nicht in jedes Gerät kopiert - sonst findet man beim Wechseln nicht alle Stellen.
+ * The same password often sits in several systems (one root password for all
+ * Linux VMs). It should therefore be documented once and linked many times,
+ * not copied into every device - or one misses places when changing it.
  */
 trait HasCredentials
 {
@@ -19,12 +19,12 @@ trait HasCredentials
     }
 
     /**
-     * Die verknüpften Logins selbst, ohne die aus dem Papierkorb.
+     * The linked logins themselves, without the ones in the trash.
      */
     public function zugangsdaten()
     {
-        // Vorgeladene Relation benutzen, wenn es sie gibt: In den Listen haengt
-        // sonst je Geraet eine eigene Abfrage dran (siehe Controller::getFilteredQuery).
+        // Use the preloaded relation if there is one: in the lists every device
+        // would otherwise carry a query of its own (see Controller::getFilteredQuery).
         $links = $this->relationLoaded('credentialLinks')
             ? $this->credentialLinks
             : $this->credentialLinks()->with('login')->get();

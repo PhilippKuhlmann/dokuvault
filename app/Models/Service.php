@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Ein Dienst aus dem Katalog der Administration - Name plus Farbe.
+ * A service from the admin catalog - name plus colour.
  *
- * Bewusst kein Mandantenbezug: Der Katalog gilt wie Betriebssysteme und
- * Mail-Anbieter für die ganze Installation.
+ * Deliberately no tenant: like operating systems and mail providers the
+ * catalog applies to the whole installation.
  */
 class Service extends Model
 {
@@ -20,10 +20,10 @@ class Service extends Model
     protected $guarded = [];
 
     /**
-     * Hex-Farbe je Dienstname, in Kleinschreibung.
+     * Hex colour per service name, in lower case.
      *
-     * Einmal geladen statt je Kachel abgefragt: Die Gerätelisten zeichnen
-     * hunderte Kacheln pro Seite.
+     * Loaded once instead of queried per chip: the device lists draw hundreds
+     * of chips per page.
      */
     public static function farbzuordnung(): array
     {
@@ -33,8 +33,8 @@ class Service extends Model
     }
 
     /**
-     * Beschreibung je Dienstname, in Kleinschreibung - fuer den Titel an der
-     * Kachel. Wie farbzuordnung() einmal geladen statt je Kachel abgefragt.
+     * Description per service name, in lower case - for the title on the chip.
+     * Like farbzuordnung() loaded once instead of queried per chip.
      */
     public static function beschreibungen(): array
     {
@@ -45,8 +45,8 @@ class Service extends Model
     }
 
     /**
-     * Der Katalog fuer die Auswahl im Geraeteformular: Name, Beschreibung und
-     * die fertige Kachelfarbe samt lesbarer Schriftfarbe.
+     * The catalog for the select in the device form: name, description and
+     * the finished chip colour with a readable text colour.
      */
     public static function katalog(): array
     {
@@ -61,12 +61,12 @@ class Service extends Model
     }
 
     /**
-     * Einmal je Anfrage laden statt je Kachel - die Gerätelisten zeichnen
-     * hunderte davon.
+     * Load once per request instead of per chip - the device lists draw
+     * hundreds of them.
      *
-     * Ablage im Container und nicht in einer static-Variablen: Die lebt so
-     * lange wie der Prozess, und in der Testsuite laufen alle Tests in
-     * demselben. Ein Test sah dann den Katalog eines frueheren.
+     * Kept in the container and not in a static variable: that lives as long
+     * as the process, and in the test suite every test runs in the same one.
+     * A test then saw the catalog of an earlier one.
      */
     protected static function einmal(string $schluessel, callable $laden): array
     {
@@ -78,10 +78,9 @@ class Service extends Model
     }
 
     /**
-     * Hintergrund- und Schriftfarbe einer Kachel. Die Schrift folgt der
-     * wahrgenommenen Helligkeit (ITU-R BT.601), sonst waere sie auf hellen oder
-     * dunklen Kacheln nicht lesbar - in beiden Themes gleich, weil der
-     * Hintergrund fest ist.
+     * Background and text colour of a chip. The text follows the perceived
+     * brightness (ITU-R BT.601), or it would be unreadable on light or dark
+     * chips - the same in both themes, because the background is fixed.
      */
     public static function kachelStil(?string $hex): ?string
     {
@@ -91,8 +90,8 @@ class Service extends Model
     }
 
     /**
-     * Dieselbe Rechnung als Werte statt als CSS - fuer die iOS-App, die sonst
-     * die Regel nachbauen muesste und beim ersten Anfassen abwiche.
+     * The same computation as values instead of CSS - for the iOS app, which
+     * would otherwise rebuild the rule and drift from it on first touch.
      *
      * @return array{farbe: string, schrift: string}|null
      */

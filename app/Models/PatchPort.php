@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Ein einzelner Port eines Patchfelds: welche Netzwerkdose er bedient und auf
- * welchen Switch-Port er gepatcht ist.
+ * A single port of a patch panel: which network outlet it serves and which
+ * switch port it is patched to.
  */
 class PatchPort extends Model
 {
@@ -26,8 +26,8 @@ class PatchPort extends Model
     }
 
     /**
-     * Anzeigename fuer die globale Suche - ein Port hat keine name-Spalte,
-     * die Trefferliste greift aber darauf zu.
+     * Display name for the global search - a port has no name column, but the
+     * hit list reaches for it.
      */
     public function getNameAttribute(): string
     {
@@ -39,10 +39,10 @@ class PatchPort extends Model
     }
 
     /**
-     * Eine Dose heisst wie ihr Aufdruck - dieselbe Auskunft wie name.
+     * An outlet is named after its label - the same answer as name.
      *
-     * Die Methode gehoert sonst zu TracksChanges; eine Dose wird nicht
-     * protokolliert, aber die globale Suche fragt jeden Treffer danach.
+     * The method otherwise belongs to TracksChanges; an outlet is not logged,
+     * but the global search asks every hit for it.
      */
     public function activityName(): ?string
     {
@@ -54,7 +54,7 @@ class PatchPort extends Model
         return $this->belongsTo(NetworkSwitch::class, 'network_switch_id');
     }
 
-    /** Steht an diesem Port etwas, das beim Loeschen verloren ginge? */
+    /** Is there anything on this port that would be lost on deletion? */
     public function isDocumented(): bool
     {
         return filled($this->outlet) || filled($this->label) || filled($this->network_switch_id)

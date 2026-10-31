@@ -2,6 +2,10 @@
 
 ## 26.10.31
 
+### Internal
+
+- **Programmcode und Adressen auf Englisch, erster Teil.** Die Oberfläche bleibt deutsch, der Code darunter nicht mehr: alle URLs und Routennamen, 97 Klassen (Support-Klassen, Traits, Jobs, Middleware, Notifications, Livewire-Komponenten samt ihren View-Dateien und Ereignisnamen), 194 Methoden und die Kommentare in `app/Support` und `app/Models` – rund 1100 Zeilen. Zwei Schutz-Tests halten es fest: `RouteLanguageTest` lässt keine deutsche Adresse mehr durch, `TraitHookNameTest` fängt einen falsch benannten Eloquent-Hook ab (`initializeHatBeschaffung` lief nach dem Umbenennen stumm ins Leere). Für Anwender ändert sich nichts, außer dass drei alte Adressen jetzt weiterleiten statt zu existieren.
+
 ### Changed
 
 - **Alle Adressen sind jetzt englisch.** Die Oberfläche bleibt deutsch, die Adressen in der Adresszeile nicht mehr: `/admin/auslastung` heißt `/admin/api-load`, `/admin/fristen` heißt `/admin/retention`, `/admin/statistik/...` heißt `/admin/stats/...`, `einladung/{token}` heißt `invitation/{token}`, die Agent-Downloads heißen `agent/service.exe` statt `agent/dienst.exe`. Ein verschickter Einladungslink gilt eine Woche – die alte Adresse leitet darum dauerhaft auf die neue weiter, ebenso die schon vorher umgestellten `/admin/papierkorb` und `/admin/protokoll-historie`. Für Lesezeichen auf die Admin-Seiten gilt das nicht: Die ruft man über das Menü auf. Die Adresse, unter der installierte Agenten ihr Update holen, ist unverändert.

@@ -13,15 +13,15 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Throwable;
 
 /**
- * Aktiviert das Aktivitätsprotokoll (wer hat wann was geändert) für ein Model.
+ * Turns on the activity log (who changed what, when) for a model.
  *
- * Zwei Dinge werden hier auseinandergehalten, die leicht zusammenfallen:
+ * Two things are kept apart here that easily fall together:
  *
- * 1. Der WERT eines Kennworts darf nie ins Protokoll. spatie/activitylog liest
- *    die Werte über die Eloquent-Accessoren, ein verschlüsseltes Feld stünde
- *    hier sonst im Klartext - und zwar alt und neu.
- * 2. Die TATSACHE, dass ein Kennwort geändert wurde, gehört sehr wohl hinein.
- *    Genau danach sucht man im Protokoll.
+ * 1. The VALUE of a password must never reach the log. spatie/activitylog
+ *    reads the values through the Eloquent accessors, so an encrypted field
+ *    would otherwise stand here in plain text - old value and new.
+ * 2. The FACT that a password was changed does belong in there. That is
+ *    exactly what one searches the log for.
  */
 trait TracksChanges
 {
@@ -33,7 +33,7 @@ trait TracksChanges
     }
 
     /**
-     * Die bisherigen Kennwoerter dieses Objekts, neueste zuerst.
+     * The previous passwords of this object, newest first.
      */
     public function passwordHistory(): MorphMany
     {
@@ -63,16 +63,16 @@ trait TracksChanges
     }
 
     /**
-     * Den Namen des Objekts in jeden Eintrag schreiben.
+     * Write the name of the object into every entry.
      *
-     * logOnlyDirty speichert nur die geänderten Felder. Wer an einer Domain
-     * bloß den Registrar ändert, hinterlässt damit einen Eintrag, in dem kein
-     * Name steht - im Protokoll stand dann "Domain #1". Zum Nachvollziehen,
-     * wer was angestellt hat, taugt das nicht.
+     * logOnlyDirty stores only the changed fields. Change nothing but the
+     * registrar on a domain and you leave an entry that holds no name - the
+     * log then read "Domain #1". For working out who did what, that is no
+     * use.
      *
-     * Mitgeschrieben statt beim Anzeigen nachgeladen: Ein Protokolleintrag
-     * überlebt sein Objekt, und ein Verweis auf eine entfernte Klasse bricht
-     * beim Auflösen die ganze Seite.
+     * Written along instead of loaded on display: an activity entry outlives
+     * its object, and a reference to a removed class breaks the whole page
+     * when resolved.
      */
     public function tapActivity(Activity $aktivitaet, string $ereignis): void
     {
@@ -86,12 +86,12 @@ trait TracksChanges
     }
 
     /**
-     * Woran man dieses Objekt im Protokoll erkennt.
+     * What makes this object recognisable in the log.
      *
-     * Ueberschreibbar: Verknuepfungen wie CredentialLink oder RackItem haben
-     * kein eigenes Feld, das etwas aussagt - sie tragen den Namen dessen, was
-     * sie verbinden. Ohne das stand in mehr als der Haelfte aller Zeilen nur
-     * eine Nummer.
+     * Overridable: links such as CredentialLink or RackItem have no field of
+     * their own that says anything - they carry the name of what they
+     * connect. Without that, more than half of all rows held nothing but a
+     * number.
      */
     public function activityName(): ?string
     {
@@ -105,12 +105,11 @@ trait TracksChanges
     }
 
     /**
-     * Einen eigenen Eintrag schreiben, wenn sich ein Kennwort geändert hat.
+     * Write an entry of its own when a password has changed.
      *
-     * Ein eigener Eintrag und nicht ein Zusatz am Änderungs-Eintrag: Wird nur
-     * das Kennwort geändert, entsteht wegen dontSubmitEmptyLogs gar kein
-     * Änderungs-Eintrag, an den sich etwas hängen liesse - und genau dieser
-     * Fall ist der häufigste.
+     * An entry of its own and not an addition to the change entry: if only
+     * the password changes, dontSubmitEmptyLogs means no change entry comes
+     * into being for anything to hang on - and that is the most common case.
      */
     protected function logPasswordChange(): void
     {
@@ -143,21 +142,21 @@ trait TracksChanges
 
         activity()
             ->performedOn($this)
-            // Nicht auth()->user(): Ein Agent hat keinen angemeldeten
-            // Benutzer, der Eintrag stuende sonst ohne Verursacher da. Der
-            // Resolver liefert den angemeldeten Benutzer und, wo die
-            // Agent-Middleware einen Token gesetzt hat, diesen.
+            // Not auth()->user(): an agent has no signed-in user, so the entry
+            // would stand there without a causer. The resolver returns the
+            // signed-in user and, where the agent middleware set a token,
+            // that token.
             ->causedBy(CauserResolver::resolve())
-            // Der Name wird mitgeschrieben, nicht nachgeladen: Ein Eintrag
-            // überlebt sein Objekt, und ein Verweis auf eine entfernte Klasse
-            // bricht beim Auflösen die ganze Protokollseite.
+            // The name is written along, not loaded later: an entry outlives
+            // its object, and a reference to a removed class breaks the whole
+            // activity page when resolved.
             ->withProperties([
                 'felder' => $geaendert,
                 'objekt' => $this->activityName(),
-                // Verweise, keine Werte: Das Protokoll zeigt das bisherige
-                // Kennwort, holt es aber beim Anzeigen aus der Historie. Damit
-                // steht es nicht im Protokolleintrag, der ewig bleibt, und
-                // verschwindet mit der eingestellten Frist.
+                // References, not values: the log shows the previous password
+                // but fetches it from the history on display. That keeps it out
+                // of the activity entry, which stays forever, and lets it go
+                // with the configured deadline.
                 'verlauf_ids' => $verlaufIds,
             ])
             ->event('password_changed')
@@ -165,15 +164,15 @@ trait TracksChanges
     }
 
     /**
-     * Das bisherige Kennwort aufheben, damit es sich nachschlagen laesst.
+     * Keep the previous password so it can be looked up.
      *
-     * Der Fall, um den es geht: Jemand aendert ein Kennwort falsch, und man
-     * braucht das alte zurueck. Es steht verschluesselt in einer eigenen
-     * Tabelle - nicht im Protokoll, das ewig bleibt und alle Kunden auf einer
-     * Seite listet.
+     * The case this is about: someone changes a password wrongly and the old
+     * one is needed back. It sits encrypted in a table of its own - not in
+     * the log, which stays forever and lists every customer on one page.
      *
-     * @return int|null Id des Eintrags, damit der Protokolleintrag darauf
-     *                  verweisen kann
+     *
+     * @return int|null Id of the entry, so the activity entry can point at
+     *                  it
      */
     protected function keepOldPassword(string $spalte): ?int
     {
@@ -199,11 +198,11 @@ trait TracksChanges
             'customer_id' => $this->customer_id ?? null,
             'subject_type' => $this::class,
             'subject_id' => $this->getKey(),
-            // protokollName() statt name/username: Ein WLAN heisst 'ssid', ein
-            // Anschluss 'extension', eine Adresse 'address'. Fuer die stand
-            // hier bisher nichts - und ein aufgehobenes Kennwort ohne Angabe,
-            // wozu es gehoerte, ist genau dann wertlos, wenn man es braucht:
-            // wenn das Geraet laengst weg ist.
+            // activityName() instead of name/username: a WLAN is called 'ssid',
+            // an extension 'extension', an address 'address'. For those there
+            // was nothing here before - and a kept password without a note of
+            // what it belonged to is worthless exactly when it is needed:
+            // when the device is long gone.
             'subject_name' => $this->activityName(),
             'field' => $spalte,
             'value' => $alt,
@@ -214,19 +213,19 @@ trait TracksChanges
     /**
      * Gleicher Klartext, neuer Chiffretext?
      *
-     * Crypt::encryptString erzeugt bei jedem Aufruf ein anderes Ergebnis. Ohne
-     * diesen Vergleich meldete jedes Speichern des Formulars eine
-     * Kennwortänderung - auch wenn niemand das Feld angefasst hat, denn das
-     * Formular schickt den unveränderten Wert mit.
+     * Crypt::encryptString produces a different result on every call. Without
+     * this comparison every save of the form reported a password change -
+     * even when nobody touched the field, because the form sends the
+     * unchanged value along.
      */
     protected function onlyReEncrypted(string $spalte): bool
     {
         try {
             return $this->getOriginal($spalte) === $this->{$spalte};
         } catch (Throwable) {
-            // Lässt sich der alte Wert nicht entschlüsseln, ist die Änderung im
-            // Zweifel echt. Ein fehlender Protokolleintrag wäre der teurere
-            // Fehler.
+            // If the old value cannot be decrypted, the change is genuine in
+            // case of doubt. A missing activity entry would be the more
+            // expensive mistake.
             return false;
         }
     }

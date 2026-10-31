@@ -7,14 +7,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Verknüpft einen Login-Eintrag mit einem dokumentierten Objekt.
+ * Links a login entry with a documented object.
  *
- * Bewusst ein eigenes Model statt morphToMany: So lässt sich zu einem Login
- * generisch aufzählen, wo es überall verwendet wird - mit morphToMany bräuchte
- * es dafür eine Relation je Gerätetyp.
+ * Deliberately a model of its own instead of morphToMany: that way one can
+ * list generically everywhere a login is used - with morphToMany that would
+ * need a relation per device kind.
  *
- * Kein SoftDeletes: Eine Verknüpfung ist keine Dokumentation, sondern ein
- * Verweis. Login und Gerät liegen bei Bedarf im Papierkorb.
+ * No SoftDeletes: a link is not documentation but a reference. Login and
+ * device lie in the trash if need be.
  */
 class CredentialLink extends Model
 {
@@ -24,13 +24,13 @@ class CredentialLink extends Model
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     /**
-     * Ungefiltert: An einem Geraet kann ein Kennwort haengen oder ein
-     * SSH-Schluessel. Beide stehen in login_generals, aber LoginGeneral sieht
-     * fuer seine eigene Liste nur die Kennwoerter - ohne dieses Aufheben
-     * haette ein Server, an dem ein Schluessel haengt, keine Zugangsdaten mehr.
+     * Unfiltered: a password or an SSH key can hang on a device. Both sit in
+     * login_generals, but LoginGeneral sees only the passwords for its own
+     * list - without lifting that filter a server with a key attached would
+     * have no credentials any more.
      *
-     * Gezielt nur dieser eine Filter: withoutGlobalScopes() nimmt auch den
-     * Papierkorb mit, und dann steht ein geloeschtes Login weiter am Geraet.
+     * Only this one filter on purpose: withoutGlobalScopes() would take the
+     * trash along too, and then a deleted login would stay on the device.
      */
     public function login()
     {
@@ -48,19 +48,19 @@ class CredentialLink extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    /** URL-Slug des Zieltyps - zugleich der Schlüssel in config('custom.trashables'). */
+    /** URL slug of the target kind - at the same time the key in config('custom.trashables'). */
     public function zielSlug(): string
     {
         return strtolower(class_basename($this->credentialable_type));
     }
 
     /**
-     * Wie das Ziel in einer Liste heißt: "SRV-01 (Server)".
+     * What the target is called in a list: "SRV-01 (Server)".
      *
-     * Telefone und DECT-Geräte haben keine Namensspalte - dort tritt die IP an
-     * die Stelle des Namens, sonst stünde da nur die Typbezeichnung. Beim
-     * FTP-Server ist es der Host: Er ist das, wonach man ihn sucht. Bei der
-     * AD-Domaene der Domaenenname.
+     * Phones and DECT devices have no name column - there the IP takes the
+     * place of the name, or only the kind label would stand there. With the
+     * FTP server it is the host: that is what one looks for it by. With the
+     * AD domain, the domain name.
      */
     public function zielBezeichnung(): string
     {
@@ -77,8 +77,8 @@ class CredentialLink extends Model
     }
 
     /**
-     * Die Verknuepfung selbst hat keinen Namen - sie traegt den des Geraets,
-     * an dem die Zugangsdaten haengen.
+     * The link itself has no name - it carries that of the device the
+     * credentials hang on.
      */
     public function activityName(): ?string
     {

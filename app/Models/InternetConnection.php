@@ -18,9 +18,9 @@ class InternetConnection extends Model
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     /**
-     * Bandbreiten als reine Zahl ablegen - die Einheit steht im Formular fest
-     * neben dem Feld und in der Anzeige hinter dem Wert. Altbestand wie
-     * "1000 Mbit/s" wird beim naechsten Speichern mitgezogen.
+     * Store bandwidths as a plain number - the unit stands fixed beside the
+     * field in the form and behind the value in the display. Legacy data like
+     * "1000 Mbit/s" is carried over on the next save.
      */
     protected function bandwidthDown(): Attribute
     {
@@ -41,8 +41,8 @@ class InternetConnection extends Model
     }
 
     /**
-     * Bandbreite fuer die Anzeige: "250 Mbit/s". Leere Werte bleiben leer,
-     * damit die Karten keine nackte Einheit zeigen.
+     * Bandwidth for display: "250 Mbit/s". Empty values stay empty so the
+     * cards do not show a bare unit.
      */
     public function bandwidth(?string $wert): ?string
     {
@@ -50,9 +50,9 @@ class InternetConnection extends Model
     }
 
     /**
-     * Einwahlpasswort verschluesselt ablegen - wie bei Router, NAS und den
-     * uebrigen Geraeten. Ein leerer Wert bleibt leer, sonst stuende der
-     * Chiffretext eines Leerstrings in der Spalte.
+     * Store the dial-in password encrypted - as with router, NAS and the
+     * other devices. An empty value stays empty, or the ciphertext of an
+     * empty string would sit in the column.
      */
     protected function pppoePassword(): Attribute
     {
@@ -66,8 +66,8 @@ class InternetConnection extends Model
      * Nutzbarer Adressbereich des gerouteten Netzes, z. B.
      * "203.0.113.17 – 203.0.113.30 (14 Adressen)".
      *
-     * Nur IPv4: Bei IPv6 ist die Zahl so gross, dass sie niemandem hilft, und
-     * es gibt dort weder Netz- noch Broadcast-Adresse im selben Sinn.
+     * IPv4 only: with IPv6 the number is so large that it helps nobody, and
+     * there is neither a network nor a broadcast address in the same sense.
      */
     public function usableRange(): ?string
     {

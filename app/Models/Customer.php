@@ -134,8 +134,8 @@ class Customer extends Model
     }
 
     /**
-     * Die SSH-Schluessel des Kunden - dieselbe Tabelle wie die Logins,
-     * getrennt ueber 'kind' (siehe App\Models\SshKey).
+     * The customer's SSH keys - the same table as the logins, kept apart
+     * through 'kind' (see App\Models\SshKey).
      */
     public function sshkeys()
     {
@@ -218,14 +218,14 @@ class Customer extends Model
     }
 
     /**
-     * Die Agent-Token dieses Kunden.
+     * This customer's agent tokens.
      *
-     * Die Beziehung fehlte, obwohl AgentToken laengst zurueckzeigt. Gebraucht
-     * wird sie nicht nur zum Abfragen: Die Agent-Routen laufen in
-     * scopeBindings(), und Laravel sucht aus dem Parameter {agentToken} eine
-     * Relation "agentTokens" am Kunden. Ohne sie endete jedes Widerrufen eines
-     * Tokens in einem 500er - dieselbe Falle wie beim Ansprechpartner
-     * darunter, nur dass hier gar keine Beziehung da war.
+     * The relation was missing although AgentToken has long pointed back.
+     * It is needed for more than querying: the agent routes run in
+     * scopeBindings(), and Laravel looks for a relation "agentTokens" on the
+     * customer from the {agentToken} parameter. Without it every revoking of
+     * a token ended in a 500 - the same trap as with the contact person
+     * below, except that here no relation existed at all.
      */
     public function agentTokens()
     {
@@ -238,17 +238,17 @@ class Customer extends Model
     }
 
     /**
-     * Kind-Bindung fuer Ansprechpartner von Hand aufloesen.
+     * Resolve the child binding for contact persons by hand.
      *
-     * Die Routen laufen in scopeBindings(). Laravel bildet aus dem Parameter
-     * {contactperson} den Plural "contactpeople" und sucht eine Relation
-     * dieses Namens - die heisst hier aber contactpersons. Jedes Bearbeiten
-     * eines Ansprechpartners endete deshalb im Fehler, waehrend Liste und
-     * Anlegen liefen.
+     * The routes run in scopeBindings(). From the {contactperson} parameter
+     * Laravel builds the plural "contactpeople" and looks for a relation of
+     * that name - which is called contactpersons here. Every edit of a
+     * contact person therefore ended in an error, while list and create
+     * worked.
      *
-     * Kein zweiter Relationsname als Abkuerzung: Dieselbe Beziehung unter zwei
-     * Namen hat hier schon einmal Aufraeumarbeit gekostet, ein Test haelt das
-     * seitdem fest.
+     * No second relation name as a shortcut: the same relation under two
+     * names has cost cleanup work here once already, and a test has held it
+     * down since.
      */
     public function resolveChildRouteBinding($childType, $value, $field = null)
     {

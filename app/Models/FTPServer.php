@@ -19,12 +19,12 @@ class FTPServer extends Model
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     /**
-     * Keine eigenen Zugangsdaten am Server.
+     * No credentials of its own on the server.
      *
-     * Ein Server hat in der Praxis mehrere Zugaenge - einen fuer den
-     * Steuerberater, einen fuers Backup, einen fuer den Lieferanten. Sie haengen
-     * ueber HasCredentials an "Logins Allgemein" wie bei jedem anderen Geraet,
-     * statt in eigenen Spalten oder einer eigenen Tabelle zu stehen. Sonst waere
+     * In practice a server has several accounts - one for the tax adviser,
+     * one for the backup, one for the supplier. They hang on "Logins
+     * Allgemein" through HasCredentials like on every other device, instead
+     * of sitting in columns or a table of their own. Otherwise
      * dasselbe Dienstkonto auf drei Servern dreimal dokumentiert.
      */
     public function customer()

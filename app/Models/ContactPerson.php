@@ -15,11 +15,11 @@ class ContactPerson extends Model
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     /**
-     * Ein Ansprechpartner heisst mit Vor- und Nachnamen.
+     * A contact person is named with first and last name.
      *
-     * Keines der beiden Felder allein taugt: "Torben" sagt im Protokoll so
-     * wenig wie "Ahlers", und die zentrale Liste in config/custom.php kann
-     * nur ein Feld nehmen, nicht zwei.
+     * Neither field alone is any use: "Torben" says as little in the log as
+     * "Ahlers", and the central list in config/custom.php can take only one
+     * field, not two.
      */
     public function activityName(): ?string
     {

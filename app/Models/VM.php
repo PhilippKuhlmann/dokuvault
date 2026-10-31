@@ -28,24 +28,24 @@ class VM extends Model
     ];
 
     /**
-     * Der Standort kommt vom Cluster oder vom Host, sobald einer gesetzt ist.
+     * The site comes from the cluster or from the host as soon as one is set.
      *
-     * Eine VM laeuft dort, wo ihr Cluster oder ihr Host steht - beides
-     * getrennt zu pflegen hiess, dass sie sich widersprechen koennen. Die
-     * Formulare blenden das Standortfeld deshalb aus, sobald eines von beiden
-     * gewaehlt ist.
+     * A VM runs where its cluster or its host stands - keeping both
+     * separately meant they could contradict each other. The forms therefore
+     * hide the site field as soon as one of the two is chosen.
      *
-     * Der Cluster geht vor: Wer beides gesetzt bekommt (etwa aus einem alten
-     * Formular), ist im Cluster - dort wandert die VM zwischen den Knoten,
-     * der Host ist nur eine Momentaufnahme.
      *
-     * Bewusst im Model und nicht im FormRequest: Das Livewire-Modal
-     * (ObjektFormular) erzeugt den Request nur, um seine rules() zu lesen -
-     * prepareForValidation laeuft dort nie. Hier kommen beide Wege durch,
-     * ebenso der Proxmox-Agent.
+     * The cluster takes precedence: whoever ends up with both set (from an
+     * old form, say) is in the cluster - there the VM moves between nodes,
+     * the host is only a snapshot.
      *
-     * Beide werden gegen den Kunden der VM geprueft: Ein fremder Host oder
-     * Cluster soll seinen Standort nicht beisteuern koennen.
+     * Deliberately in the model and not in the FormRequest: the Livewire
+     * modal (ObjectModal) creates the request only to read its rules() -
+     * prepareForValidation never runs there. Here both ways come through,
+     * and the Proxmox agent as well.
+     *
+     * Both are checked against the VM's customer: a foreign host or cluster
+     * must not be able to contribute its site.
      */
     protected static function booted(): void
     {

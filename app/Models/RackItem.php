@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Ein Einbau im Rack: entweder ein verknuepftes dokumentiertes Geraet
- * (device_type/device_id) oder ein passives Katalogelement (nur name).
+ * A mounted item in the rack: either a linked documented device
+ * (device_type/device_id) or a passive catalog item (name only).
  */
 class RackItem extends Model
 {
@@ -28,12 +28,12 @@ class RackItem extends Model
     }
 
     /**
-     * Der Katalogeintrag, aus dem dieser Einbau stammt - nur fuer sein Bild.
+     * The catalog entry this item came from - for its image only.
      *
-     * Alles Beschreibende (Bezeichnung, Darstellung, Hoehe) wurde beim Einbau
-     * kopiert und bleibt auch dann stehen, wenn der Eintrag verschwindet. Beim
-     * Bild geht das nicht: Die Datei haengt am Katalogeintrag. Faellt er weg,
-     * faellt das Foto weg und die gezeichnete Blende tritt an seine Stelle.
+     * Everything descriptive (label, appearance, height) was copied on
+     * mounting and stays even when the entry disappears. With the image that
+     * is not possible: the file hangs on the catalog entry. If it goes, the
+     * photo goes and the drawn panel takes its place.
      */
     public function catalogItem()
     {
@@ -41,10 +41,10 @@ class RackItem extends Model
     }
 
     /**
-     * Das Geraetemodell hinter einem dokumentierten Einbau, oder null.
+     * The device model behind a documented item, or null.
      *
-     * Ueber Hersteller und Modell des Geraets gefunden, nicht ueber eine
-     * Verweisspalte - siehe DeviceModel.
+     * Found through the device's manufacturer and model, not through a
+     * reference column - see DeviceModel.
      */
     public function deviceModel(): ?DeviceModel
     {
@@ -54,9 +54,9 @@ class RackItem extends Model
     /**
      * Adresse des Fotos, oder null.
      *
-     * Die Reihenfolge ist die Reihenfolge der Genauigkeit: das Foto des
-     * Katalogelements (passiver Einbau), sonst das des Geraetemodells,
-     * sonst keines - dann zeichnet die Frontansicht.
+     * The order is the order of precision: the photo of the catalog item
+     * (passive mount), otherwise that of the device model, otherwise none -
+     * then the front view draws it.
      */
     public function imageUrl(): ?string
     {
@@ -69,14 +69,14 @@ class RackItem extends Model
         return $this->deviceModel()?->drawing;
     }
 
-    /** Dasselbe als Dateipfad - fuer den PDF-Export, der kein HTTP kann. */
+    /** The same as a file path - for the PDF export, which cannot do HTTP. */
     public function imagePath(): ?string
     {
         return $this->catalogItem?->imagePath() ?? $this->deviceModel()?->imagePath();
     }
 
     /**
-     * Anzeigename: Geraetename aus der Doku bzw. Katalogbezeichnung. A device
+     * Display name: device name from the documentation or catalog label. A device
      * whose name is optional (phone system) supplies rackName() instead.
      */
     public function label(): string
@@ -93,10 +93,10 @@ class RackItem extends Model
     ];
 
     /**
-     * Belegt dieser Einbau die angegebene Seite?
+     * Does this item occupy the given side?
      *
-     * Ein Geraet in voller Tiefe blockiert beide Seiten - hinter einem
-     * 800 mm tiefen Server passt nichts mehr. Eines in halber Tiefe nur die
+     * A device at full depth blocks both sides - nothing fits behind an
+     * 800 mm deep server. One at half depth blocks only its own.
      * eigene.
      */
     public function belegtSeite(string $seite): bool
@@ -111,9 +111,9 @@ class RackItem extends Model
     }
 
     /**
-     * Darstellung in der gezeichneten Frontansicht. Bei dokumentierten Geraeten
-     * ergibt sie sich aus dem Geraetetyp, bei Katalogelementen steht sie in der
-     * beim Einbau kopierten Spalte.
+     * Appearance in the drawn front view. For documented devices it follows
+     * from the device kind, for catalog items it sits in the column copied
+     * on mounting.
      */
     public function faceAppearance(): string
     {
@@ -131,7 +131,7 @@ class RackItem extends Model
     }
 
     /**
-     * Ein Einbau heisst wie das Geraet, das eingebaut ist.
+     * A mounted item is named after the device mounted in it.
      */
     public function activityName(): ?string
     {

@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Passives Rack-Element (Patchfeld, Blindplatte, Fachboden ...), das im
- * Adminbereich gepflegt wird und in jedem Rack einbaubar ist.
+ * Passive rack element (patch panel, blanking plate, shelf ...) maintained in
+ * the admin area and mountable in every rack.
  *
- * Beim Einbau wird die Bezeichnung nach rack_items kopiert - ein spaeter
+ * On mounting the label is copied into rack_items - an entry changed later
  * geaenderter oder geloeschter Katalogeintrag veraendert also keine
  * bestehende Rack-Dokumentation.
  */
@@ -21,7 +21,7 @@ class RackCatalogItem extends Model
     use HasImage;
     use TracksChanges;
 
-    /** Ordner auf der local-Disk und Route, die das Bild ausliefert - siehe HatBild. */
+    /** Folder on the local disk and route that serves the image - see HasImage. */
     public const BILDORDNER = 'rack-catalog';
 
     public const BILDROUTE = 'rackcatalogitem.image';
@@ -32,7 +32,7 @@ class RackCatalogItem extends Model
         'full_depth' => 'boolean',
     ];
 
-    /** Reihenfolge in der Palette des Rack-Editors. */
+    /** Order in the palette of the rack editor. */
     public function scopeOrdered($query)
     {
         return $query->orderBy('sort_order')->orderBy('name');

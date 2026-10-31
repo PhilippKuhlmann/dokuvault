@@ -12,21 +12,21 @@ use Illuminate\Validation\Rules\Password;
 /**
  * Einstellungen einer Installation.
  *
- * Gelesen wird ueber den Cache: Der Fernwartungsknopf steht in jeder
- * Geraeteliste, das waere sonst eine Abfrage je Seite fuer einen Wert, der
- * sich im Monat einmal aendert.
+ * Read through the cache: the remote-access button sits in every device
+ * list, which would otherwise be one query per page for a value that
+ * changes once a month.
  */
 class Setting extends Model
 {
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
-    /** Schluessel der Fernwartungsloesung, z. B. "rustdesk". */
+    /** Key of the remote-access solution, e.g. "rustdesk". */
     public const REMOTE_TOOL = 'remote_tool';
 
-    /** Eigenes URL-Muster, wenn als Loesung "custom" gewaehlt ist. */
+    /** Own URL pattern when "custom" is chosen as the solution. */
     public const REMOTE_PATTERN = 'remote_pattern';
 
-    /** Eigener Name der Installation, statt des Namens aus der .env. */
+    /** Own name of the installation, instead of the name from the .env. */
     public const APP_NAME = 'app_name';
 
     /** Hash of the one-time code for /setup - see App\Support\InitialSetup. */
@@ -36,10 +36,10 @@ class Setting extends Model
     public const UPLOAD_MAX_KB = 'upload_max_kb';
 
     /*
-     * Wie ein Kennwort aussehen muss, mit dem sich ein Benutzer anmeldet -
-     * siehe kennwortRegel(). Nicht gemeint sind die dokumentierten Kennwoerter
-     * der Kunden: Dort wird festgehalten, was ist, nicht was sein soll. Ein
-     * Kunde mit einem schwachen Kennwort muss dokumentierbar bleiben.
+     * What a password has to look like for a user to sign in with it - see
+     * passwordRule(). Not meant are the documented passwords of the
+     * customers: there we record what is, not what ought to be. A customer
+     * with a weak password must stay documentable.
      */
     public const PW_MIN = 'pw_min';
 
@@ -52,15 +52,15 @@ class Setting extends Model
     public const PW_UNCOMPROMISED = 'pw_uncompromised';
 
     /**
-     * Zeitzone der Anzeige. Gespeichert wird weiter in UTC - siehe
-     * App\Support\Zeit.
+     * Timezone of the display. Storage stays UTC - see
+     * App\Support\LocalTime.
      */
     public const APP_TIMEZONE = 'app_timezone';
 
     /*
-     * Der Mailversand. Steht hier etwas, gilt es statt der .env - siehe
-     * App\Providers\AppServiceProvider. Wer nichts eintraegt, behaelt die
-     * Werte aus der .env, so wie vor dieser Einstellung.
+     * Mail sending. Whatever stands here applies instead of the .env - see
+     * App\Providers\AppServiceProvider. Enter nothing and the values from
+     * the .env stay, just as before this setting existed.
      */
     public const MAIL_HOST = 'mail_host';
 
@@ -79,19 +79,19 @@ class Setting extends Model
     public const MAIL_FROM_NAME = 'mail_from_name';
 
     /**
-     * Pfade der eigenen Logos auf der local-Disk, je Stelle einer.
+     * Paths of the own logos on the local disk, one per place.
      *
-     * Drei statt eines: Das Logo auf der Anmeldeseite darf gross und breit
-     * sein, das in der Kopfzeile muss neben den Namen passen, und ein Favicon
-     * ist quadratisch und winzig. In der Praxis sind das verschiedene Dateien.
+     * Three instead of one: the logo on the sign-in page may be large and
+     * wide, the one in the header has to fit beside the name, and a favicon
+     * is square and tiny. In practice those are different files.
      */
     public const LOGO_STELLEN = ['login', 'header', 'favicon'];
 
     /**
-     * Der Name, der in Kopfzeile, Titelleiste und PDF steht.
+     * The name that stands in the header, the title bar and the PDF.
      *
-     * Faellt auf config('app.name') zurueck: Wer nichts eintraegt, behaelt den
-     * Namen aus der .env - so wie vor dieser Einstellung.
+     * Falls back to config('app.name'): enter nothing and the name from the
+     * .env stays - just as before this setting existed.
      */
     public static function appName(): string
     {
@@ -101,15 +101,15 @@ class Setting extends Model
     }
 
     /**
-     * Das SMTP-Kennwort im Klartext, oder null.
+     * The SMTP password in plain text, or null.
      *
-     * Es liegt verschluesselt in der Einstellung: Die Werte gehen ueber einen
-     * Cache, und ein Kennwort, mit dem sich im Namen der Firma Mail
-     * verschicken laesst, hat weder dort noch in einem Datenbank-Abzug etwas
-     * im Klartext zu suchen.
+     * It is stored encrypted in the setting: the values go through a cache,
+     * and a password that lets someone send mail in the company's name has
+     * no business sitting in plain text there or in a database dump.
+     * sitting in plain text there.
      *
-     * Der Rueckfall auf den Rohwert ist fuer den Fall, dass jemand die Zeile
-     * von Hand gesetzt hat - besser ein Kennwort, das funktioniert, als eine
+     * The fallback to the raw value is for the case that someone set the row
+     * by hand - better a password that works than a
      * Ausnahme beim ersten Mailversand.
      */
     public static function mailPassword(): ?string
@@ -127,7 +127,7 @@ class Setting extends Model
         }
     }
 
-    /** Das SMTP-Kennwort setzen; null loescht es. */
+    /** Set the SMTP password; null deletes it. */
     public static function setMailPassword(?string $kennwort): void
     {
         self::setzen(self::MAIL_PASSWORD, $kennwort === null || $kennwort === ''
@@ -136,12 +136,12 @@ class Setting extends Model
     }
 
     /**
-     * Die groesste erlaubte Datei in Kilobyte.
+     * The largest allowed file in kilobytes.
      *
-     * Gedeckelt auf das, was der Server ueberhaupt durchlaesst: PHP und der
-     * Webserver haben eigene Grenzen, und eine Einstellung darueber waere ein
-     * Versprechen, das nicht haelt - der Upload braeche mitten im Hochladen
-     * ab, ohne verstaendliche Meldung.
+     * Capped at what the server lets through at all: PHP and the web server
+     * have limits of their own, and a setting above them would be a promise
+     * that does not hold - the upload would break mid-transfer, without a
+     * message anyone can understand.
      */
     public static function uploadMaxKb(): int
     {
@@ -152,15 +152,15 @@ class Setting extends Model
     }
 
     /**
-     * Die Regel fuer Kennwoerter, mit denen sich Benutzer anmelden.
+     * The rule for passwords that users sign in with.
      *
-     * Sie wird an einer Stelle gesetzt - Password::defaults() im
-     * AppServiceProvider - und gilt dadurch ueberall: im eigenen Profil, beim
-     * Anlegen durch einen Administrator, beim Zuruecksetzen und beim Einloesen
-     * einer Einladung. Eine Regel, die nur an einer Stelle greift, ist keine.
+     * It is set in one place - Password::defaults() in the AppServiceProvider
+     * - and thereby applies everywhere: in one's own profile, when an
+     * administrator creates an account, on a reset and when redeeming an
+     * invitation. A rule that takes hold in one place only is no rule.
      *
-     * Ohne Einstellung bleibt es bei dem, was Laravel ohnehin verlangt: acht
-     * Zeichen. Genau das galt bisher, nur wusste es niemand.
+     * Without a setting it stays with what Laravel demands anyway: eight
+     * characters. That is exactly what applied before, only nobody knew it.
      */
     public static function passwordRule(): Password
     {
@@ -185,7 +185,7 @@ class Setting extends Model
         return $regel;
     }
 
-    /** Acht ist Laravels Vorgabe und damit das, was bisher stillschweigend galt. */
+    /** Eight is Laravel's default and thereby what applied silently before. */
     public static function passwordMinLength(): int
     {
         $eigene = (int) self::wert(self::PW_MIN);
@@ -194,11 +194,11 @@ class Setting extends Model
     }
 
     /**
-     * Was verlangt wird, in einem Satz.
+     * What is demanded, in one sentence.
      *
-     * Er steht unter jedem Kennwortfeld. Wer ein Sonderzeichen verlangt, ohne
-     * es hinzuschreiben, laesst raten - und der Benutzer erfaehrt die Regel
-     * erst, wenn er gegen sie verstossen hat.
+     * It stands under every password field. Demanding a special character
+     * without writing it down leaves people guessing - and the user learns
+     * the rule only after breaking it.
      */
     public static function passwordNotice(): string
     {
@@ -229,7 +229,7 @@ class Setting extends Model
         return $satz.'.';
     }
 
-    /** Ein Haekchen aus den Einstellungen. */
+    /** A checkbox from the settings. */
     private static function ja(string $schluessel): bool
     {
         return (bool) self::wert($schluessel, false);
@@ -238,10 +238,10 @@ class Setting extends Model
     /**
      * Was PHP hoechstens annimmt, in Kilobyte.
      *
-     * Der kleinere der beiden Werte zaehlt: post_max_size umfasst die ganze
-     * Anfrage, upload_max_filesize nur die Datei darin. Der Webserver hat
-     * davor noch eine eigene Grenze (im Bild: nginx client_max_body_size) -
-     * die kann PHP nicht sehen, deshalb steht sie im Hinweis auf der Seite.
+     * The smaller of the two counts: post_max_size covers the whole request,
+     * upload_max_filesize only the file inside it. The web server has a
+     * limit of its own in front of that (in our case nginx
+     * client_max_body_size) - PHP cannot see it, hence the note on the page.
      */
     public static function serverGrenzeKb(): int
     {
@@ -258,13 +258,13 @@ class Setting extends Model
         );
     }
 
-    /** Der Einstellungs-Schluessel einer Logo-Stelle. */
+    /** The setting key of a logo place. */
     public static function logoSchluessel(string $stelle): string
     {
         return 'app_logo_'.$stelle;
     }
 
-    /** Pfad des Logos einer Stelle, oder null wenn dort keines hinterlegt ist. */
+    /** Path of the logo of one place, or null when none is stored there. */
     public static function logoPfad(string $stelle): ?string
     {
         $pfad = trim((string) self::wert(self::logoSchluessel($stelle)));
@@ -273,11 +273,11 @@ class Setting extends Model
     }
 
     /**
-     * Wie viele Tage ein Protokolleintrag bleibt. 0 heisst: unbegrenzt.
+     * How many days an activity entry stays. 0 means unlimited.
      *
-     * Die bisherigen Kennwoerter haengen daran und gehen mit: Sie sind das,
-     * was ein Protokolleintrag ueber eine Kennwortaenderung zu zeigen hat,
-     * eine zweite Frist waere eine Zahl zu viel.
+     * The previous passwords hang on it and go with it: they are what an
+     * activity entry about a password change has to show, and a second
+     * deadline would be one number too many.
      */
     public const PROTOKOLL_TAGE = 'protokoll_tage';
 
@@ -307,16 +307,16 @@ class Setting extends Model
     public const DATEI_FORMATE = 'datei_formate';
 
     /**
-     * Welche Dateiendungen hochgeladen werden duerfen.
+     * Which file extensions may be uploaded.
      *
-     * Nur eine Auswahl aus config('custom.datei_formate') - was dort nicht
-     * steht, kommt hier nicht heraus. Das ist der Punkt der ganzen
-     * Einstellung: Sie laesst die Positivliste kuerzen, nicht erweitern. Eine
-     * Liste, in die jemand "php" eintragen kann, ist keine Positivliste, und
-     * der Weg dorthin muesste nicht einmal ueber die Oberflaeche gehen -
-     * gegen einen Eintrag direkt in der Tabelle hilft nur, hier zu schneiden.
+     * Only a selection from config('custom.datei_formate') - what is not in
+     * there does not come out here. That is the whole point of this setting:
+     * it lets the allowlist be shortened, not extended. A list anyone can
+     * enter "php" into is no allowlist, and the way there would not even
+     * have to go through the interface - against a row written straight into
+     * the table, cutting here is the only help.
      *
-     * Ohne Auswahl gilt die ganze Liste aus der Konfiguration.
+     * Without a selection the whole list from the configuration applies.
      */
     public static function fileFormats(): array
     {
@@ -368,11 +368,11 @@ class Setting extends Model
     public const SEITE_ADMIN = 'seite_admin';
 
     /**
-     * Die Sprache der Installation.
+     * The language of the installation.
      *
-     * Die letzte Stufe von SetLocale: Nutzer, dann Sitzung, dann Browser,
-     * dann diese. Ein unbekannter Wert wird verworfen - er kaeme sonst
-     * ungeprueft aus der Datenbank in App::setLocale().
+     * The last stage of SetLocale: user, then session, then browser, then
+     * this one. An unknown value is dropped - it would otherwise reach
+     * App::setLocale() unchecked from the database.
      */
     public static function sprache(): string
     {
@@ -383,19 +383,19 @@ class Setting extends Model
             : (string) config('app.locale');
     }
 
-    /** Ein Satz auf der Anmeldeseite, etwa wer bei Fragen hilft. */
+    /** A sentence on the sign-in page, for instance who helps with questions. */
     public static function anmeldeHinweis(): string
     {
         return trim((string) self::wert(self::ANMELDE_HINWEIS));
     }
 
-    /** Zeilen je Seite in den Listen eines Kunden. */
+    /** Rows per page in a customer's lists. */
     public static function seiteListe(): int
     {
         return self::zahl(self::SEITE_LISTE, (int) config('custom.seiten.liste'));
     }
 
-    /** Zeilen je Seite in den Listen des Adminbereichs. */
+    /** Rows per page in the lists of the admin area. */
     public static function seiteAdmin(): int
     {
         return self::zahl(self::SEITE_ADMIN, (int) config('custom.seiten.admin'));
@@ -413,41 +413,41 @@ class Setting extends Model
 
     public const REMEMBER_TAGE = 'remember_tage';
 
-    /** Fehlversuche je Konto, bevor gesperrt wird. */
+    /** Failed attempts per account before it is locked. */
     public static function loginAttempts(): int
     {
         return self::zahl(self::ANMELDUNG_VERSUCHE, (int) config('custom.anmeldung.versuche'));
     }
 
-    /** Dauer der Sperre in Minuten. */
+    /** Duration of the lockout in minutes. */
     public static function loginLockoutMinutes(): int
     {
         return self::zahl(self::ANMELDUNG_SPERRE, (int) config('custom.anmeldung.sperre_minuten'));
     }
 
-    /** Dieselbe Sperre in Sekunden - so rechnet der RateLimiter. */
+    /** The same lockout in seconds - that is how the RateLimiter computes. */
     public static function loginLockoutSeconds(): int
     {
         return self::loginLockoutMinutes() * 60;
     }
 
-    /** Fehlversuche je Herkunft ueber alle Konten hinweg. */
+    /** Failed attempts per origin across all accounts. */
     public static function loginOrigin(): int
     {
         return self::zahl(self::ANMELDUNG_HERKUNFT, (int) config('custom.anmeldung.versuche_je_herkunft'));
     }
 
-    /** Wie lange eine untaetige Sitzung gilt, in Minuten. */
+    /** How long an idle session lasts, in minutes. */
     public static function sitzungMinuten(): int
     {
         return self::zahl(self::SITZUNG_MINUTEN, (int) config('session.lifetime'));
     }
 
     /**
-     * Mit dem Browserfenster abmelden.
+     * Sign out with the browser window.
      *
-     * Nur die Sitzung. Wer "Angemeldet bleiben" angehakt hat, kommt trotzdem
-     * wieder herein - dafuer gibt es ein eigenes Cookie mit eigener Frist.
+     * The session only. Whoever ticked "stay signed in" gets back in all the
+     * same - there is a cookie of its own for that, with its own lifetime.
      */
     public static function sitzungBeimSchliessen(): bool
     {
@@ -463,11 +463,11 @@ class Setting extends Model
     }
 
     /**
-     * Eine Zahl lesen: eigener Wert, sonst die Vorgabe.
+     * Read a number: own value, otherwise the default.
      *
-     * 0 zaehlt als "nicht gesetzt". Null Versuche waeren eine Anmeldung, die
-     * niemanden durchlaesst, null Minuten eine Sperre, die keine ist - beides
-     * entsteht sonst aus einem leergeraeumten Feld.
+     * 0 counts as "not set". Zero attempts would be a sign-in that lets
+     * nobody through, zero minutes a lockout that is none - both otherwise
+     * come out of a field someone emptied.
      */
     private static function zahl(string $schluessel, int $standard): int
     {
@@ -591,30 +591,30 @@ class Setting extends Model
         return self::clamped(self::KENNWORT_ABRUFE);
     }
 
-    /** Vorwarnzeit fuer Lizenzen, Zertifikate und Domains, in Tagen. */
+    /** Warning time for licences, certificates and domains, in days. */
     public static function contractDeadline(): int
     {
         return self::deadline(self::FRIST_VERTRAEGE, 'vertraege_tage');
     }
 
-    /** Vorwarnzeit fuer ablaufende Garantien, in Tagen. */
+    /** Warning time for expiring warranties, in days. */
     public static function warrantyDeadline(): int
     {
         return self::deadline(self::FRIST_GARANTIE, 'garantie_tage');
     }
 
-    /** Vorwarnzeit fuer das Support-Ende von Betriebssystemen, in Tagen. */
+    /** Warning time for the support end of operating systems, in days. */
     public static function eolDeadline(): int
     {
         return self::deadline(self::FRIST_EOL, 'eol_tage');
     }
 
     /**
-     * Wie lange eine fertige PDF-Ausgabe liegen bleibt, in Stunden.
+     * How long a finished PDF export stays, in hours.
      *
-     * Aufgeraeumt wird stuendlich, nicht in dem Augenblick, in dem die Frist
-     * ablaeuft - eine Datei liegt also bis zu eine Stunde laenger. Wer eine
-     * Stunde einstellt, bekommt bis zu zwei.
+     * The cleanup runs hourly, not at the moment the deadline passes - so a
+     * file lies around up to an hour longer. Set one hour and you get up to
+     * two.
      */
     public static function pdfStunden(): int
     {
@@ -624,11 +624,11 @@ class Setting extends Model
     }
 
     /**
-     * Eine Frist lesen: eigener Wert, sonst der aus der Konfiguration.
+     * Read a deadline: own value, otherwise the one from the configuration.
      *
-     * Null und 0 sind hier dasselbe wie "nicht gesetzt". Eine Vorwarnzeit von
-     * null Tagen waere keine Einstellung, sondern eine abgeschaltete Warnung -
-     * und die schaltet man nicht versehentlich ueber ein leeres Feld ab.
+     * Null and 0 mean the same here as "not set". A warning time of zero
+     * days would not be a setting but a switched-off warning - and one does
+     * not switch that off by accident through an empty field.
      */
     private static function deadline(string $schluessel, string $konfiguration): int
     {
@@ -637,27 +637,27 @@ class Setting extends Model
         return $eigene > 0 ? $eigene : (int) config('custom.fristen.'.$konfiguration);
     }
 
-    /** Aufbewahrungsfrist des Protokolls in Tagen, 0 wenn unbegrenzt. */
+    /** Retention of the activity log in days, 0 when unlimited. */
     public static function activityDays(): int
     {
         return (int) self::wert(self::PROTOKOLL_TAGE, 0);
     }
 
     /**
-     * Alle Einstellungen auf einmal - nicht je Schluessel einzeln.
+     * All settings at once - not one per key.
      *
-     * Der Grund ist ein feiner: Cache::rememberForever behandelt null als
-     * "nicht im Cache" und ruft den Callback erneut auf. Bei der
-     * Standardeinstellung gibt es gar keine Zeile, der Wert waere also immer
-     * null - und der Fernwartungsknopf in einer Liste mit 25 Geraeten haette
-     * 25 Abfragen ausgeloest statt keiner. Gemessen: 114 Abfragen fuer eine
-     * Seite, die mit acht auskommt. Ein Array ist nie null und wird gecacht.
+     * The reason is a subtle one: Cache::rememberForever treats null as "not
+     * in the cache" and calls the callback again. With the default setting
+     * there is no row at all, so the value would always be null - and the
+     * remote-access button in a list of 25 devices would have triggered 25
+     * queries instead of none. Measured: 114 queries for a page that does
+     * with eight. An array is never null and gets cached.
      */
     private static function alle(): array
     {
-        // once() statt einer statischen Eigenschaft: Die haette den Prozess
-        // ueberlebt - zwischen zwei Tests, und in einem Queue-Worker auch ueber
-        // eine Aenderung hinweg. once() gilt fuer den Request und wird von der
+        // once() instead of a static property: that would have outlived the
+        // process - between two tests, and in a queue worker across a change
+        // as well. once() applies to the request and is reset by the
         // Testumgebung zurueckgesetzt.
         return once(fn () => Cache::rememberForever(
             'settings.alle',
@@ -675,16 +675,16 @@ class Setting extends Model
         static::updateOrCreate(['key' => $key], ['value' => $value]);
         Cache::forget('settings.alle');
 
-        // once() haelt den alten Wert bis zum Ende des Requests - beim
-        // Speichern einer Einstellung ist das genau falsch herum. Im Alltag
-        // laeuft diese Zeile nie, nur wenn ein Admin auf Speichern drueckt.
+        // once() holds the old value until the end of the request - when
+        // saving a setting that is exactly the wrong way round. In everyday
+        // use this line never runs, only when an admin presses save.
         Once::flush();
     }
 
     /**
-     * Die eingestellte Fernwartungsloesung samt ihrer Beschriftungen und ihrem
-     * URL-Muster. Faellt auf RustDesk zurueck - das war die fest verdrahtete
-     * Loesung, bevor es diese Einstellung gab.
+     * The configured remote-access solution with its labels and its URL
+     * pattern. Falls back to RustDesk - that was the hard-wired solution
+     * before this setting existed.
      */
     public static function remoteAccess(): array
     {
@@ -700,8 +700,8 @@ class Setting extends Model
     }
 
     /**
-     * Der fertige Verbindungslink fuer ein Geraet - oder null, wenn die
-     * Angaben fehlen oder die Loesung keinen Link kennt.
+     * The finished connection link for a device - or null when the details
+     * are missing or the solution knows no link.
      */
     public static function remoteAccessLink(?string $id, ?string $passwort): ?string
     {
@@ -711,8 +711,8 @@ class Setting extends Model
             return null;
         }
 
-        // Ein Muster mit {password} braucht auch ein Passwort - sonst entstuende
-        // ein Link, der zur Kennwortabfrage fuehrt statt zur Verbindung.
+        // A pattern with {password} needs a password too - otherwise a link
+        // would come out that leads to the password prompt instead of the
         if (str_contains($tool['url'], '{password}') && blank($passwort)) {
             return null;
         }

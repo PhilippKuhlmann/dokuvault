@@ -7,8 +7,8 @@ use App\Models\RackItem;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 /**
- * Gegenstueck zu RackItem::device(): Von einem Geraet aus finden, wo es
- * eingebaut ist. Ohne das muesste jede Geraeteliste selbst in rack_items
+ * The counterpart to RackItem::device(): find from a device where it is
+ * mounted. Without it every device list would have to look into rack_items
  * suchen.
  */
 trait IsMountable
@@ -19,8 +19,8 @@ trait IsMountable
     }
 
     /**
-     * Kurzfassung des Einbauorts fuer Listen und PDF, z. B.
-     * "Rack HH-01 · HE 4–5 · Vorderseite". Null, wenn nicht eingebaut.
+     * Short form of the mounting place for lists and PDF, e.g.
+     * "Rack HH-01 · HE 4-5 · front". Null when not mounted.
      */
     public function mountLocation(): ?string
     {

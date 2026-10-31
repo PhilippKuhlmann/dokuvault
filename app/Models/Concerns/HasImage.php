@@ -5,24 +5,24 @@ namespace App\Models\Concerns;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Ein Model mit einem hinterlegten Bild.
+ * A model with a stored image.
  *
- * Der Rack-Katalog und die Geraetemodelle fuehren beide eines, und beide
- * behandeln es gleich: Die Datei liegt privat auf der local-Disk und geht
- * durch einen Controller heraus - wie jede Datei dieser App. Ein Symlink nach
- * public waere der einzige Sonderweg und muesste auf jedem Server
- * eingerichtet werden.
+ * The rack catalog and the device models both carry one, and both treat it
+ * the same way: the file lies privately on the local disk and goes out
+ * through a controller - like every file in this app. A symlink into public
+ * would be the only special case and would have to be set up on every
+ * server.
  *
- * Das Model bringt zwei Angaben mit:
+ * The model brings two pieces of information:
  *
- *   BILDORDNER    Ordner auf der local-Disk
- *   BILDROUTE     Name der Route, die das Bild ausliefert
+ *   BILDORDNER    folder on the local disk
+ *   BILDROUTE     name of the route that serves the image
  */
 trait HasImage
 {
     /**
-     * Sonst bliebe zu jedem geloeschten Eintrag eine Datei liegen, die
-     * niemand mehr findet.
+     * Otherwise a file would be left behind for every deleted entry that
+     * nobody finds any more.
      */
     public static function bootHasImage(): void
     {
@@ -35,13 +35,13 @@ trait HasImage
         return $this->image_path ? route(static::BILDROUTE, $this) : null;
     }
 
-    /** Absoluter Pfad der Bilddatei - fuer den PDF-Export, der kein HTTP kann. */
+    /** Absolute path of the image file - for the PDF export, which cannot do HTTP. */
     public function imagePath(): ?string
     {
         return $this->hasImageFile() ? Storage::disk('local')->path($this->image_path) : null;
     }
 
-    /** Die abgelegte Datei entfernen. Die Spalte bleibt unberuehrt. */
+    /** Remove the stored file. The column stays untouched. */
     public function deleteImage(): void
     {
         if ($this->hasImageFile()) {
@@ -49,7 +49,7 @@ trait HasImage
         }
     }
 
-    /** Liegt zur eingetragenen Adresse auch wirklich eine Datei? */
+    /** Is there really a file at the recorded address? */
     private function hasImageFile(): bool
     {
         return (bool) $this->image_path && Storage::disk('local')->exists($this->image_path);

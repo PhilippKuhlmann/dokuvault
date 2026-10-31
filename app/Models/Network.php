@@ -36,13 +36,13 @@ class Network extends Model
     }
 
     /**
-     * Netz fuer die Anzeige: Beschreibung und VLAN-Nummer zusammen, weil beides
-     * gebraucht wird - der Name sagt wofuer, die Nummer braucht man am Switch.
-     * Fehlt eines, bleibt das andere stehen.
+     * The network for display: description and VLAN number together, because
+     * both are needed - the name says what for, the number is what you need
+     * at the switch. If one is missing, the other stands on its own.
      *
-     * @param  bool  $ohneBeschreibung  nur die VLAN-Nummer - fuer den Fall, dass
-     *                                  die Beschreibung auf derselben Zeile schon
-     *                                  als Bezeichnung steht
+     * @param  bool  $ohneBeschreibung  the VLAN number only - for the case that
+     *                                  the description already stands on the same
+     *                                  line as the label
      */
     public function label(bool $ohneBeschreibung = false): ?string
     {
@@ -60,14 +60,14 @@ class Network extends Model
     }
 
     /**
-     * Subnetzmaske in die CIDR-Schreibweise: 255.255.255.0 wird zu 24.
+     * Subnet mask into CIDR notation: 255.255.255.0 becomes 24.
      *
-     * Beide Felder sagen dasselbe aus, deshalb rechnet die Anwendung das eine
-     * aus dem anderen aus, statt es zweimal abzufragen.
+     * Both fields say the same thing, so the application works one out from
+     * the other instead of asking for it twice.
      *
-     * Verlangt eine echte Maske - die Einsen muessen zusammenhaengend von
-     * links stehen. 255.0.255.0 ist keine Maske, sondern ein Tippfehler, und
-     * ergibt hier null statt einer erfundenen Zahl.
+     * Demands a real mask - the ones have to run contiguously from the left.
+     * 255.0.255.0 is not a mask but a typo, and yields null here instead of
+     * an invented number.
      */
     public static function cidrAusMaske(?string $maske): ?int
     {
@@ -79,7 +79,7 @@ class Network extends Model
 
         $bits = str_pad(decbin(ip2long($maske)), 32, '0', STR_PAD_LEFT);
 
-        // Nach dem letzten Einser darf keiner mehr kommen.
+        // After the last one no further one may follow.
         if (! preg_match('/^1*0*$/', $bits)) {
             return null;
         }
@@ -88,7 +88,7 @@ class Network extends Model
     }
 
     /**
-     * Die Gegenrichtung: 24 wird zu 255.255.255.0.
+     * The other direction: 24 becomes 255.255.255.0.
      */
     public static function maskeAusCidr(int|string|null $cidr): ?string
     {
@@ -102,8 +102,8 @@ class Network extends Model
             return null;
         }
 
-        // /0 gesondert: Ein Schub um 32 Stellen ist nicht definiert und
-        // liefert je nach Plattform Unsinn statt 0.0.0.0.
+        // /0 separately: a shift by 32 places is undefined and returns
+        // nonsense instead of 0.0.0.0, depending on the platform.
         if ($cidr === 0) {
             return '0.0.0.0';
         }
@@ -112,11 +112,11 @@ class Network extends Model
     }
 
     /**
-     * Sucht unter den Netzen eines Standorts dasjenige, in dessen Adressbereich
-     * die gegebene IPv4-Adresse fällt - für die Auto-Dokumentation-Agenten, die
-     * eine IP melden, aber kein VLAN kennen. Erstes Netz mit Treffer gewinnt;
-     * bei sich überlappenden Netzen (in der Praxis selten) ist das Ergebnis
-     * nicht eindeutig, aber immer noch besser als gar keine Zuordnung.
+     * Looks among a site's networks for the one whose address range the given
+     * IPv4 address falls into - for the auto-documentation agents, which report
+     * an IP but know no VLAN. The first network with a hit wins; with
+     * overlapping networks (rare in practice) the result is not unambiguous,
+     * but still better than no assignment at all.
      */
     public static function forUrl(int $customerId, ?int $siteId, string $adresse): ?self
     {
@@ -131,13 +131,13 @@ class Network extends Model
     }
 
     /**
-     * Die erste Adresse dieses Netzes, die man einem Gerät fest geben kann:
-     * weder Netz- noch Broadcast-Adresse, nicht das Gateway, nicht im
-     * DHCP-Bereich, nicht reserviert und beim Kunden noch nicht vergeben.
-     * null, wenn das Netz voll ist oder sich nicht auswerten lässt.
+     * The first address of this network that can be given to a device for
+     * good: neither network nor broadcast address, not the gateway, not in
+     * the DHCP range, not reserved and not yet in use at this customer.
+     * null when the network is full or cannot be evaluated.
      *
-     * Ein Vorschlag, keine Zusage - wer die Adresse zwischen Vorschlag und
-     * Speichern vergibt, fällt an der Eindeutigkeitsprüfung auf.
+     * A suggestion, not a promise - whoever hands out the address between
+     * suggestion and save is caught by the uniqueness check.
      */
     public function nextFreeAddress(): ?string
     {
@@ -148,7 +148,7 @@ class Network extends Model
         }
 
         [$netz, $broadcast] = $bereich;
-        // /31 und /32 haben keine eigene Netz- und Broadcast-Adresse.
+        // /31 and /32 have no network and broadcast address of their own.
         [$erste, $letzte] = $broadcast - $netz >= 3 ? [$netz + 1, $broadcast - 1] : [$netz, $broadcast];
 
         $belegt = IpAddress::where('customer_id', $this->customer_id)
@@ -173,8 +173,8 @@ class Network extends Model
 
             foreach ($gesperrt as [$von, $bis]) {
                 if ($ip >= $von && $ip <= $bis) {
-                    // Gleich ans Ende des Blocks springen statt ihn Adresse
-                    // fuer Adresse abzulaufen - bei einem /16 ein Unterschied.
+                    // Jump straight to the end of the block instead of walking
+                    // it address by address - on a /16 that is a difference.
                     $ip = $bis;
 
                     continue 2;
@@ -188,9 +188,9 @@ class Network extends Model
     }
 
     /**
-     * Der DHCP-Bereich als [Anfang, Ende] in long-Schreibweise, oder null.
-     * dhcpStart/dhcpEnd sind entweder volle Adressen oder ein Host-Anteil
-     * ("100"), der ins Netz eingesetzt wird.
+     * The DHCP range as [start, end] in long notation, or null.
+     * dhcpStart/dhcpEnd are either full addresses or a host part ("100")
+     * that is placed into the network.
      */
     public function dhcpRange(): ?array
     {
@@ -218,7 +218,7 @@ class Network extends Model
     }
 
     /**
-     * Prüft, ob eine IPv4-Adresse in den Adressbereich dieses Netzes fällt.
+     * Checks whether an IPv4 address falls into this network's address range.
      */
     public function containsUrl(string $adresse): bool
     {
@@ -235,10 +235,10 @@ class Network extends Model
 
     /**
      * Ganzer Adressbereich als [Netzadresse, Broadcast] in long-Schreibweise -
-     * inklusive Netz- und Broadcast-Adresse, damit sich jede gemeldete IP
-     * prüfen lässt. Anders als der Nutzbereich im IP-Plan (der Netz- und
-     * Broadcast-Adresse für die Belegungs-Anzeige ausschließt), zaehlt hier
-     * der volle Bereich - eine gemeldete Gateway-IP z. B. ist bewusst mit drin.
+     * including network and broadcast address, so every reported IP can be
+     * checked. Unlike the usable range in the IP plan (which excludes network
+     * and broadcast address for the occupancy display), the full range counts
+     * here - a reported gateway IP, for one, is deliberately included.
      */
     public function range(): ?array
     {

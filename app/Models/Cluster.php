@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * Ein Server-Cluster: welche Server zusammengehoeren und mit welcher Technik
+ * A server cluster: which servers belong together and with which technology
  * (Ceph, Replikation ...).
  *
- * Nicht auf Proxmox beschraenkt - der Typ sagt, worum es geht, damit auch ein
- * Hyper-V- oder Datenbank-Cluster hier hineinpasst.
+ * Not limited to Proxmox - the kind says what it is about, so a Hyper-V or
+ * database cluster fits in here as well.
  */
 class Cluster extends Model
 {
@@ -20,15 +20,15 @@ class Cluster extends Model
     use TracksChanges;
 
     /**
-     * Beim Loeschen verlieren die Server nur ihre Zugehoerigkeit.
+     * On deletion the servers only lose their membership.
      *
-     * Sie sind eigene Geraete und bleiben stehen. Die Fremdschluessel-Regel
-     * (nullOnDelete) greift erst beim endgueltigen Loeschen - der Cluster
-     * wandert aber zunaechst in den Papierkorb.
+     * They are devices of their own and stay. The foreign-key rule
+     * (nullOnDelete) only takes hold on final deletion - the cluster first
+     * moves to the trash, though.
      *
-     * Steht am Model und nicht am Controller: Geloescht wird im Modal, und ein
-     * Cluster ohne diese Regel liesse Server mit einer Zugehoerigkeit zurueck,
-     * die es nicht mehr gibt.
+     * On the model and not on the controller: deleting happens in the modal,
+     * and a cluster without this rule would leave servers with a membership
+     * that no longer exists.
      */
     protected static function booted(): void
     {
@@ -55,9 +55,9 @@ class Cluster extends Model
     }
 
     /**
-     * Die Technik ausgeschrieben. Ein unbekannter Schluessel (Typ nachtraeglich
-     * aus der Konfiguration entfernt) gibt den Rohwert zurueck statt zu
-     * verschwinden - er stand ja einmal bewusst da.
+     * The technology spelled out. An unknown key (kind later
+     * removed from the configuration) returns the raw value instead of
+     * vanishing - it did stand there deliberately once.
      */
     public function typeLabel(): ?string
     {

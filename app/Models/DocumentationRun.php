@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Fortschritt eines Durchlaufs durch den Dokumentations-Assistenten (siehe
+ * Progress of one run through the documentation wizard (see
  * App\Livewire\DocumentationWizard). Kein Inventar-Objekt, daher keine
- * SoftDeletes und kein Eintrag in config('custom.trashables').
+ * SoftDeletes and no entry in config('custom.trashables').
  */
 class DocumentationRun extends Model
 {
@@ -39,8 +39,8 @@ class DocumentationRun extends Model
     }
 
     /**
-     * Merkt sich eine angelegte ID unter dem jeweiligen Schritt-Schlüssel,
-     * fuer die Abschlussuebersicht am Ende des Durchlaufs.
+     * Remembers a created id under the respective step key, for the summary
+     * at the end of the run.
      */
     public function recordCreated(string $stepKey, int $id): void
     {
@@ -52,10 +52,10 @@ class DocumentationRun extends Model
     }
 
     /**
-     * Erfasst und übersprungen schließen sich aus: Wird ein Schritt erfasst,
-     * fällt er aus der Übersprungen-Liste (und umgekehrt in markStepSkipped).
-     * Sonst könnte ein Schritt nach Zurückspringen in beiden Listen stehen und
-     * die Abschluss-Zählung ihn doppelt zählen.
+     * Captured and skipped are mutually exclusive: if a step is captured it
+     * drops out of the skipped list (and the other way round in
+     * markStepSkipped). Otherwise a step could stand in both lists after
+     * jumping back and the final count would count it twice.
      */
     public function markStepCompleted(string $stepKey): void
     {

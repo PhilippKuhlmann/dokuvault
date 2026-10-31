@@ -9,16 +9,16 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Crypt;
 
 /**
- * Ein Kennwort, das einmal gegolten hat.
+ * A password that was once in force.
  *
- * Kein TracksChanges: Ein Protokolleintrag ueber eine Kennwort-Historie waere
- * genau der Klartext, den diese Tabelle vermeiden soll.
+ * No TracksChanges: an activity entry about a password history would be
+ * exactly the plain text this table is meant to avoid.
  */
 class PasswordHistory extends Model
 {
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
-    /** Nie in einer Fehlermeldung, einem Log oder einem dd() sichtbar. */
+    /** Never visible in an error message, a log or a dd(). */
     protected $hidden = ['value'];
 
     public function subject(): MorphTo

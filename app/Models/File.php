@@ -14,9 +14,9 @@ class File extends Model
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     /**
-     * Die Groesse in einer Form, die man im Vorbeigehen liest: "1,4 MB" statt
-     * 1468006. Ohne gespeicherte Groesse (Bestandsdatei, deren Datei fehlt)
-     * bleibt die Angabe leer statt "0 B" - das waere eine Falschaussage.
+     * The size in a form one reads in passing: "1,4 MB" instead of 1468006.
+     * Without a stored size (a legacy file whose file is missing) the figure
+     * stays empty instead of "0 B" - that would be a false statement.
      */
     public function groesseLesbar(): ?string
     {
@@ -37,9 +37,9 @@ class File extends Model
     }
 
     /**
-     * Grobe Einordnung der Datei - "pdf", "bild", "text", "tabelle", "archiv"
-     * oder "datei". Genauer muss es nicht sein: Es geht darum, eine Liste auf
-     * einen Blick zu ueberfliegen, nicht um eine Dateitypenkunde.
+     * Rough classification of the file - "pdf", "bild", "text", "tabelle",
+     * "archiv" or "datei". It does not need to be more precise: the point is
+     * to skim a list at a glance, not to teach file types.
      */
     public function art(): string
     {
@@ -55,10 +55,10 @@ class File extends Model
     }
 
     /**
-     * Die Endungen einer Art - fuer den Filter der Liste.
+     * The extensions of one kind - for the list filter.
      *
-     * "datei" ist der Rest: alles, was in keiner der Listen steht. Dafuer
-     * gibt es keine Endungsliste, das muss die Abfrage als "nicht in allen
+     * "datei" is the remainder: everything in none of the lists. There is no
+     * extension list for that, so the query has to express it as "not in all
      * anderen" formulieren.
      */
     public static function extensionsForType(string $art): array
@@ -66,7 +66,7 @@ class File extends Model
         return config('custom.file_arten.'.$art.'.1', []);
     }
 
-    /** Alle Endungen, die einer benannten Art zugeordnet sind. */
+    /** Every extension assigned to a named kind. */
     public static function bekannteEndungen(): array
     {
         return collect(config('custom.file_arten'))->flatMap(fn ($a) => $a[1])->all();

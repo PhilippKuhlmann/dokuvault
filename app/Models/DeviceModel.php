@@ -9,15 +9,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Ein Geraetemodell - "APC Smart-UPS 1500" - mit Foto der Frontblende.
+ * A device model - "APC Smart-UPS 1500" - with a photo of the front panel.
  *
- * Kundenuebergreifend: Wer das Bild bei einem Kunden hinterlegt, hinterlegt
- * es fuer alle. Ein Foto beschreibt das Modell, nicht das Exemplar.
+ * Across customers: whoever stores the image at one customer stores it for
+ * all. A photo describes the model, not the individual unit.
  *
- * Gefunden wird ein Eintrag ueber Geraetetyp, Hersteller und Modell - die
- * Felder, die an jedem Geraet ohnehin stehen. Es gibt keine Verweisspalte und
- * keine zusaetzliche Auswahl im Geraeteformular: Wer "APC" und
- * "Smart-UPS 1500" eintippt, hat das Bild damit schon.
+ * An entry is found through device kind, manufacturer and model - the fields
+ * that stand on every device anyway. There is no reference column and no
+ * extra select in the device form: whoever types "APC" and
+ * "Smart-UPS 1500" has the image already.
  */
 class DeviceModel extends Model
 {
@@ -25,7 +25,7 @@ class DeviceModel extends Model
     use HasImage;
     use TracksChanges;
 
-    /** Ordner auf der local-Disk und Route, die das Bild ausliefert - siehe HatBild. */
+    /** Folder on the local disk and route that serves the image - see HasImage. */
     public const BILDORDNER = 'device-models';
 
     public const BILDROUTE = 'devicemodel.image';
@@ -38,14 +38,14 @@ class DeviceModel extends Model
 
     protected static function booted(): void
     {
-        // Die Vergleichsschluessel nie von aussen setzen lassen: Sie muessen
-        // zu Hersteller und Modell passen, sonst findet der Abgleich nichts.
+        // Never let the comparison keys be set from outside: they have to
+        // match manufacturer and model, or the lookup finds nothing.
         static::saving(function (self $modell) {
             $modell->manufacturer_key = self::schluessel($modell->manufacturer);
             $modell->model_key = self::schluessel($modell->model);
         });
 
-        // Die geladene Liste ist nach jeder Aenderung veraltet.
+        // The loaded list is out of date after every change.
         static::saved(fn () => app()->forgetInstance(self::SPEICHER));
         static::deleted(fn () => app()->forgetInstance(self::SPEICHER));
     }
@@ -54,9 +54,9 @@ class DeviceModel extends Model
      * Vergleichsform eines Namens: kleingeschrieben, getrimmt,
      * Mehrfachleerzeichen zusammengezogen.
      *
-     * Ohne das waeren "APC ", "apc" und "APC  Corp" drei Hersteller. Mehr
-     * Normalisierung waere Raten: "Hewlett Packard" und "HP" zusammenzufuehren
-     * ist eine Entscheidung, die ein Mensch trifft, nicht eine Zeichenkette.
+     * Without it, "APC ", "apc" and "APC  Corp" would be three manufacturers.
+     * More normalisation would be guessing: merging "Hewlett Packard" and
+     * "HP" is a decision a person makes, not a string.
      */
     public static function schluessel(?string $wert): string
     {
@@ -64,12 +64,11 @@ class DeviceModel extends Model
     }
 
     /**
-     * Das Modell zu einem Geraet, oder null.
+     * The model for a device, or null.
      *
-     * Alle Eintraege werden einmal je Anfrage geladen und im Speicher
-     * durchsucht: Eine Rack-Ansicht mit zwanzig Einbauten braeuchte sonst
-     * zwanzig Abfragen, und die Tabelle ist klein genug, dass sich das nicht
-     * lohnt.
+     * All entries are loaded once per request and searched in memory: a rack
+     * view with twenty mounted items would otherwise need twenty queries, and
+     * the table is small enough that it is not worth it.
      */
     public static function fuer(string $geraetetyp, ?string $hersteller, ?string $modell = null): ?self
     {
@@ -80,7 +79,7 @@ class DeviceModel extends Model
         return self::alle()->get(self::kennung($geraetetyp, $hersteller, $modell));
     }
 
-    /** Der Eintrag zu einem dokumentierten Geraet, ueber seinen Typ aufgeloest. */
+    /** The entry for a documented device, resolved through its kind. */
     public static function forDevice(?Model $geraet): ?self
     {
         if (! $geraet) {
@@ -96,16 +95,15 @@ class DeviceModel extends Model
         return null;
     }
 
-    /** Schluessel, unter dem die geladene Liste im Container liegt. */
+    /** Key the loaded list sits under in the container. */
     private const SPEICHER = 'device_models.alle';
 
     /**
-     * Alle Eintraege, nach Kennung ansprechbar - einmal je Anfrage geladen.
+     * All entries, addressable by identifier - loaded once per request.
      *
-     * Abgelegt im Container, nicht in einer statischen Eigenschaft: Der
-     * Container entsteht je Anfrage und je Test neu. Eine statische Liste
-     * ueberlebte den Rollback zwischen zwei Tests und lieferte dem zweiten
-     * die Eintraege des ersten.
+     * Kept in the container, not in a static property: the container comes
+     * into being per request and per test. A static list outlived the rollback
+     * between two tests and handed the second one the entries of the first.
      */
     public static function alle()
     {
@@ -124,28 +122,28 @@ class DeviceModel extends Model
     }
 
     /**
-     * Zeichnung des Geraetetyps - der Rueckfall, solange kein Foto hinterlegt
-     * ist. Sie steht in derselben Liste, aus der auch die Rack-Ansicht sie
-     * holt (config('custom.rack_device_types')).
+     * The drawing of the device kind - the fallback as long as no photo is
+     * stored. It sits in the same list the rack view takes it from
+     * (config('custom.rack_device_types')).
      */
     public function getAppearanceAttribute(): string
     {
         return config('custom.rack_device_types')[$this->device_type][2] ?? 'server';
     }
 
-    /** Beschriftung des Geraetetyps, wie sie in der Rack-Palette steht. */
+    /** Label of the device kind, as it stands in the rack palette. */
     public function typeLabel(): string
     {
         return config('custom.rack_device_types')[$this->device_type][1] ?? $this->device_type;
     }
 
-    /** Reihenfolge in der Pflegeliste. */
+    /** Order in the maintenance list. */
     public function scopeOrdered($query)
     {
         return $query->orderBy('manufacturer')->orderBy('model');
     }
 
-    /** Wie der Eintrag heisst, wenn man ihn benennen muss. */
+    /** What the entry is called when it has to be named. */
     public function bezeichnung(): string
     {
         return trim($this->manufacturer.' '.$this->model);
@@ -156,13 +154,13 @@ class DeviceModel extends Model
         return $this->bezeichnung() ?: null;
     }
 
-    /** Adresse des Bildes, oder null. Global, wie der Eintrag selbst. */
+    /** Address of the image, or null. Global, like the entry itself. */
     public function imageUrl(): ?string
     {
         return $this->image_path ? route('devicemodel.image', $this) : null;
     }
 
-    /** Absoluter Pfad der Bilddatei - fuer den PDF-Export, der kein HTTP kann. */
+    /** Absolute path of the image file - for the PDF export, which cannot do HTTP. */
     public function imagePath(): ?string
     {
         if (! $this->image_path || ! Storage::disk('local')->exists($this->image_path)) {

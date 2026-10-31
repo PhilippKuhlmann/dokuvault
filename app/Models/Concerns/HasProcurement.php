@@ -6,21 +6,21 @@ use App\Models\Setting;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Beschaffung und Garantie eines Geraets.
+ * Procurement and warranty of a device.
  *
- * Der Trait haelt zusammen, was sonst siebzehnmal einzeln in den Models stuende:
- * die Datums-Casts und die Frage, ob die Garantie demnaechst ablaeuft. Er ist
- * gleichzeitig das Erkennungsmerkmal - Customer::ablaufendeGarantien() sucht
- * ueber class_uses_recursive genau die Models, die ihn einbinden. Damit ist ein
- * neuer Geraetetyp mit einer Zeile dabei, ohne dass eine zweite Liste gepflegt
- * werden muss.
+ * The trait holds together what would otherwise stand seventeen times over in
+ * the models: the date casts and the question whether the warranty runs out
+ * soon. At the same time it is the marker - Customer::ablaufendeGarantien()
+ * looks through class_uses_recursive for exactly the models that use it. A new
+ * device kind is therefore included with one line, without a second list to
+ * maintain.
  */
 trait HasProcurement
 {
     /**
-     * Laravel ruft initialize<TraitName> im Konstruktor auf. mergeCasts statt
-     * eines $casts-Arrays im Model: Die meisten Geraete haben schon eigene
-     * Casts, die hier nicht ueberschrieben werden duerfen.
+     * Laravel calls initialize<TraitName> in the constructor. mergeCasts
+     * instead of a $casts array in the model: most devices already have casts
+     * of their own that must not be overwritten here.
      */
     public function initializeHasProcurement(): void
     {
@@ -32,8 +32,8 @@ trait HasProcurement
     }
 
     /**
-     * Geraete, deren Garantie in den naechsten $tage Tagen ablaeuft oder schon
-     * abgelaufen ist.
+     * Devices whose warranty runs out in the next $tage days or has run out
+     * already.
      */
     public function scopeGarantieLaeuftAb(Builder $query, ?int $tage = null): Builder
     {
@@ -44,8 +44,8 @@ trait HasProcurement
     }
 
     /**
-     * Tage bis zum Garantieende - negativ, wenn sie schon abgelaufen ist.
-     * Null, wenn kein Datum erfasst wurde.
+     * Days until the end of the warranty - negative when it has passed
+     * already. Null when no date was recorded.
      */
     public function warrantyDays(): ?int
     {

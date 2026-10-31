@@ -26,17 +26,17 @@ class Rack extends Model
 
     public function items()
     {
-        // Absteigend nach Position: oberstes Geraet zuerst, wie in der Frontansicht.
+        // Descending by position: topmost device first, as in the front view.
         return $this->hasMany(RackItem::class)->orderByDesc('position');
     }
 
-    /** Die Seiten, die es gibt - Schluessel und Beschriftung. */
+    /** The sides there are - key and label. */
     public const SEITEN = ['front' => 'Vorderseite', 'rear' => 'Rückseite'];
 
     /**
-     * Was auf einer Seite zu sehen ist: die dort eingebauten Geraete, und
-     * zusaetzlich die von der anderen Seite, die in voller Tiefe durchgehen.
-     * Letztere belegen den Platz, lassen sich hier aber nicht bearbeiten.
+     * What can be seen on one side: the devices mounted there, plus the ones
+     * from the other side that run through at full depth. The latter occupy
+     * the space but cannot be edited here.
      */
     public function itemsFuerSeite(string $seite)
     {

@@ -5,8 +5,8 @@ namespace App\Models\Concerns;
 use App\Models\IpAddress;
 
 /**
- * Ermöglicht einem Gerät beliebig viele zusätzliche IP-Adressen (z. B. Gateway-IPs
- * je VLAN bei Routern/Firewalls), optional einem VLAN zugeordnet.
+ * Lets a device have any number of additional IP addresses (e.g. gateway IPs
+ * per VLAN on routers and firewalls), optionally assigned to a VLAN.
  */
 trait HasIpAddresses
 {

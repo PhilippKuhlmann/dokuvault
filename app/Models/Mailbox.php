@@ -17,10 +17,10 @@ class Mailbox extends Model
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
     /**
-     * Das Kennwort des Postfachs.
+     * The password of the mailbox.
      *
-     * Lag bis dahin im Klartext in der Datenbank - als einziges Kennwort dieser Anwendung.
-     * Ein Datenbank-Abzug enthielt es damit lesbar.
+     * It sat in plain text in the database until then - as the only password
+     * in this application. A database dump therefore held it readable.
      */
     protected function password(): Attribute
     {

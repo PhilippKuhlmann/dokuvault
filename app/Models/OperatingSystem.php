@@ -28,17 +28,17 @@ class OperatingSystem extends Model
         return $this->hasMany(VM::class);
     }
 
-    /** Der Support ist abgelaufen - es gibt keine Sicherheitsupdates mehr. */
+    /** Support has ended - there are no security updates any more. */
     public function istEol(): bool
     {
         return $this->eol_date !== null && $this->eol_date->isPast();
     }
 
     /**
-     * Der Support endet bald.
+     * Support ends soon.
      *
-     * Ein halbes Jahr Vorlauf: Ein Serverwechsel will geplant, budgetiert und
-     * in ein Wartungsfenster gelegt werden - mit 30 Tagen Warnung ist es zu spät.
+     * Half a year ahead: replacing a server wants planning, budgeting and a
+     * maintenance window - with 30 days' warning it is too late.
      * Einstellbar unter Einstellungen > Fristen.
      */
     public function laeuftAus(?int $tage = null): bool

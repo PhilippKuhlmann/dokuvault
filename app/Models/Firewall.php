@@ -14,11 +14,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Crypt;
 
 /**
- * Die herstellerunabhaengige Firewall - Sophos, Fortigate, OPNsense, pfSense.
+ * The vendor-independent firewall - Sophos, Fortigate, OPNsense, pfSense.
  *
- * Die Securepoint UTM bleibt als eigenes Objekt bestehen: Sie hat Felder, die
- * es nur dort gibt (USC-PIN, Cloud-Backup-Kennwort, drei getrennte Oberflaechen).
- * Diese Klasse ist fuer alles andere.
+ * The Securepoint UTM stays an object of its own: it has fields that exist
+ * only there (USC PIN, cloud backup password, three separate interfaces).
+ * This class is for everything else.
  */
 class Firewall extends Model
 {
@@ -38,8 +38,8 @@ class Firewall extends Model
     ];
 
     /**
-     * Die USC-PIN entsperrt die Konsole, das Cloud-Backup-Kennwort die
-     * Sicherung - beides gehoert verschluesselt in die Tabelle.
+     * The USC PIN unlocks the console, the cloud backup password the backup -
+     * both belong in the table encrypted.
      */
     protected function uscPin(): Attribute
     {
@@ -58,9 +58,9 @@ class Firewall extends Model
     }
 
     /**
-     * Securepoint-Geraete haben vier Felder, die es bei keinem anderen
-     * Hersteller gibt. Der Hersteller ist Freitext, deshalb wird verglichen und
-     * nicht auf Gleichheit geprueft: "Securepoint GmbH" ist dasselbe.
+     * Securepoint devices have four fields that no other vendor has. The
+     * vendor is free text, so it is compared rather than tested for equality:
+     * "Securepoint GmbH" is the same thing.
      */
     public function istSecurepoint(): bool
     {

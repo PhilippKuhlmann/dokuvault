@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Ein reservierter Adressbereich innerhalb eines Netzes.
+ * A reserved address range inside a network.
  *
- * Er belegt nichts - er sagt nur, wofuer das Stueck gedacht ist. Im IPAM steht
- * dadurch "reserviert: Proxmox-Server" statt "frei", auch bei Adressen, die
- * noch niemand vergeben hat.
+ * It takes nothing - it only says what the piece is meant for. In the IPAM
+ * that reads "reserved: Proxmox servers" instead of "free", even for
+ * addresses nobody has handed out yet.
  */
 class IpRange extends Model
 {
@@ -29,7 +29,7 @@ class IpRange extends Model
         return $this->belongsTo(Network::class);
     }
 
-    /** Die Anfangsadresse als Zahl - so rechnet der IP-Plan. */
+    /** The start address as a number - that is how the IP plan computes. */
     public function vonLong(): ?int
     {
         return self::alsLong($this->from_ip);
@@ -41,11 +41,11 @@ class IpRange extends Model
     }
 
     /**
-     * Eine IPv4-Adresse als vorzeichenlose Zahl, oder null.
+     * An IPv4 address as an unsigned number, or null.
      *
-     * Nur IPv4: Der IP-Plan rechnet mit ip2long und zeigt IPv6-Netze ohnehin
-     * nicht als Adressliste. Ein Bereich in einem IPv6-Netz waere eine Zeile,
-     * die nirgends erscheint.
+     * IPv4 only: the IP plan computes with ip2long and does not show IPv6
+     * networks as an address list anyway. A range in an IPv6 network would be
+     * a row that appears nowhere.
      */
     public static function alsLong(?string $adresse): ?int
     {
@@ -59,16 +59,16 @@ class IpRange extends Model
     }
 
     /**
-     * Die Bereiche eines Netzes in Lesereihenfolge, jeder mit seiner Farbe.
+     * The ranges of a network in reading order, each with its colour.
      *
-     * Eine Stelle fuer beides: die Tabelle im Plan und die Liste darunter.
-     * Zwei getrennte Zuordnungen wuerden dieselbe Reservierung verschieden
-     * einfaerben, sobald eine Sortierung abweicht - und dann waere die Liste
-     * keine Legende mehr.
+     * One place for both: the table in the plan and the list below it. Two
+     * separate mappings would colour the same reservation differently as soon
+     * as a sort order differed - and then the list would be no legend any
+     * more.
      *
-     * Sortiert nach Anfangsadresse, nicht nach Anlagedatum: So wechselt die
-     * Farbe von Zeile zu Zeile, und genau darum geht es. Nach from_ip in der
-     * Datenbank zu sortieren taugt nicht - dort steht Text, und ".100" kaeme
+     * Sorted by start address, not by creation date: that way the colour
+     * changes from row to row, and that is the whole point. Sorting by from_ip
+     * in the database is no use - that holds text, and ".100" would come
      * vor ".20".
      */
     public static function eingefaerbt($bereiche)
@@ -83,7 +83,7 @@ class IpRange extends Model
             });
     }
 
-    /** Wie viele Adressen der Bereich umfasst - 0, wenn er unsinnig ist. */
+    /** How many addresses the range covers - 0 when it makes no sense. */
     public function anzahl(): int
     {
         $von = $this->vonLong();

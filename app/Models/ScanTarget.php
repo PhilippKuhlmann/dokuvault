@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * Ein Ziel, in das gescannt wird: Netzwerkordner, E-Mail, FTP, Cloud.
+ * A target that gets scanned into: network folder, email, FTP, cloud.
  *
- * Ein eigener Eintrag beim Kunden und kein Feld am Scanner: Dasselbe Ziel ist
- * oft auf mehreren Geraeten eingerichtet. Aendert sich der Pfad oder das
- * Kennwort, wird es einmal hier geaendert - wie bei den Zugangsdaten.
+ * An entry of its own at the customer and not a field on the scanner: the
+ * same target is often set up on several devices. If the path or the password
+ * changes, it is changed once here - as with the credentials.
  */
 class ScanTarget extends Model
 {
@@ -21,7 +21,7 @@ class ScanTarget extends Model
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
-    /** Schluessel => Beschriftung, in der Reihenfolge der Auswahl. */
+    /** Key => label, in the order of the select. */
     public const ARTEN = [
         'smb' => 'Netzwerkordner',
         'email' => 'E-Mail',
@@ -35,13 +35,13 @@ class ScanTarget extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    /** Die Scanner, auf denen dieses Ziel eingerichtet ist. */
+    /** The scanners this target is set up on. */
     public function scanners()
     {
         return $this->belongsToMany(Scanner::class)->withTimestamps()->orderBy('name');
     }
 
-    /** Die Anmeldung am Ziel (FTP-Konto, Freigabe-Benutzer), falls noetig. */
+    /** The sign-in at the target (FTP account, share user), if needed. */
     public function login()
     {
         return $this->belongsTo(LoginGeneral::class, 'login_general_id');

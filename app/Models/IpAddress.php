@@ -16,7 +16,7 @@ class IpAddress extends Model
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
-    /** Was am Geraet steht, wo sonst die Adresse stuende. */
+    /** What stands on the device where the address would otherwise stand. */
     public const MARKE_DHCP = 'DHCP';
 
     protected $casts = ['dhcp' => 'boolean'];
@@ -27,12 +27,12 @@ class IpAddress extends Model
     }
 
     /**
-     * Was am Geraet steht.
+     * What stands on the device.
      *
-     * Bei DHCP nicht die Adresse: Sie stimmt nur bis zum naechsten Neustart,
-     * und wer sie abliest, verlaesst sich auf etwas, das morgen woanders
-     * steht. Gespeichert bleibt sie trotzdem - der IP-Plan braucht sie, um das
-     * Geraet dem richtigen Pool zuzuordnen.
+     * With DHCP not the address: it only holds until the next restart, and
+     * whoever reads it off relies on something that stands elsewhere
+     * tomorrow. It is stored all the same - the IP plan needs it to assign
+     * the device to the right pool.
      */
     public function label(): string
     {
