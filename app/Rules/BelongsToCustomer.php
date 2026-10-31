@@ -8,16 +8,16 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Stellt sicher, dass ein referenzierter Fremdschlüssel (z. B. site_id, network_id)
- * zum Kunden aus der Route ({customer}) gehört. Verhindert IDOR über Kundengrenzen.
+ * Makes sure that a referenced foreign key (site_id, network_id and the like)
+ * belongs to the customer from the route ({customer}). Prevents IDOR across customers.
  */
 class BelongsToCustomer implements ValidationRule
 {
     /**
-     * Ohne $customerId kommt der Kunde aus der Route. Livewire-Komponenten
-     * haben den Parameter nicht - dort laeuft jede Anfrage gegen
-     * livewire.update, der Kunde waere null und die Pruefung schlueg immer
-     * fehl. Sie geben ihn deshalb mit.
+     * Without $customerId the customer comes from the route. Livewire
+     * components do not have the parameter - there every request runs against
+     * livewire.update, the customer would be null and the check would always
+     * fail. They therefore pass it in.
      */
     public function __construct(protected string $table, protected ?int $customerId = null) {}
 

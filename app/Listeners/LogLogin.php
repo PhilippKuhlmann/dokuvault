@@ -11,13 +11,13 @@ use Illuminate\Http\Request;
 /**
  * Anmeldungen ins Aktivitätsprotokoll.
  *
- * Bis dahin stand dort, wer welchen Server geändert hat - aber nicht, wer sich
- * überhaupt angemeldet hat. In einem Werkzeug, das die Kennwörter ganzer
- * Kundennetze hält, ist das die erste Frage nach einem Vorfall und war die
- * einzige, die sich nicht beantworten liess.
+ * Until then it held who changed which server - but not who signed in at
+ * all. In a tool that holds the passwords of entire customer networks that is
+ * the first question after an incident, and it was the only one that could
+ * not be answered.
  *
- * Die Einträge laufen mit derselben Aufbewahrungsfrist ab wie der Rest des
- * Protokolls - siehe den Adminbereich unter "Protokoll".
+ * The entries expire with the same retention as the rest of the log - see
+ * the admin area under "Protokoll".
  */
 class LogLogin
 {
@@ -28,9 +28,9 @@ class LogLogin
         $nutzer = $ereignis->user;
 
         if ($nutzer instanceof User) {
-            // saveQuietly: Ein normales save() liefe durch TracksChanges und
-            // haenge an jede Anmeldung zusaetzlich einen "Geaendert"-Eintrag
-            // am Benutzer - das Protokoll waere doppelt so lang und halb so
+            // saveQuietly: a normal save() would run through TracksChanges and
+            // hang an additional "changed" entry on the user for every
+            // sign-in - the log would be twice as long and half as useful.
             // brauchbar.
             $nutzer->forceFill([
                 'last_login_at' => now(),
@@ -42,12 +42,12 @@ class LogLogin
     }
 
     /**
-     * Ein gescheiterter Versuch.
+     * A failed attempt.
      *
-     * Der versuchte Benutzername gehoert hinein - er ist die halbe Antwort auf
-     * "wer war das?". Das versuchte Kennwort nicht: Es steht im Ereignis mit
-     * drin, und wer sich vertippt, haette sein richtiges Kennwort im Klartext
-     * im Protokoll stehen.
+     * The attempted username belongs in it - it is half the answer to "who
+     * was that?". The attempted password does not: it is part of the event,
+     * and whoever mistypes would have their real password standing in the log
+     * in plain text.
      */
     public function handleFailed(Failed $ereignis): void
     {
@@ -61,7 +61,7 @@ class LogLogin
         );
     }
 
-    /** Die Bremse hat zugeschlagen - siehe LoginRequest. */
+    /** The throttle has bitten - see LoginRequest. */
     public function handleLockout(Lockout $ereignis): void
     {
         $this->schreiben(
@@ -73,9 +73,9 @@ class LogLogin
     }
 
     /**
-     * @param  string|null  $objekt  Was in der Spalte "Objekt" steht - der Name
-     *                               des Benutzers, oder bei einem unbekannten
-     *                               Zugang der versuchte Benutzername.
+     * @param  string|null  $objekt  What stands in the "Objekt" column - the
+     *                               name of the user, or for an unknown
+     *                               account the attempted username.
      */
     private function schreiben(string $ereignis, string $beschreibung, ?User $nutzer, ?string $objekt): void
     {
@@ -84,9 +84,9 @@ class LogLogin
             ->when($nutzer !== null, fn ($protokoll) => $protokoll->performedOn($nutzer)->causedBy($nutzer))
             ->withProperties([
                 'objekt' => $objekt,
-                // "attributes" ist der Schluessel, den die Protokollseite
-                // aufklappt - so stehen Herkunft und Browser dort, wo man bei
-                // jedem anderen Eintrag die Einzelheiten sucht.
+                // "attributes" is the key the activity page expands - that way
+                // origin and browser stand where one looks for the details of
+                // every other entry.
                 'attributes' => array_filter([
                     'IP' => $this->request->ip(),
                     'Browser' => str($this->request->userAgent() ?? '')->limit(120)->toString() ?: null,

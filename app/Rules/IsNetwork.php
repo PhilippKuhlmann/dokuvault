@@ -6,12 +6,12 @@ use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 /**
- * Ein Netz in CIDR-Schreibweise, z. B. 203.0.113.16/28 oder 2001:db8::/64.
+ * A network in CIDR notation, e.g. 203.0.113.16/28 or 2001:db8::/64.
  *
- * Verlangt die echte Netzadresse: Wer 203.0.113.17/28 eintraegt, meint das Netz
- * .16/28 und haette in der Doku eine Adresse stehen, die kein Netz ist. Die
- * Meldung nennt die richtige, statt still zu korrigieren - eine stille Korrektur
- * waere in einer Dokumentation die schlechtere Antwort.
+ * Demands the real network address: whoever enters 203.0.113.17/28 means the
+ * network .16/28 and would have an address in the documentation that is no
+ * network. The message names the right one instead of correcting silently - a
+ * silent correction would be the worse answer in a documentation.
  */
 class IsNetwork implements ValidationRule
 {

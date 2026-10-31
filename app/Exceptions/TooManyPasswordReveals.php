@@ -6,10 +6,10 @@ use Illuminate\Http\JsonResponse;
 use RuntimeException;
 
 /**
- * Die Bremse beim Kennwortabruf hat gegriffen - siehe App\Support\Kennwortabruf.
+ * The throttle on revealing a password has bitten - see App\Support\PasswordReveal.
  *
- * Die Felder im Browser fangen sie und zeigen die Meldung am Feld. Ueber die
- * Schnittstelle wird daraus ein 429 mit derselben Meldung.
+ * The fields in the browser catch it and show the message at the field.
+ * Through the interface it becomes a 429 with the same message.
  */
 class TooManyPasswordReveals extends RuntimeException
 {

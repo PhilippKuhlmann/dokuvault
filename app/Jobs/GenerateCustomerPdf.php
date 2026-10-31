@@ -13,24 +13,24 @@ use Illuminate\Support\Str;
 use Throwable;
 
 /**
- * Erzeugt die Kundendokumentation als PDF - ausserhalb des Requests.
+ * Generates the customer documentation as a PDF - outside the request.
  *
- * Gemessen an zwei Kunden: 26 Server, 46 VMs und 53 Computer brauchen 136 MB
- * und 2 Sekunden; 40 Server, 90 VMs und 160 Computer schon 370 MB und 15
- * Sekunden. Im Request hiess das erst eine Fehlerseite (Speicher), dann ein
- * Rennen gegen das Zeitlimit von Webserver und PHP. Hier stoert beides nicht.
+ * Measured on two customers: 26 servers, 46 VMs and 53 computers need 136 MB
+ * and 2 seconds; 40 servers, 90 VMs and 160 computers already 370 MB and 15
+ * seconds. In the request that meant first an error page (memory), then a
+ * race against the time limit of web server and PHP. Neither matters here.
  */
 class GenerateCustomerPdf implements ShouldQueue
 {
     use Queueable;
 
-    /** Grosse Kunden brauchen Minuten, nicht Sekunden. */
+    /** Large customers need minutes, not seconds. */
     public int $timeout = 600;
 
     /**
-     * Kein zweiter Versuch: Schlaegt es fehl, liegt es an den Daten oder am
-     * Speicher, und ein Wiederholen brachte dasselbe Ergebnis - nur spaeter.
-     * Der Fehler steht im Auftrag und damit auf der Seite.
+     * No second attempt: if it fails, it is the data or the memory, and a
+     * retry brought the same result - only later. The error stands in the job
+     * and thereby on the page.
      */
     public int $tries = 1;
 

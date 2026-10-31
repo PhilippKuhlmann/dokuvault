@@ -6,11 +6,11 @@ use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 /**
- * Eine Adresse muss innerhalb des angegebenen Netzes liegen.
+ * An address has to lie inside the given network.
  *
- * Der haeufigste Tippfehler beim Dokumentieren eines gerouteten Netzes ist ein
- * Gateway aus dem falschen Block - das faellt sonst erst auf, wenn jemand danach
- * sucht.
+ * The most common typo when documenting a routed network is a gateway from
+ * the wrong block - that otherwise only shows when somebody looks for it
+ * later.
  */
 class InNetwork implements ValidationRule
 {
@@ -32,7 +32,7 @@ class InNetwork implements ValidationRule
         [$netzAdresse, $praefix] = explode('/', (string) $this->netz, 2);
         $netzRoh = @inet_pton($netzAdresse);
 
-        // Ungueltiges Netz meldet bereits IstNetz - hier nichts doppelt sagen.
+        // An invalid network is already reported by IsNetwork - nothing twice here.
         if ($netzRoh === false || ! ctype_digit($praefix) || strlen($netzRoh) !== strlen($adresse)) {
             return;
         }

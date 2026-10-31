@@ -7,11 +7,11 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * Die Probe aufs Exempel fuer die Mail-Einstellungen.
+ * The proof of the pudding for the mail settings.
  *
- * Ohne ShouldQueue, aus demselben Grund wie die Einladung: Wer auf "Testmail
- * senden" drueckt, will jetzt wissen, ob es geht - nicht nachdem ein Worker
- * gelaufen ist.
+ * Without ShouldQueue, for the same reason as the invitation: whoever presses
+ * "send test mail" wants to know now whether it works - not after a worker
+ * has run.
  */
 class Testmail extends Notification
 {
@@ -30,10 +30,10 @@ class Testmail extends Notification
         return (new MailMessage)
             ->subject(__('Testmail von :anwendung', ['anwendung' => $name]))
             ->greeting(__('Das hat geklappt.'))
-            // Bewusst ohne Zeitstempel: Die Anwendung rechnet in UTC, im
-            // Postfach stuende dann eine Uhrzeit, die um den Zeitzonenversatz
-            // danebenliegt. Das Datum der Mail steht ohnehin im Kopf, und dort
-            // stimmt es.
+            // Deliberately without a timestamp: the application computes in
+            // UTC, so the mailbox would show a time off by the timezone
+            // offset. The date of the mail is in its header anyway, and there
+            // it is right.
             ->line(__('Diese Nachricht kommt von :anwendung. Der Mailversand ist damit richtig eingestellt.', ['anwendung' => $name]));
     }
 }

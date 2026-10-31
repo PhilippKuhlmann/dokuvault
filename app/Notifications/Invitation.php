@@ -7,12 +7,12 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * Die Einladung an einen neuen Benutzer: ein Link, hinter dem er sich sein
- * Kennwort selbst gibt.
+ * The invitation to a new user: a link behind which they set their own
+ * password.
  *
- * Bewusst ohne ShouldQueue. Ein Administrator, der auf "Einladen" drueckt,
- * soll sofort erfahren, ob die Mail hinausging - und nicht erst der Benutzer,
- * der drei Tage lang auf nichts wartet.
+ * Deliberately without ShouldQueue. An administrator pressing "invite" should
+ * learn at once whether the mail went out - and not the user first, waiting
+ * three days for nothing.
  */
 class Invitation extends Notification
 {
@@ -32,9 +32,9 @@ class Invitation extends Notification
         // Names come from the admin form; keep them on one line in the mail.
         $empfaenger = preg_replace('/\s+/', ' ', trim((string) $notifiable->name));
 
-        // "Kennwort festlegen" heisst es hier, auf dem Formular dahinter und
-        // in der Bestaetigung. Die Mail sagte "vergeben", das Formular
-        // "setzen" - dreimal dieselbe Handlung unter drei Namen.
+        // It says "set password" here, on the form behind it and in the
+        // confirmation. The mail said "vergeben", the form said "festlegen",
+        // the confirmation "setzen" - the same act under three names.
         return (new MailMessage)
             ->subject(__('Ihr Zugang zu :anwendung', ['anwendung' => $name]))
             ->greeting(__('Hallo :name,', ['name' => $empfaenger]))
@@ -44,7 +44,7 @@ class Invitation extends Notification
                 'username' => $notifiable->username,
             ]))
             ->line(__('Ihr Benutzername: :username', ['username' => $notifiable->username]))
-            // Die Frist steht in config/auth.php beim Broker "einladung".
+            // The deadline sits in config/auth.php with the broker "invitation".
             ->line(__('Der Link gilt eine Woche. Ist er abgelaufen, fragen Sie Ihren Administrator nach einer neuen Einladung.'));
     }
 }
