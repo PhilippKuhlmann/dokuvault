@@ -42,7 +42,7 @@ test('ein einzelner Eintrag laesst sich endgueltig loeschen', function () {
     imPapierkorbSeit($domain, 400);
 
     Livewire::test(AdminTrash::class)
-        ->call('loeschen', 'domain', $domain->id);
+        ->call('delete', 'domain', $domain->id);
 
     // Endgueltig heisst endgueltig - auch withTrashed findet nichts mehr.
     expect(Domain::withTrashed()->find($domain->id))->toBeNull();
@@ -59,7 +59,7 @@ test('das Sammelloeschen trifft nur, was der Filter zeigt', function () {
 
     Livewire::test(AdminTrash::class)
         ->set('aelterAls', 365)
-        ->call('alleLoeschen');
+        ->call('deleteAll');
 
     expect(Domain::withTrashed()->find($alt->id))->toBeNull();
     // Wer den Filter setzt, erwartet nicht, dass etwas ausserhalb davon
@@ -79,7 +79,7 @@ test('haengende IP-Adressen verschwinden mit', function () {
     $server->ipAddresses()->create(['customer_id' => $customer->id, 'address' => '10.0.0.7']);
     imPapierkorbSeit($server, 400);
 
-    Livewire::test(AdminTrash::class)->call('loeschen', 'server', $server->id);
+    Livewire::test(AdminTrash::class)->call('delete', 'server', $server->id);
 
     expect(IpAddress::where('ipable_id', $server->id)
         ->where('ipable_type', Server::class)->count())->toBe(0);

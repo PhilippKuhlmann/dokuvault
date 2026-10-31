@@ -13,7 +13,7 @@
 
     <x-backup-zustand />
 
-    <form wire:submit="speichern" class="space-y-4">
+    <form wire:submit="save" class="space-y-4">
         {{-- Schedule --}}
         <x-panel>
             <div class="mb-3 text-lg font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Zeitplan') }}</div>
@@ -67,7 +67,7 @@
                         <x-input.field id="passwort" type="password" wire:model="form.backup_ziel_geheim_passwort" class="mt-1 w-full" autocomplete="new-password"
                             :placeholder="filled($gespeichert['backup_ziel_geheim_passwort']) ? __('gespeichert – leer lassen zum Behalten') : ''" />
                         @if (filled($gespeichert['backup_ziel_geheim_passwort']))
-                            <button type="button" wire:click="geheimnisLoeschen('backup_ziel_geheim_passwort')" class="mt-1 text-xs text-red-600 hover:underline dark:text-red-400">{{ __('Gespeichertes Passwort löschen') }}</button>
+                            <button type="button" wire:click="deleteSecret('backup_ziel_geheim_passwort')" class="mt-1 text-xs text-red-600 hover:underline dark:text-red-400">{{ __('Gespeichertes Passwort löschen') }}</button>
                         @endif
                     </div>
                     @if ($form['backup_ziel_art'] === 'sftp')
@@ -77,7 +77,7 @@
                                 class="mt-1 w-full rounded-sm border-gray-300 bg-white font-mono text-xs text-gray-900 focus:border-cerulean-500 focus:ring-cerulean-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
                                 placeholder="{{ filled($gespeichert['backup_ziel_geheim_schluessel']) ? __('gespeichert – leer lassen zum Behalten') : '-----BEGIN OPENSSH PRIVATE KEY-----' }}"></textarea>
                             @if (filled($gespeichert['backup_ziel_geheim_schluessel']))
-                                <button type="button" wire:click="geheimnisLoeschen('backup_ziel_geheim_schluessel')" class="text-xs text-red-600 hover:underline dark:text-red-400">{{ __('Gespeicherten Schlüssel löschen') }}</button>
+                                <button type="button" wire:click="deleteSecret('backup_ziel_geheim_schluessel')" class="text-xs text-red-600 hover:underline dark:text-red-400">{{ __('Gespeicherten Schlüssel löschen') }}</button>
                             @endif
                         </div>
                     @else
@@ -137,7 +137,7 @@
                     <x-input.fehler feld="form.backup_geheim_archivpasswort" />
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('Verschlüsselt das ZIP der Sicherung und nimmt die .env mit dem Schlüssel (APP_KEY) mit hinein. Ohne dieses Passwort lässt sie sich nicht wiederherstellen – gut aufbewahren, außerhalb von DokuVault.') }}</p>
                     @if (filled($gespeichert['backup_geheim_archivpasswort']))
-                        <button type="button" wire:click="geheimnisLoeschen('backup_geheim_archivpasswort')" class="mt-1 text-xs text-red-600 hover:underline dark:text-red-400">{{ __('Archivpasswort entfernen') }}</button>
+                        <button type="button" wire:click="deleteSecret('backup_geheim_archivpasswort')" class="mt-1 text-xs text-red-600 hover:underline dark:text-red-400">{{ __('Archivpasswort entfernen') }}</button>
                     @endif
                 </div>
                 <div>
@@ -188,7 +188,7 @@
                         @if (isset($s['fehler']))
                             <td class="px-4 py-2" colspan="5"><span class="text-red-600 dark:text-red-400">{{ $s['ziel'] }}: {{ __('nicht lesbar') }} – {{ $s['fehler'] }}</span></td>
                         @else
-                            <td class="whitespace-nowrap px-4 py-2 text-gray-900 dark:text-gray-100">{{ LocalTime::anzeigen($s['datum'], 'd.m.Y H:i') }}</td>
+                            <td class="whitespace-nowrap px-4 py-2 text-gray-900 dark:text-gray-100">{{ LocalTime::display($s['datum'], 'd.m.Y H:i') }}</td>
                             <td class="px-4 py-2">{{ $s['ziel'] }}</td>
                             <td class="px-4 py-2 font-mono text-xs">{{ basename($s['pfad']) }}</td>
                             <td class="px-4 py-2 text-right">{{ SystemMetrics::lesbar($s['groesse']) }}</td>

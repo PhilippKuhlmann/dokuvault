@@ -96,7 +96,7 @@
 
             {{-- Vertippt beim ersten Feld? Alles leeren und neu zaehlen. Wirkt
                  nur im Formular - ohne Speichern bleibt der Stand erhalten. --}}
-            <x-input.button type="button" color="gray" wire:click="dosenLeeren"
+            <x-input.button type="button" color="gray" wire:click="clearPorts"
                 :label="__('Dosen leeren')" wire:loading.attr="disabled" />
 
             <span class="text-xs text-gray-400 dark:text-gray-500">

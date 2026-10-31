@@ -22,24 +22,24 @@ function vlan(array $overrides = []): Network
 test('trifft eine Adresse innerhalb des Bereichs, inklusive Netz- und Broadcast-Adresse', function () {
     $netz = vlan();
 
-    expect($netz->enthaeltAdresse('10.20.40.0'))->toBeTrue(); // Netzadresse
-    expect($netz->enthaeltAdresse('10.20.40.1'))->toBeTrue(); // Gateway
-    expect($netz->enthaeltAdresse('10.20.40.254'))->toBeTrue();
-    expect($netz->enthaeltAdresse('10.20.40.255'))->toBeTrue(); // Broadcast
+    expect($netz->containsUrl('10.20.40.0'))->toBeTrue(); // Netzadresse
+    expect($netz->containsUrl('10.20.40.1'))->toBeTrue(); // Gateway
+    expect($netz->containsUrl('10.20.40.254'))->toBeTrue();
+    expect($netz->containsUrl('10.20.40.255'))->toBeTrue(); // Broadcast
 });
 
 test('verfehlt Adressen ausserhalb des Bereichs knapp', function () {
     $netz = vlan();
 
-    expect($netz->enthaeltAdresse('10.20.39.255'))->toBeFalse();
-    expect($netz->enthaeltAdresse('10.20.41.0'))->toBeFalse();
+    expect($netz->containsUrl('10.20.39.255'))->toBeFalse();
+    expect($netz->containsUrl('10.20.41.0'))->toBeFalse();
 });
 
 test('leitet die Praefixlaenge auch aus der Subnetzmaske ab, ohne cidr-Feld', function () {
     $netz = vlan(['cidr' => null, 'subnetmask' => '255.255.255.0']);
 
-    expect($netz->enthaeltAdresse('10.20.40.50'))->toBeTrue();
-    expect($netz->enthaeltAdresse('10.20.41.50'))->toBeFalse();
+    expect($netz->containsUrl('10.20.40.50'))->toBeTrue();
+    expect($netz->containsUrl('10.20.41.50'))->toBeFalse();
 });
 
 test('ohne Netzadresse oder Praefixlaenge gibt es keinen Bereich', function () {

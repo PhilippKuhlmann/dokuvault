@@ -192,7 +192,7 @@ class DemoAgentSeeder extends Seeder
      */
     private function eigeneSicherung(): void
     {
-        BackupSettings::speichern(['backup_geheim_archivpasswort' => Str::random(24)]);
+        BackupSettings::save(['backup_geheim_archivpasswort' => Str::random(24)]);
         BackupHealth::merken('local', null);
     }
 }

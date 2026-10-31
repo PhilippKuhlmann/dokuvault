@@ -212,7 +212,7 @@ test('die Filter lassen sich zuruecksetzen', function () {
     Livewire::test(FileList::class, ['customer' => $customer])
         ->set('suche', 'vertrag')
         ->set('tage', 7)
-        ->call('zuruecksetzen')
+        ->call('clearFilters')
         ->assertSet('suche', '')
         ->assertSet('tage', 0)
         ->assertSee('Inventarliste');
@@ -240,7 +240,7 @@ test('die Datei eines fremden Kunden laesst sich nicht loeschen (IDOR)', functio
     ]);
 
     Livewire::test(FileList::class, ['customer' => $customer])
-        ->call('loeschen', $fremdeDatei->id)
+        ->call('delete', $fremdeDatei->id)
         ->assertStatus(404);
 
     expect(File::find($fremdeDatei->id))->not->toBeNull();
@@ -258,7 +258,7 @@ test('loeschen entfernt Eintrag und Datei', function () {
     ]);
 
     Livewire::test(FileList::class, ['customer' => $customer])
-        ->call('loeschen', $datei->id);
+        ->call('delete', $datei->id);
 
     expect(File::find($datei->id))->toBeNull();
     Storage::disk('local')->assertMissing('x/weg.pdf');

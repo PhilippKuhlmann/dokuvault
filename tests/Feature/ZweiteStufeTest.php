@@ -20,8 +20,8 @@ function stufe(): TwoFactor
 
 function nutzerMitZweiterStufe(string $kennwort = 'Ein-Gutes-Kennwort-2026'): array
 {
-    $geheimnis = stufe()->geheimnisErzeugen();
-    $codes = stufe()->wiederherstellungscodes();
+    $geheimnis = stufe()->generateSecret();
+    $codes = stufe()->recoveryCodes();
 
     $nutzer = userWithPermissions([]);
     $nutzer->forceFill([
@@ -52,7 +52,7 @@ test('die Einrichtung zeigt QR-Code und Geheimnis zum Abtippen', function () {
 
     // Noch ist nichts scharf: ein Geheimnis, das die App vielleicht nie
     // uebernommen hat, darf niemanden aussperren.
-    expect($nutzer->fresh()->hatZweiteStufe())->toBeFalse();
+    expect($nutzer->fresh()->hasTwoFactor())->toBeFalse();
 });
 
 test('erst ein stimmender Code schaltet sie ein', function () {
@@ -63,7 +63,7 @@ test('erst ein stimmender Code schaltet sie ein', function () {
     $this->post(route('two-factor.confirm'), ['code' => gueltigerCode($geheimnis)])
         ->assertRedirect();
 
-    expect($nutzer->fresh()->hatZweiteStufe())->toBeTrue()
+    expect($nutzer->fresh()->hasTwoFactor())->toBeTrue()
         ->and($nutzer->fresh()->two_factor_secret)->toBe($geheimnis);
 });
 
@@ -74,7 +74,7 @@ test('ein falscher Code schaltet nichts ein', function () {
     $this->post(route('two-factor.confirm'), ['code' => '000000'])
         ->assertSessionHasErrors('code', null, 'zweiteStufe');
 
-    expect($nutzer->fresh()->hatZweiteStufe())->toBeFalse();
+    expect($nutzer->fresh()->hasTwoFactor())->toBeFalse();
 });
 
 test('beim Einschalten gibt es Wiederherstellungscodes - genau einmal', function () {
@@ -95,12 +95,12 @@ test('Abschalten verlangt das Kennwort', function () {
     $this->actingAs($nutzer)->delete(route('two-factor.destroy'), ['password' => 'falsch'])
         ->assertSessionHasErrors('password', null, 'zweiteStufeAus');
 
-    expect($nutzer->fresh()->hatZweiteStufe())->toBeTrue();
+    expect($nutzer->fresh()->hasTwoFactor())->toBeTrue();
 
     $this->delete(route('two-factor.destroy'), ['password' => 'Ein-Gutes-Kennwort-2026'])
         ->assertRedirect();
 
-    expect($nutzer->fresh()->hatZweiteStufe())->toBeFalse();
+    expect($nutzer->fresh()->hasTwoFactor())->toBeFalse();
 });
 
 // --- Anmeldung --------------------------------------------------------------
@@ -218,7 +218,7 @@ test('ein Administrator kann die zweite Stufe zurücksetzen', function () {
         ->delete(route('admin.user.two-factor', $nutzer))
         ->assertRedirect(route('admin.user.edit', $nutzer));
 
-    expect($nutzer->fresh()->hatZweiteStufe())->toBeFalse();
+    expect($nutzer->fresh()->hasTwoFactor())->toBeFalse();
 
     // Und es steht im Protokoll, wer es war.
     // Mit Ereignisnamen: Ohne einen steht in der Protokollspalte nur "—", und
@@ -235,7 +235,7 @@ test('ohne das Recht admin_user geht das nicht', function () {
         ->delete(route('admin.user.two-factor', $nutzer))
         ->assertForbidden();
 
-    expect($nutzer->fresh()->hatZweiteStufe())->toBeTrue();
+    expect($nutzer->fresh()->hasTwoFactor())->toBeTrue();
 });
 
 test('ein fremder Nutzer kann die zweite Stufe eines anderen nicht abschalten', function () {
@@ -247,8 +247,8 @@ test('ein fremder Nutzer kann die zweite Stufe eines anderen nicht abschalten', 
     $this->actingAs($angreifer)
         ->delete(route('two-factor.destroy'), ['password' => 'Ein-Gutes-Kennwort-2026']);
 
-    expect($opfer->fresh()->hatZweiteStufe())->toBeTrue()
-        ->and($angreifer->fresh()->hatZweiteStufe())->toBeFalse();
+    expect($opfer->fresh()->hasTwoFactor())->toBeTrue()
+        ->and($angreifer->fresh()->hasTwoFactor())->toBeFalse();
 });
 
 // --- Der Administrator verlangt sie ----------------------------------------
@@ -276,7 +276,7 @@ test('nach der Einrichtung ist der Weg wieder frei', function () {
     $this->actingAs($nutzer)->post(route('two-factor.begin'));
     $this->post(route('two-factor.confirm'), ['code' => gueltigerCode(session(TwoFactorController::IN_ARBEIT))]);
 
-    expect($nutzer->fresh()->mussZweiteStufeEinrichten())->toBeFalse();
+    expect($nutzer->fresh()->mustEnrollTwoFactor())->toBeFalse();
 
     $this->get(route('customer.search'))->assertStatus(200);
 });
@@ -289,7 +289,7 @@ test('verlangt heisst: der Benutzer kann sie nicht abschalten', function () {
         ->delete(route('two-factor.destroy'), ['password' => 'Ein-Gutes-Kennwort-2026'])
         ->assertSessionHasErrors('password', null, 'zweiteStufeAus');
 
-    expect($nutzer->fresh()->hatZweiteStufe())->toBeTrue();
+    expect($nutzer->fresh()->hasTwoFactor())->toBeTrue();
 });
 
 test('Livewire bleibt offen, damit das Profil bedienbar ist', function () {
@@ -336,7 +336,7 @@ test('auf der Demo wird niemand gezwungen', function () {
 
     config(['custom.demo_protected_users' => [$nutzer->username]]);
 
-    expect($nutzer->fresh()->mussZweiteStufeEinrichten())->toBeFalse();
+    expect($nutzer->fresh()->mustEnrollTwoFactor())->toBeFalse();
 
     $this->actingAs($nutzer->fresh())->get(route('customer.search'))->assertStatus(200);
 });
@@ -425,8 +425,8 @@ test('die Benutzerliste zeigt die zweite Stufe als drei unterscheidbare Zeichen'
         ->assertSee('text-green-600', false)
         ->assertSee('text-amber-600', false);
 
-    expect($eingerichtet->hatZweiteStufe())->toBeTrue();
-    expect($offen->fresh()->hatZweiteStufe())->toBeFalse();
+    expect($eingerichtet->hasTwoFactor())->toBeTrue();
+    expect($offen->fresh()->hasTwoFactor())->toBeFalse();
 });
 
 test('ein angenommener Einmalcode gilt nicht ein zweites Mal', function () {
@@ -536,11 +536,11 @@ test('mit E-Mail-Adresse braucht die Einrichtung den Code aus der Mail', functio
         ->assertSessionHasErrors('mail_code', null, 'zweiteStufe');
     $this->post(route('two-factor.confirm'), ['code' => gueltigerCode($geheimnis), 'mail_code' => $code === '000000' ? '111111' : '000000'])
         ->assertSessionHasErrors('mail_code', null, 'zweiteStufe');
-    expect($nutzer->fresh()->hatZweiteStufe())->toBeFalse();
+    expect($nutzer->fresh()->hasTwoFactor())->toBeFalse();
 
     $this->post(route('two-factor.confirm'), ['code' => gueltigerCode($geheimnis), 'mail_code' => $code]);
 
-    expect($nutzer->fresh()->hatZweiteStufe())->toBeTrue();
+    expect($nutzer->fresh()->hasTwoFactor())->toBeTrue();
     Notification::assertSentTo($nutzer, TwoFactorEnabled::class);
 });
 
@@ -554,7 +554,7 @@ test('der Code aus der Mail läuft ab', function () {
 
     $this->post(route('two-factor.confirm'), ['code' => gueltigerCode($geheimnis), 'mail_code' => $code])
         ->assertSessionHasErrors('mail_code', null, 'zweiteStufe');
-    expect($nutzer->fresh()->hatZweiteStufe())->toBeFalse();
+    expect($nutzer->fresh()->hasTwoFactor())->toBeFalse();
 });
 
 test('ohne E-Mail-Adresse geht die Einrichtung ohne Mail', function () {
@@ -564,7 +564,7 @@ test('ohne E-Mail-Adresse geht die Einrichtung ohne Mail', function () {
     $this->actingAs($nutzer)->post(route('two-factor.begin'));
     $this->post(route('two-factor.confirm'), ['code' => gueltigerCode(session(TwoFactorController::IN_ARBEIT))]);
 
-    expect($nutzer->fresh()->hatZweiteStufe())->toBeTrue();
+    expect($nutzer->fresh()->hasTwoFactor())->toBeTrue();
     Notification::assertNothingSent();
 });
 

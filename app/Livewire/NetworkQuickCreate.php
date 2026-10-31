@@ -85,7 +85,7 @@ class NetworkQuickCreate extends Component
 
     public function mount($customer, ?int $siteId = null, string $knopfKlassen = '', string $label = '', bool $mitSymbol = false, bool $mitKnopf = true): void
     {
-        $this->nurEigenerKunde($customer->id);
+        $this->onlyOwnCustomer($customer->id);
 
         $this->customerId = $customer->id;
         $this->siteId = $siteId;
@@ -145,7 +145,7 @@ class NetworkQuickCreate extends Component
             // Das Partnerfeld hat gerade einen gueltigen Wert bekommen - sein
             // roter Rahmen gehoert weg. updated() lief schon, bevor dieser
             // Wert stand.
-            $this->partnerPruefen('cidr');
+            $this->checkPeer('cidr');
         }
     }
 
@@ -155,21 +155,21 @@ class NetworkQuickCreate extends Component
 
         if ($maske !== null) {
             $this->subnetmask = $maske;
-            $this->partnerPruefen('subnetmask');
+            $this->checkPeer('subnetmask');
         }
     }
 
     /** Maske und CIDR setzen sich gegenseitig - siehe updatedSubnetmask(). */
-    private function partnerPruefen(string $feld): void
+    private function checkPeer(string $feld): void
     {
-        $this->waehrendDerEingabePruefen($feld);
+        $this->validateOnInput($feld);
     }
 
     /**
      * Alles zurueck auf Anfang - ein Ort dafuer, weil es sonst an vier Stellen
      * dieselbe lange Feldliste waere und eine davon irgendwann abweicht.
      */
-    protected function formularLeeren(): void
+    protected function clearForm(): void
     {
         // subnetmask und cidr sind mit dabei: reset() setzt auf die Vorgaben
         // der Klasse zurueck, also auf 255.255.255.0 und 24 - die beiden
@@ -190,7 +190,7 @@ class NetworkQuickCreate extends Component
      */
     public function neu(): void
     {
-        $this->formularLeeren();
+        $this->clearForm();
         $this->offen = true;
     }
 
@@ -198,9 +198,9 @@ class NetworkQuickCreate extends Component
      * Abbrechen und Escape: schliessen und aufraeumen. Nur zu schliessen
      * reicht nicht, der Zustand bliebe sonst im naechsten Aufschlag stehen.
      */
-    public function abbrechen(): void
+    public function cancel(): void
     {
-        $this->formularLeeren();
+        $this->clearForm();
     }
 
     /**
@@ -221,11 +221,11 @@ class NetworkQuickCreate extends Component
         return app(NetworkEditing::class)->attributeNames();
     }
 
-    public function speichern(): void
+    public function save(): void
     {
         Gate::authorize($this->bearbeiteId ? 'network_update' : 'network_create');
 
-        $this->pruefungEinschalten();
+        $this->enableCheck();
 
         $daten = $this->validate($this->regeln(), [], $this->feldnamen());
 
@@ -247,7 +247,7 @@ class NetworkQuickCreate extends Component
             : __('VLAN angelegt.'));
 
         // Erst nach der Meldung: bearbeiteId entscheidet ueber ihren Wortlaut.
-        $this->formularLeeren();
+        $this->clearForm();
 
         // Der IP-Block waehlt das neue Netz damit gleich aus, die Liste rendert
         // neu. Kein Redirect mehr: Seit die Liste selbst Livewire ist, genuegt
@@ -265,7 +265,7 @@ class NetworkQuickCreate extends Component
      * IP-Adressen behalten ihre network_id und laufen ins Leere - dasselbe
      * Verhalten wie beim Loeschen ueber die alte Seite.
      */
-    public function loeschen(): void
+    public function delete(): void
     {
         Gate::authorize('network_delete');
 
@@ -277,7 +277,7 @@ class NetworkQuickCreate extends Component
             ->findOrFail($this->bearbeiteId)
             ->delete();
 
-        $this->formularLeeren();
+        $this->clearForm();
 
         $this->dispatch('notice', text: __('VLAN gelöscht.'));
         $this->dispatch('vlan-created', id: 0);

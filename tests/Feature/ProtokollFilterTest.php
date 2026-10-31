@@ -105,7 +105,7 @@ test('Zuruecksetzen raeumt alle Filter ab', function () {
         ->set('suche', 'irgendwas')
         ->set('ereignis', 'deleted')
         ->set('tage', 7)
-        ->call('zuruecksetzen')
+        ->call('clearFilters')
         ->assertSet('suche', '')
         ->assertSet('ereignis', '')
         ->assertSet('tage', 0);

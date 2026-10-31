@@ -25,7 +25,7 @@ class TwoFactor
 
     public function __construct(private Google2FA $google2fa) {}
 
-    public function geheimnisErzeugen(): string
+    public function generateSecret(): string
     {
         return $this->google2fa->generateSecretKey(32);
     }
@@ -84,7 +84,7 @@ class TwoFactor
      * wieder herein - und in dieser Anwendung liegen die Kennwoerter ganzer
      * Kundennetze.
      */
-    public function wiederherstellungscodes(): array
+    public function recoveryCodes(): array
     {
         return collect()->times(self::CODES, fn () => Str::random(10).'-'.Str::random(10))->all();
     }

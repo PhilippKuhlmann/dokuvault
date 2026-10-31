@@ -217,7 +217,7 @@ class ChecklistController extends Controller
      */
     public function toggle(Request $request, Customer $customer, Checklist $checklist, ChecklistItem $item): JsonResponse
     {
-        $grund = ChecklistActions::umschalten($item, $request->user());
+        $grund = ChecklistActions::toggle($item, $request->user());
 
         if ($grund !== null) {
             return response()->json(['message' => $grund], 409);
@@ -231,7 +231,7 @@ class ChecklistController extends Controller
 
     public function approve(Request $request, Customer $customer, Checklist $checklist, ChecklistItem $item): JsonResponse
     {
-        ChecklistActions::freigeben($item, $request->user());
+        ChecklistActions::release($item, $request->user());
 
         return response()->json(['freigegeben' => true]);
     }

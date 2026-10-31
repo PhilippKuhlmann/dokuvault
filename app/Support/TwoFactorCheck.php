@@ -25,7 +25,7 @@ class TwoFactorCheck
      *
      * @throws ValidationException bei leerem, falschem oder gebremstem Code
      */
-    public function pruefen(User $nutzer, string $eingabe, string $ip): bool
+    public function check(User $nutzer, string $eingabe, string $ip): bool
     {
         $this->nichtGesperrt($nutzer, $ip);
 
@@ -40,7 +40,7 @@ class TwoFactorCheck
         // sein, und andersherum genauso - die Reihenfolge kostet also nichts
         // und spart eine Zweitunterscheidung an der Eingabe.
         $mitCode = $this->codeAnnehmen($nutzer, $eingabe);
-        $mitZettel = ! $mitCode && $nutzer->wiederherstellungscodeVerbrauchen($eingabe);
+        $mitZettel = ! $mitCode && $nutzer->useRecoveryCode($eingabe);
 
         if (! $mitCode && ! $mitZettel) {
             RateLimiter::hit($this->schluessel($nutzer, $ip), Setting::anmeldungSperreSekunden());

@@ -331,7 +331,7 @@ test('Dosen leeren raeumt das Formular, ohne Raum und Switch anzufassen', functi
         ->set("label.{$ports[0]->id}", 'Besprechung')
         ->call('durchnummerieren')
         // Vertippt: alles leeren und mit der richtigen Nummer neu zaehlen.
-        ->call('dosenLeeren')
+        ->call('clearPorts')
         ->set("outlet.{$ports[0]->id}", '1.01')
         ->call('durchnummerieren')
         ->call('save')
@@ -351,7 +351,7 @@ test('Dosen leeren wirkt erst mit Speichern', function () {
     $port->update(['outlet' => '1.01']);
 
     Livewire::test(PatchPanelPorts::class, ['panel' => $panel, 'customer' => $customer])
-        ->call('dosenLeeren');
+        ->call('clearPorts');
 
     // Ein Fehlklick allein darf nichts loeschen.
     expect($port->fresh()->outlet)->toBe('1.01');

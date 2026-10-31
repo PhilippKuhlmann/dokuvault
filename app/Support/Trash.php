@@ -67,7 +67,7 @@ class Trash
                     'name' => $this->name($objekt),
                     'geloescht_am' => $objekt->deleted_at,
                     'id' => $objekt->id,
-                    'darf_wiederherstellen' => $this->darfWiederherstellen($slug),
+                    'darf_wiederherstellen' => $this->mayRestore($slug),
                 ]);
             }
         }
@@ -101,7 +101,7 @@ class Trash
      * Das braucht das Recht zu loeschen, nicht nur das, in den Papierkorb zu
      * sehen: Wiederherstellen macht ein Loeschen rueckgaengig.
      */
-    public function wiederherstellen(string $typ, int $id): Model
+    public function restore(string $typ, int $id): Model
     {
         // Die Klasse kommt aus der Liste der Konfiguration, nie aus der
         // Eingabe.
@@ -121,7 +121,7 @@ class Trash
         return $objekt;
     }
 
-    public function darfWiederherstellen(string $typ): bool
+    public function mayRestore(string $typ): bool
     {
         return Gate::forUser($this->nutzer)->allows($typ.'_delete');
     }

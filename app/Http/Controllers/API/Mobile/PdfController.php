@@ -66,7 +66,7 @@ class PdfController extends Controller
      * Das PDF traegt jedes Kennwort des Kunden - sein Abruf gehoert ins
      * Protokoll wie ein einzeln angesehenes Kennwort.
      */
-    public function laden(Request $request, Customer $customer, PdfExport $pdfExport): StreamedResponse
+    public function load(Request $request, Customer $customer, PdfExport $pdfExport): StreamedResponse
     {
         Gate::authorize('create_pdf');
 

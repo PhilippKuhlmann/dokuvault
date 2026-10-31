@@ -24,7 +24,7 @@ test('der Klick legt einen Auftrag an statt zu rendern', function () {
     $customer = Customer::factory()->create();
 
     Livewire::test(PdfExportStatus::class, ['customer' => $customer])
-        ->call('starten')
+        ->call('start')
         ->assertDispatched('notice');
 
     Queue::assertPushed(GenerateCustomerPdf::class);
@@ -38,7 +38,7 @@ test('ein zweiter Klick erzeugt keinen zweiten Auftrag', function () {
 
     // Wer zweimal klickt, soll nicht zweimal denselben Berg Arbeit ausloesen.
     $komponente = Livewire::test(PdfExportStatus::class, ['customer' => $customer]);
-    $komponente->call('starten')->call('starten');
+    $komponente->call('start')->call('start');
 
     expect(PdfExport::where('customer_id', $customer->id)->count())->toBe(1);
     Queue::assertPushed(GenerateCustomerPdf::class, 1);

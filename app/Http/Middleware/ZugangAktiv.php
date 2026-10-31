@@ -28,7 +28,7 @@ class ZugangAktiv
     {
         $nutzer = $request->user();
 
-        if ($nutzer === null || ! $nutzer->istDeaktiviert()) {
+        if ($nutzer === null || ! $nutzer->isDisabled()) {
             return $next($request);
         }
 

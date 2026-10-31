@@ -14,5 +14,5 @@ interface FieldGenerator
      * @param  array<string, mixed>  $form  Der bisherige Formularstand
      * @return array<string, mixed> Nur die Felder, die gesetzt werden sollen
      */
-    public function erzeugen(array $form): array;
+    public function generate(array $form): array;
 }

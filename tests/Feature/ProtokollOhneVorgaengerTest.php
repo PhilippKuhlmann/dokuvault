@@ -59,7 +59,7 @@ test('mit Vorgaenger laesst sich das bisherige Kennwort aufdecken', function () 
         'felder' => ['password'],
     ])
         ->assertDontSee('Altes111')
-        ->call('zeigen')
+        ->call('show')
         // Gefragt ist, was vorher galt - nicht, was jetzt gilt.
         ->assertSee('Altes111')
         ->assertDontSee('Neues222');
@@ -83,5 +83,5 @@ test('ohne das Recht kommt niemand an ein bisheriges Kennwort', function () {
     Livewire::test(ActivityLogPassword::class, [
         'ids' => $eintrag->properties['verlauf_ids'],
         'felder' => ['password'],
-    ])->call('zeigen')->assertForbidden();
+    ])->call('show')->assertForbidden();
 });

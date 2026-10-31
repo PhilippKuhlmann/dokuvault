@@ -157,7 +157,7 @@ test('ein Drucker ohne Kennwort lässt sich anlegen', function () {
         ->set('form.name', 'ETI-VERSAND')
         ->set('form.manufacturer', 'Zebra')
         ->set('form.model', 'ZT411')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     expect(Printer::where('name', 'ETI-VERSAND')->exists())->toBeTrue();
@@ -174,6 +174,6 @@ test('ein Webzugang ohne Kennwort wird abgelehnt', function () {
         ->set('form.name', 'Strato')
         ->set('form.url', 'https://strato.de')
         ->set('form.username', 'kunde')
-        ->call('speichern')
+        ->call('save')
         ->assertHasErrors('form.password');
 });

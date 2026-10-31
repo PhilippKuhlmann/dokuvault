@@ -24,9 +24,9 @@
         {{-- Beim Oeffnen ins erste Feld springen; Cmd/Strg+Enter speichert. --}}
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
             x-init="$fokusErstesFeld()"
-            x-on:keydown.escape.window="$wire.abbrechen()"
-            x-on:keydown.meta.enter.prevent="$wire.speichern()"
-            x-on:keydown.ctrl.enter.prevent="$wire.speichern()">
+            x-on:keydown.escape.window="$wire.cancel()"
+            x-on:keydown.meta.enter.prevent="$wire.save()"
+            x-on:keydown.ctrl.enter.prevent="$wire.save()">
 
             <div class="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-gray-200 bg-white px-5 pt-5 text-left shadow-lg dark:border-gray-700 dark:bg-gray-800">
                 {{-- Bei der Rueckfrage keine Ueberschrift: Der rote Kasten stellt
@@ -152,7 +152,7 @@
                         <div class="mt-4 flex justify-end gap-2">
                             <x-input.button type="button" color="gray"
                                 wire:click="$set('loeschenGefragt', false)" :label="__('Abbrechen')" />
-                            <x-input.button type="button" color="red" wire:click="loeschen" :label="__('Löschen')" />
+                            <x-input.button type="button" color="red" wire:click="delete" :label="__('Löschen')" />
                         </div>
                     </div>
                 @else
@@ -166,8 +166,8 @@
 
                         {{-- abbrechen() statt offen=false: sonst bleibt bearbeiteId stehen
                              und das naechste "Neu" oeffnet das Bearbeiten-Modal. --}}
-                        <x-input.button type="button" color="gray" wire:click="abbrechen" :label="__('Abbrechen')" />
-                        <x-input.button type="button" wire:click="speichern" :label="$bearbeiteId ? __('Speichern') : __('Anlegen')" />
+                        <x-input.button type="button" color="gray" wire:click="cancel" :label="__('Abbrechen')" />
+                        <x-input.button type="button" wire:click="save" :label="$bearbeiteId ? __('Speichern') : __('Anlegen')" />
                     </div>
                 @endif
             </div>

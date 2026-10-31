@@ -65,7 +65,7 @@ test('das VLAN-Fenster ergaenzt die fehlende Schreibweise', function () {
         ->set('description', 'Nur Maske')
         ->set('network', '10.10.10.0')
         ->set('subnetmask', '255.255.240.0')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     expect((int) Network::where('description', 'Nur Maske')->sole()->cidr)->toBe(20);
@@ -76,7 +76,7 @@ test('das VLAN-Fenster ergaenzt die fehlende Schreibweise', function () {
         ->set('description', 'Nur CIDR')
         ->set('network', '10.10.11.0')
         ->set('cidr', 26)
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     expect(Network::where('description', 'Nur CIDR')->sole()->subnetmask)->toBe('255.255.255.192');
@@ -99,7 +99,7 @@ test('die zuletzt getippte Angabe zieht die andere nach', function () {
         ->set('network', '10.10.12.0')
         ->set('cidr', 16)
         ->set('subnetmask', '255.255.255.0')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     $netz = Network::where('description', 'Von Hand')->sole();

@@ -24,15 +24,15 @@ class InternetConnection extends Model
      */
     protected function bandwidthDown(): Attribute
     {
-        return $this->nurZahl();
+        return $this->onlyNumber();
     }
 
     protected function bandwidthUp(): Attribute
     {
-        return $this->nurZahl();
+        return $this->onlyNumber();
     }
 
-    private function nurZahl(): Attribute
+    private function onlyNumber(): Attribute
     {
         return new Attribute(
             get: fn ($value) => filled($value) ? preg_replace('/\D+/', '', (string) $value) : null,

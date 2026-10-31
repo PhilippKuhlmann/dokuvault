@@ -49,7 +49,7 @@ class FileList extends Component
     public function mount(Customer $customer): void
     {
         Gate::authorize('viewAny', File::class);
-        $this->nurEigenerKunde($customer->id);
+        $this->onlyOwnCustomer($customer->id);
 
         $this->customerId = $customer->id;
     }
@@ -61,7 +61,7 @@ class FileList extends Component
         }
     }
 
-    public function zuruecksetzen(): void
+    public function clearFilters(): void
     {
         $this->reset(['suche', 'art', 'tage', 'sortierung']);
         $this->resetPage();
@@ -73,7 +73,7 @@ class FileList extends Component
      * Die Id wird gegen den Kunden geprueft: Sonst liesse sich mit einer
      * fremden Id die Datei eines anderen Kunden loeschen.
      */
-    public function loeschen(int $id): void
+    public function delete(int $id): void
     {
         Gate::authorize('delete', File::class);
 

@@ -328,7 +328,7 @@ test('jede Komponente mit einem Kunden als Parameter weist einen fremden ab', fu
         // Entweder die Komponente prüft beim Einhängen (der Trait) oder bei
         // jeder Aktion (RackEditor, PatchPanelPorts, der Assistent). Beides
         // ist in Ordnung - keines von beidem nicht.
-        $prueft = str_contains($quelle, 'nurEigenerKunde(')
+        $prueft = str_contains($quelle, 'onlyOwnCustomer(')
             // RackEditor und PatchPanelPorts pruefen bei jeder Aktion statt
             // beim Einhaengen - beide mit derselben Wendung.
             || str_contains($quelle, 'abort_if($user->customer_id')

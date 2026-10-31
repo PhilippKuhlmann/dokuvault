@@ -35,7 +35,7 @@ class RackCatalogItemController extends Controller
     {
         // Der Ablageort haengt nicht am Datensatz, das Bild kann also gleich
         // mit angelegt werden - sonst folgte auf jedes Anlegen ein Update.
-        RackCatalogItem::create($this->bildPflegen($request, new RackCatalogItem, $this->stammdaten($request)));
+        RackCatalogItem::create($this->handleImage($request, new RackCatalogItem, $this->stammdaten($request)));
 
         return redirect(route('admin.rackcatalogitem.index'));
     }
@@ -47,7 +47,7 @@ class RackCatalogItemController extends Controller
 
     public function update(RackCatalogItem $rackcatalogitem, RackCatalogItemRequest $request)
     {
-        $rackcatalogitem->update($this->bildPflegen($request, $rackcatalogitem, $this->stammdaten($request)));
+        $rackcatalogitem->update($this->handleImage($request, $rackcatalogitem, $this->stammdaten($request)));
 
         return redirect(route('admin.rackcatalogitem.index'));
     }
@@ -77,6 +77,6 @@ class RackCatalogItemController extends Controller
      */
     public function image(RackCatalogItem $rackcatalogitem)
     {
-        return $this->bildAusliefern($rackcatalogitem);
+        return $this->serveImage($rackcatalogitem);
     }
 }

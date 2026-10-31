@@ -31,7 +31,7 @@ test('die Bezeichnung kann den Ablageordner nicht verlassen', function () {
     lizenzFormular($kunde)
         ->set('form.file_name', '../../../../'.$fremd->slug.'/files/eingeschleust')
         ->set('datei', UploadedFile::fake()->create('x.pdf', 10))
-        ->call('speichern');
+        ->call('save');
 
     $dateien = Storage::disk('local')->allFiles();
 
@@ -52,7 +52,7 @@ test('auch der Dateiname aus dem Browser kommt nicht durch', function () {
     lizenzFormular($kunde)
         ->set('form.file_name', '')
         ->set('datei', UploadedFile::fake()->create('../../ausbruch.pdf', 10))
-        ->call('speichern');
+        ->call('save');
 
     $dateien = Storage::disk('local')->allFiles();
 
@@ -73,7 +73,7 @@ test('eine zu große Datei landet nicht auf der Platte', function () {
     lizenzFormular($kunde)
         ->set('form.file_name', 'gross')
         ->set('datei', UploadedFile::fake()->create('gross.pdf', config('custom.datei_max_kb') + 100))
-        ->call('speichern');
+        ->call('save');
 
     expect(Storage::disk('local')->allFiles())->toBeEmpty();
 });
@@ -94,7 +94,7 @@ test('eine ausführbare Datei wird abgewiesen', function () {
     lizenzFormular($kunde)
         ->set('form.file_name', 'skript')
         ->set('datei', UploadedFile::fake()->createWithContent('boese.php', '<?php echo 1;'))
-        ->call('speichern')
+        ->call('save')
         ->assertHasErrors('datei');
 
     expect(Storage::disk('local')->allFiles())->toBeEmpty();
@@ -108,7 +108,7 @@ test('Gegenprobe: eine erlaubte Datei geht durch', function () {
     lizenzFormular($kunde)
         ->set('form.file_name', 'Lizenzurkunde 2026')
         ->set('datei', UploadedFile::fake()->create('urkunde.pdf', 100))
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     expect(Storage::disk('local')->allFiles()[0] ?? '')

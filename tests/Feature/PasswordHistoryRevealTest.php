@@ -40,7 +40,7 @@ test('a revealed previous password is logged like every other reveal', function 
     $this->actingAs(historyViewer());
 
     Livewire::test(ActivityLogPassword::class, ['ids' => $ids, 'felder' => ['cloud_backup_password']])
-        ->call('zeigen')
+        ->call('show')
         ->assertSee('Das-Alte-2026');
 
     expect(Activity::where('event', 'kennwort_angesehen')->where('subject_id', $firewall->id)->count())->toBe(1);
@@ -52,7 +52,7 @@ test('a customer-bound log viewer cannot reveal another customer\'s passwords', 
     $this->actingAs(historyViewer(customer: $own));
 
     Livewire::test(ActivityLogPassword::class, ['ids' => $ids, 'felder' => ['cloud_backup_password']])
-        ->call('zeigen')
+        ->call('show')
         ->assertForbidden();
 });
 
@@ -61,7 +61,7 @@ test('without the right to see the object there is no previous password', functi
     $this->actingAs(historyViewer(['admin_activity']));
 
     Livewire::test(ActivityLogPassword::class, ['ids' => $ids, 'felder' => ['cloud_backup_password']])
-        ->call('zeigen')
+        ->call('show')
         ->assertForbidden();
 });
 
@@ -72,10 +72,10 @@ test('previous passwords share the brake of every other reveal', function () {
     $component = Livewire::test(ActivityLogPassword::class, ['ids' => $ids, 'felder' => ['cloud_backup_password']]);
 
     for ($i = 0; $i < Setting::kennwortAbrufe(); $i++) {
-        $component->call('zeigen')->call('verbergen');
+        $component->call('show')->call('verbergen');
     }
 
-    $component->call('zeigen')
+    $component->call('show')
         ->assertHasErrors('kennwort')
         ->assertDontSee('Das-Alte-2026');
 });

@@ -36,7 +36,7 @@ class ChecklistProgress extends Component
 
     public function mount(Customer $customer, Checklist $checklist): void
     {
-        $this->nurEigenerKunde($customer->id);
+        $this->onlyOwnCustomer($customer->id);
         abort_unless($checklist->customer_id === $customer->id, 404);
 
         $this->customerId = $customer->id;
@@ -88,7 +88,7 @@ class ChecklistProgress extends Component
     {
         // Abhaken und Freigeben stehen in Checklistenpflege - dieselbe
         // Klasse bedient die iOS-App.
-        $grund = ChecklistActions::umschalten(
+        $grund = ChecklistActions::toggle(
             $this->checklist()->items()->findOrFail($itemId),
             auth()->user(),
         );
@@ -100,7 +100,7 @@ class ChecklistProgress extends Component
 
     public function approve(int $itemId): void
     {
-        ChecklistActions::freigeben(
+        ChecklistActions::release(
             $this->checklist()->items()->findOrFail($itemId),
             auth()->user(),
         );
@@ -110,7 +110,7 @@ class ChecklistProgress extends Component
 
     private function checklist(): Checklist
     {
-        $this->nurEigenerKunde($this->customerId);
+        $this->onlyOwnCustomer($this->customerId);
 
         return Checklist::where('customer_id', $this->customerId)->findOrFail($this->checklistId);
     }

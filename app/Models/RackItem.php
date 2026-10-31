@@ -58,9 +58,9 @@ class RackItem extends Model
      * Katalogelements (passiver Einbau), sonst das des Geraetemodells,
      * sonst keines - dann zeichnet die Frontansicht.
      */
-    public function bildUrl(): ?string
+    public function imageUrl(): ?string
     {
-        return $this->catalogItem?->bildUrl() ?? $this->geraeteModell()?->bildUrl();
+        return $this->catalogItem?->imageUrl() ?? $this->geraeteModell()?->imageUrl();
     }
 
     /** Schluessel einer eigenen Zeichnung des Geraetemodells, oder null. */
@@ -70,9 +70,9 @@ class RackItem extends Model
     }
 
     /** Dasselbe als Dateipfad - fuer den PDF-Export, der kein HTTP kann. */
-    public function bildPfad(): ?string
+    public function imagePath(): ?string
     {
-        return $this->catalogItem?->bildPfad() ?? $this->geraeteModell()?->bildPfad();
+        return $this->catalogItem?->imagePath() ?? $this->geraeteModell()?->imagePath();
     }
 
     /**

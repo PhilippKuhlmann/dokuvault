@@ -81,7 +81,7 @@
                         </p>
                         <div class="mt-4 flex justify-end gap-2">
                             <x-input.button type="button" color="gray" wire:click="$set('loeschenGefragt', false)" :label="__('Abbrechen')" />
-                            <x-input.button type="button" color="red" wire:click="alleLoeschen"
+                            <x-input.button type="button" color="red" wire:click="deleteAll"
                                 wire:loading.attr="disabled" :label="__('Endgültig löschen')" />
                         </div>
                     </div>
@@ -120,12 +120,12 @@
                                 </span>
                             </td>
                             <td class="px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100">{{ $zeile['name'] }}</td>
-                            <td class="whitespace-nowrap px-4 py-2.5" title="{{ LocalTime::anzeigen($zeile['geloescht']) }}">
+                            <td class="whitespace-nowrap px-4 py-2.5" title="{{ LocalTime::display($zeile['geloescht']) }}">
                                 {{ $zeile['geloescht']?->diffForHumans() }}
                             </td>
                             <td class="px-4 py-2.5 text-right">
                                 <x-input.symbolknopf
-                                    wire:click="loeschen('{{ $zeile['slug'] }}', {{ $zeile['id'] }})"
+                                    wire:click="delete('{{ $zeile['slug'] }}', {{ $zeile['id'] }})"
                                     wire:confirm="{{ __('Diesen Eintrag endgültig löschen?') }}"
                                     :titel="__('Endgültig löschen')" ton="rot">
                                     <x-svg.trash class="h-5 w-5" />

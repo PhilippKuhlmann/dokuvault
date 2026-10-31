@@ -65,7 +65,7 @@
                                 {{-- "vor 3 Tagen" beantwortet die Frage, die man hier
                                      stellt; der genaue Zeitpunkt steht im Hover. --}}
                                 <td class="whitespace-nowrap px-4 py-2.5"
-                                    title="{{ LocalTime::anzeigen($item['geloescht_am']) }}">
+                                    title="{{ LocalTime::display($item['geloescht_am']) }}">
                                     {{ $item['geloescht_am']->diffForHumans() }}
                                 </td>
 

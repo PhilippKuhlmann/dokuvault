@@ -20,7 +20,7 @@ class SshKeyGenerator implements FieldGenerator
     /** RSA unter 3072 gilt als zu kurz; 4096 ist die uebliche Vorgabe. */
     private const BITS = ['rsa' => '4096', 'ecdsa' => '521'];
 
-    public function erzeugen(array $form): array
+    public function generate(array $form): array
     {
         $verfahren = $form['key_type'] ?? '';
 
@@ -28,7 +28,7 @@ class SshKeyGenerator implements FieldGenerator
             throw new RuntimeException(__('Bitte zuerst ein Verfahren wählen.'));
         }
 
-        $ordner = $this->ordnerAnlegen();
+        $ordner = $this->createFolder();
         $pfad = $ordner.'/schluessel';
 
         try {
@@ -41,7 +41,7 @@ class SshKeyGenerator implements FieldGenerator
         } finally {
             // Auch wenn ssh-keygen scheitert: Ein privater Schluessel darf
             // nicht im Temp-Verzeichnis liegenbleiben.
-            $this->aufraeumen($ordner);
+            $this->prune($ordner);
         }
     }
 
@@ -94,7 +94,7 @@ class SshKeyGenerator implements FieldGenerator
         }
     }
 
-    private function ordnerAnlegen(): string
+    private function createFolder(): string
     {
         $ordner = sys_get_temp_dir().'/dokuvault-ssh-'.bin2hex(random_bytes(8));
 
@@ -107,7 +107,7 @@ class SshKeyGenerator implements FieldGenerator
         return $ordner;
     }
 
-    private function aufraeumen(string $ordner): void
+    private function prune(string $ordner): void
     {
         foreach (glob($ordner.'/*') ?: [] as $datei) {
             @unlink($datei);

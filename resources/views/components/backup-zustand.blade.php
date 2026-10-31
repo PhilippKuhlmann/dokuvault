@@ -21,7 +21,7 @@
         <div class="flex items-baseline gap-2 text-sm">
             <span class="shrink-0 font-semibold text-gray-900 dark:text-gray-100">{{ __('Sicherung von DokuVault') }}</span>
             <span class="truncate text-xs text-gray-500 dark:text-gray-400">
-                {{ $zustand['letzte'] ? __('zuletzt :wann', ['wann' => \App\Support\LocalTime::anzeigen($zustand['letzte'])]) : '' }}
+                {{ $zustand['letzte'] ? __('zuletzt :wann', ['wann' => \App\Support\LocalTime::display($zustand['letzte'])]) : '' }}
             </span>
         </div>
         <div class="truncate text-xs text-gray-600 dark:text-gray-300" title="{{ $zustand['text'] }}">{{ $zustand['text'] }}</div>

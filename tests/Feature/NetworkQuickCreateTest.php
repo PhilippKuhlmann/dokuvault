@@ -33,7 +33,7 @@ test('mit vorgegebenem Standort entfaellt die Auswahl und das Netz erbt ihn', fu
         ->set('dns1', '10.10.30.10')
         ->set('dhcpStart', '10.10.90.100')
         ->set('dhcpEnd', '10.10.90.200')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors()
         // Der IP-Block haengt daran und waehlt das neue Netz aus.
         ->assertDispatched('vlan-created')
@@ -59,7 +59,7 @@ test('ohne vorgegebenen Standort ist die Auswahl Pflicht', function () {
     Livewire::test(NetworkQuickCreate::class, ['customer' => $customer])
         ->set('description', 'Ohne Standort')
         ->set('network', '10.10.91.0')
-        ->call('speichern')
+        ->call('save')
         ->assertHasErrors('site_id');
 
     expect(Network::count())->toBe(0);
@@ -76,7 +76,7 @@ test('ein Standort eines fremden Kunden wird abgelehnt', function () {
         ->set('site_id', $fremdeSite->id)
         ->set('description', 'Geklaut')
         ->set('network', '10.10.92.0')
-        ->call('speichern')
+        ->call('save')
         ->assertHasErrors('site_id');
 
     expect(Network::count())->toBe(0);
@@ -89,7 +89,7 @@ test('ohne network_create wird nichts angelegt', function () {
     Livewire::test(NetworkQuickCreate::class, ['customer' => $customer, 'siteId' => $site->id])
         ->set('description', 'Heimlich')
         ->set('network', '10.10.99.0')
-        ->call('speichern')
+        ->call('save')
         ->assertForbidden();
 
     expect(Network::count())->toBe(0);
@@ -121,7 +121,7 @@ test('die Liste rendert nach dem Anlegen neu, ohne Seitenwechsel', function () {
         ->set('site_id', $site->id)
         ->set('description', 'Frisch')
         ->set('network', '10.10.93.0')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors()
         ->assertNoRedirect()
         ->assertDispatched('vlan-created');
@@ -148,7 +148,7 @@ test('der Stift oeffnet dasselbe Modal mit geladenen Werten', function () {
         ->assertSet('gateway', '10.10.10.1')
         // Aendern und speichern legt kein zweites Netz an.
         ->set('description', 'Neu benannt')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     expect(Network::count())->toBe(1);
@@ -186,7 +186,7 @@ test('im Bearbeiten-Modal laesst sich das VLAN loeschen', function () {
         // Erst die Rueckfrage im Modal, dann das Loeschen - kein Browser-Dialog.
         ->assertSet('loeschenGefragt', false)
         ->set('loeschenGefragt', true)
-        ->call('loeschen')
+        ->call('delete')
         ->assertSet('offen', false)
         ->assertSet('loeschenGefragt', false)
         // Die Liste laedt daraufhin neu.
@@ -208,7 +208,7 @@ test('ohne network_delete bleibt das VLAN bestehen', function () {
 
     Livewire::test(NetworkQuickCreate::class, ['customer' => $customer])
         ->call('bearbeiten', $netz->id)
-        ->call('loeschen')
+        ->call('delete')
         ->assertForbidden();
 
     expect(Network::count())->toBe(1);
@@ -227,17 +227,17 @@ test('jede Aktion meldet sich unten rechts mit eigenem Wortlaut', function () {
         ->set('site_id', $site->id)
         ->set('description', 'Meldungsprobe')
         ->set('network', '10.10.94.0')
-        ->call('speichern')
+        ->call('save')
         ->assertDispatched('notice', text: __('VLAN angelegt.'));
 
     $netz = Network::where('description', 'Meldungsprobe')->sole();
 
     $komponente
         ->call('bearbeiten', $netz->id)
-        ->call('speichern')
+        ->call('save')
         ->assertDispatched('notice', text: __('VLAN gespeichert.'))
         ->call('bearbeiten', $netz->id)
-        ->call('loeschen')
+        ->call('delete')
         ->assertDispatched('notice', text: __('VLAN gelöscht.'));
 });
 
@@ -401,7 +401,7 @@ test('nach Abbrechen legt Neu wieder ein neues VLAN an', function () {
     Livewire::test(NetworkQuickCreate::class, ['customer' => $customer])
         ->call('bearbeiten', $netz->id)
         ->assertSet('bearbeiteId', $netz->id)
-        ->call('abbrechen')
+        ->call('cancel')
         ->assertSet('offen', false)
         ->assertSet('bearbeiteId', null)
         ->call('neu')
@@ -414,7 +414,7 @@ test('nach Abbrechen legt Neu wieder ein neues VLAN an', function () {
         ->set('site_id', $site->id)
         ->set('description', 'Frisch angelegt')
         ->set('network', '10.10.95.0')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     expect($netz->fresh()->description)->toBe('Bestehendes');

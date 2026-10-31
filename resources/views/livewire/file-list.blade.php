@@ -100,7 +100,7 @@
             </div>
 
             @if ($gefiltert)
-                <button type="button" wire:click="zuruecksetzen"
+                <button type="button" wire:click="clearFilters"
                     class="ml-auto text-sm text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400">
                     {{ __('Filter zurücksetzen') }}
                 </button>
@@ -150,7 +150,7 @@
                             {{-- Das genaue Datum im Hover: "vor 3 Tagen" liest sich
                                  schneller, aber manchmal braucht man den Tag. --}}
                             <td class="whitespace-nowrap px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300"
-                                title="{{ LocalTime::anzeigen($file->created_at) }}">
+                                title="{{ LocalTime::display($file->created_at) }}">
                                 {{ $file->created_at->diffForHumans() }}
                             </td>
 
@@ -164,7 +164,7 @@
                                     </x-input.symbolknopf>
 
                                     @can('file_delete')
-                                        <x-input.symbolknopf wire:click="loeschen({{ $file->id }})"
+                                        <x-input.symbolknopf wire:click="delete({{ $file->id }})"
                                             wire:confirm="{{ __('Diese Datei wirklich löschen?') }}"
                                             :titel="__('Löschen')" ton="rot">
                                             <x-svg.trash class="h-5 w-5" />

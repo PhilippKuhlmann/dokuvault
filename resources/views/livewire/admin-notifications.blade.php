@@ -70,8 +70,8 @@
                         </td>
                         <td class="px-4 py-2.5">{{ $user->customer?->name ?? __('Alle Kunden') }}</td>
                         <td class="px-4 py-2.5 text-right">
-                            @if ($user->istDeaktiviert() || ! $user->email)
-                                <span class="text-xs">{{ $user->istDeaktiviert() ? __('deaktiviert') : '—' }}</span>
+                            @if ($user->isDisabled() || ! $user->email)
+                                <span class="text-xs">{{ $user->isDisabled() ? __('deaktiviert') : '—' }}</span>
                             @else
                                 <input type="checkbox" @checked($user->expiry_mail) wire:click="toggle({{ $user->id }})"
                                     aria-label="{{ __('Mail zu ablaufenden Einträgen für :name', ['name' => $user->name]) }}"

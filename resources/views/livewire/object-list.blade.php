@@ -85,7 +85,7 @@
 
             @if ($gefiltert)
                 <div class="mt-4 flex border-t border-gray-100 pt-4 dark:border-gray-700">
-                    <button type="button" wire:click="zuruecksetzen"
+                    <button type="button" wire:click="clearFilters"
                         class="ml-auto text-sm text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400">
                         {{ __('Filter zurücksetzen') }}
                     </button>

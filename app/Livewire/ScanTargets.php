@@ -62,7 +62,7 @@ class ScanTargets extends Component
 
     public function mount($model, $customer, bool $eingebettet = false, bool $randlos = false): void
     {
-        $this->nurEigenerKunde($customer->id);
+        $this->onlyOwnCustomer($customer->id);
         abort_if($model->customer_id !== $customer->id, 403);
 
         $this->scannerId = $model->id;
@@ -103,7 +103,7 @@ class ScanTargets extends Component
             Gate::authorize('scantarget_create');
         }
 
-        $this->pruefungEinschalten();
+        $this->enableCheck();
         $validated = $this->validate($this->regeln(), [], $this->feldnamen());
 
         app(ScanTargetLinking::class)->add($scanner, $validated, $this->neu);

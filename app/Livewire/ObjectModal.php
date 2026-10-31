@@ -91,12 +91,12 @@ class ObjectModal extends Component
     public function mount(string $typ, Customer $customer, bool $mitKnopf = true): void
     {
         abort_unless(array_key_exists($typ, config('forms')), 404);
-        $this->nurEigenerKunde($customer->id);
+        $this->onlyOwnCustomer($customer->id);
 
         $this->typ = $typ;
         $this->customerId = $customer->id;
         $this->mitKnopf = $mitKnopf;
-        $this->formularLeeren();
+        $this->clearForm();
     }
 
     protected function einstellung(): array
@@ -115,7 +115,7 @@ class ObjectModal extends Component
         return Customer::findOrFail($this->customerId);
     }
 
-    protected function formularLeeren(): void
+    protected function clearForm(): void
     {
         $this->form = $this->objektForm()->emptyValues();
 
@@ -132,7 +132,7 @@ class ObjectModal extends Component
 
         // Leeren vor dem Oeffnen: Sonst stehen im Modal die Werte des zuletzt
         // bearbeiteten Eintrags, und "Neu" wird stillschweigend zu "Bearbeiten".
-        $this->formularLeeren();
+        $this->clearForm();
         $this->offen = true;
     }
 
@@ -165,10 +165,10 @@ class ObjectModal extends Component
         return $this->objektForm()->find($id);
     }
 
-    public function abbrechen(): void
+    public function cancel(): void
     {
         $this->offen = false;
-        $this->formularLeeren();
+        $this->clearForm();
     }
 
     /**
@@ -178,7 +178,7 @@ class ObjectModal extends Component
      * (config/forms.php), und schreibt zurueck, was er liefert. Gespeichert
      * wird nichts - erst der Speichern-Knopf legt an.
      */
-    public function erzeugen(): void
+    public function generate(): void
     {
         Gate::authorize($this->bearbeiteId ? $this->typ.'_update' : $this->typ.'_create');
 
@@ -186,7 +186,7 @@ class ObjectModal extends Component
         abort_if($klasse === null, 404);
 
         try {
-            $this->form = array_merge($this->form, app($klasse)->erzeugen($this->form));
+            $this->form = array_merge($this->form, app($klasse)->generate($this->form));
         } catch (\RuntimeException $fehler) {
             // Als Feldfehler und nicht als Ausnahme: Ein fehlendes Verfahren
             // ist eine Eingabe, die man korrigieren kann, kein Serverfehler.
@@ -208,13 +208,13 @@ class ObjectModal extends Component
         return $this->objektForm()->attributeNames('form.');
     }
 
-    public function speichern(): void
+    public function save(): void
     {
         Gate::authorize($this->bearbeiteId ? $this->typ.'_update' : $this->typ.'_create');
 
-        $this->modellbildPruefen();
+        $this->checkModelImage();
 
-        $this->pruefungEinschalten();
+        $this->enableCheck();
 
         $daten = $this->validate($this->regeln(), [], $this->feldnamen())['form'];
 
@@ -225,15 +225,15 @@ class ObjectModal extends Component
 
         // Nach dem Geraet, aber vor dem Leeren des Formulars: Die Zuordnung
         // braucht Hersteller und Modell, die dort stehen.
-        $this->modellbildAblegen();
+        $this->storeModelImage();
 
         $this->offen = false;
-        $this->formularLeeren();
+        $this->clearForm();
 
         $this->dispatch('notice', text: __($meldung));
         $this->dispatch('object-saved', typ: $this->typ);
 
-        $this->seiteNeuLadenWennNoetig();
+        $this->reloadPageIfNeeded();
     }
 
     /**
@@ -320,9 +320,9 @@ class ObjectModal extends Component
      * Ohne Hersteller laesst es sich keinem Modell zuordnen - es waere ein
      * Upload ins Nichts, und niemand saehe, warum das Bild spaeter fehlt.
      */
-    protected function modellbildPruefen(): void
+    protected function checkModelImage(): void
     {
-        if (! $this->modellbild || ! $this->zeigtModellbild()) {
+        if (! $this->modellbild || ! $this->showsModelImage()) {
             return;
         }
 
@@ -348,7 +348,7 @@ class ObjectModal extends Component
      * eigene Dokumentation pflegen darf, soll nichts hinterlegen, das anderswo
      * erscheint - sehen darf er es trotzdem.
      */
-    protected function zeigtModellbild(): bool
+    protected function showsModelImage(): bool
     {
         return array_key_exists($this->typ, config('custom.rack_device_types'))
             && Gate::allows('admin_catalog');
@@ -372,9 +372,9 @@ class ObjectModal extends Component
      * ruehrt nur das Bild an: Seine Hoehe hat jemand im Adminbereich gesetzt,
      * und ein neu angelegtes Geraet soll sie nicht stillschweigend umwerfen.
      */
-    protected function modellbildAblegen(): void
+    protected function storeModelImage(): void
     {
-        if (! $this->modellbild || ! $this->zeigtModellbild()) {
+        if (! $this->modellbild || ! $this->showsModelImage()) {
             return;
         }
 
@@ -389,33 +389,33 @@ class ObjectModal extends Component
         ]);
 
         // Erst die alte Datei weg, sonst bleibt bei jedem Wechsel eine liegen.
-        $modell->bildLoeschen();
+        $modell->deleteImage();
         $modell->image_path = $this->modellbild->store(DeviceModel::BILDORDNER, 'local');
         $modell->save();
 
         $this->modellbild = null;
     }
 
-    protected function seiteNeuLadenWennNoetig(): void
+    protected function reloadPageIfNeeded(): void
     {
         if ($this->einstellung()['seite_neu_laden'] ?? false) {
             $this->js('window.location.reload()');
         }
     }
 
-    public function loeschen(): void
+    public function delete(): void
     {
         Gate::authorize($this->typ.'_delete');
 
         $this->objektHolen($this->bearbeiteId)->delete();
 
         $this->offen = false;
-        $this->formularLeeren();
+        $this->clearForm();
 
         $this->dispatch('notice', text: __($this->einstellung()['einzahl'].' gelöscht.'));
         $this->dispatch('object-saved', typ: $this->typ);
 
-        $this->seiteNeuLadenWennNoetig();
+        $this->reloadPageIfNeeded();
     }
 
     /**
@@ -448,7 +448,7 @@ class ObjectModal extends Component
      * Kennwort ohnehin im Formular. Geprueft wird trotzdem serverseitig: Der
      * Aufruf kommt aus dem Browser.
      */
-    public function verlaufZeigen(string $feld): void
+    public function showHistory(string $feld): void
     {
         Gate::authorize($this->typ.'_update');
 
@@ -464,14 +464,14 @@ class ObjectModal extends Component
             ->get()
             ->map(fn ($eintrag) => [
                 'wert' => $eintrag->value,
-                'wann' => LocalTime::anzeigen($eintrag->created_at),
+                'wann' => LocalTime::display($eintrag->created_at),
                 'seit' => $eintrag->created_at->diffForHumans(),
                 'wer' => $eintrag->user?->name,
             ])
             ->all();
     }
 
-    public function verlaufVerbergen(string $feld): void
+    public function hideHistory(string $feld): void
     {
         unset($this->gezeigterVerlauf[$feld]);
     }
@@ -510,8 +510,8 @@ class ObjectModal extends Component
             // Nur der Scanner hat Scan-Ziele.
             'mitScanZielen' => method_exists($einstellung['model'], 'scanTargets'),
             // Foto der Frontblende, das fuer alle Kunden gilt (device_models).
-            'mitModellbild' => $this->zeigtModellbild(),
-            'modell' => $this->zeigtModellbild() ? $this->modell() : null,
+            'mitModellbild' => $this->showsModelImage(),
+            'modell' => $this->showsModelImage() ? $this->modell() : null,
             'felder' => $felder,
             'einzahl' => $einstellung['einzahl'],
             'spalten' => $einstellung['spalten'] ?? 1,

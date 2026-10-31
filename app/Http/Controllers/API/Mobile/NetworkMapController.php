@@ -23,7 +23,7 @@ use Illuminate\Http\Request;
  */
 class NetworkMapController extends Controller
 {
-    public function zeigen(Request $request, Customer $customer, NetworkMap $plan): JsonResponse
+    public function show(Request $request, Customer $customer, NetworkMap $plan): JsonResponse
     {
         $this->authorize('viewAny', Network::class);
 

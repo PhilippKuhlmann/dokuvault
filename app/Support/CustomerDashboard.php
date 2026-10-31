@@ -317,10 +317,10 @@ class CustomerDashboard
             $warnungen->push([
                 'name' => $eines->name ?: 'Token #'.$eines->id,
                 'art' => __('Agent-Token'),
-                'text' => $eines->istAbgelaufen()
+                'text' => $eines->isExpired()
                     ? __('abgelaufen')
                     : __('läuft ab in :tage Tagen', ['tage' => (int) now()->startOfDay()->diffInDays($eines->expires_at->copy()->startOfDay())]),
-                'schwer' => $eines->istAbgelaufen(),
+                'schwer' => $eines->isExpired(),
             ]);
         }
 

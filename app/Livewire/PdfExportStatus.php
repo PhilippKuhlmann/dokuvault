@@ -26,12 +26,12 @@ class PdfExportStatus extends Component
 
     public function mount(Customer $customer): void
     {
-        $this->nurEigenerKunde($customer->id);
+        $this->onlyOwnCustomer($customer->id);
 
         $this->customerId = $customer->id;
     }
 
-    public function starten(): void
+    public function start(): void
     {
         Gate::authorize('create_pdf');
 

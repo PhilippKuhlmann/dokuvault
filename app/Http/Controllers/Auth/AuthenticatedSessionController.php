@@ -44,7 +44,7 @@ class AuthenticatedSessionController extends Controller
         // Zweite Stufe eingeschaltet? Dann ist die Anmeldung noch nicht fertig.
         // Der Nutzer wird wieder abgemeldet - in der Sitzung steht nur, wer
         // hereinmoechte. Bis der Einmalcode stimmt, ist er niemand.
-        if (auth()->user()->hatZweiteStufe()) {
+        if (auth()->user()->hasTwoFactor()) {
             $id = auth()->id();
 
             Auth::guard('web')->logout();

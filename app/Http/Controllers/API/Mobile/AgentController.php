@@ -52,7 +52,7 @@ class AgentController extends Controller
                 'standort' => $eines->site?->name,
                 'gesperrt' => $eines->locked_at !== null,
                 'laeuft_ab' => $eines->expires_at?->toIso8601String(),
-                'abgelaufen' => $eines->istAbgelaufen(),
+                'abgelaufen' => $eines->isExpired(),
             ])->values(),
             // Die Takte, die der Server zulaesst - die App bietet nur diese
             // an, sonst kaeme eine 422 zurueck.
@@ -99,15 +99,15 @@ class AgentController extends Controller
 
     public function lock(Request $request, Customer $customer, AgentToken $agentToken): JsonResponse
     {
-        return $this->sperren($request, $agentToken, true);
+        return $this->setLocked($request, $agentToken, true);
     }
 
     public function unlock(Request $request, Customer $customer, AgentToken $agentToken): JsonResponse
     {
-        return $this->sperren($request, $agentToken, false);
+        return $this->setLocked($request, $agentToken, false);
     }
 
-    private function sperren(Request $request, AgentToken $token, bool $gesperrt): JsonResponse
+    private function setLocked(Request $request, AgentToken $token, bool $gesperrt): JsonResponse
     {
         Gate::authorize('agent_manage');
 

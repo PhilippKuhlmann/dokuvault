@@ -36,7 +36,7 @@ function ableitbar(string $privat, string $passphrase = ''): string
 }
 
 test('ein erzeugtes Paar gehoert zusammen', function () {
-    $werte = (new SshKeyGenerator)->erzeugen([
+    $werte = (new SshKeyGenerator)->generate([
         'key_type' => 'ed25519', 'username' => 'root', 'name' => 'Admin ed25519',
     ]);
 
@@ -50,7 +50,7 @@ test('ein erzeugtes Paar gehoert zusammen', function () {
 });
 
 test('der Kommentar sagt, wofuer der Schluessel da ist', function () {
-    $werte = (new SshKeyGenerator)->erzeugen([
+    $werte = (new SshKeyGenerator)->generate([
         'key_type' => 'ed25519', 'username' => 'deploy', 'name' => 'CI Ausrollen',
     ]);
 
@@ -58,7 +58,7 @@ test('der Kommentar sagt, wofuer der Schluessel da ist', function () {
 });
 
 test('mit Passphrase ist der private Teil verschluesselt', function () {
-    $werte = (new SshKeyGenerator)->erzeugen([
+    $werte = (new SshKeyGenerator)->generate([
         'key_type' => 'ed25519', 'username' => 'root', 'name' => 'Admin',
         'password' => 'sehr geheim 42',
     ]);
@@ -71,7 +71,7 @@ test('mit Passphrase ist der private Teil verschluesselt', function () {
 })->group('langsam');
 
 test('RSA und ECDSA gehen auch', function (string $verfahren, string $vorsatz) {
-    $werte = (new SshKeyGenerator)->erzeugen([
+    $werte = (new SshKeyGenerator)->generate([
         'key_type' => $verfahren, 'username' => 'root', 'name' => 'Test',
     ]);
 
@@ -83,18 +83,18 @@ test('RSA und ECDSA gehen auch', function (string $verfahren, string $vorsatz) {
 ])->group('langsam');
 
 test('ohne Verfahren wird nichts erzeugt', function () {
-    expect(fn () => (new SshKeyGenerator)->erzeugen(['key_type' => '']))
+    expect(fn () => (new SshKeyGenerator)->generate(['key_type' => '']))
         ->toThrow(RuntimeException::class);
 
     // Auch nichts Ausgedachtes: Das wandert sonst ungeprueft in den Aufruf.
-    expect(fn () => (new SshKeyGenerator)->erzeugen(['key_type' => 'dsa']))
+    expect(fn () => (new SshKeyGenerator)->generate(['key_type' => 'dsa']))
         ->toThrow(RuntimeException::class);
 });
 
 test('es bleibt kein privater Schluessel im Temp-Verzeichnis liegen', function () {
     $vorher = glob(sys_get_temp_dir().'/dokuvault-ssh-*');
 
-    (new SshKeyGenerator)->erzeugen(['key_type' => 'ed25519', 'username' => 'root', 'name' => 'Admin']);
+    (new SshKeyGenerator)->generate(['key_type' => 'ed25519', 'username' => 'root', 'name' => 'Admin']);
 
     expect(glob(sys_get_temp_dir().'/dokuvault-ssh-*'))->toBe($vorher);
 });
@@ -133,7 +133,7 @@ test('der Knopf im Modal fuellt beide Felder', function () {
         ->set('form.name', 'Deploy')
         ->set('form.username', 'deploy')
         ->set('form.key_type', 'ed25519')
-        ->call('erzeugen')
+        ->call('generate')
         ->assertHasNoErrors();
 
     expect($formular->get('form')['public_key'])->toStartWith('ssh-ed25519 ');
@@ -141,7 +141,7 @@ test('der Knopf im Modal fuellt beide Felder', function () {
     // Erzeugen speichert nicht - erst der Speichern-Knopf legt an.
     expect(SshKey::where('customer_id', $customer->id)->count())->toBe(0);
 
-    $formular->call('speichern')->assertHasNoErrors();
+    $formular->call('save')->assertHasNoErrors();
     expect(SshKey::where('customer_id', $customer->id)->firstOrFail()->public_key)->toStartWith('ssh-ed25519 ');
 });
 
@@ -164,7 +164,7 @@ test('ein untergeschobenes Verfahren meldet sich am Feld, nicht als Serverfehler
     Livewire::test(ObjectModal::class, ['typ' => 'sshkey', 'customer' => $customer])
         ->call('neu', 'sshkey')
         ->set('form.key_type', 'dsa')
-        ->call('erzeugen')
+        ->call('generate')
         ->assertHasErrors('form.key_type');
 });
 
@@ -174,12 +174,12 @@ test('ein Typ ohne Erzeuger hat auch keinen Knopf', function () {
 
     Livewire::test(ObjectModal::class, ['typ' => 'logingeneral', 'customer' => $customer])
         ->call('neu', 'logingeneral')
-        ->call('erzeugen')
+        ->call('generate')
         ->assertStatus(404);
 });
 
 test('der berechnete Fingerprint ist der, den ssh-keygen nennt', function (string $verfahren) {
-    $werte = (new SshKeyGenerator)->erzeugen([
+    $werte = (new SshKeyGenerator)->generate([
         'key_type' => $verfahren, 'username' => 'root', 'name' => 'Test',
     ]);
 

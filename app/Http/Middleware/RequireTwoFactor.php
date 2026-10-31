@@ -47,7 +47,7 @@ class RequireTwoFactor
     {
         $nutzer = $request->user();
 
-        if (! $nutzer || ! $nutzer->mussZweiteStufeEinrichten()) {
+        if (! $nutzer || ! $nutzer->mustEnrollTwoFactor()) {
             return $next($request);
         }
 

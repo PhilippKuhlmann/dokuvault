@@ -9,7 +9,7 @@
         </p>
     </header>
 
-    @if ($user->mussZweiteStufeEinrichten())
+    @if ($user->mustEnrollTwoFactor())
         <div class="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-700/60 dark:bg-amber-900/20 dark:text-amber-200" role="status">
             <span class="font-semibold">{{ __('Ihr Administrator verlangt die zweite Stufe.') }}</span>
             {{ __('Bis sie eingerichtet ist, kommen Sie nur bis zu dieser Seite.') }}
@@ -39,7 +39,7 @@
         </div>
     @endif
 
-    @if ($user->hatZweiteStufe())
+    @if ($user->hasTwoFactor())
         {{-- Eingeschaltet --}}
         <p class="mt-6 inline-flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-800 dark:bg-green-900/25 dark:text-green-300">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-4 w-4">
@@ -70,7 +70,7 @@
                     <p class="text-sm text-gray-700 dark:text-gray-300">{{ __('Zweite Stufe abschalten') }}</p>
                     <x-input.feldname for="aus_password" :value="__('Kennwort')" />
                     <x-input.text id="aus_password" name="password" type="password" class="mt-1.5 block w-full" autocomplete="current-password" />
-                    <x-input.fehler :messages="$errors->zweiteStufeAus->get('password')" />
+                    <x-input.fehler :messages="$errors->disableTwoFactor->get('password')" />
                     <x-input.button color="red" :label="__('Abschalten')" />
                 </form>
             @endif

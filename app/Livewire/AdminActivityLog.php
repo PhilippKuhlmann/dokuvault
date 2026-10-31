@@ -58,7 +58,7 @@ class AdminActivityLog extends Component
         }
     }
 
-    public function zuruecksetzen(): void
+    public function clearFilters(): void
     {
         $this->reset(['suche', 'ereignis', 'art', 'benutzer', 'kunde', 'tage']);
         $this->resetPage();
@@ -75,7 +75,7 @@ class AdminActivityLog extends Component
                 [$typ, $id] = $this->verursacherWahl();
                 $a->where('causer_type', $typ)->where('causer_id', $id);
             })
-            ->when($this->kunde !== '', fn ($a) => $this->nurKunde($a, (int) $this->kunde))
+            ->when($this->kunde !== '', fn ($a) => $this->onlyCustomer($a, (int) $this->kunde))
             ->when($this->tage > 0, fn ($a) => $a->where('created_at', '>=', $this->grenze()))
             // Volltext über die Eigenschaften: In einem Protokoll sucht man
             // nicht nach einem Feld, sondern nach dem, woran man sich erinnert -
@@ -116,7 +116,7 @@ class AdminActivityLog extends Component
      * objects still belong to their customer: "who deleted the firewall?"
      * is the question here.
      */
-    protected function nurKunde($abfrage, int $kundeId): void
+    protected function onlyCustomer($abfrage, int $kundeId): void
     {
         $abfrage->where('customer_id', $kundeId);
     }

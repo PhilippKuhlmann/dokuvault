@@ -33,13 +33,13 @@ trait ManagesImages
      * Erst die alte Datei weg, sonst bleibt bei jedem Wechsel eine liegen, die
      * niemand mehr findet.
      */
-    protected function bildPflegen(FormRequest $request, Model $eintrag, array $daten): array
+    protected function handleImage(FormRequest $request, Model $eintrag, array $daten): array
     {
         if ($request->hasFile('image')) {
-            $eintrag->bildLoeschen();
+            $eintrag->deleteImage();
             $daten['image_path'] = $request->file('image')->store($eintrag::BILDORDNER, 'local');
         } elseif ($request->boolean('image_remove')) {
-            $eintrag->bildLoeschen();
+            $eintrag->deleteImage();
             $daten['image_path'] = null;
         }
 
@@ -52,7 +52,7 @@ trait ManagesImages
      * nosniff und eine feste Content-Type-Angabe: Der Browser soll die Datei
      * als Bild behandeln und nicht selbst raten, was sie sein koennte.
      */
-    protected function bildAusliefern(Model $eintrag)
+    protected function serveImage(Model $eintrag)
     {
         $pfad = $eintrag->image_path;
 

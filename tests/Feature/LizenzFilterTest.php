@@ -126,7 +126,7 @@ test('Filter zuruecksetzen bringt alle Eintraege zurueck', function () {
 
     Livewire::test(ObjectList::class, ['typ' => 'licensesoftware', 'customer' => $customer])
         ->set('filter.abo', 'Monatlich')
-        ->call('zuruecksetzen')
+        ->call('clearFilters')
         ->assertSet('filter', [])
         ->assertSee('Veeam Backup');
 });

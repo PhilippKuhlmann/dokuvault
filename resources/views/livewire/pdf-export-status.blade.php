@@ -13,7 +13,7 @@
         </a>
 
         {{-- Neu erstellen bleibt moeglich: Die Doku aendert sich, das PDF nicht. --}}
-        <button type="button" wire:click="starten"
+        <button type="button" wire:click="start"
             class="text-xs text-gray-500 hover:text-cerulean-700 dark:text-gray-400 dark:hover:text-cerulean-400">
             {{ __('neu erstellen') }}
         </button>
@@ -43,7 +43,7 @@
             </div>
         @endif
 
-        <button type="button" wire:click="starten"
+        <button type="button" wire:click="start"
             class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-cerulean-600 text-white text-sm font-DINPro-bold shadow-xs hover:bg-cerulean-700 focus:outline-hidden focus:ring-2 focus:ring-cerulean-500 focus:ring-offset-2 transition-colors">
             {{ __('PDF erstellen') }}
         </button>

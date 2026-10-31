@@ -272,7 +272,7 @@ class AdminGeneral extends Component
 
         // Erst das alte weg, sonst bleibt bei jedem Wechsel eine Datei liegen,
         // die niemand mehr findet.
-        $this->altesLoeschen($stelle);
+        $this->deleteOld($stelle);
 
         Setting::setzen(Setting::logoSchluessel($stelle), $this->{$eigenschaft}->store('branding', 'local'));
 
@@ -290,7 +290,7 @@ class AdminGeneral extends Component
         Gate::authorize('admin_setting');
         abort_unless(in_array($stelle, Setting::LOGO_STELLEN, true), 404);
 
-        $this->altesLoeschen($stelle);
+        $this->deleteOld($stelle);
         Setting::setzen(Setting::logoSchluessel($stelle), null);
 
         $this->dispatch('notice', text: __('Logo entfernt.'));
@@ -310,7 +310,7 @@ class AdminGeneral extends Component
         $this->redirect(route('admin.general.index'));
     }
 
-    private function altesLoeschen(string $stelle): void
+    private function deleteOld(string $stelle): void
     {
         $alt = Setting::logoPfad($stelle);
 
@@ -333,7 +333,7 @@ class AdminGeneral extends Component
             'formate' => config('custom.bild_formate'),
             'zonen' => LocalTime::auswahl(),
             // Damit die Seite zeigen kann, was die Umstellung bewirkt.
-            'jetzt' => LocalTime::anzeigen(now(), 'd.m.Y H:i'),
+            'jetzt' => LocalTime::display(now(), 'd.m.Y H:i'),
             // Damit auf der Seite steht, was der Server ueberhaupt hergibt.
             'serverMb' => (int) floor(Setting::serverGrenzeKb() / 1024),
             'phpWerte' => [

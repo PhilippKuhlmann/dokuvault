@@ -42,18 +42,18 @@
                         $user->username,
                         $user->role?->name ?? '—',
                         $user->customer ? $user->customer->name : '',
-                        'status' => ! $user->istDeaktiviert(),
-                        'zweitestufe' => $user->hatZweiteStufe()
+                        'status' => ! $user->isDisabled(),
+                        'zweitestufe' => $user->hasTwoFactor()
                             ? 'eingerichtet'
                             : ($user->two_factor_required ? 'offen' : null),
                         'invitation' => $user,
-                        LocalTime::anzeigen($user->last_login_at, 'd.m.Y H:i', __('noch nie')),
+                        LocalTime::display($user->last_login_at, 'd.m.Y H:i', __('noch nie')),
                     ]"
 
                     {{-- Die Zeile bleibt lesbar, tritt aber zurueck: Ein
                          gesperrtes Konto ist dokumentiert und trotzdem nicht
                          das, wonach man sucht. --}}
-                    :inaktiv="$user->istDeaktiviert()"
+                    :inaktiv="$user->isDisabled()"
 
                     editUrl="{{ route('admin.user.edit', $user) }}"
                     can="admin_user"

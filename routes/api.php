@@ -84,7 +84,7 @@ Route::post('/checklist-report', ChecklistReportController::class)->middleware('
 // aufhebt.
 Route::prefix('mobile')->group(function () {
     Route::middleware(SetLocale::class)->group(function () {
-        Route::post('/login', [LoginController::class, 'anmelden']);
+        Route::post('/login', [LoginController::class, 'login']);
         Route::post('/login/two-factor', [LoginController::class, 'zweiteStufe']);
     });
 
@@ -93,20 +93,20 @@ Route::prefix('mobile')->group(function () {
         Route::get('/me', [LoginController::class, 'ich']);
 
         // Das eigene Profil: Name, E-Mail, Sprache, Kennwort.
-        Route::get('/profile', [MobileProfilController::class, 'zeigen']);
+        Route::get('/profile', [MobileProfilController::class, 'show']);
         Route::match(['put', 'patch'], '/profile', [MobileProfilController::class, 'aendern']);
         Route::put('/profile/password', [MobileProfilController::class, 'kennwort']);
 
         // Die zweite Stufe einrichten: beginnen, bestaetigen, neue
         // Wiederherstellungscodes, abschalten. Ohne Sitzung traegt ein
         // verschluesselter "vorgang" das begonnene Geheimnis.
-        Route::post('/profile/two-factor/begin', [MobileProfilController::class, 'zweiteStufeBeginnen']);
-        Route::post('/profile/two-factor/confirm', [MobileProfilController::class, 'zweiteStufeBestaetigen']);
-        Route::post('/profile/two-factor/recovery-codes', [MobileProfilController::class, 'wiederherstellungscodes']);
-        Route::delete('/profile/two-factor', [MobileProfilController::class, 'zweiteStufeAus']);
+        Route::post('/profile/two-factor/begin', [MobileProfilController::class, 'beginTwoFactor']);
+        Route::post('/profile/two-factor/confirm', [MobileProfilController::class, 'confirmTwoFactor']);
+        Route::post('/profile/two-factor/recovery-codes', [MobileProfilController::class, 'recoveryCodes']);
+        Route::delete('/profile/two-factor', [MobileProfilController::class, 'disableTwoFactor']);
 
         // Das eigene Konto loeschen - mit Kennwort und nicht rueckgaengig.
-        Route::delete('/profile', [MobileProfilController::class, 'loeschen']);
+        Route::delete('/profile', [MobileProfilController::class, 'delete']);
         // Changelog und Version - im Browser haengt beides unter der
         // Seitenleiste.
         Route::get('/changelog', [MobileProfilController::class, 'changelog']);
@@ -115,7 +115,7 @@ Route::prefix('mobile')->group(function () {
         Route::get('/customers/{customer}', [DatenController::class, 'kunde'])->middleware('isCustomer');
         // Vor der Typenliste unten: "/{typ}" passt auf jedes einzelne Segment
         // und faenge sonst "dashboard" ab.
-        Route::get('/customers/{customer}/dashboard', [MobileDashboardController::class, 'zeigen'])->middleware('isCustomer');
+        Route::get('/customers/{customer}/dashboard', [MobileDashboardController::class, 'show'])->middleware('isCustomer');
 
         // Papierkorb: auch er vor der Typenliste unten.
         Route::middleware('isCustomer')->group(function () {
@@ -126,11 +126,11 @@ Route::prefix('mobile')->group(function () {
             Route::prefix('/customers/{customer}/pdf')->group(function () {
                 Route::get('/', [MobilePdfController::class, 'stand']);
                 Route::post('/', [MobilePdfController::class, 'bestellen']);
-                Route::get('/{pdfExport}', [MobilePdfController::class, 'laden'])->whereNumber('pdfExport');
+                Route::get('/{pdfExport}', [MobilePdfController::class, 'load'])->whereNumber('pdfExport');
             });
 
             // Netzplan: Internet -> Gateway -> VLAN -> Geraete.
-            Route::get('/customers/{customer}/network-map', [MobileNetworkMapController::class, 'zeigen']);
+            Route::get('/customers/{customer}/network-map', [MobileNetworkMapController::class, 'show']);
 
             // Erstaufnahme-Assistent: Schritt fuer Schritt durch die
             // Grunddaten. Ausgefuellt wird mit den Formularen unten.

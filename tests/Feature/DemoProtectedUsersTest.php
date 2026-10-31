@@ -30,7 +30,7 @@ test('ohne Demo-Modus ist niemand geschützt', function () {
     config(['app.demo' => false]);
     $admin = demoAdmin();
 
-    expect($admin->istDemoGeschuetzt())->toBeFalse();
+    expect($admin->isDemoProtected())->toBeFalse();
 
     $this->actingAs($admin)->delete("/admin/user/{$admin->id}");
     $this->assertDatabaseMissing('users', ['id' => $admin->id]);
@@ -78,7 +78,7 @@ test('in der Demo lässt sich der Benutzername eines vordefinierten Zugangs nich
     ]);
 
     expect($admin->fresh()->username)->toBe('admin');
-    expect($admin->fresh()->istDemoGeschuetzt())->toBeTrue();
+    expect($admin->fresh()->isDemoProtected())->toBeTrue();
 });
 
 test('in der Demo lässt sich die Rolle eines vordefinierten Zugangs nicht herabstufen', function () {
@@ -124,7 +124,7 @@ test('selbst angelegte Benutzer bleiben auch in der Demo voll bearbeitbar', func
     $admin = demoAdmin();
     $eigener = eigenerBenutzer();
 
-    expect($eigener->istDemoGeschuetzt())->toBeFalse();
+    expect($eigener->isDemoProtected())->toBeFalse();
 
     $this->actingAs($admin)->patch("/admin/user/{$eigener->id}", [
         'name' => $eigener->name,

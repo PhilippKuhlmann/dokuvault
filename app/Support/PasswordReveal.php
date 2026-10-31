@@ -39,7 +39,7 @@ class PasswordReveal
         // Schlüssel liegen in derselben Tabelle, haben aber getrennte Rechte.
         Gate::forUser($nutzer)->authorize($link->login->istSchluessel() ? 'sshkey_viewAny' : 'logingeneral_viewAny');
 
-        $this->nurEigenerKunde($nutzer, $link->customer_id);
+        $this->onlyOwnCustomer($nutzer, $link->customer_id);
 
         $this->bremsen($nutzer);
 
@@ -88,7 +88,7 @@ class PasswordReveal
             return null;
         }
 
-        $this->nurEigenerKunde($nutzer, $objekt->customer_id);
+        $this->onlyOwnCustomer($nutzer, $objekt->customer_id);
 
         activity()
             ->event('kennwort_angesehen')
@@ -123,7 +123,7 @@ class PasswordReveal
 
         Gate::forUser($nutzer)->authorize('admin_activity');
         Gate::forUser($nutzer)->authorize('viewAny', $eintrag->subject_type);
-        $this->nurEigenerKunde($nutzer, $eintrag->customer_id);
+        $this->onlyOwnCustomer($nutzer, $eintrag->customer_id);
 
         $this->bremsen($nutzer);
 
@@ -159,7 +159,7 @@ class PasswordReveal
         RateLimiter::hit($schluessel, 60);
     }
 
-    private function nurEigenerKunde(User $nutzer, $kundeId): void
+    private function onlyOwnCustomer(User $nutzer, $kundeId): void
     {
         abort_if($nutzer->hasCustomer() && (int) $nutzer->customer_id !== (int) $kundeId, 403);
     }

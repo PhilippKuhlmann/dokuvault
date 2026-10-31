@@ -184,7 +184,7 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             Route::get('/mail', [MailSettingController::class, 'index'])->name('admin.mail.index');
             Route::patch('/mail', [MailSettingController::class, 'update'])->name('admin.mail.update');
             Route::post('/mail/test', [MailSettingController::class, 'test'])->name('admin.mail.test');
-            Route::delete('/mail/password', [MailSettingController::class, 'kennwortLoeschen'])
+            Route::delete('/mail/password', [MailSettingController::class, 'deletePassword'])
                 ->name('admin.mail.password');
         });
 
@@ -236,12 +236,12 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             // Verlorenes Telefon: Ohne diesen Weg waere ein Nutzer mit
             // eingeschalteter zweiter Stufe und ohne Wiederherstellungscode
             // dauerhaft ausgesperrt.
-            Route::delete('/user/{user}/two-factor', [UserController::class, 'zweiteStufeZuruecksetzen'])
+            Route::delete('/user/{user}/two-factor', [UserController::class, 'resetTwoFactor'])
                 ->name('admin.user.two-factor');
 
             // Einladung erneut schicken: im Spam gelandet, Link abgelaufen,
             // versehentlich geloescht - das ist der Alltag, nicht der Fehler.
-            Route::post('/user/{user}/invite', [UserController::class, 'einladen'])
+            Route::post('/user/{user}/invite', [UserController::class, 'invite'])
                 ->name('admin.user.invite');
         });
 
@@ -362,7 +362,7 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::get('agent', [AgentTokenController::class, 'index'])->name('agent.index');
             Route::post('agent', [AgentTokenController::class, 'store'])->name('agent.store');
             Route::delete('agent/{agentToken}', [AgentTokenController::class, 'destroy'])->name('agent.destroy');
-            Route::post('agent/{agentToken}/renew', [AgentTokenController::class, 'erneuern'])->name('agent.renew');
+            Route::post('agent/{agentToken}/renew', [AgentTokenController::class, 'renew'])->name('agent.renew');
             Route::post('agent/{agentToken}/lock', [AgentTokenController::class, 'lock'])->name('agent.lock');
             Route::post('agent/{agentToken}/unlock', [AgentTokenController::class, 'unlock'])->name('agent.unlock');
             Route::get('agent/service.exe', [AgentTokenController::class, 'dienstExe'])->name('agent.service');

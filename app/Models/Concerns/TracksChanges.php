@@ -29,7 +29,7 @@ trait TracksChanges
 
     public static function bootTracksChanges(): void
     {
-        static::updated(fn (Model $model) => $model->protokolliereKennwortaenderung());
+        static::updated(fn (Model $model) => $model->logPasswordChange());
     }
 
     /**
@@ -112,7 +112,7 @@ trait TracksChanges
      * Änderungs-Eintrag, an den sich etwas hängen liesse - und genau dieser
      * Fall ist der häufigste.
      */
-    protected function protokolliereKennwortaenderung(): void
+    protected function logPasswordChange(): void
     {
         $geaendert = [];
         $verlaufIds = [];
@@ -126,13 +126,13 @@ trait TracksChanges
                 continue;
             }
 
-            if ($this->nurNeuVerschluesselt($spalte)) {
+            if ($this->onlyReEncrypted($spalte)) {
                 continue;
             }
 
             $geaendert[] = $spalte;
 
-            if ($id = $this->altesKennwortSichern($spalte)) {
+            if ($id = $this->keepOldPassword($spalte)) {
                 $verlaufIds[] = $id;
             }
         }
@@ -175,7 +175,7 @@ trait TracksChanges
      * @return int|null Id des Eintrags, damit der Protokolleintrag darauf
      *                  verweisen kann
      */
-    protected function altesKennwortSichern(string $spalte): ?int
+    protected function keepOldPassword(string $spalte): ?int
     {
         try {
             $alt = $this->getOriginal($spalte);
@@ -219,7 +219,7 @@ trait TracksChanges
      * Kennwortänderung - auch wenn niemand das Feld angefasst hat, denn das
      * Formular schickt den unveränderten Wert mit.
      */
-    protected function nurNeuVerschluesselt(string $spalte): bool
+    protected function onlyReEncrypted(string $spalte): bool
     {
         try {
             return $this->getOriginal($spalte) === $this->{$spalte};

@@ -56,7 +56,7 @@ trait HasProcurement
         return (int) now()->startOfDay()->diffInDays($this->warranty_until->startOfDay(), false);
     }
 
-    public function garantieAbgelaufen(): bool
+    public function warrantyExpired(): bool
     {
         return ($this->garantieTage() ?? 1) < 0;
     }

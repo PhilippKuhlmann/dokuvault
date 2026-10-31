@@ -42,7 +42,7 @@ class OnboardingForm extends Component
 
     public function mount(Customer $customer): void
     {
-        $this->nurEigenerKunde($customer->id);
+        $this->onlyOwnCustomer($customer->id);
         abort_unless(Gate::any(['checklist_request', 'checklist_manage']), 403);
 
         $this->customerId = $customer->id;
@@ -84,7 +84,7 @@ class OnboardingForm extends Component
     public function submit(ChecklistBuilder $builder)
     {
         abort_unless(Gate::any(['checklist_request', 'checklist_manage']), 403);
-        $this->nurEigenerKunde($this->customerId);
+        $this->onlyOwnCustomer($this->customerId);
 
         $data = $this->validate();
         $customer = Customer::findOrFail($this->customerId);

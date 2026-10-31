@@ -55,7 +55,7 @@ test('anlegen im Modal legt an und meldet es der Liste', function () {
         ->assertSet('offen', true)
         ->set('form.name', 'beispiel.de')
         ->set('form.registrar', 'Hetzner')
-        ->call('speichern')
+        ->call('save')
         ->assertSet('offen', false)
         ->assertDispatched('object-saved', typ: 'domain');
 
@@ -74,7 +74,7 @@ test('bearbeiten laedt die Werte und speichert sie zurueck', function () {
         ->call('bearbeiten', 'domain', $domain->id)
         ->assertSet('form.name', 'alt.de')
         ->set('form.name', 'neu.de')
-        ->call('speichern');
+        ->call('save');
 
     expect($domain->fresh()->name)->toBe('neu.de');
 });
@@ -91,7 +91,7 @@ test('Neu nach Bearbeiten legt an, statt den alten Eintrag zu aendern', function
         ->assertSet('bearbeiteId', null)
         ->assertSet('form.name', '')
         ->set('form.name', 'zweite.de')
-        ->call('speichern');
+        ->call('save');
 
     expect($domain->fresh()->name)->toBe('bestand.de');
     expect(Domain::where('name', 'zweite.de')->exists())->toBeTrue();
@@ -353,7 +353,7 @@ test('ein Standort des eigenen Kunden wird im Modal angenommen', function () {
         ->call('neu')
         ->set('form.site_id', $site->id)
         ->set('form.name', 'CNC-Fraese 7')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors()
         ->assertSet('offen', false);
 
@@ -371,7 +371,7 @@ test('ein fremder Standort wird im Modal weiterhin abgelehnt', function () {
         ->call('neu')
         ->set('form.site_id', $fremderStandort->id)
         ->set('form.name', 'CNC-Fremd')
-        ->call('speichern')
+        ->call('save')
         ->assertHasErrors('form.site_id');
 
     expect(Machine::where('name', 'CNC-Fremd')->exists())->toBeFalse();
@@ -387,18 +387,18 @@ test('Anlegen, Speichern und Loeschen quittieren sich mit einer Meldung', functi
     $modal = Livewire::test(ObjectModal::class, ['typ' => 'domain', 'customer' => $customer])
         ->call('neu')
         ->set('form.name', 'meldung.de')
-        ->call('speichern')
+        ->call('save')
         ->assertDispatched('notice', text: 'Domain angelegt.');
 
     $domain = Domain::where('name', 'meldung.de')->sole();
 
     $modal->call('bearbeiten', 'domain', $domain->id)
         ->set('form.registrar', 'Hetzner')
-        ->call('speichern')
+        ->call('save')
         ->assertDispatched('notice', text: 'Domain gespeichert.');
 
     $modal->call('bearbeiten', 'domain', $domain->id)
-        ->call('loeschen')
+        ->call('delete')
         ->assertDispatched('notice', text: 'Domain gelöscht.');
 });
 
@@ -413,7 +413,7 @@ test('leere Felder werden als null gespeichert, nicht als Leerstring', function 
     Livewire::test(ObjectModal::class, ['typ' => 'domain', 'customer' => $customer])
         ->call('neu')
         ->set('form.name', 'ohnedatum.de')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     $roh = DB::table('domains')->where('name', 'ohnedatum.de')->first();
@@ -583,7 +583,7 @@ test('Fehlermeldungen nennen die Beschriftung, nicht den Feldnamen', function ()
     $modal = Livewire::test(ObjectModal::class, ['typ' => 'server', 'customer' => $customer])
         ->call('neu')
         ->set('form.form_factor', '')
-        ->call('speichern');
+        ->call('save');
 
     $fehler = $modal->errors()->get('form.form_factor');
 
@@ -618,7 +618,7 @@ test('ein leeres Pflichtfeld mit Standardwert scheitert nicht an null', function
         ->set('form.operating_system_id', $os->id)
         ->set('form.form_factor', 'tower')
         ->set('form.height_units', '')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors()
         ->assertSet('offen', false);
 
@@ -642,7 +642,7 @@ test('eine Securepoint-Firewall laesst sich im Modal anlegen', function () {
         ->set('form.name', 'FW-Modal')
         ->set('form.manufacturer', 'Securepoint GmbH')
         ->set('form.usc_pin', '112233')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors()
         ->assertSet('offen', false);
 
@@ -678,7 +678,7 @@ test('ein AD-Benutzer laesst sich im Modal anlegen', function () {
         ->assertSet('form.enabled', '1')
         ->set('form.username', 'm.mustermann')
         ->set('form.firstName', 'Max')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors()
         ->assertSet('offen', false);
 
@@ -701,7 +701,7 @@ test('ein technisches Feld wird nicht gezeichnet, bleibt aber erhalten', functio
 
     expect($modal->html())->not->toContain('form.hidden');
 
-    $modal->set('form.firstName', 'Geändert')->call('speichern');
+    $modal->set('form.firstName', 'Geändert')->call('save');
 
     expect($benutzer->fresh()->hidden)->toEqual(1);
 });
@@ -717,7 +717,7 @@ test('ein Internetanschluss laesst sich im Modal anlegen', function () {
         ->set('form.provider', 'Telekom')
         ->set('form.bandwidth_down', '250')
         ->set('form.bandwidth_up', '40')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors()
         ->assertSet('offen', false);
 
@@ -753,7 +753,7 @@ test('eine E-Mail-Archivierung laesst sich im Modal anlegen', function () {
         ->set('form.username', 'admin')
         ->set('form.password', 'Geheim!2026')
         ->set('form.encryptionkey', 'AAAA-BBBB-CCCC-DDDD')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors()
         ->assertSet('offen', false);
 
@@ -794,7 +794,7 @@ test('ein Standort laesst sich im Modal anlegen', function () {
         ->set('form.house_number', '7')
         ->set('form.zip', '21079')
         ->set('form.city', 'Hamburg')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     $standort = Site::where('name', 'Lager Süd')->sole();
@@ -814,7 +814,7 @@ test('der Standort laedt die Seite neu, andere Typen nicht', function () {
     Livewire::test(ObjectModal::class, ['typ' => 'site', 'customer' => $customer])
         ->call('neu')
         ->set('form.name', 'Neuer Standort')
-        ->call('speichern')
+        ->call('save')
         ->assertJs('window.location.reload()');
 
     // Bei einer Domain waere das Neuladen unnoetig - sie steht nirgends sonst.
@@ -834,7 +834,7 @@ test('eine Datei laesst sich im Modal hochladen', function () {
         ->set('form.key', 'XXXXX-YYYYY-ZZZZZ')
         ->set('form.file_name', 'Lizenzurkunde')
         ->set('datei', UploadedFile::fake()->create('urkunde.pdf', 12))
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     $lizenz = LicenseWindows::where('key', 'XXXXX-YYYYY-ZZZZZ')->sole();
@@ -862,7 +862,7 @@ test('eine neue Datei ersetzt die alte und laesst keine Leiche zurueck', functio
     Livewire::test(ObjectModal::class, ['typ' => 'licensewindows', 'customer' => $customer])
         ->call('bearbeiten', 'licensewindows', $lizenz->id)
         ->set('datei', UploadedFile::fake()->create('neu.pdf', 12))
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     $neu = $lizenz->fresh();
@@ -889,7 +889,7 @@ test('ohne neue Datei bleibt die hinterlegte erhalten', function () {
     Livewire::test(ObjectModal::class, ['typ' => 'licensewindows', 'customer' => $customer])
         ->call('bearbeiten', 'licensewindows', $lizenz->id)
         ->set('form.key', 'NEU')
-        ->call('speichern');
+        ->call('save');
 
     expect($lizenz->fresh()->file_path)->toBe($customer->slug.'/licensewindows/bleibt.pdf');
 });
@@ -936,7 +936,7 @@ test('eine CAL-Lizenz laesst sich mit Datei anlegen', function () {
         ->set('datei', UploadedFile::fake()->create('CAL Nachweis.pdf', 12))
         // Der Vorschlag gilt fuer jeden Typ mit Dateifeld, nicht nur fuer Windows.
         ->assertSet('form.file_name', 'CAL Nachweis')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     $lizenz = LicenseAccess::where('name', 'RDS CAL 2022')->sole();
@@ -976,7 +976,7 @@ test('eine Software-Lizenz laesst sich mit Laufzeit und Abo anlegen', function (
         ->set('form.start_date', '2026-01-01')
         ->set('form.end_date', '2026-12-31')
         ->set('form.abo', 'Jährlich')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     $lizenz = LicenseSoftware::where('name', 'Adobe Creative Cloud')->sole();
@@ -994,7 +994,7 @@ test('ohne Abo wird der leere Wert zu null', function () {
     Livewire::test(ObjectModal::class, ['typ' => 'licensesoftware', 'customer' => $customer])
         ->call('neu')
         ->set('form.name', 'Einmallizenz')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     expect(LicenseSoftware::where('name', 'Einmallizenz')->sole()->abo)->toBeNull();
@@ -1066,7 +1066,7 @@ test('der Montageort laesst sich speichern, steht in der Liste und ist suchbar',
         ->set('form.site_id', $site->id)
         ->set('form.role', 'Basis')
         ->set('form.location', 'Halle 1, über der Tür')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     $dect = DECT::firstOrFail();

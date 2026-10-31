@@ -137,7 +137,7 @@ class AdminTrash extends Component
     /**
      * Einen einzelnen Eintrag endgueltig entfernen.
      */
-    public function loeschen(string $slug, int $id): void
+    public function delete(string $slug, int $id): void
     {
         Gate::authorize('admin_trash');
 
@@ -156,7 +156,7 @@ class AdminTrash extends Component
     /**
      * Alles loeschen, was der Filter gerade zeigt.
      */
-    public function alleLoeschen(): void
+    public function deleteAll(): void
     {
         Gate::authorize('admin_trash');
 

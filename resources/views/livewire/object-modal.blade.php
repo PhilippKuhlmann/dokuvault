@@ -23,9 +23,9 @@
              stand beim Oeffnen jedes Dialogs mit Standort aufgeklappt da. --}}
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
             x-init="$fokusErstesFeld()"
-            x-on:keydown.escape.window="$wire.abbrechen()"
-            x-on:keydown.meta.enter.prevent="$wire.speichern()"
-            x-on:keydown.ctrl.enter.prevent="$wire.speichern()">
+            x-on:keydown.escape.window="$wire.cancel()"
+            x-on:keydown.meta.enter.prevent="$wire.save()"
+            x-on:keydown.ctrl.enter.prevent="$wire.save()">
 
             @php
                 // Die Breite richtet sich nach dem, was drinsteht: Ein
@@ -256,7 +256,7 @@
                                             <div class="rounded-lg border border-gray-200 bg-gray-50 p-2.5 dark:border-gray-600 dark:bg-gray-900/40">
                                                 <div class="flex items-center justify-between gap-2">
                                                     <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ __('Bisherige Kennwörter') }}</span>
-                                                    <button type="button" wire:click="verlaufVerbergen('{{ $feld['name'] }}')"
+                                                    <button type="button" wire:click="hideHistory('{{ $feld['name'] }}')"
                                                         class="text-xs text-cerulean-600 hover:text-cerulean-700 dark:text-cerulean-400">{{ __('verbergen') }}</button>
                                                 </div>
                                                 <div class="mt-1.5 space-y-1.5">
@@ -271,7 +271,7 @@
                                                 </div>
                                             </div>
                                         @else
-                                            <button type="button" wire:click="verlaufZeigen('{{ $feld['name'] }}')"
+                                            <button type="button" wire:click="showHistory('{{ $feld['name'] }}')"
                                                 class="text-xs text-gray-500 hover:text-cerulean-600 dark:text-gray-400 dark:hover:text-cerulean-400">
                                                 {{ __('Zuletzt geändert') }} {{ $verlauf[$feld['name']]['zuletzt'] }} —
                                                 <span class="underline">{{ trans_choice('{1}vorheriges Kennwort anzeigen|[2,*]:anzahl vorherige anzeigen', $verlauf[$feld['name']]['anzahl'], ['anzahl' => $verlauf[$feld['name']]['anzahl']]) }}</span>
@@ -295,13 +295,13 @@
                                 <x-input.file id="modellbild" wire:model="modellbild"
                                     accept="{{ collect(config('custom.bild_formate'))->map(fn ($e) => '.'.$e)->join(',') }}" />
 
-                                @if ($modell?->bildUrl())
+                                @if ($modell?->imageUrl())
                                     {{-- Im Seitenverhaeltnis einer Blende, nicht in
                                          einem festen Kasten: Sonst schwebt ein
                                          1-HE-Geraet als duenner Streifen in der
                                          Mitte einer leeren Flaeche. --}}
                                     <figure class="w-48">
-                                        <img src="{{ $modell->bildUrl() }}" alt=""
+                                        <img src="{{ $modell->imageUrl() }}" alt=""
                                             style="aspect-ratio: 1086 / {{ 100 * max(1, (int) $modell->height_units) }};"
                                             class="w-full rounded border border-gray-300 bg-gray-100 object-contain dark:border-gray-600 dark:bg-gray-900">
                                         <figcaption class="mt-1 text-[11px] text-gray-400 dark:text-gray-500">
@@ -346,14 +346,14 @@
                                  wire:confirm gilt trotzdem als Nachfrage, haelt
                                  beim Anlegen also mit einem leeren Dialog an. --}}
                             @if ($bearbeiteId)
-                                <x-input.button type="button" size="feld" color="gray" wire:click="erzeugen"
+                                <x-input.button type="button" size="feld" color="gray" wire:click="generate"
                                     wire:confirm="{{ __('Vorhandene Werte werden überschrieben. Fortfahren?') }}"
                                     :label="__($erzeugerLabel)" />
                             @else
-                                <x-input.button type="button" size="feld" color="gray" wire:click="erzeugen"
+                                <x-input.button type="button" size="feld" color="gray" wire:click="generate"
                                     :label="__($erzeugerLabel)" />
                             @endif
-                            <span wire:loading wire:target="erzeugen" class="text-xs text-cerulean-600 dark:text-cerulean-400">
+                            <span wire:loading wire:target="generate" class="text-xs text-cerulean-600 dark:text-cerulean-400">
                                 {{ __('wird erzeugt …') }}
                             </span>
                         </div>
@@ -413,7 +413,7 @@
                         <div class="mt-4 flex justify-end gap-2">
                             <x-input.button type="button" color="gray"
                                 wire:click="$set('loeschenGefragt', false)" :label="__('Abbrechen')" />
-                            <x-input.button type="button" color="red" wire:click="loeschen" :label="__('Löschen')" />
+                            <x-input.button type="button" color="red" wire:click="delete" :label="__('Löschen')" />
                         </div>
                     </div>
                 @else
@@ -432,8 +432,8 @@
 
                         {{-- abbrechen() statt offen=false: sonst bleibt bearbeiteId stehen
                              und das naechste "Neu" oeffnet das Bearbeiten-Modal. --}}
-                        <x-input.button type="button" color="gray" wire:click="abbrechen" :label="__('Abbrechen')" />
-                        <x-input.button type="button" wire:click="speichern"
+                        <x-input.button type="button" color="gray" wire:click="cancel" :label="__('Abbrechen')" />
+                        <x-input.button type="button" wire:click="save"
                             :label="$bearbeiteId ? __('Speichern') : __('Anlegen')" />
                     </div>
                 @endif

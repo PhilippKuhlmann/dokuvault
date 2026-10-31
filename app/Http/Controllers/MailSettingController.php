@@ -41,7 +41,7 @@ class MailSettingController extends Controller
 
     public function update(Request $request)
     {
-        $daten = $this->pruefen($request);
+        $daten = $this->check($request);
 
         Setting::setzen(Setting::MAIL_HOST, $daten['mail_host'] ?: null);
         Setting::setzen(Setting::MAIL_PORT, $daten['mail_port'] ?: null);
@@ -56,16 +56,16 @@ class MailSettingController extends Controller
         // sonst waere jedes Speichern der uebrigen Felder ein stiller Verlust.
         // Zum Loeschen gibt es den eigenen Knopf.
         if (($daten['mail_password'] ?? '') !== '') {
-            Setting::mailKennwortSetzen($daten['mail_password']);
+            Setting::setMailPassword($daten['mail_password']);
         }
 
         return redirect(route('admin.mail.index'))->with('success', __('Einstellungen gespeichert.'));
     }
 
     /** Das hinterlegte Kennwort entfernen, ohne die uebrigen Felder zu leeren. */
-    public function kennwortLoeschen()
+    public function deletePassword()
     {
-        Setting::mailKennwortSetzen(null);
+        Setting::setMailPassword(null);
 
         return redirect(route('admin.mail.index'))->with('success', __('Kennwort entfernt.'));
     }
@@ -105,7 +105,7 @@ class MailSettingController extends Controller
     /**
      * @return array<string, string|null>
      */
-    private function pruefen(Request $request): array
+    private function check(Request $request): array
     {
         return $request->validate([
             'mail_host' => ['nullable', 'string', 'max:255'],

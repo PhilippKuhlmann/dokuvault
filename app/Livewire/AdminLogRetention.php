@@ -27,7 +27,7 @@ class AdminLogRetention extends Component
         $this->tage = Setting::protokollTage();
     }
 
-    public function speichern(): void
+    public function save(): void
     {
         Gate::authorize('admin_activity');
 

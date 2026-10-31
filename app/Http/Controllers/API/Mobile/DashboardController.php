@@ -26,7 +26,7 @@ class DashboardController extends Controller
 {
     public function __construct(private MobileObjects $objekte) {}
 
-    public function zeigen(Request $request, Customer $customer): JsonResponse
+    public function show(Request $request, Customer $customer): JsonResponse
     {
         $nutzer = $request->user();
         $uebersicht = new CustomerDashboard($customer, $nutzer);

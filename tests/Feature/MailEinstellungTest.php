@@ -105,7 +105,7 @@ test('krumme Eingaben werden abgewiesen', function () {
 test('gespeicherte Einstellungen gelten statt der Umgebung', function () {
     Setting::setzen(Setting::MAIL_HOST, 'smtp.aus-der-datenbank');
     Setting::setzen(Setting::MAIL_PORT, '2525');
-    Setting::mailKennwortSetzen('Geheim-2026');
+    Setting::setMailPassword('Geheim-2026');
     Setting::setzen(Setting::MAIL_FROM_ADDRESS, 'doku@example.com');
 
     // Der Provider legt die Werte beim Hochfahren ueber die Konfiguration.

@@ -47,7 +47,7 @@ class AgentToken extends Model
      * angelegt. Solche Token bleiben gueltig, sonst waeren mit der Migration
      * alle laufenden Agenten stehengeblieben.
      */
-    public function istAbgelaufen(): bool
+    public function isExpired(): bool
     {
         return $this->expires_at !== null && $this->expires_at->isPast();
     }
@@ -98,7 +98,7 @@ class AgentToken extends Model
      * last_used_at wird zurückgesetzt: Die Angabe gehört zum alten Wert, der
      * neue wurde noch nie benutzt.
      */
-    public function erneuern(DateTimeInterface $expiresAt): string
+    public function renew(DateTimeInterface $expiresAt): string
     {
         $plain = 'doc_'.Str::random(48);
 

@@ -32,7 +32,7 @@ class ActivityLogPassword extends Component
     /** Geladene Werte - erst nach dem Klick gefuellt. */
     public array $werte = [];
 
-    public function zeigen(): void
+    public function show(): void
     {
         // Dasselbe Recht wie die Seite, auf der die Komponente steht. Geprueft
         // wird trotzdem hier - der Aufruf kommt aus dem Browser.

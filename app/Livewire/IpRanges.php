@@ -50,7 +50,7 @@ class IpRanges extends Component
         // Zwei verschiedene Fragen, beide noetig: Darf dieser Benutzer diesen
         // Kunden sehen - und gehoert dieses Netz zu ihm? Ohne die erste kaeme
         // ein auf einen Kunden festgelegter Nutzer an fremde Netzplanung.
-        $this->nurEigenerKunde($customer->id);
+        $this->onlyOwnCustomer($customer->id);
 
         abort_unless($network->customer_id === $customer->id, 404);
 
@@ -78,22 +78,22 @@ class IpRanges extends Component
         $this->offen = true;
     }
 
-    public function abbrechen(): void
+    public function cancel(): void
     {
         $this->reset('offen', 'from_ip', 'to_ip', 'label', 'note', 'geprueft');
         $this->resetErrorBag();
     }
 
-    public function speichern(): void
+    public function save(): void
     {
         Gate::authorize('network_update');
 
-        $this->pruefungEinschalten();
+        $this->enableCheck();
         $daten = $this->validate($this->regeln(), [], $this->feldnamen());
 
         app(IpRangeEditing::class)->create($this->netz(), $daten);
 
-        $this->abbrechen();
+        $this->cancel();
 
         // Die Adressliste darueber zeichnet der Controller, nicht diese
         // Komponente - ohne den Neuaufbau bliebe der neue Bereich unsichtbar,
@@ -101,7 +101,7 @@ class IpRanges extends Component
         $this->redirect(request()->header('Referer') ?: route('ipplan.index', $this->customerId), navigate: true);
     }
 
-    public function loeschen(int $id): void
+    public function delete(int $id): void
     {
         Gate::authorize('network_update');
 
@@ -116,7 +116,7 @@ class IpRanges extends Component
     {
         // Every action and every render binds to the user's customer again -
         // not only mount(). The ids are locked as well, see above.
-        $this->nurEigenerKunde($this->customerId);
+        $this->onlyOwnCustomer($this->customerId);
 
         return Network::where('customer_id', $this->customerId)->findOrFail($this->networkId);
     }

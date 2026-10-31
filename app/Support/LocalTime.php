@@ -38,7 +38,7 @@ class LocalTime
      * @param  string  $wenn_leer  Was dasteht, wenn es den Zeitpunkt nicht gibt -
      *                             "noch nie" liest sich besser als eine leere Zelle.
      */
-    public static function anzeigen(?DateTimeInterface $wert, string $format = 'd.m.Y H:i', string $wenn_leer = ''): string
+    public static function display(?DateTimeInterface $wert, string $format = 'd.m.Y H:i', string $wenn_leer = ''): string
     {
         if ($wert === null) {
             return $wenn_leer;
@@ -55,7 +55,7 @@ class LocalTime
      * Europe/Berlin that was 01:59 on the 9th, so the list said "09.10." and
      * the token lived two hours too long.
      */
-    public static function tagesende(string|DateTimeInterface $datum): Carbon
+    public static function endOfDay(string|DateTimeInterface $datum): Carbon
     {
         $tag = $datum instanceof DateTimeInterface
             ? Carbon::instance($datum)->setTimezone(self::zone())->toDateString()

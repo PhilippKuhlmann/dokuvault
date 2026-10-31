@@ -7,7 +7,7 @@
     $gewaehlt = old('appearance', $item->appearance ?? 'blank');
     $maxHe = \App\Http\Requests\RackCatalogItemRequest::MAX_HE;
     $he = max(1, min((int) old('height_units', $item->height_units ?? 1), $maxHe));
-    $bild = $item?->bildUrl();
+    $bild = $item?->imageUrl();
 @endphp
 
 <div x-data="katalogelement(@js($gewaehlt), @js((int) $he))">

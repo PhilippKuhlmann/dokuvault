@@ -410,7 +410,7 @@ test('ein abgeschalteter Schalter kommt beim Bearbeiten nicht angehakt an', func
         ->call('bearbeiten', 'networkshare', $share->id)
         ->assertSet('form.sensitive', false)
         ->set('form.sensitive', true)
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     expect($share->fresh()->sensitive)->toBeTrue();

@@ -71,11 +71,11 @@ function mobilZugang(Server $server, string $kennwort = 'LOGIN-GEHEIM')
 
 function mobilZweiteStufe(User $nutzer): string
 {
-    $geheimnis = app(TwoFactor::class)->geheimnisErzeugen();
+    $geheimnis = app(TwoFactor::class)->generateSecret();
 
     $nutzer->forceFill([
         'two_factor_secret' => $geheimnis,
-        'two_factor_recovery_codes' => app(TwoFactor::class)->wiederherstellungscodes(),
+        'two_factor_recovery_codes' => app(TwoFactor::class)->recoveryCodes(),
         'two_factor_confirmed_at' => now(),
     ])->save();
 

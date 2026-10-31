@@ -33,7 +33,7 @@ class MobileLoginRequest extends LoginRequest
      *
      * @throws ValidationException
      */
-    public function nutzerPruefen(): User
+    public function checkUser(): User
     {
         $this->ensureIsNotRateLimited();
 
@@ -53,7 +53,7 @@ class MobileLoginRequest extends LoginRequest
 
         // Wie im Browser erst nach dem richtigen Kennwort: Wer es kennt, weiss
         // ohnehin, dass es den Zugang gibt.
-        if ($nutzer->istDeaktiviert()) {
+        if ($nutzer->isDisabled()) {
             throw ValidationException::withMessages([
                 'username' => __('Dieser Zugang ist deaktiviert. Wenden Sie sich an Ihre Administration.'),
             ]);

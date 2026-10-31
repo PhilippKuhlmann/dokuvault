@@ -61,7 +61,7 @@ class UserController extends Controller
      * sondern der Alltag: Die Mail ist im Spam gelandet, der Link ist
      * abgelaufen, der Kollege hat sie geloescht.
      */
-    public function einladen(User $user)
+    public function invite(User $user)
     {
         abort_unless(auth()->user()->mayManage($user), 403);
 
@@ -125,7 +125,7 @@ class UserController extends Controller
         // Nicht nur Passwort und Rolle: Der Schutz erkennt sie am Benutzernamen,
         // ein umbenannter Zugang waere also nicht mehr geschuetzt - und die
         // dokumentierte Anmeldung funktionierte nicht mehr.
-        if ($user->istDemoGeschuetzt()) {
+        if ($user->isDemoProtected()) {
             return redirect(route('admin.user.edit', $user))
                 ->withErrors(['demo' => __('Dieser Demo-Zugang ist gesperrt und lässt sich nicht ändern.')]);
         }
@@ -168,11 +168,11 @@ class UserController extends Controller
      * Wiederherstellungscodes im Papierkorb. Ohne diesen Weg bliebe nur der
      * Griff in die Datenbank. Es steht im Protokoll, wer es getan hat.
      */
-    public function zweiteStufeZuruecksetzen(User $user)
+    public function resetTwoFactor(User $user)
     {
         abort_unless(auth()->user()->mayManage($user), 403);
 
-        if ($user->istDemoGeschuetzt()) {
+        if ($user->isDemoProtected()) {
             return redirect(route('admin.user.edit', $user))
                 ->withErrors(['demo' => __('Dieser Demo-Zugang ist gesperrt und lässt sich nicht ändern.')]);
         }
@@ -200,7 +200,7 @@ class UserController extends Controller
     {
         abort_unless(auth()->user()->mayManage($user), 403);
 
-        if ($user->istDemoGeschuetzt()) {
+        if ($user->isDemoProtected()) {
             return redirect(route('admin.user.edit', $user))
                 ->withErrors(['demo' => __('Dieser Zugang gehört zur Demo und lässt sich nicht löschen. Selbst angelegte Benutzer schon.')]);
         }

@@ -41,7 +41,7 @@ class PasswordField extends Component
         $this->width = $width;
     }
 
-    public function zeigen(): void
+    public function show(): void
     {
         $wert = $this->wertHolen();
 

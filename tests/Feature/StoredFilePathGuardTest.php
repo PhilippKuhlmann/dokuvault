@@ -59,7 +59,7 @@ test('no upload form type takes a stored path from the form or serves a foreign 
         Livewire::test(ObjectModal::class, ['typ' => $type, 'customer' => $own])
             ->call('bearbeiten', $type, $object->id)
             ->set("form.{$field['pfad_feld']}", $foreignToo)
-            ->call('speichern')
+            ->call('save')
             ->assertHasNoErrors();
 
         expect($object->fresh()->{$field['pfad_feld']})->toBe($foreign, "$type took the path from the form");

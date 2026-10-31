@@ -69,7 +69,7 @@ class BackupSettings
         return $werte;
     }
 
-    public static function speichern(array $werte): void
+    public static function save(array $werte): void
     {
         foreach (self::STANDARD as $schluessel => $standard) {
             if (! array_key_exists($schluessel, $werte)) {
@@ -133,7 +133,7 @@ class BackupSettings
      * first write then failed with "not able to write the file". Done via a
      * disk rooted at "/", where the folder is just a path.
      */
-    public static function zielordnerAnlegen(?array $werte = null): void
+    public static function createTargetFolder(?array $werte = null): void
     {
         $disk = self::zielDisk($werte);
         $ordner = trim((string) ($disk['root'] ?? ''), '/');

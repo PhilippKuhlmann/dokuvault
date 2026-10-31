@@ -128,7 +128,7 @@ class Setting extends Model
     }
 
     /** Das SMTP-Kennwort setzen; null loescht es. */
-    public static function mailKennwortSetzen(?string $kennwort): void
+    public static function setMailPassword(?string $kennwort): void
     {
         self::setzen(self::MAIL_PASSWORD, $kennwort === null || $kennwort === ''
             ? null

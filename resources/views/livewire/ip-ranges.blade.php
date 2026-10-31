@@ -37,7 +37,7 @@
                     @endif
 
                     @if ($darfPflegen)
-                        <button type="button" wire:click="loeschen({{ $bereich->id }})"
+                        <button type="button" wire:click="delete({{ $bereich->id }})"
                             wire:confirm="{{ __('Diesen Bereich entfernen?') }}"
                             title="{{ __('Entfernen') }}"
                             class="{{ $bereich->farbe['chipLeise'] ?? '' }} hover:opacity-70">&times;</button>
@@ -83,11 +83,11 @@
             <x-input.fehler feld="note" />
 
             <div class="mt-3 flex justify-end gap-2">
-                <button type="button" wire:click="abbrechen"
+                <button type="button" wire:click="cancel"
                     class="rounded-lg px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
                     {{ __('Abbrechen') }}
                 </button>
-                <button type="button" wire:click="speichern"
+                <button type="button" wire:click="save"
                     class="rounded-lg bg-cerulean-600 px-3 py-1.5 text-sm text-white hover:bg-cerulean-700">
                     {{ __('Reservieren') }}
                 </button>

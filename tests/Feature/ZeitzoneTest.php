@@ -17,7 +17,7 @@ test('die eingestellte Zone verschiebt die Anzeige', function () {
     // 16:00 UTC ist im Sommer 18:00 in Berlin.
     $zeitpunkt = Carbon::parse('2026-07-01 16:00:00', 'UTC');
 
-    expect(LocalTime::anzeigen($zeitpunkt))->toBe('01.07.2026 18:00');
+    expect(LocalTime::display($zeitpunkt))->toBe('01.07.2026 18:00');
 });
 
 test('gespeichert wird weiter in UTC', function () {
@@ -33,12 +33,12 @@ test('gespeichert wird weiter in UTC', function () {
     $roh = DB::table('users')->where('id', $nutzer->id)->value('last_login_at');
 
     expect($roh)->toStartWith('2026-07-01 16:00')
-        ->and(LocalTime::anzeigen($nutzer->fresh()->last_login_at))->toBe('01.07.2026 18:00');
+        ->and(LocalTime::display($nutzer->fresh()->last_login_at))->toBe('01.07.2026 18:00');
 });
 
 test('ein fehlender Zeitpunkt bekommt einen lesbaren Ersatz', function () {
-    expect(LocalTime::anzeigen(null, 'd.m.Y H:i', 'noch nie'))->toBe('noch nie')
-        ->and(LocalTime::anzeigen(null))->toBe('');
+    expect(LocalTime::display(null, 'd.m.Y H:i', 'noch nie'))->toBe('noch nie')
+        ->and(LocalTime::display(null))->toBe('');
 });
 
 test('eine unbekannte Zone wird nicht übernommen', function () {

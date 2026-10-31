@@ -77,7 +77,7 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
-        $this->sucheRegistrieren();
+        $this->registerSearch();
         $this->mailEinstellungenAnwenden();
 
         // Wie ein Kennwort aussehen muss - an einer Stelle gesetzt, wirksam an
@@ -156,7 +156,7 @@ class AppServiceProvider extends ServiceProvider
      * ohne ESCAPE gar nichts mehr. Da die Tests auf SQLite laufen und die
      * Produktion auf MySQL, muss beides stimmen.
      */
-    protected function sucheRegistrieren(): void
+    protected function registerSearch(): void
     {
         // "%begriff%" - findet den Begriff an jeder Stelle.
         Builder::macro('whereEnthaelt', fn (string|array $spalten, string $begriff) => $this->sucheAnwenden($spalten, '%'.static::sucheMaskieren($begriff).'%'));

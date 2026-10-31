@@ -21,7 +21,7 @@ test('the mailbox card does not deliver the password, the click fetches and logs
         ->assertDontSee('Mb-4kR2z', false);
 
     Livewire::test(SecretField::class, ['modell' => Mailbox::class, 'id' => $mailbox->id, 'feld' => 'password'])
-        ->call('zeigen')
+        ->call('show')
         ->assertSet('wert', 'Mb-4kR2z');
 
     expect(Activity::where('event', 'kennwort_angesehen')->where('causer_id', $nutzer->id)

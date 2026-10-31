@@ -25,7 +25,7 @@
     Unterscheidung an etwas, das nicht jeder sieht.
 --}}
 
-@if ($user->einladungAbgelaufen())
+@if ($user->invitationExpired())
     <span class="inline-flex items-center gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
             stroke="currentColor" class="h-5 w-5 shrink-0 text-rose-600 dark:text-rose-400"
@@ -34,9 +34,9 @@
             <path stroke-linecap="round" stroke-linejoin="round"
                 d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
         </svg>
-        <span>{{ LocalTime::anzeigen($user->invited_at, 'd.m.Y') }}</span>
+        <span>{{ LocalTime::display($user->invited_at, 'd.m.Y') }}</span>
     </span>
-@elseif ($user->einladungOffen())
+@elseif ($user->invitationPending())
     <span class="inline-flex items-center gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
             stroke="currentColor" class="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400"
@@ -45,9 +45,9 @@
             <path stroke-linecap="round" stroke-linejoin="round"
                 d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
         </svg>
-        <span>{{ LocalTime::anzeigen($user->invited_at, 'd.m.Y') }}</span>
+        <span>{{ LocalTime::display($user->invited_at, 'd.m.Y') }}</span>
     </span>
-@elseif ($user->einladungEingeloest())
+@elseif ($user->invitationRedeemed())
     <span class="inline-flex items-center gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2"
             stroke="currentColor" class="h-5 w-5 shrink-0 text-green-600 dark:text-green-400"
@@ -55,7 +55,7 @@
             <title>{{ __('eingelöst') }}</title>
             <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
         </svg>
-        <span>{{ LocalTime::anzeigen($user->invitation_accepted_at, 'd.m.Y') }}</span>
+        <span>{{ LocalTime::display($user->invitation_accepted_at, 'd.m.Y') }}</span>
     </span>
 @else
     <span class="text-gray-400 dark:text-gray-500" title="{{ __('nie eingeladen') }}">—</span>

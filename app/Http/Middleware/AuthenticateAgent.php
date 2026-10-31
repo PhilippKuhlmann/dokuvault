@@ -28,7 +28,7 @@ class AuthenticateAgent
 
         // Expired is treated like invalid - the same message, so from outside
         // nobody can tell whether a token never existed or only ran out.
-        if (! $token || ! $token->customer || ! $token->site || $token->istAbgelaufen()) {
+        if (! $token || ! $token->customer || ! $token->site || $token->isExpired()) {
             abort(401, __('Ungültiger Agent-Token.'));
         }
 

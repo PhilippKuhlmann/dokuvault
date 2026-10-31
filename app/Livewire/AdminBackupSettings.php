@@ -85,18 +85,18 @@ class AdminBackupSettings extends Component
         return $werte;
     }
 
-    public function speichern(): void
+    public function save(): void
     {
         Gate::authorize('isAdmin');
         $this->validate($this->regeln(), [], ['form.backup_ziel_host' => __('Server'), 'form.backup_ziel_benutzer' => __('Benutzer')]);
 
-        BackupSettings::speichern($this->zuSpeichern());
+        BackupSettings::save($this->zuSpeichern());
         BackupSettings::anwenden();
 
         // The folder now, not in the first night: a backup into a missing
         // folder fails.
         try {
-            BackupSettings::zielordnerAnlegen();
+            BackupSettings::createTargetFolder();
         } catch (\Throwable) {
             // Reported by "Verbindung testen" with the reason.
         }
@@ -106,7 +106,7 @@ class AdminBackupSettings extends Component
     }
 
     /** Clears a stored secret (password, key, archive password). */
-    public function geheimnisLoeschen(string $schluessel): void
+    public function deleteSecret(string $schluessel): void
     {
         Gate::authorize('isAdmin');
         abort_unless(str_contains($schluessel, '_geheim_') && array_key_exists($schluessel, BackupSettings::STANDARD), 404);
@@ -135,7 +135,7 @@ class AdminBackupSettings extends Component
         }
 
         try {
-            BackupSettings::zielordnerAnlegen($werte);
+            BackupSettings::createTargetFolder($werte);
             $ziel = Storage::build(['throw' => true] + $disk);
             $datei = 'dokuvault-verbindungstest-'.bin2hex(random_bytes(4)).'.txt';
             $ziel->put($datei, 'DokuVault '.now()->toIso8601String());

@@ -256,8 +256,8 @@ test('eine verschickte Einladung steht als offen an dem Zugang', function () {
     $this->post(route('admin.user.store'), einladungsdaten());
     $neu = User::where('username', 'neue.kollegin')->first();
 
-    expect($neu->einladungOffen())->toBeTrue()
-        ->and($neu->einladungAbgelaufen())->toBeFalse();
+    expect($neu->invitationPending())->toBeTrue()
+        ->and($neu->invitationExpired())->toBeFalse();
 });
 
 test('nach dem Einlösen ist sie nicht mehr offen', function () {
@@ -277,7 +277,7 @@ test('nach dem Einlösen ist sie nicht mehr offen', function () {
         'password_confirmation' => 'Selbst-Gewaehlt-2026',
     ]);
 
-    expect($neu->fresh()->einladungOffen())->toBeFalse();
+    expect($neu->fresh()->invitationPending())->toBeFalse();
 });
 
 test('das Einlösen hält fest, wann es war', function () {
@@ -300,9 +300,9 @@ test('das Einlösen hält fest, wann es war', function () {
 
     // Ohne eigenen Zeitpunkt saehe dieser Zugang ab jetzt genauso aus wie
     // einer, der nie eingeladen wurde: invited_at ist in beiden Faellen leer.
-    expect($neu->einladungEingeloest())->toBeTrue()
+    expect($neu->invitationRedeemed())->toBeTrue()
         ->and($neu->invitation_accepted_at->isToday())->toBeTrue()
-        ->and($neu->einladungOffen())->toBeFalse();
+        ->and($neu->invitationPending())->toBeFalse();
 });
 
 test('der Einladungslink trägt nur einmal', function () {
@@ -343,7 +343,7 @@ test('die Benutzerliste zeigt eine eingelöste Einladung als Haken mit Datum', f
         ->get(route('admin.user.index'))
         ->assertOk()
         ->assertSee('aria-label="'.__('eingelöst').'"', false)
-        ->assertSee(LocalTime::anzeigen($eingeloest->invitation_accepted_at, 'd.m.Y'))
+        ->assertSee(LocalTime::display($eingeloest->invitation_accepted_at, 'd.m.Y'))
         ->assertSee('title="'.__('nie eingeladen').'"', false)
         ->assertSee('text-green-600', false);
 });
@@ -356,7 +356,7 @@ test('nach einer Woche gilt sie als abgelaufen', function () {
         'invited_at' => now()->subMinutes((int) config('auth.passwords.invitation.expire') + 1),
     ])->saveQuietly();
 
-    expect($nutzer->fresh()->einladungAbgelaufen())->toBeTrue();
+    expect($nutzer->fresh()->invitationExpired())->toBeTrue();
 });
 
 test('die Benutzerliste zeigt offene und abgelaufene Einladungen', function () {
@@ -380,8 +380,8 @@ test('die Benutzerliste zeigt offene und abgelaufene Einladungen', function () {
         ->assertSee('aria-label="'.__('abgelaufen').'"', false)
         // Das Datum ist bei einer offenen Einladung die eigentliche Auskunft -
         // es darf nicht mit dem Wort verschwinden.
-        ->assertSee(LocalTime::anzeigen($offen->invited_at, 'd.m.Y'))
-        ->assertSee(LocalTime::anzeigen($abgelaufen->invited_at, 'd.m.Y'))
+        ->assertSee(LocalTime::display($offen->invited_at, 'd.m.Y'))
+        ->assertSee(LocalTime::display($abgelaufen->invited_at, 'd.m.Y'))
         // Zwei Zustaende, zwei Farben.
         ->assertSee('text-amber-600', false)
         ->assertSee('text-rose-600', false);

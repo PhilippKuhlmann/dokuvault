@@ -20,7 +20,7 @@ class ChecklistActions
      *
      * @return string|null Der Grund, wenn nichts geschah - sonst null.
      */
-    public static function umschalten(ChecklistItem $punkt, User $nutzer): ?string
+    public static function toggle(ChecklistItem $punkt, User $nutzer): ?string
     {
         Gate::forUser($nutzer)->authorize('checklist_manage');
 
@@ -43,7 +43,7 @@ class ChecklistActions
      *
      * Freigeben ist kein Abhaken: Danach darf die IT den Punkt erledigen.
      */
-    public static function freigeben(ChecklistItem $punkt, User $nutzer): void
+    public static function release(ChecklistItem $punkt, User $nutzer): void
     {
         Gate::forUser($nutzer)->authorize('checklist_approve');
 

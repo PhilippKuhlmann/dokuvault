@@ -65,7 +65,7 @@ class ObjectList extends Component
         abort_unless(array_key_exists($typ, config('forms')), 404);
 
         Gate::authorize($typ.'_viewAny');
-        $this->nurEigenerKunde($customer->id);
+        $this->onlyOwnCustomer($customer->id);
 
         $this->typ = $typ;
         $this->customerId = $customer->id;
@@ -119,7 +119,7 @@ class ObjectList extends Component
         $this->resetPage();
     }
 
-    public function zuruecksetzen(): void
+    public function clearFilters(): void
     {
         $this->reset(['search', 'filter', 'sortierung', 'highlight']);
         $this->resetPage();
@@ -178,7 +178,7 @@ class ObjectList extends Component
 
     /** Nach dem Speichern im Modal neu rendern - nur fuer den eigenen Typ. */
     #[On('object-saved')]
-    public function neuGeladen(string $typ): void
+    public function reloaded(string $typ): void
     {
         if ($typ === $this->typ) {
             $this->resetPage();
@@ -202,7 +202,7 @@ class ObjectList extends Component
     {
         abort_unless(in_array($this->typ, ['domain', 'certificate'], true), 404);
         Gate::authorize($this->typ.'_update');
-        $this->nurEigenerKunde($this->customerId);
+        $this->onlyOwnCustomer($this->customerId);
 
         $klasse = config('forms.'.$this->typ.'.model');
         $eintrag = $klasse::where('customer_id', $this->customerId)->findOrFail($id);

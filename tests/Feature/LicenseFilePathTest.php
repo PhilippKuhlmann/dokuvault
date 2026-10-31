@@ -35,7 +35,7 @@ test('a file_path sent with the form is ignored', function () {
         ->call('neu')
         ->set('form.name', 'Probe')
         ->set('form.file_path', $this->foreignPdf)
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     $licence = LicenseSoftware::where('name', 'Probe')->sole();
@@ -49,7 +49,7 @@ test('a file_path cannot be changed when editing', function () {
     Livewire::test(ObjectModal::class, ['typ' => 'licensesoftware', 'customer' => $this->own])
         ->call('bearbeiten', 'licensesoftware', $licence->id)
         ->set('form.file_path', $this->foreignFile)
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     expect($licence->fresh()->file_path)->toBeNull();
@@ -83,7 +83,7 @@ test('replacing the file does not delete a foreign stored path', function () {
     Livewire::test(ObjectModal::class, ['typ' => 'licensesoftware', 'customer' => $this->own])
         ->call('bearbeiten', 'licensesoftware', $licence->id)
         ->set('datei', UploadedFile::fake()->create('neu.pdf', 12))
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     Storage::disk('local')->assertExists($this->foreignFile);
@@ -99,7 +99,7 @@ test('emptying the trash does not delete a foreign stored path', function () {
     $admin = Role::find(Role::IS_ADMIN) ?? Role::factory()->create(['id' => Role::IS_ADMIN]);
     $this->actingAs(User::factory()->create(['role_id' => $admin->id]));
 
-    Livewire::test(AdminTrash::class)->call('loeschen', 'licensesoftware', $licence->id);
+    Livewire::test(AdminTrash::class)->call('delete', 'licensesoftware', $licence->id);
 
     expect(LicenseSoftware::withTrashed()->find($licence->id))->toBeNull();
     Storage::disk('local')->assertExists($this->foreignPdf);

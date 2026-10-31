@@ -29,7 +29,7 @@ test('mit dem Recht der Liste holt das Feld den Wert auf Klick', function () {
 
     Livewire::test(SecretField::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'cloud_backup_password'])
         ->assertDontSee('Wolke-Geheim-2026')
-        ->call('zeigen')
+        ->call('show')
         ->assertSet('offen', true)
         ->assertSee('Wolke-Geheim-2026');
 });
@@ -39,7 +39,7 @@ test('ohne das Recht bleibt das Geheimnis verborgen', function () {
     $fw = eineGeheimFirewall(['cloud_backup_password' => 'Verboten-2026']);
 
     Livewire::test(SecretField::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'cloud_backup_password'])
-        ->call('zeigen')
+        ->call('show')
         ->assertForbidden();
 });
 
@@ -49,7 +49,7 @@ test('ein Feld ausserhalb der Geheimnis-Spalten wird nicht herausgegeben', funct
 
     // 'name' steht nicht in secret_columns - zeigen() bricht ab, nichts wird geladen.
     Livewire::test(SecretField::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'name'])
-        ->call('zeigen')
+        ->call('show')
         ->assertSet('offen', false)
         ->assertSet('wert', null);
 });
@@ -59,7 +59,7 @@ test('die Einsicht steht im Protokoll - ohne den Wert', function () {
     $this->actingAs($nutzer);
     $fw = eineGeheimFirewall(['usc_pin' => 'Nie-Ins-Protokoll-2026']);
 
-    Livewire::test(SecretField::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'usc_pin'])->call('zeigen');
+    Livewire::test(SecretField::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'usc_pin'])->call('show');
 
     $eintrag = Activity::where('event', 'kennwort_angesehen')->latest('id')->first();
 
@@ -77,9 +77,9 @@ test('die Bremse stoppt das reihenweise Abgreifen', function () {
 
     $test = Livewire::test(SecretField::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'cloud_backup_password']);
 
-    $test->call('zeigen')->assertSet('offen', true);
+    $test->call('show')->assertSet('offen', true);
     $test->call('verbergen')
-        ->call('zeigen')
+        ->call('show')
         ->assertSet('offen', false)
         ->assertHasErrors('kennwort');
 });

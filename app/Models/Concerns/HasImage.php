@@ -26,31 +26,31 @@ trait HasImage
      */
     public static function bootHasImage(): void
     {
-        static::deleting(fn ($eintrag) => $eintrag->bildLoeschen());
+        static::deleting(fn ($eintrag) => $eintrag->deleteImage());
     }
 
     /** Adresse des Bildes, oder null. */
-    public function bildUrl(): ?string
+    public function imageUrl(): ?string
     {
         return $this->image_path ? route(static::BILDROUTE, $this) : null;
     }
 
     /** Absoluter Pfad der Bilddatei - fuer den PDF-Export, der kein HTTP kann. */
-    public function bildPfad(): ?string
+    public function imagePath(): ?string
     {
-        return $this->hatBilddatei() ? Storage::disk('local')->path($this->image_path) : null;
+        return $this->hasImageFile() ? Storage::disk('local')->path($this->image_path) : null;
     }
 
     /** Die abgelegte Datei entfernen. Die Spalte bleibt unberuehrt. */
-    public function bildLoeschen(): void
+    public function deleteImage(): void
     {
-        if ($this->hatBilddatei()) {
+        if ($this->hasImageFile()) {
             Storage::disk('local')->delete($this->image_path);
         }
     }
 
     /** Liegt zur eingetragenen Adresse auch wirklich eine Datei? */
-    private function hatBilddatei(): bool
+    private function hasImageFile(): bool
     {
         return (bool) $this->image_path && Storage::disk('local')->exists($this->image_path);
     }

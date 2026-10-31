@@ -44,7 +44,7 @@ class ObjectController extends Controller
     /** The form of a stored object, with its values. */
     public function editForm(Request $request, string $typ, int $id): JsonResponse
     {
-        [$form, $objekt] = $this->holen($request, $typ, $id);
+        [$form, $objekt] = $this->fetch($request, $typ, $id);
         Gate::authorize($typ.'_update');
 
         return response()->json([
@@ -71,7 +71,7 @@ class ObjectController extends Controller
      */
     public function update(Request $request, string $typ, int $id): JsonResponse
     {
-        [$form, $objekt] = $this->holen($request, $typ, $id);
+        [$form, $objekt] = $this->fetch($request, $typ, $id);
         Gate::authorize($typ.'_update');
 
         $eingabe = $this->eingabe($request, $form);
@@ -84,7 +84,7 @@ class ObjectController extends Controller
 
     public function destroy(Request $request, string $typ, int $id): JsonResponse
     {
-        [, $objekt] = $this->holen($request, $typ, $id);
+        [, $objekt] = $this->fetch($request, $typ, $id);
         Gate::authorize($typ.'_delete');
 
         $objekt->delete();
@@ -104,7 +104,7 @@ class ObjectController extends Controller
         $klasse = $form->settings()['erzeuger'] ?? abort(404);
 
         try {
-            return response()->json(app($klasse)->erzeugen($this->eingabe($request, $form)));
+            return response()->json(app($klasse)->generate($this->eingabe($request, $form)));
         } catch (\RuntimeException $fehler) {
             // A missing algorithm is an input one can correct, not a server error.
             throw ValidationException::withMessages(['key_type' => $fehler->getMessage()]);
@@ -112,7 +112,7 @@ class ObjectController extends Controller
     }
 
     /** Object and form - with permission and customer, as the detail view. */
-    private function holen(Request $request, string $typ, int $id): array
+    private function fetch(Request $request, string $typ, int $id): array
     {
         abort_unless(array_key_exists($typ, config('forms')), 404);
 

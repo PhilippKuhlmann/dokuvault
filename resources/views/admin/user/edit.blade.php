@@ -2,7 +2,7 @@
     {{-- Geschuetzte Demo-Zugaenge bekommen gar kein Formular. Ein Feld, das sich
          ausfuellen laesst, dessen Inhalt aber nie gespeichert wird, waere die
          schlechtere Antwort auf dieselbe Sperre. --}}
-    @if ($user->istDemoGeschuetzt())
+    @if ($user->isDemoProtected())
         <div class="mx-auto max-w-3xl px-3 py-3">
             <div class="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900
                         dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300" role="status">
@@ -47,7 +47,7 @@
 
             {{-- Nur beim Bearbeiten: Ein Zugang, der gesperrt angelegt wird,
                  ergaebe keinen Sinn. --}}
-            <x-create.gesperrt :checked="$user->istDeaktiviert()" :seit="$user->deactivated_at" />
+            <x-create.gesperrt :checked="$user->isDisabled()" :seit="$user->deactivated_at" />
             <x-input.fehler :messages="$errors->get('deactivated')" class="mt-2" />
 
         </x-create.main>
@@ -85,13 +85,13 @@
                     {{-- Der Stand der letzten Einladung: Ohne ihn sieht ein
                          Administrator nicht, ob er gerade zum zweiten Mal
                          schickt oder zum ersten Mal. --}}
-                    @if ($user->einladungAbgelaufen())
+                    @if ($user->invitationExpired())
                         <p class="mt-2 text-amber-700 dark:text-amber-400">
-                            {{ __('Die Einladung vom :datum ist abgelaufen und wurde nicht eingelöst.', ['datum' => \App\Support\LocalTime::anzeigen($user->invited_at, 'd.m.Y')]) }}
+                            {{ __('Die Einladung vom :datum ist abgelaufen und wurde nicht eingelöst.', ['datum' => \App\Support\LocalTime::display($user->invited_at, 'd.m.Y')]) }}
                         </p>
-                    @elseif ($user->einladungOffen())
+                    @elseif ($user->invitationPending())
                         <p class="mt-2 text-gray-500 dark:text-gray-400">
-                            {{ __('Verschickt am :datum, noch nicht eingelöst.', ['datum' => \App\Support\LocalTime::anzeigen($user->invited_at, 'd.m.Y H:i')]) }}
+                            {{ __('Verschickt am :datum, noch nicht eingelöst.', ['datum' => \App\Support\LocalTime::display($user->invited_at, 'd.m.Y H:i')]) }}
                         </p>
                     @endif
                 </div>
@@ -106,7 +106,7 @@
         </div>
 
         {{-- Verlorenes Telefon: sonst bliebe nur der Griff in die Datenbank. --}}
-        @if ($user->hatZweiteStufe())
+        @if ($user->hasTwoFactor())
             <div class="mx-auto mt-4 max-w-3xl px-3">
                 <div class="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 text-sm dark:border-gray-700 dark:bg-gray-800 sm:flex-row sm:items-center sm:justify-between">
                     <div>

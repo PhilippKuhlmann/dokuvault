@@ -95,7 +95,7 @@ class DocumentationWizard extends Component
                 $this->form['cidr'] = $cidr;
                 // Das Partnerfeld hat gerade einen gueltigen Wert bekommen -
                 // sein roter Rahmen gehoert weg.
-                $this->waehrendDerEingabePruefen('form.cidr');
+                $this->validateOnInput('form.cidr');
             }
         }
 
@@ -104,7 +104,7 @@ class DocumentationWizard extends Component
 
             if ($maske !== null) {
                 $this->form['subnetmask'] = $maske;
-                $this->waehrendDerEingabePruefen('form.subnetmask');
+                $this->validateOnInput('form.subnetmask');
             }
         }
     }
@@ -313,7 +313,7 @@ class DocumentationWizard extends Component
             return;
         }
 
-        $this->pruefungEinschalten();
+        $this->enableCheck();
 
         $this->validate($this->rulesForStep($step, $customer->id), [], $this->attributesForStep($step));
 
@@ -414,7 +414,7 @@ class DocumentationWizard extends Component
         $step = $this->currentStep($run);
 
         if ($step) {
-            $this->schrittVerlassen($run, $step['key']);
+            $this->leaveStep($run, $step['key']);
         }
 
         $this->advance($run);
@@ -426,7 +426,7 @@ class DocumentationWizard extends Component
      * wirklich leer gelassener Schritt gilt als übersprungen. So steht am Ende
      * nicht "übersprungen" an einem Schritt, in dem man gerade etwas eingetragen hat.
      */
-    protected function schrittVerlassen(DocumentationRun $run, string $key): void
+    protected function leaveStep(DocumentationRun $run, string $key): void
     {
         $this->ablauf()->verlassen($run, $key);
     }
@@ -458,7 +458,7 @@ class DocumentationWizard extends Component
     {
         [, $run] = $this->guard();
 
-        $this->ablauf()->gruppeUeberspringen($run);
+        $this->ablauf()->skipGroup($run);
 
         $this->resetForm();
         $this->dispatch('wizard-step');

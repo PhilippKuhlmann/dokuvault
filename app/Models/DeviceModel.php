@@ -157,13 +157,13 @@ class DeviceModel extends Model
     }
 
     /** Adresse des Bildes, oder null. Global, wie der Eintrag selbst. */
-    public function bildUrl(): ?string
+    public function imageUrl(): ?string
     {
         return $this->image_path ? route('devicemodel.image', $this) : null;
     }
 
     /** Absoluter Pfad der Bilddatei - fuer den PDF-Export, der kein HTTP kann. */
-    public function bildPfad(): ?string
+    public function imagePath(): ?string
     {
         if (! $this->image_path || ! Storage::disk('local')->exists($this->image_path)) {
             return null;
@@ -172,7 +172,7 @@ class DeviceModel extends Model
         return Storage::disk('local')->path($this->image_path);
     }
 
-    public function bildLoeschen(): void
+    public function deleteImage(): void
     {
         if ($this->image_path && Storage::disk('local')->exists($this->image_path)) {
             Storage::disk('local')->delete($this->image_path);

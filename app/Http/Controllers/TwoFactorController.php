@@ -71,7 +71,7 @@ class TwoFactorController extends Controller
             ]);
         }
 
-        $request->session()->put(self::IN_ARBEIT, $this->zweiteStufe->geheimnisErzeugen());
+        $request->session()->put(self::IN_ARBEIT, $this->zweiteStufe->generateSecret());
 
         return Redirect::route('profile.edit')->withFragment('two-factor');
     }
@@ -85,7 +85,7 @@ class TwoFactorController extends Controller
      * Checks the mail code, if this user needs one. A setup begun without
      * one (no address back then) has to start over once there is one.
      */
-    private function mailcodePruefen(Request $request): void
+    private function checkMailCode(Request $request): void
     {
         if (! $request->user()->email) {
             return;
@@ -135,7 +135,7 @@ class TwoFactorController extends Controller
 
         $request->validateWithBag('zweiteStufe', ['code' => ['required', 'string']]);
 
-        $this->mailcodePruefen($request);
+        $this->checkMailCode($request);
 
         if (! $this->zweiteStufe->stimmt($geheimnis, $request->input('code'))) {
             throw ValidationException::withMessages([
@@ -143,7 +143,7 @@ class TwoFactorController extends Controller
             ])->errorBag('zweiteStufe');
         }
 
-        $codes = $this->zweiteStufe->wiederherstellungscodes();
+        $codes = $this->zweiteStufe->recoveryCodes();
 
         $request->user()->forceFill([
             'two_factor_secret' => $geheimnis,
@@ -185,7 +185,7 @@ class TwoFactorController extends Controller
             'password' => ['required', 'current_password'],
         ]);
 
-        $codes = $this->zweiteStufe->wiederherstellungscodes();
+        $codes = $this->zweiteStufe->recoveryCodes();
 
         $request->user()->forceFill(['two_factor_recovery_codes' => $codes])->save();
 
@@ -232,7 +232,7 @@ class TwoFactorController extends Controller
      */
     private function demoGesperrt(Request $request): ?RedirectResponse
     {
-        if (! $request->user()->istDemoGeschuetzt()) {
+        if (! $request->user()->isDemoProtected()) {
             return null;
         }
 

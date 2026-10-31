@@ -365,7 +365,7 @@
                             @if ($token->isLocked())
                                 <span class="ml-1 rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-700 dark:bg-red-900/30 dark:text-red-400">{{ __('gesperrt') }}</span>
                             @endif
-                            @if ($token->istAbgelaufen())
+                            @if ($token->isExpired())
                                 <span class="ml-1 rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-700 dark:bg-red-900/30 dark:text-red-400">{{ __('abgelaufen') }}</span>
                             @elseif ($token->expires_at === null)
                                 <span class="ml-1 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">{{ __('unbegrenzt (Altbestand)') }}</span>
@@ -375,8 +375,8 @@
                             {{ __('Standort') }}: {{ $token->site?->name ?? '—' }} ·
                             {{-- One token per agent: which one it belongs to. --}}
                             {{ __('Agent') }}: {{ $token->machine_id ? ($boundHosts[$token->machine_id] ?? $token->machine_id) : __('noch keiner') }} ·
-                            {{ __('Zuletzt genutzt') }}: {{ LocalTime::anzeigen($token->last_used_at, 'd.m.Y H:i', __('noch nie')) }} ·
-                            {{ __('Läuft ab') }}: {{ LocalTime::anzeigen($token->expires_at, 'd.m.Y', __('unbegrenzt')) }}
+                            {{ __('Zuletzt genutzt') }}: {{ LocalTime::display($token->last_used_at, 'd.m.Y H:i', __('noch nie')) }} ·
+                            {{ __('Läuft ab') }}: {{ LocalTime::display($token->expires_at, 'd.m.Y', __('unbegrenzt')) }}
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
@@ -453,8 +453,8 @@
                             @if ($installation->domain)
                                 {{ $installation->domain }} ·
                             @endif
-                            {{ __('Letzter Lauf') }}: {{ LocalTime::anzeigen($installation->last_run_at, 'd.m.Y H:i', __('noch nie')) }} ·
-                            {{ __('Zuletzt erreichbar') }}: {{ LocalTime::anzeigen($installation->last_seen_at, 'd.m.Y H:i', __('noch nie')) }} ·
+                            {{ __('Letzter Lauf') }}: {{ LocalTime::display($installation->last_run_at, 'd.m.Y H:i', __('noch nie')) }} ·
+                            {{ __('Zuletzt erreichbar') }}: {{ LocalTime::display($installation->last_seen_at, 'd.m.Y H:i', __('noch nie')) }} ·
                             {{ __('Version') }}: {{ $installation->version ?? '—' }} ·
                             {{ __('Token') }}: {{ $installation->agentToken ? ($installation->agentToken->name ?: 'Token #'.$installation->agentToken->id) : __('widerrufen') }}
                             @if ($installation->agentToken?->isLocked())

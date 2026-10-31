@@ -65,7 +65,7 @@ test('editing loads the selected machines and replaces them on save', function (
         ->call('bearbeiten', 'addomain', $domaene->id)
         ->assertSet('form.domain_controllers', ['server:'.$alt->id])
         ->set('form.domain_controllers', ['vm:'.$neu->id])
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     expect($domaene->fresh()->hostNames('dc'))->toBe('VM-DC03');

@@ -136,7 +136,7 @@ test('ein Schluessel laesst sich im Modal anlegen', function () {
         ->set('form.key_type', 'ed25519')
         ->set('form.public_key', 'ssh-ed25519 AAAAC3Nza deploy@ci')
         ->set('form.private_key', '-----BEGIN OPENSSH PRIVATE KEY-----')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     $schluessel = SshKey::where('customer_id', $customer->id)->firstOrFail();
@@ -154,7 +154,7 @@ test('ein unbekanntes Verfahren wird abgelehnt', function () {
         ->call('neu', 'sshkey')
         ->set('form.name', 'Krumm')
         ->set('form.key_type', 'dsa')
-        ->call('speichern')
+        ->call('save')
         ->assertHasErrors('form.key_type');
 });
 

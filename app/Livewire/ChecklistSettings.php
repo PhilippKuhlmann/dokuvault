@@ -65,7 +65,7 @@ class ChecklistSettings extends Component
 
     public function mount(Customer $customer): void
     {
-        $this->nurEigenerKunde($customer->id);
+        $this->onlyOwnCustomer($customer->id);
         Gate::authorize('checklist_manage');
 
         $this->customerId = $customer->id;
@@ -134,7 +134,7 @@ class ChecklistSettings extends Component
     private function customer(): Customer
     {
         Gate::authorize('checklist_manage');
-        $this->nurEigenerKunde($this->customerId);
+        $this->onlyOwnCustomer($this->customerId);
 
         return Customer::findOrFail($this->customerId);
     }

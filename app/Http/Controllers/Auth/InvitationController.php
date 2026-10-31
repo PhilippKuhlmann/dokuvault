@@ -38,7 +38,7 @@ class InvitationController extends Controller
 
         // Only an account with an open invitation. An accepted one sets its
         // password in the profile or via "forgot password", not here.
-        $invitationOpen = User::where('username', $request->input('username'))->first()?->einladungOffen() ?? false;
+        $invitationOpen = User::where('username', $request->input('username'))->first()?->invitationPending() ?? false;
         if (! $invitationOpen) {
             return back()
                 ->withInput($request->only('username'))

@@ -49,7 +49,7 @@ class NetworkList extends Component
     public function mount(Customer $customer): void
     {
         Gate::authorize('viewAny', Network::class);
-        $this->nurEigenerKunde($customer->id);
+        $this->onlyOwnCustomer($customer->id);
 
         $this->customerId = $customer->id;
     }
@@ -60,7 +60,7 @@ class NetworkList extends Component
      * der neue Eintrag sonst auf einer Seite landet, die man gerade nicht sieht.
      */
     #[On('vlan-created')]
-    public function neuGeladen(): void
+    public function reloaded(): void
     {
         $this->resetPage();
     }

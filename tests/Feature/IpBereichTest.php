@@ -135,7 +135,7 @@ test('ein Bereich lässt sich anlegen', function () {
         ->set('from_ip', '10.10.250.10')
         ->set('to_ip', '10.10.250.20')
         ->set('label', 'Proxmox-Server')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     $bereich = IpRange::first();
@@ -156,7 +156,7 @@ test('eine Adresse außerhalb des Netzes wird abgewiesen', function () {
         ->set('from_ip', '10.10.250.10')
         ->set('to_ip', '10.10.251.20')
         ->set('label', 'Daneben')
-        ->call('speichern')
+        ->call('save')
         ->assertHasErrors(['to_ip']);
 
     expect(IpRange::count())->toBe(0);
@@ -173,7 +173,7 @@ test('eine Endadresse vor der Anfangsadresse wird abgewiesen', function () {
         ->set('from_ip', '10.10.250.20')
         ->set('to_ip', '10.10.250.10')
         ->set('label', 'Verdreht')
-        ->call('speichern')
+        ->call('save')
         ->assertHasErrors(['to_ip']);
 });
 
@@ -191,7 +191,7 @@ test('zwei Bereiche dürfen sich nicht überschneiden', function () {
         ->set('from_ip', '10.10.250.15')
         ->set('to_ip', '10.10.250.25')
         ->set('label', 'Drucker')
-        ->call('speichern')
+        ->call('save')
         ->assertHasErrors(['from_ip']);
 
     expect(IpRange::count())->toBe(1);
@@ -249,7 +249,7 @@ test('gelöscht wird nur im eigenen Netz', function () {
     $fremderBereich = bereichAnlegen($fremdesNetz, '10.10.250.10', '10.10.250.20', 'Fremd');
 
     Livewire::test(IpRanges::class, ['customer' => $kunde, 'network' => $netz])
-        ->call('loeschen', $fremderBereich->id);
+        ->call('delete', $fremderBereich->id);
 
     expect(IpRange::find($fremderBereich->id))->not->toBeNull();
 });

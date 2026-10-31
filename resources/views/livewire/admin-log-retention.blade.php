@@ -12,7 +12,7 @@
                 <x-input.label :value="__('Aufbewahren (Tage)')" />
                 <x-input.field type="number" min="0" max="3650" wire:model.live.debounce.500ms="tage" class="mt-1 w-24" />
             </div>
-            <x-input.button type="button" size="feld" wire:click="speichern" :label="__('Speichern')" />
+            <x-input.button type="button" size="feld" wire:click="save" :label="__('Speichern')" />
         </div>
 
         <x-input.fehler feld="tage" />

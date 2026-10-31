@@ -127,7 +127,7 @@ class Network extends Model
         return static::where('customer_id', $customerId)
             ->when($siteId, fn ($query) => $query->where('site_id', $siteId))
             ->get()
-            ->first(fn (self $netz) => $netz->enthaeltAdresse($adresse));
+            ->first(fn (self $netz) => $netz->containsUrl($adresse));
     }
 
     /**
@@ -220,7 +220,7 @@ class Network extends Model
     /**
      * Prüft, ob eine IPv4-Adresse in den Adressbereich dieses Netzes fällt.
      */
-    public function enthaeltAdresse(string $adresse): bool
+    public function containsUrl(string $adresse): bool
     {
         $bereich = $this->bereich();
 

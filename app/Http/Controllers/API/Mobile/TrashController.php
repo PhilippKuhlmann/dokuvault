@@ -51,7 +51,7 @@ class TrashController extends Controller
     {
         Gate::authorize('see_hidden');
 
-        $objekt = (new Trash($customer, $request->user()))->wiederherstellen($typ, $id);
+        $objekt = (new Trash($customer, $request->user()))->restore($typ, $id);
 
         return response()->json([
             'objekt' => array_key_exists($typ, $this->objekte->typen())

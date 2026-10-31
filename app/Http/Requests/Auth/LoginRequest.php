@@ -80,7 +80,7 @@ class LoginRequest extends FormRequest
         // Normalfall kommt weiterhin mit einem aus.
         $nutzer = User::where('username', $this->input('username'))->first();
 
-        if ($nutzer?->istDeaktiviert()) {
+        if ($nutzer?->isDisabled()) {
             // Erst bei stimmendem Kennwort den Grund nennen: Wer es kennt,
             // weiss ohnehin, dass es den Zugang gibt - "Zugangsdaten falsch"
             // schickte ihn nur los, ein Kennwort zu suchen, das er gar nicht

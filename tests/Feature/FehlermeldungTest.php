@@ -23,7 +23,7 @@ test('das fehlerhafte Feld markiert sich selbst', function () {
 
     $html = Livewire::test(NetworkQuickCreate::class, ['customer' => $kunde])
         ->call('neu')
-        ->call('speichern')
+        ->call('save')
         ->assertHasErrors(['description'])
         ->html();
 
@@ -43,7 +43,7 @@ test('die Meldung trägt eine Farbe für den Dunkelmodus', function () {
 
     $html = Livewire::test(NetworkQuickCreate::class, ['customer' => $kunde])
         ->call('neu')
-        ->call('speichern')
+        ->call('save')
         ->html();
 
     // text-red-600 auf dunklem Grund liest sich schlecht. Das fehlte an 18
@@ -61,7 +61,7 @@ test('über dem Formular steht, dass etwas fehlt', function () {
     // haengender Knopf.
     Livewire::test(NetworkQuickCreate::class, ['customer' => $kunde])
         ->call('neu')
-        ->call('speichern')
+        ->call('save')
         ->assertSee('Bitte die rot markierten Felder prüfen.');
 });
 
@@ -76,7 +76,7 @@ test('der Text sagt, was zu tun ist', function () {
     // sonst wiederholt, und er nennt die Handlung statt eines Zustands.
     Livewire::test(NetworkQuickCreate::class, ['customer' => $kunde])
         ->call('neu')
-        ->call('speichern')
+        ->call('save')
         ->assertSee('Bitte Bezeichnung angeben.');
 });
 
@@ -147,7 +147,7 @@ test('nach einem abgewiesenen Absenden verschwindet Rot, sobald der Wert stimmt'
 
     $test = Livewire::test(NetworkQuickCreate::class, ['customer' => $kunde])
         ->call('neu')
-        ->call('speichern')
+        ->call('save')
         ->assertHasErrors(['description', 'network']);
 
     // Ein gültiger Wert räumt genau dieses Feld frei - die übrigen bleiben rot.
@@ -165,7 +165,7 @@ test('ein weiterhin falscher Wert bleibt rot', function () {
     // Sonst wäre es nur ein Ausblenden der Farbe, keine Prüfung.
     Livewire::test(NetworkQuickCreate::class, ['customer' => $kunde])
         ->call('neu')
-        ->call('speichern')
+        ->call('save')
         ->set('network', 'keine-adresse')
         ->assertHasErrors(['network']);
 });
@@ -181,7 +181,7 @@ test('Maske und CIDR räumen sich gegenseitig frei', function () {
     Livewire::test(NetworkQuickCreate::class, ['customer' => $kunde])
         ->call('neu')
         ->set('subnetmask', 'unfug')
-        ->call('speichern')
+        ->call('save')
         ->assertHasErrors(['subnetmask'])
         ->set('subnetmask', '255.255.255.0')
         ->assertHasNoErrors(['subnetmask', 'cidr']);
@@ -197,7 +197,7 @@ test('ein neuer Anlauf beginnt wieder ohne Meckern', function () {
     // nur weil vorher einmal etwas gefehlt hat.
     Livewire::test(NetworkQuickCreate::class, ['customer' => $kunde])
         ->call('neu')
-        ->call('speichern')
+        ->call('save')
         ->assertHasErrors()
         ->call('neu')
         ->assertHasNoErrors()
@@ -219,7 +219,7 @@ test('auch das Objektformular prüft während der Eingabe', function () {
 
     $test = Livewire::test(ObjectModal::class, ['typ' => 'site', 'customer' => $kunde])
         ->call('neu')
-        ->call('speichern')
+        ->call('save')
         ->assertHasErrors(['form.name']);
 
     $test->set('form.name', 'Zentrale')

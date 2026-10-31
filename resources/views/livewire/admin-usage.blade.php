@@ -42,7 +42,7 @@
                             <td class="px-4 py-2 text-gray-900 dark:text-gray-100">{{ $b['name'] }}</td>
                             <td class="px-4 py-2 text-right">{{ $b['anmeldungen'] }}</td>
                             <td class="px-4 py-2 text-right text-gray-900 dark:text-gray-100">{{ $b['aenderungen'] }}</td>
-                            <td class="whitespace-nowrap px-4 py-2">{{ LocalTime::anzeigen($b['zuletzt'], 'd.m.Y H:i') }}</td>
+                            <td class="whitespace-nowrap px-4 py-2">{{ LocalTime::display($b['zuletzt'], 'd.m.Y H:i') }}</td>
                         </tr>
                     @empty
                         <tr><td colspan="4" class="px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-500">{{ __('Keine Einträge im Zeitraum.') }}</td></tr>

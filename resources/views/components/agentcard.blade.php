@@ -68,6 +68,6 @@
     @endforeach
 
     <p class="w-full mb-5 text-xs text-gray-500 dark:text-gray-400">
-        {{ __('Vom Agent gemeldet am :datum', ['datum' => \App\Support\LocalTime::anzeigen($device->agent_reported_at)]) }}
+        {{ __('Vom Agent gemeldet am :datum', ['datum' => \App\Support\LocalTime::display($device->agent_reported_at)]) }}
     </p>
 @endif

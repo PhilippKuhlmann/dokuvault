@@ -53,7 +53,7 @@ class IpRangeEditing
         // Im Netz, nicht daneben. Geprueft ueber dieselbe Funktion, mit der die
         // Anwendung sonst entscheidet, ob eine Adresse zu einem Netz gehoert.
         foreach (['from_ip', 'to_ip'] as $feld) {
-            if (! $netz->enthaeltAdresse($daten[$feld])) {
+            if (! $netz->containsUrl($daten[$feld])) {
                 throw ValidationException::withMessages([
                     $feld => __('Diese Adresse liegt nicht in :netz.', ['netz' => $netz->anzeige() ?: $netz->network]),
                 ]);

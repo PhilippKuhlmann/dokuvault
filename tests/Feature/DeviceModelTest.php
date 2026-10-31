@@ -328,7 +328,7 @@ test('ein Bild aus dem Geraeteformular legt das Modell an und gilt sofort bei an
         ->set('form.manufacturer', 'APC')
         ->set('form.model', 'Smart-UPS 1500')
         ->set('modellbild', UploadedFile::fake()->image('usv.png'))
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     $modell = DeviceModel::firstOrFail();
@@ -358,7 +358,7 @@ test('ein zweites Bild ersetzt das des Modells und laesst keine Datei liegen', f
         ->set('form.manufacturer', ' apc ')
         ->set('form.model', 'SMART-UPS  1500')
         ->set('modellbild', UploadedFile::fake()->image('neu.png'))
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     // Kein zweiter Eintrag trotz anderer Schreibweise.
@@ -382,7 +382,7 @@ test('die Hoehe eines vorhandenen Modells bleibt unangetastet', function () {
         ->set('form.manufacturer', 'APC')
         ->set('form.model', 'Smart-UPS 1500')
         ->set('modellbild', UploadedFile::fake()->image('neu.png'))
-        ->call('speichern');
+        ->call('save');
 
     // Die zwei Hoeheneinheiten hat jemand im Adminbereich gesetzt - ein neu
     // angelegtes Geraet darf sie nicht stillschweigend umwerfen.
@@ -401,7 +401,7 @@ test('ohne Hersteller wird das Bild abgelehnt, statt im Nichts zu landen', funct
         ->set('form.site_id', $site->id)
         ->set('form.name', 'USV-04')
         ->set('modellbild', UploadedFile::fake()->image('usv.png'))
-        ->call('speichern')
+        ->call('save')
         ->assertHasErrors('modellbild');
 
     expect(DeviceModel::count())->toBe(0);
@@ -427,7 +427,7 @@ test('ohne admin_catalog gibt es das Feld nicht', function () {
         ->set('form.manufacturer', 'APC')
         ->set('form.model', 'Smart-UPS 1500')
         ->set('modellbild', UploadedFile::fake()->image('usv.png'))
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     expect(Ups::count())->toBe(1);

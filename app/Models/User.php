@@ -71,7 +71,7 @@ class User extends Authenticatable
 
         static::updated(function (User $user) {
             $twoFactorRemoved = $user->wasChanged('two_factor_confirmed_at') && $user->two_factor_confirmed_at === null;
-            $twoFactorDemanded = $user->wasChanged('two_factor_required') && $user->mussZweiteStufeEinrichten();
+            $twoFactorDemanded = $user->wasChanged('two_factor_required') && $user->mustEnrollTwoFactor();
 
             if ($user->wasChanged('password') || $twoFactorRemoved || $twoFactorDemanded) {
                 $user->revokeAppTokens();
@@ -185,7 +185,7 @@ class User extends Authenticatable
      * Ein Geheimnis allein heisst nur, dass eine Einrichtung begonnen wurde -
      * vielleicht hat die App es nie uebernommen.
      */
-    public function hatZweiteStufe(): bool
+    public function hasTwoFactor(): bool
     {
         return $this->two_factor_secret !== null && $this->two_factor_confirmed_at !== null;
     }
@@ -197,15 +197,15 @@ class User extends Authenticatable
      * Demo-Zugaenge sind ausgenommen: Dort teilen sich alle Besucher einen
      * Zugang - der erste, der eine App verbindet, sperrt alle uebrigen aus.
      */
-    public function mussZweiteStufeEinrichten(): bool
+    public function mustEnrollTwoFactor(): bool
     {
         return $this->two_factor_required
-            && ! $this->hatZweiteStufe()
-            && ! $this->istDemoGeschuetzt();
+            && ! $this->hasTwoFactor()
+            && ! $this->isDemoProtected();
     }
 
     /** Eine Einladung ist unterwegs und wurde noch nicht eingelöst. */
-    public function einladungOffen(): bool
+    public function invitationPending(): bool
     {
         return $this->invited_at !== null;
     }
@@ -219,7 +219,7 @@ class User extends Authenticatable
      * geaendert" ein "jemand". Wer das Haus verlaesst, wird gesperrt - was er
      * getan hat, bleibt lesbar.
      */
-    public function istDeaktiviert(): bool
+    public function isDisabled(): bool
     {
         return $this->deactivated_at !== null;
     }
@@ -232,7 +232,7 @@ class User extends Authenticatable
      * hat hier ebenfalls nichts stehen. Genau diese beiden Faelle sahen in der
      * Benutzerliste frueher gleich aus.
      */
-    public function einladungEingeloest(): bool
+    public function invitationRedeemed(): bool
     {
         return $this->invitation_accepted_at !== null;
     }
@@ -244,9 +244,9 @@ class User extends Authenticatable
      * sie gelesen und nicht noch einmal aufgeschrieben, sonst laufen die
      * beiden Zahlen irgendwann auseinander.
      */
-    public function einladungAbgelaufen(): bool
+    public function invitationExpired(): bool
     {
-        return $this->einladungOffen()
+        return $this->invitationPending()
             && $this->invited_at->addMinutes((int) config('auth.passwords.invitation.expire'))->isPast();
     }
 
@@ -254,7 +254,7 @@ class User extends Authenticatable
      * Verbraucht einen Wiederherstellungscode. Jeder gilt genau einmal -
      * sonst waere ein abgelesener Zettel ein Dauerzugang.
      */
-    public function wiederherstellungscodeVerbrauchen(string $code): bool
+    public function useRecoveryCode(string $code): bool
     {
         $codes = $this->two_factor_recovery_codes ?? [];
 
@@ -290,7 +290,7 @@ class User extends Authenticatable
      * Ausserhalb des Demo-Modus ist niemand geschuetzt - auf einer echten
      * Installation soll ein Admin seine Benutzer natuerlich verwalten koennen.
      */
-    public function istDemoGeschuetzt(): bool
+    public function isDemoProtected(): bool
     {
         return (bool) config('app.demo')
             && in_array($this->username, config('custom.demo_protected_users', []), true);

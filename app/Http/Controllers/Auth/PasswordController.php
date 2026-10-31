@@ -17,7 +17,7 @@ class PasswordController extends Controller
     {
         // Siehe User::istDemoGeschuetzt(): auf der Demo wuerde eine
         // Passwortaenderung alle uebrigen Besucher aussperren.
-        if ($request->user()->istDemoGeschuetzt()) {
+        if ($request->user()->isDemoProtected()) {
             return back()->withErrors(
                 ['current_password' => 'Das Passwort eines Demo-Zugangs lässt sich nicht ändern.'],
                 'updatePassword'

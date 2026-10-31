@@ -28,7 +28,7 @@ class TrashController extends Controller
     {
         Gate::authorize('see_hidden');
 
-        (new Trash($customer, auth()->user()))->wiederherstellen($type, $id);
+        (new Trash($customer, auth()->user()))->restore($type, $id);
 
         return redirect(route('trash.index', $customer))
             ->with('success', 'Objekt wiederhergestellt.');

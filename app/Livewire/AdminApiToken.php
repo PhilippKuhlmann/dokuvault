@@ -69,14 +69,14 @@ class AdminApiToken extends Component
     {
         Gate::authorize('admin_apitoken');
 
-        $this->pruefungEinschalten();
+        $this->enableCheck();
 
         $this->validate($this->regeln(), [], $this->feldnamen());
 
         // Dritter Parameter von createToken ist der Ablauf - Sanctum weist einen
         // abgelaufenen Token danach von selbst ab.
         $this->frischerToken = auth()->user()
-            ->createToken($this->name, ['*'], LocalTime::tagesende($this->expiresAt))
+            ->createToken($this->name, ['*'], LocalTime::endOfDay($this->expiresAt))
             ->plainTextToken;
 
         $this->name = '';

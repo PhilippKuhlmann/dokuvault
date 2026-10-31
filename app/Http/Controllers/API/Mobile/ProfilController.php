@@ -34,7 +34,7 @@ use Throwable;
  */
 class ProfilController extends Controller
 {
-    public function zeigen(Request $request): JsonResponse
+    public function show(Request $request): JsonResponse
     {
         $nutzer = $request->user();
 
@@ -49,7 +49,7 @@ class ProfilController extends Controller
                 ->map(fn ($titel, $code) => ['code' => $code, 'titel' => $titel])
                 ->values(),
             // Der Demo-Zugang ist geteilt: Was einer aendert, traefe alle.
-            'gesperrt' => $nutzer->istDemoGeschuetzt(),
+            'gesperrt' => $nutzer->isDemoProtected(),
             'zweite_stufe' => $nutzer->two_factor_confirmed_at !== null,
         ]);
     }
@@ -58,7 +58,7 @@ class ProfilController extends Controller
     {
         $nutzer = $request->user();
 
-        if ($nutzer->istDemoGeschuetzt()) {
+        if ($nutzer->isDemoProtected()) {
             return response()->json(
                 ['message' => __('Dieser Demo-Zugang ist gesperrt und lässt sich nicht ändern.')],
                 422,
@@ -73,10 +73,10 @@ class ProfilController extends Controller
         // Nur ein echter Wechsel des Zuruecksetz-Ziels - nicht "Max@" zu
         // "max@".
         if (filled($alteAdresse) && mb_strtolower($alteAdresse) !== mb_strtolower((string) $nutzer->email)) {
-            $this->alteAdresseBenachrichtigen($alteAdresse, $nutzer->name, (string) $nutzer->email);
+            $this->notifyOldAddress($alteAdresse, $nutzer->name, (string) $nutzer->email);
         }
 
-        return $this->zeigen($request);
+        return $this->show($request);
     }
 
     /**
@@ -92,7 +92,7 @@ class ProfilController extends Controller
     {
         $nutzer = $request->user();
 
-        if ($nutzer->istDemoGeschuetzt()) {
+        if ($nutzer->isDemoProtected()) {
             return response()->json(
                 ['message' => __('Das Passwort eines Demo-Zugangs lässt sich nicht ändern.')],
                 422,
@@ -127,15 +127,15 @@ class ProfilController extends Controller
      * der Mail: Das Kennwort allein liesse jeden, der es kennt, seine eigene
      * App einrichten und den Inhaber aussperren.
      */
-    public function zweiteStufeBeginnen(Request $request, TwoFactor $zweiteStufe): JsonResponse
+    public function beginTwoFactor(Request $request, TwoFactor $zweiteStufe): JsonResponse
     {
         $nutzer = $request->user();
 
-        if ($nutzer->istDemoGeschuetzt()) {
+        if ($nutzer->isDemoProtected()) {
             return response()->json(['message' => __('Dieser Demo-Zugang ist gesperrt und lässt sich nicht ändern.')], 422);
         }
 
-        $geheimnis = $zweiteStufe->geheimnisErzeugen();
+        $geheimnis = $zweiteStufe->generateSecret();
         $mailcode = null;
 
         if ($nutzer->email) {
@@ -178,11 +178,11 @@ class ProfilController extends Controller
      * wieder. Sie liegen verschluesselt; sie noch einmal herzuzeigen hiesse,
      * sie noch einmal preiszugeben.
      */
-    public function zweiteStufeBestaetigen(Request $request, TwoFactor $zweiteStufe): JsonResponse
+    public function confirmTwoFactor(Request $request, TwoFactor $zweiteStufe): JsonResponse
     {
         $nutzer = $request->user();
 
-        if ($nutzer->istDemoGeschuetzt()) {
+        if ($nutzer->isDemoProtected()) {
             return response()->json(['message' => __('Dieser Demo-Zugang ist gesperrt und lässt sich nicht ändern.')], 422);
         }
 
@@ -210,7 +210,7 @@ class ProfilController extends Controller
             ]);
         }
 
-        $codes = $zweiteStufe->wiederherstellungscodes();
+        $codes = $zweiteStufe->recoveryCodes();
 
         $nutzer->forceFill([
             'two_factor_secret' => $vorgang['geheimnis'],
@@ -237,28 +237,28 @@ class ProfilController extends Controller
      * offenen Geraet sitzt, soll sich nicht acht Dauerzugaenge ausdrucken
      * koennen.
      */
-    public function wiederherstellungscodes(Request $request, TwoFactor $zweiteStufe): JsonResponse
+    public function recoveryCodes(Request $request, TwoFactor $zweiteStufe): JsonResponse
     {
         $nutzer = $request->user();
 
-        if ($nutzer->istDemoGeschuetzt()) {
+        if ($nutzer->isDemoProtected()) {
             return response()->json(['message' => __('Dieser Demo-Zugang ist gesperrt und lässt sich nicht ändern.')], 422);
         }
 
         $request->validate(['password' => ['required', 'current_password']]);
 
-        $codes = $zweiteStufe->wiederherstellungscodes();
+        $codes = $zweiteStufe->recoveryCodes();
         $nutzer->forceFill(['two_factor_recovery_codes' => $codes])->save();
 
         return response()->json(['codes' => $codes]);
     }
 
     /** Abschalten - ebenfalls nur mit Kennwort. */
-    public function zweiteStufeAus(Request $request): JsonResponse
+    public function disableTwoFactor(Request $request): JsonResponse
     {
         $nutzer = $request->user();
 
-        if ($nutzer->istDemoGeschuetzt()) {
+        if ($nutzer->isDemoProtected()) {
             return response()->json(['message' => __('Dieser Demo-Zugang ist gesperrt und lässt sich nicht ändern.')], 422);
         }
 
@@ -289,11 +289,11 @@ class ProfilController extends Controller
      * dieses Nutzers fallen mit ihm weg (User::booted), die App ist damit
      * abgemeldet - und bleibt es.
      */
-    public function loeschen(Request $request): JsonResponse
+    public function delete(Request $request): JsonResponse
     {
         $nutzer = $request->user();
 
-        if ($nutzer->istDemoGeschuetzt()) {
+        if ($nutzer->isDemoProtected()) {
             return response()->json(['message' => __('Ein Demo-Zugang lässt sich nicht löschen.')], 422);
         }
 
@@ -323,7 +323,7 @@ class ProfilController extends Controller
         try {
             $vorgang = json_decode(Crypt::decryptString($verschluesselt), true);
         } catch (DecryptException) {
-            throw $this->einrichtungAbgelaufen();
+            throw $this->enrollmentExpired();
         }
 
         if (! is_array($vorgang)
@@ -332,13 +332,13 @@ class ProfilController extends Controller
             || ! isset($vorgang['geheimnis'], $vorgang['bis'])
             || $vorgang['bis'] < now()->timestamp
         ) {
-            throw $this->einrichtungAbgelaufen();
+            throw $this->enrollmentExpired();
         }
 
         return ['geheimnis' => $vorgang['geheimnis'], 'mailcode' => $vorgang['mailcode'] ?? null];
     }
 
-    private function einrichtungAbgelaufen(): ValidationException
+    private function enrollmentExpired(): ValidationException
     {
         return ValidationException::withMessages([
             'vorgang' => __('Die Einrichtung wurde nicht begonnen oder ist abgelaufen.'),
@@ -392,7 +392,7 @@ class ProfilController extends Controller
      * steht, darf eine schon gespeicherte Aenderung nicht rueckgaengig
      * machen - deshalb nur gemeldet.
      */
-    private function alteAdresseBenachrichtigen(string $alt, string $name, string $neu): void
+    private function notifyOldAddress(string $alt, string $name, string $neu): void
     {
         try {
             Notification::route('mail', $alt)->notify(new EmailChanged($name, $neu));

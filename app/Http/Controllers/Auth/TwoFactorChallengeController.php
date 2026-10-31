@@ -59,7 +59,7 @@ class TwoFactorChallengeController extends Controller
      */
     private function gesperrtAbweisen(Request $request, User $nutzer): ?RedirectResponse
     {
-        if (! $nutzer->istDeaktiviert()) {
+        if (! $nutzer->isDisabled()) {
             return null;
         }
 
@@ -84,7 +84,7 @@ class TwoFactorChallengeController extends Controller
 
         // Code, Bremse und Protokoll der Fehlversuche - dieselbe Pruefung wie
         // bei der Anmeldung aus der App, siehe ZweiteStufePruefung.
-        $mitZettel = $this->pruefung->pruefen($nutzer, (string) $request->input('code'), $request->ip());
+        $mitZettel = $this->pruefung->check($nutzer, (string) $request->input('code'), $request->ip());
 
         $gemerkt = (bool) $request->session()->get(self::GEMERKT);
 

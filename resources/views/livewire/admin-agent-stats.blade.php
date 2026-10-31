@@ -44,7 +44,7 @@
                                 <span class="text-green-700 dark:text-green-400">{{ __('in Ordnung') }}</span>
                             @endif
                         </td>
-                        <td class="whitespace-nowrap px-4 py-2">{{ LocalTime::anzeigen($a->last_run_at, 'd.m.Y H:i', __('noch nie')) }}</td>
+                        <td class="whitespace-nowrap px-4 py-2">{{ LocalTime::display($a->last_run_at, 'd.m.Y H:i', __('noch nie')) }}</td>
                         <td @class(['px-4 py-2 font-mono text-xs', 'text-amber-600 dark:text-amber-400' => $a->veraltet])>
                             {{ $a->version ?? '—' }}@if ($a->veraltet) <span class="font-sans">({{ __('aktuell: :v', ['v' => $aktuell[$a->kind]]) }})</span>@endif
                         </td>

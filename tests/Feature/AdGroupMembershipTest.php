@@ -83,7 +83,7 @@ test('groups are edited on the user and members on the group', function () {
         ->call('bearbeiten', 'aduser', $user->id)
         ->assertSet('form.groups', [])
         ->set('form.groups', [(string) $vertrieb->id, (string) $technik->id])
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     expect($user->fresh()->groups->pluck('name')->all())->toBe(['Technik', 'Vertrieb']);
@@ -92,7 +92,7 @@ test('groups are edited on the user and members on the group', function () {
         ->call('bearbeiten', 'adgroup', $technik->id)
         ->assertSet('form.users', [(string) $user->id])
         ->set('form.users', [])
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     expect($user->fresh()->groups->pluck('name')->all())->toBe(['Vertrieb']);
@@ -107,7 +107,7 @@ test('a group of another customer cannot be linked', function () {
     Livewire::test(ObjectModal::class, ['typ' => 'aduser', 'customer' => $customer])
         ->call('bearbeiten', 'aduser', $user->id)
         ->set('form.groups', [(string) $fremd->id])
-        ->call('speichern')
+        ->call('save')
         ->assertHasErrors('form.groups.0');
 
     expect($user->fresh()->groups)->toHaveCount(0);

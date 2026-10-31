@@ -12,7 +12,7 @@ beforeEach(function () {
 
 function mitArchivUndZiel(): void
 {
-    BackupSettings::speichern([
+    BackupSettings::save([
         'backup_geheim_archivpasswort' => 'archiv-passwort',
         'backup_ziel_art' => 'sftp', 'backup_ziel_host' => '127.0.0.1', 'backup_ziel_benutzer' => 'backup',
     ]);
@@ -26,7 +26,7 @@ test('a recent backup without archive password or target is amber', function () 
     BackupHealth::merken('local', null);
     expect(BackupHealth::zustand())->stufe->toBe('warnung')->text->toContain('APP_KEY');
 
-    BackupSettings::speichern(['backup_geheim_archivpasswort' => 'archiv-passwort']);
+    BackupSettings::save(['backup_geheim_archivpasswort' => 'archiv-passwort']);
     expect(BackupHealth::zustand())->stufe->toBe('warnung')->text->toContain('nur auf diesem Server');
 });
 
@@ -71,7 +71,7 @@ test('a backup older than a day is red, a switched off one amber', function () {
 
     expect(BackupHealth::zustand())->stufe->toBe('fehler')->text->toContain('alt');
 
-    BackupSettings::speichern(['backup_aktiv' => '0']);
+    BackupSettings::save(['backup_aktiv' => '0']);
     expect(BackupHealth::zustand())->stufe->toBe('warnung')->text->toContain('ausgeschaltet');
 });
 

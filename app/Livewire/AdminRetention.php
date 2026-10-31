@@ -44,17 +44,17 @@ class AdminRetention extends Component
 
     public function updatedVertraege(): void
     {
-        $this->speichern('vertraege', Setting::FRIST_VERTRAEGE, __('Lizenzen, Zertifikate und Domains'));
+        $this->save('vertraege', Setting::FRIST_VERTRAEGE, __('Lizenzen, Zertifikate und Domains'));
     }
 
     public function updatedGarantie(): void
     {
-        $this->speichern('garantie', Setting::FRIST_GARANTIE, __('Garantien'));
+        $this->save('garantie', Setting::FRIST_GARANTIE, __('Garantien'));
     }
 
     public function updatedEol(): void
     {
-        $this->speichern('eol', Setting::FRIST_EOL, __('Support-Ende'));
+        $this->save('eol', Setting::FRIST_EOL, __('Support-Ende'));
     }
 
     public function updatedPdfStunden(): void
@@ -62,7 +62,7 @@ class AdminRetention extends Component
         // Nach unten auf eine Stunde: Aufgeraeumt wird stuendlich, eine
         // kuerzere Frist waere eine Zahl ohne Wirkung. Nach oben ein Jahr -
         // laenger als ein paar Tage ist ohnehin nicht gemeint.
-        $this->pruefen('pdfStunden', 1, 8760, __('Aufbewahrung der PDF-Ausgaben'));
+        $this->check('pdfStunden', 1, 8760, __('Aufbewahrung der PDF-Ausgaben'));
 
         Setting::setzen(Setting::PDF_STUNDEN, $this->pdfStunden);
 
@@ -83,7 +83,7 @@ class AdminRetention extends Component
     private function begrenzt(string $feld, string $schluessel, string $bezeichnung): void
     {
         [, $min, $max] = Setting::ZAHLEN[$schluessel];
-        $this->pruefen($feld, $min, $max, $bezeichnung);
+        $this->check($feld, $min, $max, $bezeichnung);
 
         Setting::setzen($schluessel, $this->$feld);
 
@@ -102,16 +102,16 @@ class AdminRetention extends Component
      * Der Wert selbst gehoert dem Haus - eine Betriebssystem-Ablauefe plant
      * man laenger im Voraus als eine Domainverlaengerung.
      */
-    private function speichern(string $feld, string $schluessel, string $bezeichnung): void
+    private function save(string $feld, string $schluessel, string $bezeichnung): void
     {
-        $this->pruefen($feld, 1, 1825, $bezeichnung);
+        $this->check($feld, 1, 1825, $bezeichnung);
 
         Setting::setzen($schluessel, $this->$feld);
 
         $this->dispatch('notice', text: __('Frist gespeichert.'));
     }
 
-    private function pruefen(string $feld, int $min, int $max, string $bezeichnung): void
+    private function check(string $feld, int $min, int $max, string $bezeichnung): void
     {
         Gate::authorize('admin_setting');
 

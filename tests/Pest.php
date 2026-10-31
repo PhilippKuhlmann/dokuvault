@@ -130,7 +130,7 @@ function imModal(string $typ, Customer $customer, array $werte, ?int $id = null)
         $formular->set("form.$feld", $wert);
     }
 
-    return $formular->call('speichern');
+    return $formular->call('save');
 }
 
 /**
@@ -170,7 +170,7 @@ function imModalLoeschen(string $typ, Customer $customer, $objekt): Testable
 {
     return Livewire\Livewire::test(ObjectModal::class, ['typ' => $typ, 'customer' => $customer])
         ->call('bearbeiten', $typ, $objekt->id)
-        ->call('loeschen');
+        ->call('delete');
 }
 
 /**

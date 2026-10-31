@@ -103,7 +103,7 @@
                 <x-rack.face :appearance="$geist ? 'blank' : $item->faceAppearance()" :he="$item->height_units"
                     :ports="$geist ? null : $item->device?->port_count"
                     :drawing="$geist ? null : $item->zeichnung()"
-                    :image="$geist ? null : $item->bildUrl()" />
+                    :image="$geist ? null : $item->imageUrl()" />
             </div>
         @endforeach
 

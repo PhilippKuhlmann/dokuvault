@@ -82,12 +82,12 @@ test('das Modal zeigt den Verlauf erst auf Klick', function () {
     // wird auf die Aktion, nicht auf den Wortlaut: Die Testumgebung laeuft auf
     // Englisch, der Knopftext ist uebersetzt.
     $test->assertDontSee('Vorher!2026')
-        ->assertSee('verlaufZeigen');
+        ->assertSee('showHistory');
 
-    $test->call('verlaufZeigen', 'cloud_backup_password')
+    $test->call('showHistory', 'cloud_backup_password')
         ->assertSee('Vorher!2026');
 
-    $test->call('verlaufVerbergen', 'cloud_backup_password')
+    $test->call('hideHistory', 'cloud_backup_password')
         ->assertDontSee('Vorher!2026');
 });
 
@@ -98,7 +98,7 @@ test('ohne Bearbeitungsrecht kein Verlauf', function () {
     $firewall->updateQuietly(['cloud_backup_password' => 'Neu!2026']);
 
     Livewire::test(ObjectModal::class, ['typ' => 'firewall', 'customer' => $firewall->customer])
-        ->call('verlaufZeigen', 'cloud_backup_password')
+        ->call('showHistory', 'cloud_backup_password')
         ->assertForbidden();
 });
 
@@ -111,7 +111,7 @@ test('nur echte Kennwortspalten lassen sich abfragen', function () {
     // jede Spalte als "Kennwort" ausgeben.
     $test = Livewire::test(ObjectModal::class, ['typ' => 'firewall', 'customer' => $firewall->customer])
         ->call('bearbeiten', 'firewall', $firewall->id)
-        ->call('verlaufZeigen', 'name');
+        ->call('showHistory', 'name');
 
     expect($test->get('gezeigterVerlauf'))->toBe([]);
 });
@@ -126,7 +126,7 @@ test('endgueltiges Loeschen nimmt die alten Kennwoerter mit', function () {
 
     $firewall->delete();
     Livewire::test(AdminTrash::class)
-        ->call('loeschen', 'firewall', $firewall->id);
+        ->call('delete', 'firewall', $firewall->id);
 
     // Sonst blieben verschluesselte Kennwoerter ohne Objekt liegen - und ohne
     // Frist, die sie je erreichen wuerden.
@@ -185,7 +185,7 @@ test('die Frist laesst sich einstellen', function () {
     Livewire::test(AdminLogRetention::class)
         ->assertSet('tage', 0)
         ->set('tage', 365)
-        ->call('speichern');
+        ->call('save');
 
     expect(Setting::protokollTage())->toBe(365);
 });
@@ -196,7 +196,7 @@ test('eine unsinnige Frist wird abgelehnt', function () {
 
     Livewire::test(AdminLogRetention::class)
         ->set('tage', -5)
-        ->call('speichern')
+        ->call('save')
         ->assertHasErrors('tage');
 
     expect(Setting::protokollTage())->toBe(90);

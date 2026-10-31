@@ -57,13 +57,13 @@ test('die Einladung rendert ihr Blatt', function () {
 });
 
 test('die zweite Stufe rendert ihr Blatt', function () {
-    $geheimnis = app(TwoFactor::class)->geheimnisErzeugen();
+    $geheimnis = app(TwoFactor::class)->generateSecret();
 
     $nutzer = userWithPermissions([]);
     $nutzer->forceFill([
         'password' => Hash::make('Ein-Gutes-Kennwort-2026'),
         'two_factor_secret' => $geheimnis,
-        'two_factor_recovery_codes' => app(TwoFactor::class)->wiederherstellungscodes(),
+        'two_factor_recovery_codes' => app(TwoFactor::class)->recoveryCodes(),
         'two_factor_confirmed_at' => now(),
     ])->save();
 

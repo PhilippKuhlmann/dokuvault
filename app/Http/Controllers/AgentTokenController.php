@@ -143,10 +143,10 @@ class AgentTokenController extends Controller
             $customer,
             $site,
             $validated['name'] ?? null,
-            LocalTime::tagesende($validated['expires_at']),
+            LocalTime::endOfDay($validated['expires_at']),
         );
 
-        return $this->mitNeuemToken($customer, $token, $plain);
+        return $this->withNewToken($customer, $token, $plain);
     }
 
     /**
@@ -195,15 +195,15 @@ class AgentTokenController extends Controller
      * sofort ungültig. Der Weg für einen verbrannten oder ablaufenden Token,
      * ohne die Zuordnung zu Kunde und Standort neu einrichten zu müssen.
      */
-    public function erneuern(Customer $customer, AgentToken $agentToken)
+    public function renew(Customer $customer, AgentToken $agentToken)
     {
         Gate::authorize('agent_manage');
         abort_if($agentToken->customer_id !== $customer->id, 403);
 
-        $frist = LocalTime::tagesende(now()->addDays(Setting::agentTokenTage()));
-        $plain = $agentToken->erneuern($frist);
+        $frist = LocalTime::endOfDay(now()->addDays(Setting::agentTokenTage()));
+        $plain = $agentToken->renew($frist);
 
-        return $this->mitNeuemToken($customer, $agentToken, $plain);
+        return $this->withNewToken($customer, $agentToken, $plain);
     }
 
     /**
@@ -214,7 +214,7 @@ class AgentTokenController extends Controller
      * muesste jeder neue Agent hier, in der Weiterleitung und in der Ansicht
      * einzeln nachgetragen werden.
      */
-    protected function mitNeuemToken(Customer $customer, AgentToken $token, string $plain)
+    protected function withNewToken(Customer $customer, AgentToken $token, string $plain)
     {
         $skripte = [];
         foreach (config('custom.agenten', []) as $schluessel => $agent) {

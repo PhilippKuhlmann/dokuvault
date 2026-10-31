@@ -42,14 +42,14 @@ class Controller extends BaseController
             $query = $model::where('customer_id', $customer->id);
         }
 
-        return $this->zugangsdatenVorladen($model, $query);
+        return $this->preloadCredentials($model, $query);
     }
 
     /**
      * Zugangsdaten mitladen, wo das Model sie hat: Die Listen zeigen sie je Gerät,
      * ohne Vorladen wären das 25 zusätzliche Abfragen pro Seite.
      */
-    private function zugangsdatenVorladen($model, $query)
+    private function preloadCredentials($model, $query)
     {
         $hatZugangsdaten = self::$hasCredentials[$model] ??= in_array(
             HasCredentials::class, class_uses_recursive($model), true

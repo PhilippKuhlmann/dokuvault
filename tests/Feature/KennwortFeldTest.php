@@ -51,7 +51,7 @@ test('auf Klick holt das Feld den Wert - mit Recht', function () {
     $link = eineVerknuepfung('Auf-Klick-2026');
 
     Livewire::test(PasswordField::class, ['linkId' => $link->id])
-        ->call('zeigen')
+        ->call('show')
         ->assertSet('offen', true)
         ->assertSee('Auf-Klick-2026');
 });
@@ -61,7 +61,7 @@ test('ohne Recht bleibt das Kennwort verborgen', function () {
     $link = eineVerknuepfung('Verboten-2026');
 
     Livewire::test(PasswordField::class, ['linkId' => $link->id])
-        ->call('zeigen')
+        ->call('show')
         ->assertForbidden();
 });
 
@@ -70,7 +70,7 @@ test('das Verbergen räumt den Wert wieder weg', function () {
     $link = eineVerknuepfung('Kommt-Und-Geht-2026');
 
     Livewire::test(PasswordField::class, ['linkId' => $link->id])
-        ->call('zeigen')->assertSee('Kommt-Und-Geht-2026')
+        ->call('show')->assertSee('Kommt-Und-Geht-2026')
         ->call('verbergen')
         ->assertSet('wert', null)
         ->assertDontSee('Kommt-Und-Geht-2026');
@@ -81,7 +81,7 @@ test('die Einsicht steht im Protokoll - ohne den Wert', function () {
     $this->actingAs($nutzer);
     $link = eineVerknuepfung('Nie-Ins-Protokoll-2026');
 
-    Livewire::test(PasswordField::class, ['linkId' => $link->id])->call('zeigen');
+    Livewire::test(PasswordField::class, ['linkId' => $link->id])->call('show');
 
     $eintrag = Activity::where('event', 'kennwort_angesehen')->latest('id')->first();
 
@@ -112,11 +112,11 @@ test('die Bremse stoppt das reihenweise Abgreifen', function () {
     $test = Livewire::test(PasswordField::class, ['linkId' => $link->id]);
 
     // Erster Abruf zählt und deckt auf.
-    $test->call('zeigen')->assertSet('offen', true);
+    $test->call('show')->assertSet('offen', true);
 
     // Zweiter Abruf läuft ins Limit: kein Wert, ein Hinweis.
     $test->call('verbergen')
-        ->call('zeigen')
+        ->call('show')
         ->assertSet('offen', false)
         ->assertHasErrors('kennwort');
 });

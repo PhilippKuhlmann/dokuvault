@@ -27,20 +27,20 @@ class LoginController extends Controller
 {
     public function __construct(private TwoFactorCheck $pruefung) {}
 
-    public function anmelden(MobileLoginRequest $request): JsonResponse
+    public function login(MobileLoginRequest $request): JsonResponse
     {
-        $nutzer = $request->nutzerPruefen();
+        $nutzer = $request->checkUser();
         $geraet = (string) $request->input('geraet');
 
         // Im Browser kaeme er nur bis zum Profil, um die zweite Stufe
         // einzurichten. Die App kann das nicht - also gar nicht erst hinein.
-        if ($nutzer->mussZweiteStufeEinrichten()) {
+        if ($nutzer->mustEnrollTwoFactor()) {
             return response()->json([
                 'message' => __('Ihr Administrator verlangt die zweite Stufe. Richten Sie sie zuerst im Browser in Ihrem Profil ein.'),
             ], 403);
         }
 
-        if ($nutzer->hatZweiteStufe()) {
+        if ($nutzer->hasTwoFactor()) {
             return response()->json([
                 'zweite_stufe' => true,
                 'vorgang' => Crypt::encryptString(json_encode([
@@ -67,19 +67,19 @@ class LoginController extends Controller
         $vorgang = $this->vorgang($request->input('vorgang'));
         $nutzer = User::find($vorgang['id']);
 
-        if (! $nutzer || ! $nutzer->hatZweiteStufe()) {
+        if (! $nutzer || ! $nutzer->hasTwoFactor()) {
             throw $this->abgelaufen();
         }
 
         // Vor der Codepruefung, wie im Browser: Sonst ist ein
         // Wiederherstellungscode schon verbraucht, wenn die Sperre auffaellt.
-        if ($nutzer->istDeaktiviert()) {
+        if ($nutzer->isDisabled()) {
             throw ValidationException::withMessages([
                 'code' => __('Dieser Zugang ist deaktiviert. Wenden Sie sich an Ihre Administration.'),
             ]);
         }
 
-        $this->pruefung->pruefen($nutzer, (string) $request->input('code'), $request->ip());
+        $this->pruefung->check($nutzer, (string) $request->input('code'), $request->ip());
 
         // Ein Vorgang gibt genau ein Token. Ohne das liesse sich mit einem
         // mitgelesenen Vorgang und dem naechsten Code ein zweites holen.

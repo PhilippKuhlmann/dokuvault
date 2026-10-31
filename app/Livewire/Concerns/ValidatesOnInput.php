@@ -41,7 +41,7 @@ trait ValidatesOnInput
 
     public function updated(string $eigenschaft): void
     {
-        $this->waehrendDerEingabePruefen($eigenschaft);
+        $this->validateOnInput($eigenschaft);
     }
 
     /**
@@ -50,7 +50,7 @@ trait ValidatesOnInput
      * Gehoert vor das validate() im Speichern, nicht dahinter: validate() wirft
      * bei einem Fehler, und genau dann soll es eingeschaltet sein.
      */
-    protected function pruefungEinschalten(): void
+    protected function enableCheck(): void
     {
         $this->geprueft = true;
     }
@@ -62,7 +62,7 @@ trait ValidatesOnInput
      * Eigenschaften als Felder - offen, bearbeiteId, Suchtexte -, und die
      * gehen hier nicht durch die Pruefung.
      */
-    protected function waehrendDerEingabePruefen(string $eigenschaft): void
+    protected function validateOnInput(string $eigenschaft): void
     {
         if (! $this->geprueft) {
             return;

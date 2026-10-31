@@ -74,7 +74,7 @@ class DeviceIpAddresses extends Component
 
         $netz = Network::where('customer_id', $this->customerId)->find($id);
 
-        if (! $netz || $netz->enthaeltAdresse($this->address)) {
+        if (! $netz || $netz->containsUrl($this->address)) {
             return;
         }
 
@@ -107,7 +107,7 @@ class DeviceIpAddresses extends Component
         // einem fremden Geraet ueberhaupt aufbauen laesst, hat schon zu viel
         // gesagt. Die Pruefungen in den Aktionen bleiben - sie fangen den Fall
         // ab, dass jemand die Nummer spaeter austauscht.
-        $this->nurEigenerKunde($customer->id);
+        $this->onlyOwnCustomer($customer->id);
         abort_if($model->customer_id !== $customer->id, 403);
 
         $this->modelClass = $model::class;
@@ -138,7 +138,7 @@ class DeviceIpAddresses extends Component
     {
         $device = $this->device();
 
-        $this->pruefungEinschalten();
+        $this->enableCheck();
 
         $validated = $this->validate($this->regeln(), app(IpAssignment::class)->messages(), $this->feldnamen());
 

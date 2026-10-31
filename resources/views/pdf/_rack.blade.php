@@ -62,7 +62,7 @@
                     // (Katalogelement, dann Geraetemodell). Es geht direkt als
                     // Datei heraus: Die Zeichnung braucht den Umweg ueber eine
                     // SVG-Datei, ein Foto liegt bereits als Datei vor.
-                    $bild = $item->bildPfad();
+                    $bild = $item->imagePath();
 
                     if (! $bild) {
                         $svg = view('components.rack.face', [

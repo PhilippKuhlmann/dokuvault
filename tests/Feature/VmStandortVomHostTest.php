@@ -101,7 +101,7 @@ test('auch im Modal genuegt der Host allein', function () {
         ->set('form.server_id', $host->id)
         ->set('form.name', 'VM-Modal')
         ->set('form.operating_system_id', $os->id)
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     expect(VM::where('name', 'VM-Modal')->first()->site_id)->toBe($hamburg->id);
@@ -160,7 +160,7 @@ test('auch im Modal genuegt der Cluster allein', function () {
         ->set('form.cluster_id', $cluster->id)
         ->set('form.name', 'VM-Modal-Cluster')
         ->set('form.operating_system_id', $os->id)
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     expect(VM::where('name', 'VM-Modal-Cluster')->first()->site_id)->toBe($muenchen->id);

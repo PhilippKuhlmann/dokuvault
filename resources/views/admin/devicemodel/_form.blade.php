@@ -10,7 +10,7 @@
     $gewaehlt = old('device_type', $item->device_type ?? $typen->keys()->first());
     $maxHe = \App\Http\Requests\RackCatalogItemRequest::MAX_HE;
     $he = max(1, min((int) old('height_units', $item->height_units ?? 1), $maxHe));
-    $bild = $item?->bildUrl();
+    $bild = $item?->imageUrl();
 @endphp
 
 <div x-data="geraetemodell(@js($gewaehlt), @js((int) $he), @js(old('drawing', $item->drawing ?? '')), @alpineJson($zeichnungen))">

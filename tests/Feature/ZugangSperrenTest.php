@@ -118,13 +118,13 @@ test('ein Administrator sperrt und entsperrt ueber das Formular', function () {
         ->patch(route('admin.user.update', $nutzer), $felder(['deactivated' => '1']))
         ->assertRedirect();
 
-    expect($nutzer->fresh()->istDeaktiviert())->toBeTrue();
+    expect($nutzer->fresh()->isDisabled())->toBeTrue();
 
     $this->actingAs($verwalter)
         ->patch(route('admin.user.update', $nutzer), $felder())
         ->assertRedirect();
 
-    expect($nutzer->fresh()->istDeaktiviert())->toBeFalse()
+    expect($nutzer->fresh()->isDisabled())->toBeFalse()
         ->and($nutzer->fresh()->deactivated_at)->toBeNull();
 });
 
@@ -158,7 +158,7 @@ test('den eigenen Zugang kann niemand sperren', function () {
 
     // Sonst faehrt man sich selbst aus: Die Sitzung endet beim naechsten
     // Aufruf, und anmelden geht dann auch nicht mehr.
-    expect($verwalter->fresh()->istDeaktiviert())->toBeFalse();
+    expect($verwalter->fresh()->isDisabled())->toBeFalse();
 });
 
 test('die Benutzerliste zeigt den gesperrten Zugang als solchen', function () {
@@ -170,7 +170,7 @@ test('die Benutzerliste zeigt den gesperrten Zugang als solchen', function () {
         ->assertSee('aria-label="'.__('Deaktiviert').'"', false)
         ->assertSee('aria-label="'.__('Aktiv').'"', false);
 
-    expect($gesperrt->istDeaktiviert())->toBeTrue();
+    expect($gesperrt->isDisabled())->toBeTrue();
 });
 
 // --- Was der Pruefdurchlauf gefunden hat ------------------------------------
@@ -209,13 +209,13 @@ test('der abgewiesene Versuch steht nicht als Anmeldung im Protokoll', function 
  * einen verbrauchten Wiederherstellungscode und einen Eintrag "Angemeldet".
  */
 test('die zweite Stufe laesst einen zwischenzeitlich Gesperrten nicht herein', function () {
-    $geheimnis = app(TwoFactor::class)->geheimnisErzeugen();
+    $geheimnis = app(TwoFactor::class)->generateSecret();
 
     $nutzer = userWithPermissions([]);
     $nutzer->forceFill([
         'password' => Hash::make('Ein-Gutes-Kennwort-2026'),
         'two_factor_secret' => $geheimnis,
-        'two_factor_recovery_codes' => app(TwoFactor::class)->wiederherstellungscodes(),
+        'two_factor_recovery_codes' => app(TwoFactor::class)->recoveryCodes(),
         'two_factor_confirmed_at' => now(),
     ])->save();
 
@@ -239,13 +239,13 @@ test('die zweite Stufe laesst einen zwischenzeitlich Gesperrten nicht herein', f
 });
 
 test('die Codemaske selbst steht einem Gesperrten nicht mehr offen', function () {
-    $geheimnis = app(TwoFactor::class)->geheimnisErzeugen();
+    $geheimnis = app(TwoFactor::class)->generateSecret();
 
     $nutzer = userWithPermissions([]);
     $nutzer->forceFill([
         'password' => Hash::make('Ein-Gutes-Kennwort-2026'),
         'two_factor_secret' => $geheimnis,
-        'two_factor_recovery_codes' => app(TwoFactor::class)->wiederherstellungscodes(),
+        'two_factor_recovery_codes' => app(TwoFactor::class)->recoveryCodes(),
         'two_factor_confirmed_at' => now(),
     ])->save();
 
@@ -306,5 +306,5 @@ test('das Bearbeiten-Formular zeigt, seit wann gesperrt ist', function () {
         ->get(route('admin.user.edit', $gesperrt))
         ->assertOk()
         ->assertSee(__('gesperrt seit'))
-        ->assertSee(LocalTime::anzeigen($gesperrt->fresh()->deactivated_at, 'd.m.Y H:i'));
+        ->assertSee(LocalTime::display($gesperrt->fresh()->deactivated_at, 'd.m.Y H:i'));
 });

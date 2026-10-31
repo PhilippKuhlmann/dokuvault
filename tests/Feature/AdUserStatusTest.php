@@ -82,7 +82,7 @@ test('Speichern ohne Status laesst ihn leer, statt Aktiv daraus zu machen', func
 
     Livewire::test(ObjectModal::class, ['typ' => 'aduser', 'customer' => $customer])
         ->call('bearbeiten', 'aduser', $benutzer->id)
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     // Ein unbekannter Status darf durch blosses Speichern nicht zu einer
@@ -97,7 +97,7 @@ test('ein gewaehlter Status wird gespeichert', function () {
     Livewire::test(ObjectModal::class, ['typ' => 'aduser', 'customer' => $customer])
         ->call('bearbeiten', 'aduser', $benutzer->id)
         ->set('form.enabled', '0')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     expect($benutzer->fresh()->enabled)->toBeFalse();
@@ -124,7 +124,7 @@ test('ein deaktivierter Benutzer steht im Fenster auch auf Deaktiviert', functio
     expect($formular->get('form')['enabled'])->toBe('0');
 
     // Und blosses Speichern darf ihn nicht aktivieren.
-    $formular->call('speichern')->assertHasNoErrors();
+    $formular->call('save')->assertHasNoErrors();
     expect($benutzer->fresh()->enabled)->toBeFalse();
 });
 

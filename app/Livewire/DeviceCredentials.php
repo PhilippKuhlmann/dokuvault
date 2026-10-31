@@ -85,7 +85,7 @@ class DeviceCredentials extends Component
         // einem fremden Geraet ueberhaupt aufbauen laesst, hat schon zu viel
         // gesagt. Die Pruefungen in den Aktionen bleiben - sie fangen den Fall
         // ab, dass jemand die Nummer spaeter austauscht.
-        $this->nurEigenerKunde($customer->id);
+        $this->onlyOwnCustomer($customer->id);
         abort_if($model->customer_id !== $customer->id, 403);
 
         $this->modelClass = $model::class;
@@ -133,7 +133,7 @@ class DeviceCredentials extends Component
     {
         $device = $this->device();
 
-        $this->pruefungEinschalten();
+        $this->enableCheck();
 
         $validated = $this->validate(
             Arr::only($this->regeln(), ['login_id', 'note']), [], $this->feldnamen()
@@ -150,7 +150,7 @@ class DeviceCredentials extends Component
         $device = $this->device();
         Gate::authorize('logingeneral_create');
 
-        $this->pruefungEinschalten();
+        $this->enableCheck();
 
         $validated = $this->validate(
             Arr::only($this->regeln(), ['name', 'username', 'password', 'note']), [], $this->feldnamen()

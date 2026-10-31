@@ -99,7 +99,7 @@ class PatchPanelPorts extends Component
         // waere sonst beschreibbar.
         $ports = $panel->ports()->get()->keyBy('id');
 
-        $this->pruefungEinschalten();
+        $this->enableCheck();
 
         $this->validate($this->regeln(), [], $this->fehlerNamen($ports));
 
@@ -170,7 +170,7 @@ class PatchPanelPorts extends Component
      * solange nicht gespeichert wird. Raum, Switch und Notiz bleiben stehen,
      * die haengen nicht an der Nummerierung.
      */
-    public function dosenLeeren(): void
+    public function clearPorts(): void
     {
         $this->resetErrorBag();
 

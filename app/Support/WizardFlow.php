@@ -176,7 +176,7 @@ class WizardFlow
      * Telefonie"): alle noch offenen Schritte dieser Gruppe vermerken und
      * zum ersten Schritt danach springen.
      */
-    public function gruppeUeberspringen(DocumentationRun $durchlauf): void
+    public function skipGroup(DocumentationRun $durchlauf): void
     {
         $schritte = $this->schritte();
         $aktuell = $this->aktueller($durchlauf);

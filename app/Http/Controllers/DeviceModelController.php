@@ -35,7 +35,7 @@ class DeviceModelController extends Controller
     {
         // Der Ablageort haengt nicht am Datensatz, das Bild kann also gleich
         // mit angelegt werden - sonst folgte auf jedes Anlegen ein Update.
-        DeviceModel::create($this->bildPflegen($request, new DeviceModel, $this->stammdaten($request)));
+        DeviceModel::create($this->handleImage($request, new DeviceModel, $this->stammdaten($request)));
 
         return redirect(route('admin.devicemodel.index'));
     }
@@ -47,7 +47,7 @@ class DeviceModelController extends Controller
 
     public function update(DeviceModel $devicemodel, DeviceModelRequest $request)
     {
-        $devicemodel->update($this->bildPflegen($request, $devicemodel, $this->stammdaten($request)));
+        $devicemodel->update($this->handleImage($request, $devicemodel, $this->stammdaten($request)));
 
         return redirect(route('admin.devicemodel.index'));
     }
@@ -74,6 +74,6 @@ class DeviceModelController extends Controller
      */
     public function image(DeviceModel $devicemodel)
     {
-        return $this->bildAusliefern($devicemodel);
+        return $this->serveImage($devicemodel);
     }
 }

@@ -48,7 +48,7 @@ class ProfileController extends Controller
         // Siehe User::istDemoGeschuetzt(): Der Zugang ist auf der Demo
         // vollstaendig gesperrt, also auch hier - sonst haette ein Besucher
         // Namen, E-Mail und Sprache des geteilten Zugangs in der Hand.
-        if ($request->user()->istDemoGeschuetzt()) {
+        if ($request->user()->isDemoProtected()) {
             return Redirect::route('profile.edit')
                 ->withErrors(['demo' => __('Dieser Demo-Zugang ist gesperrt und lässt sich nicht ändern.')]);
         }
@@ -92,7 +92,7 @@ class ProfileController extends Controller
     public function destroy(Request $request): RedirectResponse
     {
         // Siehe User::istDemoGeschuetzt(): der Zugang muss der Demo erhalten bleiben.
-        if ($request->user()->istDemoGeschuetzt()) {
+        if ($request->user()->isDemoProtected()) {
             return back()->withErrors(
                 ['password' => 'Ein Demo-Zugang lässt sich nicht löschen.'],
                 'userDeletion'

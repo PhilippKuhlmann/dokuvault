@@ -48,7 +48,7 @@ test('IpBereiche cannot be pointed at another customer after mounting', function
     expect(fn () => $component->set('networkId', $otherNetwork->id))->toThrow(CannotUpdateLockedPropertyException::class);
 
     // A foreign range id on the own network deletes nothing.
-    $component->call('loeschen', $otherRange->id);
+    $component->call('delete', $otherRange->id);
     expect(IpRange::find($otherRange->id))->not->toBeNull();
 });
 

@@ -22,7 +22,7 @@ test('without settings the backup stays local at 01:30, without mails to nowhere
 });
 
 test('an SFTP target becomes a disk, retention and archive password are applied', function () {
-    BackupSettings::speichern([
+    BackupSettings::save([
         'backup_ziel_art' => 'sftp', 'backup_ziel_host' => 'nas.firma.local', 'backup_ziel_benutzer' => 'backup',
         'backup_ziel_geheim_passwort' => 'geheim123', 'backup_ziel_pfad' => '/sicherung',
         'backup_tage_taeglich' => '14', 'backup_geheim_archivpasswort' => 'archiv-passwort', 'backup_mail' => 'it@firma.de',
@@ -63,7 +63,7 @@ test('without an archive password the .env stays out of the backup', function ()
 });
 
 test('FTP without keeping local writes only to the target', function () {
-    BackupSettings::speichern(['backup_ziel_art' => 'ftp', 'backup_ziel_host' => 'ftp.firma.de', 'backup_ziel_benutzer' => 'u', 'backup_lokal_behalten' => '0', 'backup_ziel_ftps' => '1']);
+    BackupSettings::save(['backup_ziel_art' => 'ftp', 'backup_ziel_host' => 'ftp.firma.de', 'backup_ziel_benutzer' => 'u', 'backup_lokal_behalten' => '0', 'backup_ziel_ftps' => '1']);
     BackupSettings::anwenden();
 
     expect(config('backup.backup.destination.disks'))->toBe([BackupSettings::ZIEL_DISK])
@@ -82,12 +82,12 @@ test('the settings page saves, keeps secrets when left empty and needs the setti
         ->set('form.backup_ziel_host', 'nas.firma.local')
         ->set('form.backup_ziel_benutzer', 'backup')
         ->set('form.backup_ziel_geheim_passwort', 'erstes-passwort')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors()
         // Secrets never go back to the browser.
         ->assertSet('form.backup_ziel_geheim_passwort', '')
         ->set('form.backup_ziel_host', '127.0.0.2')
-        ->call('speichern')
+        ->call('save')
         ->assertHasNoErrors();
 
     $werte = BackupSettings::werte();
@@ -101,7 +101,7 @@ test('a target without server or user is refused', function () {
 
     Livewire::test(AdminBackupSettings::class)
         ->set('form.backup_ziel_art', 'sftp')
-        ->call('speichern')
+        ->call('save')
         ->assertHasErrors(['form.backup_ziel_host', 'form.backup_ziel_benutzer']);
 });
 

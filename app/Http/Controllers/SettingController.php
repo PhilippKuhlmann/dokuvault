@@ -32,7 +32,7 @@ class SettingController extends Controller
         ]);
 
         if (($daten['remote_tool'] ?? null) === 'custom') {
-            $this->musterPruefen($request);
+            $this->checkPattern($request);
         }
 
         Setting::setzen(Setting::REMOTE_TOOL, $daten['remote_tool']);
@@ -47,7 +47,7 @@ class SettingController extends Controller
      * deshalb muss es mit einem Programm-Schema beginnen und darf keines der
      * Schemata sein, die der Browser selbst auswertet.
      */
-    private function musterPruefen(Request $request): void
+    private function checkPattern(Request $request): void
     {
         $muster = (string) $request->input('remote_pattern');
         $schema = strtolower(strtok($muster, ':'));

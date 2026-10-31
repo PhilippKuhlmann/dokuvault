@@ -62,7 +62,7 @@ class WizardController extends Controller
         }
 
         if ($geprueft['wie'] === 'gruppe') {
-            $ablauf->gruppeUeberspringen($durchlauf);
+            $ablauf->skipGroup($durchlauf);
 
             return $this->stand($ablauf, $durchlauf->fresh());
         }

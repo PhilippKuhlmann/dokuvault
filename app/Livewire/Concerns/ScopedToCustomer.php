@@ -16,7 +16,7 @@ namespace App\Livewire\Concerns;
  */
 trait ScopedToCustomer
 {
-    protected function nurEigenerKunde(int $customerId): void
+    protected function onlyOwnCustomer(int $customerId): void
     {
         $nutzer = auth()->user();
 
