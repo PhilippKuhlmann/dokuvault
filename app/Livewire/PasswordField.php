@@ -9,19 +9,19 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
- * Ein Kennwort in einer Geräteliste - verdeckt, bis es jemand anfordert.
+ * A password in a device list - covered until somebody asks for it.
  *
- * Vorher stand der Klartext im ausgelieferten HTML: Das Auge war reines
- * JavaScript, der Wert lag längst im DOM. Wer die Liste öffnete, hatte damit
- * alle Kennwörter, ohne einen Klick und ohne dass es irgendwo stand.
+ * The plain text used to stand in the delivered HTML: the eye was pure
+ * JavaScript, the value lay in the DOM long before. Whoever opened the list
+ * had every password, without a click and without it being recorded anywhere.
  *
- * Jetzt trägt das Feld nur die Verknüpfung, nicht den Wert. Erst der Klick holt
- * ihn - über den Server, mit demselben Recht wie die Liste, mit einem Eintrag
- * im Protokoll und einer Bremse gegen das reihenweise Abgreifen.
+ * Now the field carries the link only, not the value. Only the click fetches
+ * it - through the server, with the same permission as the list, with an entry
+ * in the log and a throttle against harvesting in bulk.
  *
- * Die Verknüpfungs-Id ist #[Locked]: Livewire signiert sie, der Browser kann
- * sie nicht gegen eine fremde austauschen. So kommt über dieses Feld nur
- * heraus, was ohnehin schon auf der Seite stand.
+ * The link id is #[Locked]: Livewire signs it, and the browser cannot swap it
+ * for a foreign one. So through this field only comes out what stood on the
+ * page anyway.
  */
 class PasswordField extends Component
 {
@@ -32,7 +32,7 @@ class PasswordField extends Component
 
     public bool $offen = false;
 
-    /** Erst nach dem Klick gefüllt - vorher liegt kein Wert im Component. */
+    /** Filled only after the click - before that no value lies in the component. */
     public ?string $wert = null;
 
     public function mount(int $linkId, string $width = 'w-full'): void
@@ -54,9 +54,9 @@ class PasswordField extends Component
     }
 
     /**
-     * Kopiert das Kennwort, ohne es aufzudecken: Der Wert geht einmalig an den
-     * Browser (in die Zwischenablage) und steht danach nirgends im DOM. So lässt
-     * er sich übernehmen, ohne dass er auf dem Schirm erscheint.
+     * Copies the password without revealing it: the value goes to the browser
+     * once (into the clipboard) and stands nowhere in the DOM afterwards. That
+     * way it can be taken over without appearing on the screen.
      */
     public function kopieren(): void
     {
@@ -70,8 +70,8 @@ class PasswordField extends Component
     }
 
     /**
-     * Holt den Klartext - mit Rechteprüfung, Bremse und Protokolleintrag, siehe
-     * App\Support\Kennwortabruf. Gemeinsamer Kern von zeigen() und kopieren().
+     * Fetches the plain text - with a permission check, a throttle and a log
+     * entry, see App\Support\PasswordReveal. The shared core of show() and copy().
      */
     private function fetchValue(): ?string
     {

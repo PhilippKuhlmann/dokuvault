@@ -7,20 +7,20 @@ use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
 /**
- * Wie ein Kennwort aussehen muss, mit dem sich ein Benutzer anmeldet.
+ * What a password has to look like for a user to sign in with it.
  *
- * Ohne Speichern-Knopf, wie unter "Allgemein": Wer ein Haekchen setzt, hat es
- * gesetzt. Ein Formular mit Knopf laesst offen, ob die letzte Aenderung noch
- * drin war.
+ * Without a save button, as under "Allgemein": whoever ticks a box has
+ * ticked it. A form with a button leaves it open whether the last change made
+ * it in.
  *
- * Nicht gemeint sind die dokumentierten Kennwoerter der Kunden - das Kennwort
- * eines Servers, eines Druckers, eines WLANs. Dort wird festgehalten, was ist,
- * nicht was sein soll: Ein Kunde mit einem schwachen Kennwort muss
+ * Not meant are the documented passwords of the customers - the password of a
+ * server, a printer, a WLAN. There we record what is, not what ought to be: a
+ * customer with a weak password has to stay documentable.
  * dokumentierbar bleiben.
  */
 class AdminSecurity extends Component
 {
-    /** Mindestlaenge; acht ist Laravels Vorgabe und galt bisher stillschweigend. */
+    /** Minimum length; eight is Laravel's default and applied silently before. */
     public int $pwMin = 8;
 
     public bool $pwMixed = false;
@@ -31,7 +31,7 @@ class AdminSecurity extends Component
 
     public bool $pwUncompromised = false;
 
-    /** Bremse gegen Durchprobieren - dieselben Zahlen gelten in der zweiten Stufe. */
+    /** Throttle against guessing - the same numbers apply to the second factor. */
     public int $versuche = 0;
 
     public int $sperre = 0;
@@ -84,8 +84,8 @@ class AdminSecurity extends Component
 
     public function updatedSitzungMinuten(): void
     {
-        // Nach unten fuenf Minuten: Kuerzer meldet die Anwendung jemanden
-        // waehrend des Tippens ab. Nach oben 30 Tage - laenger ist keine
+        // Five minutes at the bottom: shorter and the application signs
+        // somebody out while they are typing. 30 days at the top - longer is
         // Sitzung mehr, dafuer gibt es "Angemeldet bleiben".
         $this->zahl('sitzungMinuten', Setting::SITZUNG_MINUTEN, 5, 43200, __('Dauer einer Sitzung'));
     }
@@ -106,7 +106,7 @@ class AdminSecurity extends Component
         $this->haken(Setting::SITZUNG_SCHLIESSEN, $this->sitzungSchliessen);
     }
 
-    /** Eine Zahl pruefen und ablegen. */
+    /** Check a number and store it. */
     private function zahl(string $feld, string $schluessel, int $min, int $max, string $bezeichnung): void
     {
         Gate::authorize('admin_setting');
@@ -126,8 +126,8 @@ class AdminSecurity extends Component
     {
         Gate::authorize('admin_setting');
 
-        // Nach oben begrenzt, weil bcrypt bei 72 Byte abschneidet - eine
-        // Mindestlaenge darueber waere eine Zahl ohne Wirkung.
+        // Capped at the top because bcrypt truncates at 72 bytes - a minimum
+        // length above that would be a number without effect.
         $this->validate(
             ['pwMin' => ['required', 'integer', 'min:8', 'max:64']],
             [],
@@ -159,7 +159,7 @@ class AdminSecurity extends Component
         $this->haken(Setting::PW_UNCOMPROMISED, $this->pwUncompromised);
     }
 
-    /** Null statt false: "nicht gesetzt" und "abgewaehlt" sind hier dasselbe. */
+    /** Null instead of false: "not set" and "unticked" are the same thing here. */
     private function haken(string $schluessel, bool $wert): void
     {
         Gate::authorize('admin_setting');
@@ -172,8 +172,8 @@ class AdminSecurity extends Component
     public function render()
     {
         return view('livewire.admin-security', [
-            // Derselbe Satz, den die Benutzer unter ihrem Kennwortfeld sehen -
-            // damit hier steht, was die Haekchen bewirken.
+            // The same sentence the users see under their password field - so
+            // that what the boxes do stands here.
             'hinweis' => Setting::passwordNotice(),
         ])->layout('layouts.admin.app');
     }

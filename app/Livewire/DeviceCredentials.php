@@ -62,7 +62,7 @@ class DeviceCredentials extends Component
      * The block has two: one attaches existing credentials, one creates new
      * ones. Together they are right, because while typing only the one changed
      * field is checked - whoever types a name triggers no check of login_id.
-     * keine Pruefung von login_id aus.
+     * no check of login_id.
      */
     protected function regeln(): array
     {

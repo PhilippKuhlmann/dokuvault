@@ -7,14 +7,14 @@ use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
 /**
- * Wie lange vorher gewarnt wird, und wie lange eine PDF-Ausgabe liegen bleibt.
+ * How far ahead the warning comes, and how long a PDF export stays.
  *
- * Ohne Speichern-Knopf, wie unter "Allgemein": Wer eine Zahl eintraegt, hat sie
- * eingetragen.
+ * Without a save button, as under "Allgemein": whoever enters a number has
+ * entered it.
  *
- * Die Zahlen standen vorher an sieben Stellen einzeln im Code - zweimal
- * dieselbe mit dem Kommentar, es sei dieselbe. Wer eine davon geaendert haette,
- * haette die uebrigen stehen lassen.
+ * The numbers used to stand in seven places in the code - twice the same one
+ * with a comment saying it was the same. Whoever had changed one of them
+ * would have left the others standing.
  */
 class AdminRetention extends Component
 {
@@ -59,9 +59,9 @@ class AdminRetention extends Component
 
     public function updatedPdfStunden(): void
     {
-        // Nach unten auf eine Stunde: Aufgeraeumt wird stuendlich, eine
-        // kuerzere Frist waere eine Zahl ohne Wirkung. Nach oben ein Jahr -
-        // laenger als ein paar Tage ist ohnehin nicht gemeint.
+        // One hour at the bottom: the cleanup runs hourly, and a shorter
+        // deadline would be a number without effect. One year at the top -
+        // longer than a few days is not meant anyway.
         $this->check('pdfStunden', 1, 8760, __('Aufbewahrung der PDF-Ausgaben'));
 
         Setting::setzen(Setting::PDF_STUNDEN, $this->pdfStunden);
@@ -91,16 +91,16 @@ class AdminRetention extends Component
     }
 
     /**
-     * Eine Frist in Tagen pruefen und ablegen.
+     * Check a deadline in days and store it.
      *
-     * Mindestens ein Tag: Eine Vorwarnzeit von null Tagen ist keine Frist,
-     * sondern eine abgeschaltete Warnung - und die schaltet man nicht
-     * versehentlich ueber ein leergeraeumtes Feld ab.
+     * At least one day: a warning time of zero days is no deadline but a
+     * switched-off warning - and one does not switch that off by accident
+     * through an emptied field.
      *
-     * Hoechstens fuenf Jahre. Das ist keine Empfehlung, sondern ein
-     * Tippfehlerfang: Wer 60 meint und 600 tippt, warnt ab sofort vor allem.
-     * Der Wert selbst gehoert dem Haus - eine Betriebssystem-Ablauefe plant
-     * man laenger im Voraus als eine Domainverlaengerung.
+     * At most five years. That is not a recommendation but a typo catcher:
+     * whoever means 60 and types 600 warns about everything from then on. The
+     * value itself belongs to the house - an operating system's end of life is
+     * planned further ahead than a domain renewal.
      */
     private function save(string $feld, string $schluessel, string $bezeichnung): void
     {

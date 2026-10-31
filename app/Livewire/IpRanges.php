@@ -12,15 +12,15 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
- * Reservierte Bereiche eines Netzes - anlegen und wieder loeschen.
+ * Reserved ranges of a network - create and delete again.
  *
- * Sitzt am Netz, nicht in einer eigenen Liste im Menue: Ein Bereich ergibt nur
- * dort Sinn, wo man ihn sieht. Dasselbe Muster wie die IP-Adressen und die
- * Zugangsdaten am Geraet.
+ * It sits on the network, not in a list of its own in the menu: a range only
+ * makes sense where one sees it. The same pattern as the IP addresses and the
+ * credentials on the device.
  *
- * Ein Bereich belegt nichts. Er haelt fest, wofuer ein Stueck des Netzes
- * gedacht ist - "10.10.250.10 bis .20 sind fuer die Proxmox-Server" -, auch
- * wenn davon erst zwei Adressen vergeben sind.
+ * A range takes nothing. It records what a piece of the network is meant for
+ * - "10.10.250.10 to .20 are for the Proxmox servers" - even when only two
+ * addresses of it are in use.
  */
 class IpRanges extends Component
 {
@@ -48,8 +48,8 @@ class IpRanges extends Component
     public function mount(Customer $customer, Network $network): void
     {
         // Zwei verschiedene Fragen, beide noetig: Darf dieser Benutzer diesen
-        // Kunden sehen - und gehoert dieses Netz zu ihm? Ohne die erste kaeme
-        // ein auf einen Kunden festgelegter Nutzer an fremde Netzplanung.
+        // customers see - and does this network belong to them? Without the
+        // first, a user tied to one customer would reach another's network plan.
         $this->onlyOwnCustomer($customer->id);
 
         abort_unless($network->customer_id === $customer->id, 404);
@@ -58,7 +58,7 @@ class IpRanges extends Component
         $this->networkId = $network->id;
     }
 
-    /** Die Regeln stehen in IpRangeEditing - dieselben fuer die iOS-App. */
+    /** The rules sit in IpRangeEditing - the same ones for the iOS app. */
     protected function regeln(): array
     {
         return app(IpRangeEditing::class)->rules();
@@ -95,9 +95,9 @@ class IpRanges extends Component
 
         $this->cancel();
 
-        // Die Adressliste darueber zeichnet der Controller, nicht diese
-        // Komponente - ohne den Neuaufbau bliebe der neue Bereich unsichtbar,
-        // und genau ihn wollte man ja sehen.
+        // The address list above it is drawn by the controller, not by this
+        // component - without the rebuild the new range would stay invisible,
+        // and that is exactly what one wanted to see.
         $this->redirect(request()->header('Referer') ?: route('ipplan.index', $this->customerId), navigate: true);
     }
 
@@ -105,7 +105,7 @@ class IpRanges extends Component
     {
         Gate::authorize('network_update');
 
-        // Nur Bereiche dieses Netzes - eine untergeschobene fremde Id waere
+        // Only ranges of this network - a foreign id slipped in would
         // sonst loeschbar.
         app(IpRangeEditing::class)->delete($this->netz(), $id);
 

@@ -9,13 +9,13 @@ use Livewire\Component;
 class SearchCustomer extends Component
 {
     /**
-     * Wie viele Kunden die Liste hoechstens zeigt.
+     * How many customers the list shows at most.
      *
-     * Vorher holte die Suche alle Treffer. Bei 558 Kunden und einem einzigen
-     * Buchstaben als Suchbegriff waren das 70 KB und 100 Millisekunden - die
-     * einzige Stelle der Anwendung, die mit dem Bestand linear mitwaechst
-     * (alle Listen paginieren, die globale Suche begrenzt je Objekttyp auf 20).
-     * Wer einen Kunden sucht, tippt ohnehin weiter, statt fuenfhundert Namen
+     * The search used to fetch every hit. At 558 customers and a single letter
+     * as the term that was 70 KB and 100 milliseconds - the one place in the
+     * application that grows linearly with the stock (every list paginates,
+     * the global search caps at 20 per object kind). Whoever is looking for a
+     * customer types on anyway instead of reading five hundred names.
      * zu lesen.
      */
     private const HOECHSTENS = 50;
@@ -29,13 +29,13 @@ class SearchCustomer extends Component
         $weitere = 0;
 
         if ($this->search) {
-            // Einen mehr holen als angezeigt wird: Damit steht fest, ob es
-            // weitere gibt, ohne dafuer ein zweites Mal zu zaehlen.
+            // Fetch one more than is shown: that settles whether there are
+            // more without counting a second time.
             $treffer = Customer::whereEnthaelt('name', $this->search)
-                // Ein auf einen Kunden festgelegter Nutzer sieht nur diesen
-                // einen. Die Route leitet ihn zwar auf sein Dashboard, aber
-                // Livewire ruft nicht ueber sie - und der blosse Name eines
-                // fremden Kunden ist schon eine Auskunft, die ihm nicht
+                // A user tied to one customer sees only that one. The route
+                // does send them to their dashboard, but Livewire does not
+                // call through it - and the mere name of another customer is
+                // information they are not entitled to.
                 // zusteht.
                 ->when(auth()->user()?->customer_id, fn ($abfrage, $eigener) => $abfrage->whereKey($eigener))
                 ->orderBy('name')
@@ -58,12 +58,12 @@ class SearchCustomer extends Component
     }
 
     /**
-     * Wie viele Kunden dieser Nutzer ueberhaupt sehen kann.
+     * How many customers this user can see at all.
      *
-     * Steht im Schriftkopf der Karte, wie die Stueckzahl auf einer Zeichnung.
-     * Dieselbe Einschraenkung wie bei der Suche: Ein auf einen Kunden
-     * festgelegter Nutzer zaehlt nur seinen eigenen - sonst verriete schon die
-     * Zahl, wie viele andere es gibt.
+     * It stands in the masthead of the card, like the quantity on a drawing.
+     * The same restriction as in the search: a user tied to one customer
+     * counts only their own - otherwise the number alone would give away how
+     * many others there are.
      */
     private function gesamt(): int
     {

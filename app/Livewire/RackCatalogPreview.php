@@ -7,17 +7,17 @@ use Livewire\Attributes\On;
 use Livewire\Component;
 
 /**
- * Die Vorschau im Katalogformular: das Element in einem kleinen Schrank.
+ * The preview in the catalog form: the item in a small rack.
  *
- * Warum ueberhaupt eine Komponente? Die Zeichnung haengt an Darstellung UND
- * Hoehe - ein Patchfeld mit 2 HE hat zwei Portreihen, keine gestreckte. Alle
- * elf Darstellungen in allen acht Hoehen vorab auszuliefern und per x-show
- * umzuschalten waeren 737 KB Auszeichnung auf einer Formularseite. So kommt
- * bei jeder Aenderung genau eine Zeichnung nach.
+ * Why a component at all? The drawing hangs on appearance AND height - a
+ * patch panel of 2 U has two port rows, not a stretched one. Delivering all
+ * eleven appearances in all eight heights up front and switching with x-show
+ * would be 737 KB of markup on one form page. This way exactly one drawing
+ * follows on every change.
  *
- * Keine Rechtepruefung: Hier wird nichts gelesen und nichts geschrieben, es
- * entsteht nur ein Bild aus Werten, die alle gegen feste Listen geprueft
- * werden.
+ * No permission check: nothing is read and nothing is written here, only an
+ * image comes into being from values that are all checked against fixed
+ * lists.
  */
 class RackCatalogPreview extends Component
 {
@@ -25,10 +25,10 @@ class RackCatalogPreview extends Component
 
     public int $he = 1;
 
-    /** Adresse des bereits gespeicherten Fotos; ohne eines wird gezeichnet. */
+    /** Address of the photo already stored; without one it is drawn. */
     public ?string $bild = null;
 
-    /** Schluessel einer eigenen Zeichnung; geprueft gegen die Liste. */
+    /** Key of an own drawing; checked against the list. */
     public ?string $drawing = null;
 
     public function mount(string $appearance = 'blank', int $he = 1, ?string $bild = null,
@@ -39,10 +39,10 @@ class RackCatalogPreview extends Component
     }
 
     /**
-     * Das Formular meldet jede Aenderung per Browser-Ereignis.
+     * The form reports every change through a browser event.
      *
-     * Es ist ein gewoehnliches Formular, kein Livewire-Formular - die Felder
-     * gehoeren zum Absenden und koennen deshalb nicht per wire:model an dieser
+     * It is an ordinary form, not a Livewire form - the fields belong to the
+     * submit and can therefore not hang on this component through wire:model.
      * Komponente haengen.
      */
     #[On('rack-preview')]

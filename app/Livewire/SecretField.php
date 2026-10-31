@@ -8,20 +8,20 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
- * Ein Geheimnis an einem Objekt - verdeckt, bis es jemand anfordert.
+ * A secret on an object - covered until somebody asks for it.
  *
- * Das Gegenstück zu KennwortFeld, aber für Werte, die direkt am Gerät hängen
- * (BMC-Passwort, DSRM-Passwort, Verschlüsselungscode ...) statt an einer
- * Zugangsdaten-Verknüpfung. Vorher standen sie als Klartext im ausgelieferten
- * HTML jeder Liste und jeder Karte - das Auge war nur JavaScript.
+ * The counterpart to PasswordField, but for values that hang directly on the
+ * device (BMC password, DSRM password, encryption key ...) instead of on a
+ * credential link. They used to stand as plain text in the delivered HTML of
+ * every list and every card - the eye was only JavaScript.
  *
- * Jetzt trägt das Feld nur Modell, Id und Feldname. Erst der Klick holt den
- * Wert über den Server, mit demselben Recht wie die Liste (viewAny), einem
- * Protokolleintrag und derselben Bremse wie KennwortFeld.
+ * Now the field carries only model, id and field name. Only the click fetches
+ * the value through the server, with the same permission as the list
+ * (viewAny), a log entry and the same throttle as PasswordField.
  *
- * Modell, Id und Feld sind #[Locked] und werden serverseitig gegen die
- * Geheimnis-Spalten und die Policy geprüft - über dieses Feld kommt nur
- * heraus, was ohnehin auf der Seite stand.
+ * Model, id and field are #[Locked] and are checked on the server against the
+ * secret columns and the policy - through this field only comes out what
+ * stood on the page anyway.
  */
 class SecretField extends Component
 {
@@ -61,8 +61,8 @@ class SecretField extends Component
     }
 
     /**
-     * Kopiert das Geheimnis, ohne es aufzudecken: Der Wert geht einmalig an den
-     * Browser (in die Zwischenablage) und steht danach nirgends im DOM.
+     * Copies the secret without revealing it: the value goes to the browser
+     * once (into the clipboard) and stands nowhere in the DOM afterwards.
      */
     public function kopieren(): void
     {
@@ -76,9 +76,9 @@ class SecretField extends Component
     }
 
     /**
-     * Holt den Klartext - mit Feld-Whitelist, Rechteprüfung, Bremse und
-     * Protokolleintrag, siehe App\Support\Kennwortabruf. Gemeinsamer Kern von
-     * zeigen() und kopieren().
+     * Fetches the plain text - with a field allowlist, a permission check, a
+     * throttle and a log entry, see App\Support\PasswordReveal. The shared core
+     * of show() and copy().
      */
     private function fetchValue(): ?string
     {
@@ -99,8 +99,8 @@ class SecretField extends Component
 
     public function render()
     {
-        // Dieselbe Ansicht wie KennwortFeld - dasselbe verdeckte Feld mit Auge
-        // und Kopierknopf.
+        // The same view as PasswordField - the same covered field with an eye
+        // and a copy button.
         return view('livewire.password-field');
     }
 }

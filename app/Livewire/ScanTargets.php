@@ -13,12 +13,12 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
- * Die Scan-Ziele eines Scanners, im Bearbeiten-Formular. Speichert sofort,
- * wie "Weitere IP-Adressen" daneben.
+ * The scan targets of a scanner, in the edit form. Saves at once, like
+ * "Weitere IP-Adressen" beside it.
  *
- * Ein Ziel gehoert dem Kunden, nicht dem Scanner: Hier wird verknuepft oder
- * ein neues angelegt und gleich verknuepft. Loesen nimmt nur die Verknuepfung
- * weg - dasselbe Ziel kann an einem anderen Scanner haengen.
+ * A target belongs to the customer, not to the scanner: here one is linked or
+ * a new one is created and linked right away. Releasing takes only the link
+ * away - the same target can hang on another scanner.
  */
 class ScanTargets extends Component
 {
@@ -31,7 +31,7 @@ class ScanTargets extends Component
     #[Locked]
     public int $customerId;
 
-    /** Vorhandenes Ziel zum Verknuepfen. */
+    /** An existing target to link. */
     public $zielId = '';
 
     /** Neues Ziel. */
@@ -70,15 +70,15 @@ class ScanTargets extends Component
         $this->eingebettet = $eingebettet;
         $this->randlos = $randlos;
 
-        // Gibt es noch nichts zu verknuepfen, beginnt der Block beim Anlegen.
-        // Nur beim Oeffnen - danach entscheidet der Umschalter.
+        // If there is nothing to link yet, the block starts on creating.
+        // Only when opening - after that the switch decides.
         $this->neu = Gate::allows('scantarget_create')
             && ! ScanTarget::where('customer_id', $customer->id)->exists();
     }
 
     /**
-     * Recht und Kunde bei jeder Aktion neu pruefen - Public Properties sind
-     * client-seitig veraenderbar.
+     * Check permission and customer anew on every action - public properties
+     * can be changed on the client.
      */
     protected function scanner(): Scanner
     {
@@ -97,8 +97,8 @@ class ScanTargets extends Component
     {
         $scanner = $this->scanner();
 
-        // Ein neues Ziel anlegen ist mehr als verknuepfen: Es entsteht ein
-        // Eintrag in der Liste der Scan-Ziele.
+        // Creating a new target is more than linking: an entry comes into
+        // being in the list of scan targets.
         if ($this->neu) {
             Gate::authorize('scantarget_create');
         }
@@ -108,7 +108,7 @@ class ScanTargets extends Component
 
         app(ScanTargetLinking::class)->add($scanner, $validated, $this->neu);
 
-        // Die Art bleibt stehen: Wer zwanzig Ordner eintraegt, will sie nicht
+        // The kind stays: whoever enters twenty folders does not want to
         // zwanzigmal neu waehlen.
         $this->reset('zielId', 'name', 'target', 'login_general_id');
         $this->dispatch('device-changed');
@@ -124,8 +124,8 @@ class ScanTargets extends Component
     {
         $verknuepft = Scanner::find($this->scannerId)?->scanTargets()->with('login')->get() ?? collect();
 
-        // Zur Auswahl nur, was noch nicht verknuepft ist - und nur fuer den,
-        // der die Liste der Ziele sehen darf.
+        // On offer only what is not linked yet - and only for whoever may see
+        // the list of targets.
         $vorhandene = Gate::allows('scantarget_viewAny')
             ? ScanTarget::where('customer_id', $this->customerId)
                 ->whereNotIn('id', $verknuepft->pluck('id'))
@@ -134,7 +134,7 @@ class ScanTargets extends Component
         $darfAnlegen = Gate::allows('scantarget_create');
         $darfVerknuepfen = Gate::allows('scantarget_viewAny');
 
-        // Nur eine der beiden Moeglichkeiten: dann ohne Umschalter gleich die.
+        // Only one of the two options: then that one straight away, without a switch.
         if (! $darfVerknuepfen && $darfAnlegen) {
             $this->neu = true;
         }

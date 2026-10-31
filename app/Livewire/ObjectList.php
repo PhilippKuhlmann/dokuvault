@@ -43,7 +43,7 @@ class ObjectList extends Component
     /**
      * Filter values, kept by filter name. Which filters exist is said by the
      * kind in config/forms.php - a licence has a term, a printer does not.
-     * nicht.
+     * not.
      */
     #[Url]
     public array $filter = [];

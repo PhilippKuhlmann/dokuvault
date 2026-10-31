@@ -12,21 +12,21 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
- * Bestückung eines Racks: dokumentierte Geräte und Katalogelemente per
- * Drag & Drop (oder Knopf) einbauen, verschieben, entfernen.
+ * Populating a rack: documented devices and catalog items mounted, moved and
+ * removed by drag and drop (or by button).
  *
- * Die Regeln selbst stehen in RackLayout - die iOS-App baut ueber dieselben ein.
+ * The rules themselves sit in RackLayout - the iOS app mounts through the same ones.
  */
 class RackEditor extends Component
 {
-    // Skalare statt Model-Instanzen: robust bei Livewire-Hydration (wie DeviceIpAddresses).
+    // Scalars instead of model instances: robust with Livewire hydration (like DeviceIpAddresses).
     #[Locked]
     public int $rackId;
 
     #[Locked]
     public int $customerId;
 
-    /** Welche Seite gerade bearbeitet wird - 'front' oder 'rear'. */
+    /** Which side is being edited - 'front' or 'rear'. */
     public string $side = 'front';
 
     public function setSide(string $side): void
@@ -41,8 +41,8 @@ class RackEditor extends Component
     }
 
     /**
-     * Lädt das Rack neu und prüft Berechtigung + Mandant bei JEDER Aktion —
-     * die öffentlichen Props sind clientseitig manipulierbar.
+     * Reloads the rack and checks permission and tenant on EVERY action -
+     * the public props can be manipulated on the client.
      */
     protected function rack(): Rack
     {
@@ -62,7 +62,7 @@ class RackEditor extends Component
         return app(RackLayout::class);
     }
 
-    /** Dokumentiertes Gerät einbauen. $typeKey wird gegen die Config aufgelöst — nie Klassennamen vom Client. */
+    /** Mount a documented device. $typeKey is resolved against the config - never a class name. */
     public function placeDevice(string $typeKey, int $deviceId, int $position): void
     {
         $this->layout()->placeDevice($this->rack(), $this->side, $typeKey, $deviceId, $position);
@@ -75,9 +75,9 @@ class RackEditor extends Component
     }
 
     /**
-     * Einbauten der Gegenseite erscheinen als Geister, wenn sie in voller Tiefe
-     * durchreichen. Bearbeiten laesst sich dort nichts - sonst verschoebe man
-     * von hinten etwas, das man vorne sieht.
+     * Items of the other side appear as ghosts when they run through at full
+     * depth. Nothing can be edited there - one would otherwise move something
+     * from behind that is seen from the front.
      */
     protected function nurEigeneSeite(RackItem $item): void
     {
@@ -86,7 +86,7 @@ class RackEditor extends Component
         }
     }
 
-    /** Einbau an eine neue Position verschieben. */
+    /** Move a mounted item to a new position. */
     public function move(int $itemId, int $newPosition): void
     {
         $rack = $this->rack();
@@ -123,13 +123,13 @@ class RackEditor extends Component
         throw ValidationException::withMessages(['rack' => $message]);
     }
 
-    /** Einbauen-Knopf: Gerät auf die unterste freie HE setzen. */
+    /** Mount button: put the device on the lowest free U. */
     public function quickPlaceDevice(string $typeKey, int $deviceId): void
     {
         $this->layout()->placeDevice($this->rack(), $this->side, $typeKey, $deviceId);
     }
 
-    /** Einbauen-Knopf: Katalogelement auf die unterste freie passende HE setzen. */
+    /** Mount button: put the catalog item on the lowest free fitting U. */
     public function quickPlaceCatalog(int $catalogItemId): void
     {
         $this->layout()->placeCatalog($this->rack(), $this->side, $catalogItemId);
