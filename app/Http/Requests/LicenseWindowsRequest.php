@@ -23,8 +23,8 @@ class LicenseWindowsRequest extends FormRequest
     public function rules()
     {
         return [
-            // Die Spalte ist NOT NULL - ohne Regel endete eine leere
-            // Auswahl in einem Datenbankfehler statt in einer Meldung.
+            // The column is NOT NULL - without a rule an empty choice ended
+            // in a database error instead of a message.
             'operating_system_id' => 'required',
             'key' => 'required|max:255',
             'file_name' => 'nullable',

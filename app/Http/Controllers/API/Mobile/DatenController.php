@@ -66,7 +66,7 @@ class DatenController extends Controller
         $mitStandort = method_exists($klasse, 'site');
         $mitladen = $mitStandort ? ['customer', 'site'] : ['customer'];
 
-        // Der Standortfilter der Seitenleiste, hier als Abfragewert. Ein
+        // The site filter of the sidebar, here as a query value. A
         // Standort eines anderen Kunden zaehlt als kein Filter, nicht als
         // Fehler - genau wie im Browser, wo ein fremder Standort in der
         // Sitzung uebergangen wird.

@@ -171,7 +171,7 @@ class TwoFactorController extends Controller
     }
 
     /**
-     * Neue Wiederherstellungscodes. Braucht das Kennwort: Wer an einem
+     * New recovery codes. Needs the password: whoever sits at a borrowed
      * offenen Bildschirm sitzt, soll sich nicht acht Dauerzugaenge ausdrucken
      * koennen.
      */
@@ -201,8 +201,8 @@ class TwoFactorController extends Controller
             return $fehler;
         }
 
-        // Verlangt der Administrator sie, laesst sie sich nicht abschalten -
-        // sonst waere die Pflicht ein Knopf, den man einmal drueckt.
+        // If the administrator demands it, it cannot be switched off -
+        // otherwise the requirement would be a button one presses once.
         if ($request->user()->two_factor_required) {
             return Redirect::route('profile.edit')
                 ->withErrors(['password' => __('Ihr Administrator verlangt die zweite Stufe. Sie lässt sich nicht abschalten.')], 'disableTwoFactor')

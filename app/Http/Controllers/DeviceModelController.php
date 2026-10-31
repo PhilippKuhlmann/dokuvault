@@ -9,10 +9,10 @@ use App\Models\Setting;
 
 /**
  * Pflege der Geraetemodelle im Adminbereich. Die Route-Gruppe laeuft bereits
- * hinter der isAdmin-Middleware, deshalb keine zusaetzliche Autorisierung.
+ * behind the isAdmin middleware, hence no additional authorisation.
  *
- * Ausnahme ist image(): Das Bild steht in jeder Rack-Ansicht und muss deshalb
- * auch fuer Kunden erreichbar sein - die Route liegt ausserhalb der Gruppe.
+ * The exception is image(): the picture stands in every rack view and must
+ * therefore be reachable for customers too - the route lies outside the group.
  */
 class DeviceModelController extends Controller
 {
@@ -33,7 +33,7 @@ class DeviceModelController extends Controller
 
     public function store(DeviceModelRequest $request)
     {
-        // Der Ablageort haengt nicht am Datensatz, das Bild kann also gleich
+        // The storage location does not hang on the record, so the image can
         // mit angelegt werden - sonst folgte auf jedes Anlegen ein Update.
         DeviceModel::create($this->handleImage($request, new DeviceModel, $this->stammdaten($request)));
 
@@ -65,7 +65,7 @@ class DeviceModelController extends Controller
     }
 
     /**
-     * Das hinterlegte Bild ausliefern.
+     * Serve the stored image.
      *
      * Hinter auth, aber ohne Mandantenpruefung - anders als bei Geraetedaten
      * und mit Absicht: Ein Modellfoto gehoert keinem Kunden. Es zeigt die

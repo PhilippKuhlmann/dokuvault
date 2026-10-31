@@ -47,10 +47,10 @@ trait ManagesImages
     }
 
     /**
-     * Das hinterlegte Bild ausliefern.
+     * Serve the stored image.
      *
-     * nosniff und eine feste Content-Type-Angabe: Der Browser soll die Datei
-     * als Bild behandeln und nicht selbst raten, was sie sein koennte.
+     * nosniff and a fixed content type: the browser should treat the file as
+     * an image and not guess for itself what it might be.
      */
     protected function serveImage(Model $eintrag)
     {

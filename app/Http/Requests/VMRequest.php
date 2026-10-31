@@ -40,8 +40,8 @@ class VMRequest extends FormRequest
             'cluster_id' => ['nullable', new BelongsToCustomer('clusters')],
             'name' => 'required|max:255',
             'services' => 'max:255',
-            // Die Spalte ist NOT NULL - ohne Regel endete eine leere
-            // Auswahl in einem Datenbankfehler statt in einer Meldung.
+            // The column is NOT NULL - without a rule an empty choice ended
+            // in a database error instead of a message.
             'operating_system_id' => 'required',
             'remoteID' => '',
             'remotePassword' => '',

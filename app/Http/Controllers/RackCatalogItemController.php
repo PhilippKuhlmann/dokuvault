@@ -9,10 +9,10 @@ use App\Models\Setting;
 
 /**
  * Pflege des Rack-Katalogs im Adminbereich. Die Route-Gruppe laeuft bereits
- * hinter der isAdmin-Middleware, deshalb keine zusaetzliche Autorisierung.
+ * behind the isAdmin middleware, hence no additional authorisation.
  *
- * Ausnahme ist image(): Das Bild steht in jeder Rack-Ansicht und muss deshalb
- * auch fuer Kunden erreichbar sein - die Route liegt ausserhalb der Gruppe.
+ * The exception is image(): the picture stands in every rack view and must
+ * therefore be reachable for customers too - the route lies outside the group.
  */
 class RackCatalogItemController extends Controller
 {
@@ -33,7 +33,7 @@ class RackCatalogItemController extends Controller
 
     public function store(RackCatalogItemRequest $request)
     {
-        // Der Ablageort haengt nicht am Datensatz, das Bild kann also gleich
+        // The storage location does not hang on the record, so the image can
         // mit angelegt werden - sonst folgte auf jedes Anlegen ein Update.
         RackCatalogItem::create($this->handleImage($request, new RackCatalogItem, $this->stammdaten($request)));
 
@@ -65,15 +65,15 @@ class RackCatalogItemController extends Controller
     }
 
     /**
-     * Das hinterlegte Bild ausliefern.
+     * Serve the stored image.
      *
      * Hinter auth, aber nicht hinter isAdmin: Es steht in jeder Rack-Ansicht,
      * die ein Kunde sehen darf. Vertraulich ist es nicht - es zeigt eine
      * Frontblende -, die Datei liegt aber wie alle Dateien dieser App privat
      * und geht durch den Controller heraus.
      *
-     * nosniff und eine feste Content-Type-Angabe: Der Browser soll die Datei
-     * als Bild behandeln und nicht selbst raten, was sie sein koennte.
+     * nosniff and a fixed content type: the browser should treat the file as
+     * an image and not guess for itself what it might be.
      */
     public function image(RackCatalogItem $rackcatalogitem)
     {

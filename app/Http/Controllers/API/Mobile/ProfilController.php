@@ -233,7 +233,7 @@ class ProfilController extends Controller
     }
 
     /**
-     * Neue Wiederherstellungscodes. Braucht das Kennwort: Wer an einem
+     * New recovery codes. Needs the password: whoever sits at a borrowed
      * offenen Geraet sitzt, soll sich nicht acht Dauerzugaenge ausdrucken
      * koennen.
      */
@@ -262,8 +262,8 @@ class ProfilController extends Controller
             return response()->json(['message' => __('Dieser Demo-Zugang ist gesperrt und lässt sich nicht ändern.')], 422);
         }
 
-        // Verlangt der Administrator sie, laesst sie sich nicht abschalten -
-        // sonst waere die Pflicht ein Knopf, den man einmal drueckt.
+        // If the administrator demands it, it cannot be switched off -
+        // otherwise the requirement would be a button one presses once.
         if ($nutzer->two_factor_required) {
             return response()->json([
                 'message' => __('Ihr Administrator verlangt die zweite Stufe. Sie lässt sich nicht abschalten.'),
