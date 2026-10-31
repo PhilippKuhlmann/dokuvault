@@ -39,11 +39,28 @@ class DemoReset extends Command
             return self::FAILURE;
         }
 
-        $this->call('migrate:fresh', ['--force' => true]);
-        $this->call('db:seed', [
-            '--class' => LocalDatabaseSeeder::class,
-            '--force' => true,
-        ]);
+        // Wartungsmodus, solange das Schema neu entsteht. migrate:fresh
+        // loescht und legt die Tabellen wieder an; eine Anfrage, die genau in
+        // diese Sekunden faellt, traf bisher auf ein halbfertiges Schema und
+        // endete mit einem Fehler 500 im Log - am 29.10. etwa eine
+        // gescheiterte Anmeldung, deren Protokolleintrag in ein
+        // activity_log ohne customer_id schreiben wollte. Jetzt sieht der
+        // Besucher dieselbe 503-Seite wie beim Deploy und ist nach wenigen
+        // Sekunden wieder da.
+        $this->call('down', ['--retry' => 15]);
+
+        try {
+            $this->call('migrate:fresh', ['--force' => true]);
+            $this->call('db:seed', [
+                '--class' => LocalDatabaseSeeder::class,
+                '--force' => true,
+            ]);
+        } finally {
+            // Auch wenn migrate oder der Seeder abbrechen: Die Demo darf nicht
+            // im Wartungsmodus stehenbleiben, sonst waere sie bis zum
+            // naechsten Lauf eine 503-Seite.
+            $this->call('up');
+        }
 
         $this->info('Demo-Datenbank zurueckgesetzt.');
 

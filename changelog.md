@@ -14,6 +14,10 @@
 
 - **Agent-Tokens aus der Zeit vor der Ablauf-Pflicht haben jetzt eine Frist.** Sie liefen unbegrenzt. Eine Migration setzt ihnen ein Jahr – nicht sofort Schluss, damit kein laufender Agent ausfällt – und das Datum steht ab jetzt wie bei jedem anderen Token in der Liste. Wer länger braucht, verlängert mit „Erneuern".
 
+### Fixed
+
+- **Die Demo wirft keinen Fehler mehr, wenn man genau beim Zurücksetzen auf der Seite ist.** Zur vollen Stunde baut die Demo ihre Datenbank neu auf. Eine Anfrage, die in diese Sekunden fiel, traf auf ein halb fertiges Schema: Am 29.10. endete so eine gescheiterte Anmeldung in einem Fehler 500, weil ihr Protokolleintrag in eine Tabelle schreiben wollte, die es in dieser Form gerade nicht gab. Während des Neuaufbaus steht jetzt dieselbe Wartungsseite wie beim Deploy, mit dem Hinweis, es in 15 Sekunden erneut zu versuchen – und sie verschwindet auch dann wieder, wenn der Neuaufbau unterwegs abbricht. Betrifft nur die Demo.
+
 ## 26.10.29
 
 ### Internal
