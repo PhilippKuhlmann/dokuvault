@@ -22,15 +22,15 @@ use Livewire\Attributes\On;
 use Livewire\Component;
 
 /**
- * Geführte Erstaufnahme: fragt die Schritte aus config('custom.wizard_steps') der Reihe nach ab
- * und legt jede Antwort sofort an. Fortschritt liegt in documentation_runs (App\Models\
- * DocumentationRun), damit ein Durchlauf Logout/Gerätewechsel übersteht.
+ * Guided initial survey: asks the steps from config('custom.wizard_steps') in order and
+ * creates every answer at once. Progress sits in documentation_runs (App\Models\
+ * DocumentationRun), so a run survives a logout or a change of device.
  *
- * Sicherheitsmodell: isCustomer-Middleware und Autorisierung per Route-Parameter greifen bei
- * Livewire-Aktionen NICHT (die laufen über /livewire/update, ohne {customer} in der Route) -
- * deshalb prüft guard() bei jeder Aktion neu, und rulesForStep() ersetzt jede
- * App\Rules\BelongsToCustomer-Regel durch eine Rule::exists(...)->where('customer_id', ...), die
- * ohne Routen-Parameter auskommt. Siehe App\Livewire\DeviceIpAddresses für dasselbe Muster.
+ * Security model: the isCustomer middleware and authorisation by route parameter do NOT
+ * take hold on Livewire actions (those run through /livewire/update, without {customer} in
+ * the route) - hence guard() checks anew on every action, and rulesForStep() replaces every
+ * App\Rules\BelongsToCustomer rule with a Rule::exists(...)->where('customer_id', ...) that
+ * needs no route parameter. See App\Livewire\DeviceIpAddresses for the same pattern.
  */
 class DocumentationWizard extends Component
 {
@@ -46,14 +46,14 @@ class DocumentationWizard extends Component
     public array $form = [];
 
     /**
-     * Felder, bei denen die Datenbank strenger ist als der zugehörige FormRequest (geprüft in
-     * den Migrationen, nicht nur in den Requests):
-     * - wifis.password / wifis.network_id sind NOT NULL, WifiRequest führt beide nicht als 'required'.
-     * - servers.operating_system_id / vms.operating_system_id sind NOT NULL (die ->nullable() in
-     *   der Migration hängt nur an der ForeignKeyDefinition, nicht an der Spalte); VMRequest lässt
-     *   das Feld sogar leer durch.
-     * Reine FormRequest-Übernahme würde hier NOT-NULL-Verletzungen oder - bei verschlüsselten
-     * Spalten wie wifis.password - Chiffretext aus einem Leerstring erzeugen.
+     * Fields where the database is stricter than the matching FormRequest (checked in the
+     * migrations, not only in the requests):
+     * - wifis.password / wifis.network_id are NOT NULL, WifiRequest lists neither as 'required'.
+     * - servers.operating_system_id / vms.operating_system_id are NOT NULL (the ->nullable()
+     *   in the migration hangs on the ForeignKeyDefinition only, not on the column); VMRequest
+     *   even lets the field through empty.
+     * Taking the FormRequest as it is would produce NOT NULL violations here or - on
+     * encrypted columns such as wifis.password - ciphertext from an empty string.
      */
     protected const RULE_OVERRIDES = [
         'password' => 'required',
@@ -67,23 +67,23 @@ class DocumentationWizard extends Component
     ];
 
     /**
-     * Subnetzmaske und CIDR sind zwei Schreibweisen fuer dieselbe Angabe -
-     * wer eine eintraegt, bekommt die andere dazu. Dieselbe Rechnung wie im
-     * VLAN-Modal, sie steht im Model.
+     * Subnet mask and CIDR are two notations for the same thing - whoever
+     * enters one gets the other with it. The same computation as in the VLAN
+     * modal; it sits in the model.
      *
-     * Bleibt die Eingabe unvollstaendig oder falsch, wird das Partnerfeld
-     * nicht angefasst: Eine geleerte Angabe waere schlimmer als eine, die
-     * noch nicht passt.
+     * If the input stays incomplete or wrong, the partner field is left
+     * alone: a value wiped out would be worse than one that does not fit
+     * yet.
      */
     public function updatedForm(mixed $wert, ?string $schluessel = null): void
     {
-        // Livewire ruft diesen Hook nicht nur beim Aendern eines einzelnen
-        // Unterschluessels (dann ist $schluessel z. B. 'nachname'), sondern auch
-        // bei einem gebuendelten Update des ganzen form-Arrays - dann ist $wert das
-        // komplette Array und $schluessel null. Frueher warf die nicht-nullbare
-        // Signatur hier eine TypeError-Exception (500), sobald zwei Felder in einem
-        // Commit landeten (z. B. Vorname, Tab, Nachname). Ein Ganz-Array-Update
-        // braucht die Masken/CIDR-Synchronisation nicht - also einfach aussteigen.
+        // Livewire calls this hook not only when a single sub-key changes
+        // (then $schluessel is 'nachname', say), but also on a bundled update
+        // of the whole form array - then $wert is the complete array and
+        // $schluessel is null. The non-nullable signature used to throw a
+        // TypeError (500) here as soon as two fields landed in one commit
+        // (first name, tab, last name). A whole-array update does not need the
+        // mask/CIDR sync - so simply bail out.
         if ($schluessel === null) {
             return;
         }
@@ -93,8 +93,8 @@ class DocumentationWizard extends Component
 
             if ($cidr !== null) {
                 $this->form['cidr'] = $cidr;
-                // Das Partnerfeld hat gerade einen gueltigen Wert bekommen -
-                // sein roter Rahmen gehoert weg.
+                // The partner field has just received a valid value - its red
+                // border should go.
                 $this->validateOnInput('form.cidr');
             }
         }
@@ -113,7 +113,7 @@ class DocumentationWizard extends Component
     {
         $this->customerId = $customer->id;
 
-        // Ohne ein einziges _create-Recht ist der Assistent für diesen Nutzer nicht nutzbar.
+        // Without a single _create permission the wizard is unusable for this user.
         abort_if(empty($this->allowedSteps()), 403);
 
         $run = DocumentationRun::where('customer_id', $customer->id)
@@ -134,8 +134,8 @@ class DocumentationWizard extends Component
             ]);
         }
 
-        // current_step kann nach einer Config-Änderung oder einem Rechtewechsel ins Leere
-        // zeigen oder auf einen Schritt, den dieser Nutzer (mehr) nicht sehen darf.
+        // current_step can point at nothing after a config change or a change of
+        // permissions, or at a step this user may (no longer) see.
         $allowedKeys = array_column($this->allowedSteps(), 'key');
         if ($run->current_step !== null && ! in_array($run->current_step, $allowedKeys, true)) {
             $run->update(['current_step' => $allowedKeys[0] ?? null]);
@@ -147,9 +147,9 @@ class DocumentationWizard extends Component
     // --- Zugriff -------------------------------------------------------
 
     /**
-     * Lädt Kunde + Durchlauf frisch und prüft Mandantenzugehörigkeit. Public Properties sind
-     * client-seitig manipulierbar (Livewire hydriert, was der Browser schickt) - deshalb bei
-     * jeder Aktion neu prüfen, nicht nur einmalig in mount().
+     * Loads customer and run afresh and checks the tenant. Public properties can be
+     * manipulated on the client (Livewire hydrates what the browser sends) - hence a fresh
+     * check on every action, not just once in mount().
      *
      * @return array{0: Customer, 1: DocumentationRun}
      */
@@ -170,8 +170,8 @@ class DocumentationWizard extends Component
     }
 
     /**
-     * Nur Schritte, für die der Nutzer das jeweilige _create-Recht hat. Hat er für KEINEN
-     * Schritt ein Recht, ist die Seite für ihn insgesamt nicht nutzbar (siehe render()).
+     * Only steps the user holds the matching _create permission for. If they hold one for NO
+     * step, the page is unusable for them altogether (see render()).
      */
     protected function allowedSteps(): array
     {
@@ -179,9 +179,9 @@ class DocumentationWizard extends Component
     }
 
     /**
-     * Der Ablauf des Assistenten - welche Schritte, was kommt als
-     * naechstes. Dieselbe Klasse bedient die iOS-App; zwei Ablaeufe fuer
-     * denselben Assistenten waeren zwei Wahrheiten.
+     * The flow of the wizard - which steps, what comes next. The same class
+     * serves the iOS app; two flows for the same wizard would be two
+     * truths.
      */
     protected function ablauf(): WizardFlow
     {
@@ -204,15 +204,15 @@ class DocumentationWizard extends Component
         $this->form = [];
         $this->resetValidation();
 
-        // Der Server hat das Formular geleert - der Browser nicht. Bei
-        // wire:model ohne .live steht der getippte Wert im DOM, und Livewire
-        // schuetzt Eingabefelder beim Morphen: Nach "Hinzufuegen" blieb der
-        // Name im Feld stehen, und ein zweiter Klick legte denselben Standort
-        // noch einmal an.
+        // The server has emptied the form - the browser has not. With
+        // wire:model without .live the typed value sits in the DOM, and
+        // Livewire protects input fields while morphing: after "add" the name
+        // stayed in the field, and a second click created the same site a
+        // second time.
         //
-        // Ein neuer wire:key hat daran nichts geaendert - probiert und
-        // verworfen. Also sagt die Komponente es dem Browser ausdruecklich;
-        // die View leert die Felder darauf hin.
+        // A new wire:key changed nothing about it - tried and discarded. So
+        // the component tells the browser explicitly; the view empties the
+        // fields in response.
         $this->dispatch('wizard-form-cleared');
     }
 
@@ -227,13 +227,13 @@ class DocumentationWizard extends Component
         foreach ($step['fields'] as $field) {
             $name = $field['name'];
             $raw = $baseRules[$name] ?? 'nullable';
-            // Pipe-getrennte Regel-Strings ('required|max:255') müssen vor dem Anhängen
-            // weiterer Regeln aufgesplittet werden - als Ein-Element-Array durchgereicht,
-            // hält Laravel "required|max:255" für einen einzigen (nicht existierenden) Regelnamen.
+            // Pipe-separated rule strings ('required|max:255') have to be split before
+            // further rules are appended - passed through as a one-element array, Laravel
+            // takes "required|max:255" for a single (non-existent) rule name.
             $fieldRules = is_array($raw) ? $raw : explode('|', $raw);
 
             // BelongsToCustomer liest request()->route('customer') - existiert unter
-            // /livewire/update nicht (siehe Klassen-Docblock). Ersatzregel unten.
+            // /livewire/update does not (see the class docblock). Replacement rule below.
             $fieldRules = collect($fieldRules)
                 ->reject(fn ($rule) => $rule instanceof BelongsToCustomer)
                 ->values()
@@ -246,9 +246,9 @@ class DocumentationWizard extends Component
             } elseif ($name === 'operating_system_id') {
                 $fieldRules[] = Rule::exists('operating_systems', 'id')->whereNull('deleted_at');
             } elseif ($name === 'ip_address') {
-                // Kein Geraetefeld mehr, sondern ein Eintrag im IP-Block - eine
-                // Regel dafuer steht deshalb in keinem FormRequest. Angehaengt
-                // statt als RULE_OVERRIDES, damit das nullable stehen bleibt.
+                // No longer a device field but an entry in the IP block - the
+                // rule for it therefore sits in no FormRequest. Appended
+                // instead of as RULE_OVERRIDES, so the nullable stays.
                 $fieldRules[] = 'ipv4';
             }
 
@@ -277,11 +277,11 @@ class DocumentationWizard extends Component
     // --- Aktionen --------------------------------------------------------
 
     /**
-     * Die Regeln des aktuellen Schritts.
+     * The rules of the current step.
      *
-     * Der Assistent hat je Schritt eigene Felder; rulesForStep() baut sie aus
-     * dem FormRequest des Schritts. Hier wird nur der Schritt herausgesucht -
-     * eine zweite Regelliste gaebe es sonst.
+     * The wizard has fields of its own per step; rulesForStep() builds them
+     * from the step's FormRequest. Here only the step is looked up - a second
+     * rule list would exist otherwise.
      */
     protected function regeln(): array
     {
@@ -317,27 +317,27 @@ class DocumentationWizard extends Component
 
         $this->validate($this->rulesForStep($step, $customer->id), [], $this->attributesForStep($step));
 
-        // Massenzuweisung: alle Models sind $guarded = [], $form kommt vom Client.
-        // Nur die in der Config deklarierten Feldnamen dürfen durch.
+        // Mass assignment: every model is $guarded = [], and $form comes from the client.
+        // Only the field names declared in the config may get through.
         $names = array_column($step['fields'], 'name');
         $data = Arr::only($this->form, $names);
 
-        // Leere Werte raus, statt sie als '' zu speichern: verschlüsselnde Setter
-        // (Router::password etc.) machen sonst Chiffretext aus einem Leerstring.
+        // Empty values out instead of storing them as '': encrypting setters
+        // (Router::password and the like) would otherwise make ciphertext from an empty string.
         $data = array_filter($data, fn ($v) => $v !== '' && $v !== null);
 
-        // Feste Vorgaben aus der Config (nicht aus dem Formular): etwa kind =
-        // 'password' beim Zugangsdaten-Schritt - LoginGeneral setzt das nicht
-        // selbst, ohne kind versteckt der Global-Scope den Eintrag.
+        // Fixed values from the config (not from the form): kind = 'password'
+        // on the credentials step, for one - LoginGeneral does not set that
+        // itself, and without kind the global scope hides the entry.
         $data = array_merge($step['defaults'] ?? [], $data);
 
         if (($step['scope'] ?? 'site') === 'site') {
             $data['site_id'] = $run->site_id;
         }
 
-        // Die IP ist keine Spalte am Geraet mehr, sondern ein Eintrag im Block
-        // "Weitere IP-Adressen" - dort haengen Netz und Bezeichnung dran.
-        // Deshalb vor dem create() heraus und danach als eigener Datensatz.
+        // The IP is no longer a column on the device but an entry in the block
+        // "Weitere IP-Adressen" - network and label hang on it there. Hence
+        // taken out before create() and added afterwards as a record of its own.
         $adresse = trim((string) ($data['ip_address'] ?? ''));
         unset($data['ip_address']);
 
@@ -361,8 +361,8 @@ class DocumentationWizard extends Component
     }
 
     /**
-     * Im Standort-Schritt: einen vorhandenen Standort für den restlichen Durchlauf übernehmen,
-     * statt zwingend einen neuen anzulegen.
+     * On the site step: take over an existing site for the rest of the run instead of
+     * having to create a new one.
      */
     public function selectSite(int $siteId): void
     {
@@ -386,15 +386,15 @@ class DocumentationWizard extends Component
     }
 
     /**
-     * Direkt zu einem Schritt springen - vor oder zurueck.
+     * Jump straight to a step - forwards or back.
      *
-     * Nur zu erlaubten Schritten: allowedSteps() filtert nach _create-Recht,
-     * und $key kommt vom Client. Ein unbekannter oder gesperrter Schluessel
-     * wird still verworfen, statt den Durchlauf in einen Zustand zu bringen,
-     * den der Nutzer gar nicht sehen darf.
+     * Only to allowed steps: allowedSteps() filters by _create permission,
+     * and $key comes from the client. An unknown or blocked key is dropped
+     * silently instead of putting the run into a state the user may not see
+     * at all.
      *
-     * Der aktuelle Schritt wird dabei weder als erledigt noch als uebersprungen
-     * vermerkt: Springen ist kein Bearbeiten.
+     * The current step is marked neither done nor skipped in the process:
+     * jumping is not editing.
      */
     public function gotoStep(string $key): void
     {
@@ -421,10 +421,10 @@ class DocumentationWizard extends Component
     }
 
     /**
-     * Einen Schritt verlassen, ohne "Weiter" zu klicken. Wurde in diesem
-     * Durchlauf darin etwas angelegt, zählt er trotzdem als erfasst - nur ein
-     * wirklich leer gelassener Schritt gilt als übersprungen. So steht am Ende
-     * nicht "übersprungen" an einem Schritt, in dem man gerade etwas eingetragen hat.
+     * Leave a step without clicking "next". If something was created in it
+     * during this run it still counts as captured - only a step genuinely
+     * left empty counts as skipped. That way "skipped" does not end up on a
+     * step where something was just entered.
      */
     protected function leaveStep(DocumentationRun $run, string $key): void
     {
@@ -450,9 +450,9 @@ class DocumentationWizard extends Component
     }
 
     /**
-     * Die ganze Gruppe des aktuellen Schritts überspringen (z. B. "keine
-     * Telefonie"): alle noch offenen Schritte dieser Gruppe als übersprungen
-     * vermerken und zum ersten Schritt danach springen.
+     * Skip the whole group of the current step ("no telephony", say): mark
+     * every step of that group still open as skipped and jump to the first
+     * step after it.
      */
     public function skipGroup(): void
     {
@@ -492,11 +492,11 @@ class DocumentationWizard extends Component
     // --- Anzeige -----------------------------------------------------------
 
     /**
-     * Ein Eintrag wurde im eingebetteten Bearbeiten-Modal gespeichert
-     * (ObjektFormular meldet object-saved, das Netzwerk-Modal
-     * NetworkQuickCreate meldet vlan-created). Der leere Rumpf genuegt: allein
-     * dass Livewire diesen Hook aufruft, laesst die Komponente neu rendern, und
-     * render() zieht die "Schon erfasst"-Liste ohnehin frisch aus der Datenbank.
+     * An entry was saved in the embedded edit modal (ObjectModal reports
+     * object-saved, the network modal NetworkQuickCreate reports
+     * vlan-created). The empty body is enough: the mere fact that Livewire
+     * calls this hook makes the component re-render, and render() pulls the
+     * "already captured" list from the database afresh anyway.
      */
     #[On('object-saved')]
     #[On('vlan-created')]
@@ -549,9 +549,9 @@ class DocumentationWizard extends Component
                     $selectOptions[$field['name']] = $this->optionsFor($field['options'], $customer, $run);
                 }
 
-                // Vorbelegung aus der Config (z. B. Subnetzmaske 255.255.255.0), nur wenn das
-                // Feld noch nicht angefasst wurde - sonst würde jeder Re-Render nach save()
-                // die Vorgabe zurückschreiben.
+                // Prefill from the config (subnet mask 255.255.255.0, say), only if the
+                // field has not been touched yet - otherwise every re-render after save()
+                // would write the default back.
                 if (! array_key_exists($field['name'], $this->form) && isset($field['default'])) {
                     $this->form[$field['name']] = $field['default'];
                 }
@@ -562,9 +562,9 @@ class DocumentationWizard extends Component
             ? Site::where('customer_id', $customer->id)->orderBy('name')->get()
             : collect();
 
-        // Abschlussübersicht: was dieser Durchlauf angelegt hat, je Bereich mit
-        // den Namen und einem Absprung in die Liste. Die IDs stehen in
-        // created_records (siehe DocumentationRun::recordCreated).
+        // Final summary: what this run created, per area with the names and a
+        // jump into the list. The ids sit in created_records (see
+        // DocumentationRun::recordCreated).
         $zusammenfassung = [];
 
         if ($run->completed_at !== null && ! empty($run->created_records)) {

@@ -21,15 +21,15 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 
 /**
- * Anlegen und Bearbeiten im Modal - fuer jeden Typ aus config/forms.php.
+ * Create and edit in a modal - for every kind from config/forms.php.
  *
- * Das VLAN hat es vorgemacht: Wer ein Geraet nachtraegt, verliert sonst die
- * Liste, auf die er gerade geschaut hat. Statt das Muster vierzigmal zu
- * kopieren, beschreibt config/forms.php die Felder, und diese Komponente baut
- * das Formular daraus.
+ * The VLAN led the way: whoever adds a device otherwise loses the list they
+ * were just looking at. Instead of copying the pattern forty times,
+ * config/forms.php describes the fields and this component builds the form
+ * from them.
  *
- * Validiert wird mit dem Request, den auch der Controller benutzt - eine
- * zweite Regelmenge waere die Stelle, an der die beiden Wege auseinanderlaufen.
+ * Validation uses the request the controller uses as well - a second set of
+ * rules would be the place where the two paths drift apart.
  */
 class ObjectModal extends Component
 {
@@ -44,10 +44,10 @@ class ObjectModal extends Component
     public int $customerId;
 
     /**
-     * Ob der eigene "Neu"-Knopf gezeigt wird. Im Dokumentations-Assistenten
-     * wird nur das Bearbeiten-Modal eingebettet (geoeffnet ueber das Event
-     * object-edit) - dort legt der Assistent selbst an, ein zweiter
-     * gruener "Neu"-Knopf waere doppelt.
+     * Whether the own "new" button is shown. In the documentation wizard only
+     * the edit modal is embedded (opened through the event object-edit) -
+     * there the wizard creates things itself, and a second green "new"
+     * button would be one too many.
      */
     #[Locked]
     public bool $mitKnopf = true;
@@ -60,31 +60,31 @@ class ObjectModal extends Component
     public bool $loeschenGefragt = false;
 
     /**
-     * Vorherige Kennwoerter, die der Nutzer aufgeklappt hat - nach Feldname.
+     * Previous passwords the user has expanded - by field name.
      *
-     * Sie werden erst auf Klick geladen und nicht beim Oeffnen mitgeschickt:
-     * Sonst stuende in jedem Bearbeiten-Formular die halbe Kennwortgeschichte
-     * des Geraets im Quelltext, auch wenn niemand danach gefragt hat.
+     * They are loaded on click and not sent along when opening: otherwise
+     * half the password history of the device would stand in the source of
+     * every edit form, even when nobody asked for it.
      */
     public array $gezeigterVerlauf = [];
 
-    /** Die Formularwerte, nach Feldnamen. */
+    /** The form values, by field name. */
     public array $form = [];
 
     /**
-     * Die hochgeladene Datei - getrennt vom Formular, weil sie eine temporaere
-     * Datei ist und kein Wert, der validiert oder in die Tabelle geschrieben
-     * wird. Erst beim Speichern wird daraus ein Pfad.
+     * The uploaded file - kept apart from the form, because it is a temporary
+     * file and not a value that gets validated or written into the table.
+     * Only on save does it become a path.
      */
     public $datei;
 
     /**
-     * Ein Foto der Frontblende - fuer das Geraetemodell, nicht fuer dieses
-     * eine Geraet.
+     * A photo of the front panel - for the device model, not for this one
+     * device.
      *
-     * Es landet in device_models und gilt damit fuer jeden Kunden, bei dem
-     * dieselbe "APC Smart-UPS 1500" steht. Deshalb liegt es getrennt vom
-     * Formular: Es wird nie in eine Spalte dieses Geraets geschrieben.
+     * It lands in device_models and thereby applies to every customer who has
+     * the same "APC Smart-UPS 1500". That is why it is kept apart from the
+     * form: it is never written into a column of this device.
      */
     public $modellbild;
 
@@ -130,8 +130,8 @@ class ObjectModal extends Component
     {
         Gate::authorize($this->typ.'_create');
 
-        // Leeren vor dem Oeffnen: Sonst stehen im Modal die Werte des zuletzt
-        // bearbeiteten Eintrags, und "Neu" wird stillschweigend zu "Bearbeiten".
+        // Emptied before opening: otherwise the modal holds the values of the
+        // last entry edited, and "new" silently becomes "edit".
         $this->clearForm();
         $this->offen = true;
     }
@@ -157,8 +157,8 @@ class ObjectModal extends Component
     }
 
     /**
-     * Immer ueber den Kunden geladen: Eine fremde Id darf hier nicht
-     * durchkommen, auch wenn sie von aussen mitgeschickt wird.
+     * Always loaded through the customer: a foreign id must not get through
+     * here, even when it is sent along from outside.
      */
     protected function fetchObject(int $id)
     {
@@ -172,11 +172,11 @@ class ObjectModal extends Component
     }
 
     /**
-     * Werte fuer das Formular erzeugen lassen, wo der Typ einen Erzeuger nennt.
+     * Have values generated for the form where the kind names a generator.
      *
-     * Das Modal bleibt dabei generisch: Es weiss nur, dass es einen gibt
-     * (config/forms.php), und schreibt zurueck, was er liefert. Gespeichert
-     * wird nichts - erst der Speichern-Knopf legt an.
+     * The modal stays generic about it: it only knows there is one
+     * (config/forms.php) and writes back whatever it returns. Nothing is
+     * saved - only the save button creates.
      */
     public function generate(): void
     {
@@ -188,14 +188,14 @@ class ObjectModal extends Component
         try {
             $this->form = array_merge($this->form, app($klasse)->generate($this->form));
         } catch (\RuntimeException $fehler) {
-            // Als Feldfehler und nicht als Ausnahme: Ein fehlendes Verfahren
-            // ist eine Eingabe, die man korrigieren kann, kein Serverfehler.
+            // As a field error and not as an exception: a missing algorithm is
+            // input one can correct, not a server error.
             $this->addError('form.key_type', $fehler->getMessage());
         }
     }
 
     /**
-     * Die Regeln des Objekttyps, mit "form." davor - dieselben, mit denen die
+     * The rules of the object kind, prefixed with "form." - the same ones the
      * App speichert, siehe ObjectForm.
      */
     protected function regeln(): array
@@ -223,8 +223,8 @@ class ObjectModal extends Component
 
         $meldung = $this->setting()['einzahl'].($bisher ? ' gespeichert.' : ' angelegt.');
 
-        // Nach dem Geraet, aber vor dem Leeren des Formulars: Die Zuordnung
-        // braucht Hersteller und Modell, die dort stehen.
+        // After the device but before emptying the form: the assignment needs
+        // manufacturer and model, which stand there.
         $this->storeModelImage();
 
         $this->offen = false;
@@ -237,10 +237,10 @@ class ObjectModal extends Component
     }
 
     /**
-     * Manche Typen stehen auch ausserhalb ihrer Liste: Der Standort erscheint im
-     * Umschalter der Seitenleiste und in der Auswahl jedes Geraeteformulars.
-     * Beides liegt ausserhalb dieser Komponente und zeigte sonst weiter den
-     * alten Stand - ein neuer Standort waere erst nach einem Neuladen zu
+     * Some kinds appear outside their list as well: the site shows up in the
+     * sidebar switcher and in the select of every device form. Both lie
+     * outside this component and would otherwise keep showing the old state -
+     * a new site would only be usable after a reload.
      * gebrauchen.
      */
     /**
@@ -292,13 +292,13 @@ class ObjectModal extends Component
     }
 
     /**
-     * Nach der Dateiwahl die Bezeichnung vorschlagen - aber nur, solange das
-     * Feld leer ist. Wer schon etwas eingetragen hat, hat sich dabei etwas
-     * gedacht; ein Vorschlag, der die eigene Eingabe ueberschreibt, ist
+     * Suggest the label after choosing a file - but only while the field is
+     * empty. Whoever has entered something had a reason; a suggestion that
+     * overwrites one's own input is worse than none.
      * schlimmer als keiner.
      *
-     * Ohne Endung: Die steckt schon im Dateinamen, der beim Ablegen entsteht,
-     * und "Urkunde.pdf.pdf" will niemand.
+     * Without the extension: it is already in the file name that comes into
+     * being on storage, and nobody wants "Urkunde.pdf.pdf".
      */
     public function updatedDatei(): void
     {
@@ -315,10 +315,11 @@ class ObjectModal extends Component
     }
 
     /**
-     * Das Bild pruefen, bevor irgendetwas gespeichert wird.
+     * Check the image before anything is saved.
      *
-     * Ohne Hersteller laesst es sich keinem Modell zuordnen - es waere ein
-     * Upload ins Nichts, und niemand saehe, warum das Bild spaeter fehlt.
+     * Without a manufacturer it cannot be assigned to a model - it would be
+     * an upload into nothing, and nobody would see why the image is missing
+     * later.
      */
     protected function checkModelImage(): void
     {
@@ -338,15 +339,15 @@ class ObjectModal extends Component
     }
 
     /**
-     * Darf hier ein Modellbild hinterlegt werden?
+     * May a model image be stored here?
      *
-     * Abgeleitet statt konfiguriert: Wer im Rack sitzt, hat eine Frontblende.
-     * Ein neuer Eintrag in rack_device_types bekommt das Feld damit von selbst,
-     * und es steht nirgends ein zweites Mal.
+     * Derived instead of configured: whatever sits in a rack has a front
+     * panel. A new entry in rack_device_types therefore gets the field by
+     * itself, and it stands nowhere a second time.
      *
-     * Nur mit admin_catalog: Das Bild gilt fuer alle Kunden. Wer nur seine
-     * eigene Dokumentation pflegen darf, soll nichts hinterlegen, das anderswo
-     * erscheint - sehen darf er es trotzdem.
+     * Only with admin_catalog: the image applies to all customers. Whoever may
+     * only maintain their own documentation should not store anything that
+     * shows up elsewhere - seeing it is fine all the same.
      */
     protected function showsModelImage(): bool
     {
@@ -354,7 +355,7 @@ class ObjectModal extends Component
             && Gate::allows('admin_catalog');
     }
 
-    /** Der Katalogeintrag zu dem, was gerade im Formular steht. */
+    /** The catalog entry for whatever stands in the form right now. */
     protected function modell(): ?DeviceModel
     {
         return DeviceModel::fuer(
@@ -365,12 +366,12 @@ class ObjectModal extends Component
     }
 
     /**
-     * Das hochgeladene Bild dem Geraetemodell zuordnen.
+     * Assign the uploaded image to the device model.
      *
-     * Gibt es zu Hersteller und Modell noch keinen Eintrag, entsteht er hier -
-     * mit der Hoehe des Geraets, wenn es eine fuehrt. Einen vorhandenen Eintrag
-     * ruehrt nur das Bild an: Seine Hoehe hat jemand im Adminbereich gesetzt,
-     * und ein neu angelegtes Geraet soll sie nicht stillschweigend umwerfen.
+     * If there is no entry yet for manufacturer and model, it comes into
+     * being here - with the height of the device if it carries one. An
+     * existing entry is only touched for the image: somebody set its height
+     * in the admin area, and a newly created device must not silently
      */
     protected function storeModelImage(): void
     {
@@ -388,7 +389,7 @@ class ObjectModal extends Component
             'height_units' => max(1, (int) ($this->form['height_units'] ?? 1)),
         ]);
 
-        // Erst die alte Datei weg, sonst bleibt bei jedem Wechsel eine liegen.
+        // The old file first, or one stays behind with every change.
         $modell->deleteImage();
         $modell->image_path = $this->modellbild->store(DeviceModel::BILDORDNER, 'local');
         $modell->save();
@@ -419,10 +420,10 @@ class ObjectModal extends Component
     }
 
     /**
-     * Zu welchen Feldern gibt es einen Verlauf, und wie alt ist der neueste?
+     * Which fields have a history, and how old is the newest one?
      *
-     * Eine Abfrage fuer alle Felder statt einer je Feld, und ohne den Wert -
-     * der wird erst geholt, wenn jemand darauf klickt.
+     * One query for all fields instead of one per field, and without the
+     * value - that is only fetched when somebody clicks on it.
      */
     protected function historySummary($objekt): array
     {
@@ -442,11 +443,11 @@ class ObjectModal extends Component
     }
 
     /**
-     * Die bisherigen Kennwoerter eines Feldes aufklappen.
+     * Expand the previous passwords of a field.
      *
-     * Wer das Geraet bearbeiten darf, darf sie sehen - er sieht das aktuelle
-     * Kennwort ohnehin im Formular. Geprueft wird trotzdem serverseitig: Der
-     * Aufruf kommt aus dem Browser.
+     * Whoever may edit the device may see them - they see the current
+     * password in the form anyway. It is checked on the server all the same:
+     * the call comes from the browser.
      */
     public function showHistory(string $feld): void
     {
@@ -480,36 +481,36 @@ class ObjectModal extends Component
     {
         $einstellung = $this->setting();
 
-        // Geraete fuehren IP-Adressen und Zugangsdaten in eigenen Bloecken. Die
-        // haengen am gespeicherten Objekt und koennen deshalb erst beim
-        // Bearbeiten erscheinen - ohne sie waere das Modal ein Rueckschritt
-        // gegenueber der Seite, die es ersetzt.
+        // Devices carry IP addresses and credentials in blocks of their own.
+        // Those hang on the saved object and can therefore only appear when
+        // editing - without them the modal would be a step back from the page
+        // it replaces.
         $objekt = $this->bearbeiteId ? $this->fetchObject($this->bearbeiteId) : null;
 
         $felder = $this->objectForm()->displayFields();
 
         return view('livewire.object-modal', [
             'objekt' => $objekt,
-            // Nur Anzahl und Zeitpunkt - der Wert kommt erst auf Klick.
+            // Count and timestamp only - the value comes on click.
             'verlauf' => $this->historySummary($objekt),
             'mitBloecken' => (bool) ($einstellung['bloecke'] ?? false),
-            // Breiter als die Bloecke sonst bekommen: nur wo das Formular selbst
-            // kaum Felder hat und der Block den Inhalt ausmacht.
+            // Made wider than the blocks otherwise get: only where the form
+            // itself has few fields and the block is the content.
             'breitesModal' => (bool) ($einstellung['breit'] ?? false),
-            // Mehrzeilige Felder brauchen die Breite immer, nicht erst beim
-            // Bearbeiten: Ein Schluessel steht sonst schon beim Anlegen in
-            // einem Feld, in dem man ihn nicht lesen kann.
+            // Multi-line fields always need the width, not only when editing:
+            // a key would otherwise stand in a field one cannot read it in,
+            // right from creation.
             'mehrzeiligeFelder' => collect($einstellung['felder'])->contains('type', 'mehrzeilig'),
-            // Beschriftung des Erzeuger-Knopfs, wo der Typ einen nennt.
+            // Label of the generator button where the kind names one.
             'erzeugerLabel' => isset($einstellung['erzeuger']) ? $einstellung['erzeuger_label'] : null,
-            // Je Block einzeln: Ein FTP-Server fuehrt Zugangsdaten, aber keine
-            // IP-Adressen. Wuerde der IP-Block trotzdem gerendert, riefe er
-            // ipAddresses() auf einem Model auf, das die Relation nicht hat.
+            // Per block individually: an FTP server carries credentials but no
+            // IP addresses. Were the IP block rendered all the same, it would
+            // call ipAddresses() on a model that has no such relation.
             'mitIpAdressen' => in_array(HasIpAddresses::class, class_uses_recursive($einstellung['model']), true),
             'mitZugangsdaten' => in_array(HasCredentials::class, class_uses_recursive($einstellung['model']), true),
-            // Nur der Scanner hat Scan-Ziele.
+            // Only the scanner has scan targets.
             'mitScanZielen' => method_exists($einstellung['model'], 'scanTargets'),
-            // Foto der Frontblende, das fuer alle Kunden gilt (device_models).
+            // Photo of the front panel, valid for all customers (device_models).
             'mitModellbild' => $this->showsModelImage(),
             'modell' => $this->showsModelImage() ? $this->modell() : null,
             'felder' => $felder,
@@ -524,11 +525,11 @@ class ObjectModal extends Component
             'verknuepfungen' => collect($einstellung['felder'])
                 ->where('type', 'verknuepfung')
                 ->mapWithKeys(fn ($feld) => [$feld['name'] => $this->objectForm()->linkOptions($feld)]),
-            // Nur laden, wenn ein Standortfeld vorkommt.
+            // Only load when a site field appears.
             'sites' => collect($einstellung['felder'])->contains('type', 'standort')
                 ? Site::where('customer_id', $this->customerId)->orderBy('name')->get()
                 : collect(),
-            // Auswahllisten aus einer Tabelle, siehe ObjectForm::selectOptions().
+            // Select lists from a table, see ObjectForm::selectOptions().
             'auswahlen' => collect($einstellung['felder'])
                 ->where('type', 'auswahl')
                 ->mapWithKeys(fn ($feld) => [$feld['name'] => collect($this->objectForm()->selectOptions($feld))]),
