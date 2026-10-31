@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\ObjektFormular;
+use App\Livewire\ObjectModal;
 use App\Models\ADDomain;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
@@ -61,7 +61,7 @@ test('editing loads the selected machines and replaces them on save', function (
     $domaene->syncHosts('dc', ['server:'.$alt->id]);
     $this->actingAs(userWithPermissions(['addomain_update']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'addomain', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'addomain', 'customer' => $customer])
         ->call('bearbeiten', 'addomain', $domaene->id)
         ->assertSet('form.domain_controllers', ['server:'.$alt->id])
         ->set('form.domain_controllers', ['vm:'.$neu->id])

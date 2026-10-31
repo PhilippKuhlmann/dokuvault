@@ -1,8 +1,8 @@
 <?php
 
-use App\Livewire\AdminPapierkorb;
-use App\Livewire\AdminProtokollHistorie;
-use App\Livewire\ObjektFormular;
+use App\Livewire\AdminLogRetention;
+use App\Livewire\AdminTrash;
+use App\Livewire\ObjectModal;
 use App\Models\Customer;
 use App\Models\Firewall;
 use App\Models\PasswordHistory;
@@ -75,7 +75,7 @@ test('das Modal zeigt den Verlauf erst auf Klick', function () {
     $firewall = firewallMitKennwort('Vorher!2026');
     $firewall->update(['cloud_backup_password' => 'Nachher!2026']);
 
-    $test = Livewire::test(ObjektFormular::class, ['typ' => 'firewall', 'customer' => $firewall->customer])
+    $test = Livewire::test(ObjectModal::class, ['typ' => 'firewall', 'customer' => $firewall->customer])
         ->call('bearbeiten', 'firewall', $firewall->id);
 
     // Zugeklappt darf der alte Wert nirgends im Quelltext stehen. Geprueft
@@ -97,7 +97,7 @@ test('ohne Bearbeitungsrecht kein Verlauf', function () {
     $firewall = firewallMitKennwort('Geheim!2026');
     $firewall->updateQuietly(['cloud_backup_password' => 'Neu!2026']);
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'firewall', 'customer' => $firewall->customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'firewall', 'customer' => $firewall->customer])
         ->call('verlaufZeigen', 'cloud_backup_password')
         ->assertForbidden();
 });
@@ -109,7 +109,7 @@ test('nur echte Kennwortspalten lassen sich abfragen', function () {
 
     // Der Feldname kommt aus dem Browser. Ohne die Whitelist liesse sich damit
     // jede Spalte als "Kennwort" ausgeben.
-    $test = Livewire::test(ObjektFormular::class, ['typ' => 'firewall', 'customer' => $firewall->customer])
+    $test = Livewire::test(ObjectModal::class, ['typ' => 'firewall', 'customer' => $firewall->customer])
         ->call('bearbeiten', 'firewall', $firewall->id)
         ->call('verlaufZeigen', 'name');
 
@@ -125,7 +125,7 @@ test('endgueltiges Loeschen nimmt die alten Kennwoerter mit', function () {
     expect(PasswordHistory::count())->toBe(1);
 
     $firewall->delete();
-    Livewire::test(AdminPapierkorb::class)
+    Livewire::test(AdminTrash::class)
         ->call('loeschen', 'firewall', $firewall->id);
 
     // Sonst blieben verschluesselte Kennwoerter ohne Objekt liegen - und ohne
@@ -182,7 +182,7 @@ test('ohne Frist bleibt das Protokoll unangetastet', function () {
 test('die Frist laesst sich einstellen', function () {
     $this->actingAs(userWithPermissions(['admin_activity']));
 
-    Livewire::test(AdminProtokollHistorie::class)
+    Livewire::test(AdminLogRetention::class)
         ->assertSet('tage', 0)
         ->set('tage', 365)
         ->call('speichern');
@@ -194,7 +194,7 @@ test('eine unsinnige Frist wird abgelehnt', function () {
     $this->actingAs(userWithPermissions(['admin_activity']));
     Setting::setzen(Setting::PROTOKOLL_TAGE, 90);
 
-    Livewire::test(AdminProtokollHistorie::class)
+    Livewire::test(AdminLogRetention::class)
         ->set('tage', -5)
         ->call('speichern')
         ->assertHasErrors('tage');
@@ -210,7 +210,7 @@ test('die Einstellseite zeigt keine Kennwoerter', function () {
 
     // Hier wird eine Frist eingestellt, nicht nachgeschlagen - die Werte stehen
     // im Protokoll, wo sie hingehoeren.
-    Livewire::test(AdminProtokollHistorie::class)
+    Livewire::test(AdminLogRetention::class)
         ->assertDontSee('Streng-Geheim-2026')
         ->assertSee('1');
 });
@@ -218,5 +218,5 @@ test('die Einstellseite zeigt keine Kennwoerter', function () {
 test('ohne admin_activity kein Zugriff auf die Einstellung', function () {
     $this->actingAs(userWithPermissions(['firewall_viewAny']));
 
-    Livewire::test(AdminProtokollHistorie::class)->assertForbidden();
+    Livewire::test(AdminLogRetention::class)->assertForbidden();
 });

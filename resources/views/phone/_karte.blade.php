@@ -6,7 +6,7 @@
         @endphp
         <x-card>
             <x-slot:head>
-                <x-show.header can="phone_update" editAction="$dispatch('objekt-bearbeiten', { typ: 'phone', id: {{ $eintrag->id }} })">
+                <x-show.header can="phone_update" editAction="$dispatch('object-edit', { typ: 'phone', id: {{ $eintrag->id }} })">
                     Nebenstelle: {{ $eintrag->extension }}
 
                     {{-- Was man fast immer sucht, neben dem Namen. --}}

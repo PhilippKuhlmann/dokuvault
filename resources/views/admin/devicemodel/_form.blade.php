@@ -128,7 +128,7 @@
         <p class="mb-1 mt-1 text-xs text-gray-400 dark:text-gray-500">
             {{ __('Ohne Bild zeichnet die Frontansicht die Blende des Gerätetyps.') }}
         </p>
-        <livewire:rack-katalog-vorschau :appearance="$zeichnungen[$gewaehlt] ?? 'server'" :he="$he"
+        <livewire:rack-catalog-preview :appearance="$zeichnungen[$gewaehlt] ?? 'server'" :he="$he"
             :bild="$bild" :drawing="$item->drawing ?? null" />
     </div>
 

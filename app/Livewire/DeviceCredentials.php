@@ -2,8 +2,8 @@
 
 namespace App\Livewire;
 
-use App\Livewire\Concerns\GehoertZumKunden;
-use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
+use App\Livewire\Concerns\ScopedToCustomer;
+use App\Livewire\Concerns\ValidatesOnInput;
 use App\Models\Customer;
 use App\Models\LoginGeneral;
 use App\Support\CredentialLinking;
@@ -21,8 +21,8 @@ use Livewire\Component;
  */
 class DeviceCredentials extends Component
 {
-    use GehoertZumKunden;
-    use PrueftWaehrendDerEingabe;
+    use ScopedToCustomer;
+    use ValidatesOnInput;
 
     // Skalare statt Model-Instanz: robust bei polymorphen Modellen und Livewire-Hydration.
     #[Locked]
@@ -142,7 +142,7 @@ class DeviceCredentials extends Component
         $this->verknuepfen($device, (int) $validated['login_id'], $validated['note']);
         // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
         // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
-        $this->dispatch('geraet-geaendert');
+        $this->dispatch('device-changed');
     }
 
     public function create(): void
@@ -161,7 +161,7 @@ class DeviceCredentials extends Component
         $this->reset('name', 'username', 'password', 'neu');
         // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
         // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
-        $this->dispatch('geraet-geaendert');
+        $this->dispatch('device-changed');
     }
 
     /** Doppelte Verknüpfungen still übergehen - der Unique-Index würde sonst 500 werfen. */
@@ -180,7 +180,7 @@ class DeviceCredentials extends Component
         app(CredentialLinking::class)->detach($device, $id, auth()->user());
         // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
         // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
-        $this->dispatch('geraet-geaendert');
+        $this->dispatch('device-changed');
     }
 
     public function render()

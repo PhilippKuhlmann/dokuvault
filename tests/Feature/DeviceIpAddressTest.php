@@ -215,6 +215,6 @@ test('ein neu angelegtes VLAN wird im IP-Block gleich ausgewaehlt', function () 
 
     // Das Modal ist eine eigene Komponente und meldet die neue ID per Event.
     Livewire::test(DeviceIpAddresses::class, ['model' => $router, 'customer' => $customer])
-        ->dispatch('vlan-angelegt', id: $clients->id)
+        ->dispatch('vlan-created', id: $clients->id)
         ->assertSet('network_id', $clients->id);
 });

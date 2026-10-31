@@ -1,7 +1,7 @@
 {{-- Ein Internetanschluss in der Liste. --}}
     <x-card>
         <x-slot:head>
-            <x-show.header can="internetconnection_update" editAction="$dispatch('objekt-bearbeiten', { typ: 'internetconnection', id: {{ $eintrag->id }} })">
+            <x-show.header can="internetconnection_update" editAction="$dispatch('object-edit', { typ: 'internetconnection', id: {{ $eintrag->id }} })">
                 {{ $eintrag->provider }} {{ $eintrag->product ? '– '.$eintrag->product : '' }}
             </x-show.header>
         </x-slot>

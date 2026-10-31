@@ -2,8 +2,8 @@
 
 namespace App\Livewire;
 
-use App\Livewire\Concerns\GehoertZumKunden;
-use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
+use App\Livewire\Concerns\ScopedToCustomer;
+use App\Livewire\Concerns\ValidatesOnInput;
 use App\Models\ADDomainHost;
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
@@ -31,10 +31,10 @@ use Livewire\WithFileUploads;
  * Validiert wird mit dem Request, den auch der Controller benutzt - eine
  * zweite Regelmenge waere die Stelle, an der die beiden Wege auseinanderlaufen.
  */
-class ObjektFormular extends Component
+class ObjectModal extends Component
 {
-    use GehoertZumKunden;
-    use PrueftWaehrendDerEingabe;
+    use ScopedToCustomer;
+    use ValidatesOnInput;
     use WithFileUploads;
 
     #[Locked]
@@ -46,7 +46,7 @@ class ObjektFormular extends Component
     /**
      * Ob der eigene "Neu"-Knopf gezeigt wird. Im Dokumentations-Assistenten
      * wird nur das Bearbeiten-Modal eingebettet (geoeffnet ueber das Event
-     * objekt-bearbeiten) - dort legt der Assistent selbst an, ein zweiter
+     * object-edit) - dort legt der Assistent selbst an, ein zweiter
      * gruener "Neu"-Knopf waere doppelt.
      */
     #[Locked]
@@ -136,7 +136,7 @@ class ObjektFormular extends Component
         $this->offen = true;
     }
 
-    #[On('objekt-bearbeiten')]
+    #[On('object-edit')]
     public function bearbeiten(string $typ, int $id): void
     {
         if ($typ !== $this->typ) {
@@ -230,8 +230,8 @@ class ObjektFormular extends Component
         $this->offen = false;
         $this->formularLeeren();
 
-        $this->dispatch('hinweis', text: __($meldung));
-        $this->dispatch('objekt-gespeichert', typ: $this->typ);
+        $this->dispatch('notice', text: __($meldung));
+        $this->dispatch('object-saved', typ: $this->typ);
 
         $this->seiteNeuLadenWennNoetig();
     }
@@ -412,8 +412,8 @@ class ObjektFormular extends Component
         $this->offen = false;
         $this->formularLeeren();
 
-        $this->dispatch('hinweis', text: __($this->einstellung()['einzahl'].' gelöscht.'));
-        $this->dispatch('objekt-gespeichert', typ: $this->typ);
+        $this->dispatch('notice', text: __($this->einstellung()['einzahl'].' gelöscht.'));
+        $this->dispatch('object-saved', typ: $this->typ);
 
         $this->seiteNeuLadenWennNoetig();
     }
@@ -488,7 +488,7 @@ class ObjektFormular extends Component
 
         $felder = $this->objektForm()->displayFields();
 
-        return view('livewire.objekt-formular', [
+        return view('livewire.object-modal', [
             'objekt' => $objekt,
             // Nur Anzahl und Zeitpunkt - der Wert kommt erst auf Klick.
             'verlauf' => $this->verlaufsUebersicht($objekt),

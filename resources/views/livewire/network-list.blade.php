@@ -31,7 +31,7 @@
         <x-card>
             <x-slot:head>
                 {{-- Stift oeffnet das Modal statt einer eigenen Seite - wie das Anlegen. --}}
-                <x-show.header can="network_update" :edit-action="'$dispatch(\'vlan-bearbeiten\', { id: '.$network->id.' })'">
+                <x-show.header can="network_update" :edit-action="'$dispatch(\'vlan-edit\', { id: '.$network->id.' })'">
                     VLAN {{ $network->vlanId }} - {{ $network->description }}
                 </x-show.header>
             </x-slot>

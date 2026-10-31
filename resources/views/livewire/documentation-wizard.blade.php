@@ -161,9 +161,9 @@
             @if ($entries->isNotEmpty() && $step['key'] !== 'site')
                 {{-- Bearbeiten direkt hier im Modal, sofern der Nutzer aendern darf:
                      die meisten Schritte ueber die config-getriebene ObjektFormular-
-                     Komponente ($imModal, Event objekt-bearbeiten), 'network' ueber
+                     Komponente ($imModal, Event object-edit), 'network' ueber
                      sein eigenes VLAN-Modal NetworkQuickCreate ($netzModal, Event
-                     vlan-bearbeiten). Ohne Aenderungsrecht fuehrt der Eintrag weiter
+                     vlan-edit). Ohne Aenderungsrecht fuehrt der Eintrag weiter
                      in seine Liste (neuer Tab). --}}
                 @php($imModal = array_key_exists($step['key'], config('forms')) && auth()->user()?->can($step['key'].'_update'))
                 @php($netzModal = $step['key'] === 'network' && auth()->user()?->can('network_update'))
@@ -194,13 +194,13 @@
                         @foreach ($entries as $entry)
                             @if ($imModal)
                                 <button type="button" wire:key="entry-{{ $step['key'] }}-{{ $entry->id }}"
-                                    wire:click="$dispatch('objekt-bearbeiten', { typ: '{{ $step['key'] }}', id: {{ $entry->id }} })"
+                                    wire:click="$dispatch('object-edit', { typ: '{{ $step['key'] }}', id: {{ $entry->id }} })"
                                     class="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 transition-colors hover:border-cerulean-400 hover:text-cerulean-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-cerulean-500 dark:hover:text-cerulean-300">
                                     {{ \App\Livewire\DocumentationWizard::bezeichnung($entry, $step['label_field']) }}
                                 </button>
                             @elseif ($netzModal)
                                 <button type="button" wire:key="entry-{{ $step['key'] }}-{{ $entry->id }}"
-                                    wire:click="$dispatch('vlan-bearbeiten', { id: {{ $entry->id }} })"
+                                    wire:click="$dispatch('vlan-edit', { id: {{ $entry->id }} })"
                                     class="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 transition-colors hover:border-cerulean-400 hover:text-cerulean-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-cerulean-500 dark:hover:text-cerulean-300">
                                     {{ \App\Livewire\DocumentationWizard::bezeichnung($entry, $step['label_field']) }}
                                 </button>
@@ -220,14 +220,14 @@
 
                 @if ($imModal)
                     {{-- Nur das Bearbeiten-Modal, ohne eigenen "Neu"-Knopf (der Assistent
-                         legt selbst an). Faengt das oben ausgeloeste objekt-bearbeiten und
-                         meldet nach dem Speichern objekt-gespeichert; darauf rendert der
+                         legt selbst an). Faengt das oben ausgeloeste object-edit und
+                         meldet nach dem Speichern object-saved; darauf rendert der
                          Assistent neu und die "Schon erfasst"-Liste ist aktuell. --}}
-                    <livewire:objekt-formular :typ="$step['key']" :customer="$customer" :mitKnopf="false"
+                    <livewire:object-modal :typ="$step['key']" :customer="$customer" :mitKnopf="false"
                         wire:key="wizard-objektformular-{{ $step['key'] }}" />
                 @elseif ($netzModal)
-                    {{-- Netzwerk hat sein eigenes VLAN-Modal. Faengt vlan-bearbeiten und
-                         meldet nach dem Speichern vlan-angelegt (darauf rendert der
+                    {{-- Netzwerk hat sein eigenes VLAN-Modal. Faengt vlan-edit und
+                         meldet nach dem Speichern vlan-created (darauf rendert der
                          Assistent neu, siehe objektGespeichert()). --}}
                     <livewire:network-quick-create :customer="$customer" :mitKnopf="false"
                         wire:key="wizard-netzformular" />
@@ -253,13 +253,13 @@
                      "dirty" geschuetzten (gerade getippten) Eingaben wieder her -
                      sofort geleert waeren sie danach wieder voll. Erst nach dem
                      Morph leeren. --}}
-                @assistent-formular-geleert.window="$felderLeeren()"
+                @wizard-form-cleared.window="$felderLeeren()"
                 {{-- Enter in einem Textfeld fügt hinzu (kein Mausklick nötig); in
                      select/textarea bleibt Enter, was es ist. --}}
                 x-on:keydown.enter.prevent="$event.target.matches('input') && $wire.save()"
                 {{-- Beim Schrittwechsel ans erste Feld springen und nach oben
-                     scrollen - siehe DocumentationWizard::dispatch('assistent-schritt'). --}}
-                @assistent-schritt.window="$schrittZeigen()">
+                     scrollen - siehe DocumentationWizard::dispatch('wizard-step'). --}}
+                @wizard-step.window="$schrittZeigen()">
                 @foreach ($step['fields'] as $field)
                     <div class="flex flex-col" wire:key="{{ $step['key'] }}-{{ $field['name'] }}">
                         <x-input.label :value="__($field['label'])" />

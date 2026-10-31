@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\AdminSicherheit;
+use App\Livewire\AdminSecurity;
 use App\Models\Customer;
 use App\Models\LoginGeneral;
 use App\Models\Role;
@@ -30,7 +30,7 @@ test('ohne Einstellung gilt, was bisher stillschweigend galt', function () {
 test('die Mindestlänge lässt sich setzen und wirkt sofort', function () {
     $this->actingAs(userWithPermissions(['admin_setting']));
 
-    Livewire::test(AdminSicherheit::class)->set('pwMin', 12)->assertHasNoErrors();
+    Livewire::test(AdminSecurity::class)->set('pwMin', 12)->assertHasNoErrors();
 
     expect(kennwortPasst('elfzeichen1'))->toBeFalse()
         ->and(kennwortPasst('zwoelfzeiche'))->toBeTrue();
@@ -40,7 +40,7 @@ test('unter acht Zeichen geht nicht', function () {
     // Weniger wäre schlechter als der Standard, den es zu ersetzen gilt.
     $this->actingAs(userWithPermissions(['admin_setting']));
 
-    Livewire::test(AdminSicherheit::class)->set('pwMin', 4)->assertHasErrors('pwMin');
+    Livewire::test(AdminSecurity::class)->set('pwMin', 4)->assertHasErrors('pwMin');
 });
 
 test('über 64 Zeichen auch nicht', function () {
@@ -48,12 +48,12 @@ test('über 64 Zeichen auch nicht', function () {
     // Zahl ohne Wirkung.
     $this->actingAs(userWithPermissions(['admin_setting']));
 
-    Livewire::test(AdminSicherheit::class)->set('pwMin', 100)->assertHasErrors('pwMin');
+    Livewire::test(AdminSecurity::class)->set('pwMin', 100)->assertHasErrors('pwMin');
 });
 
 test('jede Komplexitätsregel wirkt einzeln', function () {
     $this->actingAs(userWithPermissions(['admin_setting']));
-    $seite = Livewire::test(AdminSicherheit::class);
+    $seite = Livewire::test(AdminSecurity::class);
 
     $seite->set('pwMixed', true);
     expect(kennwortPasst('nurkleinbuchstaben'))->toBeFalse()
@@ -71,7 +71,7 @@ test('jede Komplexitätsregel wirkt einzeln', function () {
 test('ein Häkchen lässt sich auch wieder abwählen', function () {
     $this->actingAs(userWithPermissions(['admin_setting']));
 
-    Livewire::test(AdminSicherheit::class)
+    Livewire::test(AdminSecurity::class)
         ->set('pwSymbols', true)
         ->set('pwSymbols', false);
 

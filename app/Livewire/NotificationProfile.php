@@ -24,7 +24,7 @@ class NotificationProfile extends Component
     {
         auth()->user()->update(['expiry_mail' => $this->enabled]);
 
-        $this->dispatch('hinweis', text: $this->enabled
+        $this->dispatch('notice', text: $this->enabled
             ? __('Sie bekommen ablaufende Einträge per Mail.')
             : __('Sie bekommen keine Mail mehr zu ablaufenden Einträgen.'));
     }

@@ -2,8 +2,8 @@
 
 namespace App\Livewire;
 
-use App\Livewire\Concerns\GehoertZumKunden;
-use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
+use App\Livewire\Concerns\ScopedToCustomer;
+use App\Livewire\Concerns\ValidatesOnInput;
 use App\Models\Customer;
 use App\Models\Network;
 use App\Support\IpAssignment;
@@ -14,8 +14,8 @@ use Livewire\Component;
 
 class DeviceIpAddresses extends Component
 {
-    use GehoertZumKunden;
-    use PrueftWaehrendDerEingabe;
+    use ScopedToCustomer;
+    use ValidatesOnInput;
 
     // Skalare statt Model-Instanz: robust bei polymorphen Modellen und Livewire-Hydration.
     #[Locked]
@@ -147,7 +147,7 @@ class DeviceIpAddresses extends Component
         $this->reset('address', 'network_id', 'label', 'dhcp');
         // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
         // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
-        $this->dispatch('geraet-geaendert');
+        $this->dispatch('device-changed');
     }
 
     /**
@@ -155,7 +155,7 @@ class DeviceIpAddresses extends Component
      * Meldet sie ein neues Netz, wird es hier gleich ausgewaehlt - man war ja
      * beim Eintragen einer Adresse.
      */
-    #[On('vlan-angelegt')]
+    #[On('vlan-created')]
     public function vlanUebernehmen(int $id): void
     {
         $this->network_id = $id;
@@ -164,7 +164,7 @@ class DeviceIpAddresses extends Component
         $this->updatedNetworkId($id);
         // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
         // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
-        $this->dispatch('geraet-geaendert');
+        $this->dispatch('device-changed');
     }
 
     public function remove(int $id): void
@@ -174,7 +174,7 @@ class DeviceIpAddresses extends Component
         app(IpAssignment::class)->remove($device, $id);
         // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
         // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
-        $this->dispatch('geraet-geaendert');
+        $this->dispatch('device-changed');
     }
 
     public function render()

@@ -16,7 +16,7 @@ use Livewire\Component;
  * dieselbe mit dem Kommentar, es sei dieselbe. Wer eine davon geaendert haette,
  * haette die uebrigen stehen lassen.
  */
-class AdminFristen extends Component
+class AdminRetention extends Component
 {
     public int $vertraege = 0;
 
@@ -66,7 +66,7 @@ class AdminFristen extends Component
 
         Setting::setzen(Setting::PDF_STUNDEN, $this->pdfStunden);
 
-        $this->dispatch('hinweis', text: __('Frist gespeichert.'));
+        $this->dispatch('notice', text: __('Frist gespeichert.'));
     }
 
     public function updatedStatistikApiTage(): void
@@ -87,7 +87,7 @@ class AdminFristen extends Component
 
         Setting::setzen($schluessel, $this->$feld);
 
-        $this->dispatch('hinweis', text: __('Frist gespeichert.'));
+        $this->dispatch('notice', text: __('Frist gespeichert.'));
     }
 
     /**
@@ -108,7 +108,7 @@ class AdminFristen extends Component
 
         Setting::setzen($schluessel, $this->$feld);
 
-        $this->dispatch('hinweis', text: __('Frist gespeichert.'));
+        $this->dispatch('notice', text: __('Frist gespeichert.'));
     }
 
     private function pruefen(string $feld, int $min, int $max, string $bezeichnung): void
@@ -124,6 +124,6 @@ class AdminFristen extends Component
 
     public function render()
     {
-        return view('livewire.admin-fristen')->layout('layouts.admin.app');
+        return view('livewire.admin-retention')->layout('layouts.admin.app');
     }
 }

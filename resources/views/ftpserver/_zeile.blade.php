@@ -26,7 +26,7 @@
         <div class="flex items-center justify-end gap-2">
             @can('ftpserver_update')
                 <x-input.symbolknopf :titel="__('Bearbeiten')"
-                    wire:click="$dispatch('objekt-bearbeiten', { typ: 'ftpserver', id: {{ $eintrag->id }} })">
+                    wire:click="$dispatch('object-edit', { typ: 'ftpserver', id: {{ $eintrag->id }} })">
                     <x-svg.edit class="h-5 w-5" />
                 </x-input.symbolknopf>
             @endcan

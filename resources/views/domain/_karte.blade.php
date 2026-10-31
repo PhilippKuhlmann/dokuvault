@@ -5,7 +5,7 @@
     <x-slot:head>
         {{-- Bearbeiten oeffnet das Modal, statt auf eine eigene Seite zu fuehren. --}}
         <x-show.header can="domain_update"
-            editAction="$dispatch('objekt-bearbeiten', { typ: 'domain', id: {{ $eintrag->id }} })">
+            editAction="$dispatch('object-edit', { typ: 'domain', id: {{ $eintrag->id }} })">
             {{ $eintrag->name }}
         </x-show.header>
     </x-slot>

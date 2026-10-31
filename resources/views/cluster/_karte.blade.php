@@ -1,7 +1,7 @@
 {{-- Ein Cluster in der Liste. Die Karte bleibt beim Typ. --}}
 <x-card>
     <x-slot:head>
-        <x-show.header can="cluster_update" editAction="$dispatch('objekt-bearbeiten', { typ: 'cluster', id: {{ $eintrag->id }} })">
+        <x-show.header can="cluster_update" editAction="$dispatch('object-edit', { typ: 'cluster', id: {{ $eintrag->id }} })">
             {{ $eintrag->name }}
 
             {{-- Die Art klein hinter den Namen: Sie ist die eigentliche Aussage

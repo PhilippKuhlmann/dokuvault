@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
+use App\Livewire\Concerns\ValidatesOnInput;
 use App\Support\LocalTime;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
@@ -20,7 +20,7 @@ use Livewire\Component;
  */
 class AdminApiToken extends Component
 {
-    use PrueftWaehrendDerEingabe;
+    use ValidatesOnInput;
 
     /** Name des neuen Tokens - wofuer er da ist. */
     public string $name = '';
@@ -97,7 +97,7 @@ class AdminApiToken extends Component
         // einer fremden Id der Token eines anderen Benutzers widerrufen.
         auth()->user()->tokens()->whereKey($id)->delete();
 
-        $this->dispatch('hinweis', text: __('Token widerrufen.'));
+        $this->dispatch('notice', text: __('Token widerrufen.'));
     }
 
     public function verbergen(): void

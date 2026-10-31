@@ -18,7 +18,7 @@ use Livewire\Component;
  * nicht was sein soll: Ein Kunde mit einem schwachen Kennwort muss
  * dokumentierbar bleiben.
  */
-class AdminSicherheit extends Component
+class AdminSecurity extends Component
 {
     /** Mindestlaenge; acht ist Laravels Vorgabe und galt bisher stillschweigend. */
     public int $pwMin = 8;
@@ -119,7 +119,7 @@ class AdminSicherheit extends Component
 
         Setting::setzen($schluessel, $this->$feld);
 
-        $this->dispatch('hinweis', text: __('Einstellung gespeichert.'));
+        $this->dispatch('notice', text: __('Einstellung gespeichert.'));
     }
 
     public function updatedPwMin(): void
@@ -136,7 +136,7 @@ class AdminSicherheit extends Component
 
         Setting::setzen(Setting::PW_MIN, $this->pwMin);
 
-        $this->dispatch('hinweis', text: __('Kennwortregel gespeichert.'));
+        $this->dispatch('notice', text: __('Kennwortregel gespeichert.'));
     }
 
     public function updatedPwMixed(): void
@@ -166,12 +166,12 @@ class AdminSicherheit extends Component
 
         Setting::setzen($schluessel, $wert ? 1 : null);
 
-        $this->dispatch('hinweis', text: __('Kennwortregel gespeichert.'));
+        $this->dispatch('notice', text: __('Kennwortregel gespeichert.'));
     }
 
     public function render()
     {
-        return view('livewire.admin-sicherheit', [
+        return view('livewire.admin-security', [
             // Derselbe Satz, den die Benutzer unter ihrem Kennwortfeld sehen -
             // damit hier steht, was die Haekchen bewirken.
             'hinweis' => Setting::kennwortHinweis(),

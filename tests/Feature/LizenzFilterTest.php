@@ -1,7 +1,7 @@
 <?php
 
-use App\Livewire\ObjektFormular;
-use App\Livewire\ObjektListe;
+use App\Livewire\ObjectList;
+use App\Livewire\ObjectModal;
 use App\Models\Customer;
 use App\Models\LicenseSoftware;
 use App\Models\LicenseWindows;
@@ -34,12 +34,12 @@ test('der Laufzeit-Filter trennt abgelaufen, bald und laufend', function () {
     $this->actingAs(userWithPermissions(['licensesoftware_viewAny']));
     softwareLizenzen($customer);
 
-    Livewire::test(ObjektListe::class, ['typ' => 'licensesoftware', 'customer' => $customer])
+    Livewire::test(ObjectList::class, ['typ' => 'licensesoftware', 'customer' => $customer])
         ->set('filter.ablauf', 'abgelaufen')
         ->assertSee('Veeam Backup')
         ->assertDontSee('Lexware Buchhaltung');
 
-    Livewire::test(ObjektListe::class, ['typ' => 'licensesoftware', 'customer' => $customer])
+    Livewire::test(ObjectList::class, ['typ' => 'licensesoftware', 'customer' => $customer])
         ->set('filter.ablauf', '30')
         ->assertSee('Lexware Buchhaltung')       // in 20 Tagen
         ->assertDontSee('TeamViewer Corporate')  // erst in 60
@@ -53,7 +53,7 @@ test('"Läuft noch" schliesst Lizenzen ohne Enddatum ein', function () {
 
     // Eine Dauerlizenz laeuft nicht ab und gehoert zu den unproblematischen -
     // sie faellt sonst durch jedes Raster.
-    Livewire::test(ObjektListe::class, ['typ' => 'licensesoftware', 'customer' => $customer])
+    Livewire::test(ObjectList::class, ['typ' => 'licensesoftware', 'customer' => $customer])
         ->set('filter.ablauf', 'offen')
         ->assertSee('AutoCAD Dauerlizenz')
         ->assertSee('Lexware Buchhaltung')
@@ -65,7 +65,7 @@ test('der Abo-Filter trennt jaehrlich und monatlich', function () {
     $this->actingAs(userWithPermissions(['licensesoftware_viewAny']));
     softwareLizenzen($customer);
 
-    Livewire::test(ObjektListe::class, ['typ' => 'licensesoftware', 'customer' => $customer])
+    Livewire::test(ObjectList::class, ['typ' => 'licensesoftware', 'customer' => $customer])
         ->set('filter.abo', 'Monatlich')
         ->assertSee('TeamViewer Corporate')
         ->assertDontSee('Veeam Backup');
@@ -76,7 +76,7 @@ test('Filter lassen sich kombinieren', function () {
     $this->actingAs(userWithPermissions(['licensesoftware_viewAny']));
     softwareLizenzen($customer);
 
-    Livewire::test(ObjektListe::class, ['typ' => 'licensesoftware', 'customer' => $customer])
+    Livewire::test(ObjectList::class, ['typ' => 'licensesoftware', 'customer' => $customer])
         ->set('filter.ablauf', 'offen')
         ->set('filter.abo', 'Jährlich')
         ->assertSee('Lexware Buchhaltung')
@@ -91,7 +91,7 @@ test('nach Ablauf sortiert stehen die dringenden oben, Dauerlizenzen hinten', fu
 
     // Ohne Enddatum ist nicht "laeuft als naechstes ab" - solche Zeilen
     // gehoeren ans Ende, nicht an den Anfang.
-    Livewire::test(ObjektListe::class, ['typ' => 'licensesoftware', 'customer' => $customer])
+    Livewire::test(ObjectList::class, ['typ' => 'licensesoftware', 'customer' => $customer])
         ->set('sortierung', 'ablauf')
         ->assertSeeInOrder(['Veeam Backup', 'Lexware Buchhaltung', 'AutoCAD Dauerlizenz']);
 });
@@ -107,7 +107,7 @@ test('der Betriebssystem-Filter der Windows-Lizenzen kennt nur den Bestand', fun
     LicenseWindows::create(['customer_id' => $customer->id, 'key' => 'AAAA-2022', 'operating_system_id' => $benutzt->id]);
     LicenseWindows::create(['customer_id' => $customer->id, 'key' => 'BBBB-2016', 'operating_system_id' => $anderes->id]);
 
-    $komponente = Livewire::test(ObjektListe::class, ['typ' => 'licensewindows', 'customer' => $customer]);
+    $komponente = Livewire::test(ObjectList::class, ['typ' => 'licensewindows', 'customer' => $customer]);
 
     // Ein Betriebssystem ohne Lizenz waere eine Zeile, die immer nichts findet.
     $optionen = $komponente->viewData('filterDefinition')[0]['optionen'];
@@ -124,7 +124,7 @@ test('Filter zuruecksetzen bringt alle Eintraege zurueck', function () {
     $this->actingAs(userWithPermissions(['licensesoftware_viewAny']));
     softwareLizenzen($customer);
 
-    Livewire::test(ObjektListe::class, ['typ' => 'licensesoftware', 'customer' => $customer])
+    Livewire::test(ObjectList::class, ['typ' => 'licensesoftware', 'customer' => $customer])
         ->set('filter.abo', 'Monatlich')
         ->call('zuruecksetzen')
         ->assertSet('filter', [])
@@ -137,7 +137,7 @@ test('eine Liste ohne Filterdefinition zeigt keine Filterleiste', function () {
 
     // Ein Drucker hat weder Laufzeit noch Auswahlfeld - eine leere Leiste
     // ueber der Liste waere nur Rauschen.
-    Livewire::test(ObjektListe::class, ['typ' => 'printer', 'customer' => $customer])
+    Livewire::test(ObjectList::class, ['typ' => 'printer', 'customer' => $customer])
         ->assertSet('filter', [])
         ->assertDontSee('Sortierung');
 });
@@ -153,7 +153,7 @@ test('eine Windows-Lizenz bietet nur Windows-Systeme zur Auswahl', function () {
 
     // Eine Windows-Lizenz fuer Debian oder Proxmox gibt es nicht - der
     // Katalog fuehrt beides, das Formular darf es nicht anbieten.
-    $auswahl = Livewire::test(ObjektFormular::class, ['typ' => 'licensewindows', 'customer' => $customer])
+    $auswahl = Livewire::test(ObjectModal::class, ['typ' => 'licensewindows', 'customer' => $customer])
         ->call('neu')
         ->viewData('auswahlen')['operating_system_id'];
 

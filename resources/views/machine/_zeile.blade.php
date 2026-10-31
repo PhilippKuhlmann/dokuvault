@@ -18,7 +18,7 @@
                             'credentials' => $eintrag,
                         ]"
 
-                        editAction="$dispatch('objekt-bearbeiten', { typ: 'machine', id: {{ $eintrag->id }} })"
+                        editAction="$dispatch('object-edit', { typ: 'machine', id: {{ $eintrag->id }} })"
                         can="machine_update"
                     />
 

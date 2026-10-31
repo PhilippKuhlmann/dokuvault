@@ -6,7 +6,7 @@
         @endphp
     <x-card>
         <x-slot:head>
-            <x-show.header can="iotdevice_update" editAction="$dispatch('objekt-bearbeiten', { typ: 'iotdevice', id: {{ $eintrag->id }} })">
+            <x-show.header can="iotdevice_update" editAction="$dispatch('object-edit', { typ: 'iotdevice', id: {{ $eintrag->id }} })">
                 {{ $eintrag->name }}
 
                     {{-- Was man fast immer sucht, neben dem Namen. --}}

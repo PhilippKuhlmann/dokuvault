@@ -2,8 +2,8 @@
 
 namespace App\Livewire;
 
-use App\Livewire\Concerns\GehoertZumKunden;
-use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
+use App\Livewire\Concerns\ScopedToCustomer;
+use App\Livewire\Concerns\ValidatesOnInput;
 use App\Models\Network;
 use App\Models\Site;
 use App\Support\NetworkEditing;
@@ -26,8 +26,8 @@ use Livewire\Component;
  */
 class NetworkQuickCreate extends Component
 {
-    use GehoertZumKunden;
-    use PrueftWaehrendDerEingabe;
+    use ScopedToCustomer;
+    use ValidatesOnInput;
 
     #[Locked]
     public int $customerId;
@@ -77,7 +77,7 @@ class NetworkQuickCreate extends Component
     /**
      * Ob der eigene Ausloese-Knopf gezeigt wird. Im Dokumentations-Assistenten
      * wird nur das Bearbeiten-Modal eingebettet (geoeffnet ueber das Event
-     * vlan-bearbeiten) - dort legt der Assistent selbst an, ein zweiter
+     * vlan-edit) - dort legt der Assistent selbst an, ein zweiter
      * "+ Neues VLAN"-Knopf waere doppelt.
      */
     #[Locked]
@@ -101,7 +101,7 @@ class NetworkQuickCreate extends Component
      * Das Netz wird gegen den Kunden geprueft - die ID kommt aus dem Browser,
      * und ohne die Pruefung liesse sich damit ein fremdes Netz oeffnen.
      */
-    #[On('vlan-bearbeiten')]
+    #[On('vlan-edit')]
     public function bearbeiten(int $id): void
     {
         Gate::authorize('network_update');
@@ -242,7 +242,7 @@ class NetworkQuickCreate extends Component
             $netz = Network::create($werte + ['customer_id' => $this->customerId]);
         }
 
-        $this->dispatch('hinweis', text: $this->bearbeiteId
+        $this->dispatch('notice', text: $this->bearbeiteId
             ? __('VLAN gespeichert.')
             : __('VLAN angelegt.'));
 
@@ -253,7 +253,7 @@ class NetworkQuickCreate extends Component
         // neu. Kein Redirect mehr: Seit die Liste selbst Livewire ist, genuegt
         // das Event - das erspart den Seitenwechsel samt seiner Fallstricke
         // (405 auf der Update-Adresse, verlorener Dunkelmodus).
-        $this->dispatch('vlan-angelegt', id: $netz->id);
+        $this->dispatch('vlan-created', id: $netz->id);
     }
 
     /**
@@ -279,8 +279,8 @@ class NetworkQuickCreate extends Component
 
         $this->formularLeeren();
 
-        $this->dispatch('hinweis', text: __('VLAN gelöscht.'));
-        $this->dispatch('vlan-angelegt', id: 0);
+        $this->dispatch('notice', text: __('VLAN gelöscht.'));
+        $this->dispatch('vlan-created', id: 0);
     }
 
     public function render()

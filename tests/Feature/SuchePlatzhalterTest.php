@@ -2,7 +2,7 @@
 
 use App\Livewire\GlobalSearch;
 use App\Livewire\NetworkList;
-use App\Livewire\ObjektListe;
+use App\Livewire\ObjectList;
 use App\Livewire\RemoteSearch;
 use App\Livewire\SearchCustomer;
 use App\Models\Camera;
@@ -60,7 +60,7 @@ test('die Geraeteliste liest den Unterstrich als Zeichen', function () {
 
     // Hier stand die Maskierung schon, aber ohne ESCAPE - auf SQLite fand die
     // Suche damit gar nichts mehr.
-    Livewire::test(ObjektListe::class, ['typ' => 'domain', 'customer' => $customer])
+    Livewire::test(ObjectList::class, ['typ' => 'domain', 'customer' => $customer])
         ->set('search', 'liste_eins')
         ->assertSee('liste_eins.de')
         ->assertDontSee('listexeins.de');

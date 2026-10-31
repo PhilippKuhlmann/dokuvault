@@ -1,7 +1,7 @@
 <?php
 
 use App\Livewire\DeviceIpAddresses;
-use App\Livewire\ObjektFormular;
+use App\Livewire\ObjectModal;
 use App\Models\ContactPerson;
 use App\Models\Customer;
 use App\Models\Firewall;
@@ -99,7 +99,7 @@ test('die Loeschkarte nennt den Papierkorb statt endgueltigem Verlust', function
 
     // Die Rueckfrage ersetzt im Modal die Felder - sie steht erst da, wenn
     // man auf Loeschen geklickt hat.
-    $inhalt = Livewire::test(ObjektFormular::class, ['typ' => 'contactperson', 'customer' => $customer])
+    $inhalt = Livewire::test(ObjectModal::class, ['typ' => 'contactperson', 'customer' => $customer])
         ->call('bearbeiten', 'contactperson', $person->id)
         ->set('loeschenGefragt', true)
         ->html();

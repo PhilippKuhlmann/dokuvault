@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Livewire\Concerns\GehoertZumKunden;
+use App\Livewire\Concerns\ScopedToCustomer;
 use App\Models\Customer;
 use App\Models\Network;
 use App\Models\Setting;
@@ -24,7 +24,7 @@ use Livewire\WithPagination;
  */
 class NetworkList extends Component
 {
-    use GehoertZumKunden;
+    use ScopedToCustomer;
     use WithPagination;
 
     #[Locked]
@@ -59,7 +59,7 @@ class NetworkList extends Component
      * Zurueck auf Seite eins, weil die Liste nach VLAN-Nummer sortiert ist und
      * der neue Eintrag sonst auf einer Seite landet, die man gerade nicht sieht.
      */
-    #[On('vlan-angelegt')]
+    #[On('vlan-created')]
     public function neuGeladen(): void
     {
         $this->resetPage();

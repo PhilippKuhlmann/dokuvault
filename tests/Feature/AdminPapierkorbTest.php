@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\AdminPapierkorb;
+use App\Livewire\AdminTrash;
 use App\Models\Customer;
 use App\Models\Domain;
 use App\Models\IpAddress;
@@ -25,7 +25,7 @@ test('der Filter zeigt nur Eintraege ueber der Altersgrenze', function () {
     imPapierkorbSeit(Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'uralt.de']), 400);
     imPapierkorbSeit(Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'neulich.de']), 10);
 
-    Livewire::test(AdminPapierkorb::class)
+    Livewire::test(AdminTrash::class)
         ->assertSee('uralt.de')
         ->assertSee('neulich.de')
         // Frei eingebbar, nicht auf feste Stufen beschraenkt.
@@ -41,7 +41,7 @@ test('ein einzelner Eintrag laesst sich endgueltig loeschen', function () {
     $domain = Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'weg.de']);
     imPapierkorbSeit($domain, 400);
 
-    Livewire::test(AdminPapierkorb::class)
+    Livewire::test(AdminTrash::class)
         ->call('loeschen', 'domain', $domain->id);
 
     // Endgueltig heisst endgueltig - auch withTrashed findet nichts mehr.
@@ -57,7 +57,7 @@ test('das Sammelloeschen trifft nur, was der Filter zeigt', function () {
     imPapierkorbSeit($alt, 400);
     imPapierkorbSeit($jung, 10);
 
-    Livewire::test(AdminPapierkorb::class)
+    Livewire::test(AdminTrash::class)
         ->set('aelterAls', 365)
         ->call('alleLoeschen');
 
@@ -79,7 +79,7 @@ test('haengende IP-Adressen verschwinden mit', function () {
     $server->ipAddresses()->create(['customer_id' => $customer->id, 'address' => '10.0.0.7']);
     imPapierkorbSeit($server, 400);
 
-    Livewire::test(AdminPapierkorb::class)->call('loeschen', 'server', $server->id);
+    Livewire::test(AdminTrash::class)->call('loeschen', 'server', $server->id);
 
     expect(IpAddress::where('ipable_id', $server->id)
         ->where('ipable_type', Server::class)->count())->toBe(0);
@@ -88,7 +88,7 @@ test('haengende IP-Adressen verschwinden mit', function () {
 test('ohne admin_trash kommt niemand an die Seite', function () {
     $this->actingAs(userWithPermissions(['server_viewAny']));
 
-    Livewire::test(AdminPapierkorb::class)->assertForbidden();
+    Livewire::test(AdminTrash::class)->assertForbidden();
 });
 
 test('die Rueckfrage bleibt stehen, bis man sie beantwortet', function () {
@@ -99,13 +99,13 @@ test('die Rueckfrage bleibt stehen, bis man sie beantwortet', function () {
 
     // Der Hook auf Eigenschaftsaenderungen hat die Rueckfrage anfangs sofort
     // wieder geschlossen - der Knopf tat dann schlicht nichts.
-    Livewire::test(AdminPapierkorb::class)
+    Livewire::test(AdminTrash::class)
         ->set('loeschenGefragt', true)
         ->assertSet('loeschenGefragt', true);
 });
 
 /** Wie AdminPapierkorb, holt aber nur einen Eintrag je Art. */
-class PapierkorbMitEngerGrenze extends AdminPapierkorb
+class PapierkorbMitEngerGrenze extends AdminTrash
 {
     protected const HOECHSTENS_JE_ART = 1;
 }
@@ -121,5 +121,5 @@ test('die Seite sagt es, wenn sie nicht alles zeigt', function () {
     // wundert sich, warum nach dem Loeschen noch etwas da ist.
     Livewire::test(PapierkorbMitEngerGrenze::class)->assertSee('(gekürzt)');
 
-    Livewire::test(AdminPapierkorb::class)->assertDontSee('(gekürzt)');
+    Livewire::test(AdminTrash::class)->assertDontSee('(gekürzt)');
 });

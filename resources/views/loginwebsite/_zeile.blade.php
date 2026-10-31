@@ -8,7 +8,7 @@
                             'url' => $eintrag->url,
                         ]"
 
-                        editAction="$dispatch('objekt-bearbeiten', { typ: 'loginwebsite', id: {{ $eintrag->id }} })"
+                        editAction="$dispatch('object-edit', { typ: 'loginwebsite', id: {{ $eintrag->id }} })"
                         can="loginwebsite_update"
                     />
 

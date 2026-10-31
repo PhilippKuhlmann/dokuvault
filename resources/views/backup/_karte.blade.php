@@ -8,7 +8,7 @@
          Fixed places: configuration left, schedule middle, runs right. --}}
     <x-card plain>
         <x-slot:head>
-            <x-show.header can="backup_update" editAction="$dispatch('objekt-bearbeiten', { typ: 'backup', id: {{ $eintrag->id }} })">
+            <x-show.header can="backup_update" editAction="$dispatch('object-edit', { typ: 'backup', id: {{ $eintrag->id }} })">
                 {{ $eintrag->name }}
                 {{-- Status of the last run, where an agent reported one. --}}
                 @if ($eintrag->last_status)

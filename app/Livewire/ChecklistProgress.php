@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Livewire\Concerns\GehoertZumKunden;
+use App\Livewire\Concerns\ScopedToCustomer;
 use App\Models\Checklist;
 use App\Models\ChecklistSetting;
 use App\Models\Customer;
@@ -19,7 +19,7 @@ use Livewire\Component;
  */
 class ChecklistProgress extends Component
 {
-    use GehoertZumKunden;
+    use ScopedToCustomer;
 
     #[Locked]
     public int $customerId;
@@ -81,7 +81,7 @@ class ChecklistProgress extends Component
 
         $checklist->update(['username' => $data['username'] ?: null, 'email' => $data['email'] ?: null]);
 
-        $this->dispatch('hinweis', text: __('Gespeichert.'));
+        $this->dispatch('notice', text: __('Gespeichert.'));
     }
 
     public function toggle(int $itemId): void
@@ -94,7 +94,7 @@ class ChecklistProgress extends Component
         );
 
         if ($grund !== null) {
-            $this->dispatch('hinweis', text: $grund);
+            $this->dispatch('notice', text: $grund);
         }
     }
 
@@ -105,7 +105,7 @@ class ChecklistProgress extends Component
             auth()->user(),
         );
 
-        $this->dispatch('hinweis', text: __('Freigegeben.'));
+        $this->dispatch('notice', text: __('Freigegeben.'));
     }
 
     private function checklist(): Checklist

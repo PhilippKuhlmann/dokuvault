@@ -24,7 +24,7 @@ use Livewire\WithPagination;
  * Filter gerade zeigt - ein Zeitplan, der im Hintergrund Daten endgueltig
  * entfernt, waere hier das falsche Werkzeug.
  */
-class AdminPapierkorb extends Component
+class AdminTrash extends Component
 {
     use WithPagination;
 
@@ -150,7 +150,7 @@ class AdminPapierkorb extends Component
 
         $this->endgueltig($objekt);
 
-        $this->dispatch('hinweis', text: __('Eintrag endgültig gelöscht.'));
+        $this->dispatch('notice', text: __('Eintrag endgültig gelöscht.'));
     }
 
     /**
@@ -175,7 +175,7 @@ class AdminPapierkorb extends Component
         $this->loeschenGefragt = false;
         $this->resetPage();
 
-        $this->dispatch('hinweis', text: $anzahl === 1
+        $this->dispatch('notice', text: $anzahl === 1
             ? __('Ein Eintrag endgültig gelöscht.')
             : __(':anzahl Einträge endgültig gelöscht.', ['anzahl' => $anzahl]));
     }
@@ -221,7 +221,7 @@ class AdminPapierkorb extends Component
         $alle = $this->sammeln();
         $proSeite = 50;
 
-        return view('livewire.admin-papierkorb', [
+        return view('livewire.admin-trash', [
             'eintraege' => $alle->forPage($this->getPage(), $proSeite),
             'gesamt' => $alle->count(),
             'arten' => collect(config('custom.trashables'))->map(fn ($e) => $e[1]),

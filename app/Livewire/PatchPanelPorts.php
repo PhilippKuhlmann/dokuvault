@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
+use App\Livewire\Concerns\ValidatesOnInput;
 use App\Models\NetworkSwitch;
 use App\Models\PatchPanel;
 use App\Support\PatchPortEditing;
@@ -20,7 +20,7 @@ use Livewire\Component;
  */
 class PatchPanelPorts extends Component
 {
-    use PrueftWaehrendDerEingabe;
+    use ValidatesOnInput;
 
     // Skalare statt Model-Instanz: robust bei Livewire-Hydration (wie DeviceIpAddresses).
     #[Locked]

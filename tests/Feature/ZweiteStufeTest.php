@@ -492,8 +492,8 @@ test('wer die zweite Stufe einrichten muss, erreicht über Livewire nur die Prof
     $update = route('default-livewire.update');
 
     // A password field from a page loaded before the requirement was set.
-    $this->postJson($update, livewireUpdate('kennwort-feld'))->assertForbidden();
-    $this->postJson($update, livewireUpdate('geheim-feld'))->assertForbidden();
+    $this->postJson($update, livewireUpdate('password-field'))->assertForbidden();
+    $this->postJson($update, livewireUpdate('secret-field'))->assertForbidden();
 
     // The profile component passes the middleware (Livewire itself then
     // rejects the made-up checksum - anything but our 403).
@@ -503,7 +503,7 @@ test('wer die zweite Stufe einrichten muss, erreicht über Livewire nur die Prof
 test('ohne Pflicht bleibt Livewire unberührt', function () {
     $this->actingAs(userWithPermissions(['logingeneral_viewAny']));
 
-    expect($this->postJson(route('default-livewire.update'), livewireUpdate('kennwort-feld'))->status())->not->toBe(403);
+    expect($this->postJson(route('default-livewire.update'), livewireUpdate('password-field'))->status())->not->toBe(403);
 });
 
 // --- Mail code when setting up --------------------------------------------------

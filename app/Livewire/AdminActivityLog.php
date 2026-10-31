@@ -23,7 +23,7 @@ use Spatie\Activitylog\Models\Activity;
  * Aufdecken eines bisherigen Kennworts prueft dasselbe Recht noch einmal - der
  * Aufruf kommt aus dem Browser und darf sich nicht auf die Route verlassen.
  */
-class AdminProtokoll extends Component
+class AdminActivityLog extends Component
 {
     use WithPagination;
 
@@ -93,7 +93,7 @@ class AdminProtokoll extends Component
         // sucht man nach einem Vorgang und ueberfliegt, statt zu lesen.
         $activities = $abfrage->paginate(50);
 
-        return view('livewire.admin-protokoll', [
+        return view('livewire.admin-activity-log', [
             'activities' => $activities,
             'kundeVon' => $this->kundenDerEintraege($activities->getCollection()),
             'kunden' => Customer::orderBy('name')->pluck('name', 'id')->all(),

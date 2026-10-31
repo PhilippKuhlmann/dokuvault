@@ -50,7 +50,7 @@ class AdminNotifications extends Component
         $this->kinds = array_values(array_intersect(Setting::EXPIRY_KINDS, $this->kinds));
         Setting::setzen(Setting::EXPIRY_MAIL_KINDS, implode(',', $this->kinds));
 
-        $this->dispatch('hinweis', text: __('Gespeichert.'));
+        $this->dispatch('notice', text: __('Gespeichert.'));
     }
 
     public function updatedSearch(): void
@@ -65,7 +65,7 @@ class AdminNotifications extends Component
         $user = User::findOrFail($id);
         $user->update(['expiry_mail' => ! $user->expiry_mail]);
 
-        $this->dispatch('hinweis', text: $user->expiry_mail
+        $this->dispatch('notice', text: $user->expiry_mail
             ? __(':name bekommt ablaufende Einträge per Mail.', ['name' => $user->name])
             : __(':name bekommt keine Mail mehr zu ablaufenden Einträgen.', ['name' => $user->name]));
     }
@@ -81,7 +81,7 @@ class AdminNotifications extends Component
         $items = ExpiringItems::forUser(auth()->user(), $this->kinds);
 
         if ($items->isEmpty()) {
-            $this->dispatch('hinweis', text: __('Derzeit läuft nichts ab – es gäbe nichts zu senden.'));
+            $this->dispatch('notice', text: __('Derzeit läuft nichts ab – es gäbe nichts zu senden.'));
 
             return;
         }
@@ -95,7 +95,7 @@ class AdminNotifications extends Component
             return;
         }
 
-        $this->dispatch('hinweis', text: __('Vorschau an :mail gesendet.', ['mail' => auth()->user()->email]));
+        $this->dispatch('notice', text: __('Vorschau an :mail gesendet.', ['mail' => auth()->user()->email]));
     }
 
     public function render()

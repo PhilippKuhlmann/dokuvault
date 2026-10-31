@@ -1,7 +1,7 @@
 <?php
 
-use App\Livewire\AdminProtokoll;
-use App\Livewire\ProtokollKennwort;
+use App\Livewire\ActivityLogPassword;
+use App\Livewire\AdminActivityLog;
 use App\Models\AgentToken;
 use App\Models\Customer;
 use App\Models\Network;
@@ -36,7 +36,7 @@ test('ohne Vorgaenger nennt die Zeile nur das Feld, nicht den Wert', function ()
     $eintrag = Activity::where('event', 'password_changed')->latest('id')->first();
     expect($eintrag->properties['verlauf_ids'])->toBeEmpty();
 
-    Livewire::test(AdminProtokoll::class)
+    Livewire::test(AdminActivityLog::class)
         ->assertSee('Kennwort')
         ->assertDontSee('Geheim123!');
 });
@@ -54,7 +54,7 @@ test('mit Vorgaenger laesst sich das bisherige Kennwort aufdecken', function () 
 
     $eintrag = Activity::where('event', 'password_changed')->latest('id')->first();
 
-    Livewire::test(ProtokollKennwort::class, [
+    Livewire::test(ActivityLogPassword::class, [
         'ids' => $eintrag->properties['verlauf_ids'],
         'felder' => ['password'],
     ])
@@ -80,7 +80,7 @@ test('ohne das Recht kommt niemand an ein bisheriges Kennwort', function () {
 
     // Das Recht wird hier noch einmal geprueft: Der Aufruf kommt aus dem
     // Browser und darf sich nicht auf die Route verlassen.
-    Livewire::test(ProtokollKennwort::class, [
+    Livewire::test(ActivityLogPassword::class, [
         'ids' => $eintrag->properties['verlauf_ids'],
         'felder' => ['password'],
     ])->call('zeigen')->assertForbidden();

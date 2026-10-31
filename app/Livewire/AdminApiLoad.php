@@ -18,7 +18,7 @@ use Livewire\Component;
  * keep up - more requests than before, or the same requests getting
  * slower, both say "time for more resources".
  */
-class AdminAuslastung extends Component
+class AdminApiLoad extends Component
 {
     public const ZEITRAEUME = ['24h' => 'Letzte 24 Stunden', '7d' => 'Letzte 7 Tage', '30d' => 'Letzte 30 Tage'];
 
@@ -56,7 +56,7 @@ class AdminAuslastung extends Component
                 return $z;
             });
 
-        return view('livewire.admin-auslastung', [
+        return view('livewire.admin-api-load', [
             'zeitraeume' => self::ZEITRAEUME,
             'summe' => $this->summe($zeilen),
             'verlauf' => $this->verlauf($zeilen, $von, $bis),

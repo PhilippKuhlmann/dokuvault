@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\ProtokollKennwort;
+use App\Livewire\ActivityLogPassword;
 use App\Models\Customer;
 use App\Models\Firewall;
 use App\Models\PasswordHistory;
@@ -160,7 +160,7 @@ test('das Protokoll zeigt das bisherige Kennwort auf Klick', function () {
     // Im Eintrag stehen Verweise, keine Werte.
     expect(json_encode($eintrag->properties->toArray()))->not->toContain('Das-Alte-2026');
 
-    $test = Livewire::test(ProtokollKennwort::class, ['ids' => $ids, 'felder' => ['cloud_backup_password']]);
+    $test = Livewire::test(ActivityLogPassword::class, ['ids' => $ids, 'felder' => ['cloud_backup_password']]);
 
     $test->assertDontSee('Das-Alte-2026');
     $test->call('zeigen')->assertSee('Das-Alte-2026');
@@ -175,7 +175,7 @@ test('ohne admin_activity bleibt das Kennwort im Protokoll verborgen', function 
 
     $ids = letzterEintrag($firewall, 'password_changed')->properties['verlauf_ids'];
 
-    Livewire::test(ProtokollKennwort::class, ['ids' => $ids, 'felder' => ['cloud_backup_password']])
+    Livewire::test(ActivityLogPassword::class, ['ids' => $ids, 'felder' => ['cloud_backup_password']])
         ->call('zeigen')
         ->assertForbidden();
 });
@@ -191,7 +191,7 @@ test('nach Ablauf der Frist sagt das Protokoll es ehrlich', function () {
 
     // Dass die Aenderung stattfand, bleibt im Protokoll - nur der Wert ist weg.
     // Geprueft wird der Zustand, nicht der Wortlaut: Der Hinweis ist uebersetzt.
-    Livewire::test(ProtokollKennwort::class, ['ids' => $ids, 'felder' => ['cloud_backup_password']])
+    Livewire::test(ActivityLogPassword::class, ['ids' => $ids, 'felder' => ['cloud_backup_password']])
         ->call('zeigen')
         ->assertSet('offen', true)
         ->assertSet('werte', []);

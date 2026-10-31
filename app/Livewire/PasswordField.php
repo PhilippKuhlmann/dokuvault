@@ -23,7 +23,7 @@ use Livewire\Component;
  * sie nicht gegen eine fremde austauschen. So kommt über dieses Feld nur
  * heraus, was ohnehin schon auf der Seite stand.
  */
-class KennwortFeld extends Component
+class PasswordField extends Component
 {
     #[Locked]
     public int $linkId;
@@ -66,7 +66,7 @@ class KennwortFeld extends Component
             return;
         }
 
-        $this->dispatch('kennwort-bereit', wert: $wert)->self();
+        $this->dispatch('password-ready', wert: $wert)->self();
     }
 
     /**
@@ -98,6 +98,6 @@ class KennwortFeld extends Component
 
     public function render()
     {
-        return view('livewire.kennwort-feld');
+        return view('livewire.password-field');
     }
 }

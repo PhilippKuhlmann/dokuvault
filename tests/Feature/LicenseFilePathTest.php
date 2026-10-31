@@ -1,7 +1,7 @@
 <?php
 
-use App\Livewire\AdminPapierkorb;
-use App\Livewire\ObjektFormular;
+use App\Livewire\AdminTrash;
+use App\Livewire\ObjectModal;
 use App\Models\Customer;
 use App\Models\LicenseSoftware;
 use App\Models\Role;
@@ -31,7 +31,7 @@ beforeEach(function () {
 });
 
 test('a file_path sent with the form is ignored', function () {
-    Livewire::test(ObjektFormular::class, ['typ' => 'licensesoftware', 'customer' => $this->own])
+    Livewire::test(ObjectModal::class, ['typ' => 'licensesoftware', 'customer' => $this->own])
         ->call('neu')
         ->set('form.name', 'Probe')
         ->set('form.file_path', $this->foreignPdf)
@@ -46,7 +46,7 @@ test('a file_path sent with the form is ignored', function () {
 test('a file_path cannot be changed when editing', function () {
     $licence = LicenseSoftware::create(['customer_id' => $this->own->id, 'name' => 'Probe']);
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'licensesoftware', 'customer' => $this->own])
+    Livewire::test(ObjectModal::class, ['typ' => 'licensesoftware', 'customer' => $this->own])
         ->call('bearbeiten', 'licensesoftware', $licence->id)
         ->set('form.file_path', $this->foreignFile)
         ->call('speichern')
@@ -80,7 +80,7 @@ test('replacing the file does not delete a foreign stored path', function () {
         'customer_id' => $this->own->id, 'name' => 'Alt', 'file_path' => $this->foreignFile,
     ]);
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'licensesoftware', 'customer' => $this->own])
+    Livewire::test(ObjectModal::class, ['typ' => 'licensesoftware', 'customer' => $this->own])
         ->call('bearbeiten', 'licensesoftware', $licence->id)
         ->set('datei', UploadedFile::fake()->create('neu.pdf', 12))
         ->call('speichern')
@@ -99,7 +99,7 @@ test('emptying the trash does not delete a foreign stored path', function () {
     $admin = Role::find(Role::IS_ADMIN) ?? Role::factory()->create(['id' => Role::IS_ADMIN]);
     $this->actingAs(User::factory()->create(['role_id' => $admin->id]));
 
-    Livewire::test(AdminPapierkorb::class)->call('loeschen', 'licensesoftware', $licence->id);
+    Livewire::test(AdminTrash::class)->call('loeschen', 'licensesoftware', $licence->id);
 
     expect(LicenseSoftware::withTrashed()->find($licence->id))->toBeNull();
     Storage::disk('local')->assertExists($this->foreignPdf);

@@ -2,8 +2,8 @@
 
 namespace App\Livewire;
 
-use App\Livewire\Concerns\GehoertZumKunden;
-use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
+use App\Livewire\Concerns\ScopedToCustomer;
+use App\Livewire\Concerns\ValidatesOnInput;
 use App\Models\LoginGeneral;
 use App\Models\Scanner;
 use App\Models\ScanTarget;
@@ -22,8 +22,8 @@ use Livewire\Component;
  */
 class ScanTargets extends Component
 {
-    use GehoertZumKunden;
-    use PrueftWaehrendDerEingabe;
+    use ScopedToCustomer;
+    use ValidatesOnInput;
 
     #[Locked]
     public int $scannerId;
@@ -111,13 +111,13 @@ class ScanTargets extends Component
         // Die Art bleibt stehen: Wer zwanzig Ordner eintraegt, will sie nicht
         // zwanzigmal neu waehlen.
         $this->reset('zielId', 'name', 'target', 'login_general_id');
-        $this->dispatch('geraet-geaendert');
+        $this->dispatch('device-changed');
     }
 
     public function remove(int $id): void
     {
         app(ScanTargetLinking::class)->remove($this->scanner(), $id);
-        $this->dispatch('geraet-geaendert');
+        $this->dispatch('device-changed');
     }
 
     public function render()

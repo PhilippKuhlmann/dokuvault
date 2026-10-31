@@ -19,7 +19,7 @@ use Livewire\Component;
  * entsteht nur ein Bild aus Werten, die alle gegen feste Listen geprueft
  * werden.
  */
-class RackKatalogVorschau extends Component
+class RackCatalogPreview extends Component
 {
     public string $appearance = 'blank';
 
@@ -45,7 +45,7 @@ class RackKatalogVorschau extends Component
      * gehoeren zum Absenden und koennen deshalb nicht per wire:model an dieser
      * Komponente haengen.
      */
-    #[On('rack-vorschau')]
+    #[On('rack-preview')]
     public function aendern(?string $appearance = null, $he = null, $drawing = null): void
     {
         if ($appearance !== null && array_key_exists($appearance, config('custom.rack_appearances'))) {
@@ -61,6 +61,6 @@ class RackKatalogVorschau extends Component
 
     public function render()
     {
-        return view('livewire.rack-katalog-vorschau');
+        return view('livewire.rack-catalog-preview');
     }
 }

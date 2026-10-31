@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\GeheimFeld;
+use App\Livewire\SecretField;
 use App\Models\Customer;
 use App\Models\Mailbox;
 use Livewire\Livewire;
@@ -17,10 +17,10 @@ test('the mailbox card does not deliver the password, the click fetches and logs
 
     $this->get(route('mailbox.index', $customer))
         ->assertOk()
-        ->assertSee('geheim-feld', false)
+        ->assertSee('secret-field', false)
         ->assertDontSee('Mb-4kR2z', false);
 
-    Livewire::test(GeheimFeld::class, ['modell' => Mailbox::class, 'id' => $mailbox->id, 'feld' => 'password'])
+    Livewire::test(SecretField::class, ['modell' => Mailbox::class, 'id' => $mailbox->id, 'feld' => 'password'])
         ->call('zeigen')
         ->assertSet('wert', 'Mb-4kR2z');
 

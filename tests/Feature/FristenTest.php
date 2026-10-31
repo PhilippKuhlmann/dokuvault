@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\AdminFristen;
+use App\Livewire\AdminRetention;
 use App\Models\Certificate;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
@@ -162,7 +162,7 @@ test('die PDF-Frist entscheidet, was aufgeräumt wird', function () {
 test('die Seite speichert beim Ändern, ohne Knopf', function () {
     $this->actingAs(adminUser());
 
-    Livewire::test(AdminFristen::class)
+    Livewire::test(AdminRetention::class)
         ->set('vertraege', 90)
         ->set('garantie', 45)
         ->set('eol', 365)
@@ -178,7 +178,7 @@ test('die Seite speichert beim Ändern, ohne Knopf', function () {
 test('null Tage wäre keine Frist, sondern eine abgeschaltete Warnung', function () {
     $this->actingAs(adminUser());
 
-    Livewire::test(AdminFristen::class)
+    Livewire::test(AdminRetention::class)
         ->set('vertraege', 0)
         ->assertHasErrors(['vertraege']);
 
@@ -190,7 +190,7 @@ test('ein vertippter Wert wird abgewiesen', function () {
     $this->actingAs(adminUser());
 
     // Wer 60 meint und 6000 tippt, warnt ab sofort vor allem.
-    Livewire::test(AdminFristen::class)
+    Livewire::test(AdminRetention::class)
         ->set('vertraege', 6000)
         ->assertHasErrors(['vertraege']);
 });
@@ -199,7 +199,7 @@ test('eine PDF-Frist unter einer Stunde wäre eine Zahl ohne Wirkung', function 
     $this->actingAs(adminUser());
 
     // Aufgeraeumt wird stuendlich - kuerzer geht nicht, egal was dasteht.
-    Livewire::test(AdminFristen::class)
+    Livewire::test(AdminRetention::class)
         ->set('pdfStunden', 0)
         ->assertHasErrors(['pdfStunden']);
 });

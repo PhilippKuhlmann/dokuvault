@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
+use App\Livewire\Concerns\ValidatesOnInput;
 use App\Models\Customer;
 use App\Models\DocumentationRun;
 use App\Models\Network;
@@ -34,7 +34,7 @@ use Livewire\Component;
  */
 class DocumentationWizard extends Component
 {
-    use PrueftWaehrendDerEingabe;
+    use ValidatesOnInput;
 
     #[Locked]
     public int $customerId;
@@ -213,7 +213,7 @@ class DocumentationWizard extends Component
         // Ein neuer wire:key hat daran nichts geaendert - probiert und
         // verworfen. Also sagt die Komponente es dem Browser ausdruecklich;
         // die View leert die Felder darauf hin.
-        $this->dispatch('assistent-formular-geleert');
+        $this->dispatch('wizard-form-cleared');
     }
 
     protected function rulesForStep(array $step, int $customerId): array
@@ -405,7 +405,7 @@ class DocumentationWizard extends Component
         }
 
         $this->resetForm();
-        $this->dispatch('assistent-schritt');
+        $this->dispatch('wizard-step');
     }
 
     public function skipStep(): void
@@ -438,7 +438,7 @@ class DocumentationWizard extends Component
         $this->ablauf()->zurueck($run);
 
         $this->resetForm();
-        $this->dispatch('assistent-schritt');
+        $this->dispatch('wizard-step');
     }
 
     protected function advance(DocumentationRun $run): void
@@ -446,7 +446,7 @@ class DocumentationWizard extends Component
         $this->ablauf()->weiter($run);
 
         $this->resetForm();
-        $this->dispatch('assistent-schritt');
+        $this->dispatch('wizard-step');
     }
 
     /**
@@ -461,7 +461,7 @@ class DocumentationWizard extends Component
         $this->ablauf()->gruppeUeberspringen($run);
 
         $this->resetForm();
-        $this->dispatch('assistent-schritt');
+        $this->dispatch('wizard-step');
     }
 
     public function finish(): void
@@ -493,13 +493,13 @@ class DocumentationWizard extends Component
 
     /**
      * Ein Eintrag wurde im eingebetteten Bearbeiten-Modal gespeichert
-     * (ObjektFormular meldet objekt-gespeichert, das Netzwerk-Modal
-     * NetworkQuickCreate meldet vlan-angelegt). Der leere Rumpf genuegt: allein
+     * (ObjektFormular meldet object-saved, das Netzwerk-Modal
+     * NetworkQuickCreate meldet vlan-created). Der leere Rumpf genuegt: allein
      * dass Livewire diesen Hook aufruft, laesst die Komponente neu rendern, und
      * render() zieht die "Schon erfasst"-Liste ohnehin frisch aus der Datenbank.
      */
-    #[On('objekt-gespeichert')]
-    #[On('vlan-angelegt')]
+    #[On('object-saved')]
+    #[On('vlan-created')]
     public function objektGespeichert(): void
     {
         //

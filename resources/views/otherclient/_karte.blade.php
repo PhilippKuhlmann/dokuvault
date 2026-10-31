@@ -6,7 +6,7 @@
         @endphp
         <x-card>
             <x-slot:head>
-                <x-show.header can="otherclient_update" editAction="$dispatch('objekt-bearbeiten', { typ: 'otherclient', id: {{ $eintrag->id }} })">
+                <x-show.header can="otherclient_update" editAction="$dispatch('object-edit', { typ: 'otherclient', id: {{ $eintrag->id }} })">
                     {{ $eintrag->name }}
 
                     {{-- Was man fast immer sucht, neben dem Namen. --}}

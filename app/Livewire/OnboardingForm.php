@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Livewire\Concerns\GehoertZumKunden;
+use App\Livewire\Concerns\ScopedToCustomer;
 use App\Models\Customer;
 use App\Support\ChecklistBuilder;
 use Illuminate\Support\Facades\Gate;
@@ -16,7 +16,7 @@ use Livewire\Component;
  */
 class OnboardingForm extends Component
 {
-    use GehoertZumKunden;
+    use ScopedToCustomer;
 
     #[Locked]
     public int $customerId;

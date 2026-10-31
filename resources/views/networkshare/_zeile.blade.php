@@ -10,6 +10,6 @@
                             $eintrag->writeGroup?->name ?? '—',
                             $eintrag->sensitive ? __('nötig') : '—',
                         ]"
-                        editAction="$dispatch('objekt-bearbeiten', { typ: 'networkshare', id: {{ $eintrag->id }} })"
+                        editAction="$dispatch('object-edit', { typ: 'networkshare', id: {{ $eintrag->id }} })"
                         can="networkshare_update"
                     />

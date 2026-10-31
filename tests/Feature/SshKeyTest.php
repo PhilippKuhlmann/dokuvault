@@ -1,8 +1,8 @@
 <?php
 
 use App\Livewire\DeviceCredentials;
-use App\Livewire\ObjektFormular;
-use App\Livewire\ObjektListe;
+use App\Livewire\ObjectList;
+use App\Livewire\ObjectModal;
 use App\Models\Customer;
 use App\Models\LoginGeneral;
 use App\Models\OperatingSystem;
@@ -116,7 +116,7 @@ test('die Liste zeigt Name, Benutzer und Verfahren, aber nicht den privaten Schl
     $this->actingAs(userWithPermissions(['sshkey_viewAny', 'sshkey_update']));
     [$customer, $schluessel] = sshUmgebung();
 
-    $html = Livewire::test(ObjektListe::class, ['typ' => 'sshkey', 'customer' => $customer])
+    $html = Livewire::test(ObjectList::class, ['typ' => 'sshkey', 'customer' => $customer])
         ->assertSee('Admin ed25519')
         ->assertSee('Ed25519')
         ->html();
@@ -129,7 +129,7 @@ test('ein Schluessel laesst sich im Modal anlegen', function () {
     $this->actingAs(userWithPermissions(['sshkey_create', 'sshkey_viewAny']));
     $customer = Customer::factory()->create();
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'sshkey', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'sshkey', 'customer' => $customer])
         ->call('neu', 'sshkey')
         ->set('form.name', 'Deploy ed25519')
         ->set('form.username', 'deploy')
@@ -150,7 +150,7 @@ test('ein unbekanntes Verfahren wird abgelehnt', function () {
     $this->actingAs(userWithPermissions(['sshkey_create', 'sshkey_viewAny']));
     $customer = Customer::factory()->create();
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'sshkey', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'sshkey', 'customer' => $customer])
         ->call('neu', 'sshkey')
         ->set('form.name', 'Krumm')
         ->set('form.key_type', 'dsa')
@@ -307,7 +307,7 @@ test('die Suche findet einen Schluessel ueber seinen Fingerprint', function () {
     ]);
 
     // Der Weg vom "SHA256:..." aus einer authorized_keys zurueck zum Eintrag.
-    Livewire::test(ObjektListe::class, ['typ' => 'sshkey', 'customer' => $customer])
+    Livewire::test(ObjectList::class, ['typ' => 'sshkey', 'customer' => $customer])
         ->set('search', $schluessel->fresh()->fingerprint)
         ->assertSee('Admin ed25519')
         ->assertDontSee('Anderer');
@@ -318,7 +318,7 @@ test('die Liste kuerzt den Fingerprint, haelt ihn aber vollstaendig bereit', fun
     [$customer, $schluessel] = sshUmgebung();
 
     $voll = $schluessel->fresh()->fingerprint;
-    $html = Livewire::test(ObjektListe::class, ['typ' => 'sshkey', 'customer' => $customer])->html();
+    $html = Livewire::test(ObjectList::class, ['typ' => 'sshkey', 'customer' => $customer])->html();
 
     // Gemeldet: vollstaendig nimmt er zu viel Platz. Sichtbar ist der Anfang,
     // vollstaendig steht er im Titel und im Wert des Kopier-Knopfs.

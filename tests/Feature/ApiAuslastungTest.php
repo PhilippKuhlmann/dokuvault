@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Middleware\RecordApiRequest;
-use App\Livewire\AdminAuslastung;
+use App\Livewire\AdminApiLoad;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\DB;
@@ -47,7 +47,7 @@ test('the load page shows the figures and needs the statistics right', function 
     zaehle('api/agent/checkin');
 
     $this->actingAs(userWithPermissions(['admin_statistik']));
-    Livewire::test(AdminAuslastung::class)
+    Livewire::test(AdminApiLoad::class)
         ->assertOk()
         ->assertViewHas('summe', fn ($s) => $s['anzahl'] === 2 && $s['agent'] === 2)
         ->assertSee('api/agent/checkin')

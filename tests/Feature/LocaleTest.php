@@ -1,8 +1,8 @@
 <?php
 
-use App\Livewire\AdminAuslastung;
-use App\Livewire\AdminDatenwachstum;
-use App\Livewire\AdminNutzung;
+use App\Livewire\AdminApiLoad;
+use App\Livewire\AdminDataGrowth;
+use App\Livewire\AdminUsage;
 use App\Models\Backup;
 use App\Models\Customer;
 use App\Models\Rack;
@@ -234,9 +234,9 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
         // Backup status, target kinds and the period buttons of the statistics.
         ->merge(array_values(Backup::STATUS))
         ->merge(array_values(BackupSettings::ARTEN))
-        ->merge(array_values(AdminAuslastung::ZEITRAEUME))
-        ->merge(array_values(AdminNutzung::ZEITRAEUME))
-        ->merge(array_values(AdminDatenwachstum::ZEITRAEUME))
+        ->merge(array_values(AdminApiLoad::ZEITRAEUME))
+        ->merge(array_values(AdminUsage::ZEITRAEUME))
+        ->merge(array_values(AdminDataGrowth::ZEITRAEUME))
         ->merge(array_values(config('custom.server_form_factors', [])))
         ->merge(array_values(config('custom.cluster_types', [])))
         ->merge(array_values(config('custom.firewall_form_factors', [])))

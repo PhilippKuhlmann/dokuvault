@@ -6,7 +6,7 @@
         @endphp
         <x-card>
             <x-slot:head>
-                <x-show.header can="dect_update" editAction="$dispatch('objekt-bearbeiten', { typ: 'dect', id: {{ $eintrag->id }} })">
+                <x-show.header can="dect_update" editAction="$dispatch('object-edit', { typ: 'dect', id: {{ $eintrag->id }} })">
                     Rolle: {{ $eintrag->role }}
 
                     {{-- Was man fast immer sucht, neben dem Namen. --}}

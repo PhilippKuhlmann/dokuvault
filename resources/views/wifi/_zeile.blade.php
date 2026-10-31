@@ -7,7 +7,7 @@
                             'geheim' => [$eintrag, 'password'],
                         ]"
 
-                        editAction="$dispatch('objekt-bearbeiten', { typ: 'wifi', id: {{ $eintrag->id }} })"
+                        editAction="$dispatch('object-edit', { typ: 'wifi', id: {{ $eintrag->id }} })"
                         can="wifi_update"
 
                     />

@@ -9,7 +9,7 @@
                             'geheim' => [$eintrag, 'password'],
                         ]"
 
-                        editAction="$dispatch('objekt-bearbeiten', { typ: 'dyndns', id: {{ $eintrag->id }} })"
+                        editAction="$dispatch('object-edit', { typ: 'dyndns', id: {{ $eintrag->id }} })"
                         can="dyndns_update"
                     />
 

@@ -1,7 +1,7 @@
 <?php
 
 use App\Livewire\GlobalSearch;
-use App\Livewire\ObjektFormular;
+use App\Livewire\ObjectModal;
 use App\Models\ContactPerson;
 use App\Models\Customer;
 use App\Models\DECT;
@@ -151,7 +151,7 @@ test('ein Drucker ohne Kennwort lässt sich anlegen', function () {
     $this->actingAs(userWithPermissions(['printer_create', 'printer_viewAny']));
     [$customer, $site] = bezeichnungsUmgebung();
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'printer', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'printer', 'customer' => $customer])
         ->call('neu')
         ->set('form.site_id', $site->id)
         ->set('form.name', 'ETI-VERSAND')
@@ -169,7 +169,7 @@ test('ein Webzugang ohne Kennwort wird abgelehnt', function () {
     $this->actingAs(userWithPermissions(['loginwebsite_create', 'loginwebsite_viewAny']));
     [$customer] = bezeichnungsUmgebung();
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'loginwebsite', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'loginwebsite', 'customer' => $customer])
         ->call('neu')
         ->set('form.name', 'Strato')
         ->set('form.url', 'https://strato.de')

@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\AdminAllgemein;
+use App\Livewire\AdminGeneral;
 use App\Models\Setting;
 use App\Support\LocalTime;
 use Illuminate\Support\Carbon;
@@ -65,7 +65,7 @@ test('die Benutzerliste zeigt die Zeit in der eingestellten Zone', function () {
 test('die Zeitzone lässt sich im Adminbereich umstellen', function () {
     $this->actingAs(userWithPermissions(['admin_setting']));
 
-    Livewire\Livewire::test(AdminAllgemein::class)
+    Livewire\Livewire::test(AdminGeneral::class)
         ->set('zeitzone', 'Europe/Berlin')
         ->assertHasNoErrors();
 
@@ -75,7 +75,7 @@ test('die Zeitzone lässt sich im Adminbereich umstellen', function () {
 test('eine erfundene Zone wird abgewiesen', function () {
     $this->actingAs(userWithPermissions(['admin_setting']));
 
-    Livewire\Livewire::test(AdminAllgemein::class)
+    Livewire\Livewire::test(AdminGeneral::class)
         ->set('zeitzone', 'Mars/Olympus')
         ->assertHasErrors('zeitzone');
 });

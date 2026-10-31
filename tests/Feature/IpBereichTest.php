@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\IpBereiche;
+use App\Livewire\IpRanges;
 use App\Models\Customer;
 use App\Models\IpRange;
 use App\Models\Network;
@@ -130,7 +130,7 @@ test('ein Bereich lässt sich anlegen', function () {
     $kunde = Customer::factory()->create();
     $netz = netzMitBereich($kunde);
 
-    Livewire::test(IpBereiche::class, ['customer' => $kunde, 'network' => $netz])
+    Livewire::test(IpRanges::class, ['customer' => $kunde, 'network' => $netz])
         ->call('oeffnen')
         ->set('from_ip', '10.10.250.10')
         ->set('to_ip', '10.10.250.20')
@@ -151,7 +151,7 @@ test('eine Adresse außerhalb des Netzes wird abgewiesen', function () {
     $kunde = Customer::factory()->create();
     $netz = netzMitBereich($kunde);
 
-    Livewire::test(IpBereiche::class, ['customer' => $kunde, 'network' => $netz])
+    Livewire::test(IpRanges::class, ['customer' => $kunde, 'network' => $netz])
         ->call('oeffnen')
         ->set('from_ip', '10.10.250.10')
         ->set('to_ip', '10.10.251.20')
@@ -168,7 +168,7 @@ test('eine Endadresse vor der Anfangsadresse wird abgewiesen', function () {
     $kunde = Customer::factory()->create();
     $netz = netzMitBereich($kunde);
 
-    Livewire::test(IpBereiche::class, ['customer' => $kunde, 'network' => $netz])
+    Livewire::test(IpRanges::class, ['customer' => $kunde, 'network' => $netz])
         ->call('oeffnen')
         ->set('from_ip', '10.10.250.20')
         ->set('to_ip', '10.10.250.10')
@@ -186,7 +186,7 @@ test('zwei Bereiche dürfen sich nicht überschneiden', function () {
 
     // Zwei Reservierungen fuer dieselbe Adresse waeren ein Widerspruch in der
     // Doku, kein Zustand, den man abbilden will.
-    Livewire::test(IpBereiche::class, ['customer' => $kunde, 'network' => $netz])
+    Livewire::test(IpRanges::class, ['customer' => $kunde, 'network' => $netz])
         ->call('oeffnen')
         ->set('from_ip', '10.10.250.15')
         ->set('to_ip', '10.10.250.25')
@@ -203,7 +203,7 @@ test('ohne network_update legt niemand einen Bereich an', function () {
     $kunde = Customer::factory()->create();
     $netz = netzMitBereich($kunde);
 
-    Livewire::test(IpBereiche::class, ['customer' => $kunde, 'network' => $netz])
+    Livewire::test(IpRanges::class, ['customer' => $kunde, 'network' => $netz])
         ->call('oeffnen')
         ->assertForbidden();
 });
@@ -217,7 +217,7 @@ test('das Netz eines fremden Kunden ist nicht erreichbar', function () {
 
     // Ueber die Id waere es sonst erreichbar - und damit die Netzplanung eines
     // anderen Kunden.
-    Livewire::test(IpBereiche::class, ['customer' => $kunde, 'network' => $fremdesNetz])
+    Livewire::test(IpRanges::class, ['customer' => $kunde, 'network' => $fremdesNetz])
         ->assertNotFound();
 });
 
@@ -234,7 +234,7 @@ test('ein auf einen Kunden festgelegter Nutzer sieht keine fremde Netzplanung', 
 
     $netz = netzMitBereich($kunde);
 
-    Livewire::test(IpBereiche::class, ['customer' => $kunde, 'network' => $netz])
+    Livewire::test(IpRanges::class, ['customer' => $kunde, 'network' => $netz])
         ->assertForbidden();
 });
 
@@ -248,7 +248,7 @@ test('gelöscht wird nur im eigenen Netz', function () {
     $fremdesNetz = netzMitBereich($fremder);
     $fremderBereich = bereichAnlegen($fremdesNetz, '10.10.250.10', '10.10.250.20', 'Fremd');
 
-    Livewire::test(IpBereiche::class, ['customer' => $kunde, 'network' => $netz])
+    Livewire::test(IpRanges::class, ['customer' => $kunde, 'network' => $netz])
         ->call('loeschen', $fremderBereich->id);
 
     expect(IpRange::find($fremderBereich->id))->not->toBeNull();
@@ -327,7 +327,7 @@ test('Tabelle und Liste färben denselben Bereich gleich', function () {
 
     // Die Liste unter der Tabelle ist deren Legende. Zwei getrennte
     // Zuordnungen würden auseinanderlaufen, sobald eine Sortierung abweicht.
-    $ausListe = Livewire::test(IpBereiche::class, ['customer' => $kunde, 'network' => $netz])
+    $ausListe = Livewire::test(IpRanges::class, ['customer' => $kunde, 'network' => $netz])
         ->viewData('bereiche')
         ->mapWithKeys(fn ($b) => [$b->label => $b->farbe['rand']]);
 

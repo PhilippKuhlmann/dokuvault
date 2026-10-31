@@ -1,9 +1,9 @@
 <?php
 
 use App\Console\Kernel;
-use App\Livewire\AdminAgentenEinstellungen;
-use App\Livewire\AdminFristen;
-use App\Livewire\AdminSicherheit;
+use App\Livewire\AdminAgentSettings;
+use App\Livewire\AdminRetention;
+use App\Livewire\AdminSecurity;
 use App\Models\AgentInstallation;
 use App\Models\AgentToken;
 use App\Models\Customer;
@@ -32,7 +32,7 @@ test('without settings the old defaults hold, out of range falls back', function
 test('the agent page stores the defaults and they take effect', function () {
     $this->actingAs(userWithPermissions(['admin_setting']));
 
-    Livewire::test(AdminAgentenEinstellungen::class)
+    Livewire::test(AdminAgentSettings::class)
         ->set('intervall', 30)->assertHasNoErrors()
         ->set('stillStunden', 12)->assertHasNoErrors()
         ->set('tokenMaxTage', 90)->assertHasNoErrors()
@@ -70,10 +70,10 @@ test('a token beyond the maximum validity is refused', function () {
 test('statistics retention and the password brake are stored', function () {
     $this->actingAs(userWithPermissions(['admin_setting']));
 
-    Livewire::test(AdminFristen::class)
+    Livewire::test(AdminRetention::class)
         ->set('statistikApiTage', 365)->assertHasNoErrors()
         ->set('statistikMonate', 0)->assertHasErrors('statistikMonate');
-    Livewire::test(AdminSicherheit::class)
+    Livewire::test(AdminSecurity::class)
         ->set('kennwortAbrufe', 5)->assertHasNoErrors();
 
     expect(Setting::statistikApiTage())->toBe(365)
@@ -84,7 +84,7 @@ test('statistics retention and the password brake are stored', function () {
 test('the settings pages need the settings right', function () {
     $this->actingAs(userWithPermissions(['admin_statistik']));
 
-    Livewire::test(AdminAgentenEinstellungen::class)->assertForbidden();
+    Livewire::test(AdminAgentSettings::class)->assertForbidden();
 });
 
 test('the backup runs at its time in the set time zone', function () {

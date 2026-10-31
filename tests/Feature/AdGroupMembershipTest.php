@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\ObjektFormular;
+use App\Livewire\ObjectModal;
 use App\Models\ADGroup;
 use App\Models\ADUser;
 use App\Models\AgentToken;
@@ -79,7 +79,7 @@ test('groups are edited on the user and members on the group', function () {
     $technik = ADGroup::create(['customer_id' => $customer->id, 'name' => 'Technik', 'description' => 'Abteilung Technik']);
     $this->actingAs(userWithPermissions(['aduser_update', 'adgroup_update']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'aduser', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'aduser', 'customer' => $customer])
         ->call('bearbeiten', 'aduser', $user->id)
         ->assertSet('form.groups', [])
         ->set('form.groups', [(string) $vertrieb->id, (string) $technik->id])
@@ -88,7 +88,7 @@ test('groups are edited on the user and members on the group', function () {
 
     expect($user->fresh()->groups->pluck('name')->all())->toBe(['Technik', 'Vertrieb']);
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'adgroup', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'adgroup', 'customer' => $customer])
         ->call('bearbeiten', 'adgroup', $technik->id)
         ->assertSet('form.users', [(string) $user->id])
         ->set('form.users', [])
@@ -104,7 +104,7 @@ test('a group of another customer cannot be linked', function () {
     $fremd = ADGroup::create(['customer_id' => Customer::factory()->create()->id, 'name' => 'Fremd']);
     $this->actingAs(userWithPermissions(['aduser_update']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'aduser', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'aduser', 'customer' => $customer])
         ->call('bearbeiten', 'aduser', $user->id)
         ->set('form.groups', [(string) $fremd->id])
         ->call('speichern')

@@ -1,9 +1,9 @@
 <?php
 
-use App\Livewire\AdminAgentenStatistik;
-use App\Livewire\AdminDatenwachstum;
-use App\Livewire\AdminNutzung;
+use App\Livewire\AdminAgentStats;
+use App\Livewire\AdminDataGrowth;
 use App\Livewire\AdminSystem;
+use App\Livewire\AdminUsage;
 use App\Models\AgentInstallation;
 use App\Models\AgentToken;
 use App\Models\Customer;
@@ -45,7 +45,7 @@ test('all statistics pages open with the statistics right', function (string $ko
     $this->actingAs(userWithPermissions(['admin_statistik']));
 
     Livewire::test($komponente)->assertOk();
-})->with([AdminSystem::class, AdminDatenwachstum::class, AdminAgentenStatistik::class, AdminNutzung::class]);
+})->with([AdminSystem::class, AdminDataGrowth::class, AdminAgentStats::class, AdminUsage::class]);
 
 test('without the statistics right the pages stay closed', function (string $route) {
     $this->actingAs(userWithPermissions(['admin_setting']));
@@ -63,7 +63,7 @@ test('the agents page puts silent and outdated agents first', function () {
     AgentInstallation::where('machine_id', 'still-1')->update(['last_seen_at' => now()->subDay()]);
 
     $this->actingAs(userWithPermissions(['admin_statistik']));
-    Livewire::test(AdminAgentenStatistik::class)
+    Livewire::test(AdminAgentStats::class)
         ->assertViewHas('summe', fn ($s) => $s['gesamt'] === 3 && $s['still'] === 1 && $s['veraltet'] === 1)
         ->assertViewHas('agenten', fn ($a) => $a->pluck('hostname')->all() === ['pve-still', 'pve-alt', 'pve-ok']);
 });
@@ -73,7 +73,7 @@ test('the usage page counts sign-ins and changes', function () {
     $customer = Customer::factory()->create();
     Domain::factory()->create(['customer_id' => $customer->id]);
 
-    Livewire::test(AdminNutzung::class)
+    Livewire::test(AdminUsage::class)
         ->assertViewHas('summe', fn ($s) => $s['aenderungen'] >= 1)
         ->set('zeitraum', '7')
         ->assertViewHas('aenderungenProTag', fn ($t) => count($t) === 7);

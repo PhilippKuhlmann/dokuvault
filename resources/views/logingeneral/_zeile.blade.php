@@ -9,7 +9,7 @@
 
                         ]"
 
-                        editAction="$dispatch('objekt-bearbeiten', { typ: 'logingeneral', id: {{ $eintrag->id }} })"
+                        editAction="$dispatch('object-edit', { typ: 'logingeneral', id: {{ $eintrag->id }} })"
                         can="logingeneral_update"
                     />
 

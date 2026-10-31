@@ -10,7 +10,7 @@
     nur bei vorhandener Session-Meldung gerendert zu werden.
 --}}
 <div x-data="erfolgsmeldung(@js((bool) session('success')), @js((string) session('success')))"
-    x-on:hinweis.window="zeigen($event.detail.text)"
+    x-on:notice.window="zeigen($event.detail.text)"
     x-show="show" x-cloak
     x-transition:enter="transition ease-out duration-200"
     x-transition:enter-start="opacity-0 translate-y-2"

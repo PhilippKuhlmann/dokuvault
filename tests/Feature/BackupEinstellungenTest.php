@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\AdminBackupEinstellungen;
+use App\Livewire\AdminBackupSettings;
 use App\Models\Setting;
 use App\Support\BackupSettings;
 use Illuminate\Support\Facades\Event;
@@ -73,7 +73,7 @@ test('FTP without keeping local writes only to the target', function () {
 test('the settings page saves, keeps secrets when left empty and needs the settings right', function () {
     $this->actingAs(adminUser());
 
-    Livewire::test(AdminBackupEinstellungen::class)
+    Livewire::test(AdminBackupSettings::class)
         ->set('form.backup_uhrzeit', '03:15')
         // Port 1 on loopback: the folder check on save is refused at once
         // instead of waiting for a name lookup.
@@ -99,7 +99,7 @@ test('the settings page saves, keeps secrets when left empty and needs the setti
 test('a target without server or user is refused', function () {
     $this->actingAs(adminUser());
 
-    Livewire::test(AdminBackupEinstellungen::class)
+    Livewire::test(AdminBackupSettings::class)
         ->set('form.backup_ziel_art', 'sftp')
         ->call('speichern')
         ->assertHasErrors(['form.backup_ziel_host', 'form.backup_ziel_benutzer']);
@@ -134,5 +134,5 @@ test('without the admin role no backup can be downloaded, even with admin_settin
 test('the backup component refuses admin_setting alone', function () {
     $this->actingAs(userWithPermissions(['admin_setting']));
 
-    Livewire::test(AdminBackupEinstellungen::class)->assertForbidden();
+    Livewire::test(AdminBackupSettings::class)->assertForbidden();
 });

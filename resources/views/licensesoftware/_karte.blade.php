@@ -1,7 +1,7 @@
 {{-- Eine Software-Lizenz in der Liste. --}}
         <x-card>
             <x-slot:head>
-                <x-show.header can="licensesoftware_update" editAction="$dispatch('objekt-bearbeiten', { typ: 'licensesoftware', id: {{ $eintrag->id }} })">
+                <x-show.header can="licensesoftware_update" editAction="$dispatch('object-edit', { typ: 'licensesoftware', id: {{ $eintrag->id }} })">
                     {{ $eintrag->name }}
                 </x-show.header>
             </x-slot>

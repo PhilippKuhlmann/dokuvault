@@ -9,7 +9,7 @@
 
                         ]"
 
-                        editAction="$dispatch('objekt-bearbeiten', { typ: 'contactperson', id: {{ $eintrag->id }} })"
+                        editAction="$dispatch('object-edit', { typ: 'contactperson', id: {{ $eintrag->id }} })"
                         can="contactperson_update"
 
                     />

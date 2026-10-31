@@ -7,7 +7,7 @@
 
                         ]"
 
-                        editAction="$dispatch('objekt-bearbeiten', { typ: 'licensewindows', id: {{ $eintrag->id }} })"
+                        editAction="$dispatch('object-edit', { typ: 'licensewindows', id: {{ $eintrag->id }} })"
                         can="licensewindows_update"
                     />
 

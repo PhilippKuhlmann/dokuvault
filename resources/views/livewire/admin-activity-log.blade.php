@@ -159,7 +159,7 @@
                                     {{-- Das bisherige Kennwort steht nicht im
                                          Protokolleintrag, sondern kommt auf Klick aus
                                          der Historie - und laeuft mit deren Frist ab. --}}
-                                    <livewire:protokoll-kennwort :ids="$verlaufIds" :felder="$felder"
+                                    <livewire:activity-log-password :ids="$verlaufIds" :felder="$felder"
                                         :key="'pw-'.$activity->id" />
                                 @elseif (count($felder))
                                     {{-- Kein alter Wert vorhanden - dann wenigstens

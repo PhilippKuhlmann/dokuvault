@@ -7,7 +7,7 @@
 
                         ]"
 
-                        editAction="$dispatch('objekt-bearbeiten', { typ: 'site', id: {{ $eintrag->id }} })"
+                        editAction="$dispatch('object-edit', { typ: 'site', id: {{ $eintrag->id }} })"
                         can="site_update"
 
                     />

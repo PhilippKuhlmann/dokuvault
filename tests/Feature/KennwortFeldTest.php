@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\KennwortFeld;
+use App\Livewire\PasswordField;
 use App\Models\CredentialLink;
 use App\Models\Customer;
 use App\Models\LoginGeneral;
@@ -40,7 +40,7 @@ test('vor dem Klick steht der Wert nirgends im Feld', function () {
     $this->actingAs(userWithPermissions(['logingeneral_viewAny']));
     $link = eineVerknuepfung('Sichtbar-Waere-Falsch-2026');
 
-    Livewire::test(KennwortFeld::class, ['linkId' => $link->id])
+    Livewire::test(PasswordField::class, ['linkId' => $link->id])
         ->assertSet('wert', null)
         ->assertSet('offen', false)
         ->assertDontSee('Sichtbar-Waere-Falsch-2026');
@@ -50,7 +50,7 @@ test('auf Klick holt das Feld den Wert - mit Recht', function () {
     $this->actingAs(userWithPermissions(['logingeneral_viewAny']));
     $link = eineVerknuepfung('Auf-Klick-2026');
 
-    Livewire::test(KennwortFeld::class, ['linkId' => $link->id])
+    Livewire::test(PasswordField::class, ['linkId' => $link->id])
         ->call('zeigen')
         ->assertSet('offen', true)
         ->assertSee('Auf-Klick-2026');
@@ -60,7 +60,7 @@ test('ohne Recht bleibt das Kennwort verborgen', function () {
     $this->actingAs(userWithPermissions([])); // kein logingeneral_viewAny
     $link = eineVerknuepfung('Verboten-2026');
 
-    Livewire::test(KennwortFeld::class, ['linkId' => $link->id])
+    Livewire::test(PasswordField::class, ['linkId' => $link->id])
         ->call('zeigen')
         ->assertForbidden();
 });
@@ -69,7 +69,7 @@ test('das Verbergen räumt den Wert wieder weg', function () {
     $this->actingAs(userWithPermissions(['logingeneral_viewAny']));
     $link = eineVerknuepfung('Kommt-Und-Geht-2026');
 
-    Livewire::test(KennwortFeld::class, ['linkId' => $link->id])
+    Livewire::test(PasswordField::class, ['linkId' => $link->id])
         ->call('zeigen')->assertSee('Kommt-Und-Geht-2026')
         ->call('verbergen')
         ->assertSet('wert', null)
@@ -81,7 +81,7 @@ test('die Einsicht steht im Protokoll - ohne den Wert', function () {
     $this->actingAs($nutzer);
     $link = eineVerknuepfung('Nie-Ins-Protokoll-2026');
 
-    Livewire::test(KennwortFeld::class, ['linkId' => $link->id])->call('zeigen');
+    Livewire::test(PasswordField::class, ['linkId' => $link->id])->call('zeigen');
 
     $eintrag = Activity::where('event', 'kennwort_angesehen')->latest('id')->first();
 
@@ -98,10 +98,10 @@ test('kopieren gibt den Wert heraus, ohne aufzudecken', function () {
     $this->actingAs(userWithPermissions(['logingeneral_viewAny']));
     $link = eineVerknuepfung('Kopiert-2026');
 
-    Livewire::test(KennwortFeld::class, ['linkId' => $link->id])
+    Livewire::test(PasswordField::class, ['linkId' => $link->id])
         ->call('kopieren')
         ->assertSet('offen', false)
-        ->assertDispatched('kennwort-bereit', wert: 'Kopiert-2026');
+        ->assertDispatched('password-ready', wert: 'Kopiert-2026');
 });
 
 test('die Bremse stoppt das reihenweise Abgreifen', function () {
@@ -109,7 +109,7 @@ test('die Bremse stoppt das reihenweise Abgreifen', function () {
     $this->actingAs(userWithPermissions(['logingeneral_viewAny']));
     $link = eineVerknuepfung('Nur-Einmal-2026');
 
-    $test = Livewire::test(KennwortFeld::class, ['linkId' => $link->id]);
+    $test = Livewire::test(PasswordField::class, ['linkId' => $link->id]);
 
     // Erster Abruf zählt und deckt auf.
     $test->call('zeigen')->assertSet('offen', true);

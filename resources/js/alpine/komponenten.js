@@ -57,7 +57,7 @@ export function komponentenRegistrieren(Alpine) {
         zeichnungen,
         bildWaehlen(event) { this.neuesBild = bildvorschau(event); },
         melden() {
-            this.$dispatch('rack-vorschau', {
+            this.$dispatch('rack-preview', {
                 appearance: this.zeichnungen[this.typ], he: this.he,
                 drawing: this.drawing,
             });
@@ -69,7 +69,7 @@ export function komponentenRegistrieren(Alpine) {
         neuesBild: null,
         bildWaehlen(event) { this.neuesBild = bildvorschau(event); },
         melden() {
-            this.$dispatch('rack-vorschau', { appearance: this.appearance, he: this.he });
+            this.$dispatch('rack-preview', { appearance: this.appearance, he: this.he });
         },
     }));
 

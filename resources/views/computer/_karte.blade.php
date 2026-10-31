@@ -6,7 +6,7 @@
         @endphp
     <x-card>
         <x-slot:head>
-            <x-show.header can="computer_update" editAction="$dispatch('objekt-bearbeiten', { typ: 'computer', id: {{ $eintrag->id }} })">
+            <x-show.header can="computer_update" editAction="$dispatch('object-edit', { typ: 'computer', id: {{ $eintrag->id }} })">
                 @if ($eintrag->remoteID AND $eintrag->remotePassword)
                     <x-remote.button :device="$eintrag" stil="text" />
                 @endif

@@ -3,7 +3,7 @@
      groups of the form (Domäne, Domänencontroller, Dienste). --}}
 <x-card>
     <x-slot:head>
-        <x-show.header can="addomain_update" editAction="$dispatch('objekt-bearbeiten', { typ: 'addomain', id: {{ $eintrag->id }} })">
+        <x-show.header can="addomain_update" editAction="$dispatch('object-edit', { typ: 'addomain', id: {{ $eintrag->id }} })">
             {{ $eintrag->domain }}
 
             @if ($eintrag->netbios)

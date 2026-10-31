@@ -71,23 +71,23 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VMController;
 use App\Http\Controllers\WifiController;
 use App\Http\Controllers\WizardController;
-use App\Livewire\AdminAgentenEinstellungen;
-use App\Livewire\AdminAgentenStatistik;
-use App\Livewire\AdminAllgemein;
+use App\Livewire\AdminActivityLog;
+use App\Livewire\AdminAgentSettings;
+use App\Livewire\AdminAgentStats;
+use App\Livewire\AdminApiLoad;
 use App\Livewire\AdminApiToken;
-use App\Livewire\AdminAuslastung;
-use App\Livewire\AdminBackupEinstellungen;
 use App\Livewire\AdminBackups;
-use App\Livewire\AdminDatenwachstum;
-use App\Livewire\AdminFristen;
+use App\Livewire\AdminBackupSettings;
+use App\Livewire\AdminDataGrowth;
+use App\Livewire\AdminGeneral;
+use App\Livewire\AdminLogRetention;
 use App\Livewire\AdminNotifications;
-use App\Livewire\AdminNutzung;
 use App\Livewire\AdminOperatingSystem;
-use App\Livewire\AdminPapierkorb;
-use App\Livewire\AdminProtokoll;
-use App\Livewire\AdminProtokollHistorie;
-use App\Livewire\AdminSicherheit;
+use App\Livewire\AdminRetention;
+use App\Livewire\AdminSecurity;
 use App\Livewire\AdminSystem;
+use App\Livewire\AdminTrash;
+use App\Livewire\AdminUsage;
 use App\Livewire\GlobalSearch;
 use App\Livewire\RemoteSearch;
 use Illuminate\Support\Facades\Route;
@@ -142,37 +142,37 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
         // Papierkorb ueber alle Kunden - sehen, was sich angesammelt hat, und
         // es endgueltig loswerden.
-        Route::get('/trash', AdminPapierkorb::class)
+        Route::get('/trash', AdminTrash::class)
             ->middleware('can:admin_trash')->name('admin.trash');
 
         // Wie lange das Protokoll - und damit die bisherigen Kennwoerter -
         // aufbewahrt wird.
-        Route::get('/log-retention', AdminProtokollHistorie::class)
+        Route::get('/log-retention', AdminLogRetention::class)
             ->middleware('can:admin_activity')->name('admin.logretention');
 
         // Einstellungen der Installation
         Route::middleware('can:admin_setting')->group(function () {
             // Eigener Name und eigene Logos - Livewire, damit jede Aenderung
             // sofort gilt statt erst nach einem Speichern-Knopf.
-            Route::get('/general', AdminAllgemein::class)->name('admin.general.index');
+            Route::get('/general', AdminGeneral::class)->name('admin.general.index');
 
             // Kennwortregeln fuer die Anmeldung - siehe AdminSicherheit.
-            Route::get('/security', AdminSicherheit::class)->name('admin.security.index');
+            Route::get('/security', AdminSecurity::class)->name('admin.security.index');
 
             // Vorwarnzeiten und die Aufbewahrung der PDF-Ausgaben.
-            Route::get('/retention', AdminFristen::class)->name('admin.retention.index');
+            Route::get('/retention', AdminRetention::class)->name('admin.retention.index');
 
             // Who gets the daily expiry mail, and what it reports.
             Route::get('/notifications', AdminNotifications::class)->name('admin.notifications');
 
             // Backup of DokuVault itself: schedule, external target, retention.
             // Defaults for the agents of all customers.
-            Route::get('/agents', AdminAgentenEinstellungen::class)->name('admin.agents.settings');
+            Route::get('/agents', AdminAgentSettings::class)->name('admin.agents.settings');
 
             // Admin role only, not admin_setting: whoever sets the target and
             // the archive password can take every customer's data with them.
             Route::middleware('can:isAdmin')->group(function () {
-                Route::get('/backup', AdminBackupEinstellungen::class)->name('admin.backup.settings');
+                Route::get('/backup', AdminBackupSettings::class)->name('admin.backup.settings');
                 Route::get('/backup/download', BackupDownloadController::class)->name('admin.backup.download');
             });
 
@@ -189,7 +189,7 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
         });
 
         // Aktivitätsprotokoll - mit Suche und Filtern, deshalb Livewire.
-        Route::get('/activity', AdminProtokoll::class)
+        Route::get('/activity', AdminActivityLog::class)
             ->middleware('can:admin_activity')->name('admin.activity.index');
 
         // Token anlegen und widerrufen. Vorher gab diese Adresse rohes JSON
@@ -200,13 +200,13 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
         // Statistik: requests to the API per hour - when the load comes,
         // whether the server keeps up. Own right, more pages follow.
-        Route::get('/api-load', AdminAuslastung::class)
+        Route::get('/api-load', AdminApiLoad::class)
             ->middleware('can:admin_statistik')->name('admin.api-load');
         Route::middleware('can:admin_statistik')->prefix('stats')->group(function () {
             Route::get('/system', AdminSystem::class)->name('admin.stats.system');
-            Route::get('/data-growth', AdminDatenwachstum::class)->name('admin.stats.data-growth');
-            Route::get('/agents', AdminAgentenStatistik::class)->name('admin.stats.agents');
-            Route::get('/usage', AdminNutzung::class)->name('admin.stats.usage');
+            Route::get('/data-growth', AdminDataGrowth::class)->name('admin.stats.data-growth');
+            Route::get('/agents', AdminAgentStats::class)->name('admin.stats.agents');
+            Route::get('/usage', AdminUsage::class)->name('admin.stats.usage');
         });
 
         // Backups of all customers with their last runs (reported by agents).

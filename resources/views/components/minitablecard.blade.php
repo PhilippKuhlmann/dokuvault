@@ -43,14 +43,14 @@
                     <td class="py-1 pr-6 align-top text-gray-500 dark:text-gray-400">{{ __($key) }}</td>
                     @if ($istGeheim($value))
                         <td scope="row">
-                            <livewire:geheim-feld :modell="get_class($value[0])" :id="$value[0]->id" :feld="$value[1]"
+                            <livewire:secret-field :modell="get_class($value[0])" :id="$value[0]->id" :feld="$value[1]"
                                 width="w-full" :key="'gf-'.class_basename($value[0]).'-'.$value[0]->id.'-'.$value[1]" />
                         </td>
                     @elseif ($modell && array_key_exists($key, $geheimFelder))
                         {{-- Geheimnis am Modell: erst auf Klick ueber den Server
                              (App\Livewire\GeheimFeld), nicht als Klartext im HTML. --}}
                         <td scope="row">
-                            <livewire:geheim-feld :modell="get_class($modell)" :id="$modell->id" :feld="$geheimFelder[$key]"
+                            <livewire:secret-field :modell="get_class($modell)" :id="$modell->id" :feld="$geheimFelder[$key]"
                                 width="w-full" :key="'gf-'.class_basename($modell).'-'.$modell->id.'-'.$geheimFelder[$key]" />
                         </td>
                     @elseif ($key == 'Passwort' || $key == 'BMC Passwort' || $key == 'DSRM Passwort' || $key == 'Cloud Backup Passwort' || $key == 'Verschlüsselungscode' || $key == 'USC-PIN')

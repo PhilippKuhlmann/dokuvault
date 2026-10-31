@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Livewire\Concerns\GehoertZumKunden;
+use App\Livewire\Concerns\ScopedToCustomer;
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
@@ -26,9 +26,9 @@ use Livewire\WithPagination;
  * Liste gleich aussehen lassen, und gerade die Unterschiede tragen hier die
  * Information.
  */
-class ObjektListe extends Component
+class ObjectList extends Component
 {
-    use GehoertZumKunden;
+    use ScopedToCustomer;
     use WithPagination;
 
     #[Locked]
@@ -177,7 +177,7 @@ class ObjektListe extends Component
     }
 
     /** Nach dem Speichern im Modal neu rendern - nur fuer den eigenen Typ. */
-    #[On('objekt-gespeichert')]
+    #[On('object-saved')]
     public function neuGeladen(string $typ): void
     {
         if ($typ === $this->typ) {
@@ -191,7 +191,7 @@ class ObjektListe extends Component
      * deren Aenderungen neu zeichnen - ein leerer Rumpf genuegt, Livewire
      * rendert nach jedem Aufruf ohnehin neu.
      */
-    #[On('geraet-geaendert')]
+    #[On('device-changed')]
     public function geraetGeaendert(): void {}
 
     /**
@@ -222,7 +222,7 @@ class ObjektListe extends Component
             // Customer accounts only reach public targets - see CertificateCheck.
             : app(AutoCheck::class)->checkCertificate($eintrag, auth()->user()->hasCustomer());
 
-        $this->dispatch('hinweis', text: $eintrag->check_error
+        $this->dispatch('notice', text: $eintrag->check_error
             ? __('Prüfung fehlgeschlagen: :fehler', ['fehler' => $eintrag->check_error])
             : __('Geprüft und aktualisiert.'));
     }
@@ -285,7 +285,7 @@ class ObjektListe extends Component
         $this->filterAnwenden($abfrage);
         $this->sortierungAnwenden($abfrage);
 
-        return view('livewire.objekt-liste', [
+        return view('livewire.object-list', [
             'eintraege' => $abfrage->paginate(Setting::seiteListe()),
             'filterDefinition' => $this->filterDefinition(),
             'sortierungen' => $this->sortierungen(),

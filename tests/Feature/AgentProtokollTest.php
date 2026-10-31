@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\AdminProtokoll;
+use App\Livewire\AdminActivityLog;
 use App\Models\AgentToken;
 use App\Models\Customer;
 use App\Models\Site;
@@ -86,7 +86,7 @@ test('der Filter verwechselt einen Token nicht mit dem Benutzer gleicher Id', fu
     $this->withToken($plain)->postJson('/api/agent/unifi', unifiMeldung())->assertOk();
     expect(Activity::where('causer_type', AgentToken::class)->value('causer_id'))->toBe($admin->id);
 
-    Livewire::test(AdminProtokoll::class)
+    Livewire::test(AdminActivityLog::class)
         ->set('benutzer', 'user:'.$admin->id)
         // Der Agent hat das WLAN angelegt, nicht der Benutzer - unter dessen
         // Filter darf es nicht auftauchen.
@@ -103,7 +103,7 @@ test('die Auswahlliste fuehrt Agenten getrennt von Benutzern', function () {
 
     $this->withToken($plain)->postJson('/api/agent/unifi', unifiMeldung())->assertOk();
 
-    Livewire::test(AdminProtokoll::class)
+    Livewire::test(AdminActivityLog::class)
         ->assertSee('Agenten')
         ->assertSee('UniFi Werkstatt');
 });

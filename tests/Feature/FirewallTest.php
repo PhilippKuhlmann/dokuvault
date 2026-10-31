@@ -1,7 +1,7 @@
 <?php
 
 use App\Livewire\GlobalSearch;
-use App\Livewire\ObjektFormular;
+use App\Livewire\ObjectModal;
 use App\Models\Customer;
 use App\Models\Firewall;
 use App\Models\Permission;
@@ -79,7 +79,7 @@ test('ohne Berechtigung ist die Firewall nicht erreichbar', function () {
     $this->get(route('firewall.index', $customer))->assertForbidden();
 
     // Schon das Oeffnen des Modals ist versperrt - nicht erst das Speichern.
-    Livewire::test(ObjektFormular::class, ['typ' => 'firewall', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'firewall', 'customer' => $customer])
         ->call('neu')
         ->assertForbidden();
 

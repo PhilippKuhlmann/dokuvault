@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\ObjektFormular;
+use App\Livewire\ObjectModal;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
 use App\Models\Permission;
@@ -120,7 +120,7 @@ function userWithPermissions(array $names): User
  */
 function imModal(string $typ, Customer $customer, array $werte, ?int $id = null): Testable
 {
-    $formular = Livewire\Livewire::test(ObjektFormular::class, ['typ' => $typ, 'customer' => $customer]);
+    $formular = Livewire\Livewire::test(ObjectModal::class, ['typ' => $typ, 'customer' => $customer]);
 
     $id === null
         ? $formular->call('neu')
@@ -153,7 +153,7 @@ function imModalBearbeiten(string $typ, Customer $customer, $objekt, array $wert
  */
 function modalHtml(string $typ, Customer $customer, ?int $id = null): string
 {
-    $formular = Livewire\Livewire::test(ObjektFormular::class, ['typ' => $typ, 'customer' => $customer]);
+    $formular = Livewire\Livewire::test(ObjectModal::class, ['typ' => $typ, 'customer' => $customer]);
 
     $id === null
         ? $formular->call('neu')
@@ -168,7 +168,7 @@ function modalHtml(string $typ, Customer $customer, ?int $id = null): string
  */
 function imModalLoeschen(string $typ, Customer $customer, $objekt): Testable
 {
-    return Livewire\Livewire::test(ObjektFormular::class, ['typ' => $typ, 'customer' => $customer])
+    return Livewire\Livewire::test(ObjectModal::class, ['typ' => $typ, 'customer' => $customer])
         ->call('bearbeiten', $typ, $objekt->id)
         ->call('loeschen');
 }

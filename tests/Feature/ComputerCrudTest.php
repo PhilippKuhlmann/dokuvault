@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\ObjektFormular;
+use App\Livewire\ObjectModal;
 use App\Models\Computer;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
@@ -111,7 +111,7 @@ test('ohne Berechtigung kein Anlegen möglich', function () {
     [$customer, $site, $os] = customerWithSiteAndOs();
 
     // Das Modal prueft das Recht beim Oeffnen: schon "neu" bricht ab.
-    Livewire::test(ObjektFormular::class, ['typ' => 'computer', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'computer', 'customer' => $customer])
         ->call('neu')
         ->assertForbidden();
 

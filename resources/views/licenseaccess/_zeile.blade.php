@@ -6,7 +6,7 @@
                             'download' => $eintrag->file_path ?  route('licenseaccess.download', [$customer, $eintrag]) : NULL,
                         ]"
 
-                        editAction="$dispatch('objekt-bearbeiten', { typ: 'licenseaccess', id: {{ $eintrag->id }} })"
+                        editAction="$dispatch('object-edit', { typ: 'licenseaccess', id: {{ $eintrag->id }} })"
                         can="licenseaccess_update"
                     />
 

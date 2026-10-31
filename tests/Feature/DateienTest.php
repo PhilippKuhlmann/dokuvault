@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\DateiListe;
+use App\Livewire\FileList;
 use App\Models\Customer;
 use App\Models\Domain;
 use App\Models\File;
@@ -131,13 +131,13 @@ test('die Suche greift auf Bezeichnung und Endung', function () {
     $this->actingAs(userWithPermissions(['file_viewAny']));
     dateienBestand($customer);
 
-    Livewire::test(DateiListe::class, ['customer' => $customer])
+    Livewire::test(FileList::class, ['customer' => $customer])
         ->set('suche', 'vertrag')
         ->assertSee('Wartungsvertrag 2026')
         ->assertDontSee('Inventarliste');
 
     // Auch die Endung ist ein Suchbegriff - "alle xlsx" ist eine echte Frage.
-    Livewire::test(DateiListe::class, ['customer' => $customer])
+    Livewire::test(FileList::class, ['customer' => $customer])
         ->set('suche', 'xlsx')
         ->assertSee('Inventarliste')
         ->assertDontSee('Wartungsvertrag');
@@ -148,7 +148,7 @@ test('der Zeitraum-Filter zeigt nur die letzten Tage', function () {
     $this->actingAs(userWithPermissions(['file_viewAny']));
     dateienBestand($customer);
 
-    Livewire::test(DateiListe::class, ['customer' => $customer])
+    Livewire::test(FileList::class, ['customer' => $customer])
         ->set('tage', 7)
         ->assertSee('Wartungsvertrag 2026')   // heute
         ->assertSee('Netzplan Zentrale')      // vor 3 Tagen
@@ -161,14 +161,14 @@ test('der Art-Filter trennt die Dateitypen', function () {
     $this->actingAs(userWithPermissions(['file_viewAny']));
     dateienBestand($customer);
 
-    Livewire::test(DateiListe::class, ['customer' => $customer])
+    Livewire::test(FileList::class, ['customer' => $customer])
         ->set('art', 'pdf')
         ->assertSee('Wartungsvertrag 2026')
         ->assertSee('Altes Angebot')
         ->assertDontSee('Netzplan Zentrale');
 
     // "Sonstige" ist der Rest - alles ohne benannte Art.
-    Livewire::test(DateiListe::class, ['customer' => $customer])
+    Livewire::test(FileList::class, ['customer' => $customer])
         ->set('art', 'datei')
         ->assertSee('Konfigurations-Sicherung')
         ->assertDontSee('Wartungsvertrag 2026');
@@ -181,7 +181,7 @@ test('der Art-Filter greift auch bei gross geschriebener Endung', function () {
 
     // Die Endung wird gespeichert, wie sie hochgeladen wurde: "Netzplan.PNG"
     // ist ein Bild und darf im Filter nicht fehlen.
-    Livewire::test(DateiListe::class, ['customer' => $customer])
+    Livewire::test(FileList::class, ['customer' => $customer])
         ->set('art', 'bild')
         ->assertSee('Netzplan Zentrale');
 });
@@ -192,14 +192,14 @@ test('die Sortierung laesst sich umstellen', function () {
     dateienBestand($customer);
 
     // Neueste zuerst ist die Vorgabe - vorher stand die aelteste Datei oben.
-    Livewire::test(DateiListe::class, ['customer' => $customer])
+    Livewire::test(FileList::class, ['customer' => $customer])
         ->assertSeeInOrder(['Wartungsvertrag 2026', 'Altes Angebot']);
 
-    Livewire::test(DateiListe::class, ['customer' => $customer])
+    Livewire::test(FileList::class, ['customer' => $customer])
         ->set('sortierung', 'aelteste')
         ->assertSeeInOrder(['Altes Angebot', 'Wartungsvertrag 2026']);
 
-    Livewire::test(DateiListe::class, ['customer' => $customer])
+    Livewire::test(FileList::class, ['customer' => $customer])
         ->set('sortierung', 'groesse')
         ->assertSeeInOrder(['Wartungsvertrag 2026', 'Konfigurations-Sicherung']);
 });
@@ -209,7 +209,7 @@ test('die Filter lassen sich zuruecksetzen', function () {
     $this->actingAs(userWithPermissions(['file_viewAny']));
     dateienBestand($customer);
 
-    Livewire::test(DateiListe::class, ['customer' => $customer])
+    Livewire::test(FileList::class, ['customer' => $customer])
         ->set('suche', 'vertrag')
         ->set('tage', 7)
         ->call('zuruecksetzen')
@@ -223,7 +223,7 @@ test('ohne Treffer sagt die Liste, dass es an den Filtern liegt', function () {
     $this->actingAs(userWithPermissions(['file_viewAny']));
     dateienBestand($customer);
 
-    Livewire::test(DateiListe::class, ['customer' => $customer])
+    Livewire::test(FileList::class, ['customer' => $customer])
         ->set('suche', 'gibtesnicht')
         ->assertSee('Keine Datei passt zu den Filtern.');
 });
@@ -239,7 +239,7 @@ test('die Datei eines fremden Kunden laesst sich nicht loeschen (IDOR)', functio
         'extension' => 'pdf', 'file_path' => 'x/fremd.pdf', 'size' => 100,
     ]);
 
-    Livewire::test(DateiListe::class, ['customer' => $customer])
+    Livewire::test(FileList::class, ['customer' => $customer])
         ->call('loeschen', $fremdeDatei->id)
         ->assertStatus(404);
 
@@ -257,7 +257,7 @@ test('loeschen entfernt Eintrag und Datei', function () {
         'extension' => 'pdf', 'file_path' => 'x/weg.pdf', 'size' => 6,
     ]);
 
-    Livewire::test(DateiListe::class, ['customer' => $customer])
+    Livewire::test(FileList::class, ['customer' => $customer])
         ->call('loeschen', $datei->id);
 
     expect(File::find($datei->id))->toBeNull();

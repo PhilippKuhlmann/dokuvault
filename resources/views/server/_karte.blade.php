@@ -7,7 +7,7 @@
             @endphp
 
             <x-slot:head>
-                <x-show.header can="server_update" editAction="$dispatch('objekt-bearbeiten', { typ: 'server', id: {{ $eintrag->id }} })">
+                <x-show.header can="server_update" editAction="$dispatch('object-edit', { typ: 'server', id: {{ $eintrag->id }} })">
                     {{-- Die Fernwartung bleibt der erste Knopf in der Kopfzeile:
                          taeglich benutzt. Welches Werkzeug dahinter steckt,
                          steht in den Einstellungen. --}}

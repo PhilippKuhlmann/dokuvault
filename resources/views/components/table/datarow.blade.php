@@ -82,7 +82,7 @@
                  decrypted value - some models encrypt an empty string, too. --}}
             <td scope="row" class="py-2.5 px-4">
                 @if (filled($value[0]->{$value[1]}))
-                    <livewire:geheim-feld :modell="get_class($value[0])" :id="$value[0]->id" :feld="$value[1]"
+                    <livewire:secret-field :modell="get_class($value[0])" :id="$value[0]->id" :feld="$value[1]"
                         width="w-40" :key="'gf-'.class_basename($value[0]).'-'.$value[0]->id.'-'.$value[1]" />
                 @else
                     <span class="text-gray-400 dark:text-gray-500">—</span>

@@ -1,7 +1,7 @@
 {{-- Ein Postfach in der Liste. --}}
         <x-card>
             <x-slot:head>
-                <x-show.header can="mailbox_update" editAction="$dispatch('objekt-bearbeiten', { typ: 'mailbox', id: {{ $eintrag->id }} })">
+                <x-show.header can="mailbox_update" editAction="$dispatch('object-edit', { typ: 'mailbox', id: {{ $eintrag->id }} })">
                     {{ $eintrag->name }}
                 </x-show.header>
             </x-slot>

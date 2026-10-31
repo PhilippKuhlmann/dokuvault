@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\ObjektFormular;
+use App\Livewire\ObjectModal;
 use App\Models\Accesspoint;
 use App\Models\Camera;
 use App\Models\Computer;
@@ -88,7 +88,7 @@ test('kein Geraeteformular fuehrt noch eigene IP-Felder', function () {
         [$customer, $geraet] = geraetUmgebung($klasse);
 
         foreach ([null, $geraet->id] as $id) {
-            $formular = Livewire::test(ObjektFormular::class, ['typ' => $slug, 'customer' => $customer]);
+            $formular = Livewire::test(ObjectModal::class, ['typ' => $slug, 'customer' => $customer]);
             $id === null ? $formular->call('neu') : $formular->call('bearbeiten', $slug, $id);
             $inhalt = $formular->html();
 
@@ -107,7 +107,7 @@ test('beim Anlegen sagt das Modal, dass Adressen und Zugangsdaten spaeter kommen
         $this->actingAs(userWithPermissions(["{$slug}_create"]));
         [$customer] = geraetUmgebung($klasse);
 
-        $inhalt = Livewire::test(ObjektFormular::class, ['typ' => $slug, 'customer' => $customer])
+        $inhalt = Livewire::test(ObjectModal::class, ['typ' => $slug, 'customer' => $customer])
             ->call('neu')->html();
 
         expect($inhalt)->toContain('sobald der Eintrag angelegt ist');

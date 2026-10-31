@@ -25,7 +25,7 @@ test('der Klick legt einen Auftrag an statt zu rendern', function () {
 
     Livewire::test(PdfExportStatus::class, ['customer' => $customer])
         ->call('starten')
-        ->assertDispatched('hinweis');
+        ->assertDispatched('notice');
 
     Queue::assertPushed(GenerateCustomerPdf::class);
     expect(PdfExport::where('customer_id', $customer->id)->sole()->status)->toBe(PdfExport::OFFEN);

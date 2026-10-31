@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\ObjektFormular;
+use App\Livewire\ObjectModal;
 use App\Models\Customer;
 use App\Models\LicenseSoftware;
 use App\Models\LoginGeneral;
@@ -27,7 +27,7 @@ test('Passwort mit Sonderzeichen übersteht den Edit-Roundtrip unverändert', fu
     // Das Modal bindet ueber wire:model, der Wert steht also im Zustand der
     // Komponente und nicht in einem value-Attribut. Genau dort muss er
     // unveraendert ankommen - eine zusaetzliche Maskierung faellt hier auf.
-    $formular = Livewire::test(ObjektFormular::class, ['typ' => 'logingeneral', 'customer' => $customer])
+    $formular = Livewire::test(ObjectModal::class, ['typ' => 'logingeneral', 'customer' => $customer])
         ->call('bearbeiten', 'logingeneral', $login->id);
 
     expect($formular->get('form')['password'])->toBe($password);

@@ -1,7 +1,7 @@
 <?php
 
 use App\Livewire\DeviceCredentials;
-use App\Livewire\ObjektListe;
+use App\Livewire\ObjectList;
 use App\Models\Customer;
 use App\Models\FTPServer;
 use App\Models\LoginGeneral;
@@ -118,7 +118,7 @@ test('die Liste zeigt die Benutzernamen des Servers und sonst "kein Zugang"', fu
         'customer_id' => $customer->id, 'login_general_id' => $login->id,
     ]);
 
-    Livewire::test(ObjektListe::class, ['typ' => 'ftpserver', 'customer' => $customer])
+    Livewire::test(ObjectList::class, ['typ' => 'ftpserver', 'customer' => $customer])
         ->assertSee('ftp-steuerberater')
         ->assertSee('kein Zugang');
 });

@@ -116,7 +116,7 @@
         <p class="mb-1 mt-1 text-xs text-gray-400 dark:text-gray-500">
             {{ __('Ein Schrank mit :max HE – so viel darf ein Katalogelement höchstens hoch sein.', ['max' => $maxHe]) }}
         </p>
-        <livewire:rack-katalog-vorschau :appearance="$gewaehlt" :he="$he" :bild="$bild" />
+        <livewire:rack-catalog-preview :appearance="$gewaehlt" :he="$he" :bild="$bild" />
     </div>
 
 </div>

@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Livewire\AdminSicherheit;
+use App\Livewire\AdminSecurity;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
@@ -177,7 +177,7 @@ test('ohne lesbare Einstellungen bleibt die Frist bei 30 Tagen, nicht bei 400', 
 test('die Seite speichert beim Ändern, ohne Knopf', function () {
     $this->actingAs(sicherheitsAdmin());
 
-    Livewire::test(AdminSicherheit::class)
+    Livewire::test(AdminSecurity::class)
         ->set('versuche', 3)
         ->set('sperre', 30)
         ->set('herkunft', 50)
@@ -197,7 +197,7 @@ test('die Seite speichert beim Ändern, ohne Knopf', function () {
 test('null Versuche wäre eine Anmeldung, die niemanden durchlässt', function () {
     $this->actingAs(sicherheitsAdmin());
 
-    Livewire::test(AdminSicherheit::class)
+    Livewire::test(AdminSecurity::class)
         ->set('versuche', 0)
         ->assertHasErrors(['versuche']);
 
@@ -208,7 +208,7 @@ test('eine Sitzung unter fünf Minuten wird abgewiesen', function () {
     $this->actingAs(sicherheitsAdmin());
 
     // Kuerzer meldet die Anwendung jemanden waehrend des Tippens ab.
-    Livewire::test(AdminSicherheit::class)
+    Livewire::test(AdminSecurity::class)
         ->set('sitzungMinuten', 1)
         ->assertHasErrors(['sitzungMinuten']);
 });

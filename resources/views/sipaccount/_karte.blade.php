@@ -1,7 +1,7 @@
 {{-- A SIP account in the list. The blocks follow the groups of the form. --}}
 <x-card>
     <x-slot:head>
-        <x-show.header can="sipaccount_update" editAction="$dispatch('objekt-bearbeiten', { typ: 'sipaccount', id: {{ $eintrag->id }} })">
+        <x-show.header can="sipaccount_update" editAction="$dispatch('object-edit', { typ: 'sipaccount', id: {{ $eintrag->id }} })">
             {{ $eintrag->provider }}
 
             @if ($eintrag->account_type)

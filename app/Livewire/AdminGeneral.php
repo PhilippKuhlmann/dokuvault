@@ -18,7 +18,7 @@ use Livewire\WithFileUploads;
  * uebernommen. Ein Formular mit Speichern-Knopf laesst offen, ob die letzte
  * Aenderung noch drin war - hier gibt es diesen Zwischenzustand nicht.
  */
-class AdminAllgemein extends Component
+class AdminGeneral extends Component
 {
     use WithFileUploads;
 
@@ -109,7 +109,7 @@ class AdminAllgemein extends Component
 
         Setting::setzen(Setting::APP_NAME, trim($this->name) ?: null);
 
-        $this->dispatch('hinweis', text: __('Name gespeichert.'));
+        $this->dispatch('notice', text: __('Name gespeichert.'));
     }
 
     /**
@@ -133,7 +133,7 @@ class AdminAllgemein extends Component
 
         Setting::setzen(Setting::UPLOAD_MAX_KB, $this->uploadMb * 1024);
 
-        $this->dispatch('hinweis', text: __('Obergrenze gespeichert.'));
+        $this->dispatch('notice', text: __('Obergrenze gespeichert.'));
     }
 
     /** Die Zeitzone gilt sofort - wie der Name. */
@@ -149,7 +149,7 @@ class AdminAllgemein extends Component
 
         Setting::setzen(Setting::APP_TIMEZONE, $this->zeitzone);
 
-        $this->dispatch('hinweis', text: __('Zeitzone gespeichert.'));
+        $this->dispatch('notice', text: __('Zeitzone gespeichert.'));
     }
 
     /** Die Sprache der Installation - wirkt, wo Nutzer und Browser nichts sagen. */
@@ -165,7 +165,7 @@ class AdminAllgemein extends Component
 
         Setting::setzen(Setting::APP_LOCALE, $this->sprache);
 
-        $this->dispatch('hinweis', text: __('Sprache gespeichert.'));
+        $this->dispatch('notice', text: __('Sprache gespeichert.'));
     }
 
     /**
@@ -187,7 +187,7 @@ class AdminAllgemein extends Component
 
         Setting::setzen(Setting::ANMELDE_HINWEIS, trim($this->anmeldeHinweis) ?: null);
 
-        $this->dispatch('hinweis', text: __('Hinweis gespeichert.'));
+        $this->dispatch('notice', text: __('Hinweis gespeichert.'));
     }
 
     /**
@@ -214,7 +214,7 @@ class AdminAllgemein extends Component
 
         Setting::setzen(Setting::DATEI_FORMATE, implode(',', $auswahl));
 
-        $this->dispatch('hinweis', text: __('Dateiendungen gespeichert.'));
+        $this->dispatch('notice', text: __('Dateiendungen gespeichert.'));
     }
 
     public function updatedSeiteListe(): void
@@ -246,7 +246,7 @@ class AdminAllgemein extends Component
 
         Setting::setzen($schluessel, $this->$feld);
 
-        $this->dispatch('hinweis', text: __('Seitengröße gespeichert.'));
+        $this->dispatch('notice', text: __('Seitengröße gespeichert.'));
     }
 
     /**
@@ -280,7 +280,7 @@ class AdminAllgemein extends Component
         // Zwischenspeicher statt an der abgelegten Datei.
         $this->{$eigenschaft} = null;
 
-        $this->dispatch('hinweis', text: __('Logo gespeichert.'));
+        $this->dispatch('notice', text: __('Logo gespeichert.'));
         $this->seiteNeu();
     }
 
@@ -293,7 +293,7 @@ class AdminAllgemein extends Component
         $this->altesLoeschen($stelle);
         Setting::setzen(Setting::logoSchluessel($stelle), null);
 
-        $this->dispatch('hinweis', text: __('Logo entfernt.'));
+        $this->dispatch('notice', text: __('Logo entfernt.'));
         $this->seiteNeu();
     }
 
@@ -321,7 +321,7 @@ class AdminAllgemein extends Component
 
     public function render()
     {
-        return view('livewire.admin-allgemein', [
+        return view('livewire.admin-general', [
             'standardName' => config('app.name'),
             'stellen' => collect(config('custom.branding_logos'))
                 ->map(fn ($texte, $stelle) => [

@@ -358,7 +358,7 @@ class MobileObjects
     }
 
     /**
-     * Dieselbe Regel wie im Modal (objekt-formular.blade.php): Ein Standserver
+     * Dieselbe Regel wie im Modal (object-modal.blade.php): Ein Standserver
      * hat keine Einbautiefe, auch wenn in der Spalte noch eine steht.
      * Mehrere Bedingungen gelten zusammen.
      */

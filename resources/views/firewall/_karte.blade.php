@@ -6,7 +6,7 @@
         @endphp
         <x-card>
             <x-slot:head>
-                <x-show.header can="firewall_update" editAction="$dispatch('objekt-bearbeiten', { typ: 'firewall', id: {{ $eintrag->id }} })">
+                <x-show.header can="firewall_update" editAction="$dispatch('object-edit', { typ: 'firewall', id: {{ $eintrag->id }} })">
                     {{ $eintrag->name }}
 
                     {{-- Was man an einer Firewall fast immer sucht: die Adresse,

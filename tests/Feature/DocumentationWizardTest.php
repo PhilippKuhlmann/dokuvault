@@ -2,7 +2,7 @@
 
 use App\Livewire\DocumentationWizard;
 use App\Livewire\NetworkQuickCreate;
-use App\Livewire\ObjektFormular;
+use App\Livewire\ObjectModal;
 use App\Models\ADDomain;
 use App\Models\ContactPerson;
 use App\Models\Customer;
@@ -390,9 +390,9 @@ test('schon erfasste Eintraege öffnen mit Änderungsrecht das Bearbeiten-Modal'
     $router = Router::where('customer_id', $customer->id)->firstOrFail();
 
     // Mit _update-Recht wird direkt hier im eingebetteten Modal bearbeitet
-    // (objekt-bearbeiten mit der ID), nicht mehr in einem neuen Tab auf der Liste.
+    // (object-edit mit der ID), nicht mehr in einem neuen Tab auf der Liste.
     expect($router->exists)->toBeTrue();
-    expect($inhalt)->toContain('objekt-bearbeiten');
+    expect($inhalt)->toContain('object-edit');
     expect($inhalt)->toContain("id: {$router->id}");
     expect($inhalt)->not->toContain(route('router.index', $customer, false));
 });
@@ -475,7 +475,7 @@ test('nach dem Hinzufügen sagt der Assistent dem Browser, dass er leeren soll',
         ->call('save')
         ->assertHasNoErrors()
         ->assertSet('form', [])
-        ->assertDispatched('assistent-formular-geleert');
+        ->assertDispatched('wizard-form-cleared');
 
     expect(Site::where('name', 'Zentrale')->count())->toBe(1);
 });
@@ -549,7 +549,7 @@ test('ein gebündeltes form-Update mit null-Key wirft keine Exception', function
 
 test('vorhandene Einträge öffnen im Assistenten das Bearbeiten-Modal, wenn man ändern darf', function () {
     // "Schon erfasst"-Chips sind jetzt Bearbeiten-Auslöser: statt in einem neuen Tab
-    // die Liste zu öffnen, lösen sie objekt-bearbeiten aus und das eingebettete
+    // die Liste zu öffnen, lösen sie object-edit aus und das eingebettete
     // ObjektFormular-Modal (dieselbe config-getriebene Komponente wie in den Listen)
     // öffnet mit dem Datensatz - sofern der Nutzer das _update-Recht hat.
     $this->actingAs(userWithPermissions(['contactperson_create', 'contactperson_update', 'contactperson_viewAny']));
@@ -566,8 +566,8 @@ test('vorhandene Einträge öffnen im Assistenten das Bearbeiten-Modal, wenn man
 
     Livewire::test(DocumentationWizard::class, ['customer' => $customer])
         ->assertSee('Musterfrau')
-        ->assertSee('objekt-bearbeiten', false)   // der Chip löst das Bearbeiten-Event aus
-        ->assertSeeLivewire('objekt-formular');    // Modal ist eingebettet
+        ->assertSee('object-edit', false)   // der Chip löst das Bearbeiten-Event aus
+        ->assertSeeLivewire('object-modal');    // Modal ist eingebettet
 });
 
 test('ohne Änderungsrecht bettet der Assistent kein Bearbeiten-Modal ein', function () {
@@ -585,8 +585,8 @@ test('ohne Änderungsrecht bettet der Assistent kein Bearbeiten-Modal ein', func
 
     Livewire::test(DocumentationWizard::class, ['customer' => $customer])
         ->assertSee('Musterfrau')
-        ->assertDontSee('objekt-bearbeiten', false)
-        ->assertDontSeeLivewire('objekt-formular');
+        ->assertDontSee('object-edit', false)
+        ->assertDontSeeLivewire('object-modal');
 });
 
 test('nach dem Speichern im Modal rendert der Assistent neu (Liste aktuell)', function () {
@@ -602,7 +602,7 @@ test('nach dem Speichern im Modal rendert der Assistent neu (Liste aktuell)', fu
     ]);
 
     Livewire::test(DocumentationWizard::class, ['customer' => $customer])
-        ->dispatch('objekt-gespeichert', typ: 'contactperson')
+        ->dispatch('object-saved', typ: 'contactperson')
         ->assertOk();
 });
 
@@ -612,16 +612,16 @@ test('ObjektFormular ohne Knopf zeigt den eigenen Neu-Button nicht', function ()
     $this->actingAs(userWithPermissions(['contactperson_create']));
     $customer = Customer::factory()->create();
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'contactperson', 'customer' => $customer, 'mitKnopf' => true])
+    Livewire::test(ObjectModal::class, ['typ' => 'contactperson', 'customer' => $customer, 'mitKnopf' => true])
         ->assertSee('Neu');
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'contactperson', 'customer' => $customer, 'mitKnopf' => false])
+    Livewire::test(ObjectModal::class, ['typ' => 'contactperson', 'customer' => $customer, 'mitKnopf' => false])
         ->assertDontSee('Neu');
 });
 
 test('Netzwerk-Einträge öffnen im Assistenten das VLAN-Modal, wenn man ändern darf', function () {
     // 'network' hat keinen forms.php-Typ, sondern sein eigenes Modal
-    // (NetworkQuickCreate). Der Chip loest deshalb vlan-bearbeiten aus und das
+    // (NetworkQuickCreate). Der Chip loest deshalb vlan-edit aus und das
     // eingebettete VLAN-Modal oeffnet mit dem Datensatz.
     $this->actingAs(userWithPermissions(['network_create', 'network_update', 'network_viewAny']));
     $customer = Customer::factory()->create();
@@ -638,7 +638,7 @@ test('Netzwerk-Einträge öffnen im Assistenten das VLAN-Modal, wenn man ändern
     ]);
 
     Livewire::test(DocumentationWizard::class, ['customer' => $customer])
-        ->assertSee('vlan-bearbeiten', false)
+        ->assertSee('vlan-edit', false)
         ->assertSeeLivewire('network-quick-create');
 });
 

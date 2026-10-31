@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Livewire\Concerns\GehoertZumKunden;
+use App\Livewire\Concerns\ScopedToCustomer;
 use App\Models\ADGroup;
 use App\Models\ChecklistOption;
 use App\Models\ChecklistSetting;
@@ -22,7 +22,7 @@ use Livewire\Component;
  */
 class ChecklistSettings extends Component
 {
-    use GehoertZumKunden;
+    use ScopedToCustomer;
 
     #[Locked]
     public int $customerId;
@@ -128,7 +128,7 @@ class ChecklistSettings extends Component
 
         $this->passwordSpecials = $setting->password_specials;
         $this->fixedPassword = '';
-        $this->dispatch('hinweis', text: __('Kennwort-Regel gespeichert.'));
+        $this->dispatch('notice', text: __('Kennwort-Regel gespeichert.'));
     }
 
     private function customer(): Customer
@@ -164,11 +164,11 @@ class ChecklistSettings extends Component
 
         if ($this->editingId) {
             $customer->checklistOptions()->findOrFail($this->editingId)->update($data);
-            $this->dispatch('hinweis', text: __('Gespeichert.'));
+            $this->dispatch('notice', text: __('Gespeichert.'));
         } else {
             $data['sort'] = (int) $customer->checklistOptions()->where('kind', $data['kind'])->max('sort') + 1;
             $customer->checklistOptions()->create($data);
-            $this->dispatch('hinweis', text: __('Hinzugefügt.'));
+            $this->dispatch('notice', text: __('Hinzugefügt.'));
         }
 
         $this->cancelEdit();
@@ -261,7 +261,7 @@ class ChecklistSettings extends Component
         ]);
 
         $this->steps[$type] = ['section' => $data['section'], 'title' => '', 'assignee' => 'it', 'due_offset' => 0];
-        $this->dispatch('hinweis', text: __('Schritt hinzugefügt.'));
+        $this->dispatch('notice', text: __('Schritt hinzugefügt.'));
     }
 
     public function deleteStep(int $itemId): void

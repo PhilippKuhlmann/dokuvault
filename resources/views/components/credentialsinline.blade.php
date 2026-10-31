@@ -13,7 +13,7 @@
                 <span class="font-mono text-gray-900 dark:text-gray-100"> · {{ $eintrag->login->username }}</span>
             @endif
             @if ($eintrag->login->password)
-                <livewire:kennwort-feld :link-id="$eintrag->id" width="w-24" :key="'kw-'.$eintrag->id" />
+                <livewire:password-field :link-id="$eintrag->id" width="w-24" :key="'kw-'.$eintrag->id" />
             @endif
         </div>
     @empty

@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Livewire\Concerns\GehoertZumKunden;
+use App\Livewire\Concerns\ScopedToCustomer;
 use App\Models\Customer;
 use App\Models\File;
 use App\Models\Setting;
@@ -22,9 +22,9 @@ use Livewire\WithPagination;
  * Dateien war "wo ist der Wartungsvertrag von 2024?" damit eine
  * Blaetteruebung - und die zuletzt hochgeladene Datei stand ganz hinten.
  */
-class DateiListe extends Component
+class FileList extends Component
 {
-    use GehoertZumKunden;
+    use ScopedToCustomer;
     use WithPagination;
 
     #[Locked]
@@ -86,7 +86,7 @@ class DateiListe extends Component
         Storage::disk('local')->delete($datei->file_path);
         $datei->delete();
 
-        $this->dispatch('hinweis', text: __('Datei gelöscht.'));
+        $this->dispatch('notice', text: __('Datei gelöscht.'));
     }
 
     public function render()
@@ -105,7 +105,7 @@ class DateiListe extends Component
             default => $abfrage->latest(),
         };
 
-        return view('livewire.datei-liste', [
+        return view('livewire.file-list', [
             'customer' => Customer::findOrFail($this->customerId),
             'files' => $abfrage->paginate(Setting::seiteListe()),
             'gesamt' => File::where('customer_id', $this->customerId)->count(),

@@ -12,7 +12,7 @@ use Livewire\Component;
  * how many report, which are silent, which runs fail, which still run an
  * old version (self-update stuck).
  */
-class AdminAgentenStatistik extends Component
+class AdminAgentStats extends Component
 {
     public function mount(): void
     {
@@ -43,7 +43,7 @@ class AdminAgentenStatistik extends Component
             ->sortBy(fn ($a) => [$a->isStale() ? 0 : ($a->fehler ? 1 : ($a->veraltet ? 2 : 3)), $a->customer?->name, $a->hostname])
             ->values();
 
-        return view('livewire.admin-agenten-statistik', [
+        return view('livewire.admin-agent-stats', [
             'agenten' => $agenten,
             'summe' => [
                 'gesamt' => $agenten->count(),

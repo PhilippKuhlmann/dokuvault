@@ -1,14 +1,14 @@
 <?php
 
-use App\Livewire\DateiListe;
 use App\Livewire\DeviceCredentials;
 use App\Livewire\DeviceIpAddresses;
 use App\Livewire\DocumentationWizard;
+use App\Livewire\FileList;
 use App\Livewire\GlobalSearch;
 use App\Livewire\NetworkList;
 use App\Livewire\NetworkQuickCreate;
-use App\Livewire\ObjektFormular;
-use App\Livewire\ObjektListe;
+use App\Livewire\ObjectList;
+use App\Livewire\ObjectModal;
 use App\Livewire\PatchPanelPorts;
 use App\Livewire\PdfExportStatus;
 use App\Livewire\RackEditor;
@@ -98,7 +98,7 @@ test('die Geräteliste eines fremden Kunden bleibt zu', function () {
     $this->get("/{$fremd->slug}/networkswitch")->assertForbidden();
 
     // Und direkt an der Komponente vorbei, wie es /livewire/update tut.
-    Livewire::test(ObjektListe::class, ['typ' => 'networkswitch', 'customer' => $fremd])
+    Livewire::test(ObjectList::class, ['typ' => 'networkswitch', 'customer' => $fremd])
         ->assertForbidden();
 });
 
@@ -106,7 +106,7 @@ test('das Formular eines fremden Kunden öffnet nicht', function () {
     [$meins, $fremd] = fremdeUmgebung();
     $this->actingAs(kundenNutzerMitAllenRechten($meins));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'server', 'customer' => $fremd])
+    Livewire::test(ObjectModal::class, ['typ' => 'server', 'customer' => $fremd])
         ->assertForbidden();
 });
 
@@ -123,7 +123,7 @@ test('ein fremdes Objekt lässt sich nicht über die eigene Liste bearbeiten', f
     // einem 404 statt einem 403, weil die Abfrage nach dem eigenen Kunden
     // sucht und nichts findet - fuer die Trennung ist beides gleichwertig,
     // und ein 404 verraet sogar weniger als ein 403.
-    Livewire::test(ObjektFormular::class, ['typ' => 'networkswitch', 'customer' => $meins])
+    Livewire::test(ObjectModal::class, ['typ' => 'networkswitch', 'customer' => $meins])
         ->call('bearbeiten', 'networkswitch', $fremderSwitch->id)
         ->assertNotFound();
 
@@ -184,7 +184,7 @@ test('Dateien, Netze, Assistent und PDF-Status eines fremden Kunden bleiben zu',
     [$meins, $fremd] = fremdeUmgebung();
     $this->actingAs(kundenNutzerMitAllenRechten($meins));
 
-    Livewire::test(DateiListe::class, ['customer' => $fremd])->assertForbidden();
+    Livewire::test(FileList::class, ['customer' => $fremd])->assertForbidden();
     Livewire::test(NetworkList::class, ['customer' => $fremd])->assertForbidden();
     Livewire::test(DocumentationWizard::class, ['customer' => $fremd])->assertForbidden();
     Livewire::test(NetworkQuickCreate::class, ['customer' => $fremd])->assertForbidden();
@@ -288,9 +288,9 @@ test('keine Komponente gibt einem fremden Kundennutzer Inhalte heraus', function
         }
     };
 
-    $ohneGeheimnis('ObjektListe', fn () => Livewire::test(ObjektListe::class, ['typ' => 'networkswitch', 'customer' => $fremd])->html());
-    $ohneGeheimnis('ObjektFormular', fn () => Livewire::test(ObjektFormular::class, ['typ' => 'networkswitch', 'customer' => $fremd])->html());
-    $ohneGeheimnis('DateiListe', fn () => Livewire::test(DateiListe::class, ['customer' => $fremd])->html());
+    $ohneGeheimnis('ObjektListe', fn () => Livewire::test(ObjectList::class, ['typ' => 'networkswitch', 'customer' => $fremd])->html());
+    $ohneGeheimnis('ObjektFormular', fn () => Livewire::test(ObjectModal::class, ['typ' => 'networkswitch', 'customer' => $fremd])->html());
+    $ohneGeheimnis('DateiListe', fn () => Livewire::test(FileList::class, ['customer' => $fremd])->html());
     $ohneGeheimnis('NetworkList', fn () => Livewire::test(NetworkList::class, ['customer' => $fremd])->html());
     $ohneGeheimnis('DocumentationWizard', fn () => Livewire::test(DocumentationWizard::class, ['customer' => $fremd])->html());
     $ohneGeheimnis('NetworkQuickCreate', fn () => Livewire::test(NetworkQuickCreate::class, ['customer' => $fremd])->html());

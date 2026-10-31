@@ -14,7 +14,7 @@ use Spatie\Activitylog\Models\Activity;
  * most, which areas change most - from the activity log. Only as far back
  * as the log keeps entries (Protokoll-Historie).
  */
-class AdminNutzung extends Component
+class AdminUsage extends Component
 {
     public const ZEITRAEUME = ['7' => 'Letzte 7 Tage', '30' => 'Letzte 30 Tage', '90' => 'Letzte 90 Tage'];
 
@@ -93,7 +93,7 @@ class AdminNutzung extends Component
             ->map(fn ($z) => ['name' => $bereiche[$z->subject_type] ?? class_basename((string) $z->subject_type), 'anzahl' => (int) $z->anzahl])
             ->all();
 
-        return view('livewire.admin-nutzung', [
+        return view('livewire.admin-usage', [
             'zeitraeume' => self::ZEITRAEUME,
             'summe' => [
                 'anmeldungen' => $summe(['anmeldung']),

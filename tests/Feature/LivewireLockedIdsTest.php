@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\IpBereiche;
+use App\Livewire\IpRanges;
 use App\Livewire\OnboardingForm;
 use App\Models\Customer;
 use App\Models\IpRange;
@@ -41,7 +41,7 @@ test('IpBereiche cannot be pointed at another customer after mounting', function
     $user->update(['customer_id' => $own->id]);
     $this->actingAs($user);
 
-    $component = Livewire::test(IpBereiche::class, ['customer' => $own, 'network' => $ownNetwork])
+    $component = Livewire::test(IpRanges::class, ['customer' => $own, 'network' => $ownNetwork])
         ->assertDontSee('FREMD-GEHEIM');
 
     expect(fn () => $component->set('customerId', $other->id))->toThrow(CannotUpdateLockedPropertyException::class);

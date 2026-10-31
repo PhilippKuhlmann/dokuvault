@@ -6,7 +6,7 @@
         @endphp
         <x-card>
             <x-slot:head>
-                <x-show.header can="phonesystem_update" editAction="$dispatch('objekt-bearbeiten', { typ: 'phonesystem', id: {{ $eintrag->id }} })">
+                <x-show.header can="phonesystem_update" editAction="$dispatch('object-edit', { typ: 'phonesystem', id: {{ $eintrag->id }} })">
                     {{-- The name, where there is one - two phone systems of the same
                          make were indistinguishable before. --}}
                     {{ $eintrag->name ?: $eintrag->manufacturer }}

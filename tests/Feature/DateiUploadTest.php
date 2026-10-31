@@ -1,7 +1,7 @@
 <?php
 
-use App\Livewire\AdminAllgemein;
-use App\Livewire\ObjektFormular;
+use App\Livewire\AdminGeneral;
+use App\Livewire\ObjectModal;
 use App\Models\Customer;
 use App\Models\Setting;
 use App\Support\FileName;
@@ -11,7 +11,7 @@ use Livewire\Livewire;
 
 function lizenzFormular(Customer $kunde)
 {
-    return Livewire::test(ObjektFormular::class, ['typ' => 'licenseaccess', 'customer' => $kunde])
+    return Livewire::test(ObjectModal::class, ['typ' => 'licenseaccess', 'customer' => $kunde])
         ->set('form.name', 'Lizenz')
         ->set('form.key', 'ABC-123');
 }
@@ -162,7 +162,7 @@ test('die Obergrenze lässt sich einstellen und gilt sofort', function () {
     // Test, der mehr verlangt, prueft nur die dortige Einstellung.
     $mb = max(1, min(5, (int) floor(Setting::serverGrenzeKb() / 1024)));
 
-    Livewire::test(AdminAllgemein::class)
+    Livewire::test(AdminGeneral::class)
         ->set('uploadMb', $mb)
         ->assertHasNoErrors();
 
@@ -176,7 +176,7 @@ test('mehr als der Server annimmt geht nicht', function () {
 
     $zuViel = (int) floor(Setting::serverGrenzeKb() / 1024) + 1;
 
-    Livewire::test(AdminAllgemein::class)
+    Livewire::test(AdminGeneral::class)
         ->set('uploadMb', $zuViel)
         ->assertHasErrors('uploadMb');
 });

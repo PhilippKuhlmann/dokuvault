@@ -14,7 +14,7 @@ use Livewire\Component;
  * the documentation holds, and how that grew - in total and per customer.
  * From the daily snapshot (statistik:schnappschuss).
  */
-class AdminDatenwachstum extends Component
+class AdminDataGrowth extends Component
 {
     public const ZEITRAEUME = ['30' => 'Letzte 30 Tage', '90' => 'Letzte 90 Tage', '365' => 'Letztes Jahr'];
 
@@ -80,7 +80,7 @@ class AdminDatenwachstum extends Component
                 'jetzt' => (int) ($zeilen->firstWhere('datum', $letzter)->wert ?? 0),
             ])->sortByDesc('jetzt')->values()->all();
 
-        return view('livewire.admin-datenwachstum', [
+        return view('livewire.admin-data-growth', [
             'zeitraeume' => self::ZEITRAEUME,
             'arten' => $arten,
             'uebersicht' => $uebersicht,

@@ -1,8 +1,8 @@
 <?php
 
-use App\Livewire\ObjektFormular;
+use App\Livewire\ObjectModal;
+use App\Livewire\RackCatalogPreview;
 use App\Livewire\RackEditor;
-use App\Livewire\RackKatalogVorschau;
 use App\Models\Customer;
 use App\Models\DeviceModel;
 use App\Models\NetworkSwitch;
@@ -321,7 +321,7 @@ test('ein Bild aus dem Geraeteformular legt das Modell an und gilt sofort bei an
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'ups', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'ups', 'customer' => $customer])
         ->call('neu')
         ->set('form.site_id', $site->id)
         ->set('form.name', 'USV-01')
@@ -351,7 +351,7 @@ test('ein zweites Bild ersetzt das des Modells und laesst keine Datei liegen', f
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'ups', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'ups', 'customer' => $customer])
         ->call('neu')
         ->set('form.site_id', $site->id)
         ->set('form.name', 'USV-02')
@@ -375,7 +375,7 @@ test('die Hoehe eines vorhandenen Modells bleibt unangetastet', function () {
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'ups', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'ups', 'customer' => $customer])
         ->call('neu')
         ->set('form.site_id', $site->id)
         ->set('form.name', 'USV-03')
@@ -396,7 +396,7 @@ test('ohne Hersteller wird das Bild abgelehnt, statt im Nichts zu landen', funct
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'ups', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'ups', 'customer' => $customer])
         ->call('neu')
         ->set('form.site_id', $site->id)
         ->set('form.name', 'USV-04')
@@ -415,7 +415,7 @@ test('ohne admin_catalog gibt es das Feld nicht', function () {
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
 
-    $komponente = Livewire::test(ObjektFormular::class, ['typ' => 'ups', 'customer' => $customer])
+    $komponente = Livewire::test(ObjectModal::class, ['typ' => 'ups', 'customer' => $customer])
         ->call('neu');
 
     $komponente->assertDontSee('Bild der Frontblende');
@@ -440,7 +440,7 @@ test('ein Typ ohne Rack kennt das Feld nicht', function () {
 
     // Gegenprobe zur Ableitung aus rack_device_types: Eine Domain hat keine
     // Frontblende.
-    Livewire::test(ObjektFormular::class, ['typ' => 'domain', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'domain', 'customer' => $customer])
         ->call('neu')
         ->assertDontSee('Bild der Frontblende');
 });
@@ -452,7 +452,7 @@ test('das hinterlegte Bild erscheint beim Tippen, noch vor dem Speichern', funct
 
     $customer = Customer::factory()->create();
 
-    $komponente = Livewire::test(ObjektFormular::class, ['typ' => 'ups', 'customer' => $customer])
+    $komponente = Livewire::test(ObjectModal::class, ['typ' => 'ups', 'customer' => $customer])
         ->call('neu');
 
     // Noch nichts eingetippt: kein Bild.
@@ -538,7 +538,7 @@ test('die Vorschau übernimmt die eigene Zeichnung schon beim Öffnen', function
     // Sie kam einmal als vierter von sieben Werten an einer Methode mit drei
     // Parametern an und ging dabei verloren - das Formular zeigte dann die
     // Blende des Gerätetyps statt der eigenen Zeichnung.
-    Livewire::test(RackKatalogVorschau::class, [
+    Livewire::test(RackCatalogPreview::class, [
         'appearance' => 'switch', 'he' => 1, 'drawing' => 'unifi-usw-pro-48-poe',
     ])
         ->assertSet('drawing', 'unifi-usw-pro-48-poe')

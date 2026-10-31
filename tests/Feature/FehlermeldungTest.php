@@ -1,7 +1,7 @@
 <?php
 
 use App\Livewire\NetworkQuickCreate;
-use App\Livewire\ObjektFormular;
+use App\Livewire\ObjectModal;
 use App\Models\Customer;
 use App\Models\Site;
 use Livewire\Livewire;
@@ -217,7 +217,7 @@ test('auch das Objektformular prüft während der Eingabe', function () {
 
     $kunde = Customer::factory()->create();
 
-    $test = Livewire::test(ObjektFormular::class, ['typ' => 'site', 'customer' => $kunde])
+    $test = Livewire::test(ObjectModal::class, ['typ' => 'site', 'customer' => $kunde])
         ->call('neu')
         ->call('speichern')
         ->assertHasErrors(['form.name']);
@@ -232,7 +232,7 @@ test('auch dort meckert es nicht vor dem ersten Absenden', function () {
 
     $kunde = Customer::factory()->create();
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'site', 'customer' => $kunde])
+    Livewire::test(ObjectModal::class, ['typ' => 'site', 'customer' => $kunde])
         ->call('neu')
         ->set('form.name', '')
         ->assertHasNoErrors();

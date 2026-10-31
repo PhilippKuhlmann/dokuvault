@@ -1,7 +1,7 @@
 <?php
 
-use App\Livewire\AdminAgentenEinstellungen;
-use App\Livewire\ObjektListe;
+use App\Livewire\AdminAgentSettings;
+use App\Livewire\ObjectList;
 use App\Models\Certificate;
 use App\Models\Customer;
 use App\Models\Domain;
@@ -222,9 +222,9 @@ test('Jetzt prüfen auf der Karte prüft nur Einträge des eigenen Kunden', func
     $certificate = Certificate::factory()->for(Customer::factory())->create(['customer_id' => $customer->id, 'common_name' => 'www.example.com']);
     $fremd = Certificate::factory()->for(Customer::factory())->create(['common_name' => 'www.example.com']);
 
-    $liste = Livewire::test(ObjektListe::class, ['typ' => 'certificate', 'customer' => $customer]);
+    $liste = Livewire::test(ObjectList::class, ['typ' => 'certificate', 'customer' => $customer]);
 
-    $liste->call('check', $certificate->id)->assertDispatched('hinweis');
+    $liste->call('check', $certificate->id)->assertDispatched('notice');
     expect($certificate->refresh()->expiry_date)->toBe('2027-01-01');
 
     $liste->call('check', $fremd->id)->assertNotFound();
@@ -237,7 +237,7 @@ test('ohne Bearbeiten-Recht kein Jetzt prüfen', function () {
     $customer = Customer::factory()->create();
     $certificate = Certificate::factory()->for(Customer::factory())->create(['customer_id' => $customer->id]);
 
-    Livewire::test(ObjektListe::class, ['typ' => 'certificate', 'customer' => $customer])
+    Livewire::test(ObjectList::class, ['typ' => 'certificate', 'customer' => $customer])
         ->call('check', $certificate->id)
         ->assertForbidden();
 });
@@ -245,7 +245,7 @@ test('ohne Bearbeiten-Recht kein Jetzt prüfen', function () {
 test('Admin schaltet die Prüfung ab', function () {
     $this->actingAs(userWithPermissions(['admin_setting']));
 
-    Livewire::test(AdminAgentenEinstellungen::class)
+    Livewire::test(AdminAgentSettings::class)
         ->assertSet('autoCheck', true)
         ->set('autoCheck', false);
 
@@ -406,7 +406,7 @@ test('Jetzt prüfen setzt der Kommandozeile kein Zeitlimit', function () {
     $customer = Customer::factory()->create();
     $certificate = Certificate::factory()->create(['customer_id' => $customer->id, 'common_name' => 'www.example.com']);
 
-    Livewire::test(ObjektListe::class, ['typ' => 'certificate', 'customer' => $customer])
+    Livewire::test(ObjectList::class, ['typ' => 'certificate', 'customer' => $customer])
         ->call('check', $certificate->id);
 
     // The CLI runs without a limit; the call must not have set one.

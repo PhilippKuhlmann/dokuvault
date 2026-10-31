@@ -36,8 +36,8 @@ test('mit vorgegebenem Standort entfaellt die Auswahl und das Netz erbt ihn', fu
         ->call('speichern')
         ->assertHasNoErrors()
         // Der IP-Block haengt daran und waehlt das neue Netz aus.
-        ->assertDispatched('vlan-angelegt')
-        ->assertDispatched('hinweis')
+        ->assertDispatched('vlan-created')
+        ->assertDispatched('notice')
         // Modal zu und Felder geleert - sonst steht die Eingabe beim naechsten
         // Oeffnen noch da.
         ->assertSet('offen', false)
@@ -124,7 +124,7 @@ test('die Liste rendert nach dem Anlegen neu, ohne Seitenwechsel', function () {
         ->call('speichern')
         ->assertHasNoErrors()
         ->assertNoRedirect()
-        ->assertDispatched('vlan-angelegt');
+        ->assertDispatched('vlan-created');
 
     Livewire::test(NetworkList::class, ['customer' => $customer])
         ->assertSee('Frisch');
@@ -190,7 +190,7 @@ test('im Bearbeiten-Modal laesst sich das VLAN loeschen', function () {
         ->assertSet('offen', false)
         ->assertSet('loeschenGefragt', false)
         // Die Liste laedt daraufhin neu.
-        ->assertDispatched('vlan-angelegt');
+        ->assertDispatched('vlan-created');
 
     // Papierkorb, nicht endgueltig - wie beim Loeschen ueber die alte Seite.
     expect(Network::count())->toBe(0);
@@ -228,17 +228,17 @@ test('jede Aktion meldet sich unten rechts mit eigenem Wortlaut', function () {
         ->set('description', 'Meldungsprobe')
         ->set('network', '10.10.94.0')
         ->call('speichern')
-        ->assertDispatched('hinweis', text: __('VLAN angelegt.'));
+        ->assertDispatched('notice', text: __('VLAN angelegt.'));
 
     $netz = Network::where('description', 'Meldungsprobe')->sole();
 
     $komponente
         ->call('bearbeiten', $netz->id)
         ->call('speichern')
-        ->assertDispatched('hinweis', text: __('VLAN gespeichert.'))
+        ->assertDispatched('notice', text: __('VLAN gespeichert.'))
         ->call('bearbeiten', $netz->id)
         ->call('loeschen')
-        ->assertDispatched('hinweis', text: __('VLAN gelöscht.'));
+        ->assertDispatched('notice', text: __('VLAN gelöscht.'));
 });
 
 test('die VLAN-Liste laesst sich durchsuchen', function () {

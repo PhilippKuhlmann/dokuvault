@@ -25,7 +25,7 @@ use Illuminate\Support\Str;
  * muss es waehrendDerEingabePruefen() selbst rufen. Ein Test haelt das offen,
  * sonst faellt die Pruefung still aus.
  */
-trait PrueftWaehrendDerEingabe
+trait ValidatesOnInput
 {
     /** Ist einmal abgeschickt worden? Erst dann wird waehrend der Eingabe geprueft. */
     public bool $geprueft = false;

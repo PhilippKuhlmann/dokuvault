@@ -1,7 +1,7 @@
 <?php
 
-use App\Livewire\AdminAllgemein;
-use App\Livewire\ObjektListe;
+use App\Livewire\AdminGeneral;
+use App\Livewire\ObjectList;
 use App\Models\Customer;
 use App\Models\Role;
 use App\Models\Setting;
@@ -23,7 +23,7 @@ test('der Name wird beim Tippen gespeichert, ohne Speichern-Knopf', function () 
     config(['app.name' => 'DokuVault']);
     $this->actingAs(adminUser());
 
-    Livewire::test(AdminAllgemein::class)
+    Livewire::test(AdminGeneral::class)
         ->set('name', 'Musterfirma IT')
         ->assertHasNoErrors();
 
@@ -39,7 +39,7 @@ test('ein leeres Namensfeld heisst zurueck zur Konfiguration, nicht leerer Name'
     $this->actingAs(adminUser());
     Setting::setzen(Setting::APP_NAME, 'Alter Name');
 
-    Livewire::test(AdminAllgemein::class)->set('name', '');
+    Livewire::test(AdminGeneral::class)->set('name', '');
 
     expect(Setting::appName())->toBe('DokuVault');
 });
@@ -47,7 +47,7 @@ test('ein leeres Namensfeld heisst zurueck zur Konfiguration, nicht leerer Name'
 test('ein zu langer Name wird abgelehnt und nicht gespeichert', function () {
     $this->actingAs(adminUser());
 
-    Livewire::test(AdminAllgemein::class)
+    Livewire::test(AdminGeneral::class)
         ->set('name', str_repeat('a', 61))
         ->assertHasErrors('name');
 
@@ -58,7 +58,7 @@ test('ein ausgewaehltes Logo ist damit schon gesetzt', function () {
     Storage::fake('local');
     $this->actingAs(adminUser());
 
-    Livewire::test(AdminAllgemein::class)
+    Livewire::test(AdminGeneral::class)
         ->set('logo_header', UploadedFile::fake()->image('k.png', 200, 40))
         ->assertHasNoErrors();
 
@@ -72,11 +72,11 @@ test('jede der drei Stellen laesst sich einzeln belegen', function () {
 
     // Anmeldeseite gross und breit, Kopfzeile schmal, Favicon quadratisch -
     // drei verschiedene Dateien.
-    Livewire::test(AdminAllgemein::class)
+    Livewire::test(AdminGeneral::class)
         ->set('logo_login', UploadedFile::fake()->image('gross.png', 400, 120));
-    Livewire::test(AdminAllgemein::class)
+    Livewire::test(AdminGeneral::class)
         ->set('logo_header', UploadedFile::fake()->image('schmal.png', 200, 40));
-    Livewire::test(AdminAllgemein::class)
+    Livewire::test(AdminGeneral::class)
         ->set('logo_favicon', UploadedFile::fake()->image('quadrat.png', 64, 64));
 
     $pfade = collect(Setting::LOGO_STELLEN)->map(fn ($s) => Setting::logoPfad($s));
@@ -88,9 +88,9 @@ test('jede der drei Stellen laesst sich einzeln belegen', function () {
 test('jede Stelle nutzt ihr eigenes Logo, nicht das der anderen', function () {
     Storage::fake('local');
     $this->actingAs(adminUser());
-    Livewire::test(AdminAllgemein::class)->set('logo_login', UploadedFile::fake()->image('a.png'));
-    Livewire::test(AdminAllgemein::class)->set('logo_header', UploadedFile::fake()->image('k.png'));
-    Livewire::test(AdminAllgemein::class)->set('logo_favicon', UploadedFile::fake()->image('f.png'));
+    Livewire::test(AdminGeneral::class)->set('logo_login', UploadedFile::fake()->image('a.png'));
+    Livewire::test(AdminGeneral::class)->set('logo_header', UploadedFile::fake()->image('k.png'));
+    Livewire::test(AdminGeneral::class)->set('logo_favicon', UploadedFile::fake()->image('f.png'));
 
     $this->get(route('admin.dashboard'))
         ->assertSee(route('branding.logo', 'header'), false)
@@ -106,10 +106,10 @@ test('jede Stelle nutzt ihr eigenes Logo, nicht das der anderen', function () {
 test('ein neues Logo laesst keine Leiche zurueck', function () {
     Storage::fake('local');
     $this->actingAs(adminUser());
-    Livewire::test(AdminAllgemein::class)->set('logo_header', UploadedFile::fake()->image('alt.png'));
+    Livewire::test(AdminGeneral::class)->set('logo_header', UploadedFile::fake()->image('alt.png'));
     $alt = Setting::logoPfad('header');
 
-    Livewire::test(AdminAllgemein::class)->set('logo_header', UploadedFile::fake()->image('neu.png'));
+    Livewire::test(AdminGeneral::class)->set('logo_header', UploadedFile::fake()->image('neu.png'));
 
     Storage::disk('local')->assertMissing($alt);
     Storage::disk('local')->assertExists(Setting::logoPfad('header'));
@@ -118,12 +118,12 @@ test('ein neues Logo laesst keine Leiche zurueck', function () {
 test('der Entfernen-Knopf raeumt Einstellung und Datei weg', function () {
     Storage::fake('local');
     $this->actingAs(adminUser());
-    Livewire::test(AdminAllgemein::class)->set('logo_header', UploadedFile::fake()->image('k.png'));
-    Livewire::test(AdminAllgemein::class)->set('logo_login', UploadedFile::fake()->image('a.png'));
+    Livewire::test(AdminGeneral::class)->set('logo_header', UploadedFile::fake()->image('k.png'));
+    Livewire::test(AdminGeneral::class)->set('logo_login', UploadedFile::fake()->image('a.png'));
     $kopfzeile = Setting::logoPfad('header');
 
     // Ein Knopf, kein Haken mit Speichern danach.
-    Livewire::test(AdminAllgemein::class)->call('entfernen', 'header');
+    Livewire::test(AdminGeneral::class)->call('entfernen', 'header');
 
     expect(Setting::logoPfad('header'))->toBeNull();
     Storage::disk('local')->assertMissing($kopfzeile);
@@ -137,7 +137,7 @@ test('SVG wird abgelehnt', function () {
 
     // Eine SVG-Datei darf Skript enthalten - von derselben Herkunft
     // ausgeliefert waere das ausfuehrbarer Code auf jeder Seite.
-    Livewire::test(AdminAllgemein::class)
+    Livewire::test(AdminGeneral::class)
         ->set('logo_login', UploadedFile::fake()->create('logo.svg', 10, 'image/svg+xml'))
         ->assertHasErrors('logo_login');
 
@@ -149,7 +149,7 @@ test('eine unbekannte Stelle beim Entfernen ergibt 404', function () {
 
     // Die Stelle kommt aus der Whitelist, nie roh aus der Anfrage - sonst
     // waere der Einstellungs-Schluessel von aussen bestimmbar.
-    Livewire::test(AdminAllgemein::class)->call('entfernen', 'app_name')
+    Livewire::test(AdminGeneral::class)->call('entfernen', 'app_name')
         ->assertStatus(404);
 });
 
@@ -160,7 +160,7 @@ test('eine unbekannte Stelle in der Adresse ergibt 404', function () {
 test('das Logo geht ohne Anmeldung heraus, mit nosniff', function () {
     Storage::fake('local');
     $this->actingAs(adminUser());
-    Livewire::test(AdminAllgemein::class)->set('logo_login', UploadedFile::fake()->image('a.png'));
+    Livewire::test(AdminGeneral::class)->set('logo_login', UploadedFile::fake()->image('a.png'));
 
     auth()->logout();
     $this->get(route('branding.logo', 'login'))
@@ -302,7 +302,7 @@ test('die eingestellte Seitengröße wirkt in den Kundenlisten', function () {
 
     // Am Paginator, nicht am Blaetter-Link: Livewire blaettert per wire:click,
     // in der Ausgabe steht kein "page=2".
-    $eintraege = Livewire::test(ObjektListe::class, ['typ' => 'site', 'customer' => $customer])
+    $eintraege = Livewire::test(ObjectList::class, ['typ' => 'site', 'customer' => $customer])
         ->viewData('eintraege');
 
     expect($eintraege->perPage())->toBe(5)
@@ -319,7 +319,7 @@ test('die eingestellte Seitengröße wirkt in den Kundenlisten', function () {
 test('Sprache, Hinweis und Seitengrößen speichern beim Ändern', function () {
     $this->actingAs(adminUser());
 
-    Livewire::test(AdminAllgemein::class)
+    Livewire::test(AdminGeneral::class)
         ->set('sprache', 'en')
         ->set('anmeldeHinweis', 'Support: it@example.test')
         ->set('seiteListe', 50)
@@ -335,7 +335,7 @@ test('Sprache, Hinweis und Seitengrößen speichern beim Ändern', function () {
 test('eine erfundene Sprache wird abgewiesen', function () {
     $this->actingAs(adminUser());
 
-    Livewire::test(AdminAllgemein::class)
+    Livewire::test(AdminGeneral::class)
         ->set('sprache', 'kl')
         ->assertHasErrors(['sprache']);
 });
@@ -344,7 +344,7 @@ test('ein zu langer Hinweis wird abgewiesen', function () {
     $this->actingAs(adminUser());
 
     // Es ist ein Satz, kein Aushang.
-    Livewire::test(AdminAllgemein::class)
+    Livewire::test(AdminGeneral::class)
         ->set('anmeldeHinweis', str_repeat('a', 201))
         ->assertHasErrors(['anmeldeHinweis']);
 });
@@ -352,7 +352,7 @@ test('ein zu langer Hinweis wird abgewiesen', function () {
 test('eine Seite mit einer Zeile wird abgewiesen', function () {
     $this->actingAs(adminUser());
 
-    Livewire::test(AdminAllgemein::class)
+    Livewire::test(AdminGeneral::class)
         ->set('seiteListe', 1)
         ->assertHasErrors(['seiteListe']);
 
@@ -372,7 +372,7 @@ test('der Logo-Hinweis nennt die Bildformate, nicht die Dokumentformate', functi
     // ZIP. Im Browser gesehen; kein Test hat es gemerkt.
     $this->actingAs(adminUser());
 
-    Livewire::test(AdminAllgemein::class)
+    Livewire::test(AdminGeneral::class)
         ->assertSee('Erlaubt sind PNG, JPG, JPEG, WEBP')
         ->assertDontSee('Erlaubt sind PDF');
 });
@@ -437,7 +437,7 @@ test('eine erlaubte Endung geht durch', function () {
 test('die Seite speichert die Auswahl in der Reihenfolge der Konfiguration', function () {
     $this->actingAs(adminUser());
 
-    Livewire::test(AdminAllgemein::class)
+    Livewire::test(AdminGeneral::class)
         ->set('endungen', ['png', 'pdf'])
         ->assertHasNoErrors();
 
@@ -449,7 +449,7 @@ test('die Seite speichert die Auswahl in der Reihenfolge der Konfiguration', fun
 test('eine Endung außerhalb der Konfiguration wird abgewiesen', function () {
     $this->actingAs(adminUser());
 
-    Livewire::test(AdminAllgemein::class)
+    Livewire::test(AdminGeneral::class)
         ->set('endungen', ['pdf', 'php'])
         ->assertHasErrors(['endungen.1']);
 });
@@ -457,7 +457,7 @@ test('eine Endung außerhalb der Konfiguration wird abgewiesen', function () {
 test('gar keine Endung wird abgewiesen', function () {
     $this->actingAs(adminUser());
 
-    Livewire::test(AdminAllgemein::class)
+    Livewire::test(AdminGeneral::class)
         ->set('endungen', [])
         ->assertHasErrors(['endungen']);
 });

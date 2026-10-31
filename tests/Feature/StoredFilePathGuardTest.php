@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\ObjektFormular;
+use App\Livewire\ObjectModal;
 use App\Models\Customer;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
@@ -56,7 +56,7 @@ test('no upload form type takes a stored path from the form or serves a foreign 
             $field['pfad_feld'] => $foreign,
         ]);
 
-        Livewire::test(ObjektFormular::class, ['typ' => $type, 'customer' => $own])
+        Livewire::test(ObjectModal::class, ['typ' => $type, 'customer' => $own])
             ->call('bearbeiten', $type, $object->id)
             ->set("form.{$field['pfad_feld']}", $foreignToo)
             ->call('speichern')

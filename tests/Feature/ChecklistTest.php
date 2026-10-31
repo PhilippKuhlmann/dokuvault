@@ -2,7 +2,7 @@
 
 use App\Livewire\ChecklistProgress;
 use App\Livewire\ChecklistSettings;
-use App\Livewire\ObjektFormular;
+use App\Livewire\ObjectModal;
 use App\Livewire\OnboardingForm;
 use App\Models\ADDomainHost;
 use App\Models\ADGroup;
@@ -387,7 +387,7 @@ test('die Wahl von Server oder NAS füllt den Pfad vor, ohne Eingetipptes zu üb
     $nas = NAS::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'NAS01']);
     $this->actingAs(userWithPermissions(['networkshare_viewAny', 'networkshare_create']));
 
-    $form = Livewire::test(ObjektFormular::class, ['typ' => 'networkshare', 'customer' => $customer])->call('neu')
+    $form = Livewire::test(ObjectModal::class, ['typ' => 'networkshare', 'customer' => $customer])->call('neu')
         ->set('form.host', "server:{$server->id}")
         ->assertSet('form.path', '\\\\SRV-FS01\\')
         ->set('form.path', '\\\\SRV-FS01\\Buchhaltung')
@@ -404,7 +404,7 @@ test('ein abgeschalteter Schalter kommt beim Bearbeiten nicht angehakt an', func
     $share = NetworkShare::factory()->create(['customer_id' => $customer->id, 'sensitive' => false]);
     $this->actingAs(userWithPermissions(['networkshare_viewAny', 'networkshare_create', 'networkshare_update']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'networkshare', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'networkshare', 'customer' => $customer])
         ->call('neu')
         ->assertSet('form.sensitive', false)
         ->call('bearbeiten', 'networkshare', $share->id)

@@ -1,7 +1,7 @@
 <?php
 
-use App\Livewire\ObjektFormular;
-use App\Livewire\ObjektListe;
+use App\Livewire\ObjectList;
+use App\Livewire\ObjectModal;
 use App\Models\ADUser;
 use App\Models\Customer;
 use Database\Seeders\LocalDatabaseSeeder;
@@ -32,7 +32,7 @@ test('ohne gespeicherten Status behauptet das Fenster keinen', function () {
     $this->actingAs(userWithPermissions(['aduser_update', 'aduser_viewAny']));
     [$customer, $benutzer] = adBenutzer(null);
 
-    $html = Livewire::test(ObjektFormular::class, ['typ' => 'aduser', 'customer' => $customer])
+    $html = Livewire::test(ObjectModal::class, ['typ' => 'aduser', 'customer' => $customer])
         ->call('bearbeiten', 'aduser', $benutzer->id)
         ->html();
 
@@ -45,7 +45,7 @@ test('mit gespeichertem Status gibt es den Zusatzeintrag nicht', function () {
     $this->actingAs(userWithPermissions(['aduser_update', 'aduser_viewAny']));
     [$customer, $benutzer] = adBenutzer(true);
 
-    $html = Livewire::test(ObjektFormular::class, ['typ' => 'aduser', 'customer' => $customer])
+    $html = Livewire::test(ObjectModal::class, ['typ' => 'aduser', 'customer' => $customer])
         ->call('bearbeiten', 'aduser', $benutzer->id)
         ->html();
 
@@ -59,7 +59,7 @@ test('auch der Wert 0 gilt als bekannt', function () {
 
     // 0 ist ein Wert, kein fehlender - eine lose Pruefung haette ihn mit dem
     // Leerstring verwechselt und "unbekannt" angeboten.
-    $html = Livewire::test(ObjektFormular::class, ['typ' => 'aduser', 'customer' => $customer])
+    $html = Livewire::test(ObjectModal::class, ['typ' => 'aduser', 'customer' => $customer])
         ->call('bearbeiten', 'aduser', $benutzer->id)
         ->html();
 
@@ -71,7 +71,7 @@ test('Fenster und Liste sagen dasselbe', function () {
     [$customer, $benutzer] = adBenutzer(null);
 
     // Der gemeldete Widerspruch: hier "—", dort "Aktiv".
-    $liste = Livewire::test(ObjektListe::class, ['typ' => 'aduser', 'customer' => $customer])->html();
+    $liste = Livewire::test(ObjectList::class, ['typ' => 'aduser', 'customer' => $customer])->html();
     expect($liste)->toContain('—');
     expect(str_contains($liste, 'Aktiv'))->toBeFalse('Ohne Wert darf die Liste keinen Status nennen.');
 });
@@ -80,7 +80,7 @@ test('Speichern ohne Status laesst ihn leer, statt Aktiv daraus zu machen', func
     $this->actingAs(userWithPermissions(['aduser_update', 'aduser_viewAny']));
     [$customer, $benutzer] = adBenutzer(null);
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'aduser', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'aduser', 'customer' => $customer])
         ->call('bearbeiten', 'aduser', $benutzer->id)
         ->call('speichern')
         ->assertHasNoErrors();
@@ -94,7 +94,7 @@ test('ein gewaehlter Status wird gespeichert', function () {
     $this->actingAs(userWithPermissions(['aduser_update', 'aduser_viewAny']));
     [$customer, $benutzer] = adBenutzer(null);
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'aduser', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'aduser', 'customer' => $customer])
         ->call('bearbeiten', 'aduser', $benutzer->id)
         ->set('form.enabled', '0')
         ->call('speichern')
@@ -118,7 +118,7 @@ test('ein deaktivierter Benutzer steht im Fenster auch auf Deaktiviert', functio
     // Der schwerere Fall des gemeldeten Fehlers: (string) false ergibt '' und
     // nicht '0'. Das Feld kam leer im Formular an, die Auswahl zeigte ihren
     // ersten Eintrag - und behauptete damit das Gegenteil des Gespeicherten.
-    $formular = Livewire::test(ObjektFormular::class, ['typ' => 'aduser', 'customer' => $customer])
+    $formular = Livewire::test(ObjectModal::class, ['typ' => 'aduser', 'customer' => $customer])
         ->call('bearbeiten', 'aduser', $benutzer->id);
 
     expect($formular->get('form')['enabled'])->toBe('0');
@@ -139,7 +139,7 @@ test('die Liste zeigt Haken, Kreuz und Strich statt Woertern', function () {
     }
     ADUser::create(['customer_id' => $customer->id, 'username' => 'unklar', 'enabled' => null]);
 
-    $html = Livewire::test(ObjektListe::class, ['typ' => 'aduser', 'customer' => $customer])->html();
+    $html = Livewire::test(ObjectList::class, ['typ' => 'aduser', 'customer' => $customer])->html();
 
     // Ein Zeichen erfasst man schneller als ein Wort; die Bedeutung haengt
     // trotzdem nicht allein an der Form, sondern steht im title.
@@ -153,13 +153,13 @@ test('eine gesperrte Zeile tritt zurueck, eine aktive nicht', function () {
     $customer = Customer::factory()->create();
     ADUser::create(['customer_id' => $customer->id, 'username' => 'aktiv', 'enabled' => true]);
 
-    $nurAktiv = Livewire::test(ObjektListe::class, ['typ' => 'aduser', 'customer' => $customer])->html();
+    $nurAktiv = Livewire::test(ObjectList::class, ['typ' => 'aduser', 'customer' => $customer])->html();
     expect(str_contains($nurAktiv, 'opacity-60'))
         ->toBeFalse('Ein aktives Konto ist nichts, was zuruecktreten soll.');
 
     ADUser::create(['customer_id' => $customer->id, 'username' => 'gesperrt', 'enabled' => false]);
 
-    $mitGesperrt = Livewire::test(ObjektListe::class, ['typ' => 'aduser', 'customer' => $customer])->html();
+    $mitGesperrt = Livewire::test(ObjectList::class, ['typ' => 'aduser', 'customer' => $customer])->html();
     expect(substr_count($mitGesperrt, 'opacity-60'))->toBe(1);
 });
 
@@ -170,7 +170,7 @@ test('ein unbekannter Status graut die Zeile nicht aus', function () {
 
     // Nur "gesperrt" tritt zurueck. "Nicht dokumentiert" heisst nicht
     // "unwichtig" - eher im Gegenteil.
-    $html = Livewire::test(ObjektListe::class, ['typ' => 'aduser', 'customer' => $customer])->html();
+    $html = Livewire::test(ObjectList::class, ['typ' => 'aduser', 'customer' => $customer])->html();
     expect(str_contains($html, 'opacity-60'))->toBeFalse();
 });
 
@@ -214,8 +214,8 @@ test('without a password the list shows a dash, not a field to reveal', function
 
     // Reported: a user without a password (by hand or from the agent) showed
     // the masked field, and "show" revealed nothing.
-    $liste = Livewire::test(ObjektListe::class, ['typ' => 'aduser', 'customer' => $customer])->html();
+    $liste = Livewire::test(ObjectList::class, ['typ' => 'aduser', 'customer' => $customer])->html();
 
-    expect(substr_count($liste, 'wire:name="geheim-feld"'))->toBe(1)
+    expect(substr_count($liste, 'wire:name="secret-field"'))->toBe(1)
         ->and($liste)->not->toContain('Ad-7xQ');
 });

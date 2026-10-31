@@ -2,8 +2,8 @@
 
 namespace App\Livewire;
 
-use App\Livewire\Concerns\GehoertZumKunden;
-use App\Livewire\Concerns\PrueftWaehrendDerEingabe;
+use App\Livewire\Concerns\ScopedToCustomer;
+use App\Livewire\Concerns\ValidatesOnInput;
 use App\Models\Customer;
 use App\Models\Network;
 use App\Support\IpRangeEditing;
@@ -22,10 +22,10 @@ use Livewire\Component;
  * gedacht ist - "10.10.250.10 bis .20 sind fuer die Proxmox-Server" -, auch
  * wenn davon erst zwei Adressen vergeben sind.
  */
-class IpBereiche extends Component
+class IpRanges extends Component
 {
-    use GehoertZumKunden;
-    use PrueftWaehrendDerEingabe;
+    use ScopedToCustomer;
+    use ValidatesOnInput;
 
     // Locked: set in mount() after the tenant check. Changed in the browser,
     // they pointed every action at another customer's network.
@@ -123,7 +123,7 @@ class IpBereiche extends Component
 
     public function render()
     {
-        return view('livewire.ip-bereiche', [
+        return view('livewire.ip-ranges', [
             'bereiche' => app(IpRangeEditing::class)->ranges($this->netz()),
             'darfPflegen' => Gate::allows('network_update'),
         ]);

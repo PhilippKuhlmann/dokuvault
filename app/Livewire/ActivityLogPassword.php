@@ -17,7 +17,7 @@ use Livewire\Component;
  * verschwindet mit deren Frist. Fuer den Betrachter ist das derselbe Handgriff
  * wie bei jeder anderen Aenderung.
  */
-class ProtokollKennwort extends Component
+class ActivityLogPassword extends Component
 {
     /** Ids der Historie-Eintraege, die zu dieser Zeile gehoeren. */
     #[Locked]
@@ -67,6 +67,6 @@ class ProtokollKennwort extends Component
 
     public function render()
     {
-        return view('livewire.protokoll-kennwort');
+        return view('livewire.activity-log-password');
     }
 }

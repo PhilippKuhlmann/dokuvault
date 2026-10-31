@@ -69,7 +69,7 @@ class AdminBackups extends Component
             $geloescht += $backup->pruneRuns($this->aufbewahrung);
         });
 
-        $this->dispatch('hinweis', text: $geloescht > 0
+        $this->dispatch('notice', text: $geloescht > 0
             ? __(':anzahl ältere Läufe gelöscht.', ['anzahl' => $geloescht])
             : __('Gespeichert.'));
     }

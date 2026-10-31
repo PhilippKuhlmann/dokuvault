@@ -14,7 +14,7 @@ namespace App\Livewire\Concerns;
  * Ein Nutzer ohne customer_id - Techniker, Admin - arbeitet fuer alle Kunden
  * und wird nicht aufgehalten; fuer ihn entscheiden die Rechte.
  */
-trait GehoertZumKunden
+trait ScopedToCustomer
 {
     protected function nurEigenerKunde(int $customerId): void
     {

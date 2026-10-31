@@ -4,7 +4,7 @@
      Information tragen. --}}
     <x-card>
         <x-slot:head>
-            <x-show.header can="certificate_update" editAction="$dispatch('objekt-bearbeiten', { typ: 'certificate', id: {{ $eintrag->id }} })">
+            <x-show.header can="certificate_update" editAction="$dispatch('object-edit', { typ: 'certificate', id: {{ $eintrag->id }} })">
                 {{ $eintrag->name }}
             </x-show.header>
         </x-slot>

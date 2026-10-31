@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\ObjektListe;
+use App\Livewire\ObjectList;
 use App\Models\Cluster;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
@@ -100,8 +100,8 @@ test('die Liste zeigt den Cluster mit Art und Knoten', function () {
     ]);
     serverFuer($customer, $site, 'pve01', $cluster);
 
-    // Die Liste ist Livewire (objekt-liste), wie bei den Servern.
-    Livewire::test(ObjektListe::class, ['typ' => 'cluster', 'customer' => $customer])
+    // Die Liste ist Livewire (object-list), wie bei den Servern.
+    Livewire::test(ObjectList::class, ['typ' => 'cluster', 'customer' => $customer])
         ->assertSee('PVE-Cluster')
         ->assertSee('Ceph (verteilter Speicher)')
         ->assertSee('pve01');
@@ -113,7 +113,7 @@ test('die Cluster-Liste laesst sich durchsuchen', function () {
     Cluster::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'PVE-Cluster']);
     Cluster::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'SQL-Cluster']);
 
-    Livewire::test(ObjektListe::class, ['typ' => 'cluster', 'customer' => $customer])
+    Livewire::test(ObjectList::class, ['typ' => 'cluster', 'customer' => $customer])
         ->set('search', 'PVE')
         ->assertSee('PVE-Cluster')
         ->assertDontSee('SQL-Cluster');

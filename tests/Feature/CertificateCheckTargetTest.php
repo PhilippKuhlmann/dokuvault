@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\ObjektListe;
+use App\Livewire\ObjectList;
 use App\Models\Certificate;
 use App\Models\Customer;
 use App\Support\CertificateCheck;
@@ -54,7 +54,7 @@ test('a customer user\'s "check now" does not reach an internal host', function 
     $this->actingAs($user);
     $certificate = Certificate::factory()->create(['customer_id' => $customer->id, 'check_host' => '10.0.0.5', 'check_port' => 8443]);
 
-    Livewire::test(ObjektListe::class, ['typ' => 'certificate', 'customer' => $customer])
+    Livewire::test(ObjectList::class, ['typ' => 'certificate', 'customer' => $customer])
         ->call('check', $certificate->id);
 
     expect($check->connections)->toBe([])
@@ -67,7 +67,7 @@ test('staff still check internal certificates', function () {
     $this->actingAs(userWithPermissions(['certificate_viewAny', 'certificate_update']));
     $certificate = Certificate::factory()->create(['customer_id' => $customer->id, 'check_host' => '10.0.0.5', 'check_port' => 8443]);
 
-    Livewire::test(ObjektListe::class, ['typ' => 'certificate', 'customer' => $customer])
+    Livewire::test(ObjectList::class, ['typ' => 'certificate', 'customer' => $customer])
         ->call('check', $certificate->id);
 
     expect($check->connections)->toBe(['10.0.0.5:8443']);

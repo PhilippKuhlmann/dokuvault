@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\GeheimFeld;
+use App\Livewire\SecretField;
 use App\Models\Customer;
 use App\Models\Firewall;
 use App\Models\SecurepointUMA;
@@ -27,7 +27,7 @@ test('mit dem Recht der Liste holt das Feld den Wert auf Klick', function () {
     $this->actingAs(userWithPermissions(['firewall_viewAny']));
     $fw = eineGeheimFirewall(['cloud_backup_password' => 'Wolke-Geheim-2026']);
 
-    Livewire::test(GeheimFeld::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'cloud_backup_password'])
+    Livewire::test(SecretField::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'cloud_backup_password'])
         ->assertDontSee('Wolke-Geheim-2026')
         ->call('zeigen')
         ->assertSet('offen', true)
@@ -38,7 +38,7 @@ test('ohne das Recht bleibt das Geheimnis verborgen', function () {
     $this->actingAs(userWithPermissions([])); // kein firewall_viewAny
     $fw = eineGeheimFirewall(['cloud_backup_password' => 'Verboten-2026']);
 
-    Livewire::test(GeheimFeld::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'cloud_backup_password'])
+    Livewire::test(SecretField::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'cloud_backup_password'])
         ->call('zeigen')
         ->assertForbidden();
 });
@@ -48,7 +48,7 @@ test('ein Feld ausserhalb der Geheimnis-Spalten wird nicht herausgegeben', funct
     $fw = eineGeheimFirewall(['name' => 'FW-Sichtbar']);
 
     // 'name' steht nicht in secret_columns - zeigen() bricht ab, nichts wird geladen.
-    Livewire::test(GeheimFeld::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'name'])
+    Livewire::test(SecretField::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'name'])
         ->call('zeigen')
         ->assertSet('offen', false)
         ->assertSet('wert', null);
@@ -59,7 +59,7 @@ test('die Einsicht steht im Protokoll - ohne den Wert', function () {
     $this->actingAs($nutzer);
     $fw = eineGeheimFirewall(['usc_pin' => 'Nie-Ins-Protokoll-2026']);
 
-    Livewire::test(GeheimFeld::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'usc_pin'])->call('zeigen');
+    Livewire::test(SecretField::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'usc_pin'])->call('zeigen');
 
     $eintrag = Activity::where('event', 'kennwort_angesehen')->latest('id')->first();
 
@@ -75,7 +75,7 @@ test('die Bremse stoppt das reihenweise Abgreifen', function () {
     $this->actingAs(userWithPermissions(['firewall_viewAny']));
     $fw = eineGeheimFirewall(['cloud_backup_password' => 'Nur-Einmal-2026']);
 
-    $test = Livewire::test(GeheimFeld::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'cloud_backup_password']);
+    $test = Livewire::test(SecretField::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'cloud_backup_password']);
 
     $test->call('zeigen')->assertSet('offen', true);
     $test->call('verbergen')
@@ -88,18 +88,18 @@ test('kopieren gibt den Wert an die Zwischenablage, ohne aufzudecken', function 
     $this->actingAs(userWithPermissions(['firewall_viewAny']));
     $fw = eineGeheimFirewall(['cloud_backup_password' => 'Kopiert-Ohne-Anzeige-2026']);
 
-    Livewire::test(GeheimFeld::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'cloud_backup_password'])
+    Livewire::test(SecretField::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'cloud_backup_password'])
         ->call('kopieren')
         ->assertSet('offen', false)       // bleibt verdeckt
         ->assertSet('wert', null)          // Wert nicht im DOM-Zustand
-        ->assertDispatched('kennwort-bereit', wert: 'Kopiert-Ohne-Anzeige-2026');
+        ->assertDispatched('password-ready', wert: 'Kopiert-Ohne-Anzeige-2026');
 });
 
 test('kopieren ohne das Recht gibt nichts heraus', function () {
     $this->actingAs(userWithPermissions([]));
     $fw = eineGeheimFirewall(['cloud_backup_password' => 'Verboten-2026']);
 
-    Livewire::test(GeheimFeld::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'cloud_backup_password'])
+    Livewire::test(SecretField::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'cloud_backup_password'])
         ->call('kopieren')
         ->assertForbidden();
 });

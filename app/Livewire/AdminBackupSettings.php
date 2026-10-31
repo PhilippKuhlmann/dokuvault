@@ -18,7 +18,7 @@ use Spatie\Backup\BackupDestination\BackupDestination;
  * Admin role only (isAdmin), not admin_setting: the target, the archive
  * password and the download together hand over every customer's data.
  */
-class AdminBackupEinstellungen extends Component
+class AdminBackupSettings extends Component
 {
     public array $form = [];
 
@@ -102,7 +102,7 @@ class AdminBackupEinstellungen extends Component
         }
         $this->mount();
 
-        $this->dispatch('hinweis', text: __('Backup-Einstellungen gespeichert.'));
+        $this->dispatch('notice', text: __('Backup-Einstellungen gespeichert.'));
     }
 
     /** Clears a stored secret (password, key, archive password). */
@@ -113,7 +113,7 @@ class AdminBackupEinstellungen extends Component
 
         Setting::setzen($schluessel, '');
         BackupSettings::anwenden();
-        $this->dispatch('hinweis', text: __('Gelöscht.'));
+        $this->dispatch('notice', text: __('Gelöscht.'));
     }
 
     /**
@@ -159,7 +159,7 @@ class AdminBackupEinstellungen extends Component
             Artisan::call('backup:run');
         });
 
-        $this->dispatch('hinweis', text: __('Sicherung gestartet – sie erscheint in ein paar Minuten in der Liste.'));
+        $this->dispatch('notice', text: __('Sicherung gestartet – sie erscheint in ein paar Minuten in der Liste.'));
     }
 
     /** Existing backups per target, newest first. */
@@ -195,7 +195,7 @@ class AdminBackupEinstellungen extends Component
     {
         Gate::authorize('isAdmin');
 
-        return view('livewire.admin-backup-einstellungen', [
+        return view('livewire.admin-backup-settings', [
             'arten' => BackupSettings::ARTEN,
             'gespeichert' => BackupSettings::werte(),
             'sicherungen' => $this->sicherungen(),

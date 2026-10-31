@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\AdminProtokoll;
+use App\Livewire\AdminActivityLog;
 use App\Models\CredentialLink;
 use App\Models\Customer;
 use App\Models\Domain;
@@ -18,7 +18,7 @@ test('die Suche findet ueber den Objektnamen', function () {
     Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'gesucht.de']);
     Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'unauffaellig.de']);
 
-    Livewire::test(AdminProtokoll::class)
+    Livewire::test(AdminActivityLog::class)
         ->set('suche', 'gesucht')
         ->assertSee('gesucht.de')
         ->assertDontSee('unauffaellig.de');
@@ -32,7 +32,7 @@ test('die Suche greift auch auf Werte zu, nicht nur auf Namen', function () {
 
     // In einem Protokoll sucht man nach dem, woran man sich erinnert - nicht
     // nach dem Feld, in dem es stand.
-    Livewire::test(AdminProtokoll::class)
+    Livewire::test(AdminActivityLog::class)
         ->set('suche', 'Hetzner')
         ->assertSee('irgendwas.de');
 });
@@ -45,7 +45,7 @@ test('der Ereignisfilter trennt Anlegen von Loeschen', function () {
     $geht = Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'geht.de']);
     $geht->delete();
 
-    Livewire::test(AdminProtokoll::class)
+    Livewire::test(AdminActivityLog::class)
         ->set('ereignis', 'deleted')
         ->assertSee('geht.de')
         ->assertDontSee('bleibt.de');
@@ -59,7 +59,7 @@ test('der Artfilter trennt die Objektarten', function () {
     Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'nur-domain.de']);
     Firewall::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'nur-firewall']);
 
-    Livewire::test(AdminProtokoll::class)
+    Livewire::test(AdminActivityLog::class)
         ->set('art', Firewall::class)
         ->assertSee('nur-firewall')
         ->assertDontSee('nur-domain.de');
@@ -76,7 +76,7 @@ test('der Benutzerfilter zeigt nur Eintraege dieses Verursachers', function () {
     $this->actingAs($anderer);
     Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'vom-anderen.de']);
 
-    Livewire::test(AdminProtokoll::class)
+    Livewire::test(AdminActivityLog::class)
         ->set('benutzer', 'user:'.$einer->id)
         ->assertSee('von-einem.de')
         ->assertDontSee('vom-anderen.de');
@@ -92,7 +92,7 @@ test('der Zeitraum blendet Aelteres aus', function () {
     Activity::where('subject_id', $alt->id)->where('subject_type', Domain::class)
         ->update(['created_at' => now()->subDays(40)]);
 
-    Livewire::test(AdminProtokoll::class)
+    Livewire::test(AdminActivityLog::class)
         ->set('tage', 7)
         ->assertSee('von-heute.de')
         ->assertDontSee('von-damals.de');
@@ -101,7 +101,7 @@ test('der Zeitraum blendet Aelteres aus', function () {
 test('Zuruecksetzen raeumt alle Filter ab', function () {
     $this->actingAs(userWithPermissions([]));
 
-    Livewire::test(AdminProtokoll::class)
+    Livewire::test(AdminActivityLog::class)
         ->set('suche', 'irgendwas')
         ->set('ereignis', 'deleted')
         ->set('tage', 7)
@@ -117,7 +117,7 @@ test('die Kopfzeile nennt beide Zahlen, wenn gefiltert wird', function () {
     Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'eine.de']);
 
     // Ohne die Gesamtzahl haelt man das gefilterte Ergebnis fuer den Bestand.
-    Livewire::test(AdminProtokoll::class)
+    Livewire::test(AdminActivityLog::class)
         ->set('ereignis', 'deleted')
         ->assertSee('von');
 });
@@ -127,7 +127,7 @@ test('die Auswahllisten enthalten nur, was vorkommt', function () {
     $customer = Customer::factory()->create();
     Domain::factory()->create(['customer_id' => $customer->id]);
 
-    $test = Livewire::test(AdminProtokoll::class);
+    $test = Livewire::test(AdminActivityLog::class);
 
     // Eine Auswahl mit 114 Verursachern, von denen 110 geloescht sind, hilft
     // niemandem - und eine Objektart ohne Eintraege auch nicht.
@@ -149,7 +149,7 @@ test('heute heisst heute, nicht die letzten 24 Stunden', function () {
     Activity::where('subject_id', $heute->id)->where('subject_type', Domain::class)
         ->update(['created_at' => now()->startOfDay()->addHour()]);
 
-    Livewire::test(AdminProtokoll::class)
+    Livewire::test(AdminActivityLog::class)
         ->set('tage', 1)
         ->assertSee('von-heute.de')
         ->assertDontSee('gestern-abend.de');
@@ -164,7 +164,7 @@ test('Platzhalter im Suchbegriff werden nicht als solche gelesen', function () {
 
     // Der Unterstrich steht in LIKE fuer ein beliebiges Zeichen. Ohne
     // Maskierung fand "srv_01" auch "srv101".
-    Livewire::test(AdminProtokoll::class)
+    Livewire::test(AdminActivityLog::class)
         ->set('suche', 'srv_01')
         ->assertSee('srv_01.example')
         ->assertDontSee('srv101.example');
@@ -178,7 +178,7 @@ test('das Prozentzeichen liefert nicht den ganzen Bestand', function () {
     Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'mit-100%-anteil.de']);
 
     // Gemessen im Browser: Die Suche nach "%" gab 863 von 863 Eintraegen aus.
-    Livewire::test(AdminProtokoll::class)
+    Livewire::test(AdminActivityLog::class)
         ->set('suche', '%')
         ->assertSee('mit-100%-anteil.de')
         ->assertDontSee('ohne-sonderzeichen.de');
@@ -196,7 +196,7 @@ test('die Benutzerliste trennt Mitarbeiter von Kundenzugaengen', function () {
     $this->actingAs($kundenzugang);
     Domain::factory()->create(['customer_id' => $kunde->id, 'name' => 'vom-kunden.de']);
 
-    $liste = Livewire::test(AdminProtokoll::class)->viewData('benutzerListe');
+    $liste = Livewire::test(AdminActivityLog::class)->viewData('benutzerListe');
 
     // Ein Kundenzugang mit Schreibrecht aendert Daten wie jeder Techniker -
     // in einer Liste aus lauter Namen liesse sich nicht erkennen, wer zu wem
@@ -216,7 +216,7 @@ test('die Zeile nennt den Kunden eines Kundenzugangs', function () {
     $this->actingAs($kundenzugang);
     Domain::factory()->create(['customer_id' => $kunde->id, 'name' => 'geaendert.de']);
 
-    Livewire::test(AdminProtokoll::class)
+    Livewire::test(AdminActivityLog::class)
         ->assertSee($kundenzugang->name)
         ->assertSee('Mustermann GmbH');
 });
@@ -235,7 +235,7 @@ test('der Benutzerfilter trifft auch einen Kundenzugang', function () {
 
     // Genau der Fall, um den es geht: nachsehen, was ein bestimmter Zugang
     // getan hat.
-    Livewire::test(AdminProtokoll::class)
+    Livewire::test(AdminActivityLog::class)
         ->set('benutzer', 'user:'.$einer->id)
         ->assertSee('vom-kunden.de')
         ->assertDontSee('vom-techniker.de');
@@ -256,7 +256,7 @@ test('jeder Eintrag nennt den Namen des Objekts', function () {
 
     expect($eintrag->properties['objekt'])->toBe('beispiel.de');
 
-    Livewire::test(AdminProtokoll::class)->assertSee('beispiel.de');
+    Livewire::test(AdminActivityLog::class)->assertSee('beispiel.de');
 });
 
 test('auch Objekte ohne name-Spalte werden benannt', function () {
@@ -305,7 +305,7 @@ test('der Kundenfilter zeigt nur Aenderungen an Objekten dieses Kunden', functio
     // Deleted: still belongs to its customer - "who deleted it?" is the question.
     Domain::factory()->create(['customer_id' => $mustermann->id, 'name' => 'alt-mustermann.de'])->delete();
 
-    Livewire::test(AdminProtokoll::class)
+    Livewire::test(AdminActivityLog::class)
         ->set('kunde', (string) $mustermann->id)
         ->assertSee('mustermann.de')
         ->assertSee('alt-mustermann.de')
@@ -317,7 +317,7 @@ test('jede Zeile nennt den Kunden des geaenderten Objekts', function () {
     $nordwind = Customer::factory()->create(['name' => 'Nordwind Fischerei']);
     Domain::factory()->create(['customer_id' => $nordwind->id, 'name' => 'nordwind.de']);
 
-    Livewire::test(AdminProtokoll::class)
+    Livewire::test(AdminActivityLog::class)
         ->assertViewHas('kundeVon', fn ($kunden) => in_array('Nordwind Fischerei', $kunden, true));
 });
 

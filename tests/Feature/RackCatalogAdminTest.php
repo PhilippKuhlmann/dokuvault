@@ -1,7 +1,7 @@
 <?php
 
+use App\Livewire\RackCatalogPreview;
 use App\Livewire\RackEditor;
-use App\Livewire\RackKatalogVorschau;
 use App\Models\Customer;
 use App\Models\Rack;
 use App\Models\RackCatalogItem;
@@ -330,12 +330,12 @@ test('das Einbauen merkt sich den Katalogeintrag - nur fuer sein Bild', function
 test('die Vorschau zeichnet in der eingestellten Hoehe', function () {
     $this->actingAs(adminUser());
 
-    $komponente = Livewire::test(RackKatalogVorschau::class, ['appearance' => 'patchpanel', 'he' => 1]);
+    $komponente = Livewire::test(RackCatalogPreview::class, ['appearance' => 'patchpanel', 'he' => 1]);
 
     // Ein Patchfeld mit 2 HE hat zwei Portreihen, keine gestreckte - die
     // Zeichnung muss deshalb tatsaechlich neu entstehen.
     $einzeilig = $komponente->html();
-    $zweizeilig = $komponente->dispatch('rack-vorschau', appearance: 'patchpanel', he: 2)->html();
+    $zweizeilig = $komponente->dispatch('rack-preview', appearance: 'patchpanel', he: 2)->html();
 
     expect($einzeilig)->not->toBe($zweizeilig);
     expect($komponente->get('he'))->toBe(2);
@@ -344,8 +344,8 @@ test('die Vorschau zeichnet in der eingestellten Hoehe', function () {
 test('die Vorschau nimmt weder eine unbekannte Darstellung noch eine zu grosse Hoehe an', function () {
     $this->actingAs(adminUser());
 
-    Livewire::test(RackKatalogVorschau::class, ['appearance' => 'shelf', 'he' => 2])
-        ->dispatch('rack-vorschau', appearance: 'raumschiff', he: 99)
+    Livewire::test(RackCatalogPreview::class, ['appearance' => 'shelf', 'he' => 2])
+        ->dispatch('rack-preview', appearance: 'raumschiff', he: 99)
         ->assertSet('appearance', 'shelf')
         ->assertSet('he', 8);
 });

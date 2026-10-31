@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\ObjektFormular;
+use App\Livewire\ObjectModal;
 use App\Models\Customer;
 use App\Models\SshKey;
 use App\Support\SshKeyGenerator;
@@ -105,7 +105,7 @@ test('der Knopf steht im Modal - beim Anlegen ohne Nachfrage, beim Bearbeiten mi
 
     // Der Test unten ruft erzeugen() direkt auf und liefe auch dann gruen,
     // wenn der Knopf gar nicht gerendert waere - genau das war einmal der Fall.
-    $anlegen = Livewire::test(ObjektFormular::class, ['typ' => 'sshkey', 'customer' => $customer])
+    $anlegen = Livewire::test(ObjectModal::class, ['typ' => 'sshkey', 'customer' => $customer])
         ->call('neu')->html();
 
     expect($anlegen)->toContain('Schlüsselpaar erzeugen');
@@ -118,7 +118,7 @@ test('der Knopf steht im Modal - beim Anlegen ohne Nachfrage, beim Bearbeiten mi
         'customer_id' => $customer->id, 'name' => 'Admin', 'key_type' => 'ed25519',
     ]);
 
-    $bearbeiten = Livewire::test(ObjektFormular::class, ['typ' => 'sshkey', 'customer' => $customer])
+    $bearbeiten = Livewire::test(ObjectModal::class, ['typ' => 'sshkey', 'customer' => $customer])
         ->call('bearbeiten', 'sshkey', $schluessel->id)->html();
 
     expect($bearbeiten)->toContain('wire:confirm');
@@ -128,7 +128,7 @@ test('der Knopf im Modal fuellt beide Felder', function () {
     $this->actingAs(userWithPermissions(['sshkey_create', 'sshkey_viewAny']));
     $customer = Customer::factory()->create();
 
-    $formular = Livewire::test(ObjektFormular::class, ['typ' => 'sshkey', 'customer' => $customer])
+    $formular = Livewire::test(ObjectModal::class, ['typ' => 'sshkey', 'customer' => $customer])
         ->call('neu', 'sshkey')
         ->set('form.name', 'Deploy')
         ->set('form.username', 'deploy')
@@ -151,7 +151,7 @@ test('das Modal bringt ein Verfahren schon mit', function () {
 
     // Feste Optionslisten sind vorbelegt - der Knopf laeuft also nie ins Leere,
     // nur weil noch nichts gewaehlt wurde.
-    $formular = Livewire::test(ObjektFormular::class, ['typ' => 'sshkey', 'customer' => $customer])
+    $formular = Livewire::test(ObjectModal::class, ['typ' => 'sshkey', 'customer' => $customer])
         ->call('neu', 'sshkey');
 
     expect($formular->get('form')['key_type'])->toBe('ed25519');
@@ -161,7 +161,7 @@ test('ein untergeschobenes Verfahren meldet sich am Feld, nicht als Serverfehler
     $this->actingAs(userWithPermissions(['sshkey_create', 'sshkey_viewAny']));
     $customer = Customer::factory()->create();
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'sshkey', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'sshkey', 'customer' => $customer])
         ->call('neu', 'sshkey')
         ->set('form.key_type', 'dsa')
         ->call('erzeugen')
@@ -172,7 +172,7 @@ test('ein Typ ohne Erzeuger hat auch keinen Knopf', function () {
     $this->actingAs(userWithPermissions(['logingeneral_create', 'logingeneral_viewAny']));
     $customer = Customer::factory()->create();
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'logingeneral', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'logingeneral', 'customer' => $customer])
         ->call('neu', 'logingeneral')
         ->call('erzeugen')
         ->assertStatus(404);

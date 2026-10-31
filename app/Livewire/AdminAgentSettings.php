@@ -14,7 +14,7 @@ use Livewire\Component;
  *
  * Saves while typing, like Fristen and Sicherheit.
  */
-class AdminAgentenEinstellungen extends Component
+class AdminAgentSettings extends Component
 {
     public int $intervall = 0;
 
@@ -42,7 +42,7 @@ class AdminAgentenEinstellungen extends Component
         Gate::authorize('admin_setting');
 
         Setting::setzen(Setting::AUTO_CHECK, $this->autoCheck ? '1' : '0');
-        $this->dispatch('hinweis', text: __('Einstellung gespeichert.'));
+        $this->dispatch('notice', text: __('Einstellung gespeichert.'));
     }
 
     public function updatedIntervall(): void
@@ -55,7 +55,7 @@ class AdminAgentenEinstellungen extends Component
         );
 
         Setting::setzen(Setting::AGENT_INTERVALL, $this->intervall);
-        $this->dispatch('hinweis', text: __('Einstellung gespeichert.'));
+        $this->dispatch('notice', text: __('Einstellung gespeichert.'));
     }
 
     public function updatedStillStunden(): void
@@ -92,12 +92,12 @@ class AdminAgentenEinstellungen extends Component
         );
 
         Setting::setzen($schluessel, $this->$feld);
-        $this->dispatch('hinweis', text: __('Einstellung gespeichert.'));
+        $this->dispatch('notice', text: __('Einstellung gespeichert.'));
     }
 
     public function render()
     {
-        return view('livewire.admin-agenten-einstellungen', [
+        return view('livewire.admin-agent-settings', [
             'intervalle' => config('custom.agent_intervalle'),
         ])->layout('layouts.admin.app');
     }

@@ -23,7 +23,7 @@ use Livewire\Component;
  * Geheimnis-Spalten und die Policy geprüft - über dieses Feld kommt nur
  * heraus, was ohnehin auf der Seite stand.
  */
-class GeheimFeld extends Component
+class SecretField extends Component
 {
     #[Locked]
     public string $modell;
@@ -72,7 +72,7 @@ class GeheimFeld extends Component
             return;
         }
 
-        $this->dispatch('kennwort-bereit', wert: $wert)->self();
+        $this->dispatch('password-ready', wert: $wert)->self();
     }
 
     /**
@@ -101,6 +101,6 @@ class GeheimFeld extends Component
     {
         // Dieselbe Ansicht wie KennwortFeld - dasselbe verdeckte Feld mit Auge
         // und Kopierknopf.
-        return view('livewire.kennwort-feld');
+        return view('livewire.password-field');
     }
 }

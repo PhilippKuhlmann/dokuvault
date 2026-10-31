@@ -2,7 +2,7 @@
      welchen Scannern es eingerichtet ist. --}}
     <x-card>
         <x-slot:head>
-            <x-show.header can="scantarget_update" editAction="$dispatch('objekt-bearbeiten', { typ: 'scantarget', id: {{ $eintrag->id }} })">
+            <x-show.header can="scantarget_update" editAction="$dispatch('object-edit', { typ: 'scantarget', id: {{ $eintrag->id }} })">
                 {{ $eintrag->name ?: $eintrag->target }}
 
                     <x-slot:kernwerte>
@@ -36,7 +36,7 @@
                                         <div class="font-mono">{{ $eintrag->login->username }}</div>
                                     @endif
                                     @if ($eintrag->login->password)
-                                        <livewire:geheim-feld :modell="\App\Models\LoginGeneral::class" :id="$eintrag->login->id" feld="password"
+                                        <livewire:secret-field :modell="\App\Models\LoginGeneral::class" :id="$eintrag->login->id" feld="password"
                                             width="w-24" :key="'scanziel-kw-'.$eintrag->id" />
                                     @endif
                                 </td>

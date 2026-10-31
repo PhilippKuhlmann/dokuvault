@@ -7,7 +7,7 @@
 
         <x-card>
             <x-slot:head>
-                <x-show.header can="vm_update" editAction="$dispatch('objekt-bearbeiten', { typ: 'vm', id: {{ $eintrag->id }} })">
+                <x-show.header can="vm_update" editAction="$dispatch('object-edit', { typ: 'vm', id: {{ $eintrag->id }} })">
                     {{-- Die Fernwartung bleibt der erste Knopf in der Kopfzeile: taeglich
                          benutzt. Welches Werkzeug dahinter steckt, steht in den
                          Einstellungen. --}}

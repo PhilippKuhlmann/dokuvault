@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\ObjektFormular;
+use App\Livewire\ObjectModal;
 use App\Models\Cluster;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
@@ -96,7 +96,7 @@ test('auch im Modal genuegt der Host allein', function () {
     // Standortfeld aus, schickt also nichts mit. Frueher lag die Ableitung im
     // FormRequest - dessen prepareForValidation laeuft hier aber nie, weil
     // ObjektFormular den Request nur fuer seine rules() erzeugt.
-    Livewire::test(ObjektFormular::class, ['typ' => 'vm', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'vm', 'customer' => $customer])
         ->call('neu')
         ->set('form.server_id', $host->id)
         ->set('form.name', 'VM-Modal')
@@ -155,7 +155,7 @@ test('auch im Modal genuegt der Cluster allein', function () {
         'customer_id' => $customer->id, 'site_id' => $muenchen->id, 'name' => 'PVE-Cluster',
     ]);
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'vm', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'vm', 'customer' => $customer])
         ->call('neu')
         ->set('form.cluster_id', $cluster->id)
         ->set('form.name', 'VM-Modal-Cluster')

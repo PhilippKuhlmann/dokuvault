@@ -1,5 +1,5 @@
 <div class="flex items-center gap-2" x-data="{ copied: false }"
-    x-on:kennwort-bereit="$kopieren($event.detail.wert)">
+    x-on:password-ready="$kopieren($event.detail.wert)">
     {{-- Immer dasselbe Feld und dieselben zwei Knöpfe - ob verdeckt oder offen.
          So springt die Spalte beim Aufdecken nicht: Vorher kam offen ein
          zweiter Knopf (Kopieren) dazu, und die Zelle wuchs.

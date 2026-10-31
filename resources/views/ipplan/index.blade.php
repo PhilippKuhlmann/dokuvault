@@ -122,7 +122,7 @@
                         </div>
                     @endif
 
-                    <livewire:ip-bereiche :customer="$customer" :network="$network" :key="'bereiche-'.$network->id" />
+                    <livewire:ip-ranges :customer="$customer" :network="$network" :key="'bereiche-'.$network->id" />
 
                     @if ($plan['truncated'] ?? false)
                         <div class="px-5 py-3 text-xs text-gray-400 border-t border-gray-100 dark:border-gray-700">

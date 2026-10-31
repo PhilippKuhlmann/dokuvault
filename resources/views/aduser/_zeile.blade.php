@@ -11,7 +11,7 @@
                         ]"
 
                         :inaktiv="$eintrag->enabled === false"
-                        editAction="$dispatch('objekt-bearbeiten', { typ: 'aduser', id: {{ $eintrag->id }} })"
+                        editAction="$dispatch('object-edit', { typ: 'aduser', id: {{ $eintrag->id }} })"
                         can="aduser_update"
                     />
 

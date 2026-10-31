@@ -35,7 +35,7 @@
             @endcan
         @endforeach
 
-        <livewire:objekt-formular :typ="$typ" :customer="$customer" :key="'formular-'.$typ" />
+        <livewire:object-modal :typ="$typ" :customer="$customer" :key="'formular-'.$typ" />
     </x-sitetopmenu>
 
     {{-- Filterleiste nur, wo der Typ etwas anzubieten hat: Eine Lizenz hat

@@ -1,8 +1,8 @@
 <?php
 
 use App\Livewire\DeviceIpAddresses;
-use App\Livewire\ObjektFormular;
-use App\Livewire\ObjektListe;
+use App\Livewire\ObjectList;
+use App\Livewire\ObjectModal;
 use App\Models\ADUser;
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
@@ -50,14 +50,14 @@ test('anlegen im Modal legt an und meldet es der Liste', function () {
     $customer = Customer::factory()->create();
     $this->actingAs(userWithPermissions(['domain_viewAny', 'domain_create']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'domain', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'domain', 'customer' => $customer])
         ->call('neu')
         ->assertSet('offen', true)
         ->set('form.name', 'beispiel.de')
         ->set('form.registrar', 'Hetzner')
         ->call('speichern')
         ->assertSet('offen', false)
-        ->assertDispatched('objekt-gespeichert', typ: 'domain');
+        ->assertDispatched('object-saved', typ: 'domain');
 
     $domain = Domain::where('name', 'beispiel.de')->sole();
     expect($domain->customer_id)->toBe($customer->id);
@@ -70,7 +70,7 @@ test('bearbeiten laedt die Werte und speichert sie zurueck', function () {
 
     $domain = Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'alt.de']);
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'domain', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'domain', 'customer' => $customer])
         ->call('bearbeiten', 'domain', $domain->id)
         ->assertSet('form.name', 'alt.de')
         ->set('form.name', 'neu.de')
@@ -85,7 +85,7 @@ test('Neu nach Bearbeiten legt an, statt den alten Eintrag zu aendern', function
 
     $domain = Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'bestand.de']);
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'domain', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'domain', 'customer' => $customer])
         ->call('bearbeiten', 'domain', $domain->id)
         ->call('neu')
         ->assertSet('bearbeiteId', null)
@@ -106,7 +106,7 @@ test('eine fremde Domain laesst sich nicht bearbeiten', function () {
 
     // Die Id kommt vom Browser - sie wird deshalb immer ueber den Kunden
     // geladen, und eine fremde laeuft ins Leere statt fremde Daten zu oeffnen.
-    Livewire::test(ObjektFormular::class, ['typ' => 'domain', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'domain', 'customer' => $customer])
         ->call('bearbeiten', 'domain', $fremdeDomain->id)
         ->assertNotFound();
 });
@@ -115,7 +115,7 @@ test('ohne Recht kein Anlegen', function () {
     $customer = Customer::factory()->create();
     $this->actingAs(userWithPermissions(['domain_viewAny']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'domain', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'domain', 'customer' => $customer])
         ->call('neu')
         ->assertForbidden();
 });
@@ -127,7 +127,7 @@ test('die Liste sucht und zeigt den Anlegen-Knopf', function () {
     Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'treffer.de']);
     Domain::factory()->create(['customer_id' => $customer->id, 'name' => 'anderes.de']);
 
-    Livewire::test(ObjektListe::class, ['typ' => 'domain', 'customer' => $customer])
+    Livewire::test(ObjectList::class, ['typ' => 'domain', 'customer' => $customer])
         ->assertSee('treffer.de')
         ->assertSee('anderes.de')
         ->set('search', 'treffer')
@@ -143,7 +143,7 @@ test('jede Liste aus config/forms ist auf das Modal umgestellt', function () {
     foreach (array_keys(config('forms')) as $typ) {
         $index = resource_path("views/$typ/index.blade.php");
 
-        if (! str_contains(file_get_contents($index), 'livewire:objekt-liste')) {
+        if (! str_contains(file_get_contents($index), 'livewire:object-list')) {
             $offen[] = $typ;
         }
 
@@ -190,13 +190,13 @@ test('jede umgestellte Liste zeigt einen Bearbeiten-Knopf', function () {
         // Entities aufloesen: Blade schreibt die Anfuehrungszeichen im
         // wire:click als &#039;, die Suche nach dem Ausdruck ginge sonst leer aus.
         $html = html_entity_decode(
-            Livewire::test(ObjektListe::class, ['typ' => $typ, 'customer' => $customer])->html()
+            Livewire::test(ObjectList::class, ['typ' => $typ, 'customer' => $customer])->html()
         );
 
         // Auf wire:click pruefen, nicht auf den blossen Text: Ein unbekanntes
         // Attribut reicht Blade unveraendert ins Element durch - der Name des
         // Ereignisses stand also auch dann im HTML, wenn gar kein Knopf da war.
-        if (! str_contains($html, 'wire:click="$dispatch(\'objekt-bearbeiten\'')) {
+        if (! str_contains($html, 'wire:click="$dispatch(\'object-edit\'')) {
             $ohneKnopf[] = $typ;
         }
     }
@@ -252,7 +252,7 @@ test('Typen mit IP-Adressen und Zugangsdaten zeigen beide Bloecke beim Bearbeite
 
         $objekt = $klasse::factory()->create($werte);
 
-        $html = Livewire::test(ObjektFormular::class, ['typ' => $typ, 'customer' => $customer])
+        $html = Livewire::test(ObjectModal::class, ['typ' => $typ, 'customer' => $customer])
             ->call('bearbeiten', $typ, $objekt->id)
             ->html();
 
@@ -315,10 +315,10 @@ test('eine im Block ergaenzte IP-Adresse meldet sich an die Liste', function () 
     ])
         ->set('address', '10.10.10.42')
         ->call('add')
-        ->assertDispatched('geraet-geaendert');
+        ->assertDispatched('device-changed');
 
     // Und die Liste zeigt sie danach auch.
-    Livewire::test(ObjektListe::class, ['typ' => 'machine', 'customer' => $customer])
+    Livewire::test(ObjectList::class, ['typ' => 'machine', 'customer' => $customer])
         ->assertSee('10.10.10.42');
 });
 
@@ -331,13 +331,13 @@ test('die Liste zeichnet auf die Meldung der Bloecke neu', function () {
         'customer_id' => $customer->id, 'site_id' => $site->id,
     ]);
 
-    $liste = Livewire::test(ObjektListe::class, ['typ' => 'machine', 'customer' => $customer])
+    $liste = Livewire::test(ObjectList::class, ['typ' => 'machine', 'customer' => $customer])
         ->assertDontSee('10.10.10.43');
 
     $maschine->ipAddresses()->create(['customer_id' => $customer->id, 'address' => '10.10.10.43']);
 
     // Ohne den Zuhoerer bliebe die Zeile auf dem Stand von vorhin.
-    $liste->dispatch('geraet-geaendert')->assertSee('10.10.10.43');
+    $liste->dispatch('device-changed')->assertSee('10.10.10.43');
 });
 
 test('ein Standort des eigenen Kunden wird im Modal angenommen', function () {
@@ -349,7 +349,7 @@ test('ein Standort des eigenen Kunden wird im Modal angenommen', function () {
     $site = Site::factory()->create(['customer_id' => $customer->id, 'name' => 'Halle Ost']);
     $this->actingAs(userWithPermissions(['machine_create', 'machine_viewAny']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'machine', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'machine', 'customer' => $customer])
         ->call('neu')
         ->set('form.site_id', $site->id)
         ->set('form.name', 'CNC-Fraese 7')
@@ -367,7 +367,7 @@ test('ein fremder Standort wird im Modal weiterhin abgelehnt', function () {
     $fremderStandort = Site::factory()->create(['customer_id' => $fremd->id]);
     $this->actingAs(userWithPermissions(['machine_create']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'machine', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'machine', 'customer' => $customer])
         ->call('neu')
         ->set('form.site_id', $fremderStandort->id)
         ->set('form.name', 'CNC-Fremd')
@@ -384,22 +384,22 @@ test('Anlegen, Speichern und Loeschen quittieren sich mit einer Meldung', functi
     $customer = Customer::factory()->create();
     $this->actingAs(userWithPermissions(['domain_create', 'domain_update', 'domain_delete', 'domain_viewAny']));
 
-    $modal = Livewire::test(ObjektFormular::class, ['typ' => 'domain', 'customer' => $customer])
+    $modal = Livewire::test(ObjectModal::class, ['typ' => 'domain', 'customer' => $customer])
         ->call('neu')
         ->set('form.name', 'meldung.de')
         ->call('speichern')
-        ->assertDispatched('hinweis', text: 'Domain angelegt.');
+        ->assertDispatched('notice', text: 'Domain angelegt.');
 
     $domain = Domain::where('name', 'meldung.de')->sole();
 
     $modal->call('bearbeiten', 'domain', $domain->id)
         ->set('form.registrar', 'Hetzner')
         ->call('speichern')
-        ->assertDispatched('hinweis', text: 'Domain gespeichert.');
+        ->assertDispatched('notice', text: 'Domain gespeichert.');
 
     $modal->call('bearbeiten', 'domain', $domain->id)
         ->call('loeschen')
-        ->assertDispatched('hinweis', text: 'Domain gelöscht.');
+        ->assertDispatched('notice', text: 'Domain gelöscht.');
 });
 
 test('leere Felder werden als null gespeichert, nicht als Leerstring', function () {
@@ -410,7 +410,7 @@ test('leere Felder werden als null gespeichert, nicht als Leerstring', function 
     $customer = Customer::factory()->create();
     $this->actingAs(userWithPermissions(['domain_create', 'domain_viewAny']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'domain', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'domain', 'customer' => $customer])
         ->call('neu')
         ->set('form.name', 'ohnedatum.de')
         ->call('speichern')
@@ -434,7 +434,7 @@ test('die Netz-Auswahl zeigt VLAN-Nummer und Bezeichnung', function () {
 
     // Ohne die Nummer sind zwei Netze mit aehnlicher Bezeichnung nicht zu
     // unterscheiden - im Netz spricht ohnehin jeder von der VLAN-Nummer.
-    Livewire::test(ObjektFormular::class, ['typ' => 'wifi', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'wifi', 'customer' => $customer])
         ->call('neu')
         ->assertSee('VLAN 20 · Clients');
 });
@@ -449,7 +449,7 @@ test('ein Netz ohne Bezeichnung laesst kein einsames Trennzeichen stehen', funct
         'vlanId' => 99, 'description' => null,
     ]);
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'wifi', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'wifi', 'customer' => $customer])
         ->call('neu')
         ->assertSee('VLAN 99')
         ->assertDontSee('VLAN 99 ·');
@@ -509,7 +509,7 @@ test('die Dienste-Auswahl steht im Modal, nicht nur ein Textfeld', function () {
         'operating_system_id' => $os->id,
     ]);
 
-    $html = Livewire::test(ObjektFormular::class, ['typ' => 'vm', 'customer' => $customer])
+    $html = Livewire::test(ObjectModal::class, ['typ' => 'vm', 'customer' => $customer])
         ->call('bearbeiten', 'vm', $vm->id)
         ->html();
 
@@ -533,7 +533,7 @@ test('das Server-Modal ist zweispaltig und zeigt alle Sonderfelder', function ()
         'operating_system_id' => $os->id,
     ]);
 
-    $html = Livewire::test(ObjektFormular::class, ['typ' => 'server', 'customer' => $customer])
+    $html = Livewire::test(ObjectModal::class, ['typ' => 'server', 'customer' => $customer])
         ->call('bearbeiten', 'server', $server->id)
         ->html();
 
@@ -553,7 +553,7 @@ test('einspaltige Typen bleiben einspaltig', function () {
 
     // Sechs Felder brauchen keine zweite Spalte - sonst steht das Modal
     // unnoetig breit im Bild.
-    $html = Livewire::test(ObjektFormular::class, ['typ' => 'domain', 'customer' => $customer])
+    $html = Livewire::test(ObjectModal::class, ['typ' => 'domain', 'customer' => $customer])
         ->call('neu')
         ->html();
 
@@ -568,7 +568,7 @@ test('eine feste Optionsliste ist beim Anlegen vorbelegt', function () {
     $customer = Customer::factory()->create();
     $this->actingAs(userWithPermissions(['server_create']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'server', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'server', 'customer' => $customer])
         ->call('neu')
         ->assertSet('form.form_factor', 'rack')
         ->assertSet('form.full_depth', '1');
@@ -580,7 +580,7 @@ test('Fehlermeldungen nennen die Beschriftung, nicht den Feldnamen', function ()
     $customer = Customer::factory()->create();
     $this->actingAs(userWithPermissions(['server_create']));
 
-    $modal = Livewire::test(ObjektFormular::class, ['typ' => 'server', 'customer' => $customer])
+    $modal = Livewire::test(ObjectModal::class, ['typ' => 'server', 'customer' => $customer])
         ->call('neu')
         ->set('form.form_factor', '')
         ->call('speichern');
@@ -611,7 +611,7 @@ test('ein leeres Pflichtfeld mit Standardwert scheitert nicht an null', function
     $os = OperatingSystem::factory()->create(['name' => 'Debian 13']);
     $this->actingAs(userWithPermissions(['server_create', 'server_viewAny']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'server', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'server', 'customer' => $customer])
         ->call('neu')
         ->set('form.site_id', $site->id)
         ->set('form.name', 'SRV-OhneHE')
@@ -635,7 +635,7 @@ test('eine Securepoint-Firewall laesst sich im Modal anlegen', function () {
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     $this->actingAs(userWithPermissions(['firewall_create', 'firewall_viewAny']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'firewall', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'firewall', 'customer' => $customer])
         ->call('neu')
         ->assertSet('form.form_factor', 'appliance')
         ->set('form.site_id', $site->id)
@@ -656,7 +656,7 @@ test('die Securepoint-Felder erscheinen nur beim passenden Hersteller', function
     $customer = Customer::factory()->create();
     $this->actingAs(userWithPermissions(['firewall_create']));
 
-    $html = Livewire::test(ObjektFormular::class, ['typ' => 'firewall', 'customer' => $customer])
+    $html = Livewire::test(ObjectModal::class, ['typ' => 'firewall', 'customer' => $customer])
         ->call('neu')
         ->html();
 
@@ -672,7 +672,7 @@ test('ein AD-Benutzer laesst sich im Modal anlegen', function () {
     $customer = Customer::factory()->create();
     $this->actingAs(userWithPermissions(['aduser_create', 'aduser_viewAny']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'aduser', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'aduser', 'customer' => $customer])
         ->call('neu')
         // Ein neuer Benutzer ist aktiv, nicht "nichts ausgewaehlt".
         ->assertSet('form.enabled', '1')
@@ -696,7 +696,7 @@ test('ein technisches Feld wird nicht gezeichnet, bleibt aber erhalten', functio
         'customer_id' => $customer->id, 'username' => 'verborgen', 'hidden' => 1,
     ]);
 
-    $modal = Livewire::test(ObjektFormular::class, ['typ' => 'aduser', 'customer' => $customer])
+    $modal = Livewire::test(ObjectModal::class, ['typ' => 'aduser', 'customer' => $customer])
         ->call('bearbeiten', 'aduser', $benutzer->id);
 
     expect($modal->html())->not->toContain('form.hidden');
@@ -711,7 +711,7 @@ test('ein Internetanschluss laesst sich im Modal anlegen', function () {
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     $this->actingAs(userWithPermissions(['internetconnection_create', 'internetconnection_viewAny']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'internetconnection', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'internetconnection', 'customer' => $customer])
         ->call('neu')
         ->set('form.site_id', $site->id)
         ->set('form.provider', 'Telekom')
@@ -733,7 +733,7 @@ test('die Bandbreitenfelder tragen ihre Einheit', function () {
     $customer = Customer::factory()->create();
     $this->actingAs(userWithPermissions(['internetconnection_create']));
 
-    $html = Livewire::test(ObjektFormular::class, ['typ' => 'internetconnection', 'customer' => $customer])
+    $html = Livewire::test(ObjectModal::class, ['typ' => 'internetconnection', 'customer' => $customer])
         ->call('neu')
         ->html();
 
@@ -745,7 +745,7 @@ test('eine E-Mail-Archivierung laesst sich im Modal anlegen', function () {
     $customer = Customer::factory()->create();
     $this->actingAs(userWithPermissions(['securepointuma_create', 'securepointuma_viewAny']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'securepointuma', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'securepointuma', 'customer' => $customer])
         ->call('neu')
         ->set('form.name', 'UMA-Modal')
         ->set('form.manufacturer', 'Reddoxx')
@@ -776,7 +776,7 @@ test('das Modal kommt ohne customer-Relation am Model aus', function () {
 
     $uma = SecurepointUMA::factory()->create(['customer_id' => $customer->id]);
 
-    $html = Livewire::test(ObjektFormular::class, ['typ' => 'securepointuma', 'customer' => $customer])
+    $html = Livewire::test(ObjectModal::class, ['typ' => 'securepointuma', 'customer' => $customer])
         ->call('bearbeiten', 'securepointuma', $uma->id)
         ->html();
 
@@ -787,7 +787,7 @@ test('ein Standort laesst sich im Modal anlegen', function () {
     $customer = Customer::factory()->create();
     $this->actingAs(userWithPermissions(['site_create', 'site_viewAny']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'site', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'site', 'customer' => $customer])
         ->call('neu')
         ->set('form.name', 'Lager Süd')
         ->set('form.street', 'Industrieweg')
@@ -811,7 +811,7 @@ test('der Standort laedt die Seite neu, andere Typen nicht', function () {
     $customer = Customer::factory()->create();
     $this->actingAs(userWithPermissions(['site_create', 'domain_create']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'site', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'site', 'customer' => $customer])
         ->call('neu')
         ->set('form.name', 'Neuer Standort')
         ->call('speichern')
@@ -828,7 +828,7 @@ test('eine Datei laesst sich im Modal hochladen', function () {
     $os = OperatingSystem::factory()->create(['name' => 'Windows Server 2022']);
     $this->actingAs(userWithPermissions(['licensewindows_create', 'licensewindows_viewAny']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'licensewindows', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'licensewindows', 'customer' => $customer])
         ->call('neu')
         ->set('form.operating_system_id', $os->id)
         ->set('form.key', 'XXXXX-YYYYY-ZZZZZ')
@@ -859,7 +859,7 @@ test('eine neue Datei ersetzt die alte und laesst keine Leiche zurueck', functio
     ]);
     Storage::disk('local')->put($customer->slug.'/licensewindows/alt.pdf', 'Inhalt');
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'licensewindows', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'licensewindows', 'customer' => $customer])
         ->call('bearbeiten', 'licensewindows', $lizenz->id)
         ->set('datei', UploadedFile::fake()->create('neu.pdf', 12))
         ->call('speichern')
@@ -886,7 +886,7 @@ test('ohne neue Datei bleibt die hinterlegte erhalten', function () {
     ]);
 
     // Wer nur den Key korrigiert, darf die Datei nicht verlieren.
-    Livewire::test(ObjektFormular::class, ['typ' => 'licensewindows', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'licensewindows', 'customer' => $customer])
         ->call('bearbeiten', 'licensewindows', $lizenz->id)
         ->set('form.key', 'NEU')
         ->call('speichern');
@@ -901,7 +901,7 @@ test('die Dateiwahl schlaegt eine Bezeichnung vor', function () {
     $os = OperatingSystem::factory()->create(['name' => 'Windows Server 2022']);
     $this->actingAs(userWithPermissions(['licensewindows_create']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'licensewindows', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'licensewindows', 'customer' => $customer])
         ->call('neu')
         ->set('datei', UploadedFile::fake()->create('Lizenzurkunde 2026.pdf', 12))
         // Ohne Endung: Die kommt beim Ablegen von selbst dazu.
@@ -916,7 +916,7 @@ test('eine eingetragene Bezeichnung bleibt beim Hochladen stehen', function () {
     $this->actingAs(userWithPermissions(['licensewindows_create']));
 
     // Wer schon etwas eingetragen hat, hat sich dabei etwas gedacht.
-    Livewire::test(ObjektFormular::class, ['typ' => 'licensewindows', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'licensewindows', 'customer' => $customer])
         ->call('neu')
         ->set('form.file_name', 'Von Hand benannt')
         ->set('datei', UploadedFile::fake()->create('egal.pdf', 12))
@@ -929,7 +929,7 @@ test('eine CAL-Lizenz laesst sich mit Datei anlegen', function () {
     $customer = Customer::factory()->create();
     $this->actingAs(userWithPermissions(['licenseaccess_create', 'licenseaccess_viewAny']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'licenseaccess', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'licenseaccess', 'customer' => $customer])
         ->call('neu')
         ->set('form.name', 'RDS CAL 2022')
         ->set('form.key', 'AAAAA-BBBBB')
@@ -967,7 +967,7 @@ test('eine Software-Lizenz laesst sich mit Laufzeit und Abo anlegen', function (
     $customer = Customer::factory()->create();
     $this->actingAs(userWithPermissions(['licensesoftware_create', 'licensesoftware_viewAny']));
 
-    Livewire::test(ObjektFormular::class, ['typ' => 'licensesoftware', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'licensesoftware', 'customer' => $customer])
         ->call('neu')
         // "Kein Abo" ist der Standard, nicht "nichts ausgewaehlt".
         ->assertSet('form.abo', '')
@@ -991,7 +991,7 @@ test('ohne Abo wird der leere Wert zu null', function () {
 
     // "Kein Abo" ist ein leerer Wert - in der Tabelle gehoert dort null hin,
     // kein Leerstring.
-    Livewire::test(ObjektFormular::class, ['typ' => 'licensesoftware', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'licensesoftware', 'customer' => $customer])
         ->call('neu')
         ->set('form.name', 'Einmallizenz')
         ->call('speichern')
@@ -1038,7 +1038,7 @@ test('das Modal ist per Tastatur bedienbar (Autofokus, Cmd/Strg+Enter)', functio
     $customer = Customer::factory()->create();
     $this->actingAs(userWithPermissions(['domain_viewAny', 'domain_create']));
 
-    $html = Livewire::test(ObjektFormular::class, ['typ' => 'domain', 'customer' => $customer])
+    $html = Livewire::test(ObjectModal::class, ['typ' => 'domain', 'customer' => $customer])
         ->call('neu')
         ->assertSet('offen', true)
         ->html();
@@ -1062,7 +1062,7 @@ test('der Montageort laesst sich speichern, steht in der Liste und ist suchbar',
     $this->actingAs(userWithPermissions(['dect_viewAny', 'dect_create']));
 
     // Ein DECT-Sender unter der Decke ist ohne diese Notiz nicht wiederzufinden.
-    Livewire::test(ObjektFormular::class, ['typ' => 'dect', 'customer' => $customer])
+    Livewire::test(ObjectModal::class, ['typ' => 'dect', 'customer' => $customer])
         ->set('form.site_id', $site->id)
         ->set('form.role', 'Basis')
         ->set('form.location', 'Halle 1, über der Tür')
@@ -1072,7 +1072,7 @@ test('der Montageort laesst sich speichern, steht in der Liste und ist suchbar',
     $dect = DECT::firstOrFail();
     expect($dect->location)->toBe('Halle 1, über der Tür');
 
-    Livewire::test(ObjektListe::class, ['typ' => 'dect', 'customer' => $customer])
+    Livewire::test(ObjectList::class, ['typ' => 'dect', 'customer' => $customer])
         ->assertSee('Halle 1, über der Tür')
         // Suchbar, denn danach fragt man: "was hängt in Halle 1?"
         ->set('search', 'Halle 1')

@@ -10,6 +10,6 @@
 
                         ]"
 
-                        editAction="$dispatch('objekt-bearbeiten', { typ: 'sshkey', id: {{ $eintrag->id }} })"
+                        editAction="$dispatch('object-edit', { typ: 'sshkey', id: {{ $eintrag->id }} })"
                         can="sshkey_update"
                     />
