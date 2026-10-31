@@ -11,12 +11,12 @@ use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
 
 /**
- * Die zweite Stufe der Anmeldung: ein Einmalcode aus einer
- * Authentifizierungs-App (TOTP, RFC 6238).
+ * The second factor at sign-in: a one-time code from an authenticator app
+ * (TOTP, RFC 6238).
  *
- * Der QR-Code wird hier erzeugt, nicht von einem Dienst geholt. Ein Geheimnis
- * an einen fremden Server zu schicken, nur damit er ein Bild daraus malt,
- * waere genau das Gegenteil dessen, was diese Stufe leisten soll.
+ * The QR code is generated here, not fetched from a service. Sending a secret
+ * to someone else's server just so it can paint a picture from it would be
+ * exactly the opposite of what this factor is for.
  */
 class TwoFactor
 {
@@ -31,9 +31,8 @@ class TwoFactor
     }
 
     /**
-     * Prueft einen Code. Google2FA laesst standardmaessig ein Zeitfenster
-     * davor und danach gelten - Uhren gehen auseinander, und wer sechs Ziffern
-     * abtippt, braucht dafuer Sekunden.
+     * Checks a code. By default Google2FA allows a time window before and
+     * after - clocks drift apart, and typing six digits takes seconds.
      */
     public function stimmt(string $geheimnis, string $code): bool
     {
@@ -52,9 +51,9 @@ class TwoFactor
     }
 
     /**
-     * Die Adresse, die im QR-Code steht. Der Name vor dem Doppelpunkt
-     * erscheint in der App als Ueberschrift - deshalb der Anwendungsname und
-     * nicht die nackte Kennung.
+     * The URL inside the QR code. The name before the colon shows up in the
+     * app as a heading - hence the application name and not the bare
+     * identifier.
      */
     public function url(User $nutzer, string $geheimnis): string
     {
@@ -66,8 +65,8 @@ class TwoFactor
     }
 
     /**
-     * Der QR-Code als SVG, fertig zum Einbetten. Kein <?xml-Vorspann, sonst
-     * steht er mitten in der Seite.
+     * The QR code as SVG, ready to embed. No <?xml preamble, or it would
+     * stand in the middle of the page.
      */
     public function qrCode(string $adresse): string
     {
@@ -80,9 +79,9 @@ class TwoFactor
     }
 
     /**
-     * Wiederherstellungscodes. Wer sein Telefon verliert, kommt sonst nie
-     * wieder herein - und in dieser Anwendung liegen die Kennwoerter ganzer
-     * Kundennetze.
+     * Recovery codes. Whoever loses their phone would otherwise never get
+     * back in - and this application holds the passwords of entire customer
+     * networks.
      */
     public function recoveryCodes(): array
     {

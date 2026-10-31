@@ -9,13 +9,13 @@ use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * Der Ablauf des Erstaufnahme-Assistenten: welche Schritte ein Nutzer sieht
- * und wie ein Durchlauf von einem zum naechsten kommt.
+ * The flow of the initial-survey wizard: which steps a user sees and how a
+ * run gets from one to the next.
  *
- * Einmal geschrieben, zweimal gerufen - von der Livewire-Komponente im
- * Browser und vom Mobile\WizardController. Das Ausfuellen selbst gehoert
- * nicht hierher: Im Browser macht es die Komponente, in der App das
- * Formular, das der Server ohnehin schon beschreibt
+ * Written once, called twice - by the Livewire component in the browser and
+ * by the Mobile\WizardController. Filling things in does not belong here:
+ * in the browser the component does it, in the app the form that the server
+ * already describes anyway
  * (`customers/{slug}/forms/{typ}`).
  */
 class WizardFlow
@@ -26,10 +26,10 @@ class WizardFlow
     ) {}
 
     /**
-     * Nur Schritte, fuer die der Nutzer das jeweilige _create-Recht hat.
+     * Only steps the user holds the matching _create right for.
      *
-     * Hat er fuer keinen ein Recht, ist der Assistent fuer ihn nicht
-     * nutzbar - dann ist die Liste leer, und der Zugang ist 403.
+     * If they hold none, the wizard is unusable for them - then the list is
+     * empty and access is 403.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -43,12 +43,12 @@ class WizardFlow
     }
 
     /**
-     * Die beiden Fernwartungsfelder heissen nach dem eingestellten Werkzeug.
+     * The two remote-access fields are named after the configured tool.
      *
-     * Die Ersetzung passiert hier und nicht in der Konfiguration: "php
-     * artisan config:cache" friert config/custom.php ein, ein Wert aus der
-     * Datenbank waere darin fuer immer eingebacken und liesse sich ueber die
-     * Einstellungen nicht mehr aendern.
+     * The substitution happens here and not in the configuration: "php artisan
+     * config:cache" freezes config/custom.php, a value from the database would
+     * be baked into it for good and could no longer be changed through the
+     * settings.
      *
      * @param  array<string, mixed>  $schritt
      * @return array<string, mixed>
@@ -70,7 +70,7 @@ class WizardFlow
         return $schritt;
     }
 
-    /** Der offene Durchlauf dieses Nutzers - oder keiner. */
+    /** This user's open run - or none. */
     public function durchlauf(): ?DocumentationRun
     {
         return DocumentationRun::where('customer_id', $this->kunde->id)
@@ -80,7 +80,7 @@ class WizardFlow
             ->first();
     }
 
-    /** Den offenen Durchlauf holen oder einen neuen beginnen. */
+    /** Fetch the open run or begin a new one. */
     public function beginnen(): DocumentationRun
     {
         return $this->durchlauf() ?? DocumentationRun::create([
@@ -102,19 +102,18 @@ class WizardFlow
         return collect($this->steps())->firstWhere('key', $durchlauf->current_step);
     }
 
-    /** Ob dieser Schluessel ein Schritt ist, den der Nutzer sehen darf. */
+    /** Whether this key is a step the user may see. */
     public function erlaubt(string $schluessel): bool
     {
         return collect($this->steps())->contains(fn ($schritt) => $schritt['key'] === $schluessel);
     }
 
     /**
-     * Einen Schritt verlassen, ohne "Weiter" zu waehlen.
+     * Leave a step without choosing "next".
      *
-     * Wurde in diesem Durchlauf darin etwas angelegt, zaehlt er trotzdem als
-     * erfasst - nur ein wirklich leer gelassener Schritt gilt als
-     * uebersprungen. So steht am Ende nicht "uebersprungen" an einem
-     * Schritt, in dem man gerade etwas eingetragen hat.
+     * If something was created in it during this run it still counts as
+     * captured - only a step genuinely left empty counts as skipped. That way
+     * "skipped" does not end up on a step where something was just entered.
      */
     public function verlassen(DocumentationRun $durchlauf, string $schluessel): void
     {
@@ -126,7 +125,7 @@ class WizardFlow
     }
 
     /**
-     * Zum naechsten Schritt. Gibt es keinen mehr, ist der Durchlauf fertig.
+     * On to the next step. If there is none left, the run is finished.
      */
     public function weiter(DocumentationRun $durchlauf): void
     {
@@ -141,7 +140,7 @@ class WizardFlow
         }
     }
 
-    /** Einen Schritt zurueck. Am Anfang bleibt es, wo es ist. */
+    /** One step back. At the start it stays where it is. */
     public function zurueck(DocumentationRun $durchlauf): void
     {
         $schluessel = array_column($this->steps(), 'key');
@@ -153,12 +152,12 @@ class WizardFlow
     }
 
     /**
-     * Direkt zu einem Schritt springen - vor oder zurueck.
+     * Jump straight to a step - forwards or back.
      *
-     * Nur zu erlaubten: Ein unbekannter oder gesperrter Schluessel wird
-     * still verworfen, statt den Durchlauf in einen Zustand zu bringen, den
-     * der Nutzer gar nicht sehen darf. Springen ist kein Bearbeiten - der
-     * verlassene Schritt wird weder erledigt noch uebersprungen.
+     * Only to allowed ones: an unknown or blocked key is dropped silently
+     * instead of putting the run into a state the user may not see at all.
+     * Jumping is not editing - the step left behind is neither done nor
+     * skipped.
      */
     public function springen(DocumentationRun $durchlauf, string $schluessel): bool
     {
@@ -172,9 +171,9 @@ class WizardFlow
     }
 
     /**
-     * Die ganze Gruppe des aktuellen Schritts ueberspringen ("keine
-     * Telefonie"): alle noch offenen Schritte dieser Gruppe vermerken und
-     * zum ersten Schritt danach springen.
+     * Skip the whole group of the current step ("no
+     * telephony"): note every step of that group still open and jump to the
+     * first step after it.
      */
     public function skipGroup(DocumentationRun $durchlauf): void
     {
@@ -211,9 +210,9 @@ class WizardFlow
     }
 
     /**
-     * "Als erledigt markieren": schliesst einen offenen Durchlauf ab. Gibt
-     * es keinen, entsteht ein bereits abgeschlossener - das Dashboard fragt
-     * nur, ob es fuer den Kunden einen abgeschlossenen gibt.
+     * "Mark as done": closes an open run. If there is none, one that is
+     * already closed comes into being - the dashboard only asks whether there
+     * is a closed one for the customer.
      */
     public function abschliessen(): void
     {

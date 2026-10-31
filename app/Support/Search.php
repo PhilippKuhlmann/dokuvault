@@ -39,19 +39,19 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * Die Suche ueber alle Kunden - fuer die Seite und fuer die App.
+ * Search across every customer - for the page and for the app.
  *
- * Stand vorher ganz in App\Livewire\GlobalSearch. Die App braucht dieselbe
+ * This used to sit entirely in App\Livewire\GlobalSearch. The app needs the same
  * Antwort auf dieselbe Frage; zwei Kopien haetten bald zwei Meinungen darueber,
  * wer was sehen darf.
  */
 class Search
 {
     /**
-     * Durchsuchbare Typen: Slug => [Model, Anzeigename, Permission-Prefix, Suchspalten]
-     * und optional als fuenftes Element der Routen-Slug, falls der Treffer auf eine
-     * andere Liste zeigt als sein eigener Schluessel (Patchfeld-Ports -> Patchfelder).
-     * Die Spalten sind gegen die Migrationen verifiziert (ip vs. ip1 etc.).
+     * Searchable kinds: slug => [model, display name, permission prefix, search columns]
+     * and optionally, as a fifth element, the route slug if the hit points at a
+     * different list than its own key (patch panel ports -> patch panels).
+     * The columns are verified against the migrations (ip vs. ip1 etc.).
      */
     public const TYPES = [
         'server' => [Server::class, 'Server', 'server', ['name', 'serialNumber']],
@@ -88,21 +88,21 @@ class Search
     ];
 
     /**
-     * Typen, deren Tabellen so gross werden, dass nur die Praefix-Suche traegt.
+     * Kinds whose tables grow so large that only the prefix search carries.
      *
-     * Gemessen an einem Bestand mit 10 Millionen Datensaetzen: 4 Mio
+     * Measured on a stock of 10 million records: 4 million AD users, the rest
      * AD-Benutzer, 2 Mio Computer, 1,5 Mio Adressen, 1 Mio VMs. Alles andere
-     * bleibt bei der Suche mitten im Wort - dort ist ein Tabellendurchlauf
-     * billiger als der Verlust an Treffern.
+     * stays with the search in mid-word - a table scan is cheaper there than
+     * the loss of hits.
      */
     private const MASSENHAFT = ['aduser', 'computer', 'vm', 'phone', 'camera'];
 
     /**
-     * Wie viele Treffer je Objektart hoechstens gezeigt werden.
+     * How many hits per object kind are shown at most.
      *
-     * Die Suche laeuft ueber knapp vierzig Arten; ohne Deckel waere eine
-     * Anfrage nach "a" eine Liste des ganzen Bestands. Wer etwas sucht, tippt
-     * ohnehin weiter - der Hinweis unter der Gruppe sagt, dass es mehr gibt.
+     * The search runs across nearly forty kinds; without a cap a query for
+     * "a" would be a listing of the entire stock. Whoever is looking types on
+     * anyway - the note under the group says there is more.
      */
     public const JE_ART = 20;
 
@@ -114,18 +114,18 @@ class Search
     public const ZUR_DETAILSEITE = ['checklist'];
 
     /**
-     * Die Treffer, nach Typ gruppiert.
+     * The hits, grouped by kind.
      *
-     * Je Gruppe: typ (eigener Schluessel), slug (die Liste, auf die der
-     * Treffer zeigt), label, results, weitere, highlightable.
+     * Per group: typ (its own key), slug (the list the hit points at),
+     * label, results, weitere, highlightable.
      */
     public function groups(User $user, string $roh): Collection
     {
         $groups = collect();
 
-        // Roh: Die Maskierung der LIKE-Platzhalter macht whereEnthaelt.
-        // Zweimal maskiert wuerde aus "srv_01" ein Suchbegriff, der den
-        // Backslash selbst sucht - und nichts mehr findet.
+        // Raw: escaping the LIKE placeholders is done by whereEnthaelt.
+        // Escaped twice, "srv_01" would become a term searching for the
+        // backslash itself - and finding nothing at all.
         if (strlen($roh) < 2) {
             return $groups;
         }
@@ -139,35 +139,35 @@ class Search
 
             $query = $class::query()->with('customer');
 
-            // Kunden-Nutzer sehen nur Objekte des eigenen Kunden
+            // Customer users see only objects of their own customer
             if ($user->customer_id) {
                 $query->where('customer_id', $user->customer_id);
             }
 
-            // Die zusaetzlich dokumentierten Adressen zaehlen mit. Seit die
-            // Server-Formulare ip1/ip2 nicht mehr fuehren, stehen IP-Adressen
-            // neuer Geraete ausschliesslich dort - ohne das hier faende die
-            // Suche sie nicht mehr.
+            // The additionally documented addresses count too. Since the server
+            // forms no longer carry ip1/ip2, IP addresses of new devices live
+            // exclusively there - without this the search would no longer find
+            // them.
             $hatIpBlock = in_array(HasIpAddresses::class, class_uses_recursive($class), true);
 
-            // Wie gesucht wird, haengt an der Tabellengroesse.
+            // How we search depends on the size of the table.
             //
-            // "%begriff%" kann keinen Index nutzen, MySQL liest die ganze
-            // Tabelle. Bei 4 Millionen AD-Benutzern kostete das 2788 ms,
-            // die Praefix-Form auf indizierter Spalte 3 ms. Bei ein paar
-            // tausend Raecken oder Patchfeldern ist derselbe Scan dagegen
+            // "%term%" cannot use an index, MySQL reads the whole table. At 4
+            // million AD users that cost 2788 ms, the prefix form on an indexed
+            // column 3 ms. On a few thousand racks or patch panels the same
+            // scan is done in milliseconds, though.
             // in Millisekunden erledigt.
             //
-            // Deshalb Praefix nur fuer die Massentabellen. Sonst ginge
-            // genau das verloren, wofuer die Suche da ist: Die Dose steht
-            // als "EG 2.14" drin und wird als "2.14" gesucht, das Rack
-            // heisst "Rack HH-01" und wird als "HH-01" gesucht.
+            // Hence prefix only for the bulk tables. Otherwise exactly what the
+            // search is for would be lost: the outlet is documented as
+            // "EG 2.14" and searched for as "2.14", the rack is called
+            // "Rack HH-01" and searched for as "HH-01".
             $nurAnfang = in_array($slug, self::MASSENHAFT, true);
 
-            // whereBeginntMit / whereEnthaelt statt like: Ohne Maskierung
-            // stand ein Unterstrich im Suchbegriff fuer ein beliebiges
-            // Zeichen - "SRV_01" fand auch "SRV101" - und ein
-            // Prozentzeichen fuer den ganzen Bestand.
+            // whereBeginntMit / whereEnthaelt instead of like: without escaping
+            // an underscore in the term stood for any character - "SRV_01" also
+            // found "SRV101" - and a percent sign for the entire stock.
+            // percent sign for the entire stock.
             $query->where(function ($q) use ($columns, $roh, $nurAnfang, $hatIpBlock) {
                 $nurAnfang
                     ? $q->whereBeginntMit($columns, $roh)
@@ -180,11 +180,11 @@ class Search
                 }
             });
 
-            // Einen mehr holen als angezeigt wird: Damit steht fest, ob
-            // es weitere gibt, ohne dafuer ein zweites Mal zu zaehlen -
-            // dasselbe Vorgehen wie in der Kundensuche. Vorher wurde bei
-            // zwanzig stillschweigend abgeschnitten, und wer den
-            // einundzwanzigsten Server suchte, hielt ihn fuer nicht
+            // Fetch one more than is shown: that settles whether there are more
+            // without counting a second time - the same approach as in the
+            // customer search. Before, it was cut off silently at twenty, and
+            // whoever looked for the twenty-first server took it to be
+            // missing.
             // vorhanden.
             $treffer = $query->limit(self::JE_ART + 1)->get();
 

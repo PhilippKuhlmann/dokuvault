@@ -3,23 +3,22 @@
 namespace App\Support;
 
 /**
- * Der Changelog als Quelle der Versionsnummer.
+ * The changelog as the source of the version number.
  *
- * Die Nummer im Schriftkopf der Anmeldeseite und in der Seitenleiste ist die
- * oberste Überschrift von changelog.md. Das ist bewusst so: Eine Version, die
- * an einer zweiten Stelle gepflegt werden müsste, läuft irgendwann gegen den
- * Changelog, und dann stimmt eine von beiden nicht mehr.
+ * The number in the masthead of the sign-in page and in the sidebar is the
+ * topmost heading of changelog.md. That is deliberate: a version that had to
+ * be kept in a second place drifts against the changelog sooner or later,
+ * and then one of the two is wrong.
  *
- * Gelesen wird die Datei einmal je Anfrage. Vorher stand das
- * file_get_contents samt Regex in einem View-Composer auf '*' - und
- * Blade-Komponenten sind Views: Eine Seite mit vierzig Komponenten las die
- * Datei vierzigmal von der Platte. Sichtbar war davon nichts, messbar schon.
+ * The file is read once per request. Before, the file_get_contents and its
+ * regex sat in a view composer on '*' - and Blade components are views: a
+ * page with forty components read the file forty times from disk. None of
+ * that was visible, but it was measurable.
  *
- * Absichtlich kein Cache-Eintrag, sondern nur für die Dauer der Anfrage
- * gemerkt: Ein gecachter Wert überlebte das Bearbeiten des Changelogs, und die
- * angezeigte Version wäre danach still falsch - bis jemand den Cache leert.
- * Ein Dateizugriff je Anfrage ist der Preis dafür, dass das nicht passieren
- * kann.
+ * Deliberately not a cache entry, only remembered for the duration of the
+ * request: a cached value outlived editing the changelog, and the version
+ * shown would be silently wrong afterwards - until someone clears the cache.
+ * One file access per request is the price for that not happening.
  */
 class Changelog
 {
@@ -27,17 +26,17 @@ class Changelog
 
     protected static ?string $version = null;
 
-    /** Der vollständige Changelog, wie er auf der Platte steht. */
+    /** The complete changelog as it stands on disk. */
     public static function roh(): string
     {
         return static::$roh ??= file_get_contents(base_path('changelog.md'));
     }
 
     /**
-     * Die oberste Überschrift, etwa "26.09.19".
+     * The topmost heading, for example "26.09.19".
      *
-     * Findet sich keine, bleibt es bei "Unbekannt" - eine geratene Nummer wäre
-     * schlimmer als keine.
+     * If none is found it stays "Unbekannt" - a guessed number would be
+     * worse than none.
      */
     public static function version(): string
     {

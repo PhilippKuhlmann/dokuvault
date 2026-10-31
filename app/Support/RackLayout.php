@@ -33,8 +33,8 @@ class RackLayout
         $device = $class::findOrFail($deviceId);
         abort_if($device->customer_id !== $rack->customer_id, 403);
 
-        // Serverseitig pruefen, nicht nur in der Auswahlliste: Der Aufruf
-        // kommt vom Client und laesst sich mit beliebiger ID nachbilden.
+        // Checked on the server, not only in the select list: the call comes
+        // from the client and can be replayed with any id.
         if (method_exists($device, 'istRackServer') && ! $device->istRackServer()) {
             $this->fail($device->name.__(' ist ein Standserver und lässt sich nicht einbauen.'));
         }
@@ -45,7 +45,7 @@ class RackLayout
 
         [$he, $volleTiefe] = $this->dimensions($device);
 
-        // Freien Platz fuer die *tatsaechliche* Hoehe suchen - sonst laege ein
+        // Look for free space for the *actual* height - otherwise a device
         // 2-HE-Patchfeld auf einer einzelnen Luecke.
         $position ??= $this->lowestFree($rack, $side, $he) ?? $this->fail('Kein freier Platz im Rack.');
 
@@ -55,8 +55,8 @@ class RackLayout
             'side' => $side,
             'position' => $position,
             'height_units' => $he,
-            // Tiefe beim Einbau kopieren, wie Name und Darstellung: Eine spaetere
-            // Aenderung am Geraet soll den Schrank nicht rueckwirkend umbauen.
+            // Copy the depth on mounting, like name and appearance: a later
+            // change on the device must not rebuild the rack retroactively.
             'full_depth' => $volleTiefe,
             'device_type' => $class,
             'device_id' => $device->id,
@@ -64,9 +64,9 @@ class RackLayout
     }
 
     /**
-     * Passives Katalogelement einbauen. Die Bezeichnung wird kopiert, damit ein
-     * spaeter im Adminbereich geaenderter oder geloeschter Katalogeintrag die
-     * bestehende Rack-Dokumentation nicht veraendert.
+     * Mount a passive catalog item. The label is copied so that a catalog entry
+     * later changed or deleted in the admin area does not alter the existing
+     * rack documentation.
      */
     public function placeCatalog(Rack $rack, string $side, int $catalogItemId, ?int $position = null): RackItem
     {
@@ -84,12 +84,12 @@ class RackLayout
             'full_depth' => (bool) $catalogItem->full_depth,
             'name' => $catalogItem->name,
             'appearance' => $catalogItem->appearance,
-            // Nur fuer das hinterlegte Foto - siehe RackItem::catalogItem().
+            // Only for the stored photo - see RackItem::catalogItem().
             'rack_catalog_item_id' => $catalogItem->id,
         ]);
     }
 
-    /** Einbau an eine neue Position verschieben, auf seiner eigenen Seite. */
+    /** Move a mounted item to a new position, on its own side. */
     public function move(Rack $rack, RackItem $item, int $newPosition): void
     {
         $this->assertFree($rack, $item->side, $newPosition, $item->height_units, ignoreId: $item->id);
@@ -110,14 +110,13 @@ class RackLayout
     }
 
     /**
-     * Hoehe und Tiefe eines Geraets: [Hoeheneinheiten, volle Tiefe].
+     * Height and depth of a device: [height units, full depth].
      *
-     * Zuerst das Geraet selbst - ein Server oder ein Patchfeld fuehrt beides
-     * als eigenes Feld. Kennt sein Typ die Felder nicht (Switch, NAS, Router,
-     * USV, Recorder), zaehlt das Geraetemodell: Eine "APC Smart-UPS 1500" ist
-     * zwei Hoeheneinheiten hoch, egal bei welchem Kunden sie steht. Erst dann
-     * eine Hoeheneinheit in voller Tiefe, die sich im Editor korrigieren
-     * laesst.
+     * The device itself first - a server or a patch panel carries both as
+     * fields of its own. If its kind does not know the fields (switch, NAS,
+     * router, UPS, recorder), the device model counts: an "APC Smart-UPS 1500"
+     * is two height units tall, whichever customer it stands at. Only then
+     * one height unit at full depth, which can be corrected in the editor.
      */
     public function dimensions($device): array
     {
@@ -133,7 +132,7 @@ class RackLayout
     }
 
     /**
-     * Kollisionsprüfung: [position, position+he-1] muss im Rack liegen und darf
+     * Collision check: [position, position+he-1] must lie inside the rack and must
      * keinen anderen Einbau schneiden.
      */
     public function assertFree(Rack $rack, string $seite, int $position, int $he, ?int $ignoreId = null): void
@@ -144,8 +143,8 @@ class RackLayout
             $this->fail("Passt nicht: HE {$position}–{$top} liegt außerhalb des Racks (1–{$rack->height_units}).");
         }
 
-        // Nur was diese Seite belegt: ein Geraet in halber Tiefe auf der
-        // Gegenseite laesst hier Platz, eines in voller Tiefe nicht.
+        // Only what this side occupies: a device at half depth on the other
+        // side leaves room here, one at full depth does not.
         $conflict = $rack->items()
             ->when($ignoreId, fn ($q) => $q->whereKeyNot($ignoreId))
             ->get()
@@ -161,7 +160,7 @@ class RackLayout
         }
     }
 
-    /** Unterste freie Position, an der ein Element mit $he Höhe Platz hat. */
+    /** The lowest free position where an item of height $he fits. */
     public function lowestFree(Rack $rack, string $seite, int $he): ?int
     {
         $occupied = [];
@@ -191,9 +190,9 @@ class RackLayout
     }
 
     /**
-     * Palette: je Typ die noch nicht verbauten Geräte des Kunden.
-     * Bewusst OHNE Standortfilter: Racks stehen an einem Standort, aber
-     * verbaut wird, was der Kunde hat.
+     * Palette: per kind the customer's devices not yet mounted.
+     * Deliberately WITHOUT a site filter: racks stand at a site, but what
+     * gets mounted is whatever the customer has.
      */
     public function palette(int $customerId): Collection
     {
@@ -201,8 +200,8 @@ class RackLayout
             ->map(function (array $entry, string $key) use ($customerId) {
                 [$class, $label] = $entry;
 
-                // Modelle koennen selbst bestimmen, was einbaubar ist -
-                // ein Standserver steht neben dem Schrank, nicht darin.
+                // Models can decide for themselves what is mountable -
+                // a tower server stands beside the rack, not inside it.
                 $query = method_exists($class, 'scopeRackMountable')
                     ? $class::rackMountable()
                     : $class::query();

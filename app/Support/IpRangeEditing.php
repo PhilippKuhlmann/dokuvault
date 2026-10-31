@@ -43,15 +43,15 @@ class IpRangeEditing
         $von = IpRange::alsLong($daten['from_ip']);
         $bis = IpRange::alsLong($daten['to_ip']);
 
-        // Die Reihenfolge zuerst: Ohne sie waere jede weitere Meldung Rauschen.
+        // The order first: without it every further message would be noise.
         if ($bis < $von) {
             throw ValidationException::withMessages([
                 'to_ip' => __('Die Endadresse liegt vor der Anfangsadresse.'),
             ]);
         }
 
-        // Im Netz, nicht daneben. Geprueft ueber dieselbe Funktion, mit der die
-        // Anwendung sonst entscheidet, ob eine Adresse zu einem Netz gehoert.
+        // Inside the network, not next to it. Checked through the same function
+        // the application otherwise uses to decide whether an address belongs to a network.
         foreach (['from_ip', 'to_ip'] as $feld) {
             if (! $netz->containsUrl($daten[$feld])) {
                 throw ValidationException::withMessages([
@@ -60,8 +60,8 @@ class IpRangeEditing
             }
         }
 
-        // Zwei Reservierungen fuer dieselbe Adresse waeren ein Widerspruch in
-        // der Doku, kein Zustand, den man abbilden will.
+        // Two reservations for the same address would be a contradiction in
+        // the documentation, not a state worth modelling.
         $ueberschneidung = $this->ranges($netz)->first(
             fn (IpRange $b) => $b->vonLong() !== null && $b->bisLong() !== null
                 && $von <= $b->bisLong() && $bis >= $b->vonLong()

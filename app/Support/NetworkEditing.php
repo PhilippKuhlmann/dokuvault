@@ -34,7 +34,7 @@ class NetworkEditing
             'dhcpEnd' => ['nullable', 'ipv4'],
         ];
 
-        // Ein Standort dieses Kunden, sonst haengt das Netz an einem fremden.
+        // A site of this customer, otherwise the network hangs on a foreign one.
         if ($mitStandort) {
             $regeln['site_id'] = ['required', Rule::exists('sites', 'id')
                 ->where('customer_id', $customerId)->whereNull('deleted_at')];
@@ -43,7 +43,7 @@ class NetworkEditing
         return $regeln;
     }
 
-    /** Die Beschriftungen fuer die Meldungen - "Bitte Bezeichnung angeben.". */
+    /** The labels for the messages - "Bitte Bezeichnung angeben.". */
     public function attributeNames(): array
     {
         return [

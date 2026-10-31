@@ -14,33 +14,33 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * Wie die App ein dokumentiertes Objekt zu sehen bekommt.
+ * How the app gets to see a documented object.
  *
- * Die Felder kommen aus config/forms.php - derselben Beschreibung, aus der das
- * Modal im Browser sein Formular baut. Eine eigene Liste fuer die App waere
- * nach dem naechsten neuen Feld veraltet, ohne dass es jemand merkt.
+ * The fields come from config/forms.php - the same description the modal in
+ * the browser builds its form from. A list of its own for the app would be
+ * out of date after the next new field, with nobody noticing.
  *
- * Geheimnisse gehen hier nie hinaus, nur die Tatsache, dass eines gesetzt
- * ist. Den Wert gibt es einzeln ueber App\Support\Kennwortabruf - mit Bremse
- * und Protokolleintrag, wie im Browser.
+ * Secrets never leave through here, only the fact that one is set. The value
+ * is available one at a time through App\Support\PasswordReveal - with a
+ * throttle and a log entry, as in the browser.
  */
 class MobileObjects
 {
     /**
-     * Feldarten, die die App nicht zeigt: Dateien sind dort nicht zu oeffnen,
-     * versteckte Felder sind auch im Browser nicht zu sehen.
+     * Field kinds the app does not show: files cannot be opened there, and
+     * hidden fields are not visible in the browser either.
      */
     private const OHNE = ['versteckt', 'datei'];
 
-    /** Wie viele Eintraege eine Liste in der App hoechstens bekommt. */
+    /** How many entries a list in the app gets at most. */
     public const LISTE_HOECHSTENS = 500;
 
     /**
-     * Alle Typen, die die App kennt: Slug => [Model, Recht, Felder|null].
+     * Every kind the app knows: slug => [model, permission, fields|null].
      *
-     * Die Formulartypen plus das, was die globale Suche findet, aber kein
-     * Modal hat (Serverschrank, Patchfeld, Netzwerkdose) - ein Treffer, den
-     * man nicht oeffnen kann, ist keiner.
+     * The form kinds plus whatever the global search finds but has no modal
+     * for (rack, patch panel, network outlet) - a hit you cannot open is
+     * no hit.
      *
      * @return array<string, array{0: class-string<Model>, 1: string, 2: array|null}>
      */
@@ -61,7 +61,7 @@ class MobileObjects
         return $typen;
     }
 
-    /** Die Typen, deren Liste dieser Benutzer sehen darf. */
+    /** The kinds whose list this user may see. */
     public function visibleKinds(User $nutzer): array
     {
         return array_filter(
@@ -87,7 +87,7 @@ class MobileObjects
         return Gate::forUser($nutzer)->allows($typ[1].'_create');
     }
 
-    /** Mehrzahl fuer Ueberschriften, wie in der Seitenleiste. */
+    /** Plural for headings, as in the sidebar. */
     public function titel(string $slug): string
     {
         return __(config('custom.list_titles')[$slug]
@@ -106,10 +106,10 @@ class MobileObjects
     }
 
     /**
-     * Ein Objekt holen - mit Recht und Kundenzugehoerigkeit.
+     * Fetch an object - with permission and customer check.
      *
-     * 404 fuer einen unbekannten Typ und fuer ein fremdes Objekt eines
-     * Kundennutzers: Er soll nicht einmal erfahren, dass es die Nummer gibt.
+     * 404 for an unknown kind and for a foreign object of a customer user:
+     * they should not even learn that the number exists.
      */
     public function finden(string $slug, int $id, User $nutzer): Model
     {
@@ -124,7 +124,7 @@ class MobileObjects
         return $objekt ?? abort(404);
     }
 
-    /** Eine Zeile in Liste und Suche. */
+    /** One row in list and search. */
     public function kurz(Model $objekt, string $slug): array
     {
         return [
@@ -136,7 +136,7 @@ class MobileObjects
         ];
     }
 
-    /** Alles, was die Detailansicht zeigt. */
+    /** Everything the detail view shows. */
     public function detail(Model $objekt, string $slug, User $nutzer): array
     {
         $felder = $this->typen()[$slug][2];
@@ -158,8 +158,8 @@ class MobileObjects
                 ])->values()->all()
                 : [],
             'zugangsdaten' => $this->zugangsdaten($objekt, $nutzer),
-            // Der Schluessel bleibt deutsch: Er ist Teil der Antwort, die die
-            // iOS-App liest - ein Umbau dort gehoert mit der App zusammen.
+            // The key stays German: it is part of the response the iOS app
+            // reads - changing it belongs together with the app.
             'einbauort' => $this->mountLocation($objekt),
             'support_ende' => $this->supportEnde($objekt),
             'scan_ziele' => $objekt instanceof Scanner
@@ -229,7 +229,7 @@ class MobileObjects
         return $name ?: $this->singular($slug).' #'.$objekt->getKey();
     }
 
-    /** Woran man das Objekt in einer Liste wiedererkennt, ohne es zu oeffnen. */
+    /** What makes the object recognisable in a list, without opening it. */
     private function subtitle(Model $objekt): ?string
     {
         $teile = [
@@ -240,7 +240,7 @@ class MobileObjects
         return collect($teile)->filter()->implode(' · ') ?: null;
     }
 
-    /** Die Felder aus dem Formular, nach dessen Abschnitten gruppiert. */
+    /** The fields from the form, grouped by its sections. */
     private function groups(Model $objekt, array $felder): array
     {
         $gruppen = [];
@@ -272,10 +272,10 @@ class MobileObjects
     }
 
     /**
-     * Ein Feld - oder null, wenn es leer ist.
+     * One field - or null when it is empty.
      *
-     * Leere Felder bleiben weg: Auf dem Telefon ist eine Seite voller
-     * Striche nur Scrollweg.
+     * Empty fields are left out: on a phone a page full of dashes is just
+     * scrolling distance.
      */
     private function feld(Model $objekt, array $feld): ?array
     {
@@ -328,8 +328,8 @@ class MobileObjects
         }
 
         if ($this->istGeheim($name)) {
-            // Den Rohwert pruefen, nicht den entschluesselten: Die Frage ist
-            // nur, ob etwas drinsteht.
+            // Check the raw value, not the decrypted one: the question is
+            // only whether something is in there.
             return filled($objekt->getRawOriginal($name))
                 ? ['name' => $name, 'label' => $label, 'art' => 'geheim', 'wert' => null]
                 : null;
@@ -360,8 +360,8 @@ class MobileObjects
     }
 
     /**
-     * Dieselbe Regel wie im Modal (object-modal.blade.php): Ein Standserver
-     * hat keine Einbautiefe, auch wenn in der Spalte noch eine steht.
+     * The same rule as in the modal (object-modal.blade.php): a tower server
+     * has no mounting depth, even if the column still holds one.
      * Mehrere Bedingungen gelten zusammen.
      */
     private function sichtbar(Model $objekt, array $feld): bool
@@ -403,7 +403,7 @@ class MobileObjects
             ->all();
     }
 
-    /** Fuer Objekte ohne Formular (Schrank, Patchfeld, Dose): die Spalten selbst. */
+    /** For objects without a form (rack, patch panel, outlet): the columns themselves. */
     private function groupsWithoutForm(Model $objekt): array
     {
         $versteckt = ['id', 'customer_id', 'site_id', 'created_at', 'updated_at', 'deleted_at'];
@@ -423,7 +423,7 @@ class MobileObjects
         return $felder ? [['titel' => __('Allgemein'), 'felder' => $felder]] : [];
     }
 
-    /** Die verknuepften Zugaenge, ohne Kennwort - das holt die App einzeln. */
+    /** The linked credentials, without the password - the app fetches that one at a time. */
     private function zugangsdaten(Model $objekt, User $nutzer): array
     {
         if (! method_exists($objekt, 'zugangsdaten')) {
@@ -461,7 +461,7 @@ class MobileObjects
         return $feld['werte'] ?? (isset($feld['quelle']) ? config($feld['quelle'], []) : []);
     }
 
-    /** Damit die App eine Adresse antippbar machen kann. */
+    /** So the app can make an address tappable. */
     private function typeFromText($wert): string
     {
         $wert = (string) $wert;

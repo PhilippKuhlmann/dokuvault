@@ -7,17 +7,17 @@ use RuntimeException;
 use Symfony\Component\Process\Process;
 
 /**
- * Erzeugt ein SSH-Schluesselpaar mit ssh-keygen.
+ * Generates an SSH key pair with ssh-keygen.
  *
- * Bewusst nicht in PHP nachgebaut: Das OpenSSH-Format des privaten Teils ist
- * eine gepackte Binaerstruktur, und mit Passphrase kommen bcrypt-KDF und
- * aes256-ctr dazu. Ein hier nachgebauter Schluessel waere im Zweifel subtil
- * falsch - und das faellt erst auf, wenn er nachts um drei nicht angenommen
- * wird. ssh-keygen liegt auf jedem Server, der diese Anwendung traegt.
+ * Deliberately not rebuilt in PHP: the OpenSSH format of the private part is
+ * a packed binary structure, and with a passphrase bcrypt-KDF and aes256-ctr
+ * come on top. A key rebuilt here would be subtly wrong if anything - and
+ * that only shows when it is refused at three in the morning. ssh-keygen is
+ * on every server that carries this application.
  */
 class SshKeyGenerator implements FieldGenerator
 {
-    /** RSA unter 3072 gilt als zu kurz; 4096 ist die uebliche Vorgabe. */
+    /** RSA below 3072 counts as too short; 4096 is the usual default. */
     private const BITS = ['rsa' => '4096', 'ecdsa' => '521'];
 
     public function generate(array $form): array
@@ -39,8 +39,8 @@ class SshKeyGenerator implements FieldGenerator
                 'private_key' => (string) file_get_contents($pfad),
             ];
         } finally {
-            // Auch wenn ssh-keygen scheitert: Ein privater Schluessel darf
-            // nicht im Temp-Verzeichnis liegenbleiben.
+            // Even when ssh-keygen fails: a private key must not be left
+            // lying in the temp directory.
             $this->prune($ordner);
         }
     }
@@ -57,10 +57,10 @@ class SshKeyGenerator implements FieldGenerator
             $befehl[] = self::BITS[$verfahren];
         }
 
-        // Die Passphrase steht kurzzeitig in der Prozessliste. Ein eigener
-        // Weg gaebe es nicht: ssh-keygen nimmt sie nur ueber -N oder
-        // interaktiv entgegen. Wer den Anwendungsserver ohnehin einsehen kann,
-        // kann auch die Datenbank lesen - dort steht sie ebenfalls.
+        // The passphrase is briefly visible in the process list. There would
+        // be no way around it: ssh-keygen takes it only through -N or
+        // interactively. Whoever can read the application server anyway can
+        // also read the database - it is in there as well.
         $befehl[] = '-N';
         $befehl[] = (string) ($form['password'] ?? '');
 
@@ -68,8 +68,8 @@ class SshKeyGenerator implements FieldGenerator
     }
 
     /**
-     * Der Kommentar landet am Ende des oeffentlichen Schluessels und ist das,
-     * woran man ihn spaeter in einer authorized_keys wiedererkennt.
+     * The comment ends up at the end of the public key and is what one
+     * recognises it by later in an authorized_keys.
      */
     private function kommentar(array $form): string
     {
@@ -81,8 +81,8 @@ class SshKeyGenerator implements FieldGenerator
 
     private function aufrufen(array $befehl): void
     {
-        // Kein Shell-Aufruf: Argumente gehen als Feld hinein, damit weder
-        // Kommentar noch Passphrase als Sonderzeichen gedeutet werden koennen.
+        // No shell call: arguments go in as an array, so neither comment nor
+        // passphrase can be read as special characters.
         $prozess = new Process($befehl);
         $prozess->setTimeout(60);
         $prozess->run();
@@ -98,8 +98,8 @@ class SshKeyGenerator implements FieldGenerator
     {
         $ordner = sys_get_temp_dir().'/dokuvault-ssh-'.bin2hex(random_bytes(8));
 
-        // 0700: Der private Schluessel liegt hier fuer den Moment der Erzeugung,
-        // und ssh-keygen verweigert ohnehin zu weit gesetzte Rechte.
+        // 0700: the private key lies here for the moment of generation, and
+        // ssh-keygen refuses permissions that are too wide anyway.
         if (! @mkdir($ordner, 0700) && ! is_dir($ordner)) {
             throw new RuntimeException(__('Der Schlüssel ließ sich nicht erzeugen.'));
         }

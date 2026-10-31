@@ -3,16 +3,16 @@
 namespace App\Support;
 
 /**
- * Erzeugt Feldwerte fuer ein Formular.
+ * Generates field values for a form.
  *
- * Damit bleibt das generische Modal generisch: Es kennt nur "dieser Typ hat
- * einen Erzeuger" (config/forms.php), nicht dessen Innenleben.
+ * That keeps the generic modal generic: it only knows "this kind has a
+ * generator" (config/forms.php), not what goes on inside it.
  */
 interface FieldGenerator
 {
     /**
-     * @param  array<string, mixed>  $form  Der bisherige Formularstand
-     * @return array<string, mixed> Nur die Felder, die gesetzt werden sollen
+     * @param  array<string, mixed>  $form  The form as it stands so far
+     * @return array<string, mixed> Only the fields that should be set
      */
     public function generate(array $form): array;
 }

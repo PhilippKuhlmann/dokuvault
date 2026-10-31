@@ -16,14 +16,14 @@ class IpAssignment
     public function rules(int $customerId, bool $dhcp): array
     {
         return [
-            // Eine Adresse gibt es beim selben Kunden nur einmal. Vorher liess
-            // sich dieselbe IP zweimal am selben Geraet und zusaetzlich an
-            // einem zweiten eintragen - danach stand in der Doku, sie gehoere
-            // zu beiden, und der IP-Plan zeigte sie doppelt als belegt.
-            // Bei DHCP keine Adresse: Welche das Geraet gerade hat, ist
-            // morgen eine andere. Dafuer dann das Netz - ohne es saehe die
-            // Zuordnung so aus: "haengt irgendwo per DHCP", und das hilft
-            // niemandem.
+            // An address exists only once per customer. Before, the same IP
+            // could be entered twice on the same device and on a second one as
+            // well - after which the documentation said it belonged to both,
+            // and the IP plan showed it twice as taken.
+            // With DHCP no address: whichever the device holds now is a
+            // different one tomorrow. The network instead - without it the
+            // assignment would read "hangs somewhere by DHCP", and that helps
+            // nobody.
             'address' => $dhcp
                 ? ['nullable', 'prohibited']
                 : ['required', 'ip', $this->notYetTaken($customerId)],
@@ -63,10 +63,10 @@ class IpAssignment
     }
 
     /**
-     * Die Adresse darf beim Kunden noch nicht vergeben sein.
+     * The address must not yet be in use at this customer.
      *
-     * Geloeschte Eintraege zaehlen nicht mit: Was im Papierkorb liegt, belegt
-     * keine Adresse - sonst blieben Adressen nach dem Aufraeumen gesperrt.
+     * Deleted entries do not count: what lies in the trash takes no address -
+     * otherwise addresses would stay blocked after a cleanup.
      */
     private function notYetTaken(int $customerId)
     {

@@ -5,34 +5,34 @@ namespace App\Support;
 use Illuminate\Http\UploadedFile;
 
 /**
- * Aus einer Bezeichnung und einer hochgeladenen Datei einen Dateinamen bauen,
- * der nur ein Dateiname ist.
+ * Build a file name from a label and an uploaded file that is nothing but a
+ * file name.
  *
- * Der Anlass: Die Bezeichnung ging ungeprüft in den Ablagepfad. Mit
- * "../../../../fremder-kunde/files/x" landete die Datei im Verzeichnis eines
- * anderen Kunden - und überschrieb, was dort lag. Nachgestellt und belegt,
- * bevor diese Klasse entstand.
+ * What prompted this: the label went into the storage path unchecked. With
+ * "../../../../other-customer/files/x" the file landed in another customer's
+ * directory - and overwrote what was there. Reproduced and proven before
+ * this class came into being.
  *
- * Die Endung kommt genauso wenig ungeprüft durch: Sie stammt aus dem
- * Dateinamen, den der Browser mitschickt, und den bestimmt der Absender.
+ * The extension gets through just as unchecked: it comes from the file name
+ * the browser sends along, and the sender decides that.
  */
 class FileName
 {
-    /** Was von einer Bezeichnung übrig bleibt: Buchstaben, Ziffern, _ und -. */
+    /** What is left of a label: letters, digits, _ and -. */
     public static function bereinigen(string $roh): string
     {
         $sauber = preg_replace('/[^A-Za-z0-9_-]+/', '_', $roh);
 
-        // Nur Unterstriche heisst: Es war nichts Brauchbares dabei.
+        // Underscores only means: there was nothing usable in it.
         return trim($sauber, '_') !== '' ? trim($sauber, '_') : 'datei';
     }
 
     /**
-     * Der vollständige Name unter dem abgelegt wird.
+     * The complete name to store under.
      *
-     * Der Zeitstempel steht vorn, damit zwei gleichnamige Dateien sich nicht
-     * überschreiben - er ist kein Schutz gegen den Ausbruch, das war er nie:
-     * Ein "../" dahinter wirkt trotzdem.
+     * The timestamp stands at the front so two files of the same name do not
+     * overwrite each other - it is no protection against the escape, and never
+     * was: a "../" behind it still takes effect.
      */
     public static function fuer(UploadedFile $datei, ?string $bezeichnung = null): string
     {

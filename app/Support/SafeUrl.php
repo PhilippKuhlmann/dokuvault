@@ -3,34 +3,33 @@
 namespace App\Support;
 
 /**
- * Eine Adresse, die sich anklicken lässt - oder eben nicht.
+ * A URL that can be clicked - or deliberately cannot.
  *
- * Der Anlass: Mehrere URL-Felder werden nur auf ihre Länge geprüft, nicht auf
- * ihr Schema. Sie landen aber als href in einer Karte. Steht dort
- * "javascript:...", führt jeder Klick den Code in der Sitzung dessen aus, der
- * klickt - und das ist selten der, der ihn eingetragen hat.
+ * What prompted this: several URL fields are checked for their length only,
+ * not for their scheme, and they end up as an href on a card. If the value
+ * reads "javascript:...", every click runs that code in the session of
+ * whoever clicked - and that is rarely the person who entered it.
  *
- * Geprüft wird beim Anzeigen, nicht nur beim Speichern: In den Feldern steht
- * längst, was jemand eingetragen hat, bevor es eine Regel dafür gab. Und die
- * Regel darf nicht streng sein - dort steht oft nur "192.168.178.1", und das
- * soll weiterhin gehen. Es wird dann nur nicht verlinkt.
+ * The check happens on display, not only on save: the fields have long held
+ * whatever someone entered before there was a rule for it. And the rule must
+ * not be strict - they often hold just "192.168.178.1", and that should keep
+ * working. It simply is not turned into a link.
  */
 class SafeUrl
 {
     /**
-     * Die Adresse, wenn man sie gefahrlos verlinken kann - sonst null.
+     * The URL if it is safe to link - null otherwise.
      *
-     * Positivliste, und zwar nur vollständige Adressen: http und https.
-     * Andersherum müsste man jedes Schema kennen, das ein Browser ausführt -
-     * javascript, data, vbscript, und das nächste, das dazukommt.
+     * An allowlist, and only complete URLs at that: http and https. The other
+     * way round one would have to know every scheme a browser executes -
+     * javascript, data, vbscript, and whichever comes next.
      *
-     * Ein Wert, der mit "/" beginnt, zählt ausdrücklich nicht dazu. Er sah
-     * einen Nachmittag lang nach einem Pfad innerhalb der Anwendung aus, bis
-     * in der VLAN-Liste "/24" stand - eine Netzmaske, die prompt als Link auf
-     * eine Seite "/24" ausgegeben wurde. Aus dem Wert allein lässt sich das
-     * nicht unterscheiden. Wer einen anwendungsinternen Link ausgeben will,
-     * gibt eine vollständige Adresse mit - dort weiß die Ansicht, dass es
-     * einer ist; hier ist es geraten.
+     * A value starting with "/" expressly does not count. It looked like a
+     * path inside the application for one afternoon, until the VLAN list held
+     * "/24" - a netmask, promptly rendered as a link to a page "/24". From the
+     * value alone the two cannot be told apart. Whoever wants to render a link
+     * inside the application passes a complete URL: there the view knows it is
+     * one, here it would be a guess.
      */
     public static function sicher(mixed $wert): ?string
     {
@@ -46,16 +45,16 @@ class SafeUrl
     }
 
     /**
-     * Ein Pfad innerhalb dieser Anwendung, etwa "/mustermann".
+     * A path inside this application, such as "/mustermann".
      *
-     * Getrennt von sicher(), und das ist der Punkt: Hier hat die Ansicht
-     * bereits entschieden, dass ein Link gemeint ist - sie übergibt den Wert
-     * unter einem eigenen Schlüssel. Geraten wird nichts mehr; die Netzmaske
-     * "/24" steht unter "CIDR" und kommt hier gar nicht an.
+     * Kept apart from sicher(), and that is the point: here the view has
+     * already decided that a link is meant - it passes the value under a key
+     * of its own. Nothing is guessed any more; the netmask "/24" sits under
+     * "CIDR" and never arrives here.
      *
-     * Geprüft wird trotzdem, damit die nächste Verwendung nicht aus Versehen
-     * nach draußen führt: "//example.test" ist protokoll-relativ, und
-     * "/\example.test" behandeln Browser genauso.
+     * It is checked all the same, so the next use does not accidentally lead
+     * outside: "//example.test" is protocol-relative, and browsers treat
+     * "/\example.test" the same way.
      */
     public static function pfad(mixed $wert): ?string
     {

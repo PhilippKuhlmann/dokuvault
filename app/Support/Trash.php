@@ -9,25 +9,25 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * Der Papierkorb eines Kunden: was geloescht wurde und sich zurueckholen
- * laesst.
+ * A customer's trash: what was deleted and what can be brought
+ * back.
  *
- * Einmal gerechnet, zweimal gezeigt - im Browser (TrashController) und in
- * der iOS-App (Mobile\TrashController). Die Arten kommen aus
- * config('custom.trashables'), nie aus der Eingabe: Der Typ in der Adresse
- * ist ein Schluessel dieser Liste, sonst 404.
+ * Worked out once, shown twice - in the browser (TrashController) and
+ * in the iOS app (Mobile\TrashController). The kinds come from
+ * config('custom.trashables'), never from the input: the type in the
+ * URL is a key of that list, otherwise 404.
  */
 class Trash
 {
     /**
-     * Wie viele Eintraege je Art hoechstens.
+     * How many entries per kind at most.
      *
-     * Was abgeschnitten wird, meldet `gekuerzt` - ein stilles Abschneiden
-     * liest sich wie "mehr ist nicht da".
+     * What gets cut off is reported by `gekuerzt` - cutting silently
+     * reads like "there is no more".
      */
     public const JE_ART = 100;
 
-    /** Woran man ein geloeschtes Objekt wiedererkennt, Spalte fuer Spalte. */
+    /** What makes a deleted object recognisable, column by column. */
     private const NAMENSSPALTEN = ['name', 'ssid', 'username', 'mailAdress', 'domain', 'provider', 'description', 'host'];
 
     public function __construct(
@@ -35,17 +35,17 @@ class Trash
         private User $nutzer,
     ) {}
 
-    /** Ob der Angemeldete ueberhaupt in den Papierkorb sehen darf. */
+    /** Whether the signed-in user may look into the trash at all. */
     public function darfSehen(): bool
     {
         return Gate::forUser($this->nutzer)->allows('see_hidden');
     }
 
     /**
-     * Was im Papierkorb liegt, das Neueste zuerst.
+     * What lies in the trash, newest first.
      *
-     * Nur Arten, die dieser Nutzer sehen darf - sonst stuenden hier Namen von
-     * Objekten, von denen er nichts wissen soll.
+     * Only kinds this user may see - otherwise names of objects they
+     * are not meant to know about would show up here.
      *
      * @return Collection<int, array{typ: string, titel: string, name: string, geloescht_am: mixed, id: int, darf_wiederherstellen: bool}>
      */
@@ -76,9 +76,9 @@ class Trash
     }
 
     /**
-     * Welche Arten mehr haben, als die Liste zeigt.
+     * Which kinds hold more than the list shows.
      *
-     * @return array<string, int> Bezeichnung => wie viele es wirklich sind
+     * @return array<string, int> label => how many there really are
      */
     public function gekuerzt(): array
     {
@@ -96,22 +96,22 @@ class Trash
     }
 
     /**
-     * Ein Objekt zurueckholen.
+     * Bring an object back.
      *
-     * Das braucht das Recht zu loeschen, nicht nur das, in den Papierkorb zu
-     * sehen: Wiederherstellen macht ein Loeschen rueckgaengig.
+     * That needs the right to delete, not just the right to look into
+     * the trash: restoring undoes a deletion.
      */
     public function restore(string $typ, int $id): Model
     {
-        // Die Klasse kommt aus der Liste der Konfiguration, nie aus der
-        // Eingabe.
+        // The class comes from the configured list, never from the
+        // input.
         $eintrag = config("custom.trashables.$typ");
         abort_unless($eintrag, 404);
         [$klasse] = $eintrag;
 
         Gate::forUser($this->nutzer)->authorize($typ.'_delete');
 
-        // Am Kunden festgemacht: kein Zurueckholen ueber Kundengrenzen (IDOR).
+        // Pinned to the customer: no restoring across customers (IDOR).
         $objekt = $klasse::onlyTrashed()
             ->where('customer_id', $this->kunde->id)
             ->findOrFail($id);
@@ -127,7 +127,7 @@ class Trash
     }
 
     /**
-     * Die Arten, die dieser Nutzer sehen darf.
+     * The kinds this user may see.
      *
      * @return array<string, array{0: class-string<Model>, 1: string}>
      */

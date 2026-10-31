@@ -8,20 +8,20 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Den Code der zweiten Stufe bei der Anmeldung pruefen - im Browser und in der App.
+ * Check the second-factor code at sign-in - in the browser and in the app.
  *
- * Stand vorher privat in TwoFactorChallengeController. Die App meldet sich
- * ohne Sitzung an und braucht dieselbe Pruefung mit derselben Bremse: Zwei
- * Eingaenge mit getrennten Zaehlern waeren doppelt so viele Versuche.
+ * This used to sit privately in TwoFactorChallengeController. The app signs
+ * in without a session and needs the same check with the same throttle: two
+ * entrances with separate counters would be twice as many attempts.
  */
 class TwoFactorCheck
 {
     public function __construct(private TwoFactor $zweiteStufe) {}
 
     /**
-     * Prueft den Einmal- oder Wiederherstellungscode.
+     * Checks the one-time or recovery code.
      *
-     * @return bool ob ein Wiederherstellungscode verbraucht wurde
+     * @return bool whether a recovery code was used up
      *
      * @throws ValidationException bei leerem, falschem oder gebremstem Code
      */
@@ -35,10 +35,10 @@ class TwoFactorCheck
             throw ValidationException::withMessages(['code' => __('Bitte einen Code eingeben.')]);
         }
 
-        // Erst der Einmalcode, dann der Wiederherstellungscode: Ein
-        // sechsstelliger Code aus der App kann kein Wiederherstellungscode
-        // sein, und andersherum genauso - die Reihenfolge kostet also nichts
-        // und spart eine Zweitunterscheidung an der Eingabe.
+        // The one-time code first, the recovery code second: a six-digit code
+        // from the app cannot be a recovery code, and the other way round just
+        // the same - so the order costs nothing and saves telling the two
+        // apart at the input.
         $mitCode = $this->codeAnnehmen($nutzer, $eingabe);
         $mitZettel = ! $mitCode && $nutzer->useRecoveryCode($eingabe);
 
@@ -46,9 +46,9 @@ class TwoFactorCheck
             RateLimiter::hit($this->schluessel($nutzer, $ip), Setting::loginLockoutSeconds());
             RateLimiter::hit($this->userKey($nutzer), Setting::loginLockoutSeconds());
 
-            // Ein falscher zweiter Faktor loest kein Auth\Events\Failed aus -
-            // das Kennwort stimmte ja. Genau dieser Fall ist aber der
-            // interessante: Jemand kennt das Kennwort und kommt trotzdem nicht
+            // A wrong second factor raises no Auth\Events\Failed - the password
+            // was right, after all. Yet this is exactly the interesting case:
+            // someone knows the password and still does not get in.
             // herein.
             activity()
                 ->event('anmeldung_gescheitert')
@@ -108,13 +108,13 @@ class TwoFactorCheck
     }
 
     /**
-     * Ohne diese Bremse waere die zweite Stufe sechs Ziffern, die sich in
-     * Ruhe durchprobieren lassen - eine Million Moeglichkeiten sind schnell
-     * durch, wenn niemand mitzaehlt.
+     * Without this throttle the second factor would be six digits to work
+     * through at leisure - a million possibilities go quickly when nobody is
+     * counting.
      *
-     * Dieselben Zahlen wie bei der Anmeldung, und jetzt auch dieselbe Quelle:
-     * Sie standen hier ein zweites Mal, mit einem Kommentar, der behauptete,
-     * es seien dieselben. Ein Kommentar haelt zwei Zahlen nicht zusammen.
+     * The same numbers as at sign-in, and now the same source as well: they
+     * stood here a second time, with a comment claiming they were the same.
+     * A comment does not hold two numbers together.
      */
     private function nichtGesperrt(User $nutzer, string $ip): void
     {

@@ -7,18 +7,18 @@ use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * Was an einer laufenden Checkliste getan wird: abhaken und freigeben.
+ * What gets done on a running checklist: ticking off and approving.
  *
- * Einmal geschrieben, zweimal gerufen - von der Livewire-Komponente im
- * Browser und vom Mobile\ChecklistController. Die Regel, dass ein Punkt vor
- * der Freigabe nicht abgehakt werden darf, gehoert an eine Stelle.
+ * Written once, called twice - by the Livewire component in the browser and
+ * by the Mobile\ChecklistController. The rule that an item must not be ticked
+ * off before approval belongs in one place.
  */
 class ChecklistActions
 {
     /**
-     * Einen Punkt abhaken oder den Haken wieder wegnehmen.
+     * Tick an item off or take the tick away again.
      *
-     * @return string|null Der Grund, wenn nichts geschah - sonst null.
+     * @return string|null The reason if nothing happened - null otherwise.
      */
     public static function toggle(ChecklistItem $punkt, User $nutzer): ?string
     {
@@ -32,16 +32,16 @@ class ChecklistActions
             ? ['done_at' => null, 'done_by' => null]
             : ['done_at' => now(), 'done_by' => $nutzer->id]);
 
-        // Ist alles abgehakt, gilt die Liste als erledigt - und umgekehrt.
+        // If everything is ticked the list counts as done - and the other way round.
         $punkt->checklist->refreshCompletion();
 
         return null;
     }
 
     /**
-     * Einen Punkt freigeben, den die Leitung des Kunden freigeben muss.
+     * Approve an item that the customer's management has to approve.
      *
-     * Freigeben ist kein Abhaken: Danach darf die IT den Punkt erledigen.
+     * Approving is not ticking off: afterwards IT may carry the item out.
      */
     public static function release(ChecklistItem $punkt, User $nutzer): void
     {

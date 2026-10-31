@@ -63,8 +63,8 @@ class ObjectForm
     }
 
     /**
-     * Immer ueber den Kunden geladen: Eine fremde Id darf hier nicht
-     * durchkommen, auch wenn sie von aussen mitgeschickt wird.
+     * Always loaded through the customer: a foreign id must not get
+     * through here, even when it is sent along from outside.
      */
     public function find(int $id): Model
     {
@@ -77,13 +77,13 @@ class ObjectForm
         $werte = [];
 
         foreach ($this->fields() as $feld) {
-            // Eine feste Optionsliste zeigt immer ihren ersten Eintrag an. Ohne
-            // denselben Wert im Formular sieht man eine Auswahl und bekommt
-            // trotzdem "ist erforderlich".
-            // 'default' wie im Assistenten (config/custom.php): Ein Feld, das
-            // fast immer denselben Wert hat, soll ihn schon anbieten. Ohne das
-            // muesste man bei jedem Rackserver die 1 fuer die Hoeheneinheit
-            // tippen - das Seitenformular belegt sie laengst vor.
+            // A fixed option list always shows its first entry. Without the
+            // same value in the form you see a choice and still get
+            // "is required".
+            // 'default' as in the wizard (config/custom.php): a field that
+            // almost always holds the same value should offer it already.
+            // Without it one would type the 1 for the height unit on every
+            // rack server - the page form has filled it in for ages.
             $werte[$feld['name']] = match (true) {
                 $feld['type'] === 'host' && ($feld['mehrfach'] ?? false) => [],
                 $feld['type'] === 'verknuepfung' => [],
@@ -122,18 +122,18 @@ class ObjectForm
             }
 
             $wert = $objekt->{$feld['name']};
-            // Datumsfelder kommen je nach Model als Carbon oder als Text.
-            // Dienste kommen als Array aus dem Model (explode beim Lesen),
-            // gespeichert wird die Komma-Liste - deshalb wieder zusammenfuegen.
+            // Date fields arrive as Carbon or as text, depending on the model.
+            // Services arrive as an array from the model (explode on read),
+            // stored is the comma list - hence joined back together.
             $werte[$feld['name']] = match (true) {
                 // Switches stay booleans - '0' would show as ticked.
                 $feld['type'] === 'schalter' => (bool) $wert,
                 $wert instanceof \DateTimeInterface => $wert->format('Y-m-d'),
                 is_array($wert) => implode(',', $wert),
-                // (string) false ergibt '' und nicht '0': Ein deaktivierter
-                // AD-Benutzer kam so als leeres Feld im Formular an und wurde
-                // von der Auswahl als "Aktiv" angezeigt - der gespeicherte Wert
-                // war das Gegenteil dessen, was dastand.
+                // (string) false yields '' and not '0': a disabled AD user
+                // arrived as an empty field in the form and was shown as
+                // "active" by the select - the stored value was the opposite
+                // of what stood there.
                 is_bool($wert) => $wert ? '1' : '0',
                 default => (string) $wert,
             };
@@ -143,18 +143,18 @@ class ObjectForm
     }
 
     /**
-     * Die Regeln des Objekttyps.
+     * The rules of the object kind.
      *
-     * Eine Quelle fuer das Speichern und fuer die laufende Pruefung waehrend
-     * der Eingabe - zwei Listen liefen frueher oder spaeter auseinander.
+     * One source for saving and for the running check while typing -
+     * two lists drift apart sooner or later.
      */
     public function rules(array $werte, string $prefix = ''): array
     {
         $request = $this->request($werte);
 
-        // Die Mandantenregel holt den Kunden sonst aus der Route - die heisst
-        // im Modal livewire.update und kennt ihn nicht, in der App steht bei
-        // einer Aenderung kein Kunde in der Adresse.
+        // Otherwise the tenant rule takes the customer from the route -
+        // in the modal that route is livewire.update and does not know it,
+        // and in the app an update carries no customer in the URL.
         $regelnMitKunde = collect($request->rules())->map(function ($regel) {
             if (! is_array($regel)) {
                 return $regel;
@@ -176,10 +176,10 @@ class ObjectForm
     }
 
     /**
-     * Beschriftungen aus der eigenen Felddefinition.
+     * Labels from the field definition itself.
      *
-     * Nicht jeder Request nennt jedes Feld in attributes(), und dann stuende
-     * der interne Name in der Meldung ("Bitte form.form factor angeben").
+     * Not every request names every field in attributes(), and then the
+     * internal name would stand in the message ("Please enter form.form
      */
     public function attributeNames(string $prefix = ''): array
     {
@@ -205,14 +205,14 @@ class ObjectForm
     {
         $klasse = $this->settings()['model'];
 
-        // Leere Felder als null, nicht als Leerstring: MySQL lehnt '' fuer eine
+        // Empty fields as null, not as an empty string: MySQL rejects ''
         // date-Spalte ab ("Incorrect date value"), waehrend SQLite es
-        // durchlaesst - in den Tests bleibt das deshalb unsichtbar. Fachlich ist
-        // null ohnehin richtig: kein Wert ist kein leerer Wert.
+        // lets it through - so it stays invisible in the tests. And null is
+        // the right thing anyway: no value is not an empty value.
         //
-        // Ausser die Spalte laesst kein null zu: height_units etwa ist NOT NULL
-        // mit Standardwert. Dort wird der Schluessel weggelassen, damit die
-        // Datenbank ihren Standard setzt, statt an null zu scheitern.
+        // Unless the column allows no null: height_units for one is NOT
+        // NULL with a default. There the key is left out so the database
+        // sets its default instead of failing on null.
         $spalten = collect(Schema::getColumns((new $klasse)->getTable()))->keyBy('name');
 
         foreach ($daten as $feld => $wert) {
@@ -311,9 +311,9 @@ class ObjectForm
     }
 
     /**
-     * Auswahllisten aus einer Tabelle, z. B. die Postfach-Anbieter. Was dem
-     * Kunden gehoert, wird auf ihn eingeschraenkt; globale Kataloge wie die
-     * Anbieter haben keine customer_id.
+     * Select lists from a table, e.g. the mailbox providers. What belongs
+     * to the customer is limited to them; global catalogs such as the
+     * providers have no customer_id.
      */
     public function selectOptions(array $feld): array
     {
@@ -324,15 +324,15 @@ class ObjectForm
             $abfrage->where('customer_id', $this->customerId);
         }
 
-        // Einschraenkung des Typs, z. B. "nur Windows" beim Betriebssystem
-        // einer Windows-Lizenz: Debian oder Proxmox gehoeren dort nicht zur
+        // Restricting the type, e.g. "Windows only" for the operating
+        // system of a Windows licence: Debian or Proxmox do not belong
         // Auswahl.
         foreach ($feld['einschraenkung'] ?? [] as [$spalte, $verhaeltnis, $wert]) {
             $abfrage->where($spalte, $verhaeltnis, $wert);
         }
 
-        // Sortiert wird nach dem ersten genannten Feld - bei einem Muster also
-        // nach dem, was vorne steht.
+        // Sorted by the first field named - with a pattern therefore by
+        // whatever stands at the front.
         $sortierung = preg_match('/\{(\w+)\}/', $feld['anzeige'], $t) ? $t[1] : $feld['anzeige'];
 
         return $abfrage->orderBy($sortierung)->get()
@@ -341,13 +341,13 @@ class ObjectForm
     }
 
     /**
-     * Beschriftung eines Auswahleintrags. Entweder ein Feldname oder ein Muster
+     * The label of a select entry. Either a field name or a pattern
      * mit Platzhaltern wie "VLAN {vlanId} · {description}".
      *
-     * Ein Muster statt einer Closure, weil config/forms.php mit
-     * "php artisan config:cache" eingefroren wird - Closures ueberleben das
-     * nicht. Leere Platzhalter fallen mitsamt ihrem Trennzeichen weg, damit
-     * bei einem VLAN ohne Bezeichnung kein einsames Trennzeichen stehen bleibt.
+     * A pattern instead of a closure, because config/forms.php is frozen
+     * by "php artisan config:cache" - closures do not survive that
+     * not. Empty placeholders drop out together with their separator, so
+     * a VLAN without a label leaves no lonely separator behind.
      */
     public function label($eintrag, string $muster): string
     {
@@ -365,12 +365,12 @@ class ObjectForm
     }
 
     /**
-     * Der Request des Objekttyps, mit den Formularwerten gefuellt.
+     * The request of the object kind, filled with the form values.
      *
-     * Gefuellt, weil manche Regel aus einem anderen Feld gebaut wird - "das
-     * Gateway muss im Netz liegen" liest dafuer $this->input('subnet'). Ohne
-     * die Werte bekaeme sie null und pruefte gegen nichts, ohne dass ein
-     * Fehler sichtbar wuerde.
+     * Filled, because some rules are built from another field - "the
+     * gateway must lie in the network" reads $this->input('subnet') for
+     * that. Without the values it would get null and check against
+     * nothing, with no error becoming visible.
      */
     private function request(array $werte): FormRequest
     {
@@ -418,16 +418,16 @@ class ObjectForm
     }
 
     /**
-     * Verweise auf andere Felder in den Praefix heben.
+     * Lift references to other fields into the prefix.
      *
-     * Im Modal heissen die Felder "form.server_id", in den Requests aber
-     * "server_id" - eine Regel wie required_without:server_id suchte deshalb
-     * ein Feld, das es dort nicht gibt, und griff nie. Betraf schon vorher
-     * required_if:form_factor,rack am Server: Hoeheneinheiten und Einbautiefe
-     * waren im Modal nie Pflicht, ohne dass es auffiel.
+     * In the modal the fields are called "form.server_id", in the
+     * requests "server_id" - so a rule like required_without:server_id
+     * looked for a field that does not exist there and never took hold.
+     * This already affected required_if:form_factor,rack on the server:
+     * height units and depth were never required in the modal, unnoticed.
      *
-     * Bei required_if/required_unless ist nur der erste Parameter ein Feld,
-     * dahinter stehen Werte. Bei required_with/without sind es alle.
+     * With required_if/required_unless only the first parameter is a
+     * field, values follow it. With required_with/without all of them are.
      */
     private function prefixReferences(mixed $regel, string $prefix): mixed
     {
@@ -458,7 +458,7 @@ class ObjectForm
             return array_map($einzelne, $regel);
         }
 
-        // Die Kurzschreibweise "required_if:...|boolean" haengt mehrere Regeln
+        // The short form "required_if:...|boolean" hangs several rules
         // mit | aneinander.
         return is_string($regel)
             ? implode('|', array_map($einzelne, explode('|', $regel)))
@@ -466,12 +466,12 @@ class ObjectForm
     }
 
     /**
-     * Eine hochgeladene Datei ablegen und ihren Pfad in die Daten schreiben.
+     * Store an uploaded file and write its path into the data.
      *
-     * Der Ablageort folgt dem bisherigen Controller: {kunde}/{ordner}/ mit
-     * Zeitstempel im Dateinamen, damit zwei gleichnamige Dateien sich nicht
-     * ueberschreiben. Beim Ersetzen wird die alte geloescht - sonst sammeln
-     * sich Karteileichen auf der Platte, die niemand mehr zuordnen kann.
+     * The location follows the previous controller: {customer}/{folder}/ with a
+     * timestamp in the file name, so two files of the same name do not
+     * overwrite each other. On replacement the old one is deleted - otherwise
+     * orphans pile up on disk that nobody can place any more.
      */
     private function storeFile(array $daten, ?Model $objekt, ?UploadedFile $datei): array
     {
@@ -481,9 +481,9 @@ class ObjectForm
             return $daten;
         }
 
-        // Bis hierher wurde die Datei ueberhaupt nicht geprueft: weder wie
-        // gross sie ist noch was sie ist. Eine 60-MB-Datei ging durch, eine
-        // .php auch.
+        // Up to here the file was not checked at all: neither how big it is
+        // nor what it is. A 60 MB file went through, and a .php did too.
+        //
         Validator::make(['datei' => $datei], [
             'datei' => [
                 'file',
@@ -492,10 +492,10 @@ class ObjectForm
             ],
         ], [], ['datei' => __('Datei')])->validate();
 
-        // Der Name kommt aus einem Textfeld und die Endung aus dem Browser -
-        // beides bestimmt der Absender. Ungeprueft in den Ablagepfad gesetzt,
-        // schrieb "../../../../fremder-kunde/files/x" die Datei in das
-        // Verzeichnis eines anderen Kunden und ueberschrieb, was dort lag.
+        // The name comes from a text field and the extension from the browser -
+        // the sender decides both. Put into the storage path unchecked,
+        // "../../../../other-customer/files/x" wrote the file into another
+        // customer's directory and overwrote what was there.
         $dateiname = FileName::fuer($datei, $daten[$feld['name_feld']] ?? null);
         $pfad = $datei->storeAs($this->customer()->slug.'/'.$feld['ordner'], $dateiname, 'local');
 

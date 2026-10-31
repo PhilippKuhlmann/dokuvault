@@ -8,21 +8,19 @@ use DateTimeZone;
 use Illuminate\Support\Carbon;
 
 /**
- * Zeitpunkte in der eingestellten Zeitzone anzeigen.
+ * Show instants in the configured timezone.
  *
- * Gespeichert wird weiter in UTC - daran wird bewusst nicht gerührt. Würde man
- * stattdessen app.timezone umstellen, schriebe die Anwendung ab dann lokale
- * Zeiten in dieselben Spalten, in denen bereits UTC steht: zwei Zeitzonen in
- * einer Spalte, ohne Merkmal, welche Zeile welche ist. Umgerechnet wird
- * deshalb erst beim Anzeigen.
+ * Storage stays UTC, and that is deliberate. Switching app.timezone instead
+ * would make the application write local times into the very columns that
+ * already hold UTC: two timezones in one column, with nothing to tell which
+ * row is which. The conversion therefore happens on display only.
  *
- * Datumsangaben ohne Uhrzeit (Ablaufdatum, Beschaffungsdatum) laufen absichtlich
- * nicht hierdurch: Ein Datum um Stunden zu verschieben kann es auf den Vortag
- * kippen lassen.
+ * Dates without a time (expiry date, procurement date) deliberately do not
+ * run through here: shifting a date by hours can tip it to the day before.
  */
 class LocalTime
 {
-    /** Ohne Einstellung bleibt es bei dem, was die Konfiguration sagt. */
+    /** Without a setting it stays with whatever the configuration says. */
     public static function zone(): string
     {
         $eigene = trim((string) Setting::wert(Setting::APP_TIMEZONE));
@@ -33,10 +31,10 @@ class LocalTime
     }
 
     /**
-     * Ein Zeitpunkt in der eingestellten Zone.
+     * An instant in the configured zone.
      *
-     * @param  string  $wenn_leer  Was dasteht, wenn es den Zeitpunkt nicht gibt -
-     *                             "noch nie" liest sich besser als eine leere Zelle.
+     * @param  string  $wenn_leer  What stands there when the instant does not
+     *                             exist - "never" reads better than an empty cell.
      */
     public static function display(?DateTimeInterface $wert, string $format = 'd.m.Y H:i', string $wenn_leer = ''): string
     {
@@ -65,11 +63,11 @@ class LocalTime
     }
 
     /**
-     * Die Zonen zur Auswahl: Europa und UTC.
+     * The zones on offer: Europe and UTC.
      *
-     * Nicht alle 400 Kennungen der Welt - die Liste soll benutzbar bleiben.
-     * Wer eine andere braucht, kann sie in der Konfiguration setzen; die
-     * Einstellung überschreibt sie dann nur, wenn sie hier auch auswählbar ist.
+     * Not all 400 identifiers in the world - the list should stay usable.
+     * Anyone who needs another one can set it in the configuration; the
+     * setting then overrides it only if it is selectable here as well.
      *
      * @return array<int, string>
      */

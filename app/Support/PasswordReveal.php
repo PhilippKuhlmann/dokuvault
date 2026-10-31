@@ -12,21 +12,21 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 
 /**
- * Der einzige Weg, auf dem ein Kennwort im Klartext den Server verlaesst.
+ * The only way a password leaves the server in plain text.
  *
- * Stand vorher zweimal in den Livewire-Feldern (KennwortFeld, GeheimFeld). Die
- * App braucht denselben Weg - und eine dritte Kopie haette irgendwann eine
- * Pruefung weniger als die anderen beiden. Jetzt gilt fuer Browser und App
- * dasselbe: Recht wie die Liste, eine gemeinsame Bremse je Benutzer, ein
- * Eintrag im Protokoll.
+ * This used to sit twice in the Livewire fields (PasswordField,
+ * SecretField). The app needs the same path - and a third copy would
+ * sooner or later have one check fewer than the other two. Browser and
+ * app now share the same rules: the right of the list it sits on, one
+ * shared throttle per user, one entry in the activity log.
  *
- * Neu gegenueber den Feldern ist die Pruefung der Kundenzugehoerigkeit. Im
- * Browser waren die Ids von Livewire gesperrt und kamen nur von einer Seite,
- * die schon nach Kunde gefiltert war. Die App schickt die Id selbst.
+ * New compared with the fields is the customer check. In the browser
+ * the ids were locked by Livewire and came from a page already filtered
+ * by customer. The app sends the id itself.
  */
 class PasswordReveal
 {
-    /** Das Kennwort hinter einer Verknuepfung an einem Geraet. */
+    /** The password behind a credential link on a device. */
     public function ausVerknuepfung(CredentialLink $link, User $nutzer): ?string
     {
         $link->loadMissing('login');
@@ -35,17 +35,17 @@ class PasswordReveal
             return null;
         }
 
-        // Dasselbe Recht wie die Liste, auf der das Feld steht: Kennwort und
-        // Schlüssel liegen in derselben Tabelle, haben aber getrennte Rechte.
+        // The same right as the list the field sits on: password and key
+        // live in the same table but have separate permissions.
         Gate::forUser($nutzer)->authorize($link->login->istSchluessel() ? 'sshkey_viewAny' : 'logingeneral_viewAny');
 
         $this->onlyOwnCustomer($nutzer, $link->customer_id);
 
         $this->bremsen($nutzer);
 
-        // Die Tatsache der Einsicht gehört ins Protokoll, der Wert nie. Deshalb
-        // der activity()-Helfer statt der Model-Ereignisse: Er schreibt genau
-        // das Ereignis, das wir angeben, und keine Attribute.
+        // The fact of the reveal belongs in the log, the value never.
+        // Hence the activity() helper instead of the model events: it
+        // writes exactly the event we name, and no attributes.
         activity()
             ->event('kennwort_angesehen')
             ->performedOn($link->login)
@@ -63,21 +63,21 @@ class PasswordReveal
     }
 
     /**
-     * Ein Geheimnis, das direkt am Objekt haengt (BMC-Passwort, DSRM-Passwort,
-     * Verschluesselungscode ...).
+     * A secret that hangs directly on the object (BMC password, DSRM
+     * password, encryption key ...).
      *
      * @param  class-string  $modell
      */
     public function fromField(string $modell, int $id, string $feld, User $nutzer): ?string
     {
-        // Feld-Whitelist: Nur echte Geheimnis-Spalten, nie ein beliebiges
-        // Attribut. Modell muss ein Eloquent-Model sein.
+        // Field allowlist: only real secret columns, never an arbitrary
+        // attribute. The model must be an Eloquent model.
         if (! in_array($feld, config('custom.secret_columns'), true)
             || ! is_subclass_of($modell, Model::class)) {
             return null;
         }
 
-        // Dasselbe Recht wie die Liste/Karte, auf der das Feld steht.
+        // The same right as the list or card the field sits on.
         Gate::forUser($nutzer)->authorize('viewAny', $modell);
 
         $this->bremsen($nutzer);
@@ -144,9 +144,9 @@ class PasswordReveal
     }
 
     /**
-     * Bremse gegen das reihenweise Abgreifen: Eine Handvoll Kennwörter
-     * nachzusehen ist normal, hundert in einer Minute nicht. Ein gemeinsames
-     * Budget je Benutzer - Browser und App zaehlen zusammen.
+     * A brake against harvesting in bulk: looking up a handful of passwords
+     * is normal, a hundred in a minute is not. One shared budget per user -
+     * browser and app count together.
      */
     private function bremsen(User $nutzer): void
     {

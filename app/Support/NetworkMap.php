@@ -309,15 +309,15 @@ class NetworkMap
     }
 
     /**
-     * Dasselbe Ziel ohne Browser-Adresse: Slug und Id, mit denen die App das
-     * Geraet oeffnet. "typ" ist null, wo auch "url" null waere - dann darf
-     * dieser Nutzer die Liste nicht sehen.
+     * The same target without a browser URL: slug and id the app opens the
+     * device with. "typ" is null wherever "url" would be null too - then this
+     * user may not see the list.
      *
      * @return array{typ: ?string, id: int}
      */
     protected function ziel(Model $device): array
     {
-        // Fuellt $this->lists, falls noch nicht geschehen.
+        // Fills $this->lists if that has not happened yet.
         $this->url($device);
 
         return [

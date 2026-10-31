@@ -24,31 +24,30 @@ use Illuminate\Support\Facades\Route;
 use Spatie\Activitylog\Models\Activity;
 
 /**
- * Was auf dem Kunden-Dashboard steht: Fristen, Standorte, Ansprechpartner,
- * Agenten, die letzten Aenderungen.
+ * What the customer dashboard shows: deadlines, sites, contacts,
+ * agents, the latest changes.
  *
- * Einmal gerechnet, zweimal gezeigt - im Browser
- * (customer/dashboard.blade.php) und in der iOS-App (Mobile\DashboardController).
- * Vorher lag das in privaten Methoden des CustomerControllers und war von
- * aussen nicht erreichbar; die App haette es nachbauen muessen, und zwei
- * Rechnungen fuer dieselbe Frist sind zwei Wahrheiten.
+ * Worked out once, shown twice - in the browser
+ * (customer/dashboard.blade.php) and in the iOS app (Mobile\DashboardController).
+ * This used to live in private methods of the CustomerController and was
+ * not reachable from outside; the app would have had to rebuild it, and
+ * two sums for the same deadline are two truths.
  *
- * Jede Kachel prueft die Rechte des uebergebenen Nutzers. Nicht die des
- * Angemeldeten: Beim Versand einer Mail (siehe ExpiringItems) ist das nicht
- * derselbe, und auf dem Dashboard darf nichts stehen, dessen Liste der
- * Nutzer nicht oeffnen darf.
+ * Every tile checks the rights of the user passed in. Not those of the
+ * signed-in user: when a mail goes out (see ExpiringItems) that is not
+ * the same person, and nothing may show on the dashboard whose list the
+ * user may not open.
  */
 class CustomerDashboard
 {
     /**
-     * Wie viele Zeilen je Geraeteart hoechstens.
+     * How many rows per device kind at most.
      *
-     * Mehr passt nicht auf eine Karte; die vollstaendige Liste steht hinter
-     * dem Verweis.
+     * More does not fit on a card; the full list sits behind the link.
      */
     public const JE_ART = 10;
 
-    /** Wie viele Aenderungen die Kachel "Zuletzt geaendert" fuehrt. */
+    /** How many changes the "recently changed" tile carries. */
     public const AENDERUNGEN = 8;
 
     public function __construct(
@@ -56,7 +55,7 @@ class CustomerDashboard
         private User $nutzer,
     ) {}
 
-    /** Software-Lizenzen, die bald ablaufen oder schon abgelaufen sind. */
+    /** Software licences expiring soon or expired already. */
     public function lizenzen(): Collection
     {
         if (! $this->darf('licensesoftware')) {
@@ -78,7 +77,7 @@ class CustomerDashboard
             ->values();
     }
 
-    /** SSL/TLS-Zertifikate, die bald ablaufen oder schon abgelaufen sind. */
+    /** SSL/TLS certificates expiring soon or expired already. */
     public function zertifikate(): Collection
     {
         if (! $this->darf('certificate')) {
@@ -101,12 +100,12 @@ class CustomerDashboard
     }
 
     /**
-     * Hardware, deren Garantie ablaeuft - ueber alle Geraetearten hinweg.
+     * Hardware whose warranty is running out - across every device kind.
      *
-     * Die Geraeteliste kommt aus config('custom.trashables') und wird auf die
-     * Models eingeschraenkt, die HatBeschaffung einbinden. Damit gibt es keine
-     * zweite Liste, die man beim naechsten Geraetetyp vergessen kann: Wer den
-     * Trait einbaut, ist hier automatisch dabei.
+     * The device list comes from config('custom.trashables') and is limited
+     * to the models that use HasProcurement. That way there is no second
+     * list to forget on the next device kind: whoever adds the trait is
+     * included here automatically.
      */
     public function garantien(?int $tage = null): Collection
     {
@@ -122,7 +121,7 @@ class CustomerDashboard
                     ->limit(self::JE_ART)
                     ->get()
                     ->map(fn ($geraet) => $this->zeile(
-                        // Telefone und einige andere haben keine name-Spalte.
+                        // Phones and a few others have no name column.
                         $geraet->name ?? $geraet->serialNumber ?? '—',
                         __($bezeichnung),
                         $geraet->warranty_until,
@@ -136,13 +135,13 @@ class CustomerDashboard
     }
 
     /**
-     * Geraete und Betriebssysteme, deren Support endet oder geendet hat.
+     * Devices and operating systems whose support ends or has ended.
      *
-     * Zwei Quellen: das Support-Ende der Hardware (eol_date ueber
-     * HatBeschaffung, gefunden wie die Garantien) und das des Betriebssystems
-     * auf Servern, VMs und Computern. Mit der EOL-Frist aus den
-     * Einstellungen - ein Server will laenger vorher ersetzt werden, als eine
-     * Lizenz verlaengert.
+     * Two sources: the support end of the hardware (eol_date through
+     * HasProcurement, found like the warranties) and that of the operating
+     * system on servers, VMs and computers. With the EOL deadline from the
+     * settings - a server wants replacing further ahead than a licence
+     * wants renewing.
      */
     public function supportEnde(): Collection
     {
@@ -181,7 +180,7 @@ class CustomerDashboard
         return $geraete->concat($systeme)->sortBy('datum')->values();
     }
 
-    /** Die Standorte des Kunden. */
+    /** The customer's sites. */
     public function sites(): Collection
     {
         return $this->darf('site')
@@ -189,11 +188,11 @@ class CustomerDashboard
             : collect();
     }
 
-    /** Die Ansprechpartner des Kunden. */
+    /** The customer's contact persons. */
     public function contactPersons(): Collection
     {
-        // Nach Nachnamen: contact_people hat keine name-Spalte, der Name
-        // entsteht erst aus first_name und last_name.
+        // By last name: contact_people has no name column, the name only
+        // comes together from first_name and last_name.
         return $this->darf('contactperson')
             ? ContactPerson::where('customer_id', $this->kunde->id)
                 ->orderBy('last_name')
@@ -203,15 +202,14 @@ class CustomerDashboard
     }
 
     /**
-     * Die letzten Aenderungen an der Dokumentation dieses Kunden.
+     * The latest changes to this customer's documentation.
      *
-     * Nur Arten, die der Nutzer auflisten darf - die Kachel zeigt nichts,
-     * dessen Liste ihm verschlossen bleibt. Ein Loeschen ist auch eine
-     * Aenderung.
+     * Only kinds the user may list - the tile shows nothing whose list
+     * stays closed to them. A deletion is a change as well.
      */
     public function letzteAenderungen(int $anzahl = self::AENDERUNGEN): Collection
     {
-        // Jede Art im Papierkorb traegt customer_id (darauf baut er auf).
+        // Every kind in the trash carries customer_id (the trash builds on that).
         $typen = collect(config('custom.trashables'))
             ->filter(fn ($eintrag, $slug) => $this->darf($slug));
 
@@ -221,8 +219,8 @@ class CustomerDashboard
 
         $slugs = $typen->mapWithKeys(fn ($eintrag, $slug) => [$eintrag[0] => [$slug, $eintrag[1]]]);
 
-        // customer_id am Eintrag selbst, nicht "wessen Objekt ist das?": ein
-        // OR EXISTS je Objektart brauchte 250 ms bei 96.000 Eintraegen.
+        // customer_id on the entry itself, not "whose object is this?": an
+        // OR EXISTS per object kind took 250 ms at 96,000 entries.
         return Activity::with('causer')
             ->where('customer_id', $this->kunde->id)
             ->whereIn('subject_type', $typen->pluck(0)->all())
@@ -236,8 +234,8 @@ class CustomerDashboard
                 'wer' => $eintrag->causer?->name,
                 'wann' => $eintrag->created_at,
                 'typ' => $slugs[$eintrag->subject_type][0] ?? null,
-                // Ein gelöschtes Objekt liegt im Papierkorb - dort ist nichts
-                // zu markieren und in der App nichts zu oeffnen.
+                // A deleted object lies in the trash - there is nothing to
+                // highlight there and nothing to open in the app.
                 'id' => $eintrag->event === 'deleted' ? null : $eintrag->subject_id,
                 'url' => isset($slugs[$eintrag->subject_type]) && Route::has($slugs[$eintrag->subject_type][0].'.index')
                     ? route($slugs[$eintrag->subject_type][0].'.index', $eintrag->event === 'deleted'
@@ -248,12 +246,12 @@ class CustomerDashboard
     }
 
     /**
-     * Was bei den Agenten zu tun ist: Rechner, die nicht mehr melden,
-     * fehlgeschlagene Durchlaeufe, fehlgeschlagene oder warnende Backups,
-     * Token, die bald ablaufen.
+     * What needs doing about the agents: machines that stopped reporting,
+     * failed runs, failed or warning backups, tokens about to expire.
      *
-     * null, wenn der Kunde weder Agenten noch Token hat - dann gibt es gar
-     * keine Kachel.
+     *
+     * null when the customer has neither agents nor tokens - then there is
+     * no tile at all.
      *
      * @return Collection<int, array{name: string, art: string, text: string, schwer: bool}>|null
      */
@@ -265,8 +263,8 @@ class CustomerDashboard
 
         $installationen = AgentInstallation::where('customer_id', $this->kunde->id)->orderBy('hostname')->get();
         $token = AgentToken::where('customer_id', $this->kunde->id)->get();
-        // Backups, deren letzter Durchlauf fehlschlug oder warnte, wie ein
-        // Agent es gemeldet hat.
+        // Backups whose last run failed or warned, as an agent reported it.
+        // Backups whose last run failed or warned, as an agent reported it.
         $backups = Backup::where('customer_id', $this->kunde->id)
             ->whereIn('last_status', ['failed', 'warning'])
             ->orderBy('name')
@@ -328,10 +326,10 @@ class CustomerDashboard
     }
 
     /**
-     * Die Geraetearten mit Beschaffungsdaten, die der Nutzer sehen darf.
+     * The device kinds with procurement data that the user may see.
      *
-     * Garantie und Support-Ende stehen beide in HatBeschaffung und fragen
-     * dieselbe Liste ab.
+     * Warranty and support end both live in HasProcurement and query the
+     * same list.
      *
      * @return Collection<string, array{0: class-string<Model>, 1: string}>
      */
@@ -348,11 +346,11 @@ class CustomerDashboard
     }
 
     /**
-     * Eine Zeile einer Fristen-Kachel - fuer alle vier dieselbe Form.
+     * One row of a deadline tile - the same shape for all four.
      *
-     * "tage" ist das Vorzeichen, an dem Browser und App faerben: negativ
-     * abgelaufen, 0 heute. Wer sie schon gerechnet hat (garantieTage()),
-     * gibt sie mit.
+     * "tage" is the sign the browser and the app colour by: negative means
+     * expired, 0 means today. Whoever computed it already (warrantyDays())
+     * passes it in.
      */
     private function zeile(
         ?string $name,
@@ -371,8 +369,8 @@ class CustomerDashboard
             'tage' => $tage ?? (int) now()->startOfDay()->diffInDays($datum->copy()->startOfDay(), false),
             'typ' => $slug,
             'id' => $id,
-            // ?highlight= wie aus der globalen Suche: die Liste springt zum
-            // Eintrag und markiert ihn.
+            // ?highlight= as from the global search: the list jumps to the
+            // entry and marks it.
             'url' => Route::has($slug.'.index')
                 ? route($slug.'.index', [$this->kunde, 'highlight' => $id])
                 : null,

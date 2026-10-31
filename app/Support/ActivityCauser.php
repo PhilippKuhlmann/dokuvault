@@ -6,14 +6,14 @@ use App\Models\AgentToken;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Wie ein Protokolleintrag seinen Verursacher zeigt.
+ * How an activity entry shows its causer.
  *
- * Verursacher ist entweder ein Benutzer oder ein Agent-Token - beide haben ein
- * Feld 'name', und ein Tokenname wie "Werkstatt" saehe in der Spalte aus wie
- * ein Mensch. Deshalb bekommt der Agent seine eigene Schreibweise.
+ * The causer is either a user or an agent token - both have a field 'name',
+ * and a token name like "Werkstatt" would look like a person in the column.
+ * The agent therefore gets a notation of its own.
  *
- * Bleibt "System" fuer alles ohne Verursacher: Seeder, Konsolenbefehle,
- * geplante Aufgaben. Dort gibt es wirklich niemanden.
+ * Stays "System" for everything without a causer: seeders, console commands,
+ * scheduled tasks. There really is nobody there.
  */
 class ActivityCauser
 {
@@ -24,7 +24,7 @@ class ActivityCauser
         }
 
         if ($causer instanceof AgentToken) {
-            // Ein Token ohne Bezeichnung ist erlaubt - dann bleibt die Nummer.
+            // A token without a label is allowed - then the number stays.
             return __('Agent').' · '.($causer->name ?: 'Token #'.$causer->id);
         }
 

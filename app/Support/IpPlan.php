@@ -23,16 +23,16 @@ use Illuminate\Support\Collection;
 class IpPlan
 {
     /**
-     * Geräte-Modelle mit ihren verbliebenen IP-Spalten. Die dokumentierten
-     * Adressen kommen aus ip_addresses (siehe unten); als Spalte am Gerät gibt
-     * es nur noch die BMC-Adresse des Servers.
+     * Device models with their remaining IP columns. The documented
+     * Addresses come from ip_addresses (see below); as a column on the
+     * device there is only the server's BMC address left.
      * [Model, [spalte => label-suffix]]
      */
     protected const IP_SOURCES = [
         [Server::class, ['bmcIp' => ' (BMC)']],
     ];
 
-    // Obergrenze an Host-Adressen, die vollständig aufgelistet werden (schützt vor riesigen Subnetzen).
+    // Upper bound of host addresses listed in full (guards against huge subnets).
     public const MAX_HOSTS = 8192;
 
     public function __construct(private Closure $eintrag) {}
@@ -45,21 +45,21 @@ class IpPlan
      */
     public function plans(Customer $customer, Collection $networks): Collection
     {
-        // Die belegten Adressen bewusst OHNE Standortfilter einsammeln: liegt ein Gerät
-        // eines anderen Standorts in diesem Netz, muss es sichtbar bleiben - sonst würde
-        // eine tatsächlich vergebene Adresse hier als frei erscheinen.
+        // The taken addresses deliberately collected WITHOUT a site filter: if a
+        // device of another site sits in this network it must stay visible - an
+        // address actually in use would otherwise appear free here.
         $used = $this->collectUsedIps($customer);
 
-        // Geraete ohne feste Adresse: Sie haengen am Netz, nicht an einer Zeile.
+        // Devices without a fixed address: they hang on the network, not on a row.
         $perDhcp = $this->collectDhcpDevices($customer);
 
-        // Reservierte Bereiche je Netz. Sie belegen nichts - sie sagen, wofuer
-        // ein Stueck gedacht ist, auch wenn davon noch keine Adresse vergeben
-        // ist.
+        // Reserved ranges per network. They take nothing - they say what a
+        // piece is meant for, even when no address from it is in use yet.
+        //
         $bereiche = IpRange::where('customer_id', $customer->id)
             ->get()
             ->groupBy('network_id')
-            // Je Netz eigene Farben - siehe IpRange::eingefaerbt().
+        // Own colours per network - see IpRange::eingefaerbt().
             ->map(fn ($je) => IpRange::eingefaerbt($je));
 
         return $networks->map(fn (Network $network) => [
@@ -72,7 +72,7 @@ class IpPlan
     }
 
     /**
-     * Der Name eines Geräts im Plan - für beide Aufrufer gleich.
+     * The name of a device in the plan - the same for both callers.
      */
     public static function deviceName(?Model $geraet): string
     {
@@ -86,11 +86,11 @@ class IpPlan
     }
 
     /**
-     * Alle im Kunden vergebenen IP-Adressen einsammeln.
+     * Collect every IP address in use at this customer.
      *
-     * [ip_long => [Eintrag, ...]], ein Eintrag je Gerät auf dieser Adresse.
-     * Mehrere Einträge auf einer Adresse sind ein Konflikt und bleiben
-     * deshalb alle sichtbar.
+     * [ip_long => [entry, ...]], one entry per device on that address.
+     * Several entries on one address are a conflict and therefore all
+     * stay visible.
      */
     protected function collectUsedIps(Customer $customer): array
     {
@@ -114,7 +114,7 @@ class IpPlan
             }
         }
 
-        // Zusätzliche (polymorphe) IP-Adressen — z. B. Gateway-IPs eines Routers je VLAN
+        // Additional (polymorphic) IP addresses - e.g. gateway IPs of a router per VLAN
         IpAddress::where('customer_id', $customer->id)
             ->with('ipable')
             ->get()
@@ -130,11 +130,11 @@ class IpPlan
     }
 
     /**
-     * Die per DHCP versorgten Geräte, je Netz: [network_id => [Eintrag, ...]].
+     * The devices served by DHCP, per network: [network_id => [entry, ...]].
      *
-     * Sie haben keine Adresse - was zählt, ist das Netz. Im Plan stehen sie
-     * deshalb am DHCP-Bereich und nicht auf einer Zeile, die morgen eine
-     * andere wäre.
+     * They have no address - what counts is the network. In the plan they
+     * therefore sit on the DHCP range and not on a row that would be a
+     * different one tomorrow.
      */
     protected function collectDhcpDevices(Customer $customer): array
     {
@@ -153,7 +153,7 @@ class IpPlan
     }
 
     /**
-     * Baut die Zeilen für ein VLAN: belegte Adressen einzeln, freie und DHCP-Bereiche zusammengefasst.
+     * Builds the rows for a VLAN: taken addresses one by one, free and DHCP ranges merged.
      */
     protected function buildPlan(Network $network, array $used, $bereiche = null, array $dhcpGeraete = []): array
     {
@@ -170,7 +170,7 @@ class IpPlan
             $truncated = true;
         }
 
-        // Nur belegte Adressen innerhalb dieses Subnetzes
+        // Only taken addresses inside this subnet
         $map = array_filter($used, fn ($k) => $k >= $first && $k <= $last, ARRAY_FILTER_USE_KEY);
 
         // Gateway markieren
@@ -185,31 +185,31 @@ class IpPlan
 
         $dhcp = $network->dhcpRange();
 
-        // Je Adresse die Beschriftung des Bereichs, in dem sie liegt. Als
-        // Nachschlagetabelle statt einer Schleife je Adresse: Ein /16 haette
-        // sonst 65.000 Durchlaeufe mal Anzahl der Bereiche.
+        // Per address the label of the range it lies in. As a lookup table
+        // instead of a loop per address: a /16 would otherwise mean 65,000
+        // passes times the number of ranges.
         $reserviert = $this->reservierungen($bereiche, $first, $last);
 
         $rows = [];
         $counts = ['device' => 0, 'dhcp' => 0, 'free' => 0, 'reserved' => 0];
 
-        // Je Bereich getrennt mitzaehlen, damit der Balken oben ihn in seiner
-        // eigenen Farbe zeigen kann. Gezaehlt wird nur, was auch als
-        // reserviert in der Tabelle steht - eine belegte Adresse im Bereich
-        // zaehlt als belegt, sonst kaeme der Balken ueber 100 Prozent.
+        // Counted separately per range so the bar above can show it in its
+        // own colour. Counted is only what the table holds as reserved - a
+        // taken address inside the range counts as taken, otherwise the bar
+        // would go past 100 percent.
         $jeBereich = [];
         $runStart = null;
         $runKind = null;
 
         $runBereich = null;
 
-        // Die Geraete, die aus diesem Netz per DHCP versorgt werden. Sie
-        // stehen am Bereich statt an einer Adresse - welche sie gerade haben,
-        // ist morgen eine andere. Nur am ersten Bereich: Bei mehreren (eine
-        // feste Adresse teilt ihn) stuenden sie sonst doppelt.
-        // Genannt werden sie am ERSTEN DHCP-Bereich. flush() laeuft fuer jeden
-        // Lauf, auch fuer freie und reservierte - ohne die Pruefung auf die Art
-        // stuenden die Geraete am erstbesten Block.
+        // The devices served from this network by DHCP. They sit on the
+        // range instead of on an address - whichever they hold now is a
+        // different one tomorrow. Only on the first range: with several (a
+        // fixed address splits it) they would otherwise appear twice.
+        // They are named on the FIRST DHCP range. flush() runs for every
+        // run, for free and reserved ones too - without the check on the
+        // kind the devices would sit on whichever block came first.
         $dhcpGenannt = false;
 
         // Devices with a fixed address inside the DHCP range: they stand at
@@ -279,9 +279,9 @@ class IpPlan
                     )),
                     'geraete' => $map[$ip],
                     'isGateway' => $ip === $gatewayLong,
-                    // Eine belegte Adresse innerhalb einer Reservierung bleibt
-                    // eine belegte Adresse - sie traegt nur zusaetzlich, wozu
-                    // der Block gedacht ist.
+                    // A taken address inside a reservation stays a taken
+                    // address - it merely carries in addition what the
+                    // block is meant for.
                     'reservierung' => $reserviert[$ip]['label'] ?? null,
                     'farbe' => $reserviert[$ip]['farbe'] ?? [],
                 ];
@@ -289,9 +289,9 @@ class IpPlan
                 continue;
             }
 
-            // Reihenfolge: DHCP schlaegt die Reservierung. Ein Bereich, den der
-            // DHCP-Server selbst vergibt, ist kein reservierter Block mehr -
-            // und wer beides uebereinanderlegt, soll das im Plan sehen.
+            // Order: DHCP beats the reservation. A range the DHCP server
+            // hands out itself is no reserved block any more - and whoever
+            // lays both on top of each other should see that in the plan.
             if ($dhcp && $ip >= $dhcp[0] && $ip <= $dhcp[1]) {
                 $kind = 'dhcp';
                 $label = null;
@@ -310,10 +310,10 @@ class IpPlan
                 $jeBereich[$bereich['id']]['anzahl']++;
             }
 
-            // Auch bei gleicher Art umbrechen, wenn ein anderer Bereich
-            // beginnt - sonst verschmelzen zwei Reservierungen zu einer Zeile
-            // mit der Beschriftung und der Farbe der ersten. An der Id, nicht
-            // an der Beschriftung: Zwei Bereiche duerfen gleich heissen.
+            // Break even within the same kind when another range begins -
+            // otherwise two reservations merge into one row with the label
+            // and colour of the first. By id, not by label: two ranges are
+            // allowed to share a name.
             if ($runKind !== $kind
                 || ($kind === 'reserved' && ($runBereich['id'] ?? null) !== $bereich['id'])) {
                 $flush($ip - 1);
@@ -328,26 +328,26 @@ class IpPlan
             'error' => null,
             'rows' => $rows,
             'counts' => $counts,
-            // In Lesereihenfolge, damit der Balken die Farben in derselben
-            // Folge zeigt wie die Tabelle darunter.
+            // In reading order, so the bar shows the colours in the same
+            // sequence as the table below it.
             'reserviert' => array_values($jeBereich),
             'truncated' => $truncated,
             'total' => $last - $first + 1,
-            // Ohne gepflegten DHCP-Bereich gibt es keine Zeile, an der sie
-            // stehen koennten. Verschwinden duerfen sie trotzdem nicht - dann
-            // waere das Geraet in der Doku, aber nicht im Plan.
+            // Without a documented DHCP range there is no row for them to
+            // sit on. They must not vanish all the same - the device would
+            // then be in the documentation but not in the plan.
             'dhcpOhneBereich' => $dhcpGenannt ? [] : $this->ohneDoppelte($dhcpGeraete),
-            // Nicht count($map): Eine Adresse, die im Pool aufgegangen ist,
-            // zaehlt nicht zusaetzlich als belegt - der Pool steht schon als
-            // Ganzes in der Rechnung. Bis auf diesen Fall sind beide Zahlen
-            // dieselbe, denn jede belegte Adresse bekam eine eigene Zeile.
+            // Not count($map): an address absorbed into the pool does not
+            // count as taken on top - the pool is already in the sum as a
+            // whole. Apart from that case both numbers are the same, since
+            // every taken address got a row of its own.
             'usedCount' => $counts['device'],
         ];
     }
 
     /**
-     * Ein Gerät mit mehreren DHCP-Zuordnungen im selben Netz nur einmal nennen.
-     * Erkannt am ganzen Eintrag - der Browser fuehrt eine URL, die App Typ und Id.
+     * Name a device with several DHCP assignments in the same network only once.
+     * Recognised by the whole entry - the browser carries a URL, the app kind and id.
      */
     protected function ohneDoppelte(array $eintraege): array
     {
@@ -355,13 +355,13 @@ class IpPlan
     }
 
     /**
-     * Nachschlagetabelle [ip_long => Beschriftung] fuer die reservierten
-     * Bereiche eines Netzes, auf den sichtbaren Ausschnitt beschnitten.
+     * Lookup table [ip_long => label] for the reserved ranges of a network,
+     * trimmed to the visible section.
      *
-     * Ueberlappen zwei Bereiche, gewinnt der zuletzt angelegte. Das Formular
-     * laesst Ueberlappungen gar nicht erst zu; die Regel steht hier fuer den
-     * Fall, dass doch eine in der Datenbank landet - dann soll der Plan eine
-     * Beschriftung zeigen statt zu raten.
+     * If two ranges overlap, the one created last wins. The form does not
+     * allow overlaps in the first place; the rule stands here for the case
+     * that one lands in the database anyway - then the plan should show a
+     * label instead of guessing.
      */
     protected function reservierungen($bereiche, int $first, int $last): array
     {
@@ -416,7 +416,7 @@ class IpPlan
         $networkLong = $cidr === 0 ? 0 : ($base & ((0xFFFFFFFF << (32 - $cidr)) & 0xFFFFFFFF));
 
         if ($cidr >= 31) {
-            // /31 und /32: keine gesonderte Netz-/Broadcast-Adresse
+            // /31 and /32: no separate network or broadcast address
             return [$networkLong, $networkLong, $networkLong + $hostCount - 1];
         }
 

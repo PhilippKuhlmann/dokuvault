@@ -19,13 +19,13 @@ class PatchPortEditing
     public function rules(int $customerId): array
     {
         return [
-            // Schreibweise ist je Kunde verschieden ("EG 1.01", "A.12", "2.23") -
-            // deshalb kein Format erzwingen, nur die Laenge begrenzen.
+            // The notation differs per customer ("EG 1.01", "A.12", "2.23") -
+            // hence no format is enforced, only the length is capped.
             'outlet' => 'nullable|string|max:50',
             'label' => 'nullable|string|max:255',
             'switch_port' => 'nullable|string|max:50',
             'note' => 'nullable|string|max:255',
-            // Kundengebunden: der Switch eines fremden Kunden wird abgelehnt.
+            // Bound to the customer: another customer's switch is rejected.
             'network_switch_id' => [
                 'nullable',
                 Rule::exists('network_switches', 'id')
@@ -54,7 +54,7 @@ class PatchPortEditing
         }
     }
 
-    /** Eine Zeile leeren, ohne alle Felder einzeln loeschen zu muessen. */
+    /** Clear a row without having to empty every field by hand. */
     public function clear(PatchPanel $panel, int $portId): void
     {
         $panel->ports()->whereKey($portId)->update(array_fill_keys(self::COLUMNS, null));
