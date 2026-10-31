@@ -34,22 +34,22 @@ Artisan::command('inspire', function () {
 | hier: Ein PDF ist ohnehin keine Sekundensache.
 */
 
-// Die Warteschlange leeren und dann beenden - kein Dauerlaeufer, der nach
-// einem Deploy mit altem Code weiterarbeitet. Die Laufzeit bleibt unter einer
-// Minute, damit sich zwei Laeufe nicht ins Gehege kommen; withoutOverlapping
-// sichert das zusaetzlich ab, denn ein grosses PDF dauert laenger.
+// Drain the queue and then stop - no long runner that keeps working with old
+// code after a deploy. The runtime stays under a minute so two runs do not
+// get in each other's way; withoutOverlapping secures that on top, because a
+// large PDF takes longer.
 //
-// --memory=512, weil der Vorgabewert 128 MB betraegt und ein PDF-Auftrag
-// darueber liegt: Der Export des Beispielkunden kommt auf 164 MB. Der Worker
-// prueft den Verbrauch NACH jedem Auftrag und beendet sich mit Code 12
-// (EXIT_MEMORY_LIMIT), wenn er darueber liegt - das erste PDF wird also fertig,
-// das zweite blieb liegen und wartete auf den naechsten Minutenlauf. Bei drei
-// wartenden Exporten dauerte es damit drei Minuten statt zehn Sekunden.
+// --memory=512, because the default is 128 MB and a PDF job sits above it:
+// the export of the sample customer comes to 164 MB. The worker checks its
+// usage AFTER every job and stops with code 12 (EXIT_MEMORY_LIMIT) if it is
+// above - so the first PDF finishes and the second one stayed put, waiting
+// for the next minute's run. With three exports waiting that took three
+// minutes instead of ten seconds.
 //
-// Die 512 sind kein Bedarf, sondern Luft: Der Auftrag selbst setzt sein
-// memory_limit auf 1G, damit auch ein Kunde mit vielen Serverschraenken
-// durchlaeuft. Diese Zahl hier entscheidet nur, ab wann der Worker sich fuer
-// verbraucht haelt.
+// The 512 are not a requirement but headroom: the job itself sets its
+// memory_limit to 1G so a customer with many racks gets through as well.
+// This number here only decides when the worker considers itself used up.
+//
 // The demo rebuilds its database at every full hour (demo:reset, its own
 // cron line). A job started in the same minute found its tables gone and
 // failed - twice an hour in the log. On the demo, jobs that would run at a
@@ -66,14 +66,14 @@ Schedule::command('queue:work --stop-when-empty --max-time=55 --tries=1 --memory
 // from 04:00 with 24 hours retention stayed until the run after next.
 Schedule::command('pdf:purge')->hourlyAt($demo ? 20 : 0);
 
-// Das Protokoll nach der eingestellten Frist kuerzen, samt der daran
-// haengenden Kennwoerter. Taeglich, nicht stuendlich: Die Frist wird in Tagen
-// angegeben, eine Stunde Genauigkeit waere geheuchelte Praezision.
+// Trim the activity log after the configured deadline, together with the
+// passwords hanging on it. Daily, not hourly: the deadline is given in days,
+// and an hour's precision would be feigned accuracy.
 Schedule::command('activity:prune')->dailyAt('03:40');
 
-// API-Statistik (Admin -> Auslastung) nach der eingestellten Frist (Standard
-// 90 Tage, Einstellungen -> Fristen) loeschen: Fuer die Frage
-// "wann kommt die Last, reicht der Server" genuegt ein Quartal.
+// API statistics (Admin -> Auslastung) deleted after the configured deadline
+// (90 days by default, Einstellungen -> Fristen): for the question "when does
+// the load come, is the server enough" a quarter is plenty.
 Schedule::call(fn () => DB::table('api_request_stats')
     ->where('stunde', '<', now()->subDays(Setting::statistikApiTage()))->delete())
     ->dailyAt('03:50')->name('api-stats-cleanup');
@@ -86,6 +86,6 @@ Schedule::command('domains:check')->dailyAt($demo ? '05:20' : '05:00')->withoutO
 // the list is there when the day starts; the scheduler runs in UTC.
 Schedule::command('expiry:notify')->dailyAt('05:30');
 
-// Kennzahlen des Tages fuer Admin -> Statistik (System, Datenwachstum).
-// Nachts, nach dem Backup um 01:30 - dessen Groesse soll schon mitzaehlen.
+// The day's figures for Admin -> Statistik (System, Datenwachstum). At night,
+// after the backup at 01:30 - its size should already count.
 Schedule::command('stats:snapshot')->dailyAt('02:30');

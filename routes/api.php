@@ -41,15 +41,15 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// "aktiv" hinter "auth:sanctum", nicht davor: Erst muss der Guard den Nutzer
-// aufgeloest haben, sonst sieht die Middleware niemanden und laesst alles
-// durch. Damit arbeitet das Script eines gesperrten Benutzers nicht weiter -
-// die Agent-Token oben haengen an keinem Benutzer und bleiben unberuehrt.
+// "aktiv" after "auth:sanctum", not before: the guard has to resolve the
+// user first, or the middleware sees nobody and lets everything through.
+// That way the script of a locked user does not keep working - the agent
+// tokens above hang on no user and stay untouched.
 Route::middleware(['auth:sanctum', 'aktiv', RequireTwoFactor::class])->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// Self-Service-Dokumentation: Geräte melden sich per Agent-Token selbst.
+// Self-service documentation: devices report in with an agent token.
 // Own limit per token instead of the API limit per IP - see
 // RouteServiceProvider: a whole site reports from one NAT address.
 Route::middleware(['throttle:agent', 'agent'])->withoutMiddleware('throttle:api')->prefix('agent')->group(function () {
@@ -77,11 +77,11 @@ Route::middleware(['throttle:agent', 'agent'])->withoutMiddleware('throttle:api'
 // limited time) instead of a user token - see ChecklistReportController.
 Route::post('/checklist-report', ChecklistReportController::class)->middleware('throttle:30,1');
 
-// Die iOS-App. Vor der Kundenroute unten: "/{customer}" passt auf jedes
-// einzelne Segment und fing sonst "/api/mobile" ab - siehe die Server-Routen.
-// Lesen und Bearbeiten wie im Browser, mit denselben Rechten; Kennwoerter
-// einzeln ueber POST, damit kein Zwischenspeicher sie als Antwort auf ein GET
-// aufhebt.
+// The iOS app. Before the customer route below: "/{customer}" matches any
+// single segment and would otherwise catch "/api/mobile" - see the server
+// routes. Reading and editing as in the browser, with the same permissions;
+// passwords one at a time through POST, so no cache keeps them as the answer
+// to a GET.
 Route::prefix('mobile')->group(function () {
     Route::middleware(SetLocale::class)->group(function () {
         Route::post('/login', [LoginController::class, 'login']);
@@ -92,48 +92,48 @@ Route::prefix('mobile')->group(function () {
         Route::post('/logout', [LoginController::class, 'abmelden']);
         Route::get('/me', [LoginController::class, 'ich']);
 
-        // Das eigene Profil: Name, E-Mail, Sprache, Kennwort.
+        // The own profile: name, email, language, password.
         Route::get('/profile', [MobileProfilController::class, 'show']);
         Route::match(['put', 'patch'], '/profile', [MobileProfilController::class, 'aendern']);
         Route::put('/profile/password', [MobileProfilController::class, 'kennwort']);
 
-        // Die zweite Stufe einrichten: beginnen, bestaetigen, neue
-        // Wiederherstellungscodes, abschalten. Ohne Sitzung traegt ein
-        // verschluesselter "vorgang" das begonnene Geheimnis.
+        // Setting up the second factor: begin, confirm, new recovery codes,
+        // switch off. Without a session an encrypted "vorgang" carries the
+        // secret that was begun.
         Route::post('/profile/two-factor/begin', [MobileProfilController::class, 'beginTwoFactor']);
         Route::post('/profile/two-factor/confirm', [MobileProfilController::class, 'confirmTwoFactor']);
         Route::post('/profile/two-factor/recovery-codes', [MobileProfilController::class, 'recoveryCodes']);
         Route::delete('/profile/two-factor', [MobileProfilController::class, 'disableTwoFactor']);
 
-        // Das eigene Konto loeschen - mit Kennwort und nicht rueckgaengig.
+        // Delete the own account - with a password and not undoable.
         Route::delete('/profile', [MobileProfilController::class, 'delete']);
-        // Changelog und Version - im Browser haengt beides unter der
-        // Seitenleiste.
+        // Changelog and version - in the browser both hang under the
+        // sidebar.
         Route::get('/changelog', [MobileProfilController::class, 'changelog']);
 
         Route::get('/customers', [DatenController::class, 'kunden']);
         Route::get('/customers/{customer}', [DatenController::class, 'kunde'])->middleware('isCustomer');
-        // Vor der Typenliste unten: "/{typ}" passt auf jedes einzelne Segment
-        // und faenge sonst "dashboard" ab.
+        // Before the type list below: "/{typ}" matches any single segment and
+        // would otherwise catch "dashboard".
         Route::get('/customers/{customer}/dashboard', [MobileDashboardController::class, 'show'])->middleware('isCustomer');
 
-        // Papierkorb: auch er vor der Typenliste unten.
+        // Trash: before the type list below as well.
         Route::middleware('isCustomer')->group(function () {
             Route::get('/customers/{customer}/trash', [MobileTrashController::class, 'index']);
-            // Die Dokumentation als PDF: bestellen, nachfragen, abholen.
-            // Ohne scopeBindings - der Kunde fuehrt keine Beziehung auf die
-            // Auftraege; der Controller prueft ihn selbst, wie im Browser.
+            // The documentation as a PDF: order, ask after, collect.
+            // Without scopeBindings - the customer carries no relation to the
+            // jobs; the controller checks it itself, as in the browser.
             Route::prefix('/customers/{customer}/pdf')->group(function () {
                 Route::get('/', [MobilePdfController::class, 'stand']);
                 Route::post('/', [MobilePdfController::class, 'bestellen']);
                 Route::get('/{pdfExport}', [MobilePdfController::class, 'load'])->whereNumber('pdfExport');
             });
 
-            // Netzplan: Internet -> Gateway -> VLAN -> Geraete.
+            // Network map: internet -> gateway -> VLAN -> devices.
             Route::get('/customers/{customer}/network-map', [MobileNetworkMapController::class, 'show']);
 
-            // Erstaufnahme-Assistent: Schritt fuer Schritt durch die
-            // Grunddaten. Ausgefuellt wird mit den Formularen unten.
+            // Initial-survey wizard: step by step through the basics.
+            // Filling in happens with the forms below.
             Route::prefix('/customers/{customer}/wizard')->group(function () {
                 Route::get('/', [MobileWizardController::class, 'index']);
                 Route::post('/start', [MobileWizardController::class, 'start']);
@@ -142,34 +142,34 @@ Route::prefix('mobile')->group(function () {
                 Route::post('/complete', [MobileWizardController::class, 'abschliessen']);
             });
 
-            // Auto-Dokumentation: welche Agenten laufen und was sie
-            // melden. scopeBindings: ein Agent eines anderen Kunden ist ein
-            // 404, nicht nur verborgen.
+            // Auto-documentation: which agents run and what they report.
+            // scopeBindings: an agent of another customer is a 404, not just
+            // hidden.
             Route::prefix('/customers/{customer}/agents')->scopeBindings()->group(function () {
                 Route::get('/', [MobileAgentController::class, 'index']);
-                // Die Parameternamen treffen die Beziehungen am Kunden
-                // (agentInstallations, agentTokens) - daran haengt das
-                // scopeBindings.
+                // The parameter names match the relations on the customer
+                // (agentInstallations, agentTokens) - that is what
+                // scopeBindings hangs on.
                 Route::put('/installations/{agentInstallation}', [MobileAgentController::class, 'update']);
                 Route::post('/installations/{agentInstallation}/run', [MobileAgentController::class, 'run']);
                 Route::post('/tokens/{agentToken}/lock', [MobileAgentController::class, 'lock']);
                 Route::post('/tokens/{agentToken}/unlock', [MobileAgentController::class, 'unlock']);
             });
 
-            // Checklisten. scopeBindings: eine Liste eines anderen Kunden
-            // (und ein Punkt einer anderen Liste) ist ein 404.
+            // Checklists. scopeBindings: a list of another customer (and an
+            // item of another list) is a 404.
             Route::prefix('/customers/{customer}/checklists')->scopeBindings()->group(function () {
                 Route::get('/', [MobileChecklistController::class, 'index']);
-                // Beantragen: erst die Auswahl holen, dann anlegen. Vor
-                // "/{checklist}", sonst faenge das die festen Pfade ab.
+                // Requesting: fetch the choices first, then create. Before
+                // "/{checklist}", or that would catch the fixed paths.
                 Route::get('/form', [MobileChecklistController::class, 'formular']);
                 Route::post('/onboarding', [MobileChecklistController::class, 'onboarding']);
                 Route::post('/offboarding', [MobileChecklistController::class, 'offboarding']);
                 Route::get('/{checklist}', [MobileChecklistController::class, 'show'])->whereNumber('checklist');
                 Route::post('/{checklist}/items/{item}/toggle', [MobileChecklistController::class, 'toggle']);
                 Route::post('/{checklist}/items/{item}/approve', [MobileChecklistController::class, 'approve']);
-                // Das PowerShell-Skript fuer den AD-Teil - zum Weitergeben
-                // an den Rechner, auf dem es laeuft.
+                // The PowerShell script for the AD part - to hand to the
+                // machine it runs on.
                 Route::get('/{checklist}/ad-script', [MobileChecklistController::class, 'adSkript']);
             });
             Route::post('/customers/{customer}/trash/{typ}/{id}/restore', [MobileTrashController::class, 'restore'])
@@ -259,18 +259,18 @@ Route::middleware(['auth:sanctum', 'aktiv', RequireTwoFactor::class, RequireInte
     Route::get('/customers', [CustomerController::class, 'index']);
     Route::post('/customers', [CustomerController::class, 'store'])->can('admin_customer');
 
-    // Vor der Kundenroute: "/{customer}" passt auf jedes einzelne Segment und
-    // fing "GET /api/servers" ab - die Anfrage suchte einen Kunden namens
-    // "servers" und endete in einem 404. Die Server-Schnittstelle war damit
-    // nicht erreichbar, ohne dass es jemandem auffiel.
+    // Before the customer route: "/{customer}" matches any single segment and
+    // caught "GET /api/servers" - the request looked for a customer named
+    // "servers" and ended in a 404. The server interface was unreachable that
+    // way, without anyone noticing.
     Route::get('servers', [ServerController::class, 'index'])->can('viewAny', Server::class);
     Route::get('servers/{server}', [ServerController::class, 'show'])->can('viewAny', Server::class);
     Route::post('servers', [ServerController::class, 'store'])->can('create', Server::class);
     Route::put('servers/{server}', [ServerController::class, 'update'])->can('update', Server::class);
     Route::delete('servers/{server}', [ServerController::class, 'delete'])->can('delete', Server::class);
-    // isCustomer: verhindert, dass ein auf einen Kunden beschraenkter Token
-    // (customer_id gesetzt) Daten eines anderen Kunden ueber die Route
-    // abruft. Admin-/Techniker-Token (kein customer_id) bleiben unbeschraenkt.
+    // isCustomer: keeps a token limited to one customer (customer_id set)
+    // from fetching another customer's data through the route. Admin and
+    // technician tokens (no customer_id) stay unrestricted.
     Route::get('/{customer}', [CustomerController::class, 'show'])->middleware('isCustomer');
 
     // scopeBindings: {site} and {accesspoint} resolve through the customer -

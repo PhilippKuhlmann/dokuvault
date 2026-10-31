@@ -98,36 +98,36 @@ Route::redirect('/', '/login');
 
 Route::get('/changelog', [ChangelogController::class, 'index'])->name('changelog');
 
-// Die frueheren deutschen Adressen. Sie bleiben als Weiterleitung stehen -
-// ein Lesezeichen auf /admin/papierkorb soll nicht ins Leere laufen. Neue
-// Adressen sind durchgaengig englisch.
+// The former German addresses. They stay as redirects - a bookmark on
+// /admin/papierkorb must not lead nowhere. New addresses are English
+// throughout.
 Route::permanentRedirect('/admin/papierkorb', '/admin/trash');
 Route::permanentRedirect('/admin/protokoll-historie', '/admin/log-retention');
 Route::permanentRedirect('/{customer}/assistent', '/{customer}/wizard');
 
-// Das eigene Logo - bewusst ohne auth: Es steht auch auf der Anmeldeseite.
-// Ein Logo ist nicht vertraulich, die Datei liegt aber trotzdem privat und
-// geht durch den Controller, wie alle Dateien dieser App.
+// The own logo - deliberately without auth: it stands on the sign-in page
+// too. A logo is not confidential, but the file lies privately all the same
+// and goes through the controller, like every file in this app.
 Route::get('/logo/{placement}', [BrandingController::class, 'logo'])->name('branding.logo');
 
-// Das Bild eines Katalogelements. Hinter auth, aber ausserhalb des
-// Adminbereichs: Gepflegt wird es dort, zu sehen ist es in jeder Rack-Ansicht -
-// auch bei einem Kunden, der den Adminbereich nie betreten darf.
+// The image of a catalog item. Behind auth but outside the admin area: it is
+// maintained there and visible in every rack view - including at a customer
+// who may never enter the admin area.
 Route::middleware('auth')
     ->get('/rack-catalog-image/{rackcatalogitem}', [RackCatalogItemController::class, 'image'])
     ->name('rackcatalogitem.image');
 
-// Das Bild eines Geraetemodells. Dieselbe Ueberlegung, und bewusst ohne
-// Mandantenpruefung: Ein Modellfoto gehoert keinem Kunden - es zeigt die
-// Frontblende einer "APC Smart-UPS 1500" und soll genau deshalb bei jedem
-// Kunden erscheinen, bei dem eine steht.
+// The image of a device model. The same reasoning, and deliberately without
+// a tenant check: a model photo belongs to no customer - it shows the front
+// panel of an "APC Smart-UPS 1500" and should appear for exactly that reason
+// at every customer who has one.
 Route::middleware('auth')
     ->get('/device-model-image/{devicemodel}', [DeviceModelController::class, 'image'])
     ->name('devicemodel.image');
 
-// Techniker
-// Bewusst ohne auth: Auch auf der Anmeldeseite soll man die Sprache wechseln
-// koennen, und auf der Demo ist der geteilte Zugang gesperrt.
+// Technicians
+// Deliberately without auth: the language should be switchable on the
+// sign-in page too, and on the demo the shared account is locked.
 Route::post('/locale/{locale}', [LocaleController::class, 'update'])->name('locale.update');
 
 Route::middleware(['auth', 'IsTechnician'])->group(function () {
@@ -136,30 +136,30 @@ Route::middleware(['auth', 'IsTechnician'])->group(function () {
     Route::get('/remotesearch', RemoteSearch::class)->name('search.remote');
 });
 
-// Admin Bereich
+// Admin area
 Route::middleware(['auth', 'isAdmin'])->group(function () {
     Route::prefix('admin')->group(function () {
 
-        // Papierkorb ueber alle Kunden - sehen, was sich angesammelt hat, und
-        // es endgueltig loswerden.
+        // Trash across all customers - see what has piled up and get rid of
+        // it for good.
         Route::get('/trash', AdminTrash::class)
             ->middleware('can:admin_trash')->name('admin.trash');
 
-        // Wie lange das Protokoll - und damit die bisherigen Kennwoerter -
-        // aufbewahrt wird.
+        // How long the activity log - and with it the previous passwords -
+        // is kept.
         Route::get('/log-retention', AdminLogRetention::class)
             ->middleware('can:admin_activity')->name('admin.logretention');
 
-        // Einstellungen der Installation
+        // Settings of the installation
         Route::middleware('can:admin_setting')->group(function () {
-            // Eigener Name und eigene Logos - Livewire, damit jede Aenderung
-            // sofort gilt statt erst nach einem Speichern-Knopf.
+            // Own name and own logos - Livewire, so every change applies at
+            // once instead of only after a save button.
             Route::get('/general', AdminGeneral::class)->name('admin.general.index');
 
-            // Kennwortregeln fuer die Anmeldung - siehe AdminSicherheit.
+            // Password rules for signing in - see AdminSecurity.
             Route::get('/security', AdminSecurity::class)->name('admin.security.index');
 
-            // Vorwarnzeiten und die Aufbewahrung der PDF-Ausgaben.
+            // Warning times and the retention of the PDF exports.
             Route::get('/retention', AdminRetention::class)->name('admin.retention.index');
 
             // Who gets the daily expiry mail, and what it reports.
@@ -179,8 +179,8 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             Route::get('/setting', [SettingController::class, 'index'])->name('admin.setting.index');
             Route::patch('/setting', [SettingController::class, 'update'])->name('admin.setting.update');
 
-            // Mailversand. Was hier steht, gilt statt der .env - siehe
-            // AppServiceProvider::mailEinstellungenAnwenden().
+            // Mail sending. Whatever stands here applies instead of the .env -
+            // see AppServiceProvider::applyMailSettings().
             Route::get('/mail', [MailSettingController::class, 'index'])->name('admin.mail.index');
             Route::patch('/mail', [MailSettingController::class, 'update'])->name('admin.mail.update');
             Route::post('/mail/test', [MailSettingController::class, 'test'])->name('admin.mail.test');
@@ -188,13 +188,13 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
                 ->name('admin.mail.password');
         });
 
-        // Aktivitätsprotokoll - mit Suche und Filtern, deshalb Livewire.
+        // Activity log - with search and filters, hence Livewire.
         Route::get('/activity', AdminActivityLog::class)
             ->middleware('can:admin_activity')->name('admin.activity.index');
 
-        // Token anlegen und widerrufen. Vorher gab diese Adresse rohes JSON
-        // zurueck und legte bei jedem Aufruf einen weiteren Token an - ein
-        // Menuepunkt darauf haette beim Klicken Token erzeugt.
+        // Create and revoke tokens. This address used to return raw JSON and
+        // created another token on every call - a menu item pointing at it
+        // would have generated tokens when clicked.
         Route::get('/apitoken', AdminApiToken::class)
             ->middleware('can:admin_apitoken')->name('admin.apitoken');
 
@@ -215,7 +215,7 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
         Route::get('/', [AdminController::class, 'index'])->name('admin.dashboard');
 
-        // Kunden
+        // Customers
         Route::middleware('can:admin_customer')->group(function () {
             Route::get('/customer', [CustomerController::class, 'index'])->name('admin.customer.index');
             Route::post('/customer', [CustomerController::class, 'store'])->name('admin.customer.store');
@@ -233,19 +233,19 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             Route::patch('/user/{user}', [UserController::class, 'update'])->name('admin.user.update');
             Route::delete('/user/{user}', [UserController::class, 'destroy'])->name('admin.user.destroy');
 
-            // Verlorenes Telefon: Ohne diesen Weg waere ein Nutzer mit
-            // eingeschalteter zweiter Stufe und ohne Wiederherstellungscode
-            // dauerhaft ausgesperrt.
+            // A lost phone: without this way a user with the second factor
+            // switched on and no recovery code would be locked out for good.
+            //
             Route::delete('/user/{user}/two-factor', [UserController::class, 'resetTwoFactor'])
                 ->name('admin.user.two-factor');
 
-            // Einladung erneut schicken: im Spam gelandet, Link abgelaufen,
-            // versehentlich geloescht - das ist der Alltag, nicht der Fehler.
+            // Send the invitation again: landed in spam, link expired, deleted
+            // by accident - that is everyday life, not a fault.
             Route::post('/user/{user}/invite', [UserController::class, 'invite'])
                 ->name('admin.user.invite');
         });
 
-        // Rolen
+        // Roles
         Route::middleware('can:admin_role')->group(function () {
             Route::get('/role', [RoleController::class, 'index'])->name('admin.role.index');
             Route::post('/role', [RoleController::class, 'store'])->name('admin.role.store');
@@ -254,13 +254,13 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             Route::patch('/role/{role}', [RoleController::class, 'update'])->name('admin.role.update');
         });
 
-        // Operating Systems. Die Liste steht im Menue unter "Auswahlmenues",
-        // neben Diensten und Mail-Anbietern - deshalb dasselbe Recht. Das
-        // eigene Recht traegt die EOL-Auswertung, die einen eigenen Menuepunkt
-        // hat.
+        // Operating systems. The list stands in the menu under
+        // "Auswahlmenues", beside services and mail providers - hence the same
+        // permission. The separate permission carries the EOL evaluation,
+        // which has a menu item of its own.
         Route::middleware('can:admin_catalog')->group(function () {
-            // Livewire statt Controller: einzige Aenderung ist die Suche,
-            // Anlegen/Bearbeiten bleiben eigene Seiten.
+            // Livewire instead of a controller: the only change is the search,
+            // create and edit stay pages of their own.
             Route::get('/operatingsystem', AdminOperatingSystem::class)->name('admin.operatingsystem.index');
             Route::post('/operatingsystem/create', [OperatingSystemController::class, 'store'])->name('admin.operatingsystem.store');
             Route::get('/operatingsystem/create', [OperatingSystemController::class, 'create'])->name('admin.operatingsystem.create');
@@ -268,17 +268,17 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             Route::patch('/operatingsystem/{operatingSystem}', [OperatingSystemController::class, 'update'])->name('admin.operatingsystem.update');
         });
 
-        // Betroffene Geraete nach Kunde: Welcher Kunde hat wie viele Maschinen
-        // auf einem System, dessen Support endet? Gehoert zu den
-        // Betriebssystemen - dort steht das Support-Ende.
+        // Affected devices by customer: which customer has how many machines
+        // on a system whose support is ending? Belongs with the operating
+        // systems - that is where the support end stands.
         Route::get('/eol', [EolController::class, 'index'])
             ->middleware('can:admin_operatingsystem')->name('admin.eol.index');
 
-        // Die drei Kataloge teilen sich ein Recht: Wer Dienste pflegen darf,
-        // pflegt auch Mailbox-Anbieter und Rack-Einbauten - es ist dieselbe
-        // Art von Arbeit an denselben Auswahllisten.
+        // The three catalogs share one permission: whoever may maintain
+        // services also maintains mailbox providers and rack items - it is the
+        // same kind of work on the same select lists.
         Route::middleware('can:admin_catalog')->group(function () {
-            // Dienste-Katalog (Name und Farbe der Kacheln in den Geraetelisten)
+            // Service catalog (name and colour of the chips in the device lists)
             Route::get('/service', [ServiceController::class, 'index'])->name('admin.service.index');
             Route::post('/service/create', [ServiceController::class, 'store'])->name('admin.service.store');
             Route::get('/service/create', [ServiceController::class, 'create'])->name('admin.service.create');
@@ -293,7 +293,7 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             Route::get('/mailboxprovider/{mailboxprovider}/edit', [MailboxProviderController::class, 'edit'])->name('admin.mailboxprovider.edit');
             Route::patch('/mailboxprovider/{mailboxprovider}', [MailboxProviderController::class, 'update'])->name('admin.mailboxprovider.update');
 
-            // Rack-Katalog (passive Einbauten wie Patchfelder und Blindplatten)
+            // Rack catalog (passive items such as patch panels and blanking plates)
             Route::get('/rackcatalogitem', [RackCatalogItemController::class, 'index'])->name('admin.rackcatalogitem.index');
             Route::post('/rackcatalogitem/create', [RackCatalogItemController::class, 'store'])->name('admin.rackcatalogitem.store');
             Route::get('/rackcatalogitem/create', [RackCatalogItemController::class, 'create'])->name('admin.rackcatalogitem.create');
@@ -328,8 +328,8 @@ Route::middleware('auth')->get('/remote/{type}/{id}', RemoteConnectController::c
 Route::get('/customer/search', [CustomerController::class, 'search'])->name('customer.search');
 Route::get('/{customer}', [CustomerController::class, 'dashboard'])->name('customer.dashboard');
 Route::post('/{customer}/view-pdf', [CustomerController::class, 'viewPDF'])->name('customer.view-pdf');
-// Das fertige PDF abholen. Nur der Besteller darf es laden - es enthaelt alle
-// Zugangsdaten des Kunden.
+// Collect the finished PDF. Only the person who ordered it may load it - it
+// holds every credential of the customer.
 Route::get('/{customer}/pdf/{pdfExport}', [CustomerController::class, 'downloadPDF'])->name('customer.pdf-download');
 
 Route::middleware(['auth', 'isCustomer'])->group(function () {
@@ -339,7 +339,7 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             // Site
             Route::post('filter', [SiteController::class, 'filter'])->name('filter.site');
 
-            // IP-Plan je VLAN
+            // IP plan per VLAN
             Route::get('ip-plan', [IpPlanController::class, 'index'])->name('ipplan.index');
 
             // Logical network map per site
@@ -355,7 +355,7 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::get('checklists/{checklist}/ad-script', [ChecklistController::class, 'adScript'])->name('checklist.ad-script');
             Route::delete('checklists/{checklist}', [ChecklistController::class, 'destroy'])->name('checklist.destroy');
 
-            // Papierkorb
+            // Trash
             Route::get('trash', [TrashController::class, 'index'])->name('trash.index');
             Route::post('trash/{type}/{id}/restore', [TrashController::class, 'restore'])->name('trash.restore');
 
@@ -372,7 +372,7 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::get('agent/service-proxmox.sh', [AgentTokenController::class, 'serviceProxmox'])->name('agent.service.proxmox');
             Route::get('agent/service-linux.sh', [AgentTokenController::class, 'serviceLinux'])->name('agent.service.linux');
 
-            // Dokumentations-Assistent (geführte Erstaufnahme)
+            // Documentation wizard (guided initial survey)
             Route::get('wizard', [WizardController::class, 'index'])->name('wizard.index');
             Route::post('wizard/complete', [WizardController::class, 'complete'])->name('wizard.complete');
 
@@ -397,7 +397,7 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::resource('adgroup', ADGroupController::class)->only(['index']);
             Route::resource('loginwebsite', LoginWebsiteController::class)->only(['index']);
             Route::resource('logingeneral', LoginGeneralController::class)->only(['index']);
-            // Nur die Liste: Anlegen, Bearbeiten und Loeschen laufen ueber das Modal.
+            // The list only: create, edit and delete run through the modal.
             Route::get('sshkey', [SshKeyController::class, 'index'])->name('sshkey.index');
             Route::resource('phonesystem', PhoneSystemController::class)->only(['index']);
             Route::resource('phone', PhoneController::class)->only(['index']);
@@ -430,8 +430,8 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::resource('licenseaccess', LicenseAccessController::class, ['parameters' => ['licenseaccess' => 'licenseaccess']])->only(['index']);
 
             // File
-            // Die Liste als Livewire - Suche, Filter und Sortierung. Hochladen
-            // und Herunterladen bleiben beim Controller.
+            // The list as Livewire - search, filter and sorting. Upload and
+            // download stay with the controller.
             Route::get('file', [FileController::class, 'index'])->name('file.index');
             Route::post('file', [FileController::class, 'store'])->name('file.store');
             Route::delete('file/{file}', [FileController::class, 'destroy'])->name('file.destroy');

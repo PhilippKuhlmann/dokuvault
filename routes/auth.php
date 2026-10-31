@@ -19,8 +19,8 @@ Route::middleware('guest')->group(function () {
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
 
-    // Verschickt Mail und verraet ueber die Antwort, ob es den Nutzer gibt.
-    // Beides taugt zum Ausprobieren, also gedrosselt.
+    // Sends mail and gives away through the response whether the user
+    // exists. Both are worth trying out, so it is throttled.
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
         ->middleware('throttle:5,15')
         ->name('password.email');
@@ -28,18 +28,18 @@ Route::middleware('guest')->group(function () {
     Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
         ->name('password.reset');
 
-    // Hier laesst sich das Zuruecksetz-Token raten - dieselbe Bremse.
+    // The reset token can be guessed here - the same brake.
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->middleware('throttle:5,15')
         ->name('password.store');
 
-    // Einladung: Der neue Benutzer gibt sich sein Kennwort selbst. Gedrosselt
-    // wie das Zuruecksetzen - dahinter steckt derselbe ratbare Token.
+    // Invitation: the new user sets their own password. Throttled like the
+    // reset - the same guessable token is behind it.
     Route::get('invitation/{token}', [InvitationController::class, 'create'])
         ->name('invitation.form');
 
-    // Die Adresse hiess bis 31.10.2026 'einladung/{token}'. Verschickte
-    // Einladungen gelten eine Woche, ihre Links sollen nicht ins Leere laufen.
+    // The address was 'einladung/{token}' until 31 October 2026. Invitations
+    // already sent are valid for a week; their links must not lead nowhere.
     Route::permanentRedirect('einladung/{token}', 'invitation/{token}');
 
     Route::post('invitation', [InvitationController::class, 'store'])
@@ -55,9 +55,9 @@ Route::middleware('guest')->group(function () {
         ->middleware('throttle:5,15')
         ->name('setup.store');
 
-    // Zwischen Kennwort und Einmalcode ist der Nutzer nicht angemeldet -
-    // deshalb steht der zweite Schritt hier bei den Gaesten und nicht bei den
-    // angemeldeten Routen.
+    // Between password and one-time code the user is not signed in - hence
+    // the second step stands here with the guests and not with the
+    // authenticated routes.
     Route::get('two-factor-challenge', [TwoFactorChallengeController::class, 'create'])
         ->name('two-factor.login');
 
