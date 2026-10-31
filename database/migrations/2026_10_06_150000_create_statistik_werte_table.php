@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Daily figures for Admin -> Statistik (System, Datenwachstum): one value
- * per day, figure and customer, written by statistik:schnappschuss.
+ * per day, figure and customer, written by stats:snapshot.
  *
  * customer_id 0 instead of NULL for totals and system values: a unique
  * index treats NULLs as different, the same day could be written twice.

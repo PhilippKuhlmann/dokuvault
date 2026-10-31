@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
  * eingebaut ist. Ohne das muesste jede Geraeteliste selbst in rack_items
  * suchen.
  */
-trait IstEinbaubar
+trait IsMountable
 {
     public function rackItem(): MorphOne
     {

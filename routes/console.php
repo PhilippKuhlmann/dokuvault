@@ -88,4 +88,4 @@ Schedule::command('expiry:notify')->dailyAt('05:30');
 
 // Kennzahlen des Tages fuer Admin -> Statistik (System, Datenwachstum).
 // Nachts, nach dem Backup um 01:30 - dessen Groesse soll schon mitzaehlen.
-Schedule::command('statistik:schnappschuss')->dailyAt('02:30');
+Schedule::command('stats:snapshot')->dailyAt('02:30');

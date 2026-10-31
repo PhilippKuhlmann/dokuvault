@@ -7,7 +7,7 @@ use App\Http\Middleware\AuthenticateAgent;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\isAdmin;
 use App\Http\Middleware\isCustomer;
-use App\Http\Middleware\isTechniker;
+use App\Http\Middleware\IsTechnician;
 use App\Http\Middleware\PinRootUrl;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RecordApiRequest;
@@ -144,7 +144,7 @@ class Kernel extends HttpKernel
         'throttle' => ThrottleRequests::class,
         'verified' => EnsureEmailIsVerified::class,
         'isAdmin' => isAdmin::class,
-        'isTechniker' => isTechniker::class,
+        'IsTechnician' => IsTechnician::class,
         'isCustomer' => isCustomer::class,
         'agent' => AuthenticateAgent::class,
         'aktiv' => ZugangAktiv::class,

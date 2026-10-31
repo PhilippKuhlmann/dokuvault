@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * 90 days of history for Statistik -> System and Datenwachstum.
  *
- * The nightly snapshot (statistik:schnappschuss) only starts the history -
+ * The nightly snapshot (stats:snapshot) only starts the history -
  * a fresh demo showed "the history starts now" under every chart. Here
  * today's snapshot is taken and the days before are derived from it: the
  * documentation grew to today's state, steadily with the odd jump, as it
@@ -23,7 +23,7 @@ class DemoStatistikSeeder extends Seeder
 
     public function run(): void
     {
-        Artisan::call('statistik:schnappschuss');
+        Artisan::call('stats:snapshot');
 
         $heute = now()->toDateString();
         $stand = DB::table('statistik_werte')->where('datum', $heute)->get();

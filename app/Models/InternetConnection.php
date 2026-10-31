@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\TracksChanges;
-use App\Rules\IstNetz;
+use App\Rules\IsNetwork;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -82,7 +82,7 @@ class InternetConnection extends Model
             return null;
         }
 
-        $netz = ip2long(inet_ntop(IstNetz::networkAddress($roh, (int) $praefix)));
+        $netz = ip2long(inet_ntop(IsNetwork::networkAddress($roh, (int) $praefix)));
         $anzahl = 2 ** (32 - (int) $praefix);
 
         return long2ip($netz + 1).' – '.long2ip($netz + $anzahl - 2).' ('.($anzahl - 2).' '.__('Adressen').')';

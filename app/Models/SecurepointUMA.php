@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
-use App\Models\Concerns\IstEinbaubar;
+use App\Models\Concerns\IsMountable;
 use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,7 +17,7 @@ class SecurepointUMA extends Model
     use HasCredentials;
     use HasFactory, SoftDeletes;
     use HasIpAddresses;
-    use IstEinbaubar;
+    use IsMountable;
     use TracksChanges;
 
     protected $table = 'securepoint_umas';

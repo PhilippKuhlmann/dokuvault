@@ -130,7 +130,7 @@ Route::middleware('auth')
 // koennen, und auf der Demo ist der geteilte Zugang gesperrt.
 Route::post('/locale/{locale}', [LocaleController::class, 'update'])->name('locale.update');
 
-Route::middleware(['auth', 'isTechniker'])->group(function () {
+Route::middleware(['auth', 'IsTechnician'])->group(function () {
 
     // GlobalSearch
     Route::get('/remotesearch', RemoteSearch::class)->name('search.remote');

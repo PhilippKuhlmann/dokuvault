@@ -12,7 +12,7 @@ use Livewire\Component;
 /**
  * Admin -> Statistik -> Datenwachstum: how many servers, VMs, AD users ...
  * the documentation holds, and how that grew - in total and per customer.
- * From the daily snapshot (statistik:schnappschuss).
+ * From the daily snapshot (stats:snapshot).
  */
 class AdminDataGrowth extends Component
 {

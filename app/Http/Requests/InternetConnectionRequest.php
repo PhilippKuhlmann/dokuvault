@@ -3,8 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Rules\BelongsToCustomer;
-use App\Rules\IstNetz;
-use App\Rules\LiegtImNetz;
+use App\Rules\InNetwork;
+use App\Rules\IsNetwork;
 use Illuminate\Foundation\Http\FormRequest;
 
 class InternetConnectionRequest extends FormRequest
@@ -30,8 +30,8 @@ class InternetConnectionRequest extends FormRequest
             'pppoe_password' => 'nullable|max:255',
             // Optional: viele Anschluesse bringen zusaetzlich ein geroutetes
             // Netz mit, etwa ein /28 samt eigenem Gateway.
-            'subnet' => ['nullable', 'max:255', new IstNetz],
-            'subnet_gateway' => ['nullable', 'ip', new LiegtImNetz($this->input('subnet'))],
+            'subnet' => ['nullable', 'max:255', new IsNetwork],
+            'subnet_gateway' => ['nullable', 'ip', new InNetwork($this->input('subnet'))],
             'hotline' => 'max:255',
             'notes' => 'nullable',
         ];

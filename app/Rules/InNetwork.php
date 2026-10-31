@@ -12,7 +12,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
  * Gateway aus dem falschen Block - das faellt sonst erst auf, wenn jemand danach
  * sucht.
  */
-class LiegtImNetz implements ValidationRule
+class InNetwork implements ValidationRule
 {
     public function __construct(protected ?string $netz) {}
 
@@ -37,7 +37,7 @@ class LiegtImNetz implements ValidationRule
             return;
         }
 
-        if (IstNetz::networkAddress($adresse, (int) $praefix) !== IstNetz::networkAddress($netzRoh, (int) $praefix)) {
+        if (IsNetwork::networkAddress($adresse, (int) $praefix) !== IsNetwork::networkAddress($netzRoh, (int) $praefix)) {
             $fail('Die Adresse liegt nicht im angegebenen Netz '.$this->netz.'.');
         }
     }

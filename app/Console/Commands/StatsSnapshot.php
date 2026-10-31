@@ -14,9 +14,9 @@ use Illuminate\Support\Facades\Schema;
  * backups and disk (System). Run nightly; running it again on the same day
  * overwrites that day.
  */
-class StatistikSchnappschuss extends Command
+class StatsSnapshot extends Command
 {
-    protected $signature = 'statistik:schnappschuss';
+    protected $signature = 'stats:snapshot';
 
     protected $description = 'Kennzahlen des Tages fuer die Statistik speichern';
 

@@ -28,9 +28,9 @@ test('the nightly snapshot stores object counts per customer and in total, and s
     Server::factory()->count(2)->create(['customer_id' => $a->id, 'site_id' => $site->id, 'operating_system_id' => $os->id]);
     Server::factory()->create(['customer_id' => $b->id, 'site_id' => Site::factory()->create(['customer_id' => $b->id])->id, 'operating_system_id' => $os->id]);
 
-    $this->artisan('statistik:schnappschuss')->assertSuccessful();
+    $this->artisan('stats:snapshot')->assertSuccessful();
     // Same day again: overwritten, not doubled.
-    $this->artisan('statistik:schnappschuss')->assertSuccessful();
+    $this->artisan('stats:snapshot')->assertSuccessful();
 
     $server = DB::table('statistik_werte')->where('kennzahl', 'server')->pluck('wert', 'customer_id');
     expect((int) $server[$a->id])->toBe(2)
@@ -41,7 +41,7 @@ test('the nightly snapshot stores object counts per customer and in total, and s
 });
 
 test('all statistics pages open with the statistics right', function (string $komponente) {
-    $this->artisan('statistik:schnappschuss');
+    $this->artisan('stats:snapshot');
     $this->actingAs(userWithPermissions(['admin_statistik']));
 
     Livewire::test($komponente)->assertOk();

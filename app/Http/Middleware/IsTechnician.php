@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
-class isTechniker
+class IsTechnician
 {
     /**
      * Handle an incoming request.

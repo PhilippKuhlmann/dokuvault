@@ -11,7 +11,7 @@ use Livewire\Component;
 /**
  * Admin -> Statistik -> System: what the installation needs right now
  * (database, files, backups, disk, memory, queue) and how it developed -
- * from the daily snapshot (statistik:schnappschuss).
+ * from the daily snapshot (stats:snapshot).
  */
 class AdminSystem extends Component
 {

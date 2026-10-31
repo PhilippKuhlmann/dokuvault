@@ -13,7 +13,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
  * Meldung nennt die richtige, statt still zu korrigieren - eine stille Korrektur
  * waere in einer Dokumentation die schlechtere Antwort.
  */
-class IstNetz implements ValidationRule
+class IsNetwork implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
