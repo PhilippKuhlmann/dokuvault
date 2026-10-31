@@ -17,7 +17,7 @@ use Livewire\Livewire;
 
 /*
  * Admin -> Statistik: System, Datenwachstum, Agenten, Nutzung - all behind
- * the right "Statistik sehen" (admin_statistik).
+ * the right "Statistik sehen" (admin_stats).
  */
 
 test('the nightly snapshot stores object counts per customer and in total, and system values', function () {
@@ -42,7 +42,7 @@ test('the nightly snapshot stores object counts per customer and in total, and s
 
 test('all statistics pages open with the statistics right', function (string $komponente) {
     $this->artisan('stats:snapshot');
-    $this->actingAs(userWithPermissions(['admin_statistik']));
+    $this->actingAs(userWithPermissions(['admin_stats']));
 
     Livewire::test($komponente)->assertOk();
 })->with([AdminSystem::class, AdminDataGrowth::class, AdminAgentStats::class, AdminUsage::class]);
@@ -62,14 +62,14 @@ test('the agents page puts silent and outdated agents first', function () {
     AgentInstallation::checkin($token, 'proxmox', 'still-1', 'pve-still', null, AgentScript::installerVersion('linux-agent.sh'), ['proxmox']);
     AgentInstallation::where('machine_id', 'still-1')->update(['last_seen_at' => now()->subDay()]);
 
-    $this->actingAs(userWithPermissions(['admin_statistik']));
+    $this->actingAs(userWithPermissions(['admin_stats']));
     Livewire::test(AdminAgentStats::class)
         ->assertViewHas('summe', fn ($s) => $s['gesamt'] === 3 && $s['still'] === 1 && $s['veraltet'] === 1)
         ->assertViewHas('agenten', fn ($a) => $a->pluck('hostname')->all() === ['pve-still', 'pve-alt', 'pve-ok']);
 });
 
 test('the usage page counts sign-ins and changes', function () {
-    $this->actingAs(userWithPermissions(['admin_statistik']));
+    $this->actingAs(userWithPermissions(['admin_stats']));
     $customer = Customer::factory()->create();
     Domain::factory()->create(['customer_id' => $customer->id]);
 

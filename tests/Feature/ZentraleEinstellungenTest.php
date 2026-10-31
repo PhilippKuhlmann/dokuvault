@@ -82,7 +82,7 @@ test('statistics retention and the password brake are stored', function () {
 });
 
 test('the settings pages need the settings right', function () {
-    $this->actingAs(userWithPermissions(['admin_statistik']));
+    $this->actingAs(userWithPermissions(['admin_stats']));
 
     Livewire::test(AdminAgentSettings::class)->assertForbidden();
 });

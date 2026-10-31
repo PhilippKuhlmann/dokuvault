@@ -27,7 +27,7 @@ class AdminApiLoad extends Component
 
     public function mount(): void
     {
-        Gate::authorize('admin_statistik');
+        Gate::authorize('admin_stats');
 
         if (! array_key_exists($this->zeitraum, self::ZEITRAEUME)) {
             $this->zeitraum = '7d';
@@ -37,7 +37,7 @@ class AdminApiLoad extends Component
     public function render()
     {
         // Not only in mount(): the component keeps answering updates.
-        Gate::authorize('admin_statistik');
+        Gate::authorize('admin_stats');
 
         // Hours of the day in the display zone: "most load at 8" means 8
         // o'clock local time, not UTC. Stored is UTC (app.timezone).

@@ -123,11 +123,11 @@
             ['admin_apitoken', $adminPraefix.__('API-Token'), 'admin.apitoken'],
             ['admin_trash', $adminPraefix.__('Alle Kunden'), 'admin.trash'],
             ['admin_activity', $adminPraefix.__('Aktivitäten'), 'admin.activity.index'],
-            ['admin_statistik', $adminPraefix.__('Statistik').' · '.__('System'), 'admin.stats.system'],
-            ['admin_statistik', $adminPraefix.__('Statistik').' · '.__('API-Auslastung'), 'admin.api-load'],
-            ['admin_statistik', $adminPraefix.__('Statistik').' · '.__('Datenwachstum'), 'admin.stats.data-growth'],
-            ['admin_statistik', $adminPraefix.__('Statistik').' · '.__('Agenten'), 'admin.stats.agents'],
-            ['admin_statistik', $adminPraefix.__('Statistik').' · '.__('Nutzung'), 'admin.stats.usage'],
+            ['admin_stats', $adminPraefix.__('Statistik').' · '.__('System'), 'admin.stats.system'],
+            ['admin_stats', $adminPraefix.__('Statistik').' · '.__('API-Auslastung'), 'admin.api-load'],
+            ['admin_stats', $adminPraefix.__('Statistik').' · '.__('Datenwachstum'), 'admin.stats.data-growth'],
+            ['admin_stats', $adminPraefix.__('Statistik').' · '.__('Agenten'), 'admin.stats.agents'],
+            ['admin_stats', $adminPraefix.__('Statistik').' · '.__('Nutzung'), 'admin.stats.usage'],
         ]);
     }
 @endphp

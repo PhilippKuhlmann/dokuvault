@@ -78,7 +78,7 @@
 
             {{-- Own section: figures about the installation itself. More
                  pages follow here (as sub-items), not under the settings. --}}
-            @can('admin_statistik')
+            @can('admin_stats')
                 <x-aside.dropdown :label="__('Statistik')" svg="svg.chart" >
                     <x-slot:links>
                         <x-aside.dropdownlink :label="__('System')" href="{{ route('admin.stats.system') }}" />

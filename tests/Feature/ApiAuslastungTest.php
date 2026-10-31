@@ -46,7 +46,7 @@ test('the load page shows the figures and needs the statistics right', function 
     zaehle('api/agent/checkin');
     zaehle('api/agent/checkin');
 
-    $this->actingAs(userWithPermissions(['admin_statistik']));
+    $this->actingAs(userWithPermissions(['admin_stats']));
     Livewire::test(AdminApiLoad::class)
         ->assertOk()
         ->assertViewHas('summe', fn ($s) => $s['anzahl'] === 2 && $s['agent'] === 2)

@@ -16,13 +16,13 @@ class AdminAgentStats extends Component
 {
     public function mount(): void
     {
-        Gate::authorize('admin_statistik');
+        Gate::authorize('admin_stats');
     }
 
     public function render()
     {
         // Not only in mount(): the component keeps answering updates.
-        Gate::authorize('admin_statistik');
+        Gate::authorize('admin_stats');
 
         // Current version per kind: the Windows exe, for Linux/Proxmox the
         // shared installer (see AgentController::update).

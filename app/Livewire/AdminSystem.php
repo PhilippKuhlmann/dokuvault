@@ -17,13 +17,13 @@ class AdminSystem extends Component
 {
     public function mount(): void
     {
-        Gate::authorize('admin_statistik');
+        Gate::authorize('admin_stats');
     }
 
     public function render()
     {
         // Not only in mount(): the component keeps answering updates.
-        Gate::authorize('admin_statistik');
+        Gate::authorize('admin_stats');
 
         $verlauf = DB::table('statistik_werte')
             ->where('customer_id', 0)

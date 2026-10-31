@@ -1348,7 +1348,7 @@ return [
         'admin_activity' => 'Protokoll sehen',
         'admin_apitoken' => 'API-Token verwalten',
         'admin_backup' => 'Backups aller Kunden sehen',
-        'admin_statistik' => 'Statistik sehen',
+        'admin_stats' => 'Statistik sehen',
     ],
 
     /*

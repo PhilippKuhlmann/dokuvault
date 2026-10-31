@@ -26,7 +26,7 @@ class AdminDataGrowth extends Component
 
     public function mount(): void
     {
-        Gate::authorize('admin_statistik');
+        Gate::authorize('admin_stats');
         if (! array_key_exists($this->zeitraum, self::ZEITRAEUME)) {
             $this->zeitraum = '90';
         }
@@ -35,7 +35,7 @@ class AdminDataGrowth extends Component
     public function render()
     {
         // Not only in mount(): the component keeps answering updates.
-        Gate::authorize('admin_statistik');
+        Gate::authorize('admin_stats');
 
         $arten = collect(config('custom.trashables'))->mapWithKeys(fn ($e, $slug) => [$slug => $e[1]]);
         if (! $arten->has($this->kennzahl)) {

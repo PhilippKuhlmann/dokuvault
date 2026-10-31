@@ -201,8 +201,8 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
         // Statistik: requests to the API per hour - when the load comes,
         // whether the server keeps up. Own right, more pages follow.
         Route::get('/api-load', AdminApiLoad::class)
-            ->middleware('can:admin_statistik')->name('admin.api-load');
-        Route::middleware('can:admin_statistik')->prefix('stats')->group(function () {
+            ->middleware('can:admin_stats')->name('admin.api-load');
+        Route::middleware('can:admin_stats')->prefix('stats')->group(function () {
             Route::get('/system', AdminSystem::class)->name('admin.stats.system');
             Route::get('/data-growth', AdminDataGrowth::class)->name('admin.stats.data-growth');
             Route::get('/agents', AdminAgentStats::class)->name('admin.stats.agents');
