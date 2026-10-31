@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Requests\Concerns\ValidiertBeschaffung;
+use App\Http\Requests\Concerns\ValidatesProcurement;
 use App\Models\Setting;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Foundation\Http\FormRequest;
@@ -10,7 +10,7 @@ use Illuminate\Validation\Rule;
 
 class ServerRequest extends FormRequest
 {
-    use ValidiertBeschaffung;
+    use ValidatesProcurement;
 
     /**
      * Determine if the user is authorized to make this request.

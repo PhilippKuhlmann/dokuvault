@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Concerns\PflegtBilder;
+use App\Http\Controllers\Concerns\ManagesImages;
 use App\Http\Requests\RackCatalogItemRequest;
 use App\Models\RackCatalogItem;
 use App\Models\Setting;
@@ -16,7 +16,7 @@ use App\Models\Setting;
  */
 class RackCatalogItemController extends Controller
 {
-    use PflegtBilder;
+    use ManagesImages;
 
     public function index()
     {

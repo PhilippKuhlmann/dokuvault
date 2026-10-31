@@ -18,13 +18,13 @@ use Illuminate\Support\Facades\Storage;
  *   BILDORDNER    Ordner auf der local-Disk
  *   BILDROUTE     Name der Route, die das Bild ausliefert
  */
-trait HatBild
+trait HasImage
 {
     /**
      * Sonst bliebe zu jedem geloeschten Eintrag eine Datei liegen, die
      * niemand mehr findet.
      */
-    public static function bootHatBild(): void
+    public static function bootHasImage(): void
     {
         static::deleting(fn ($eintrag) => $eintrag->bildLoeschen());
     }

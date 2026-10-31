@@ -19,7 +19,7 @@ use Illuminate\Http\Request;
  * Die Einträge laufen mit derselben Aufbewahrungsfrist ab wie der Rest des
  * Protokolls - siehe den Adminbereich unter "Protokoll".
  */
-class AnmeldungProtokollieren
+class LogLogin
 {
     public function __construct(private Request $request) {}
 

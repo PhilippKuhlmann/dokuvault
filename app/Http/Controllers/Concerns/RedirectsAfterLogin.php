@@ -13,7 +13,7 @@ use Illuminate\Http\RedirectResponse;
  * Kennwort und - bei eingeschalteter zweiter Stufe - die mit dem Einmalcode.
  * Beide muessen dasselbe Ziel treffen.
  */
-trait LeitetNachAnmeldungWeiter
+trait RedirectsAfterLogin
 {
     protected function nachDerAnmeldung(): RedirectResponse
     {

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\HatBild;
+use App\Models\Concerns\HasImage;
 use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Model;
 class RackCatalogItem extends Model
 {
     use HasFactory;
-    use HatBild;
+    use HasImage;
     use TracksChanges;
 
     /** Ordner auf der local-Disk und Route, die das Bild ausliefert - siehe HatBild. */

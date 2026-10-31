@@ -155,7 +155,7 @@ test('die Frist gilt fuer Protokoll und Kennwoerter zusammen', function () {
     DB::table('password_histories')->where('id', $alt->id)->update(['created_at' => now()->subDays(100)]);
     DB::table('activity_log')->update(['created_at' => now()->subDays(100)]);
 
-    $this->artisan('protokoll:aufraeumen')->assertSuccessful();
+    $this->artisan('activity:prune')->assertSuccessful();
 
     // Bliebe die Historie stehen, waeren die alten Werte laenger da als der
     // Eintrag, der auf sie verweist.
@@ -173,7 +173,7 @@ test('ohne Frist bleibt das Protokoll unangetastet', function () {
     DB::table('password_histories')->update(['created_at' => now()->subYears(5)]);
 
     // Ein Protokoll, das sich ungefragt selbst leert, waere keines mehr.
-    $this->artisan('protokoll:aufraeumen')->assertSuccessful();
+    $this->artisan('activity:prune')->assertSuccessful();
 
     expect(PasswordHistory::count())->toBe(1);
     expect(Activity::count())->toBeGreaterThan(0);

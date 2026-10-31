@@ -12,7 +12,7 @@ use Illuminate\Notifications\Notification;
  *
  * Without ShouldQueue: the user is waiting for it on the profile page.
  */
-class ZweiteStufeCode extends Notification
+class TwoFactorCode extends Notification
 {
     public function __construct(public readonly string $code) {}
 

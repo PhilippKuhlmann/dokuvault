@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
-use App\Models\Concerns\HatBeschaffung;
+use App\Models\Concerns\HasProcurement;
 use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,7 +15,7 @@ class Scanner extends Model
     use HasCredentials;
     use HasFactory, SoftDeletes;
     use HasIpAddresses;
-    use HatBeschaffung;
+    use HasProcurement;
     use TracksChanges;
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];

@@ -4,8 +4,8 @@ use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\TwoFactorController;
 use App\Models\Customer;
 use App\Models\User;
-use App\Notifications\ZweiteStufeCode;
-use App\Notifications\ZweiteStufeEingerichtet;
+use App\Notifications\TwoFactorCode;
+use App\Notifications\TwoFactorEnabled;
 use App\Support\TwoFactor;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -516,7 +516,7 @@ function einrichtungMitMail(User $nutzer): string
     test()->actingAs($nutzer)->post(route('two-factor.begin'));
 
     $code = null;
-    Notification::assertSentTo($nutzer, ZweiteStufeCode::class, function ($mail) use (&$code) {
+    Notification::assertSentTo($nutzer, TwoFactorCode::class, function ($mail) use (&$code) {
         $code = $mail->code;
 
         return true;
@@ -541,7 +541,7 @@ test('mit E-Mail-Adresse braucht die Einrichtung den Code aus der Mail', functio
     $this->post(route('two-factor.confirm'), ['code' => gueltigerCode($geheimnis), 'mail_code' => $code]);
 
     expect($nutzer->fresh()->hatZweiteStufe())->toBeTrue();
-    Notification::assertSentTo($nutzer, ZweiteStufeEingerichtet::class);
+    Notification::assertSentTo($nutzer, TwoFactorEnabled::class);
 });
 
 test('der Code aus der Mail läuft ab', function () {

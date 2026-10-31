@@ -21,7 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
  * second factor was required would otherwise keep working. There the answer
  * is a 403 - an app or script cannot set up the second factor anyway.
  */
-class VerlangtZweiteStufe
+class RequireTwoFactor
 {
     /**
      * Wege, die offen bleiben muessen - sonst kaeme der Nutzer nicht einmal

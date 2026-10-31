@@ -69,7 +69,7 @@ Schedule::command('pdf:purge')->hourlyAt($demo ? 20 : 0);
 // Das Protokoll nach der eingestellten Frist kuerzen, samt der daran
 // haengenden Kennwoerter. Taeglich, nicht stuendlich: Die Frist wird in Tagen
 // angegeben, eine Stunde Genauigkeit waere geheuchelte Praezision.
-Schedule::command('protokoll:aufraeumen')->dailyAt('03:40');
+Schedule::command('activity:prune')->dailyAt('03:40');
 
 // API-Statistik (Admin -> Auslastung) nach der eingestellten Frist (Standard
 // 90 Tage, Einstellungen -> Fristen) loeschen: Fuer die Frage

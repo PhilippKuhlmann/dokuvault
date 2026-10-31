@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Exceptions\ZuVieleKennwortabrufe;
+use App\Exceptions\TooManyPasswordReveals;
 use App\Models\CredentialLink;
 use App\Support\PasswordReveal;
 use Livewire\Attributes\Locked;
@@ -83,7 +83,7 @@ class KennwortFeld extends Component
 
         try {
             return app(PasswordReveal::class)->ausVerknuepfung($link, auth()->user());
-        } catch (ZuVieleKennwortabrufe $bremse) {
+        } catch (TooManyPasswordReveals $bremse) {
             $this->addError('kennwort', $bremse->getMessage());
 
             return null;

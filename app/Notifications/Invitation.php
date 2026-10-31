@@ -14,7 +14,7 @@ use Illuminate\Notifications\Notification;
  * soll sofort erfahren, ob die Mail hinausging - und nicht erst der Benutzer,
  * der drei Tage lang auf nichts wartet.
  */
-class Einladung extends Notification
+class Invitation extends Notification
 {
     public function __construct(private string $token) {}
 

@@ -2,13 +2,13 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Requests\Concerns\ValidiertBeschaffung;
+use App\Http\Requests\Concerns\ValidatesProcurement;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Foundation\Http\FormRequest;
 
 class PrinterRequest extends FormRequest
 {
-    use ValidiertBeschaffung;
+    use ValidatesProcurement;
 
     /**
      * Determine if the user is authorized to make this request.

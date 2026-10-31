@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Exceptions\ZuVieleKennwortabrufe;
+use App\Exceptions\TooManyPasswordReveals;
 use App\Support\PasswordReveal;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -84,7 +84,7 @@ class GeheimFeld extends Component
     {
         try {
             return app(PasswordReveal::class)->ausFeld($this->modell, $this->id, $this->feld, auth()->user());
-        } catch (ZuVieleKennwortabrufe $bremse) {
+        } catch (TooManyPasswordReveals $bremse) {
             $this->addError('kennwort', $bremse->getMessage());
 
             return null;

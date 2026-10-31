@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\API\Mobile;
 
 use App\Http\Controllers\Controller;
-use App\Jobs\KundenPdfErzeugen;
+use App\Jobs\GenerateCustomerPdf;
 use App\Models\Customer;
 use App\Models\PdfExport;
 use Illuminate\Http\JsonResponse;
@@ -54,7 +54,7 @@ class PdfController extends Controller
                 'status' => PdfExport::OFFEN,
             ]);
 
-            KundenPdfErzeugen::dispatch($auftrag->id);
+            GenerateCustomerPdf::dispatch($auftrag->id);
         }
 
         return response()->json(['auftrag' => $this->form($auftrag)]);

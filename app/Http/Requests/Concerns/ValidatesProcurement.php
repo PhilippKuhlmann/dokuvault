@@ -10,7 +10,7 @@ namespace App\Http\Requests\Concerns;
  * Eingebunden wird das per Spread in rules() bzw. attributes(), damit der
  * jeweilige Request seine eigenen Regeln behaelt.
  */
-trait ValidiertBeschaffung
+trait ValidatesProcurement
 {
     protected function beschaffungRegeln(): array
     {

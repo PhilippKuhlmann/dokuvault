@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
  * ersetzen, entfernen, ausliefern. Das Model bringt Ordner und Route mit
  * (siehe App\Models\Concerns\HatBild), hier steht der Weg dorthin.
  */
-trait PflegtBilder
+trait ManagesImages
 {
     /**
      * Die geprueften Werte ohne die Upload-Felder - die gehoeren nicht in die

@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Jobs\KundenPdfErzeugen;
+use App\Jobs\GenerateCustomerPdf;
 use App\Livewire\Concerns\GehoertZumKunden;
 use App\Models\Customer;
 use App\Models\PdfExport;
@@ -49,7 +49,7 @@ class PdfExportStatus extends Component
             'status' => PdfExport::OFFEN,
         ]);
 
-        KundenPdfErzeugen::dispatch($export->id);
+        GenerateCustomerPdf::dispatch($export->id);
 
         $this->dispatch('hinweis', text: __('PDF wird erstellt.'));
     }

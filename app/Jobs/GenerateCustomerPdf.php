@@ -20,7 +20,7 @@ use Throwable;
  * Sekunden. Im Request hiess das erst eine Fehlerseite (Speicher), dann ein
  * Rennen gegen das Zeitlimit von Webserver und PHP. Hier stoert beides nicht.
  */
-class KundenPdfErzeugen implements ShouldQueue
+class GenerateCustomerPdf implements ShouldQueue
 {
     use Queueable;
 

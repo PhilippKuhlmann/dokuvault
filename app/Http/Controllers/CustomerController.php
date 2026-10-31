@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CustomerRequest;
-use App\Jobs\KundenPdfErzeugen;
+use App\Jobs\GenerateCustomerPdf;
 use App\Models\Customer;
 use App\Models\DocumentationRun;
 use App\Models\PdfExport;
@@ -137,7 +137,7 @@ class CustomerController extends Controller
                 'status' => PdfExport::OFFEN,
             ]);
 
-            KundenPdfErzeugen::dispatch($export->id);
+            GenerateCustomerPdf::dispatch($export->id);
         }
 
         return back()->with('success', __('PDF wird erstellt — der Stand steht auf dieser Seite.'));

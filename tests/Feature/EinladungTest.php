@@ -2,7 +2,7 @@
 
 use App\Models\Role;
 use App\Models\User;
-use App\Notifications\Einladung;
+use App\Notifications\Invitation;
 use App\Support\LocalTime;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Hash;
@@ -42,7 +42,7 @@ test('ein eingeladener Benutzer entsteht ohne Kennwort vom Administrator', funct
 
     expect($neu)->not->toBeNull();
 
-    Notification::assertSentTo($neu, Einladung::class);
+    Notification::assertSentTo($neu, Invitation::class);
 });
 
 test('das gesetzte Zufallskennwort ist keins, mit dem man hereinkommt', function () {
@@ -87,7 +87,7 @@ test('der Link führt auf ein Formular, in dem der Benutzer sein Kennwort vergib
     $neu = User::where('username', 'neue.kollegin')->first();
 
     $token = null;
-    Notification::assertSentTo($neu, Einladung::class, function ($benachrichtigung) use (&$token, $neu) {
+    Notification::assertSentTo($neu, Invitation::class, function ($benachrichtigung) use (&$token, $neu) {
         // Den Token aus dem Link ziehen, den der Benutzer wirklich bekommt.
         $nachricht = $benachrichtigung->toMail($neu);
         preg_match('#/invitation/([^?]+)#', $nachricht->actionUrl, $treffer);
@@ -149,7 +149,7 @@ test('ein Administrator kann die Einladung erneut schicken', function () {
     $this->post(route('admin.user.invite', $nutzer))
         ->assertRedirect(route('admin.user.edit', $nutzer));
 
-    Notification::assertSentTo($nutzer->fresh(), Einladung::class);
+    Notification::assertSentTo($nutzer->fresh(), Invitation::class);
 });
 
 test('ohne Adresse sagt das erneute Einladen, woran es liegt', function () {

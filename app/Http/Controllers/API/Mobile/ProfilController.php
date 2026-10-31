@@ -5,8 +5,8 @@ namespace App\Http\Controllers\API\Mobile;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Notifications\EmailChanged;
-use App\Notifications\ZweiteStufeCode;
-use App\Notifications\ZweiteStufeEingerichtet;
+use App\Notifications\TwoFactorCode;
+use App\Notifications\TwoFactorEnabled;
 use App\Support\Changelog;
 use App\Support\TwoFactor;
 use Illuminate\Contracts\Encryption\DecryptException;
@@ -142,7 +142,7 @@ class ProfilController extends Controller
             $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
             try {
-                $nutzer->notify(new ZweiteStufeCode($code));
+                $nutzer->notify(new TwoFactorCode($code));
             } catch (Throwable $fehler) {
                 report($fehler);
 
@@ -221,7 +221,7 @@ class ProfilController extends Controller
 
         if ($nutzer->email) {
             try {
-                $nutzer->notify(new ZweiteStufeEingerichtet);
+                $nutzer->notify(new TwoFactorEnabled);
             } catch (Throwable $fehler) {
                 // Eingerichtet ist eingerichtet - eine gescheiterte
                 // Hinweismail darf das nicht rueckgaengig machen.

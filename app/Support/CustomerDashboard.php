@@ -7,7 +7,7 @@ use App\Models\AgentToken;
 use App\Models\Backup;
 use App\Models\Certificate;
 use App\Models\Computer;
-use App\Models\Concerns\HatBeschaffung;
+use App\Models\Concerns\HasProcurement;
 use App\Models\ContactPerson;
 use App\Models\Customer;
 use App\Models\LicenseSoftware;
@@ -338,7 +338,7 @@ class CustomerDashboard
     private function beschaffungsarten(): Collection
     {
         return collect(config('custom.trashables'))
-            ->filter(fn ($eintrag, $slug) => in_array(HatBeschaffung::class, class_uses_recursive($eintrag[0]), true)
+            ->filter(fn ($eintrag, $slug) => in_array(HasProcurement::class, class_uses_recursive($eintrag[0]), true)
                 && $this->darf($slug));
     }
 

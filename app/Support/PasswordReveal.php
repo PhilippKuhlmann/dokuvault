@@ -2,7 +2,7 @@
 
 namespace App\Support;
 
-use App\Exceptions\ZuVieleKennwortabrufe;
+use App\Exceptions\TooManyPasswordReveals;
 use App\Models\CredentialLink;
 use App\Models\PasswordHistory;
 use App\Models\Setting;
@@ -153,7 +153,7 @@ class PasswordReveal
         $schluessel = 'kennwort-ansehen:'.$nutzer->id;
 
         if (RateLimiter::tooManyAttempts($schluessel, Setting::kennwortAbrufe())) {
-            throw new ZuVieleKennwortabrufe(RateLimiter::availableIn($schluessel));
+            throw new TooManyPasswordReveals(RateLimiter::availableIn($schluessel));
         }
 
         RateLimiter::hit($schluessel, 60);

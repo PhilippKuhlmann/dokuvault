@@ -7,7 +7,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /** Goes out after the second factor was set up - so the owner notices one they did not set up. */
-class ZweiteStufeEingerichtet extends Notification
+class TwoFactorEnabled extends Notification
 {
     /**
      * @return array<int, string>

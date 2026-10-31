@@ -1,6 +1,6 @@
 <?php
 
-use App\Jobs\KundenPdfErzeugen;
+use App\Jobs\GenerateCustomerPdf;
 use App\Models\Customer;
 use App\Models\PdfExport;
 use Illuminate\Support\Facades\Queue;
@@ -29,7 +29,7 @@ test('bestellen legt einen Auftrag an und stellt ihn in die Warteschlange', func
     expect($antwort->json('auftrag.status'))->toBe(PdfExport::OFFEN);
     expect($antwort->json('auftrag.laeuft_noch'))->toBeTrue();
     expect($antwort->json('auftrag.fertig'))->toBeFalse();
-    Queue::assertPushed(KundenPdfErzeugen::class);
+    Queue::assertPushed(GenerateCustomerPdf::class);
 });
 
 /** Wer zweimal tippt, soll nicht zweimal denselben Berg Arbeit ausloesen. */
@@ -43,7 +43,7 @@ test('ein zweiter Auftrag entsteht nicht, solange einer läuft', function () {
 
     expect($zweiter->json('auftrag.id'))->toBe($erster->json('auftrag.id'));
     expect(PdfExport::count())->toBe(1);
-    Queue::assertPushed(KundenPdfErzeugen::class, 1);
+    Queue::assertPushed(GenerateCustomerPdf::class, 1);
 });
 
 test('ohne das Recht gibt es kein PDF', function () {

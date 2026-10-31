@@ -15,14 +15,14 @@ use Illuminate\Database\Eloquent\Builder;
  * neuer Geraetetyp mit einer Zeile dabei, ohne dass eine zweite Liste gepflegt
  * werden muss.
  */
-trait HatBeschaffung
+trait HasProcurement
 {
     /**
      * Laravel ruft initialize<TraitName> im Konstruktor auf. mergeCasts statt
      * eines $casts-Arrays im Model: Die meisten Geraete haben schon eigene
      * Casts, die hier nicht ueberschrieben werden duerfen.
      */
-    public function initializeHatBeschaffung(): void
+    public function initializeHasProcurement(): void
     {
         $this->mergeCasts([
             'purchase_date' => 'date',

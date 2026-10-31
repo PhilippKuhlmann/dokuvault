@@ -2,11 +2,11 @@
 
 use App\Models\Setting;
 use App\Models\User;
-use App\Notifications\Einladung;
+use App\Notifications\Invitation;
 
 function gerenderteEinladung(User $nutzer): string
 {
-    return (new Einladung('probe-token'))->toMail($nutzer)->render();
+    return (new Invitation('probe-token'))->toMail($nutzer)->render();
 }
 
 test('die Mail trägt die Farben der Anwendung', function () {

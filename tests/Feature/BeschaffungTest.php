@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\Computer;
-use App\Models\Concerns\HatBeschaffung;
+use App\Models\Concerns\HasProcurement;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
 use App\Models\Server;
@@ -26,7 +26,7 @@ test('jede Hardware-Tabelle hat die Beschaffungsspalten', function () {
             }
         }
 
-        if (! in_array(HatBeschaffung::class, class_uses_recursive($klasse), true)) {
+        if (! in_array(HasProcurement::class, class_uses_recursive($klasse), true)) {
             $ohne[] = "$klasse ohne HatBeschaffung";
         }
     }

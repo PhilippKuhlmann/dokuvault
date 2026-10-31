@@ -2,13 +2,13 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Requests\Concerns\ValidiertBeschaffung;
+use App\Http\Requests\Concerns\ValidatesProcurement;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpsRequest extends FormRequest
 {
-    use ValidiertBeschaffung;
+    use ValidatesProcurement;
 
     public function authorize(): bool
     {

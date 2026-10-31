@@ -14,6 +14,7 @@ use App\Http\Middleware\RecordApiRequest;
 use App\Http\Middleware\RecordDemoUsage;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\RedirectToInitialSetup;
+use App\Http\Middleware\RequireTwoFactor;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\SicherheitsHeader;
 use App\Http\Middleware\TrimStrings;
@@ -21,7 +22,6 @@ use App\Http\Middleware\TrustHosts;
 use App\Http\Middleware\TrustProxies;
 use App\Http\Middleware\ValidateSignature;
 use App\Http\Middleware\VerifyCsrfToken;
-use App\Http\Middleware\VerlangtZweiteStufe;
 use App\Http\Middleware\ZugangAktiv;
 use Illuminate\Auth\Middleware\AuthenticateWithBasicAuth;
 use Illuminate\Auth\Middleware\Authorize;
@@ -93,7 +93,7 @@ class Kernel extends HttpKernel
             // Wer die zweite Stufe einrichten muss, kommt bis dahin nur ins
             // eigene Profil. Ebenfalls in der Gruppe, sonst waere ueber
             // Livewire weiterhin alles erreichbar.
-            VerlangtZweiteStufe::class,
+            RequireTwoFactor::class,
 
             // Nach StartSession: braucht Session und angemeldeten Nutzer.
             SetLocale::class,

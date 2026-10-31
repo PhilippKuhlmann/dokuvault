@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Notifications\ZweiteStufeCode;
-use App\Notifications\ZweiteStufeEingerichtet;
+use App\Notifications\TwoFactorCode;
+use App\Notifications\TwoFactorEnabled;
 use App\Support\TwoFactor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -56,7 +56,7 @@ class TwoFactorController extends Controller
             $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
             try {
-                $request->user()->notify(new ZweiteStufeCode($code));
+                $request->user()->notify(new TwoFactorCode($code));
             } catch (Throwable $fehler) {
                 report($fehler);
 
@@ -156,7 +156,7 @@ class TwoFactorController extends Controller
 
         if ($request->user()->email) {
             try {
-                $request->user()->notify(new ZweiteStufeEingerichtet);
+                $request->user()->notify(new TwoFactorEnabled);
             } catch (Throwable $fehler) {
                 // The setup itself worked - a failed info mail must not undo it.
                 report($fehler);

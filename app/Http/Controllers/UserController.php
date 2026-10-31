@@ -7,7 +7,7 @@ use App\Models\Customer;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
-use App\Notifications\Einladung;
+use App\Notifications\Invitation;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -87,7 +87,7 @@ class UserController extends Controller
         try {
             $token = Password::broker('invitation')->createToken($user);
 
-            $user->notify(new Einladung($token));
+            $user->notify(new Invitation($token));
 
             // saveQuietly: Eine verschickte Einladung ist kein Aenderungs-
             // eintrag am Benutzer wert - im Protokoll stuende sonst neben

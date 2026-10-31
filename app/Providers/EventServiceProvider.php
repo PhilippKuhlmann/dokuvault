@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Listeners\AnmeldungProtokollieren;
+use App\Listeners\LogLogin;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Auth\Events\Login;
@@ -26,15 +26,15 @@ class EventServiceProvider extends ServiceProvider
         // Wer sich anmeldet, woher, und wer es vergeblich versucht - siehe
         // AnmeldungProtokollieren.
         Login::class => [
-            [AnmeldungProtokollieren::class, 'handleLogin'],
+            [LogLogin::class, 'handleLogin'],
         ],
 
         Failed::class => [
-            [AnmeldungProtokollieren::class, 'handleFailed'],
+            [LogLogin::class, 'handleFailed'],
         ],
 
         Lockout::class => [
-            [AnmeldungProtokollieren::class, 'handleLockout'],
+            [LogLogin::class, 'handleLockout'],
         ],
     ];
 

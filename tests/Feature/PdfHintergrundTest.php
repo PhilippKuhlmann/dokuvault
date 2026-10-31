@@ -1,6 +1,6 @@
 <?php
 
-use App\Jobs\KundenPdfErzeugen;
+use App\Jobs\GenerateCustomerPdf;
 use App\Livewire\PdfExportStatus;
 use App\Models\Customer;
 use App\Models\PdfExport;
@@ -27,7 +27,7 @@ test('der Klick legt einen Auftrag an statt zu rendern', function () {
         ->call('starten')
         ->assertDispatched('hinweis');
 
-    Queue::assertPushed(KundenPdfErzeugen::class);
+    Queue::assertPushed(GenerateCustomerPdf::class);
     expect(PdfExport::where('customer_id', $customer->id)->sole()->status)->toBe(PdfExport::OFFEN);
 });
 
@@ -41,7 +41,7 @@ test('ein zweiter Klick erzeugt keinen zweiten Auftrag', function () {
     $komponente->call('starten')->call('starten');
 
     expect(PdfExport::where('customer_id', $customer->id)->count())->toBe(1);
-    Queue::assertPushed(KundenPdfErzeugen::class, 1);
+    Queue::assertPushed(GenerateCustomerPdf::class, 1);
 });
 
 test('der Job erzeugt die Datei und haelt den Stand fest', function () {
@@ -52,7 +52,7 @@ test('der Job erzeugt die Datei und haelt den Stand fest', function () {
         'customer_id' => $customer->id, 'user_id' => auth()->id(), 'status' => PdfExport::OFFEN,
     ]);
 
-    (new KundenPdfErzeugen($export->id))->handle();
+    (new GenerateCustomerPdf($export->id))->handle();
 
     $export->refresh();
 
@@ -70,7 +70,7 @@ test('nur der Besteller darf das PDF laden', function () {
     $export = PdfExport::create([
         'customer_id' => $customer->id, 'user_id' => $besteller->id, 'status' => PdfExport::OFFEN,
     ]);
-    (new KundenPdfErzeugen($export->id))->handle();
+    (new GenerateCustomerPdf($export->id))->handle();
 
     $this->get(route('customer.pdf-download', [$customer, $export]))->assertOk();
 

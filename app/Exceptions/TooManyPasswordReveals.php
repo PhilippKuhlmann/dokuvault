@@ -11,7 +11,7 @@ use RuntimeException;
  * Die Felder im Browser fangen sie und zeigen die Meldung am Feld. Ueber die
  * Schnittstelle wird daraus ein 429 mit derselben Meldung.
  */
-class ZuVieleKennwortabrufe extends RuntimeException
+class TooManyPasswordReveals extends RuntimeException
 {
     public function __construct(public readonly int $sekunden)
     {

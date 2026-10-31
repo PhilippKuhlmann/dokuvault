@@ -17,9 +17,9 @@ use Spatie\Activitylog\Models\Activity;
  * eine Kennwortaenderung zu zeigen hat. Bliebe die Historie stehen, waeren die
  * alten Werte laenger da als der Eintrag, der auf sie verweist.
  */
-class ProtokollAufraeumen extends Command
+class PruneActivityLog extends Command
 {
-    protected $signature = 'protokoll:aufraeumen {--vorschau : Nur zeigen, was geloescht wuerde}';
+    protected $signature = 'activity:prune {--preview : Nur zeigen, was geloescht wuerde}';
 
     protected $description = 'Loescht Protokolleintraege und die daran haengenden Kennwoerter nach der eingestellten Frist';
 
@@ -41,7 +41,7 @@ class ProtokollAufraeumen extends Command
         $anzahlEintraege = $eintraege->count();
         $anzahlKennwoerter = $kennwoerter->count();
 
-        if ($this->option('vorschau')) {
+        if ($this->option('preview')) {
             $this->info($anzahlEintraege.' Einträge und '.$anzahlKennwoerter.' bisherige Kennwörter wären älter als '.$tage.' Tage.');
 
             return self::SUCCESS;

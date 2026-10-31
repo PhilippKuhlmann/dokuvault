@@ -636,7 +636,7 @@ class AgentController extends Controller
      * anything. The token is the one the service authenticated with - the
      * plain value is only known here because it came in the header.
      *
-     * Only agents the service can run unattended (AgentSkript::fuerDienst);
+     * Only agents the service can run unattended (AgentScript::fuerDienst);
      * everything else is a 404, not a hint that it exists.
      */
     public function script(Request $request, string $agent)

@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Exceptions\ZuVieleKennwortabrufe;
+use App\Exceptions\TooManyPasswordReveals;
 use App\Models\PasswordHistory;
 use App\Support\PasswordReveal;
 use Illuminate\Support\Facades\Gate;
@@ -50,7 +50,7 @@ class ProtokollKennwort extends Component
                 ->filter(fn ($eintrag) => $eintrag['wert'] !== null)
                 ->values()
                 ->all();
-        } catch (ZuVieleKennwortabrufe $bremse) {
+        } catch (TooManyPasswordReveals $bremse) {
             $this->addError('kennwort', $bremse->getMessage());
 
             return;

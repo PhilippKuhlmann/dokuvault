@@ -5,11 +5,11 @@ use App\Http\Controllers\API\AgentController;
 use App\Http\Controllers\API\ChecklistReportController;
 use App\Http\Controllers\API\CustomerController;
 use App\Http\Controllers\API\Mobile\AgentController as MobileAgentController;
-use App\Http\Controllers\API\Mobile\AnmeldungController;
 use App\Http\Controllers\API\Mobile\ChecklistController as MobileChecklistController;
 use App\Http\Controllers\API\Mobile\DashboardController as MobileDashboardController;
 use App\Http\Controllers\API\Mobile\DatenController;
 use App\Http\Controllers\API\Mobile\DeviceController;
+use App\Http\Controllers\API\Mobile\LoginController;
 use App\Http\Controllers\API\Mobile\NetworkController as MobileNetworkController;
 use App\Http\Controllers\API\Mobile\NetworkMapController as MobileNetworkMapController;
 use App\Http\Controllers\API\Mobile\ObjectController;
@@ -22,8 +22,8 @@ use App\Http\Controllers\API\Mobile\WizardController as MobileWizardController;
 use App\Http\Controllers\API\ServerController;
 use App\Http\Controllers\API\SiteController;
 use App\Http\Middleware\RequireIntegrationToken;
+use App\Http\Middleware\RequireTwoFactor;
 use App\Http\Middleware\SetLocale;
-use App\Http\Middleware\VerlangtZweiteStufe;
 use App\Models\Accesspoint;
 use App\Models\Server;
 use App\Models\Site;
@@ -45,7 +45,7 @@ use Illuminate\Support\Facades\Route;
 // aufgeloest haben, sonst sieht die Middleware niemanden und laesst alles
 // durch. Damit arbeitet das Script eines gesperrten Benutzers nicht weiter -
 // die Agent-Token oben haengen an keinem Benutzer und bleiben unberuehrt.
-Route::middleware(['auth:sanctum', 'aktiv', VerlangtZweiteStufe::class])->get('/user', function (Request $request) {
+Route::middleware(['auth:sanctum', 'aktiv', RequireTwoFactor::class])->get('/user', function (Request $request) {
     return $request->user();
 });
 
@@ -84,13 +84,13 @@ Route::post('/checklist-report', ChecklistReportController::class)->middleware('
 // aufhebt.
 Route::prefix('mobile')->group(function () {
     Route::middleware(SetLocale::class)->group(function () {
-        Route::post('/login', [AnmeldungController::class, 'anmelden']);
-        Route::post('/login/two-factor', [AnmeldungController::class, 'zweiteStufe']);
+        Route::post('/login', [LoginController::class, 'anmelden']);
+        Route::post('/login/two-factor', [LoginController::class, 'zweiteStufe']);
     });
 
-    Route::middleware(['auth:sanctum', 'aktiv', SetLocale::class, VerlangtZweiteStufe::class])->group(function () {
-        Route::post('/logout', [AnmeldungController::class, 'abmelden']);
-        Route::get('/me', [AnmeldungController::class, 'ich']);
+    Route::middleware(['auth:sanctum', 'aktiv', SetLocale::class, RequireTwoFactor::class])->group(function () {
+        Route::post('/logout', [LoginController::class, 'abmelden']);
+        Route::get('/me', [LoginController::class, 'ich']);
 
         // Das eigene Profil: Name, E-Mail, Sprache, Kennwort.
         Route::get('/profile', [MobileProfilController::class, 'zeigen']);
@@ -254,7 +254,7 @@ Route::prefix('mobile')->group(function () {
 // The legacy REST API for integrations. Every route checks the same right
 // as the browser (->can(), before any validation), only integration tokens from
 // the admin area get in, and records resolve within the customer of the URL.
-Route::middleware(['auth:sanctum', 'aktiv', VerlangtZweiteStufe::class, RequireIntegrationToken::class])->group(function () {
+Route::middleware(['auth:sanctum', 'aktiv', RequireTwoFactor::class, RequireIntegrationToken::class])->group(function () {
 
     Route::get('/customers', [CustomerController::class, 'index']);
     Route::post('/customers', [CustomerController::class, 'store'])->can('admin_customer');

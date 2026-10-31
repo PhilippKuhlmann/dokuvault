@@ -4,7 +4,7 @@ namespace App\Support;
 
 use App\Models\AgentInstallation;
 use App\Models\Certificate;
-use App\Models\Concerns\HatBeschaffung;
+use App\Models\Concerns\HasProcurement;
 use App\Models\Domain;
 use App\Models\Firewall;
 use App\Models\LicenseSoftware;
@@ -63,7 +63,7 @@ class ExpiringItems
 
         if (in_array('warranty', $kinds, true)) {
             foreach (config('custom.trashables') as $slug => [$class, $label]) {
-                if (! in_array(HatBeschaffung::class, class_uses_recursive($class), true)
+                if (! in_array(HasProcurement::class, class_uses_recursive($class), true)
                     || ! $gate->allows($slug.'_viewAny')) {
                     continue;
                 }

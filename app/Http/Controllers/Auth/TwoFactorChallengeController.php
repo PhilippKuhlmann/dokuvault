@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Concerns\LeitetNachAnmeldungWeiter;
+use App\Http\Controllers\Concerns\RedirectsAfterLogin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Support\TwoFactorCheck;
@@ -20,7 +20,7 @@ use Illuminate\View\View;
  */
 class TwoFactorChallengeController extends Controller
 {
-    use LeitetNachAnmeldungWeiter;
+    use RedirectsAfterLogin;
 
     /** Wer auf den Einmalcode wartet, und ob er angemeldet bleiben wollte. */
     public const WARTET = 'zweite-stufe.wartet';

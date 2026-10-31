@@ -3,7 +3,7 @@
 use App\Http\Controllers\API\Mobile\ProfilController;
 use App\Models\User;
 use App\Notifications\EmailChanged;
-use App\Notifications\ZweiteStufeCode;
+use App\Notifications\TwoFactorCode;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -209,7 +209,7 @@ test('die Einrichtung liefert Geheimnis, Adresse und einen Vorgang', function ()
     // Mit Adresse braucht es den Code aus der Mail.
     expect($antwort->json('braucht_mail_code'))->toBeTrue();
     expect($antwort->json('vorgang'))->not->toBeEmpty();
-    Notification::assertSentTo($nutzer, ZweiteStufeCode::class);
+    Notification::assertSentTo($nutzer, TwoFactorCode::class);
 });
 
 test('ein falscher Code aus der App wird abgewiesen', function () {

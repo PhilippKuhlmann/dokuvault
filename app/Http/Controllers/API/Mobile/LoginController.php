@@ -23,7 +23,7 @@ use Illuminate\Validation\ValidationException;
  * mit dem Schluessel der Installation, damit niemand eine fremde Nummer
  * hineinschreibt. Bis der Code stimmt, gibt es kein Token.
  */
-class AnmeldungController extends Controller
+class LoginController extends Controller
 {
     public function __construct(private TwoFactorCheck $pruefung) {}
 
