@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
-use App\Models\DocumentationRun;
+use App\Support\Erstaufnahme;
 use Illuminate\Support\Facades\Gate;
 
 class WizardController extends Controller
@@ -25,20 +25,7 @@ class WizardController extends Controller
     {
         $this->authorizeWizard();
 
-        $closed = DocumentationRun::where('customer_id', $customer->id)
-            ->where('user_id', auth()->id())
-            ->whereNull('completed_at')
-            ->update(['current_step' => null, 'completed_at' => now()]);
-
-        if ($closed === 0) {
-            DocumentationRun::create([
-                'customer_id' => $customer->id,
-                'user_id' => auth()->id(),
-                'completed_steps' => [],
-                'skipped_steps' => [],
-                'completed_at' => now(),
-            ]);
-        }
+        (new Erstaufnahme($customer, auth()->user()))->abschliessen();
 
         return redirect()->route('customer.dashboard', $customer);
     }

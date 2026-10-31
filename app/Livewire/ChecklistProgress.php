@@ -8,6 +8,7 @@ use App\Models\ChecklistSetting;
 use App\Models\Customer;
 use App\Models\NetworkShare;
 use App\Support\ChecklistAdScript;
+use App\Support\Checklistenpflege;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -85,30 +86,24 @@ class ChecklistProgress extends Component
 
     public function toggle(int $itemId): void
     {
-        Gate::authorize('checklist_manage');
+        // Abhaken und Freigeben stehen in Checklistenpflege - dieselbe
+        // Klasse bedient die iOS-App.
+        $grund = Checklistenpflege::umschalten(
+            $this->checklist()->items()->findOrFail($itemId),
+            auth()->user(),
+        );
 
-        $checklist = $this->checklist();
-        $item = $checklist->items()->findOrFail($itemId);
-
-        if ($item->awaitsApproval()) {
-            $this->dispatch('hinweis', text: __('Dieser Punkt wartet noch auf die Freigabe.'));
-
-            return;
+        if ($grund !== null) {
+            $this->dispatch('hinweis', text: $grund);
         }
-
-        $item->update($item->isDone()
-            ? ['done_at' => null, 'done_by' => null]
-            : ['done_at' => now(), 'done_by' => auth()->id()]);
-
-        $checklist->refreshCompletion();
     }
 
     public function approve(int $itemId): void
     {
-        Gate::authorize('checklist_approve');
-
-        $item = $this->checklist()->items()->where('needs_approval', true)->findOrFail($itemId);
-        $item->update(['approved_at' => now(), 'approved_by' => auth()->id()]);
+        Checklistenpflege::freigeben(
+            $this->checklist()->items()->findOrFail($itemId),
+            auth()->user(),
+        );
 
         $this->dispatch('hinweis', text: __('Freigegeben.'));
     }

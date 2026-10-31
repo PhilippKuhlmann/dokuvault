@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API\Mobile;
 use App\Http\Controllers\Controller;
 use App\Models\CredentialLink;
 use App\Models\Customer;
+use App\Models\Site;
 use App\Support\GlobaleSuche;
 use App\Support\Kennwortabruf;
 use App\Support\MobilObjekte;
@@ -62,10 +63,21 @@ class DatenController extends Controller
         $eintrag = $this->objekte->sichtbareTypen($request->user())[$typ] ?? abort(404);
         $klasse = $eintrag[0];
 
-        $mitladen = method_exists($klasse, 'site') ? ['customer', 'site'] : ['customer'];
+        $mitStandort = method_exists($klasse, 'site');
+        $mitladen = $mitStandort ? ['customer', 'site'] : ['customer'];
+
+        // Der Standortfilter der Seitenleiste, hier als Abfragewert. Ein
+        // Standort eines anderen Kunden zaehlt als kein Filter, nicht als
+        // Fehler - genau wie im Browser, wo ein fremder Standort in der
+        // Sitzung uebergangen wird.
+        $standort = (int) $request->query('site');
+        $standort = $standort && $mitStandort && $customer->sites()->whereKey($standort)->exists()
+            ? $standort
+            : null;
 
         $objekte = $klasse::with($mitladen)
             ->where('customer_id', $customer->id)
+            ->when($standort, fn ($abfrage) => $abfrage->where('site_id', $standort))
             ->limit(MobilObjekte::LISTE_HOECHSTENS + 1)
             ->get();
 
@@ -80,6 +92,11 @@ class DatenController extends Controller
             'eintraege' => $zeilen,
             'weitere' => $objekte->count() > MobilObjekte::LISTE_HOECHSTENS,
             'darf_anlegen' => $this->objekte->darfAnlegen($request->user(), $typ),
+            // Die Auswahl fuer den Standortfilter. Nur wo die Art ueberhaupt
+            // an einem Standort haengt - sonst gaebe es nichts zu filtern.
+            'standorte' => $mitStandort
+                ? Site::where('customer_id', $customer->id)->orderBy('name')->get(['id', 'name'])
+                : null,
         ]);
     }
 

@@ -54,7 +54,7 @@
                                     {{-- Die Art als Etikett: In einer gemischten Liste
                                          sucht man zuerst danach, nicht nach dem Namen. --}}
                                     <span class="inline-flex rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                                        {{ __($item['label']) }}
+                                        {{ $item['titel'] }}
                                     </span>
                                 </td>
 
@@ -65,12 +65,12 @@
                                 {{-- "vor 3 Tagen" beantwortet die Frage, die man hier
                                      stellt; der genaue Zeitpunkt steht im Hover. --}}
                                 <td class="whitespace-nowrap px-4 py-2.5"
-                                    title="{{ Zeit::anzeigen($item['deleted_at']) }}">
-                                    {{ $item['deleted_at']->diffForHumans() }}
+                                    title="{{ Zeit::anzeigen($item['geloescht_am']) }}">
+                                    {{ $item['geloescht_am']->diffForHumans() }}
                                 </td>
 
                                 <td class="px-4 py-2.5 text-right">
-                                    <form method="POST" action="{{ route('trash.restore', [$customer, $item['type'], $item['id']]) }}">
+                                    <form method="POST" action="{{ route('trash.restore', [$customer, $item['typ'], $item['id']]) }}">
                                         @csrf
                                         <x-input.button type="submit" size="sm" :label="__('Wiederherstellen')" />
                                     </form>

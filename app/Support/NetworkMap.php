@@ -290,10 +290,11 @@ class NetworkMap
             'name' => $uplink->provider ?: __('Internet'),
             'detail' => collect([$uplink->connection_type, $bandwidth ?: null, $uplink->wan_ip])->filter()->implode(' · '),
             'url' => $this->url($uplink),
+            ...$this->ziel($uplink),
         ];
     }
 
-    /** @return array{name: string, type: string, url: ?string, detail: ?string} */
+    /** @return array{name: string, type: string, url: ?string, detail: ?string, typ: ?string, id: int} */
     protected function node(Model $device): array
     {
         $model = trim($device->getAttribute('manufacturer').' '.$device->getAttribute('model'));
@@ -303,6 +304,25 @@ class NetworkMap
             'type' => self::TYPES[$device::class] ?? class_basename($device),
             'url' => $this->url($device),
             'detail' => $model ?: null,
+            ...$this->ziel($device),
+        ];
+    }
+
+    /**
+     * Dasselbe Ziel ohne Browser-Adresse: Slug und Id, mit denen die App das
+     * Geraet oeffnet. "typ" ist null, wo auch "url" null waere - dann darf
+     * dieser Nutzer die Liste nicht sehen.
+     *
+     * @return array{typ: ?string, id: int}
+     */
+    protected function ziel(Model $device): array
+    {
+        // Fuellt $this->lists, falls noch nicht geschehen.
+        $this->url($device);
+
+        return [
+            'typ' => $this->lists[$device::class] ?? null,
+            'id' => $device->getKey(),
         ];
     }
 

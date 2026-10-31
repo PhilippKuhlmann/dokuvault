@@ -77,6 +77,10 @@ test('every download from storage checks the stored path', function () {
         'Http/Controllers/BackupDownloadController.php',
         // PDF export: path written by the job; owner and requester are checked.
         'Http/Controllers/CustomerController.php',
+        // The same export for the app. StoragePath::belongsTo does not fit -
+        // the job writes under pdf-exports/{customer_id}/, not under the
+        // slug. The controller checks that folder itself.
+        'Http/Controllers/API/Mobile/PdfController.php',
     ];
 
     $unchecked = [];

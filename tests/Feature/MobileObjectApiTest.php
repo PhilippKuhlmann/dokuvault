@@ -297,3 +297,50 @@ test('Schrank und Patchfeld haben einen Anlege-Weg, die Netzwerkdose nicht', fun
     $this->withToken($token)->getJson("/api/mobile/customers/{$kunde->slug}/patchport")
         ->assertOk()->assertJsonPath('darf_anlegen', false);
 });
+
+/**
+ * Der Standortfilter der Seitenleiste, in der App als Abfragewert an der
+ * Liste. Ein fremder Standort zaehlt als kein Filter, nicht als Fehler.
+ */
+test('die Liste lässt sich auf einen Standort einengen', function () {
+    $kunde = Customer::factory()->create();
+    $eins = Site::factory()->create(['customer_id' => $kunde->id, 'name' => 'Zentrale']);
+    $zwei = Site::factory()->create(['customer_id' => $kunde->id, 'name' => 'Filiale']);
+    $fremder = Site::factory()->create(['customer_id' => Customer::factory()->create()->id]);
+
+    $system = OperatingSystem::factory()->create(['name' => 'Debian 13']);
+    foreach ([[$eins, 'SRV-ZENTRALE'], [$zwei, 'SRV-FILIALE']] as [$ort, $name]) {
+        Server::factory()->create([
+            'customer_id' => $kunde->id, 'site_id' => $ort->id,
+            'operating_system_id' => $system->id, 'name' => $name,
+        ]);
+    }
+
+    $nutzer = userWithPermissions(['server_viewAny']);
+    $token = $nutzer->createToken('App Test', ['mobil'], now()->addDay())->plainTextToken;
+    $pfad = "/api/mobile/customers/{$kunde->slug}/server";
+
+    $alle = test()->withToken($token)->getJson($pfad)->assertOk();
+    expect(collect($alle->json('eintraege'))->pluck('name')->sort()->values()->all())
+        ->toBe(['SRV-FILIALE', 'SRV-ZENTRALE']);
+    // Die Auswahl fuer das Filtermenue kommt mit.
+    expect(collect($alle->json('standorte'))->pluck('name')->all())->toBe(['Filiale', 'Zentrale']);
+
+    $gefiltert = test()->withToken($token)->getJson("{$pfad}?site={$zwei->id}")->assertOk();
+    expect(collect($gefiltert->json('eintraege'))->pluck('name')->all())->toBe(['SRV-FILIALE']);
+
+    $fremd = test()->withToken($token)->getJson("{$pfad}?site={$fremder->id}")->assertOk();
+    expect(collect($fremd->json('eintraege'))->count())->toBe(2);
+});
+
+/** Eine Art ohne Standort hat nichts zu filtern - dann auch keine Auswahl. */
+test('ohne Standortbezug gibt es keine Auswahl', function () {
+    $kunde = Customer::factory()->create();
+    Site::factory()->create(['customer_id' => $kunde->id]);
+
+    $nutzer = userWithPermissions(['domain_viewAny']);
+    $token = $nutzer->createToken('App Test', ['mobil'], now()->addDay())->plainTextToken;
+
+    expect(test()->withToken($token)->getJson("/api/mobile/customers/{$kunde->slug}/domain")
+        ->assertOk()->json('standorte'))->toBeNull();
+});

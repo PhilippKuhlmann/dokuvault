@@ -5,9 +5,17 @@ use App\Http\Controllers\API\AgentController;
 use App\Http\Controllers\API\ChecklistReportController;
 use App\Http\Controllers\API\CustomerController;
 use App\Http\Controllers\API\Mobile\AnmeldungController;
+use App\Http\Controllers\API\Mobile\DashboardController as MobileDashboardController;
+use App\Http\Controllers\API\Mobile\AgentController as MobileAgentController;
+use App\Http\Controllers\API\Mobile\ChecklistController as MobileChecklistController;
 use App\Http\Controllers\API\Mobile\DatenController;
 use App\Http\Controllers\API\Mobile\DeviceController;
+use App\Http\Controllers\API\Mobile\TrashController as MobileTrashController;
+use App\Http\Controllers\API\Mobile\WizardController as MobileWizardController;
 use App\Http\Controllers\API\Mobile\NetworkController as MobileNetworkController;
+use App\Http\Controllers\API\Mobile\NetworkMapController as MobileNetworkMapController;
+use App\Http\Controllers\API\Mobile\PdfController as MobilePdfController;
+use App\Http\Controllers\API\Mobile\ProfilController as MobileProfilController;
 use App\Http\Controllers\API\Mobile\ObjectController;
 use App\Http\Controllers\API\Mobile\PatchPanelController as MobilePatchPanelController;
 use App\Http\Controllers\API\Mobile\RackController as MobileRackController;
@@ -84,8 +92,89 @@ Route::prefix('mobile')->group(function () {
         Route::post('/logout', [AnmeldungController::class, 'abmelden']);
         Route::get('/me', [AnmeldungController::class, 'ich']);
 
+        // Das eigene Profil: Name, E-Mail, Sprache, Kennwort.
+        Route::get('/profile', [MobileProfilController::class, 'zeigen']);
+        Route::match(['put', 'patch'], '/profile', [MobileProfilController::class, 'aendern']);
+        Route::put('/profile/password', [MobileProfilController::class, 'kennwort']);
+
+        // Die zweite Stufe einrichten: beginnen, bestaetigen, neue
+        // Wiederherstellungscodes, abschalten. Ohne Sitzung traegt ein
+        // verschluesselter "vorgang" das begonnene Geheimnis.
+        Route::post('/profile/two-factor/begin', [MobileProfilController::class, 'zweiteStufeBeginnen']);
+        Route::post('/profile/two-factor/confirm', [MobileProfilController::class, 'zweiteStufeBestaetigen']);
+        Route::post('/profile/two-factor/recovery-codes', [MobileProfilController::class, 'wiederherstellungscodes']);
+        Route::delete('/profile/two-factor', [MobileProfilController::class, 'zweiteStufeAus']);
+
+        // Das eigene Konto loeschen - mit Kennwort und nicht rueckgaengig.
+        Route::delete('/profile', [MobileProfilController::class, 'loeschen']);
+        // Changelog und Version - im Browser haengt beides unter der
+        // Seitenleiste.
+        Route::get('/changelog', [MobileProfilController::class, 'changelog']);
+
         Route::get('/customers', [DatenController::class, 'kunden']);
         Route::get('/customers/{customer}', [DatenController::class, 'kunde'])->middleware('isCustomer');
+        // Vor der Typenliste unten: "/{typ}" passt auf jedes einzelne Segment
+        // und faenge sonst "dashboard" ab.
+        Route::get('/customers/{customer}/dashboard', [MobileDashboardController::class, 'zeigen'])->middleware('isCustomer');
+
+        // Papierkorb: auch er vor der Typenliste unten.
+        Route::middleware('isCustomer')->group(function () {
+            Route::get('/customers/{customer}/trash', [MobileTrashController::class, 'index']);
+            // Die Dokumentation als PDF: bestellen, nachfragen, abholen.
+            // Ohne scopeBindings - der Kunde fuehrt keine Beziehung auf die
+            // Auftraege; der Controller prueft ihn selbst, wie im Browser.
+            Route::prefix('/customers/{customer}/pdf')->group(function () {
+                Route::get('/', [MobilePdfController::class, 'stand']);
+                Route::post('/', [MobilePdfController::class, 'bestellen']);
+                Route::get('/{pdfExport}', [MobilePdfController::class, 'laden'])->whereNumber('pdfExport');
+            });
+
+            // Netzplan: Internet -> Gateway -> VLAN -> Geraete.
+            Route::get('/customers/{customer}/network-map', [MobileNetworkMapController::class, 'zeigen']);
+
+            // Erstaufnahme-Assistent: Schritt fuer Schritt durch die
+            // Grunddaten. Ausgefuellt wird mit den Formularen unten.
+            Route::prefix('/customers/{customer}/wizard')->group(function () {
+                Route::get('/', [MobileWizardController::class, 'index']);
+                Route::post('/start', [MobileWizardController::class, 'start']);
+                Route::post('/next', [MobileWizardController::class, 'weiter']);
+                Route::post('/goto', [MobileWizardController::class, 'springen']);
+                Route::post('/complete', [MobileWizardController::class, 'abschliessen']);
+            });
+
+            // Auto-Dokumentation: welche Agenten laufen und was sie
+            // melden. scopeBindings: ein Agent eines anderen Kunden ist ein
+            // 404, nicht nur verborgen.
+            Route::prefix('/customers/{customer}/agents')->scopeBindings()->group(function () {
+                Route::get('/', [MobileAgentController::class, 'index']);
+                // Die Parameternamen treffen die Beziehungen am Kunden
+                // (agentInstallations, agentTokens) - daran haengt das
+                // scopeBindings.
+                Route::put('/installations/{agentInstallation}', [MobileAgentController::class, 'update']);
+                Route::post('/installations/{agentInstallation}/run', [MobileAgentController::class, 'run']);
+                Route::post('/tokens/{agentToken}/lock', [MobileAgentController::class, 'lock']);
+                Route::post('/tokens/{agentToken}/unlock', [MobileAgentController::class, 'unlock']);
+            });
+
+            // Checklisten. scopeBindings: eine Liste eines anderen Kunden
+            // (und ein Punkt einer anderen Liste) ist ein 404.
+            Route::prefix('/customers/{customer}/checklists')->scopeBindings()->group(function () {
+                Route::get('/', [MobileChecklistController::class, 'index']);
+                // Beantragen: erst die Auswahl holen, dann anlegen. Vor
+                // "/{checklist}", sonst faenge das die festen Pfade ab.
+                Route::get('/form', [MobileChecklistController::class, 'formular']);
+                Route::post('/onboarding', [MobileChecklistController::class, 'onboarding']);
+                Route::post('/offboarding', [MobileChecklistController::class, 'offboarding']);
+                Route::get('/{checklist}', [MobileChecklistController::class, 'show'])->whereNumber('checklist');
+                Route::post('/{checklist}/items/{item}/toggle', [MobileChecklistController::class, 'toggle']);
+                Route::post('/{checklist}/items/{item}/approve', [MobileChecklistController::class, 'approve']);
+                // Das PowerShell-Skript fuer den AD-Teil - zum Weitergeben
+                // an den Rechner, auf dem es laeuft.
+                Route::get('/{checklist}/ad-script', [MobileChecklistController::class, 'adSkript']);
+            });
+            Route::post('/customers/{customer}/trash/{typ}/{id}/restore', [MobileTrashController::class, 'restore'])
+                ->whereNumber('id');
+        });
 
         // Racks: the list is the "rack" type below, these show and edit one.
         // Scoped bindings: a rack of another customer (and an item of another

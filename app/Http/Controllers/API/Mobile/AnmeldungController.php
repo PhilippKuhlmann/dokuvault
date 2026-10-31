@@ -135,6 +135,18 @@ class AnmeldungController extends Controller
             'rechte' => [
                 'kennwoerter' => Gate::forUser($nutzer)->allows('logingeneral_viewAny'),
                 'schluessel' => Gate::forUser($nutzer)->allows('sshkey_viewAny'),
+                // Damit die App den Weg in den Papierkorb gar nicht erst
+                // anbietet, wo er in eine 403 fuehrt.
+                'papierkorb' => Gate::forUser($nutzer)->allows('see_hidden'),
+                // Dasselbe fuer die Checklisten: Jedes der drei Rechte
+                // genuegt, um sie zu sehen (ChecklistController::VIEW_RIGHTS).
+                'checklisten' => Gate::forUser($nutzer)->allows('checklist_viewAny'),
+                'agenten' => Gate::forUser($nutzer)->allows('agent_manage'),
+                'pdf' => Gate::forUser($nutzer)->allows('create_pdf'),
+                // Der Assistent braucht wenigstens ein Anlege-Recht aus
+                // seinen Schritten - sonst gibt es darin nichts zu tun.
+                'erstaufnahme' => collect(config('custom.wizard_steps'))
+                    ->contains(fn (array $schritt) => Gate::forUser($nutzer)->allows($schritt['permission'])),
             ],
         ];
     }

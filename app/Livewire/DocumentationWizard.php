@@ -9,6 +9,7 @@ use App\Models\Network;
 use App\Models\OperatingSystem;
 use App\Models\Server;
 use App\Models\Setting;
+use App\Support\Erstaufnahme;
 use App\Models\Site;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Foundation\Http\FormRequest;
@@ -175,36 +176,17 @@ class DocumentationWizard extends Component
      */
     protected function allowedSteps(): array
     {
-        return collect(config('custom.wizard_steps'))
-            ->filter(fn (array $step) => Gate::allows($step['permission']))
-            ->map(fn (array $step) => $this->fernwartungBeschriften($step))
-            ->values()
-            ->all();
+        return $this->ablauf()->schritte();
     }
 
     /**
-     * Die beiden Fernwartungsfelder heissen nach dem eingestellten Werkzeug.
-     *
-     * Die Ersetzung passiert hier und nicht in der Konfiguration: "php artisan
-     * config:cache" friert config/custom.php ein, ein Wert aus der Datenbank
-     * waere darin fuer immer eingebacken und liesse sich ueber die
-     * Einstellungen nicht mehr aendern.
+     * Der Ablauf des Assistenten - welche Schritte, was kommt als
+     * naechstes. Dieselbe Klasse bedient die iOS-App; zwei Ablaeufe fuer
+     * denselben Assistenten waeren zwei Wahrheiten.
      */
-    protected function fernwartungBeschriften(array $step): array
+    protected function ablauf(): Erstaufnahme
     {
-        $tool = Setting::fernwartung();
-
-        $step['fields'] = collect($step['fields'] ?? [])->map(function (array $feld) use ($tool) {
-            $feld['label'] = match ($feld['name'] ?? null) {
-                'remoteID' => $tool['id_label'],
-                'remotePassword' => $tool['password_label'],
-                default => $feld['label'] ?? '',
-            };
-
-            return $feld;
-        })->all();
-
-        return $step;
+        return new Erstaufnahme(Customer::findOrFail($this->customerId), auth()->user());
     }
 
     protected function currentStep(DocumentationRun $run): ?array
@@ -419,11 +401,10 @@ class DocumentationWizard extends Component
     {
         [, $run] = $this->guard();
 
-        if (! collect($this->allowedSteps())->contains(fn ($s) => $s['key'] === $key)) {
+        if (! $this->ablauf()->springen($run, $key)) {
             return;
         }
 
-        $run->update(['current_step' => $key]);
         $this->resetForm();
         $this->dispatch('assistent-schritt');
     }
@@ -448,22 +429,14 @@ class DocumentationWizard extends Component
      */
     protected function schrittVerlassen(DocumentationRun $run, string $key): void
     {
-        if (! empty($run->created_records[$key] ?? [])) {
-            $run->markStepCompleted($key);
-        } else {
-            $run->markStepSkipped($key);
-        }
+        $this->ablauf()->verlassen($run, $key);
     }
 
     public function previousStep(): void
     {
         [, $run] = $this->guard();
-        $keys = array_column($this->allowedSteps(), 'key');
-        $index = array_search($run->current_step, $keys, true);
 
-        if ($index !== false && $index > 0) {
-            $run->update(['current_step' => $keys[$index - 1]]);
-        }
+        $this->ablauf()->zurueck($run);
 
         $this->resetForm();
         $this->dispatch('assistent-schritt');
@@ -471,15 +444,7 @@ class DocumentationWizard extends Component
 
     protected function advance(DocumentationRun $run): void
     {
-        $keys = array_column($this->allowedSteps(), 'key');
-        $index = array_search($run->current_step, $keys, true);
-        $nextKey = ($index !== false && isset($keys[$index + 1])) ? $keys[$index + 1] : null;
-
-        $run->update(['current_step' => $nextKey]);
-
-        if ($nextKey === null) {
-            $run->update(['completed_at' => now()]);
-        }
+        $this->ablauf()->weiter($run);
 
         $this->resetForm();
         $this->dispatch('assistent-schritt');
@@ -493,35 +458,8 @@ class DocumentationWizard extends Component
     public function skipGroup(): void
     {
         [, $run] = $this->guard();
-        $steps = $this->allowedSteps();
-        $current = $this->currentStep($run);
 
-        if (! $current) {
-            return;
-        }
-
-        $keys = array_column($steps, 'key');
-        $index = array_search($run->current_step, $keys, true);
-
-        if ($index === false) {
-            return;
-        }
-
-        $nextKey = null;
-
-        foreach (array_slice($steps, $index) as $s) {
-            if ($s['group'] !== $current['group']) {
-                $nextKey = $s['key'];
-                break;
-            }
-            $this->schrittVerlassen($run, $s['key']);
-        }
-
-        $run->update(['current_step' => $nextKey]);
-
-        if ($nextKey === null) {
-            $run->update(['completed_at' => now()]);
-        }
+        $this->ablauf()->gruppeUeberspringen($run);
 
         $this->resetForm();
         $this->dispatch('assistent-schritt');
