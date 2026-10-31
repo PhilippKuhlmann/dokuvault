@@ -86,8 +86,8 @@ class ChecklistProgress extends Component
 
     public function toggle(int $itemId): void
     {
-        // Abhaken und Freigeben stehen in Checklistenpflege - dieselbe
-        // Klasse bedient die iOS-App.
+        // Ticking off and approving sit in ChecklistActions - the same class
+        // serves the iOS app.
         $grund = ChecklistActions::toggle(
             $this->checklist()->items()->findOrFail($itemId),
             auth()->user(),

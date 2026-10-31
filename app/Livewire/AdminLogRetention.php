@@ -9,11 +9,11 @@ use Livewire\Component;
 use Spatie\Activitylog\Models\Activity;
 
 /**
- * Wie lange das Protokoll aufbewahrt wird.
+ * How long the activity log is kept.
  *
- * Eine Zahl, keine Liste: Was im Protokoll steht, sieht man im Protokoll. Hier
- * geht es nur darum, wie lange es dort steht - und damit auch, wie lange die
- * bisherigen Kennwoerter nachschlagbar bleiben, denn die haengen daran.
+ * One number, not a list: what the log holds is seen in the log. Here it is
+ * only about how long it stays there - and thereby how long the previous
+ * passwords stay available, because they hang on it.
  */
 class AdminLogRetention extends Component
 {
@@ -45,10 +45,10 @@ class AdminLogRetention extends Component
     }
 
     /**
-     * Wie viel die Frist heute treffen wuerde.
+     * How much the deadline would hit today.
      *
-     * Eine Zahl ohne Folgenabschaetzung ist eine Zumutung: "365" sagt einem
-     * nicht, ob damit drei Eintraege verschwinden oder dreitausend.
+     * A number without an idea of its consequences is an imposition: "365"
+     * does not tell anyone whether three entries disappear or three thousand.
      */
     public function render()
     {

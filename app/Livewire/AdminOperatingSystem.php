@@ -10,12 +10,12 @@ use Livewire\Component;
 use Livewire\WithPagination;
 
 /**
- * Der Betriebssystem-Katalog mit Suche.
+ * The operating system catalog with search.
  *
- * Vorher eine statische Liste ohne Suche - bei 55 Eintraegen ueber drei
- * Seiten war ein bestimmtes System nur ueber Blaettern zu finden. Anlegen
- * und Bearbeiten bleiben eigene Seiten (OperatingSystemController): Anders
- * als beim VLAN-Modal gibt es hier keinen Grund fuer ein Livewire-Formular.
+ * It used to be a static list without search - at 55 entries across three
+ * pages a particular system could only be found by paging. Creating and
+ * editing stay pages of their own (OperatingSystemController): unlike with
+ * the VLAN modal there is no reason for a Livewire form here.
  */
 class AdminOperatingSystem extends Component
 {

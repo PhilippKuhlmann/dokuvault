@@ -13,12 +13,12 @@ class GlobalSearch extends Component
     public $search;
 
     /**
-     * Die Treffer, nach Typ gruppiert.
+     * The hits, grouped by kind.
      *
-     * Als computed property statt inline in render(): So laesst sich die Suche
-     * einzeln pruefen, ohne die View mitzurendern, und render() sagt wieder in
-     * einer Zeile, was es tut. Die Suche selbst steht in App\Support\GlobaleSuche -
-     * die App stellt dieselbe Frage.
+     * As a computed property instead of inline in render(): that way the
+     * search can be tested on its own without rendering the view, and render()
+     * says in one line again what it does. The search itself sits in
+     * App\Support\Search - the app asks the same question.
      */
     #[Computed]
     public function groups()

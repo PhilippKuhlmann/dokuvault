@@ -11,11 +11,11 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
- * Knopf und Stand der PDF-Ausgabe.
+ * Button and state of the PDF export.
  *
- * Das PDF entsteht im Hintergrund - ohne diese Anzeige waere nach dem Klick
- * nicht zu erkennen, ob etwas passiert. Nachgefragt wird nur, solange ein
- * Auftrag laeuft; ist er fertig, hoert das Nachfragen auf.
+ * The PDF comes into being in the background - without this display there
+ * would be no telling after the click whether anything is happening. It is
+ * polled only while a job runs; once it is finished the polling stops.
  */
 class PdfExportStatus extends Component
 {
@@ -37,8 +37,8 @@ class PdfExportStatus extends Component
 
         $kunde = Customer::findOrFail($this->customerId);
 
-        // Kein zweiter Auftrag, solange einer laeuft: Wer zweimal klickt, soll
-        // nicht zweimal denselben Berg Arbeit ausloesen.
+        // No second job while one runs: whoever clicks twice should not set
+        // the same mountain of work going twice.
         if ($this->auftrag()?->laeuftNoch()) {
             return;
         }
@@ -55,10 +55,10 @@ class PdfExportStatus extends Component
     }
 
     /**
-     * Der letzte Auftrag dieses Nutzers zu diesem Kunden.
+     * The last job of this user for this customer.
      *
-     * Je Nutzer, nicht je Kunde: Das PDF enthaelt alle Zugangsdaten, es darf
-     * also nur abholen, wer es bestellt hat.
+     * Per user, not per customer: the PDF holds every credential, so only the
+     * person who ordered it may collect it.
      */
     public function auftrag(): ?PdfExport
     {
@@ -75,8 +75,8 @@ class PdfExportStatus extends Component
         return view('livewire.pdf-export-status', [
             'auftrag' => $auftrag,
             'kunde' => Customer::find($this->customerId),
-            // Nur nachfragen, solange etwas laeuft - und nicht endlos, wenn
-            // niemand die Warteschlange abarbeitet.
+            // Only poll while something runs - and not endlessly when nobody
+            // works the queue.
             'nachfragen' => (bool) $auftrag?->laeuftNoch() && ! $auftrag->haengt(),
         ]);
     }

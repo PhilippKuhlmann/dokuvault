@@ -32,11 +32,11 @@ class RemoteSearch extends Component
                 ->join('customers', $tabelle.'.customer_id', '=', 'customers.id')
                 ->select($tabelle.'.*', 'customers.name as customerName')
                 ->when($kunde, fn ($q) => $q->where($tabelle.'.customer_id', $kunde))
-                // Kundenname oder Geraetename: Wer einen bestimmten Server
-                // fernwarten will, kennt meist dessen Namen und nicht den des
-                // Kunden. Vorher traf die Suche nur den Kunden - wer
-                // "SRV-DC01" eintippte, bekam nichts und hielt das Geraet fuer
-                // nicht eingerichtet.
+                // Customer name or device name: whoever wants to connect to a
+                // particular server usually knows its name and not the
+                // customer's. The search used to match the customer only -
+                // whoever typed "SRV-DC01" got nothing and took the device for
+                // not set up.
                 ->when($this->search, fn ($q) => $q->whereEnthaelt(['customers.name', $tabelle.'.name'], $this->search))
                 ->orderBy('customers.name')
                 ->get();

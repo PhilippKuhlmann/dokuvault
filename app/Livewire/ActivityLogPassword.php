@@ -10,32 +10,32 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
- * Das bisherige Kennwort in einer Protokollzeile - auf Klick.
+ * The previous password in a log row - on click.
  *
- * Der Wert steht nicht im Protokolleintrag: Der bleibt ewig stehen und listet
- * alle Kunden auf einer Seite. Er kommt aus der Kennwort-Historie und
- * verschwindet mit deren Frist. Fuer den Betrachter ist das derselbe Handgriff
- * wie bei jeder anderen Aenderung.
+ * The value is not in the activity entry: that stays forever and lists every
+ * customer on one page. It comes from the password history and disappears
+ * with its deadline. For the viewer it is the same move as with any other
+ * change.
  */
 class ActivityLogPassword extends Component
 {
-    /** Ids der Historie-Eintraege, die zu dieser Zeile gehoeren. */
+    /** Ids of the history entries belonging to this row. */
     #[Locked]
     public array $ids = [];
 
-    /** Beschriftungen der Felder, damit klar ist, welches Kennwort gemeint ist. */
+    /** Labels of the fields, so it is clear which password is meant. */
     #[Locked]
     public array $felder = [];
 
     public bool $offen = false;
 
-    /** Geladene Werte - erst nach dem Klick gefuellt. */
+    /** Loaded values - filled only after the click. */
     public array $werte = [];
 
     public function show(): void
     {
-        // Dasselbe Recht wie die Seite, auf der die Komponente steht. Geprueft
-        // wird trotzdem hier - der Aufruf kommt aus dem Browser.
+        // The same permission as the page the component sits on. It is checked
+        // here all the same - the call comes from the browser.
         Gate::authorize('admin_activity');
 
         // Every value through Kennwortabruf: brake, log entry, customer and

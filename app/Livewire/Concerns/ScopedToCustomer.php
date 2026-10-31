@@ -3,16 +3,16 @@
 namespace App\Livewire\Concerns;
 
 /**
- * Der angemeldete Nutzer muss zu dem Kunden gehoeren, mit dem die Komponente
- * arbeitet.
+ * The signed-in user has to belong to the customer the component works
+ * with.
  *
- * Warum die Komponente das selbst pruefen muss: Die isCustomer-Middleware
- * haengt an den Routen, und Livewire ruft nicht ueber sie, sondern ueber
- * /livewire/update. Wer den Kunden als Parameter entgegennimmt, nimmt ihn
- * damit von aussen entgegen.
+ * Why the component has to check that itself: the isCustomer middleware hangs
+ * on the routes, and Livewire does not call through them but through
+ * /livewire/update. Whoever takes the customer as a parameter takes it from
+ * outside.
  *
- * Ein Nutzer ohne customer_id - Techniker, Admin - arbeitet fuer alle Kunden
- * und wird nicht aufgehalten; fuer ihn entscheiden die Rechte.
+ * A user without customer_id - technician, admin - works for every customer
+ * and is not stopped; for them the permissions decide.
  */
 trait ScopedToCustomer
 {
