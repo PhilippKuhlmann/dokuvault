@@ -16,11 +16,11 @@ use Livewire\Component;
 use Livewire\WithPagination;
 
 /**
- * Die Dateiliste mit Suche, Filtern und Sortierung.
+ * The file list with search, filters and sorting.
  *
- * Vorher eine feste Liste, aelteste zuerst. Bei einem Kunden mit hundert
- * Dateien war "wo ist der Wartungsvertrag von 2024?" damit eine
- * Blaetteruebung - und die zuletzt hochgeladene Datei stand ganz hinten.
+ * It used to be a fixed list, oldest first. At a customer with a hundred
+ * files "where is the maintenance contract from 2024?" was a paging exercise -
+ * and the file uploaded last stood right at the back.
  */
 class FileList extends Component
 {
@@ -30,15 +30,15 @@ class FileList extends Component
     #[Locked]
     public int $customerId;
 
-    /** Freitext ueber Bezeichnung und Endung. */
+    /** Free text across label and extension. */
     #[Url(except: '')]
     public string $suche = '';
 
-    /** Auf eine Art einschraenken, etwa nur PDF. */
+    /** Limit to one kind, PDFs only for instance. */
     #[Url(except: '')]
     public string $art = '';
 
-    /** Nur die letzten X Tage. 0 heisst: alles. */
+    /** The last X days only. 0 means everything. */
     #[Url(except: 0)]
     public int $tage = 0;
 
@@ -68,10 +68,10 @@ class FileList extends Component
     }
 
     /**
-     * Eine Datei loeschen - samt der Datei auf der Platte.
+     * Delete a file - together with the file on disk.
      *
-     * Die Id wird gegen den Kunden geprueft: Sonst liesse sich mit einer
-     * fremden Id die Datei eines anderen Kunden loeschen.
+     * The id is checked against the customer: otherwise another customer's
+     * file could be deleted with a foreign id.
      */
     public function delete(int $id): void
     {
@@ -79,8 +79,8 @@ class FileList extends Component
 
         $datei = File::where('customer_id', $this->customerId)->find($id);
 
-        // abort statt findOrFail: Das liefert einen sauberen 404 statt einer
-        // durchgereichten Ausnahme.
+        // abort instead of findOrFail: that yields a clean 404 instead of an
+        // exception passed through.
         abort_unless($datei !== null, 404);
 
         Storage::disk('local')->delete($datei->file_path);
@@ -99,8 +99,8 @@ class FileList extends Component
         $abfrage = match ($this->sortierung) {
             'aelteste' => $abfrage->oldest(),
             'name' => $abfrage->orderBy('name'),
-            // Ohne gespeicherte Groesse (Bestandsdatei) nach hinten statt nach
-            // vorn: Eine leere Angabe ist keine kleine Datei.
+            // Without a stored size (a legacy file) to the back instead of the
+            // front: an empty figure is not a small file.
             'groesse' => $abfrage->orderByRaw('size IS NULL')->orderByDesc('size'),
             default => $abfrage->latest(),
         };
@@ -115,16 +115,16 @@ class FileList extends Component
     }
 
     /**
-     * Auf eine Art einschraenken.
+     * Limit to one kind.
      *
-     * "datei" ist der Rest - alles, was in keiner Endungsliste steht. Das
-     * laesst sich nicht als Liste formulieren, sondern nur als Gegenteil.
+     * "datei" is the remainder - everything in no extension list. That cannot
+     * be expressed as a list, only as its opposite.
      */
     private function limitToType($abfrage)
     {
-        // Kleingeschrieben vergleichen: Die Endung wird gespeichert, wie sie
-        // hochgeladen wurde - "Vertrag.PDF" ist eine PDF-Datei und soll im
-        // Filter nicht fehlen. Auf SQLite (Tests) vergleicht IN sonst
+        // Compared in lower case: the extension is stored as it was uploaded -
+        // "Vertrag.PDF" is a PDF file and should not be missing from the
+        // filter. On SQLite (tests) IN otherwise compares letter for letter.
         // buchstabengetreu.
         $spalte = DB::raw('LOWER(extension)');
 
@@ -136,10 +136,10 @@ class FileList extends Component
     }
 
     /**
-     * Ab wann Dateien gezeigt werden.
+     * From when files are shown.
      *
-     * "heute" heisst heute, nicht "die letzten 24 Stunden" - dieselbe Regel
-     * wie im Protokoll.
+     * "today" means today, not "the last 24 hours" - the same rule as in the
+     * log.
      */
     private function grenze(): Carbon
     {

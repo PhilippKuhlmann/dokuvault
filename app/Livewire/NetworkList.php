@@ -14,13 +14,13 @@ use Livewire\Component;
 use Livewire\WithPagination;
 
 /**
- * Die VLAN-Liste als Livewire-Komponente.
+ * The VLAN list as a Livewire component.
  *
- * Grund fuer den Umbau: Das Anlegen laeuft ueber ein Modal (NetworkQuickCreate).
- * Solange die Liste statisches Blade war, musste danach die ganze Seite neu
- * geladen werden - und jeder Weg dorthin hatte seine eigene Falle (Redirect auf
- * die Livewire-Update-Adresse, verlorener Dunkelmodus). Jetzt genuegt ein
- * Rerender.
+ * The reason for the rebuild: creating runs through a modal
+ * (NetworkQuickCreate). As long as the list was static Blade, the whole page
+ * had to be reloaded afterwards - and every way there had a pitfall of its own
+ * (a redirect to the Livewire update address, lost dark mode). Now a re-render
+ * is enough.
  */
 class NetworkList extends Component
 {
@@ -31,15 +31,15 @@ class NetworkList extends Component
     public int $customerId;
 
     /**
-     * Wie in den uebrigen Suchkomponenten in der Adresse - ein gefiltertes
-     * Ergebnis laesst sich damit weitergeben.
+     * In the URL as in the other search components - a filtered result can be
+     * passed on that way.
      */
     #[Url]
     public string $search = '';
 
     /**
-     * Nach jedem Tastendruck zurueck auf Seite eins: Sonst sucht man auf
-     * Seite drei und sieht nichts, obwohl es Treffer gibt.
+     * Back to page one after every keystroke: otherwise one searches on page
+     * three and sees nothing although there are hits.
      */
     public function updatedSearch(): void
     {
@@ -55,9 +55,9 @@ class NetworkList extends Component
     }
 
     /**
-     * Nach dem Anlegen im Modal neu rendern - kein Seitenwechsel noetig.
-     * Zurueck auf Seite eins, weil die Liste nach VLAN-Nummer sortiert ist und
-     * der neue Eintrag sonst auf einer Seite landet, die man gerade nicht sieht.
+     * Re-render after creating in the modal - no page change needed.
+     * Back to page one, because the list is sorted by VLAN number and the new
+     * entry would otherwise land on a page one is not looking at.
      */
     #[On('vlan-created')]
     public function reloaded(): void
@@ -66,12 +66,12 @@ class NetworkList extends Component
     }
 
     /**
-     * Standortfilter und Sortierung wie in Controller::getFilteredQuery().
+     * Site filter and sorting as in Controller::getFilteredQuery().
      *
-     * Bewusst hier nachgebaut statt die Basisklasse aller Controller
-     * anzufassen: Solange nur diese eine Liste auf Livewire laeuft, waere ein
-     * Umbau dort ein Eingriff in vierzig Controller fuer einen Nutzer. Ziehen
-     * die uebrigen Listen nach, gehoert das in ein gemeinsames Trait.
+     * Deliberately rebuilt here instead of touching the base class of every
+     * controller: as long as only this one list runs on Livewire, a rebuild
+     * there would be an intervention in forty controllers for one user. Once
+     * the other lists follow, this belongs in a shared trait.
      */
     public function render()
     {
@@ -86,11 +86,11 @@ class NetworkList extends Component
             $query->where('site_id', $site);
         }
 
-        // Gesucht wird in dem, was man im Kopf hat, wenn man ein VLAN sucht:
-        // Bezeichnung, Nummer, Netz und Gateway. Die DNS- und DHCP-Felder
-        // bleiben draussen - danach sucht niemand, sie wuerden nur die
-        // Trefferliste aufblaehen. Der Klammerausdruck ist noetig, damit das
-        // ODER den Kunden- und Standortfilter nicht aushebelt.
+        // The search covers what one has in mind when looking for a VLAN:
+        // label, number, network and gateway. The DNS and DHCP fields stay
+        // out - nobody searches for those, they would only bloat the hit list.
+        // The bracketed expression is needed so the OR does not undo the
+        // customer and site filter.
         if ($this->search !== '') {
             $query->whereEnthaelt(['description', 'vlanId', 'network', 'gateway'], $this->search);
         }

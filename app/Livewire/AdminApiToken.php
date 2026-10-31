@@ -8,47 +8,47 @@ use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
 /**
- * API-Token anlegen und widerrufen.
+ * Create and revoke API tokens.
  *
- * Vorher war /admin/apitoken eine Route, die rohes JSON zurueckgab - und bei
- * jedem Aufruf einen weiteren Token namens "optin" anlegte. Ein Menuepunkt
- * darauf haette bei jedem Klick einen Token erzeugt, ohne dass jemand die
- * alten je wieder losgeworden waere.
+ * /admin/apitoken used to be a route returning raw JSON - and creating
+ * another token named "optin" on every call. A menu item pointing at it would
+ * have generated a token on every click, without anyone ever getting rid of
+ * the old ones.
  *
- * Gezeigt werden die Token des angemeldeten Benutzers: Ein Token spricht mit
- * seinen Rechten, fremde Token zu verwalten waere eine andere Befugnis.
+ * Shown are the tokens of the signed-in user: a token speaks with their
+ * permissions, and managing someone else's tokens would be a different
  */
 class AdminApiToken extends Component
 {
     use ValidatesOnInput;
 
-    /** Name des neuen Tokens - wofuer er da ist. */
+    /** Name of the new token - what it is for. */
     public string $name = '';
 
     /**
      * Ablaufdatum des neuen Tokens - Pflicht.
      *
-     * Ein Token ohne Frist ist ein Dauerzugang mit den Rechten seines
-     * Benutzers, der im Skript liegt, das ihn nutzt. Vorgefuellt aus der
-     * Konfiguration, aenderbar.
+     * A token without a deadline is permanent access with the permissions of
+     * its user, lying in the script that uses it. Prefilled from the
+     * configuration, changeable.
      */
     public string $expiresAt = '';
 
     /**
-     * Der Klartext, genau einmal.
+     * The plain text, exactly once.
      *
-     * Gespeichert wird nur der Hash; wer ihn jetzt nicht mitnimmt, muss einen
-     * neuen anlegen. Deshalb steht er gross auf der Seite und nicht in einer
-     * Meldung, die nach drei Sekunden verschwindet.
+     * Only the hash is stored; whoever does not take it now has to create a
+     * new one. Hence it stands large on the page and not in a message that
+     * disappears after three seconds.
      */
     public ?string $frischerToken = null;
 
-    /** Eine Quelle fuer das Anlegen und fuer die Pruefung waehrend der Eingabe. */
+    /** One source for creating and for the check while typing. */
     protected function regeln(): array
     {
         return [
             'name' => ['required', 'string', 'max:100'],
-            // Pflicht und in der Zukunft: kein unbegrenzter Token.
+            // Required and in the future: no unlimited token.
             'expiresAt' => ['required', 'date', 'after:today'],
         ];
     }
@@ -73,8 +73,8 @@ class AdminApiToken extends Component
 
         $this->validate($this->regeln(), [], $this->fieldNames());
 
-        // Dritter Parameter von createToken ist der Ablauf - Sanctum weist einen
-        // abgelaufenen Token danach von selbst ab.
+        // The third parameter of createToken is the expiry - Sanctum rejects an
+        // expired token by itself afterwards.
         $this->frischerToken = auth()->user()
             ->createToken($this->name, ['*'], LocalTime::endOfDay($this->expiresAt))
             ->plainTextToken;
@@ -83,7 +83,7 @@ class AdminApiToken extends Component
         $this->expiresAt = $this->defaultDeadline();
     }
 
-    /** Die vorgefüllte Frist: heute plus die Vorgabe aus der Konfiguration. */
+    /** The prefilled deadline: today plus the default from the configuration. */
     private function defaultDeadline(): string
     {
         return now()->addDays(config('custom.api_token.gueltigkeit_tage_standard'))->format('Y-m-d');
@@ -93,8 +93,8 @@ class AdminApiToken extends Component
     {
         Gate::authorize('admin_apitoken');
 
-        // Ueber die Beziehung, nicht ueber die Id allein: Sonst liesse sich mit
-        // einer fremden Id der Token eines anderen Benutzers widerrufen.
+        // Through the relation, not through the id alone: otherwise another
+        // user's token could be revoked with a foreign id.
         auth()->user()->tokens()->whereKey($id)->delete();
 
         $this->dispatch('notice', text: __('Token widerrufen.'));
