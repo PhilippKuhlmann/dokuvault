@@ -18,13 +18,13 @@ use Livewire\Component;
 use Livewire\WithPagination;
 
 /**
- * Die Liste zu einem Typ aus config/forms.php - als Livewire, damit ein im
- * Modal angelegter Eintrag sofort erscheint statt erst nach einem Neuladen.
+ * The list for one kind from config/forms.php - as Livewire, so an entry
+ * created in the modal appears at once instead of only after a reload.
  *
- * Die Darstellung der einzelnen Karte bleibt beim Typ: Sie steht weiterhin in
- * resources/views/<typ>/_karte.blade.php. Eine generische Karte haette jede
- * Liste gleich aussehen lassen, und gerade die Unterschiede tragen hier die
- * Information.
+ * The look of the individual card stays with the kind: it still sits in
+ * resources/views/<typ>/_karte.blade.php. A generic card would have made every
+ * list look the same, and here it is precisely the differences that carry the
+ * information.
  */
 class ObjectList extends Component
 {
@@ -41,14 +41,14 @@ class ObjectList extends Component
     public string $search = '';
 
     /**
-     * Filterwerte, nach Filtername abgelegt. Welche Filter es gibt, sagt der
-     * Typ in config/forms.php - eine Lizenz hat eine Laufzeit, ein Drucker
+     * Filter values, kept by filter name. Which filters exist is said by the
+     * kind in config/forms.php - a licence has a term, a printer does not.
      * nicht.
      */
     #[Url]
     public array $filter = [];
 
-    /** Schluessel aus 'sortierungen' des Typs; leer heisst: die erste davon. */
+    /** A key from the kind's 'sortierungen'; empty means the first of them. */
     #[Url(except: '')]
     public string $sortierung = '';
 
@@ -126,11 +126,11 @@ class ObjectList extends Component
     }
 
     /**
-     * Die Filter dieses Typs, oder eine leere Liste.
+     * The filters of this kind, or an empty list.
      *
-     * Bei einem Beziehungsfilter kommt die Auswahl aus dem Bestand dieses
-     * Kunden, nicht aus dem ganzen Katalog: Ein Betriebssystem, zu dem es
-     * keine Lizenz gibt, waere eine Zeile, die immer nichts findet.
+     * With a relation filter the choices come from this customer's stock, not
+     * from the whole catalog: an operating system without a licence would be a
+     * row that never finds anything.
      */
     public function filterDefinition(): array
     {
@@ -152,13 +152,13 @@ class ObjectList extends Component
             })->all();
     }
 
-    /** Die Sortierungen dieses Typs, oder eine leere Liste. */
+    /** The sort orders of this kind, or an empty list. */
     public function sortierungen(): array
     {
         return config('forms.'.$this->typ.'.sortierungen', []);
     }
 
-    /** Ob das Model eine site_id-Spalte führt - einmal je Tabelle geprüft. */
+    /** Whether the model carries a site_id column - checked once per table. */
     private function tableHasSite(string $klasse): bool
     {
         static $cache = [];
@@ -168,7 +168,7 @@ class ObjectList extends Component
         return $cache[$tabelle] ??= Schema::hasColumn($tabelle, 'site_id');
     }
 
-    /** Wahr, sobald etwas eingeschraenkt ist - fuer den Zuruecksetzen-Knopf. */
+    /** True as soon as something is limited - for the reset button. */
     public function gefiltert(): bool
     {
         return $this->search !== ''
@@ -176,7 +176,7 @@ class ObjectList extends Component
             || collect($this->filter)->contains(fn ($w) => $w !== '' && $w !== null);
     }
 
-    /** Nach dem Speichern im Modal neu rendern - nur fuer den eigenen Typ. */
+    /** Re-render after saving in the modal - only for the own kind. */
     #[On('object-saved')]
     public function reloaded(string $typ): void
     {
@@ -186,10 +186,10 @@ class ObjectList extends Component
     }
 
     /**
-     * IP-Adressen und Zugangsdaten werden in eigenen Bloecken im Modal
-     * gepflegt. Die Liste zeigt sie in ihren Spalten und muss deshalb auch auf
-     * deren Aenderungen neu zeichnen - ein leerer Rumpf genuegt, Livewire
-     * rendert nach jedem Aufruf ohnehin neu.
+     * IP addresses and credentials are maintained in blocks of their own in
+     * the modal. The list shows them in its columns and therefore has to
+     * redraw on their changes as well - an empty body is enough, Livewire
+     * re-renders after every call anyway.
      */
     #[On('device-changed')]
     public function deviceChanged(): void {}
@@ -234,11 +234,11 @@ class ObjectList extends Component
 
         $abfrage = $klasse::where('customer_id', $this->customerId);
 
-        // Standortfilter - dieselbe Regel wie Controller::getFilteredQuery, nur
-        // fehlte sie hier: Seit die Listen über diese Livewire-Komponente laufen,
-        // wurde der in der Seitenleiste gewählte Standort nicht mehr angewandt,
-        // die Liste zeigte alle Geräte des Kunden. Nur greifen, wenn ein gültiger
-        // Standort dieses Kunden gewählt ist und das Model überhaupt einen führt.
+        // Site filter - the same rule as Controller::getFilteredQuery, except
+        // that it was missing here: since the lists run through this Livewire
+        // component the site chosen in the sidebar was no longer applied and
+        // the list showed every device of the customer. Only takes hold when a
+        // valid site of this customer is chosen and the model carries one at all.
         // When jumping in from the global search, suspend the site filter:
         // otherwise a different site chosen in the sidebar would hide the very
         // entry we wanted to jump to.
@@ -250,11 +250,11 @@ class ObjectList extends Component
             $abfrage->where('site_id', $site);
         }
 
-        // Dasselbe Vorladen wie in den Controllern (siehe
-        // Controller::zugangsdatenVorladen): Ohne das kostet eine Seite mit 25
-        // Geraeten rund hundert Abfragen statt acht. Die Bedingungen sind
-        // dieselben - Zugangsdaten und Adressen nur, wo das Model sie fuehrt,
-        // sonst zaehlt eine Liste ohne beides zwei Abfragen zu viel.
+        // The same preloading as in the controllers (see
+        // Controller::preloadCredentials): without it a page with 25 devices
+        // costs about a hundred queries instead of eight. The conditions are
+        // the same - credentials and addresses only where the model carries
+        // them, or a list without both counts two queries too many.
         $traits = class_uses_recursive($klasse);
 
         if (in_array(HasCredentials::class, $traits, true)) {
@@ -276,9 +276,9 @@ class ObjectList extends Component
         }
 
         if ($this->search !== '') {
-            // Die Maskierung stand hier schon, aber ohne ESCAPE-Klausel: Auf
-            // MySQL ging das gut, auf SQLite fand ein Begriff mit Unterstrich
-            // gar nichts mehr. whereEnthaelt bringt beides mit.
+            // The escaping was already here, but without an ESCAPE clause: on
+            // MySQL that went well, on SQLite a term with an underscore found
+            // nothing at all. whereEnthaelt brings both along.
             $abfrage->whereEnthaelt($einstellung['suchfelder'], $this->search);
         }
 
@@ -297,11 +297,11 @@ class ObjectList extends Component
     }
 
     /**
-     * Die Filter des Typs auf die Abfrage legen.
+     * Put the filters of the kind onto the query.
      *
-     * Drei Arten reichen fuer den Bestand: ein Datum ("laeuft ab"), eine feste
-     * Werteliste (Abo) und eine Beziehung (Betriebssystem). Was ein Typ davon
-     * anbietet, steht bei ihm in config/forms.php.
+     * Three sorts are enough for the stock: a date ("expiring"), a fixed value
+     * list (subscription) and a relation (operating system). Which of them a
+     * kind offers stands with it in config/forms.php.
      */
     protected function filterAnwenden($abfrage): void
     {
@@ -322,8 +322,8 @@ class ObjectList extends Component
     /**
      * Nach Ablaufdatum einschraenken.
      *
-     * "offen" statt "laeuft": Eine Lizenz ohne Enddatum laeuft nicht ab und
-     * gehoert zu den unproblematischen - sie faellt sonst durch jedes Raster.
+     * "offen" instead of "laeuft": a licence without an end date does not
+     * expire and counts among the unproblematic ones - it would otherwise fall
      */
     protected function ablaufFiltern($abfrage, string $feld, string $wert): void
     {
@@ -337,13 +337,13 @@ class ObjectList extends Component
     }
 
     /**
-     * Sortieren nach dem, was der Typ anbietet.
+     * Sort by what the kind offers.
      *
-     * Ohne Auswahl bleibt es bei "zuletzt angelegt zuerst" - so war es, bevor
-     * es diese Auswahl gab.
+     * Without a choice it stays with "most recently created first" - as it was
+     * before this select existed.
      *
-     * Bei einem Datum stehen leere Werte hinten: Eine Lizenz ohne Enddatum ist
-     * nicht die, die als naechstes ablaeuft.
+     * With a date, empty values go last: a licence without an end date is not
+     * the one expiring next.
      */
     protected function sortierungAnwenden($abfrage): void
     {

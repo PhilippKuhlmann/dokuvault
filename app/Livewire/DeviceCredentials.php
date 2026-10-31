@@ -13,18 +13,18 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
- * Verknüpft ein Gerät mit Logins aus "Logins Allgemein".
+ * Links a device with logins from "Logins Allgemein".
  *
- * Absichtlich keine eigenen Passwortfelder am Gerät: Ein Passwort gilt oft für
- * mehrere Systeme. Es steht einmal im Login-Eintrag und wird hier nur angehängt -
- * beim Wechseln muss man dann eine Stelle ändern, nicht fünf.
+ * Deliberately no password fields of its own on the device: a password often
+ * applies to several systems. It stands once in the login entry and is only
+ * attached here - when changing it one place has to change, not five.
  */
 class DeviceCredentials extends Component
 {
     use ScopedToCustomer;
     use ValidatesOnInput;
 
-    // Skalare statt Model-Instanz: robust bei polymorphen Modellen und Livewire-Hydration.
+    // Scalars instead of a model instance: robust with polymorphic models and Livewire hydration.
     #[Locked]
     public string $modelClass;
 
@@ -39,7 +39,7 @@ class DeviceCredentials extends Component
 
     public string $note = '';
 
-    // Neues Login anlegen und gleich anhängen
+    // Create a new login and attach it right away
     public bool $neu = false;
 
     public string $name = '';
@@ -48,20 +48,20 @@ class DeviceCredentials extends Component
 
     public string $password = '';
 
-    // Eingebettet: ohne eigenen Kartenrahmen, weil der Block dann in der Karte
+    // Embedded: without a card frame of its own, because the block then sits in the card
     // des Formulars steht (x-create.main, Slot "nach").
     #[Locked]
     public bool $eingebettet = false;
 
-    /** Im Modal bringt der Rahmen das Padding mit - dann keins vom Block. */
+    /** In the modal the frame brings the padding - then none from the block. */
     public bool $randlos = false;
 
     /**
-     * Die Regeln beider Formulare zusammen.
+     * The rules of both forms together.
      *
-     * Der Block hat zwei: eines haengt vorhandene Zugangsdaten an, eines legt
-     * neue an. Zusammen sind sie richtig, weil waehrend der Eingabe immer nur
-     * das eine geaenderte Feld geprueft wird - wer einen Namen tippt, loest
+     * The block has two: one attaches existing credentials, one creates new
+     * ones. Together they are right, because while typing only the one changed
+     * field is checked - whoever types a name triggers no check of login_id.
      * keine Pruefung von login_id aus.
      */
     protected function regeln(): array
@@ -81,10 +81,10 @@ class DeviceCredentials extends Component
 
     public function mount($model, $customer, bool $eingebettet = false, bool $randlos = false): void
     {
-        // Beim Einhaengen, nicht erst bei der Aktion: Ein Block, der sich mit
-        // einem fremden Geraet ueberhaupt aufbauen laesst, hat schon zu viel
-        // gesagt. Die Pruefungen in den Aktionen bleiben - sie fangen den Fall
-        // ab, dass jemand die Nummer spaeter austauscht.
+        // On mounting, not only on the action: a block that can be built at
+        // all with a foreign device has already said too much. The checks in
+        // the actions stay - they catch the case that someone swaps the number
+        // later.
         $this->onlyOwnCustomer($customer->id);
         abort_if($model->customer_id !== $customer->id, 403);
 
@@ -96,15 +96,15 @@ class DeviceCredentials extends Component
     }
 
     /**
-     * Autorisierung: Recht zum Bearbeiten des Gerätetyps UND Kundenzugehörigkeit.
-     * (Public Properties sind client-seitig manipulierbar → bei jeder Aktion prüfen.)
+     * Authorisation: permission to edit the device kind AND customer membership.
+     * (Public properties can be manipulated on the client -> check on every action.)
      */
     /**
      * Welche Arten von Zugangsdaten dieser Benutzer sehen darf.
      *
-     * Kennwoerter und SSH-Schluessel liegen in derselben Tabelle, haben aber
-     * getrennte Rechte. Ohne diese Unterscheidung saehe jeder mit Login-Recht
-     * ueber den Geraeteblock auch die Schluessel.
+     * Passwords and SSH keys sit in the same table but have separate
+     * permissions. Without that distinction anyone with the login permission
+     * would see the keys through the device block as well.
      *
      * @return array<int, string>
      */
@@ -119,7 +119,7 @@ class DeviceCredentials extends Component
 
         Gate::authorize(strtolower(class_basename($this->modelClass)).'_update');
 
-        // Eine der beiden Arten genuegt - welche, entscheidet sichtbareArten().
+        // One of the two kinds is enough - which, is decided by visibleTypes().
         abort_if($this->visibleTypes() === [], 403);
 
         $user = auth()->user();
@@ -140,8 +140,8 @@ class DeviceCredentials extends Component
         );
 
         $this->verknuepfen($device, (int) $validated['login_id'], $validated['note']);
-        // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
-        // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
+        // A list around this block shows the addresses or credentials in its
+        // columns - without this message it would stay on the old state.
         $this->dispatch('device-changed');
     }
 
@@ -159,12 +159,12 @@ class DeviceCredentials extends Component
         app(CredentialLinking::class)->create($device, $validated);
         $this->reset('login_id', 'note');
         $this->reset('name', 'username', 'password', 'neu');
-        // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
-        // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
+        // A list around this block shows the addresses or credentials in its
+        // columns - without this message it would stay on the old state.
         $this->dispatch('device-changed');
     }
 
-    /** Doppelte Verknüpfungen still übergehen - der Unique-Index würde sonst 500 werfen. */
+    /** Skip duplicate links silently - the unique index would throw a 500. */
     protected function verknuepfen($device, int $loginId, ?string $note): void
     {
         app(CredentialLinking::class)->attach($device, $loginId, $note);
@@ -172,14 +172,14 @@ class DeviceCredentials extends Component
         $this->reset('login_id', 'note');
     }
 
-    /** Löst nur die Verknüpfung - der Login-Eintrag selbst bleibt bestehen. */
+    /** Only releases the link - the login entry itself stays. */
     public function detach(int $id): void
     {
         $device = $this->device();
 
         app(CredentialLinking::class)->detach($device, $id, auth()->user());
-        // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
-        // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
+        // A list around this block shows the addresses or credentials in its
+        // columns - without this message it would stay on the old state.
         $this->dispatch('device-changed');
     }
 
@@ -193,15 +193,15 @@ class DeviceCredentials extends Component
 
         return view('livewire.device-credentials', [
             'entries' => $entries,
-            // Als Model, nicht als ID: die Kunden-Route bindet über den Slug.
+            // As a model, not as an id: the customer route binds through the slug.
             'kunde' => Customer::find($this->customerId),
-            // Schon verknüpfte Logins fliegen aus der Auswahl - sie ein zweites
-            // Mal anzubieten wäre eine Sackgasse.
-            // Auch die Schluessel: An ein Geraet gehoert genauso gut ein
-            // SSH-Schluessel wie ein Kennwort - sonst liesse er sich nirgends
-            // anhaengen. Nur dieser Filter faellt weg, der Papierkorb bleibt.
-            // Nach Art gruppiert: In einer gemischten Liste sieht man einem
-            // Namen nicht an, ob dahinter ein Kennwort oder ein Schluessel steht.
+            // Logins already linked drop out of the select - offering one a
+            // second time would be a dead end.
+            // The keys as well: an SSH key belongs on a device just as much as
+            // a password - otherwise it could be attached nowhere. Only this
+            // filter falls away, the trash stays.
+            // Grouped by kind: in a mixed list one cannot tell from a name
+            // whether a password or a key is behind it.
             'logins' => LoginGeneral::withoutGlobalScope(LoginGeneral::SCOPE)
                 ->where('customer_id', $this->customerId)
                 ->whereIn('kind', $arten)

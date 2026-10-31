@@ -13,33 +13,33 @@ use Livewire\WithPagination;
 use Spatie\Activitylog\Models\Activity;
 
 /**
- * Das Aktivitätsprotokoll mit Suche und Filtern.
+ * The activity log with search and filters.
  *
- * Vorher eine feste Liste, 50 Einträge je Seite, absteigend nach Zeit. Bei 863
- * Einträgen war die Frage "wer hat gestern an der Firewall etwas geändert?"
- * damit eine Blätterübung.
+ * It used to be a fixed list, 50 entries per page, newest first. At 863
+ * entries the question "who changed something on the firewall yesterday?" was
+ * a paging exercise.
  *
- * Der Zugang haengt am Recht admin_activity, gesetzt an der Route. Das
- * Aufdecken eines bisherigen Kennworts prueft dasselbe Recht noch einmal - der
- * Aufruf kommt aus dem Browser und darf sich nicht auf die Route verlassen.
+ * Access hangs on the permission admin_activity, set on the route. Revealing
+ * a previous password checks the same permission again - the call comes from
+ * the browser and must not rely on the route.
  */
 class AdminActivityLog extends Component
 {
     use WithPagination;
 
-    /** Freitext über die Eigenschaften eines Eintrags. */
+    /** Free text across the properties of an entry. */
     #[Url(except: '')]
     public string $suche = '';
 
-    /** Auf ein Ereignis einschränken, etwa nur Kennwortänderungen. */
+    /** Limit to one event, password changes only for instance. */
     #[Url(except: '')]
     public string $ereignis = '';
 
-    /** Auf eine Objektart einschränken, etwa nur Server. */
+    /** Limit to one object kind, servers only for instance. */
     #[Url(except: '')]
     public string $art = '';
 
-    /** Auf einen Verursacher einschränken. */
+    /** Limit to one causer. */
     #[Url(except: '')]
     public string $benutzer = '';
 
@@ -47,7 +47,7 @@ class AdminActivityLog extends Component
     #[Url(except: '')]
     public string $kunde = '';
 
-    /** Nur die letzten X Tage. 0 heißt: alles. */
+    /** The last X days only. 0 means everything. */
     #[Url(except: 0)]
     public int $tage = 0;
 
@@ -69,28 +69,28 @@ class AdminActivityLog extends Component
         $abfrage = Activity::with('causer.customer')
             ->when($this->ereignis !== '', fn ($a) => $a->where('event', $this->ereignis))
             ->when($this->art !== '', fn ($a) => $a->where('subject_type', $this->art))
-            // Typ UND Id: Ein Agent-Token mit der Id 5 ist nicht der Benutzer
-            // mit der Id 5. Ohne den Typ zeigte der Filter beide.
+            // Kind AND id: an agent token with id 5 is not the user with id 5.
+            // Without the kind the filter showed both.
             ->when($this->benutzer !== '', function ($a) {
                 [$typ, $id] = $this->verursacherWahl();
                 $a->where('causer_type', $typ)->where('causer_id', $id);
             })
             ->when($this->kunde !== '', fn ($a) => $this->onlyCustomer($a, (int) $this->kunde))
             ->when($this->tage > 0, fn ($a) => $a->where('created_at', '>=', $this->grenze()))
-            // Volltext über die Eigenschaften: In einem Protokoll sucht man
-            // nicht nach einem Feld, sondern nach dem, woran man sich erinnert -
-            // einem Namen, einer IP, einer Seriennummer.
+            // Full text across the properties: in a log one does not search
+            // for a field but for what one remembers - a name, an IP, a serial
+            // number.
             //
-            // whereEnthaelt statt like: Ein Suchbegriff wie "SRV_01" fand sonst
-            // auch "SRV101", und die Suche nach "%" lieferte alle 863 Einträge.
+            // whereEnthaelt instead of like: a term like "SRV_01" would
+            // otherwise find "SRV101" too, and a search for "%" returned all 863 entries.
             ->when($this->suche !== '', fn ($a) => $a->where(
                 fn ($teil) => $teil->whereEnthaelt(['properties', 'subject_type'], $this->suche)
                     ->orWhereHas('causer', fn ($c) => $c->whereEnthaelt('name', $this->suche))
             ))
             ->latest('id');
 
-        // Bewusst nicht einstellbar wie die uebrigen Listen: Im Protokoll
-        // sucht man nach einem Vorgang und ueberfliegt, statt zu lesen.
+        // Deliberately not configurable like the other lists: in the log one
+        // searches for an event and skims rather than reads.
         $activities = $abfrage->paginate(50);
 
         return view('livewire.admin-activity-log', [
@@ -100,8 +100,8 @@ class AdminActivityLog extends Component
             'gesamt' => Activity::count(),
             'ereignisse' => config('custom.activity_events'),
             'arten' => $this->types(),
-            // Nicht 'benutzer': So heisst schon die Filter-Eigenschaft, und die
-            // gewinnt in der View - die Auswahlliste waere dort ein String.
+            // Not 'benutzer': that is already the name of the filter property,
+            // and it wins in the view - the select list would be a string there.
             'benutzerListe' => $this->verursacher(),
             'gefiltert' => $this->suche !== '' || $this->ereignis !== '' || $this->art !== ''
                 || $this->benutzer !== '' || $this->kunde !== '' || $this->tage > 0,
@@ -136,11 +136,11 @@ class AdminActivityLog extends Component
     }
 
     /**
-     * Ab wann Einträge gezeigt werden.
+     * From when entries are shown.
      *
-     * "heute" heißt heute, nicht "die letzten 24 Stunden": Um 18:46 zeigte der
-     * Knopf sonst auch Einträge von gestern 18:20. Ab einer Woche ist der
-     * Unterschied belanglos, dort bleibt es rollierend.
+     * "today" means today, not "the last 24 hours": at 18:46 the button would
+     * otherwise also show entries from 18:20 yesterday. From a week on the
+     * difference is irrelevant, so there it stays rolling.
      */
     protected function grenze(): Carbon
     {
@@ -150,10 +150,10 @@ class AdminActivityLog extends Component
     }
 
     /**
-     * Die Objektarten, zu denen es überhaupt Einträge gibt.
+     * The object kinds that have entries at all.
      *
-     * Aus der Tabelle und nicht aus einer Liste: Protokolliert wird auch, was
-     * nicht im Papierkorb steht - IP-Adressen, Rollen, Zugangsdaten-Verknüpfungen.
+     * From the table and not from a list: things are logged that are not in
+     * the trash - IP addresses, roles, credential links.
      */
     protected function types(): array
     {
@@ -167,25 +167,25 @@ class AdminActivityLog extends Component
     }
 
     /**
-     * Wer im Protokoll vorkommt und noch existiert.
+     * Who appears in the log and still exists.
      *
-     * Die Tabelle kennt 114 verschiedene Verursacher-Ids, die meisten davon aus
-     * Beispieldaten längst gelöschter Konten. Eine Auswahl mit 114 Zeilen,
-     * von denen 110 leer sind, hilft niemandem.
+     * The table knows 114 different causer ids, most of them from sample data
+     * of accounts long deleted. A select with 114 rows, 110 of which are
+     * empty, helps nobody.
      */
     protected function verursacher(): array
     {
         $ids = Activity::where('causer_type', User::class)
             ->whereNotNull('causer_id')->distinct()->pluck('causer_id');
 
-        // Nach Herkunft getrennt: Ein Kundenzugang mit Schreibrecht aendert
-        // Daten wie jeder Techniker, und genau dann will man nachsehen, was er
-        // getan hat. In einer Liste aus lauter Namen liesse sich aber nicht
-        // erkennen, wer zu wem gehoert - bei mehreren Kunden heissen die
+        // Kept apart by origin: a customer account with write permission
+        // changes data like any technician, and that is exactly when one wants
+        // to look. In a list of plain names one could not tell who belongs to
+        // whom - with several customers the accounts are quickly alike.
         // Zugaenge schnell aehnlich.
         //
-        // Der Wert traegt die Art mit ('user:5'), weil ein Agent-Token
-        // dieselbe Id haben kann wie ein Benutzer.
+        // The value carries the kind with it ('user:5'), because an agent
+        // token can have the same id as a user.
         $gruppen = User::whereIn('id', $ids)
             ->with('customer:id,name')
             ->orderBy('name')
@@ -195,8 +195,8 @@ class AdminActivityLog extends Component
             ->map(fn ($gruppe) => $gruppe->mapWithKeys(fn ($n) => ['user:'.$n->id => $n->name]))
             ->all();
 
-        // Agenten stehen unten und getrennt: "wer hat das angelegt?" wird bei
-        // einem Agenten anders beantwortet als bei einem Menschen.
+        // Agents stand at the bottom and apart: "who created this?" is
+        // answered differently for an agent than for a person.
         $tokenIds = Activity::where('causer_type', AgentToken::class)
             ->whereNotNull('causer_id')->distinct()->pluck('causer_id');
 
@@ -212,7 +212,7 @@ class AdminActivityLog extends Component
     }
 
     /**
-     * Die gewaehlte Verursacherart und -Id auseinandernehmen ('user:5').
+     * Take the chosen causer kind and id apart ('user:5').
      *
      * @return array{0: class-string, 1: int}
      */
