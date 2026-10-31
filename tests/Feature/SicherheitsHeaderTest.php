@@ -78,3 +78,19 @@ test('ohne https kommt kein HSTS mit', function () {
     // Die Testanfrage selbst läuft über http - beide Bedingungen fehlen.
     expect($this->get('/login')->headers->has('Strict-Transport-Security'))->toBeFalse();
 });
+
+test('HSTS_MAX_AGE=0 lässt den Header weg', function () {
+    // Für Installationen, deren TLS-Endpunkt den Header selbst setzt: Bei
+    // zwei Headern gilt im Browser der erste (RFC 6797) - unserer würde die
+    // strengere Politik des Proxys verdrängen.
+    config(['app.url' => 'https://doku.example.test', 'custom.hsts_max_age' => 0]);
+
+    expect($this->get('/login')->headers->has('Strict-Transport-Security'))->toBeFalse();
+});
+
+test('die Dauer kommt aus der Einstellung', function () {
+    config(['app.url' => 'https://doku.example.test', 'custom.hsts_max_age' => 63072000]);
+
+    expect($this->get('/login')->headers->get('Strict-Transport-Security'))
+        ->toBe('max-age=63072000; includeSubDomains');
+});

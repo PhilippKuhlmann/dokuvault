@@ -52,8 +52,13 @@ class SicherheitsHeader
         // request and whenever APP_URL is https - behind a proxy that is not
         // in TRUSTED_PROXIES the request itself looks like http, and the
         // header would otherwise be missing exactly where it matters.
-        if ($request->secure() || str_starts_with((string) config('app.url'), 'https://')) {
-            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains', false);
+        //
+        // HSTS_MAX_AGE=0 leaves it out: where the TLS endpoint sets the header
+        // itself, a second one of ours would be the one the browser uses
+        // (RFC 6797: the first wins) and could undercut the proxy's policy.
+        $hsts = (int) config('custom.hsts_max_age');
+        if ($hsts > 0 && ($request->secure() || str_starts_with((string) config('app.url'), 'https://'))) {
+            $response->headers->set('Strict-Transport-Security', 'max-age='.$hsts.'; includeSubDomains', false);
         }
 
         return $response;

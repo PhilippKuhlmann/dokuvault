@@ -1460,6 +1460,24 @@ return [
     'trusted_proxies' => env('TRUSTED_PROXIES', '10.0.254.2'),
 
     /*
+    |--------------------------------------------------------------------------
+    | HSTS
+    |--------------------------------------------------------------------------
+    |
+    | Wie lange ein Browser nach dem ersten Besuch ueber https nur noch https
+    | fuer diese Adresse und ihre Subdomains verwendet (Sekunden, ein Jahr als
+    | Vorgabe). Gesendet wird der Header nur, wenn https im Spiel ist - siehe
+    | SicherheitsHeader.
+    |
+    | HSTS_MAX_AGE=0 schaltet ihn ab. Gedacht fuer Installationen, deren
+    | TLS-Endpunkt den Header selbst setzt: Stehen zwei davon in einer
+    | Antwort, gilt im Browser der erste (RFC 6797), und das waere dann
+    | unserer - auch wenn der Proxy die strengere Politik faehrt.
+    |
+    */
+    'hsts_max_age' => (int) env('HSTS_MAX_AGE', 31536000),
+
+    /*
      * Darstellungen der gezeichneten Frontansicht (x-rack.face).
      * Geraete bekommen sie aus rack_device_types, Katalogelemente waehlt der
      * Admin je Eintrag aus dieser Liste.
