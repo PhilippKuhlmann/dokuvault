@@ -185,6 +185,6 @@ class AgentInstallation extends Model
      */
     public function isStale(): bool
     {
-        return $this->last_seen_at === null || $this->last_seen_at->lt(now()->subHours(Setting::agentStillStunden()));
+        return $this->last_seen_at === null || $this->last_seen_at->lt(now()->subHours(Setting::agentSilentHours()));
     }
 }

@@ -60,7 +60,7 @@ class AdminApiLoad extends Component
             'zeitraeume' => self::ZEITRAEUME,
             'summe' => $this->summe($zeilen),
             'verlauf' => $this->verlauf($zeilen, $von, $bis),
-            'tagesprofil' => $this->tagesprofil($zeilen),
+            'tagesprofil' => $this->dayProfile($zeilen),
             'endpunkte' => $this->endpunkte($zeilen),
             'agenten' => AgentInstallation::count(),
         ])->layout('layouts.admin.app');
@@ -111,7 +111,7 @@ class AdminApiLoad extends Component
     }
 
     /** Average requests per hour of day - when in the day the load comes. */
-    protected function tagesprofil(Collection $zeilen): array
+    protected function dayProfile(Collection $zeilen): array
     {
         $tage = max(1, $zeilen->map(fn ($z) => $z->stunde->format('Y-m-d'))->unique()->count());
         $jeStunde = $zeilen->groupBy(fn ($z) => (int) $z->stunde->format('G'));

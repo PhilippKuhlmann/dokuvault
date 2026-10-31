@@ -68,7 +68,7 @@ class PasswordReveal
      *
      * @param  class-string  $modell
      */
-    public function ausFeld(string $modell, int $id, string $feld, User $nutzer): ?string
+    public function fromField(string $modell, int $id, string $feld, User $nutzer): ?string
     {
         // Feld-Whitelist: Nur echte Geheimnis-Spalten, nie ein beliebiges
         // Attribut. Modell muss ein Eloquent-Model sein.
@@ -114,7 +114,7 @@ class PasswordReveal
      * bulk. Now the same rules as every other reveal, plus the right to see
      * the kind of object the password belonged to.
      */
-    public function ausVerlauf(PasswordHistory $eintrag, User $nutzer): ?string
+    public function fromHistory(PasswordHistory $eintrag, User $nutzer): ?string
     {
         // Account passwords are hashes, never shown - see TracksChanges.
         if ($eintrag->subject_type === User::class || ! is_subclass_of($eintrag->subject_type, Model::class)) {

@@ -53,7 +53,7 @@ class Backup extends Model
      */
     public function recentRuns()
     {
-        return $this->runs()->limit(Setting::backupVerlauf());
+        return $this->runs()->limit(Setting::backupHistory());
     }
 
     /** Deletes all but the newest $behalten runs of this backup. */

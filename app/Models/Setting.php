@@ -112,7 +112,7 @@ class Setting extends Model
      * von Hand gesetzt hat - besser ein Kennwort, das funktioniert, als eine
      * Ausnahme beim ersten Mailversand.
      */
-    public static function mailKennwort(): ?string
+    public static function mailPassword(): ?string
     {
         $roh = (string) self::wert(self::MAIL_PASSWORD);
 
@@ -162,9 +162,9 @@ class Setting extends Model
      * Ohne Einstellung bleibt es bei dem, was Laravel ohnehin verlangt: acht
      * Zeichen. Genau das galt bisher, nur wusste es niemand.
      */
-    public static function kennwortRegel(): Password
+    public static function passwordRule(): Password
     {
-        $regel = Password::min(self::kennwortMindestlaenge());
+        $regel = Password::min(self::passwordMinLength());
 
         if (self::ja(self::PW_MIXED)) {
             $regel->mixedCase();
@@ -186,7 +186,7 @@ class Setting extends Model
     }
 
     /** Acht ist Laravels Vorgabe und damit das, was bisher stillschweigend galt. */
-    public static function kennwortMindestlaenge(): int
+    public static function passwordMinLength(): int
     {
         $eigene = (int) self::wert(self::PW_MIN);
 
@@ -200,7 +200,7 @@ class Setting extends Model
      * es hinzuschreiben, laesst raten - und der Benutzer erfaehrt die Regel
      * erst, wenn er gegen sie verstossen hat.
      */
-    public static function kennwortHinweis(): string
+    public static function passwordNotice(): string
     {
         $teile = [];
 
@@ -216,7 +216,7 @@ class Setting extends Model
             $teile[] = __('ein Sonderzeichen');
         }
 
-        $satz = __('Mindestens :anzahl Zeichen', ['anzahl' => self::kennwortMindestlaenge()]);
+        $satz = __('Mindestens :anzahl Zeichen', ['anzahl' => self::passwordMinLength()]);
 
         if ($teile !== []) {
             $letzter = array_pop($teile);
@@ -318,7 +318,7 @@ class Setting extends Model
      *
      * Ohne Auswahl gilt die ganze Liste aus der Konfiguration.
      */
-    public static function dateiFormate(): array
+    public static function fileFormats(): array
     {
         $erlaubt = array_map('strtolower', config('custom.datei_formate', []));
         $eigene = array_filter(explode(',', (string) self::wert(self::DATEI_FORMATE)));
@@ -414,25 +414,25 @@ class Setting extends Model
     public const REMEMBER_TAGE = 'remember_tage';
 
     /** Fehlversuche je Konto, bevor gesperrt wird. */
-    public static function anmeldungVersuche(): int
+    public static function loginAttempts(): int
     {
         return self::zahl(self::ANMELDUNG_VERSUCHE, (int) config('custom.anmeldung.versuche'));
     }
 
     /** Dauer der Sperre in Minuten. */
-    public static function anmeldungSperreMinuten(): int
+    public static function loginLockoutMinutes(): int
     {
         return self::zahl(self::ANMELDUNG_SPERRE, (int) config('custom.anmeldung.sperre_minuten'));
     }
 
     /** Dieselbe Sperre in Sekunden - so rechnet der RateLimiter. */
-    public static function anmeldungSperreSekunden(): int
+    public static function loginLockoutSeconds(): int
     {
-        return self::anmeldungSperreMinuten() * 60;
+        return self::loginLockoutMinutes() * 60;
     }
 
     /** Fehlversuche je Herkunft ueber alle Konten hinweg. */
-    public static function anmeldungHerkunft(): int
+    public static function loginOrigin(): int
     {
         return self::zahl(self::ANMELDUNG_HERKUNFT, (int) config('custom.anmeldung.versuche_je_herkunft'));
     }
@@ -489,7 +489,7 @@ class Setting extends Model
     public const BACKUP_AUFBEWAHRUNG = 'backup_aufbewahrung';
 
     /** How many runs per backup are shown - admin overview and customer card (5-50, default 10). */
-    public static function backupVerlauf(): int
+    public static function backupHistory(): int
     {
         $wert = (int) self::wert(self::BACKUP_VERLAUF);
 
@@ -504,7 +504,7 @@ class Setting extends Model
     {
         $wert = (int) self::wert(self::BACKUP_AUFBEWAHRUNG);
 
-        return max($wert >= 10 && $wert <= 10000 ? $wert : 100, self::backupVerlauf());
+        return max($wert >= 10 && $wert <= 10000 ? $wert : 100, self::backupHistory());
     }
 
     /*
@@ -538,7 +538,7 @@ class Setting extends Model
     ];
 
     /** A number setting from ZAHLEN, inside its range or its default. */
-    public static function begrenzt(string $schluessel): int
+    public static function clamped(string $schluessel): int
     {
         [$standard, $min, $max] = self::ZAHLEN[$schluessel];
         $wert = (int) self::wert($schluessel);
@@ -557,56 +557,56 @@ class Setting extends Model
     }
 
     /** After how many hours without contact an agent counts as silent. */
-    public static function agentStillStunden(): int
+    public static function agentSilentHours(): int
     {
-        return self::begrenzt(self::AGENT_STILL_STUNDEN);
+        return self::clamped(self::AGENT_STILL_STUNDEN);
     }
 
     /** Validity of a new or renewed agent token, never above the maximum. */
-    public static function agentTokenTage(): int
+    public static function agentTokenDays(): int
     {
-        return min(self::begrenzt(self::AGENT_TOKEN_TAGE), self::agentTokenMaxTage());
+        return min(self::clamped(self::AGENT_TOKEN_TAGE), self::agentTokenMaxDays());
     }
 
-    public static function agentTokenMaxTage(): int
+    public static function agentTokenMaxDays(): int
     {
-        return self::begrenzt(self::AGENT_TOKEN_MAX_TAGE);
+        return self::clamped(self::AGENT_TOKEN_MAX_TAGE);
     }
 
     /** How long the API statistics (per hour and endpoint) are kept. */
     public static function statistikApiTage(): int
     {
-        return self::begrenzt(self::STATISTIK_API_TAGE);
+        return self::clamped(self::STATISTIK_API_TAGE);
     }
 
     /** How long the nightly snapshots (system, data growth) are kept. */
     public static function statistikMonate(): int
     {
-        return self::begrenzt(self::STATISTIK_MONATE);
+        return self::clamped(self::STATISTIK_MONATE);
     }
 
     /** Passwords one user may fetch per minute before the brake holds. */
     public static function kennwortAbrufe(): int
     {
-        return self::begrenzt(self::KENNWORT_ABRUFE);
+        return self::clamped(self::KENNWORT_ABRUFE);
     }
 
     /** Vorwarnzeit fuer Lizenzen, Zertifikate und Domains, in Tagen. */
-    public static function fristVertraege(): int
+    public static function contractDeadline(): int
     {
-        return self::frist(self::FRIST_VERTRAEGE, 'vertraege_tage');
+        return self::deadline(self::FRIST_VERTRAEGE, 'vertraege_tage');
     }
 
     /** Vorwarnzeit fuer ablaufende Garantien, in Tagen. */
-    public static function fristGarantie(): int
+    public static function warrantyDeadline(): int
     {
-        return self::frist(self::FRIST_GARANTIE, 'garantie_tage');
+        return self::deadline(self::FRIST_GARANTIE, 'garantie_tage');
     }
 
     /** Vorwarnzeit fuer das Support-Ende von Betriebssystemen, in Tagen. */
-    public static function fristEol(): int
+    public static function eolDeadline(): int
     {
-        return self::frist(self::FRIST_EOL, 'eol_tage');
+        return self::deadline(self::FRIST_EOL, 'eol_tage');
     }
 
     /**
@@ -620,7 +620,7 @@ class Setting extends Model
     {
         // Capped on read as well: a value written past the form (database,
         // import) must not keep exports for years.
-        return min(self::frist(self::PDF_STUNDEN, 'pdf_stunden'), 8760);
+        return min(self::deadline(self::PDF_STUNDEN, 'pdf_stunden'), 8760);
     }
 
     /**
@@ -630,7 +630,7 @@ class Setting extends Model
      * null Tagen waere keine Einstellung, sondern eine abgeschaltete Warnung -
      * und die schaltet man nicht versehentlich ueber ein leeres Feld ab.
      */
-    private static function frist(string $schluessel, string $konfiguration): int
+    private static function deadline(string $schluessel, string $konfiguration): int
     {
         $eigene = (int) self::wert($schluessel);
 
@@ -638,7 +638,7 @@ class Setting extends Model
     }
 
     /** Aufbewahrungsfrist des Protokolls in Tagen, 0 wenn unbegrenzt. */
-    public static function protokollTage(): int
+    public static function activityDays(): int
     {
         return (int) self::wert(self::PROTOKOLL_TAGE, 0);
     }
@@ -686,7 +686,7 @@ class Setting extends Model
      * URL-Muster. Faellt auf RustDesk zurueck - das war die fest verdrahtete
      * Loesung, bevor es diese Einstellung gab.
      */
-    public static function fernwartung(): array
+    public static function remoteAccess(): array
     {
         $tools = config('custom.remote_tools');
         $key = static::wert(self::REMOTE_TOOL, 'rustdesk');
@@ -703,9 +703,9 @@ class Setting extends Model
      * Der fertige Verbindungslink fuer ein Geraet - oder null, wenn die
      * Angaben fehlen oder die Loesung keinen Link kennt.
      */
-    public static function fernwartungsLink(?string $id, ?string $passwort): ?string
+    public static function remoteAccessLink(?string $id, ?string $passwort): ?string
     {
-        $tool = static::fernwartung();
+        $tool = static::remoteAccess();
 
         if (blank($id) || blank($tool['url'])) {
             return null;

@@ -43,8 +43,8 @@ test('leitet die Praefixlaenge auch aus der Subnetzmaske ab, ohne cidr-Feld', fu
 });
 
 test('ohne Netzadresse oder Praefixlaenge gibt es keinen Bereich', function () {
-    expect(vlan(['network' => null])->bereich())->toBeNull();
-    expect(vlan(['cidr' => null, 'subnetmask' => null])->bereich())->toBeNull();
+    expect(vlan(['network' => null])->range())->toBeNull();
+    expect(vlan(['cidr' => null, 'subnetmask' => null])->range())->toBeNull();
 });
 
 test('fuerAdresse findet das passende Netz nur am richtigen Standort des Kunden', function () {
@@ -54,10 +54,10 @@ test('fuerAdresse findet das passende Netz nur am richtigen Standort des Kunden'
     $treffer = vlan(['customer_id' => $customer->id, 'site_id' => $site1->id]);
     vlan(['customer_id' => $customer->id, 'site_id' => $site2->id, 'network' => '10.99.0.0']);
 
-    $gefunden = Network::fuerAdresse($customer->id, $site1->id, '10.20.40.50');
+    $gefunden = Network::forUrl($customer->id, $site1->id, '10.20.40.50');
 
     expect($gefunden?->id)->toBe($treffer->id);
-    expect(Network::fuerAdresse($customer->id, $site2->id, '10.20.40.50'))->toBeNull();
+    expect(Network::forUrl($customer->id, $site2->id, '10.20.40.50'))->toBeNull();
 });
 
 test('fuerAdresse liefert null bei einer ungueltigen Adresse oder ohne Treffer', function () {
@@ -65,6 +65,6 @@ test('fuerAdresse liefert null bei einer ungueltigen Adresse oder ohne Treffer',
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     vlan(['customer_id' => $customer->id, 'site_id' => $site->id]);
 
-    expect(Network::fuerAdresse($customer->id, $site->id, 'keine-ip'))->toBeNull();
-    expect(Network::fuerAdresse($customer->id, $site->id, '192.168.1.1'))->toBeNull();
+    expect(Network::forUrl($customer->id, $site->id, 'keine-ip'))->toBeNull();
+    expect(Network::forUrl($customer->id, $site->id, '192.168.1.1'))->toBeNull();
 });

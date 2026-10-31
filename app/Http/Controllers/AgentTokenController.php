@@ -71,7 +71,7 @@ class AgentTokenController extends Controller
             'interval_minutes' => $validated['interval_minutes'] ?? $agentInstallation->interval_minutes,
         ]);
 
-        return $this->zurListe($customer)
+        return $this->toList($customer)
             ->with('success', __('Aufgaben für :name gespeichert – gilt ab dem nächsten Lauf.', ['name' => $agentInstallation->hostname]));
     }
 
@@ -86,7 +86,7 @@ class AgentTokenController extends Controller
 
         $agentInstallation->forceFill(['run_requested_at' => now()])->save();
 
-        return $this->zurListe($customer)
+        return $this->toList($customer)
             ->with('success', __(':name meldet innerhalb der nächsten fünf Minuten.', ['name' => $agentInstallation->hostname]));
     }
 
@@ -106,7 +106,7 @@ class AgentTokenController extends Controller
 
         $agentInstallation->delete();
 
-        return $this->zurListe($customer);
+        return $this->toList($customer);
     }
 
     /**
@@ -114,7 +114,7 @@ class AgentTokenController extends Controller
      * a save on page 3 otherwise landed on page 1. Only to the agent page of
      * this customer: the previous URL comes from the browser.
      */
-    private function zurListe(Customer $customer)
+    private function toList(Customer $customer)
     {
         $liste = route('agent.index', $customer);
         $vorher = url()->previous();
@@ -134,7 +134,7 @@ class AgentTokenController extends Controller
             // Pflicht und in der Zukunft: Ein Token ohne Ablauf ist ein
             // Dauerzugang, der auf jedem dokumentierten Rechner liegt.
             // Not beyond the maximum from Einstellungen -> Agenten.
-            'expires_at' => ['required', 'date', 'after:today', 'before_or_equal:'.now()->addDays(Setting::agentTokenMaxTage())->toDateString()],
+            'expires_at' => ['required', 'date', 'after:today', 'before_or_equal:'.now()->addDays(Setting::agentTokenMaxDays())->toDateString()],
         ]);
 
         $site = Site::where('customer_id', $customer->id)->findOrFail($validated['site_id']);
@@ -177,7 +177,7 @@ class AgentTokenController extends Controller
             ->withProperties(['objekt' => $agentToken->name ?: 'Token #'.$agentToken->id])
             ->log($locked ? 'Agent gesperrt' : 'Agent entsperrt');
 
-        return $this->zurListe($customer);
+        return $this->toList($customer);
     }
 
     public function destroy(Customer $customer, AgentToken $agentToken)
@@ -200,7 +200,7 @@ class AgentTokenController extends Controller
         Gate::authorize('agent_manage');
         abort_if($agentToken->customer_id !== $customer->id, 403);
 
-        $frist = LocalTime::endOfDay(now()->addDays(Setting::agentTokenTage()));
+        $frist = LocalTime::endOfDay(now()->addDays(Setting::agentTokenDays()));
         $plain = $agentToken->renew($frist);
 
         return $this->withNewToken($customer, $agentToken, $plain);
@@ -251,9 +251,9 @@ class AgentTokenController extends Controller
      * (JSON, 4-byte length, marker). Like the script, the file is as
      * confidential as the token in it.
      */
-    public function dienstExe(Customer $customer)
+    public function serviceExe(Customer $customer)
     {
-        $token = $this->dienstToken($customer);
+        $token = $this->serviceToken($customer);
 
         $json = json_encode(['url' => url('/'), 'token' => $token], JSON_UNESCAPED_SLASHES);
         // Inside the signature table if the exe is signed (ExeTag).
@@ -273,13 +273,13 @@ class AgentTokenController extends Controller
      * The Proxmox agent: an installer with URL and token filled in, which
      * sets up a systemd timer on the host (resources/agents/install).
      */
-    public function dienstProxmox(Customer $customer)
+    public function serviceProxmox(Customer $customer)
     {
         return $this->linuxInstaller($customer, 'proxmox');
     }
 
     /** The agent for Linux servers (Debian/Ubuntu) - same installer. */
-    public function dienstLinux(Customer $customer)
+    public function serviceLinux(Customer $customer)
     {
         return $this->linuxInstaller($customer, 'linux');
     }
@@ -290,7 +290,7 @@ class AgentTokenController extends Controller
      */
     protected function linuxInstaller(Customer $customer, string $art)
     {
-        $inhalt = AgentScript::rendernInstaller('linux-agent.sh', $this->dienstToken($customer), $art);
+        $inhalt = AgentScript::rendernInstaller('linux-agent.sh', $this->serviceToken($customer), $art);
 
         return response($inhalt, 200, [
             'Content-Type' => 'text/x-shellscript; charset=utf-8',
@@ -304,7 +304,7 @@ class AgentTokenController extends Controller
      * customer, only for half an hour, and only for one download; otherwise
      * 410.
      */
-    protected function dienstToken(Customer $customer): string
+    protected function serviceToken(Customer $customer): string
     {
         Gate::authorize('agent_manage');
 

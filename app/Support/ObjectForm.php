@@ -48,8 +48,8 @@ class ObjectForm
     {
         return array_map(function (array $feld) {
             $feld['label'] = match ($feld['name']) {
-                'remoteID' => Setting::fernwartung()['id_label'],
-                'remotePassword' => Setting::fernwartung()['password_label'],
+                'remoteID' => Setting::remoteAccess()['id_label'],
+                'remotePassword' => Setting::remoteAccess()['password_label'],
                 default => $feld['label'],
             };
 
@@ -488,7 +488,7 @@ class ObjectForm
             'datei' => [
                 'file',
                 'max:'.Setting::uploadMaxKb(),
-                'mimes:'.implode(',', Setting::dateiFormate()),
+                'mimes:'.implode(',', Setting::fileFormats()),
             ],
         ], [], ['datei' => __('Datei')])->validate();
 

@@ -43,7 +43,7 @@ class PasswordField extends Component
 
     public function show(): void
     {
-        $wert = $this->wertHolen();
+        $wert = $this->fetchValue();
 
         if ($wert === null) {
             return;
@@ -60,7 +60,7 @@ class PasswordField extends Component
      */
     public function kopieren(): void
     {
-        $wert = $this->wertHolen();
+        $wert = $this->fetchValue();
 
         if ($wert === null) {
             return;
@@ -73,7 +73,7 @@ class PasswordField extends Component
      * Holt den Klartext - mit Rechteprüfung, Bremse und Protokolleintrag, siehe
      * App\Support\Kennwortabruf. Gemeinsamer Kern von zeigen() und kopieren().
      */
-    private function wertHolen(): ?string
+    private function fetchValue(): ?string
     {
         $link = CredentialLink::find($this->linkId);
 
@@ -90,7 +90,7 @@ class PasswordField extends Component
         }
     }
 
-    public function verbergen(): void
+    public function hide(): void
     {
         $this->wert = null;
         $this->offen = false;

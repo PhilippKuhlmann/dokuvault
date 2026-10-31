@@ -35,7 +35,7 @@ class IoTDeviceRequest extends FormRequest
             'serialNumber' => 'max:255',
             'port' => 'max:255',
             'url' => 'nullable|url',
-            ...$this->beschaffungRegeln(),
+            ...$this->procurementRules(),
         ];
     }
 
@@ -50,7 +50,7 @@ class IoTDeviceRequest extends FormRequest
             'serialNumber' => 'Seriennummer',
             'port' => 'Port',
             'url' => 'URL',
-            ...$this->beschaffungBezeichnungen(),
+            ...$this->procurementLabels(),
         ];
     }
 }

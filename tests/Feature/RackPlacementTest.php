@@ -29,7 +29,7 @@ function platzUmgebung(): array
 test('ein nicht eingebautes Gerät hat keinen Einbauort', function () {
     [$customer, $site, $rack, $server] = platzUmgebung();
 
-    expect($server->einbauort())->toBeNull();
+    expect($server->mountLocation())->toBeNull();
 });
 
 test('der Einbauort nennt Rack, Höheneinheiten und Seite', function () {
@@ -40,7 +40,7 @@ test('der Einbauort nennt Rack, Höheneinheiten und Seite', function () {
         'device_type' => Server::class, 'device_id' => $server->id,
     ]);
 
-    expect($server->fresh()->einbauort())->toBe('Rack HH-01 · HE 4–5 · Rückseite');
+    expect($server->fresh()->mountLocation())->toBe('Rack HH-01 · HE 4–5 · Rückseite');
 });
 
 test('bei einer Höheneinheit steht kein Bereich', function () {
@@ -51,7 +51,7 @@ test('bei einer Höheneinheit steht kein Bereich', function () {
         'device_type' => Server::class, 'device_id' => $server->id,
     ]);
 
-    expect($server->fresh()->einbauort())->toBe('Rack HH-01 · HE 7 · Vorderseite');
+    expect($server->fresh()->mountLocation())->toBe('Rack HH-01 · HE 7 · Vorderseite');
 });
 
 test('die Geräteliste zeigt den Einbauort', function () {

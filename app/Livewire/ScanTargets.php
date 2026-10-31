@@ -55,7 +55,7 @@ class ScanTargets extends Component
         return app(ScanTargetLinking::class)->rules($this->customerId, $this->neu);
     }
 
-    protected function feldnamen(): array
+    protected function fieldNames(): array
     {
         return app(ScanTargetLinking::class)->attributeNames();
     }
@@ -104,7 +104,7 @@ class ScanTargets extends Component
         }
 
         $this->enableCheck();
-        $validated = $this->validate($this->regeln(), [], $this->feldnamen());
+        $validated = $this->validate($this->regeln(), [], $this->fieldNames());
 
         app(ScanTargetLinking::class)->add($scanner, $validated, $this->neu);
 

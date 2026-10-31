@@ -44,7 +44,7 @@ class PatchPort extends Model
      * Die Methode gehoert sonst zu TracksChanges; eine Dose wird nicht
      * protokolliert, aber die globale Suche fragt jeden Treffer danach.
      */
-    public function protokollName(): ?string
+    public function activityName(): ?string
     {
         return $this->name ?: null;
     }

@@ -6,8 +6,8 @@
 
             {{-- Die Art klein hinter den Namen: Sie ist die eigentliche Aussage
                  eines Clusters, nicht ein Nachschlagewert weiter unten. --}}
-            @if ($eintrag->typBezeichnung())
-                <span class="text-sm font-normal text-gray-500 dark:text-gray-400">{{ $eintrag->typBezeichnung() }}</span>
+            @if ($eintrag->typeLabel())
+                <span class="text-sm font-normal text-gray-500 dark:text-gray-400">{{ $eintrag->typeLabel() }}</span>
             @endif
 
             <x-slot:kernwerte>
@@ -64,7 +64,7 @@
         </div>
 
         <x-minitablecard :title="__('Cluster')" :array="[
-            'Art' => $eintrag->typBezeichnung(),
+            'Art' => $eintrag->typeLabel(),
             'Notiz' => $eintrag->note,
         ]" />
 

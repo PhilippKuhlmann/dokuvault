@@ -34,9 +34,9 @@ class AdminRetention extends Component
     {
         Gate::authorize('admin_setting');
 
-        $this->vertraege = Setting::fristVertraege();
-        $this->garantie = Setting::fristGarantie();
-        $this->eol = Setting::fristEol();
+        $this->vertraege = Setting::contractDeadline();
+        $this->garantie = Setting::warrantyDeadline();
+        $this->eol = Setting::eolDeadline();
         $this->pdfStunden = Setting::pdfStunden();
         $this->statistikApiTage = Setting::statistikApiTage();
         $this->statistikMonate = Setting::statistikMonate();
@@ -71,16 +71,16 @@ class AdminRetention extends Component
 
     public function updatedStatistikApiTage(): void
     {
-        $this->begrenzt('statistikApiTage', Setting::STATISTIK_API_TAGE, __('API-Auslastung'));
+        $this->clamped('statistikApiTage', Setting::STATISTIK_API_TAGE, __('API-Auslastung'));
     }
 
     public function updatedStatistikMonate(): void
     {
-        $this->begrenzt('statistikMonate', Setting::STATISTIK_MONATE, __('Verläufe'));
+        $this->clamped('statistikMonate', Setting::STATISTIK_MONATE, __('Verläufe'));
     }
 
     /** A setting with its range from Setting::ZAHLEN. */
-    private function begrenzt(string $feld, string $schluessel, string $bezeichnung): void
+    private function clamped(string $feld, string $schluessel, string $bezeichnung): void
     {
         [, $min, $max] = Setting::ZAHLEN[$schluessel];
         $this->check($feld, $min, $max, $bezeichnung);

@@ -20,7 +20,7 @@
             // Netzname und VLAN-Nummer zusammen ("DMZ · VLAN 20"): Der Name sagt
             // wofuer, die Nummer braucht man am Switch. Heisst die Bezeichnung
             // schon wie das Netz ("Clients"), bleibt nur die Nummer stehen.
-            'zusatz' => $netz?->anzeige($netz->description === $rolle),
+            'zusatz' => $netz?->label($netz->description === $rolle),
         ];
     }
 @endphp

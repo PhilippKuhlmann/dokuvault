@@ -80,7 +80,7 @@ class CredentialLink extends Model
      * Die Verknuepfung selbst hat keinen Namen - sie traegt den des Geraets,
      * an dem die Zugangsdaten haengen.
      */
-    public function protokollName(): ?string
+    public function activityName(): ?string
     {
         return $this->zielBezeichnung() ?: null;
     }

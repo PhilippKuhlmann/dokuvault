@@ -34,7 +34,7 @@ class IpAddress extends Model
      * steht. Gespeichert bleibt sie trotzdem - der IP-Plan braucht sie, um das
      * Geraet dem richtigen Pool zuzuordnen.
      */
-    public function anzeige(): string
+    public function label(): string
     {
         return $this->istDhcp() ? __(self::MARKE_DHCP) : (string) $this->address;
     }

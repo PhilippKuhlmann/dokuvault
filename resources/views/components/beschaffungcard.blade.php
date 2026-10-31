@@ -8,7 +8,7 @@
 @props(['device'])
 
 @php
-    $tage = $device->garantieTage();
+    $tage = $device->warrantyDays();
 
     $garantie = $device->warranty_until?->format('d.m.Y');
 

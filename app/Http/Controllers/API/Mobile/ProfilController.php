@@ -157,7 +157,7 @@ class ProfilController extends Controller
         return response()->json([
             // Zum Abtippen und fuer den QR-Code, den die App daraus malt.
             'geheimnis' => $geheimnis,
-            'adresse' => $zweiteStufe->adresse($nutzer, $geheimnis),
+            'adresse' => $zweiteStufe->url($nutzer, $geheimnis),
             'braucht_mail_code' => $mailcode !== null,
             'vorgang' => Crypt::encryptString(json_encode([
                 // Zweck: Der Schluessel verschluesselt auch anderes; ein

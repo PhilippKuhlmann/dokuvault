@@ -117,7 +117,7 @@ class WizardController extends Controller
     {
         $ablauf = new WizardFlow($customer, $request->user());
 
-        abort_if(empty($ablauf->schritte()), 403);
+        abort_if(empty($ablauf->steps()), 403);
 
         return $ablauf;
     }
@@ -133,7 +133,7 @@ class WizardController extends Controller
             'laeuft' => $durchlauf !== null,
             'aktuell' => $durchlauf?->current_step,
             'fertig' => $durchlauf === null ? null : $durchlauf->completed_at?->toIso8601String(),
-            'schritte' => collect($ablauf->schritte())->map(fn ($schritt) => [
+            'schritte' => collect($ablauf->steps())->map(fn ($schritt) => [
                 'schluessel' => $schritt['key'],
                 'gruppe' => __($schritt['group']),
                 'titel' => __($schritt['label']),

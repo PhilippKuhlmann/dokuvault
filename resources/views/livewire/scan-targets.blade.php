@@ -28,7 +28,7 @@
                     <tr class="border-b border-gray-50 last:border-0 dark:border-gray-700/50" wire:key="ziel-{{ $eintrag->id }}">
                         <td class="py-2 pr-4 align-top text-gray-900 dark:text-gray-100">
                             {{ $eintrag->name ?: '—' }}
-                            <div class="text-xs text-gray-400 dark:text-gray-500">{{ $eintrag->artName() }}</div>
+                            <div class="text-xs text-gray-400 dark:text-gray-500">{{ $eintrag->typeName() }}</div>
                         </td>
                         <td class="py-2 pr-4 align-top font-mono text-xs break-all text-gray-900 dark:text-gray-100">{{ $eintrag->target }}</td>
                         <td class="py-2 pr-4 align-top text-gray-600 dark:text-gray-300">{{ $eintrag->login?->name ?: '—' }}</td>

@@ -135,9 +135,9 @@
     {{-- Netzwerk --}}
     <x-pdf.section :title="__('Internet / WAN')" :items="$customer->internetconnections" :titleField="fn($i) => trim(($i->provider ?? '').' '.($i->product ? '– '.$i->product : ''))" :groups="[
         'Vertrag' => ['Anbieter' => 'provider', 'Produkt' => 'product', 'Vertragsnummer' => 'contract_number', 'Anschlussart' => 'connection_type'],
-        'Technik' => ['Download' => fn($i) => $i->bandbreite($i->bandwidth_down), 'Upload' => fn($i) => $i->bandbreite($i->bandwidth_up), 'WAN-IP' => 'wan_ip', 'Hotline' => 'hotline'],
+        'Technik' => ['Download' => fn($i) => $i->bandwidth($i->bandwidth_down), 'Upload' => fn($i) => $i->bandwidth($i->bandwidth_up), 'WAN-IP' => 'wan_ip', 'Hotline' => 'hotline'],
         'Einwahl (PPPoE)' => ['Benutzer' => 'pppoe_user', 'Passwort' => 'pppoe_password'],
-        'Geroutetes Netz' => ['Netz' => 'subnet', 'Gateway' => 'subnet_gateway', 'Nutzbar' => fn($i) => $i->nutzbarerBereich()],
+        'Geroutetes Netz' => ['Netz' => 'subnet', 'Gateway' => 'subnet_gateway', 'Nutzbar' => fn($i) => $i->usableRange()],
     ]" />
 
     <x-pdf.section :title="__('Firewalls')" :items="$customer->firewalls" :titleField="$deviceTitle" :groups="[
@@ -229,7 +229,7 @@
 
     {{-- Server & Storage --}}
     <x-pdf.section :title="__('Cluster')" :items="$customer->clusters()->with('servers')->get()" :groups="[
-        'Cluster' => ['Art' => fn($c) => $c->typBezeichnung(), 'Knoten' => fn($c) => $c->servers->pluck('name')->implode(', '), 'Notiz' => 'note'],
+        'Cluster' => ['Art' => fn($c) => $c->typeLabel(), 'Knoten' => fn($c) => $c->servers->pluck('name')->implode(', '), 'Notiz' => 'note'],
     ]" />
 
     <x-pdf.section :title="__('Server')" :items="$customer->servers" :groups="[
@@ -264,7 +264,7 @@
     ]" />
 
     <x-pdf.section :title="__('Scan-Ziele')" :items="$customer->scantargets()->with('scanners', 'login')->get()" :titleField="fn($z) => $z->name ?: $z->target" :groups="[
-        'Ziel' => ['Art' => fn($z) => $z->artName(), 'Ziel' => 'target', 'Beschreibung' => 'description'],
+        'Ziel' => ['Art' => fn($z) => $z->typeName(), 'Ziel' => 'target', 'Beschreibung' => 'description'],
         'Zugang' => ['Zugangsdaten' => fn($z) => $z->login ? trim($z->login->name.($z->login->username ? ' ('.$z->login->username.')' : '')) : null],
         'Eingerichtet auf' => ['Scanner' => fn($z) => $z->scanners->pluck('name')->implode(', ')],
     ]" />
@@ -355,7 +355,7 @@
     {{-- Der private Schluessel steht bewusst nicht im PDF: Er waere in einem
          weitergereichten Dokument nicht mehr einzufangen. --}}
     <x-pdf.section :title="__('SSH-Schlüssel')" :items="$customer->sshkeys" :groups="[
-        'Schlüssel' => ['Benutzer' => 'username', 'Verfahren' => fn ($k) => $k->verfahrenName(), 'Fingerprint' => 'fingerprint', 'Beschreibung' => 'description'],
+        'Schlüssel' => ['Benutzer' => 'username', 'Verfahren' => fn ($k) => $k->algorithmName(), 'Fingerprint' => 'fingerprint', 'Beschreibung' => 'description'],
         'Verwendung' => ['Verwendet bei' => fn ($k) => $k->verwendetBei() ?: '—'],
     ]" />
 

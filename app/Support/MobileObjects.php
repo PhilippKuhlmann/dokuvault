@@ -62,7 +62,7 @@ class MobileObjects
     }
 
     /** Die Typen, deren Liste dieser Benutzer sehen darf. */
-    public function sichtbareTypen(User $nutzer): array
+    public function visibleKinds(User $nutzer): array
     {
         return array_filter(
             $this->typen(),
@@ -97,7 +97,7 @@ class MobileObjects
     }
 
     /** Einzahl: "Server", "Zertifikat". */
-    public function einzahl(string $slug): string
+    public function singular(string $slug): string
     {
         return __(config('forms')[$slug]['einzahl']
             ?? config('custom.trashables')[$slug][1]
@@ -131,7 +131,7 @@ class MobileObjects
             'typ' => $slug,
             'id' => $objekt->getKey(),
             'name' => $this->name($objekt, $slug),
-            'untertitel' => $this->untertitel($objekt),
+            'untertitel' => $this->subtitle($objekt),
             'kunde' => $this->kunde($objekt->customer),
         ];
     }
@@ -143,22 +143,24 @@ class MobileObjects
 
         return [
             ...$this->kurz($objekt, $slug),
-            'einzahl' => $this->einzahl($slug),
+            'einzahl' => $this->singular($slug),
             'gruppen' => $felder !== null
-                ? $this->gruppen($objekt, $felder)
-                : $this->gruppenOhneFormular($objekt),
+                ? $this->groups($objekt, $felder)
+                : $this->groupsWithoutForm($objekt),
             'ip_adressen' => method_exists($objekt, 'ipAddresses')
                 ? $objekt->ipAddresses()->with('network')->get()->map(fn ($ip) => [
                     // id and dhcp to remove it again (DeviceController).
                     'id' => $ip->id,
                     'dhcp' => (bool) $ip->dhcp,
-                    'adresse' => $ip->anzeige(),
+                    'adresse' => $ip->label(),
                     'bezeichnung' => $ip->label,
-                    'netz' => $ip->network?->protokollName(),
+                    'netz' => $ip->network?->activityName(),
                 ])->values()->all()
                 : [],
             'zugangsdaten' => $this->zugangsdaten($objekt, $nutzer),
-            'einbauort' => $this->einbauort($objekt),
+            // Der Schluessel bleibt deutsch: Er ist Teil der Antwort, die die
+            // iOS-App liest - ein Umbau dort gehoert mit der App zusammen.
+            'einbauort' => $this->mountLocation($objekt),
             'support_ende' => $this->supportEnde($objekt),
             'scan_ziele' => $objekt instanceof Scanner
                 ? $objekt->scanTargets()->with('login')->get()->map(fn ($ziel) => $this->scanZiel($ziel))->values()->all()
@@ -180,9 +182,9 @@ class MobileObjects
     }
 
     /** Where the device is fitted - the way back from the rack view. */
-    private function einbauort(Model $objekt): ?array
+    private function mountLocation(Model $objekt): ?array
     {
-        if (! method_exists($objekt, 'einbauort') || ! ($text = $objekt->einbauort())) {
+        if (! method_exists($objekt, 'mountLocation') || ! ($text = $objekt->mountLocation())) {
             return null;
         }
 
@@ -222,13 +224,13 @@ class MobileObjects
 
     private function name(Model $objekt, string $slug): string
     {
-        $name = method_exists($objekt, 'protokollName') ? $objekt->protokollName() : null;
+        $name = method_exists($objekt, 'activityName') ? $objekt->activityName() : null;
 
-        return $name ?: $this->einzahl($slug).' #'.$objekt->getKey();
+        return $name ?: $this->singular($slug).' #'.$objekt->getKey();
     }
 
     /** Woran man das Objekt in einer Liste wiedererkennt, ohne es zu oeffnen. */
-    private function untertitel(Model $objekt): ?string
+    private function subtitle(Model $objekt): ?string
     {
         $teile = [
             $objekt->site_id ? $objekt->site?->name : null,
@@ -239,7 +241,7 @@ class MobileObjects
     }
 
     /** Die Felder aus dem Formular, nach dessen Abschnitten gruppiert. */
-    private function gruppen(Model $objekt, array $felder): array
+    private function groups(Model $objekt, array $felder): array
     {
         $gruppen = [];
 
@@ -347,7 +349,7 @@ class MobileObjects
             'optionen' => ['text', __((string) ($this->optionen($feld)[$roh] ?? $roh))],
             'standort' => ['text', $objekt->site?->name],
             'auswahl' => ['text', $feld['quelle']::find($roh)?->{$feld['anzeige'] ?? 'name'}],
-            default => [$this->artVonText($roh), (string) $roh],
+            default => [$this->typeFromText($roh), (string) $roh],
         };
 
         if ($wert === null || $wert === '') {
@@ -402,7 +404,7 @@ class MobileObjects
     }
 
     /** Fuer Objekte ohne Formular (Schrank, Patchfeld, Dose): die Spalten selbst. */
-    private function gruppenOhneFormular(Model $objekt): array
+    private function groupsWithoutForm(Model $objekt): array
     {
         $versteckt = ['id', 'customer_id', 'site_id', 'created_at', 'updated_at', 'deleted_at'];
 
@@ -412,7 +414,7 @@ class MobileObjects
             ->map(fn ($wert, $name) => [
                 'name' => $name,
                 'label' => $name,
-                'art' => $this->artVonText($wert),
+                'art' => $this->typeFromText($wert),
                 'wert' => is_bool($wert) ? ($wert ? __('Ja') : __('Nein')) : (string) $wert,
             ])
             ->values()
@@ -460,7 +462,7 @@ class MobileObjects
     }
 
     /** Damit die App eine Adresse antippbar machen kann. */
-    private function artVonText($wert): string
+    private function typeFromText($wert): string
     {
         $wert = (string) $wert;
 

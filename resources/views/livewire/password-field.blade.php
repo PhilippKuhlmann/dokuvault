@@ -11,7 +11,7 @@
         class="{{ $width }} min-w-0 p-0 text-sm font-mono bg-transparent border-0 {{ $offen ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 select-none' }}">
 
     {{-- Auge: aufdecken bzw. verbergen. --}}
-    <button type="button" tabindex="-1" wire:click="{{ $offen ? 'verbergen' : 'zeigen' }}"
+    <button type="button" tabindex="-1" wire:click="{{ $offen ? 'hide' : 'show' }}"
         title="{{ $offen ? __('Passwort verbergen') : __('Passwort anzeigen') }}"
         class="shrink-0 text-gray-400 hover:text-cerulean-600 dark:text-gray-500 dark:hover:text-gray-300">
         @if ($offen)

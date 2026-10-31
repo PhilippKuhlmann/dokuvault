@@ -61,7 +61,7 @@ class File extends Model
      * gibt es keine Endungsliste, das muss die Abfrage als "nicht in allen
      * anderen" formulieren.
      */
-    public static function endungenFuerArt(string $art): array
+    public static function extensionsForType(string $art): array
     {
         return config('custom.file_arten.'.$art.'.1', []);
     }

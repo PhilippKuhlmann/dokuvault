@@ -29,7 +29,7 @@ class EolController extends Controller
         // Dieselbe Schwelle wie beim Abzeichen - und jetzt auch dieselbe
         // Quelle. Zwei Zahlen mit demselben Kommentar laufen sonst auseinander.
         $systeme = OperatingSystem::whereNotNull('eol_date')
-            ->whereDate('eol_date', '<=', now()->addDays(Setting::fristEol()))
+            ->whereDate('eol_date', '<=', now()->addDays(Setting::eolDeadline()))
             ->get()
             ->keyBy('id');
 

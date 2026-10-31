@@ -33,7 +33,7 @@ class NASRequest extends FormRequest
             'model' => 'max:255',
             'serialNumber' => 'max:255',
             'port' => 'numeric',
-            ...$this->beschaffungRegeln(),
+            ...$this->procurementRules(),
         ];
     }
 
@@ -46,7 +46,7 @@ class NASRequest extends FormRequest
             'model' => 'Modell',
             'serialNumber' => 'Seriennummer',
             'port' => 'Port',
-            ...$this->beschaffungBezeichnungen(),
+            ...$this->procurementLabels(),
         ];
     }
 }

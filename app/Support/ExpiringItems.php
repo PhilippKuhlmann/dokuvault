@@ -56,7 +56,7 @@ class ExpiringItems
 
             $query = $class::query()->with('customer')
                 ->whereNotNull($column)
-                ->whereDate($column, '<=', now()->addDays(Setting::fristVertraege()));
+                ->whereDate($column, '<=', now()->addDays(Setting::contractDeadline()));
 
             $items = $items->merge(self::rows(self::scoped($query, $user)->get(), 'contract', $slug, $label, $column));
         }
@@ -94,7 +94,7 @@ class ExpiringItems
     {
         $query = AgentInstallation::query()->with('customer')
             ->where(fn ($q) => $q->whereNull('last_seen_at')
-                ->orWhere('last_seen_at', '<', now()->subHours(Setting::agentStillStunden())));
+                ->orWhere('last_seen_at', '<', now()->subHours(Setting::agentSilentHours())));
 
         return self::scoped($query, $user)->get()
             ->filter(fn (AgentInstallation $a) => $a->customer)

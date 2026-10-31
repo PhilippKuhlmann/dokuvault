@@ -21,7 +21,7 @@
                     <x-table.datarow
                         :values="[
                             'rackface' => $deviceModel,
-                            __($deviceModel->typBezeichnung()),
+                            __($deviceModel->typeLabel()),
                             $deviceModel->manufacturer,
                             $deviceModel->model ?: '—',
                             $deviceModel->height_units . ' HE',

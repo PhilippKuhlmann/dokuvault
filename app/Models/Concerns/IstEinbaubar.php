@@ -22,7 +22,7 @@ trait IstEinbaubar
      * Kurzfassung des Einbauorts fuer Listen und PDF, z. B.
      * "Rack HH-01 · HE 4–5 · Vorderseite". Null, wenn nicht eingebaut.
      */
-    public function einbauort(): ?string
+    public function mountLocation(): ?string
     {
         $einbau = $this->rackItem;
 

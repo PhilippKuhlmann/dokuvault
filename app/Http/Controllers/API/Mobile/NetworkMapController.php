@@ -87,7 +87,7 @@ class NetworkMapController extends Controller
     {
         return [
             'id' => $netz->id,
-            'name' => $netz->anzeige() ?: __('VLAN'),
+            'name' => $netz->label() ?: __('VLAN'),
             'adresse' => $netz->network && $netz->cidr ? $netz->network.'/'.$netz->cidr : $netz->network,
             'gateway' => $netz->gateway,
         ];

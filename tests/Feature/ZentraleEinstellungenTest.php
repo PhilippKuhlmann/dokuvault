@@ -18,15 +18,15 @@ use Livewire\Livewire;
 
 test('without settings the old defaults hold, out of range falls back', function () {
     expect(Setting::agentIntervall())->toBe(60)
-        ->and(Setting::agentStillStunden())->toBe(3)
-        ->and(Setting::agentTokenTage())->toBe(365)
+        ->and(Setting::agentSilentHours())->toBe(3)
+        ->and(Setting::agentTokenDays())->toBe(365)
         ->and(Setting::statistikApiTage())->toBe(90)
         ->and(Setting::statistikMonate())->toBe(24)
         ->and(Setting::kennwortAbrufe())->toBe(30);
 
     Setting::setzen(Setting::AGENT_STILL_STUNDEN, 0);
     Setting::setzen(Setting::AGENT_INTERVALL, 45);
-    expect(Setting::agentStillStunden())->toBe(3)->and(Setting::agentIntervall())->toBe(60);
+    expect(Setting::agentSilentHours())->toBe(3)->and(Setting::agentIntervall())->toBe(60);
 });
 
 test('the agent page stores the defaults and they take effect', function () {
@@ -52,7 +52,7 @@ test('the agent page stores the defaults and they take effect', function () {
     // 5 hours silent: still within 12 hours; interval from the default.
     expect($installation->isStale())->toBeFalse()
         ->and($installation->intervalMinutes())->toBe(30)
-        ->and(Setting::agentTokenTage())->toBe(90);
+        ->and(Setting::agentTokenDays())->toBe(90);
 });
 
 test('a token beyond the maximum validity is refused', function () {

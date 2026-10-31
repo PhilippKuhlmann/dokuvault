@@ -78,7 +78,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $this->registerSearch();
-        $this->mailEinstellungenAnwenden();
+        $this->applyMailSettings();
 
         // Wie ein Kennwort aussehen muss - an einer Stelle gesetzt, wirksam an
         // allen vier: eigenes Profil, Anlegen durch einen Administrator,
@@ -88,7 +88,7 @@ class AppServiceProvider extends ServiceProvider
         // Als Funktion, nicht als Wert: So wird die Einstellung erst beim
         // Pruefen gelesen und nicht beim Hochfahren - dort gibt es die Tabelle
         // beim ersten "artisan migrate" noch gar nicht.
-        Password::defaults(fn () => Setting::kennwortRegel());
+        Password::defaults(fn () => Setting::passwordRule());
 
         // Livewire prueft temporaere Uploads mit einer eigenen Regel und laesst
         // ohne Angabe hoechstens 12 MB durch. Die Anwendung erlaubt mehr -
@@ -108,7 +108,7 @@ class AppServiceProvider extends ServiceProvider
             'required', 'file', 'max:'.$grenze,
         ]]);
 
-        $this->sitzungEinstellungenAnwenden();
+        $this->applySessionSettings();
 
         // role_id, not role->id: a user without a role would throw here.
         Gate::define('isAdmin', function (User $user) {
@@ -207,7 +207,7 @@ class AppServiceProvider extends ServiceProvider
      * .env oder eine Tabelle gibt. Genau daran ist schon ein CI-Lauf
      * gescheitert.
      */
-    private function sitzungEinstellungenAnwenden(): void
+    private function applySessionSettings(): void
     {
         // Ohne Schluessel gar nicht erst anfangen: Der Guard zieht die Sitzung,
         // die Sitzung ist verschluesselt, und ohne APP_KEY wirft der
@@ -237,7 +237,7 @@ class AppServiceProvider extends ServiceProvider
         Auth::guard('web')->setRememberDuration(60 * 24 * $tage);
     }
 
-    private function mailEinstellungenAnwenden(): void
+    private function applyMailSettings(): void
     {
         try {
             $host = trim((string) Setting::wert(Setting::MAIL_HOST));
@@ -249,7 +249,7 @@ class AppServiceProvider extends ServiceProvider
             return;
         }
 
-        $kennwort = Setting::mailKennwort();
+        $kennwort = Setting::mailPassword();
 
         config([
             'mail.default' => 'smtp',

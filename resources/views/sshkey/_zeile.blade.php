@@ -3,7 +3,7 @@
                         :values="[
                             $eintrag->name,
                             $eintrag->username,
-                            $eintrag->verfahrenName(),
+                            $eintrag->algorithmName(),
                             $eintrag->description,
                             'fingerprint' => $eintrag->fingerprint,
                             $eintrag->verwendetBei() ?: '—',

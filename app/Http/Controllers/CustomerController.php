@@ -46,8 +46,8 @@ class CustomerController extends Controller
         // iOS-App, damit beide dieselben Tage zeigen.
         $uebersicht = new CustomerDashboard($customer, auth()->user());
 
-        $sites = $uebersicht->standorte();
-        $contactpersons = $uebersicht->ansprechpartner();
+        $sites = $uebersicht->sites();
+        $contactpersons = $uebersicht->contactPersons();
 
         // Inventar-Zähler (in einer Abfrage via loadCount)
         $customer->loadCount([

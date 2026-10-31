@@ -17,7 +17,7 @@ test('without settings the backup stays local at 01:30, without mails to nowhere
     BackupSettings::anwenden();
 
     expect(config('backup.backup.destination.disks'))->toBe(['local'])
-        ->and(BackupSettings::uhrzeit())->toBe('01:30')
+        ->and(BackupSettings::timeOfDay())->toBe('01:30')
         ->and(collect(config('backup.notifications.notifications'))->flatten()->all())->toBe([]);
 });
 

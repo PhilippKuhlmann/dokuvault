@@ -67,7 +67,7 @@ class Checklist extends Model
     }
 
     /** For the global search: the person, and whether they come or go. */
-    public function protokollName(): ?string
+    public function activityName(): ?string
     {
         return $this->fullName().' ('.($this->isOnboarding() ? __('Onboarding') : __('Offboarding')).')';
     }

@@ -10,7 +10,7 @@ use App\Support\AgentScript;
  * updates reach installed services without a new download.
  */
 
-function dienstToken(): array
+function serviceToken(): array
 {
     $customer = Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
@@ -19,7 +19,7 @@ function dienstToken(): array
 }
 
 test('the service gets the current script with its own token filled in', function () {
-    [, $plain] = dienstToken();
+    [, $plain] = serviceToken();
 
     $antwort = $this->withToken($plain)->get('/api/agent/script/windows-ad')->assertOk();
 
@@ -37,14 +37,14 @@ test('without a valid token there is no script', function () {
 });
 
 test('an expired token gets no script', function () {
-    [$token, $plain] = dienstToken();
+    [$token, $plain] = serviceToken();
     $token->forceFill(['expires_at' => now()->subDay()])->save();
 
     $this->withToken($plain)->get('/api/agent/script/windows-server')->assertUnauthorized();
 });
 
 test('agents that need credentials or unknown names are not served', function (string $agent) {
-    [, $plain] = dienstToken();
+    [, $plain] = serviceToken();
 
     $this->withToken($plain)->get('/api/agent/script/'.$agent)->assertNotFound();
 })->with(['unifi', 'vmware', 'microsoft365', 'proxmox', 'gibt-es-nicht']);
@@ -111,7 +111,7 @@ test('without the right to agents there is no exe', function () {
 });
 
 test('the Proxmox agent fetches the bash script, unattended bash agents only', function () {
-    [, $plain] = dienstToken();
+    [, $plain] = serviceToken();
 
     $this->withToken($plain)->get('/api/agent/script/proxmox?shell=bash')
         ->assertOk()
@@ -159,7 +159,7 @@ test('the agent page always says how to uninstall each agent', function () {
 });
 
 test('the Windows agent gets an update only when its version differs', function () {
-    [, $plain] = dienstToken();
+    [, $plain] = serviceToken();
     $aktuell = AgentScript::exeVersion();
     expect($aktuell)->not->toBeEmpty();
 
@@ -171,7 +171,7 @@ test('the Windows agent gets an update only when its version differs', function 
 });
 
 test('the Proxmox agent gets the current installer with its own token', function () {
-    [, $plain] = dienstToken();
+    [, $plain] = serviceToken();
     $aktuell = AgentScript::installerVersion('linux-agent.sh');
 
     $this->withToken($plain)->get('/api/agent/update/proxmox?version='.$aktuell)->assertNoContent();
@@ -191,7 +191,7 @@ test('the Proxmox agent gets the current installer with its own token', function
 test('updates need a valid token and a known agent', function () {
     $this->get('/api/agent/update/windows?version=x')->assertUnauthorized();
 
-    [, $plain] = dienstToken();
+    [, $plain] = serviceToken();
     $this->withToken($plain)->get('/api/agent/update/unifi?version=x')->assertNotFound();
 });
 

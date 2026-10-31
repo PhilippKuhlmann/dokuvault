@@ -47,7 +47,7 @@ class AdminController extends Controller
      * Wer die Zahl sofort braucht, oeffnet die Liste dahinter - die zaehlt
      * ihre Eintraege selbst und ist durch den Kundenfilter schnell.
      */
-    protected function zahlen(): array
+    protected function numbers(): array
     {
         return Cache::remember('admin.zahlen', now()->addMinutes(15), fn () => [
             'users' => User::count(),
@@ -75,7 +75,7 @@ class AdminController extends Controller
         // liest den ganzen Index. Gemessen bei 10 Millionen Datensaetzen: 1595
         // ms fuer vier Tabellen, mit allen Kacheln zusammen mehrere Sekunden -
         // fuer Zahlen, die niemand sekundengenau braucht.
-        $zahlen = $this->zahlen();
+        $zahlen = $this->numbers();
 
         // Nur Kacheln, die auch zu oeffnen sind. Eine Kachel, die beim Klick
         // 403 liefert, ist schlechter als keine - und die Zahl darauf verraet
@@ -89,7 +89,7 @@ class AdminController extends Controller
 
         // Globale Ablauf-Übersicht über alle Kunden, inkl. bereits abgelaufen.
         // Die Frist steht unter Einstellungen > Fristen.
-        $limit = now()->addDays(Setting::fristVertraege());
+        $limit = now()->addDays(Setting::contractDeadline());
         $expiring = collect();
         foreach (LicenseSoftware::whereNotNull('end_date')->whereDate('end_date', '<=', $limit)->with('customer')->get() as $l) {
             $expiring->push(['type' => 'Lizenz', 'name' => $l->name, 'date' => $l->end_date, 'customer' => $l->customer, 'route' => $l->customer ? route('licensesoftware.index', $l->customer) : null]);

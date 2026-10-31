@@ -37,7 +37,7 @@ class LiegtImNetz implements ValidationRule
             return;
         }
 
-        if (IstNetz::netzadresse($adresse, (int) $praefix) !== IstNetz::netzadresse($netzRoh, (int) $praefix)) {
+        if (IstNetz::networkAddress($adresse, (int) $praefix) !== IstNetz::networkAddress($netzRoh, (int) $praefix)) {
             $fail('Die Adresse liegt nicht im angegebenen Netz '.$this->netz.'.');
         }
     }

@@ -25,7 +25,7 @@ class Kernel extends ConsoleKernel
         // Germany). Stored and logged stays UTC, see App\Support\Zeit.
         try {
             $aktiv = BackupSettings::aktiv();
-            $uhrzeit = BackupSettings::uhrzeit();
+            $uhrzeit = BackupSettings::timeOfDay();
             $zone = LocalTime::zone();
         } catch (\Throwable) {
             [$aktiv, $uhrzeit, $zone] = [true, '01:30', config('app.timezone')];

@@ -17,7 +17,7 @@
                 ['eol', __('Support-Ende der Betriebssysteme'),
                     __('Für das Abzeichen am Betriebssystem und für die Liste unter Betriebssysteme.')],
             ] as [$feld, $label, $wirkung])
-                <div wire:key="frist-{{ $feld }}">
+                <div wire:key="deadline-{{ $feld }}">
                     <x-input.label for="{{ $feld }}" :value="$label" />
 
                     <div class="mt-1 flex items-center gap-2">

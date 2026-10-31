@@ -1,7 +1,7 @@
 {{-- Ein Eintrag in der Liste. Die Karte bleibt beim Typ. --}}
         @php
             $adressen = $eintrag->relationLoaded('ipAddresses') ? $eintrag->ipAddresses : $eintrag->ipAddresses()->get();
-            $primaer = $adressen->first()?->anzeige();
+            $primaer = $adressen->first()?->label();
             $anzahlIps = $adressen->count();
         @endphp
     <x-card>
@@ -44,11 +44,11 @@
                     <table class="w-full text-sm dark:text-gray-100">
                         @foreach ($ziele as $ziel)
                             <tr class="border-b border-gray-100 last:border-0 dark:border-gray-700/50">
-                                <td class="py-1 pr-3 align-top text-gray-500 dark:text-gray-400">{{ $ziel->name ?: $ziel->artName() }}</td>
+                                <td class="py-1 pr-3 align-top text-gray-500 dark:text-gray-400">{{ $ziel->name ?: $ziel->typeName() }}</td>
                                 <td class="py-1 align-top font-mono text-xs break-all">
                                     {{ $ziel->target }}
                                     @if ($ziel->name)
-                                        <span class="ml-1 font-sans text-[10px] text-gray-400 dark:text-gray-500">{{ $ziel->artName() }}</span>
+                                        <span class="ml-1 font-sans text-[10px] text-gray-400 dark:text-gray-500">{{ $ziel->typeName() }}</span>
                                     @endif
                                 </td>
                             </tr>

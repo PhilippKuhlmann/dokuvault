@@ -31,7 +31,7 @@ test('das bisherige Kennwort bleibt nachschlagbar', function () {
     $firewall = firewallMitKennwort('Richtig!2026');
     $firewall->update(['cloud_backup_password' => 'Versehen!2026']);
 
-    $eintrag = $firewall->kennwortVerlauf()->sole();
+    $eintrag = $firewall->passwordHistory()->sole();
 
     expect($eintrag->field)->toBe('cloud_backup_password');
     expect($eintrag->value)->toBe('Richtig!2026');
@@ -187,7 +187,7 @@ test('die Frist laesst sich einstellen', function () {
         ->set('tage', 365)
         ->call('save');
 
-    expect(Setting::protokollTage())->toBe(365);
+    expect(Setting::activityDays())->toBe(365);
 });
 
 test('eine unsinnige Frist wird abgelehnt', function () {
@@ -199,7 +199,7 @@ test('eine unsinnige Frist wird abgelehnt', function () {
         ->call('save')
         ->assertHasErrors('tage');
 
-    expect(Setting::protokollTage())->toBe(90);
+    expect(Setting::activityDays())->toBe(90);
 });
 
 test('die Einstellseite zeigt keine Kennwoerter', function () {

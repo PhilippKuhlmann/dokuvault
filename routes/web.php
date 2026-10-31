@@ -365,12 +365,12 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::post('agent/{agentToken}/renew', [AgentTokenController::class, 'renew'])->name('agent.renew');
             Route::post('agent/{agentToken}/lock', [AgentTokenController::class, 'lock'])->name('agent.lock');
             Route::post('agent/{agentToken}/unlock', [AgentTokenController::class, 'unlock'])->name('agent.unlock');
-            Route::get('agent/service.exe', [AgentTokenController::class, 'dienstExe'])->name('agent.service');
+            Route::get('agent/service.exe', [AgentTokenController::class, 'serviceExe'])->name('agent.service');
             Route::put('agent/installation/{agentInstallation}', [AgentTokenController::class, 'updateInstallation'])->name('agent.installation.update');
             Route::post('agent/installation/{agentInstallation}/run', [AgentTokenController::class, 'runInstallation'])->name('agent.installation.run');
             Route::delete('agent/installation/{agentInstallation}', [AgentTokenController::class, 'destroyInstallation'])->name('agent.installation.destroy');
-            Route::get('agent/service-proxmox.sh', [AgentTokenController::class, 'dienstProxmox'])->name('agent.service.proxmox');
-            Route::get('agent/service-linux.sh', [AgentTokenController::class, 'dienstLinux'])->name('agent.service.linux');
+            Route::get('agent/service-proxmox.sh', [AgentTokenController::class, 'serviceProxmox'])->name('agent.service.proxmox');
+            Route::get('agent/service-linux.sh', [AgentTokenController::class, 'serviceLinux'])->name('agent.service.linux');
 
             // Dokumentations-Assistent (geführte Erstaufnahme)
             Route::get('wizard', [WizardController::class, 'index'])->name('wizard.index');

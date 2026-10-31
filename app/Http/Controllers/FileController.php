@@ -41,7 +41,7 @@ class FileController extends Controller
                 'required',
                 'file',
                 'max:'.Setting::uploadMaxKb(),
-                'mimes:'.implode(',', Setting::dateiFormate()),
+                'mimes:'.implode(',', Setting::fileFormats()),
             ],
             'name' => ['required', 'string', 'max:255'],
         ], [], ['file' => __('Datei'), 'name' => __('Name')]);

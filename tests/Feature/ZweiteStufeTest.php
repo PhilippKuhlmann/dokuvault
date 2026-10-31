@@ -93,7 +93,7 @@ test('Abschalten verlangt das Kennwort', function () {
     [$nutzer] = nutzerMitZweiterStufe();
 
     $this->actingAs($nutzer)->delete(route('two-factor.destroy'), ['password' => 'falsch'])
-        ->assertSessionHasErrors('password', null, 'zweiteStufeAus');
+        ->assertSessionHasErrors('password', null, 'disableTwoFactor');
 
     expect($nutzer->fresh()->hasTwoFactor())->toBeTrue();
 
@@ -287,7 +287,7 @@ test('verlangt heisst: der Benutzer kann sie nicht abschalten', function () {
 
     $this->actingAs($nutzer->fresh())
         ->delete(route('two-factor.destroy'), ['password' => 'Ein-Gutes-Kennwort-2026'])
-        ->assertSessionHasErrors('password', null, 'zweiteStufeAus');
+        ->assertSessionHasErrors('password', null, 'disableTwoFactor');
 
     expect($nutzer->fresh()->hasTwoFactor())->toBeTrue();
 });

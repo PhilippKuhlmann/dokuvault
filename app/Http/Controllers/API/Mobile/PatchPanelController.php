@@ -31,7 +31,7 @@ class PatchPanelController extends Controller
     {
         Gate::authorize('patchpanel_viewAny');
 
-        return response()->json($this->patchfeld($patchpanel, $request));
+        return response()->json($this->patchPanel($patchpanel, $request));
     }
 
     public function store(PatchPanelRequest $request, Customer $customer): JsonResponse
@@ -41,7 +41,7 @@ class PatchPanelController extends Controller
         $patchpanel = $customer->patchpanels()->create($request->validated());
         $patchpanel->syncPorts();
 
-        return response()->json($this->patchfeld($patchpanel, $request), 201);
+        return response()->json($this->patchPanel($patchpanel, $request), 201);
     }
 
     public function update(PatchPanelRequest $request, Customer $customer, PatchPanel $patchpanel): JsonResponse
@@ -57,7 +57,7 @@ class PatchPanelController extends Controller
         $patchpanel->update($data);
         $patchpanel->syncPorts();
 
-        return response()->json($this->patchfeld($patchpanel->fresh(), $request));
+        return response()->json($this->patchPanel($patchpanel->fresh(), $request));
     }
 
     public function destroy(Customer $customer, PatchPanel $patchpanel): JsonResponse
@@ -87,10 +87,10 @@ class PatchPanelController extends Controller
 
         $ports->save($patchpanel, collect($daten['ports'])->keyBy('id')->all());
 
-        return response()->json($this->patchfeld($patchpanel->fresh(), $request));
+        return response()->json($this->patchPanel($patchpanel->fresh(), $request));
     }
 
-    private function patchfeld(PatchPanel $panel, Request $request): array
+    private function patchPanel(PatchPanel $panel, Request $request): array
     {
         $panel->load('site', 'customer', 'ports.networkSwitch', 'rackItem.rack');
         $nutzer = $request->user();
@@ -105,7 +105,7 @@ class PatchPanelController extends Controller
             'notiz' => $panel->note,
             'standort' => $panel->site ? ['id' => $panel->site->id, 'name' => $panel->site->name] : null,
             'kunde' => $this->objekte->kunde($panel->customer),
-            'einbauort' => $panel->einbauort(),
+            'einbauort' => $panel->mountLocation(),
             'darf_bearbeiten' => Gate::forUser($nutzer)->allows('patchpanel_update'),
             'darf_loeschen' => Gate::forUser($nutzer)->allows('patchpanel_delete'),
             'ports' => $panel->ports->sortBy('number')->map(fn ($port) => [

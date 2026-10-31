@@ -97,7 +97,7 @@ test('abgelaufene Garantie wird als abgelaufen ausgewiesen', function () {
     ]);
 
     expect($server->warrantyExpired())->toBeTrue();
-    expect($server->garantieTage())->toBeLessThan(0);
+    expect($server->warrantyDays())->toBeLessThan(0);
 
     $this->get(route('server.index', $customer))->assertSee('abgelaufen');
 });

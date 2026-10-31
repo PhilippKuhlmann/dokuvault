@@ -13,8 +13,8 @@
                 'Anschlussart' => $eintrag->connection_type,
             ]" />
             <x-minitablecard :title="__('Technik')" :array="[
-                'Download' => $eintrag->bandbreite($eintrag->bandwidth_down),
-                'Upload' => $eintrag->bandbreite($eintrag->bandwidth_up),
+                'Download' => $eintrag->bandwidth($eintrag->bandwidth_down),
+                'Upload' => $eintrag->bandwidth($eintrag->bandwidth_up),
                 'WAN-IP' => $eintrag->wan_ip,
                 'Hotline' => $eintrag->hotline,
             ]" />
@@ -34,7 +34,7 @@
                 <x-minitablecard :title="__('Geroutetes Netz')" :array="[
                     'Netz' => $eintrag->subnet,
                     'Gateway' => $eintrag->subnet_gateway,
-                    'Nutzbar' => $eintrag->nutzbarerBereich(),
+                    'Nutzbar' => $eintrag->usableRange(),
                 ]" />
             @endif
             @if ($eintrag->notes)

@@ -19,9 +19,9 @@ function sicherheitsAdmin(): User
 }
 
 test('ohne Einstellung gilt die Konfiguration', function () {
-    expect(Setting::anmeldungVersuche())->toBe(config('custom.anmeldung.versuche'))
-        ->and(Setting::anmeldungSperreMinuten())->toBe(config('custom.anmeldung.sperre_minuten'))
-        ->and(Setting::anmeldungHerkunft())->toBe(config('custom.anmeldung.versuche_je_herkunft'))
+    expect(Setting::loginAttempts())->toBe(config('custom.anmeldung.versuche'))
+        ->and(Setting::loginLockoutMinutes())->toBe(config('custom.anmeldung.sperre_minuten'))
+        ->and(Setting::loginOrigin())->toBe(config('custom.anmeldung.versuche_je_herkunft'))
         ->and(Setting::sitzungMinuten())->toBe((int) config('session.lifetime'))
         ->and(Setting::rememberTage())->toBe((int) config('custom.remember_days'));
 });
@@ -89,8 +89,8 @@ test('Anmeldung und zweite Stufe folgen derselben Quelle', function () {
         ->and($zweite->getConstants())->not->toHaveKey('VERSUCHE')
         ->and($zweite->getConstants())->not->toHaveKey('SPERRE');
 
-    expect(Setting::anmeldungVersuche())->toBe(3)
-        ->and(Setting::anmeldungSperreSekunden())->toBe(7 * 60);
+    expect(Setting::loginAttempts())->toBe(3)
+        ->and(Setting::loginLockoutSeconds())->toBe(7 * 60);
 });
 
 test('die zweite Stufe sperrt nach der eingestellten Zahl', function () {
@@ -186,9 +186,9 @@ test('die Seite speichert beim Ändern, ohne Knopf', function () {
         ->set('sitzungSchliessen', true)
         ->assertHasNoErrors();
 
-    expect(Setting::anmeldungVersuche())->toBe(3)
-        ->and(Setting::anmeldungSperreMinuten())->toBe(30)
-        ->and(Setting::anmeldungHerkunft())->toBe(50)
+    expect(Setting::loginAttempts())->toBe(3)
+        ->and(Setting::loginLockoutMinutes())->toBe(30)
+        ->and(Setting::loginOrigin())->toBe(50)
         ->and(Setting::sitzungMinuten())->toBe(240)
         ->and(Setting::rememberTage())->toBe(14)
         ->and(Setting::sitzungBeimSchliessen())->toBeTrue();
@@ -201,7 +201,7 @@ test('null Versuche wäre eine Anmeldung, die niemanden durchlässt', function (
         ->set('versuche', 0)
         ->assertHasErrors(['versuche']);
 
-    expect(Setting::anmeldungVersuche())->toBe(config('custom.anmeldung.versuche'));
+    expect(Setting::loginAttempts())->toBe(config('custom.anmeldung.versuche'));
 });
 
 test('eine Sitzung unter fünf Minuten wird abgewiesen', function () {

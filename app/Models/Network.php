@@ -44,7 +44,7 @@ class Network extends Model
      *                                  die Beschreibung auf derselben Zeile schon
      *                                  als Bezeichnung steht
      */
-    public function anzeige(bool $ohneBeschreibung = false): ?string
+    public function label(bool $ohneBeschreibung = false): ?string
     {
         $teile = [];
 
@@ -118,7 +118,7 @@ class Network extends Model
      * bei sich überlappenden Netzen (in der Praxis selten) ist das Ergebnis
      * nicht eindeutig, aber immer noch besser als gar keine Zuordnung.
      */
-    public static function fuerAdresse(int $customerId, ?int $siteId, string $adresse): ?self
+    public static function forUrl(int $customerId, ?int $siteId, string $adresse): ?self
     {
         if (filter_var($adresse, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false) {
             return null;
@@ -139,9 +139,9 @@ class Network extends Model
      * Ein Vorschlag, keine Zusage - wer die Adresse zwischen Vorschlag und
      * Speichern vergibt, fällt an der Eindeutigkeitsprüfung auf.
      */
-    public function naechsteFreieAdresse(): ?string
+    public function nextFreeAddress(): ?string
     {
-        $bereich = $this->bereich();
+        $bereich = $this->range();
 
         if (! $bereich) {
             return null;
@@ -162,7 +162,7 @@ class Network extends Model
 
         $gesperrt = IpRange::where('network_id', $this->id)->get()
             ->map(fn (IpRange $r) => [$r->vonLong(), $r->bisLong()])
-            ->push($this->dhcpBereich())
+            ->push($this->dhcpRange())
             ->filter(fn ($b) => $b && $b[0] !== null && $b[1] !== null)
             ->all();
 
@@ -192,9 +192,9 @@ class Network extends Model
      * dhcpStart/dhcpEnd sind entweder volle Adressen oder ein Host-Anteil
      * ("100"), der ins Netz eingesetzt wird.
      */
-    public function dhcpBereich(): ?array
+    public function dhcpRange(): ?array
     {
-        $netz = $this->bereich()[0] ?? null;
+        $netz = $this->range()[0] ?? null;
 
         if ($netz === null) {
             return null;
@@ -222,7 +222,7 @@ class Network extends Model
      */
     public function containsUrl(string $adresse): bool
     {
-        $bereich = $this->bereich();
+        $bereich = $this->range();
 
         if (! $bereich || filter_var($adresse, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false) {
             return false;
@@ -240,7 +240,7 @@ class Network extends Model
      * Broadcast-Adresse für die Belegungs-Anzeige ausschließt), zaehlt hier
      * der volle Bereich - eine gemeldete Gateway-IP z. B. ist bewusst mit drin.
      */
-    public function bereich(): ?array
+    public function range(): ?array
     {
         $base = $this->network ? ip2long($this->network) : false;
 

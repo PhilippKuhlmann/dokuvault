@@ -59,7 +59,7 @@ class RecordDemoUsage
             't' => now()->toIso8601String(),
             'v' => $visit,
             'r' => auth()->user()?->role?->name,
-            'ip' => $this->adresse($request),
+            'ip' => $this->url($request),
         ], fn ($wert) => $wert !== null), JSON_UNESCAPED_UNICODE);
 
         $datei = self::pfad(now()->format('Y-m'));
@@ -76,7 +76,7 @@ class RecordDemoUsage
      * IPv6 laesst sich als Text nicht zuverlaessig abschneiden, weil "::"
      * beliebig viele Nullgruppen vertritt.
      */
-    private function adresse(Request $request): ?string
+    private function url(Request $request): ?string
     {
         $modus = config('custom.demo_ip_logging', 'anonym');
 

@@ -23,7 +23,7 @@ class ScannerRequest extends FormRequest
             'manufacturer' => 'max:255',
             'model' => 'max:255',
             'serialNumber' => 'max:255',
-            ...$this->beschaffungRegeln(),
+            ...$this->procurementRules(),
         ];
     }
 
@@ -35,7 +35,7 @@ class ScannerRequest extends FormRequest
             'manufacturer' => 'Hersteller',
             'model' => 'Modell',
             'serialNumber' => 'Seriennummer',
-            ...$this->beschaffungBezeichnungen(),
+            ...$this->procurementLabels(),
         ];
     }
 }

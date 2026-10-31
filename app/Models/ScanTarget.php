@@ -47,7 +47,7 @@ class ScanTarget extends Model
         return $this->belongsTo(LoginGeneral::class, 'login_general_id');
     }
 
-    public function artName(): string
+    public function typeName(): string
     {
         return __(self::ARTEN[$this->kind] ?? self::ARTEN['other']);
     }

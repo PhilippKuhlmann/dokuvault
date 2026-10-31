@@ -33,7 +33,7 @@ class RouterRequest extends FormRequest
             'model' => 'nullable|max:255',
             'serialNumber' => 'nullable|max:255',
             'port' => 'required|numeric',
-            ...$this->beschaffungRegeln(),
+            ...$this->procurementRules(),
         ];
     }
 
@@ -46,7 +46,7 @@ class RouterRequest extends FormRequest
             'model' => 'Modell',
             'serialNumber' => 'Seriennummer',
             'port' => 'Port',
-            ...$this->beschaffungBezeichnungen(),
+            ...$this->procurementLabels(),
         ];
     }
 }

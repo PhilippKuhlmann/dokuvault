@@ -54,7 +54,7 @@ test('das Kennwort liegt verschlüsselt in der Einstellung', function () {
     $roh = DB::table('settings')->where('key', Setting::MAIL_PASSWORD)->value('value');
 
     expect($roh)->not->toBe('Geheim-2026')
-        ->and(Setting::mailKennwort())->toBe('Geheim-2026');
+        ->and(Setting::mailPassword())->toBe('Geheim-2026');
 });
 
 test('ein leeres Kennwortfeld lässt das hinterlegte stehen', function () {
@@ -67,7 +67,7 @@ test('ein leeres Kennwortfeld lässt das hinterlegte stehen', function () {
         'mail_host' => 'smtp.anders.example',
     ]));
 
-    expect(Setting::mailKennwort())->toBe('Geheim-2026')
+    expect(Setting::mailPassword())->toBe('Geheim-2026')
         ->and(Setting::wert(Setting::MAIL_HOST))->toBe('smtp.anders.example');
 });
 
@@ -77,7 +77,7 @@ test('zum Entfernen gibt es einen eigenen Weg', function () {
     $this->patch(route('admin.mail.update'), mailFormular());
     $this->delete(route('admin.mail.password'))->assertRedirect(route('admin.mail.index'));
 
-    expect(Setting::mailKennwort())->toBeNull();
+    expect(Setting::mailPassword())->toBeNull();
 });
 
 test('das Kennwort steht nie wieder auf der Seite', function () {

@@ -34,17 +34,17 @@ class DashboardController extends Controller
         return response()->json([
             ...$this->objekte->kunde($customer),
             'fristen' => [
-                'lizenzen' => $this->fristen($uebersicht->lizenzen()),
-                'zertifikate' => $this->fristen($uebersicht->zertifikate()),
-                'garantien' => $this->fristen($uebersicht->garantien()),
-                'support_ende' => $this->fristen($uebersicht->supportEnde()),
+                'lizenzen' => $this->deadlines($uebersicht->lizenzen()),
+                'zertifikate' => $this->deadlines($uebersicht->zertifikate()),
+                'garantien' => $this->deadlines($uebersicht->garantien()),
+                'support_ende' => $this->deadlines($uebersicht->supportEnde()),
             ],
-            'standorte' => $uebersicht->standorte()
+            'standorte' => $uebersicht->sites()
                 ->map(fn ($standort) => $this->objekte->kurz($standort, 'site'))
                 ->values(),
             // Mit Telefon und Mail: im Browser steht beides auf der Karte,
             // und auf dem Telefon ist eine Nummer ein Anruf.
-            'ansprechpartner' => $uebersicht->ansprechpartner()
+            'ansprechpartner' => $uebersicht->contactPersons()
                 ->map(fn ($person) => [
                     ...$this->objekte->kurz($person, 'contactperson'),
                     'rolle' => $person->role,
@@ -71,7 +71,7 @@ class DashboardController extends Controller
     }
 
     /** Eine Fristen-Kachel ohne die Browser-Verweise. */
-    private function fristen(Collection $zeilen): Collection
+    private function deadlines(Collection $zeilen): Collection
     {
         return $zeilen->map(fn ($zeile) => [
             'name' => $zeile['name'],

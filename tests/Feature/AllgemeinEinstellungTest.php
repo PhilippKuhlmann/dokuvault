@@ -378,13 +378,13 @@ test('der Logo-Hinweis nennt die Bildformate, nicht die Dokumentformate', functi
 });
 
 test('ohne Auswahl gilt die ganze Liste aus der Konfiguration', function () {
-    expect(Setting::dateiFormate())->toBe(array_map('strtolower', config('custom.datei_formate')));
+    expect(Setting::fileFormats())->toBe(array_map('strtolower', config('custom.datei_formate')));
 });
 
 test('die Liste lässt sich kürzen', function () {
     Setting::setzen(Setting::DATEI_FORMATE, 'pdf,png');
 
-    expect(Setting::dateiFormate())->toBe(['pdf', 'png']);
+    expect(Setting::fileFormats())->toBe(['pdf', 'png']);
 });
 
 test('die Liste lässt sich nicht erweitern - auch nicht an der Oberfläche vorbei', function () {
@@ -393,7 +393,7 @@ test('die Liste lässt sich nicht erweitern - auch nicht an der Oberfläche vorb
     // gehen. Deshalb wird beim Lesen geschnitten, nicht nur beim Speichern.
     Setting::setzen(Setting::DATEI_FORMATE, 'pdf,php,exe,phtml');
 
-    expect(Setting::dateiFormate())->toBe(['pdf']);
+    expect(Setting::fileFormats())->toBe(['pdf']);
 });
 
 test('eine leere Auswahl heißt nicht "nichts erlaubt"', function () {
@@ -401,7 +401,7 @@ test('eine leere Auswahl heißt nicht "nichts erlaubt"', function () {
 
     // Sonst haette ein leergeraeumtes Feld jeden Upload lahmgelegt, ohne dass
     // irgendwo steht, warum.
-    expect(Setting::dateiFormate())->toBe(array_map('strtolower', config('custom.datei_formate')));
+    expect(Setting::fileFormats())->toBe(array_map('strtolower', config('custom.datei_formate')));
 });
 
 test('eine abgewählte Endung wird beim Hochladen abgewiesen', function () {
@@ -443,7 +443,7 @@ test('die Seite speichert die Auswahl in der Reihenfolge der Konfiguration', fun
 
     // Nicht in der Reihenfolge des Anklickens - sonst steht dieselbe Auswahl
     // je nach Weg anders da.
-    expect(Setting::dateiFormate())->toBe(['pdf', 'png']);
+    expect(Setting::fileFormats())->toBe(['pdf', 'png']);
 });
 
 test('eine Endung außerhalb der Konfiguration wird abgewiesen', function () {

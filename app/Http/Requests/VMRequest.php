@@ -58,8 +58,8 @@ class VMRequest extends FormRequest
             'services' => 'Dienste',
             'cidr' => 'CIDR',
             'operating_system_id' => 'Betriebssystem',
-            'remoteID' => Setting::fernwartung()['id_label'],
-            'remotePassword' => Setting::fernwartung()['password_label'],
+            'remoteID' => Setting::remoteAccess()['id_label'],
+            'remotePassword' => Setting::remoteAccess()['password_label'],
         ];
     }
 }

@@ -45,7 +45,7 @@ class MobileLoginRequest extends LoginRequest
         if (! Auth::validate($zugang)) {
             event(new Failed('sanctum', Auth::getLastAttempted(), $zugang));
 
-            $this->fehlversuch();
+            $this->failedAttempt();
         }
 
         /** @var User $nutzer */

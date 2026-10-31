@@ -35,7 +35,7 @@ class ProfileController extends Controller
             'user' => $request->user(),
             'zweiteStufeGeheimnis' => $geheimnis,
             'zweiteStufeQr' => $geheimnis
-                ? $zweiteStufe->qrCode($zweiteStufe->adresse($request->user(), $geheimnis))
+                ? $zweiteStufe->qrCode($zweiteStufe->url($request->user(), $geheimnis))
                 : null,
         ]);
     }

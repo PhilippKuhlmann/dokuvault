@@ -26,7 +26,7 @@
                         {{ __('Kopiere ihn jetzt. Danach lässt er sich nicht mehr anzeigen — nur ein neuer anlegen.') }}
                     </p>
                 </div>
-                <button type="button" wire:click="verbergen"
+                <button type="button" wire:click="hide"
                     class="shrink-0 text-xs text-amber-800 hover:text-amber-900 dark:text-amber-400">{{ __('verbergen') }}</button>
             </div>
 

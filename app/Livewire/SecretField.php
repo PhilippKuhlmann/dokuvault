@@ -50,7 +50,7 @@ class SecretField extends Component
 
     public function show(): void
     {
-        $wert = $this->wertHolen();
+        $wert = $this->fetchValue();
 
         if ($wert === null) {
             return;
@@ -66,7 +66,7 @@ class SecretField extends Component
      */
     public function kopieren(): void
     {
-        $wert = $this->wertHolen();
+        $wert = $this->fetchValue();
 
         if ($wert === null) {
             return;
@@ -80,10 +80,10 @@ class SecretField extends Component
      * Protokolleintrag, siehe App\Support\Kennwortabruf. Gemeinsamer Kern von
      * zeigen() und kopieren().
      */
-    private function wertHolen(): ?string
+    private function fetchValue(): ?string
     {
         try {
-            return app(PasswordReveal::class)->ausFeld($this->modell, $this->id, $this->feld, auth()->user());
+            return app(PasswordReveal::class)->fromField($this->modell, $this->id, $this->feld, auth()->user());
         } catch (TooManyPasswordReveals $bremse) {
             $this->addError('kennwort', $bremse->getMessage());
 
@@ -91,7 +91,7 @@ class SecretField extends Component
         }
     }
 
-    public function verbergen(): void
+    public function hide(): void
     {
         $this->wert = null;
         $this->offen = false;

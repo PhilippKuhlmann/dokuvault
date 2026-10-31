@@ -51,15 +51,15 @@ class AdminSecurity extends Component
     {
         Gate::authorize('admin_setting');
 
-        $this->pwMin = Setting::kennwortMindestlaenge();
+        $this->pwMin = Setting::passwordMinLength();
         $this->pwMixed = (bool) Setting::wert(Setting::PW_MIXED, false);
         $this->pwNumbers = (bool) Setting::wert(Setting::PW_NUMBERS, false);
         $this->pwSymbols = (bool) Setting::wert(Setting::PW_SYMBOLS, false);
         $this->pwUncompromised = (bool) Setting::wert(Setting::PW_UNCOMPROMISED, false);
 
-        $this->versuche = Setting::anmeldungVersuche();
-        $this->sperre = Setting::anmeldungSperreMinuten();
-        $this->herkunft = Setting::anmeldungHerkunft();
+        $this->versuche = Setting::loginAttempts();
+        $this->sperre = Setting::loginLockoutMinutes();
+        $this->herkunft = Setting::loginOrigin();
 
         $this->sitzungMinuten = Setting::sitzungMinuten();
         $this->sitzungSchliessen = Setting::sitzungBeimSchliessen();
@@ -174,7 +174,7 @@ class AdminSecurity extends Component
         return view('livewire.admin-security', [
             // Derselbe Satz, den die Benutzer unter ihrem Kennwortfeld sehen -
             // damit hier steht, was die Haekchen bewirken.
-            'hinweis' => Setting::kennwortHinweis(),
+            'hinweis' => Setting::passwordNotice(),
         ])->layout('layouts.admin.app');
     }
 }

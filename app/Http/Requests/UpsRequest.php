@@ -26,13 +26,13 @@ class UpsRequest extends FormRequest
             'capacity' => 'max:255',
             'runtime' => 'max:255',
             'notes' => 'nullable',
-            ...$this->beschaffungRegeln(),
+            ...$this->procurementRules(),
         ];
     }
 
     public function attributes(): array
     {
         return ['site_id' => 'Standort', 'name' => 'Name', 'manufacturer' => 'Hersteller', 'model' => 'Modell', 'serialNumber' => 'Seriennummer', 'ip' => 'IP', 'capacity' => 'Kapazität', 'runtime' => 'Laufzeit', 'notes' => 'Notizen',
-            ...$this->beschaffungBezeichnungen()];
+            ...$this->procurementLabels()];
     }
 }

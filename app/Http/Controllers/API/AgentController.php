@@ -272,7 +272,7 @@ class AgentController extends Controller
             $this->osCatalogName($data['server']['os'] ?? null, 'Windows')
         );
 
-        $dienste = $this->diensteAusRollen($data['server']['roles'] ?? []);
+        $dienste = $this->servicesFromRoles($data['server']['roles'] ?? []);
 
         // Nur eintragen, solange das Feld leer ist. Wer die Dienste einmal von
         // Hand gepflegt hat, weiss mehr als Get-WindowsFeature - der naechste
@@ -323,7 +323,7 @@ class AgentController extends Controller
         $meldung = $data['server'];
 
         // No catalog entry, no operating system: the support end hangs on it.
-        $osName = $this->osReleaseKatalogName($meldung['os_id'] ?? null, $meldung['os_version'] ?? null);
+        $osName = $this->osReleaseCatalogName($meldung['os_id'] ?? null, $meldung['os_version'] ?? null);
         $dienste = $this->imKatalog(collect($meldung['services'] ?? [])
             ->map(fn ($unit) => self::LINUX_DIENSTE[$unit] ?? null)
             ->filter()
@@ -348,7 +348,7 @@ class AgentController extends Controller
                 $geraet->operating_system_id = $osId;
             }
             $geraet->save();
-            $this->meldeAdresse($geraet, $customer->id, $site->id, $meldung['ip'] ?? null);
+            $this->reportUrl($geraet, $customer->id, $site->id, $meldung['ip'] ?? null);
         } else {
             [$geraet] = $this->hostUndGaeste($meldung, [], $customer, $site, (string) $osName, fromOsRelease: true);
         }
@@ -425,7 +425,7 @@ class AgentController extends Controller
 
         $userCount = 0;
         foreach ($data['users'] ?? [] as $u) {
-            $user = $this->adEintragFinden(ADUser::class, $customer->id, $u['identifier'], 'username', $u['username'] ?? null);
+            $user = $this->findAdEntry(ADUser::class, $customer->id, $u['identifier'], 'username', $u['username'] ?? null);
             // Only what AD reported: an empty field must not wipe a value
             // entered by hand. 'password' is never touched (kept by hand).
             $user->fill(array_filter([
@@ -444,7 +444,7 @@ class AgentController extends Controller
 
         $groupCount = 0;
         foreach ($data['groups'] ?? [] as $g) {
-            $group = $this->adEintragFinden(ADGroup::class, $customer->id, $g['identifier'], 'name', $g['name'] ?? null);
+            $group = $this->findAdEntry(ADGroup::class, $customer->id, $g['identifier'], 'name', $g['name'] ?? null);
             $group->fill(array_filter([
                 'agent_identifier' => $g['identifier'],
                 'name' => $g['name'] ?? null,
@@ -613,7 +613,7 @@ class AgentController extends Controller
      * user by hand before the agent ran, and this run adopts that entry
      * instead of creating a second one. Case-insensitive, as AD is.
      */
-    private function adEintragFinden(string $klasse, int $customerId, string $identifier, string $namensfeld, ?string $name): ADUser|ADGroup
+    private function findAdEntry(string $klasse, int $customerId, string $identifier, string $namensfeld, ?string $name): ADUser|ADGroup
     {
         $eintrag = $klasse::where('customer_id', $customerId)->where('agent_identifier', $identifier)->first();
 
@@ -644,7 +644,7 @@ class AgentController extends Controller
         // ?shell=bash for the Proxmox agent; without it PowerShell, as the
         // Windows service has always asked.
         $shell = $request->query('shell') === 'bash' ? 'bash' : 'powershell';
-        $variante = AgentScript::fuerDienst($shell)[$agent] ?? null;
+        $variante = AgentScript::forService($shell)[$agent] ?? null;
         abort_unless($variante, 404);
 
         $token = $request->bearerToken() ?: $request->header('X-Agent-Token');
@@ -811,7 +811,7 @@ class AgentController extends Controller
 
             $gefunden = [];
             foreach ($namen as $hostname) {
-                $maschine = $this->maschineZumHostnamen($customer->id, $hostname);
+                $maschine = $this->machineForHostname($customer->id, $hostname);
                 $maschine ? $gefunden[] = ADDomainHost::key($maschine) : $nichtGefunden[] = $hostname;
             }
 
@@ -836,7 +836,7 @@ class AgentController extends Controller
      *
      * @return array<string, string|null>
      */
-    private function hardwareFelder(array $gemeldet, $vorhanden): array
+    private function hardwareFields(array $gemeldet, $vorhanden): array
     {
         $felder = [];
 
@@ -914,7 +914,7 @@ class AgentController extends Controller
      * A documented server or VM by host name: "dc01.firma.local" and "DC01"
      * both find "dc01". Servers first - a DC is more often hardware.
      */
-    private function maschineZumHostnamen(int $customerId, string $hostname): Server|VM|null
+    private function machineForHostname(int $customerId, string $hostname): Server|VM|null
     {
         $kurz = strtolower(strtok(trim($hostname), '.'));
 
@@ -966,10 +966,10 @@ class AgentController extends Controller
                 'site_id' => $site->id,
                 'operating_system_id' => $osId,
                 'name' => $client['hostname'],
-            ], fn ($value) => $value !== null) + $this->hardwareFelder($client, $vorhanden)
+            ], fn ($value) => $value !== null) + $this->hardwareFields($client, $vorhanden)
         );
 
-        $this->meldeAdresse($computer, $customer->id, $site->id, $client['ip'] ?? null);
+        $this->reportUrl($computer, $customer->id, $site->id, $client['ip'] ?? null);
 
         return response()->json([
             'status' => 'ok',
@@ -1021,13 +1021,13 @@ class AgentController extends Controller
 
         $switches = 0;
         foreach ($data['switches'] ?? [] as $g) {
-            $this->meldeNetzwerkgeraet(NetworkSwitch::class, $g, $customer, $site);
+            $this->reportNetworkDevice(NetworkSwitch::class, $g, $customer, $site);
             $switches++;
         }
 
         $accesspoints = 0;
         foreach ($data['accesspoints'] ?? [] as $g) {
-            $this->meldeNetzwerkgeraet(Accesspoint::class, $g, $customer, $site);
+            $this->reportNetworkDevice(Accesspoint::class, $g, $customer, $site);
             $accesspoints++;
         }
 
@@ -1176,12 +1176,12 @@ class AgentController extends Controller
         // already find the network they belong to.
         $netze = 0;
         foreach ($data['interfaces'] ?? [] as $schnittstelle) {
-            $netze += $this->meldeNetz($schnittstelle, $data['dhcp_ranges'] ?? [], $customer->id, $firewall->site_id) ? 1 : 0;
+            $netze += $this->reportNetwork($schnittstelle, $data['dhcp_ranges'] ?? [], $customer->id, $firewall->site_id) ? 1 : 0;
         }
 
         // Interface addresses into the IPAM, without the prefix length.
         foreach ($data['interfaces'] ?? [] as $schnittstelle) {
-            $this->meldeAdresse($firewall, $customer->id, $firewall->site_id, strtok((string) ($schnittstelle['ip'] ?? ''), '/') ?: null, false);
+            $this->reportUrl($firewall, $customer->id, $firewall->site_id, strtok((string) ($schnittstelle['ip'] ?? ''), '/') ?: null, false);
         }
 
         return response()->json([
@@ -1211,7 +1211,7 @@ class AgentController extends Controller
      * Skipped: WAN interfaces, IPv6, no address, /31 and /32 (no network
      * worth a VLAN entry).
      */
-    protected function meldeNetz(array $schnittstelle, array $dhcpBereiche, int $customerId, ?int $siteId): bool
+    protected function reportNetwork(array $schnittstelle, array $dhcpBereiche, int $customerId, ?int $siteId): bool
     {
         if (! empty($schnittstelle['wan']) || ! str_contains((string) ($schnittstelle['ip'] ?? ''), '/')) {
             return false;
@@ -1353,7 +1353,7 @@ class AgentController extends Controller
             LicenseSoftware::updateOrCreate(
                 ['customer_id' => $customer->id, 'agent_identifier' => $l['identifier']],
                 [
-                    'name' => $this->lizenzName($l),
+                    'name' => $this->licenseName($l),
                     'abo' => true,
                     // 'key' bleibt leer: einen Schluessel gibt es bei einem
                     // Microsoft-365-Abonnement nicht.
@@ -1399,7 +1399,7 @@ class AgentController extends Controller
         // Seriennummer nicht heraus - wuerde hier stur null eingetragen, loeschte
         // jeder Lauf, was jemand von Hand nachgetragen hat.
         $vorhanden = Server::where('customer_id', $customer->id)->where('site_id', $site->id)->where('agent_identifier', $host['identifier'])->first();
-        $attribute += $this->hardwareFelder($host, $vorhanden);
+        $attribute += $this->hardwareFields($host, $vorhanden);
 
         if ($details = $this->agentDetails($host, self::HOST_DETAILS)) {
             $attribute['agent_details'] = $details;
@@ -1413,7 +1413,7 @@ class AgentController extends Controller
 
         // Die IP ist keine Spalte am Geraet mehr, sondern ein Eintrag im Block
         // "Weitere IP-Adressen".
-        $this->meldeAdresse($server, $customer->id, $site->id, $host['ip'] ?? null);
+        $this->reportUrl($server, $customer->id, $site->id, $host['ip'] ?? null);
 
         $anzahl = 0;
         foreach ($gaeste as $gast) {
@@ -1427,7 +1427,7 @@ class AgentController extends Controller
             // Proxmox reports what /etc/os-release says in the guest ('debian',
             // '12'); the others a finished name ("Windows Server 2022").
             $gastOsName = $fromOsRelease
-                ? $this->osReleaseKatalogName($gast['os_id'] ?? null, $gast['os_version'] ?? null)
+                ? $this->osReleaseCatalogName($gast['os_id'] ?? null, $gast['os_version'] ?? null)
                 : $this->osCatalogName($gast['os'] ?? null, 'Unbekannt');
 
             if ($gastOsId = $this->catalogOsId($gastOsName)) {
@@ -1444,7 +1444,7 @@ class AgentController extends Controller
                 $vmAttribute
             );
 
-            $this->meldeAdresse($vm, $customer->id, $site->id, $gast['ip'] ?? null);
+            $this->reportUrl($vm, $customer->id, $site->id, $gast['ip'] ?? null);
 
             // Tags that name a service of the catalog (case-insensitive,
             // stored in the catalog's spelling) are added to the services -
@@ -1507,7 +1507,7 @@ class AgentController extends Controller
                 'customer_id' => $customer->id,
                 'site_id' => $site->id,
                 'name' => $name,
-                'type' => $this->clusterTyp($host),
+                'type' => $this->clusterType($host),
             ]);
 
         $cluster->agent_identifier = $kennung;
@@ -1531,7 +1531,7 @@ class AgentController extends Controller
      * replication jobs, then shared storage, else local only. A PBS storage
      * is a backup target, not where guests run - it does not count.
      */
-    protected function clusterTyp(array $host): string
+    protected function clusterType(array $host): string
     {
         $typen = collect($host['storages'] ?? [])->pluck('type')->filter()->map(fn ($t) => mb_strtolower($t));
 
@@ -1548,7 +1548,7 @@ class AgentController extends Controller
      *
      * @param  class-string  $klasse
      */
-    protected function meldeNetzwerkgeraet(string $klasse, array $g, $customer, $site): void
+    protected function reportNetworkDevice(string $klasse, array $g, $customer, $site): void
     {
         $geraet = $klasse::updateOrCreate(
             ['customer_id' => $customer->id, 'site_id' => $site->id, 'agent_identifier' => $g['identifier']],
@@ -1563,7 +1563,7 @@ class AgentController extends Controller
 
         // Ob die Adresse fest steht oder vom DHCP kommt, gehoert an die
         // Adresse und nicht an das Geraet: Ein Switch kann mehrere haben.
-        $this->meldeAdresse($geraet, $customer->id, $site->id, $g['ip'] ?? null, $this->bezugsweg($g));
+        $this->reportUrl($geraet, $customer->id, $site->id, $g['ip'] ?? null, $this->bezugsweg($g));
     }
 
     /**
@@ -1592,7 +1592,7 @@ class AgentController extends Controller
      * @param  array<int, string>  $rollen
      * @return array<int, string>
      */
-    protected function diensteAusRollen(array $rollen): array
+    protected function servicesFromRoles(array $rollen): array
     {
         $gewuenscht = collect($rollen)
             ->map(fn ($rolle) => self::WINDOWS_ROLLEN[$rolle] ?? null)
@@ -1636,7 +1636,7 @@ class AgentController extends Controller
      * dem Agenten (agent_identifier), der Name darf sich also mit jedem Lauf
      * an die tatsächliche Zahl anpassen.
      */
-    protected function lizenzName(array $lizenz): string
+    protected function licenseName(array $lizenz): string
     {
         $name = trim($lizenz['name']);
 
@@ -1656,7 +1656,7 @@ class AgentController extends Controller
      * Zuordnung wieder um (Ueberlappende Netze sind selten, aber moeglich).
      * Nur bei der Neuanlage wird ein passendes Netz gesucht und gesetzt.
      */
-    protected function meldeAdresse($geraet, int $customerId, ?int $siteId, ?string $adresse, ?bool $dhcp = null): void
+    protected function reportUrl($geraet, int $customerId, ?int $siteId, ?string $adresse, ?bool $dhcp = null): void
     {
         $adresse = trim((string) $adresse);
 
@@ -1665,7 +1665,7 @@ class AgentController extends Controller
         }
 
         // Die gemeldete Adresse dient hier nur noch dazu, das Netz zu finden.
-        $netz = Network::fuerAdresse($customerId, $siteId, $adresse)?->id;
+        $netz = Network::forUrl($customerId, $siteId, $adresse)?->id;
 
         if ($dhcp === true) {
             $this->meldeDhcp($geraet, $customerId, $netz);
@@ -1837,7 +1837,7 @@ class AgentController extends Controller
      *
      * Was dort nicht steht, ergibt null - und damit kein Betriebssystem.
      */
-    protected function osReleaseKatalogName(?string $id, ?string $version): ?string
+    protected function osReleaseCatalogName(?string $id, ?string $version): ?string
     {
         $id = strtolower(trim((string) $id));
         $version = trim((string) $version);

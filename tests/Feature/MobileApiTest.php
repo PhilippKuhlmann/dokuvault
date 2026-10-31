@@ -140,7 +140,7 @@ test('ein Token eines spaeter gesperrten Zugangs gilt nicht mehr', function () {
 test('dieselbe Bremse wie im Browser: nach zu vielen Fehlversuchen ist zu', function () {
     $nutzer = mobilNutzer();
 
-    foreach (range(1, Setting::anmeldungVersuche()) as $versuch) {
+    foreach (range(1, Setting::loginAttempts()) as $versuch) {
         $this->postJson('/api/mobile/login', ['username' => $nutzer->username, 'password' => 'falsch']);
     }
 

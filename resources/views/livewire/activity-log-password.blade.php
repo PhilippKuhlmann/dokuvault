@@ -3,7 +3,7 @@
      unsichtbar - der Wert kommt erst auf Klick vom Server, nicht aus dem
      bereits geladenen Quelltext. --}}
 <div>
-    <button type="button" wire:click="{{ $offen ? 'verbergen' : 'zeigen' }}"
+    <button type="button" wire:click="{{ $offen ? 'hide' : 'show' }}"
         class="text-cerulean-600 hover:text-cerulean-700 text-sm">
         {{ $offen ? __('verbergen') : __('anzeigen') }}
     </button>

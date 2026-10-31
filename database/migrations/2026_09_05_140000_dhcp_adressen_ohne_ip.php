@@ -31,7 +31,7 @@ return new class extends Migration
             $netz = $zeile->network_id;
 
             if (! $netz && $zeile->address) {
-                $netz = Network::fuerAdresse($zeile->customer_id, null, $zeile->address)?->id;
+                $netz = Network::forUrl($zeile->customer_id, null, $zeile->address)?->id;
             }
 
             DB::table('ip_addresses')->where('id', $zeile->id)

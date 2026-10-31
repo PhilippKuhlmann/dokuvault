@@ -43,7 +43,7 @@ class OperatingSystem extends Model
      */
     public function laeuftAus(?int $tage = null): bool
     {
-        $tage ??= Setting::fristEol();
+        $tage ??= Setting::eolDeadline();
 
         return $this->eol_date !== null
             && ! $this->istEol()

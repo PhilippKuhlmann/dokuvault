@@ -20,10 +20,10 @@
 
 @php
     // Only to know whether there is a button at all - not put into the page.
-    $moeglich = \App\Models\Setting::fernwartungsLink($device->remoteID, $device->remotePassword);
+    $moeglich = \App\Models\Setting::remoteAccessLink($device->remoteID, $device->remotePassword);
     $typ = [\App\Models\Server::class => 'server', \App\Models\VM::class => 'vm', \App\Models\Computer::class => 'computer'][get_class($device)] ?? null;
     $link = $moeglich && $typ ? route('remote.connect', [$typ, $device->id]) : null;
-    $werkzeug = \App\Models\Setting::fernwartung();
+    $werkzeug = \App\Models\Setting::remoteAccess();
 @endphp
 
 @if ($link)

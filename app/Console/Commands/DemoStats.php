@@ -52,11 +52,11 @@ class DemoStats extends Command
 
         $this->gesamt($besuche, $zeilen);
         $this->newLine();
-        $this->proTag($besuche);
+        $this->perDay($besuche);
         $this->newLine();
-        $this->proStunde($zeilen);
+        $this->perHour($zeilen);
         $this->newLine();
-        $this->proRolle($besuche);
+        $this->perRole($besuche);
         $this->newLine();
         $this->proHerkunft($besuche);
 
@@ -108,7 +108,7 @@ class DemoStats extends Command
         ]);
     }
 
-    private function proTag(array $besuche): void
+    private function perDay(array $besuche): void
     {
         $tage = [];
         foreach ($besuche as $b) {
@@ -125,7 +125,7 @@ class DemoStats extends Command
         }
     }
 
-    private function proStunde(array $zeilen): void
+    private function perHour(array $zeilen): void
     {
         $stunden = array_fill(0, 24, 0);
         foreach ($zeilen as $z) {
@@ -149,7 +149,7 @@ class DemoStats extends Command
         'general_read' => 'Kunde (nur lesen)',
     ];
 
-    private function proRolle(array $besuche): void
+    private function perRole(array $besuche): void
     {
         $rollen = [];
         foreach ($besuche as $b) {
@@ -198,7 +198,7 @@ class DemoStats extends Command
             $this->line('  ... und '.(count($netze) - 20).' weitere.');
         }
 
-        $this->proxyhinweis(array_keys($netze));
+        $this->proxyNotice(array_keys($netze));
     }
 
     /**
@@ -206,7 +206,7 @@ class DemoStats extends Command
      * sie nicht vertraut - dann zeichnet sie dessen Adresse auf statt der des
      * Besuchers. Ohne Hinweis liest man die Zahlen sonst als Ergebnis.
      */
-    private function proxyhinweis(array $netze): void
+    private function proxyNotice(array $netze): void
     {
         $privat = array_filter($netze, fn ($netz) => filter_var(
             $netz, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE

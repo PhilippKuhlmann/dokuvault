@@ -358,5 +358,5 @@ test('a phone system can be mounted and is labelled even without a name', functi
     $einbau = RackItem::where('device_type', PhoneSystem::class)->first();
     expect($einbau->position)->toBe(12);
     expect($einbau->label())->toBe('Auerswald COMpact 5500R');
-    expect($anlage->fresh()->einbauort())->toContain('Rack Test');
+    expect($anlage->fresh()->mountLocation())->toContain('Rack Test');
 });

@@ -159,7 +159,7 @@ class ObjectList extends Component
     }
 
     /** Ob das Model eine site_id-Spalte führt - einmal je Tabelle geprüft. */
-    private function tabelleHatStandort(string $klasse): bool
+    private function tableHasSite(string $klasse): bool
     {
         static $cache = [];
 
@@ -192,7 +192,7 @@ class ObjectList extends Component
      * rendert nach jedem Aufruf ohnehin neu.
      */
     #[On('device-changed')]
-    public function geraetGeaendert(): void {}
+    public function deviceChanged(): void {}
 
     /**
      * "Check now" on a domain or certificate card - the same check the
@@ -245,7 +245,7 @@ class ObjectList extends Component
         $site = session()->get('site');
 
         if (! $this->highlight && $site && $site !== 'all'
-            && $this->tabelleHatStandort($klasse)
+            && $this->tableHasSite($klasse)
             && Site::where('customer_id', $this->customerId)->whereKey($site)->exists()) {
             $abfrage->where('site_id', $site);
         }

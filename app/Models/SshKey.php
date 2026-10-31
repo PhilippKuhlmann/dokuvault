@@ -71,7 +71,7 @@ class SshKey extends LoginGeneral
     }
 
     /** Das Verfahren, wie es in der Liste steht - "ed25519" statt eines leeren Felds. */
-    public function verfahrenName(): string
+    public function algorithmName(): string
     {
         return config('custom.ssh_key_types')[$this->key_type] ?? '—';
     }

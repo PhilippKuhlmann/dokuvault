@@ -12,7 +12,7 @@ namespace App\Http\Requests\Concerns;
  */
 trait ValidatesProcurement
 {
-    protected function beschaffungRegeln(): array
+    protected function procurementRules(): array
     {
         return [
             'purchase_date' => 'nullable|date',
@@ -24,7 +24,7 @@ trait ValidatesProcurement
         ];
     }
 
-    protected function beschaffungBezeichnungen(): array
+    protected function procurementLabels(): array
     {
         return [
             'purchase_date' => 'Kaufdatum',

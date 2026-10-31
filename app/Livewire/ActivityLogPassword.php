@@ -45,7 +45,7 @@ class ActivityLogPassword extends Component
                 ->get()
                 ->map(fn ($eintrag) => [
                     'feld' => config('custom.secret_field_labels')[$eintrag->field] ?? $eintrag->field,
-                    'wert' => app(PasswordReveal::class)->ausVerlauf($eintrag, auth()->user()),
+                    'wert' => app(PasswordReveal::class)->fromHistory($eintrag, auth()->user()),
                 ])
                 ->filter(fn ($eintrag) => $eintrag['wert'] !== null)
                 ->values()
@@ -59,7 +59,7 @@ class ActivityLogPassword extends Component
         $this->offen = true;
     }
 
-    public function verbergen(): void
+    public function hide(): void
     {
         $this->werte = [];
         $this->offen = false;

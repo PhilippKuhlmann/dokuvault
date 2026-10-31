@@ -26,7 +26,7 @@ class MailSettingController extends Controller
             'username' => Setting::wert(Setting::MAIL_USERNAME),
             // Das Kennwort selbst geht nie wieder hinaus - nur die Auskunft,
             // ob eines hinterlegt ist.
-            'hatKennwort' => Setting::mailKennwort() !== null,
+            'hatKennwort' => Setting::mailPassword() !== null,
             'encryption' => Setting::wert(Setting::MAIL_ENCRYPTION, 'tls'),
             'from_address' => Setting::wert(Setting::MAIL_FROM_ADDRESS),
             'from_name' => Setting::wert(Setting::MAIL_FROM_NAME),

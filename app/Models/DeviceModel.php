@@ -81,7 +81,7 @@ class DeviceModel extends Model
     }
 
     /** Der Eintrag zu einem dokumentierten Geraet, ueber seinen Typ aufgeloest. */
-    public static function fuerGeraet(?Model $geraet): ?self
+    public static function forDevice(?Model $geraet): ?self
     {
         if (! $geraet) {
             return null;
@@ -134,7 +134,7 @@ class DeviceModel extends Model
     }
 
     /** Beschriftung des Geraetetyps, wie sie in der Rack-Palette steht. */
-    public function typBezeichnung(): string
+    public function typeLabel(): string
     {
         return config('custom.rack_device_types')[$this->device_type][1] ?? $this->device_type;
     }
@@ -151,7 +151,7 @@ class DeviceModel extends Model
         return trim($this->manufacturer.' '.$this->model);
     }
 
-    public function protokollName(): ?string
+    public function activityName(): ?string
     {
         return $this->bezeichnung() ?: null;
     }

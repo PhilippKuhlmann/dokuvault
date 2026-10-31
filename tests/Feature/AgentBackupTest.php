@@ -175,7 +175,7 @@ test('the number of runs is a setting and the page needs its right', function ()
         ->assertSet('anzahl', 10)
         ->set('anzahl', 20);
 
-    expect(Setting::backupVerlauf())->toBe(20);
+    expect(Setting::backupHistory())->toBe(20);
 });
 
 test('without the right there is no backup overview', function () {

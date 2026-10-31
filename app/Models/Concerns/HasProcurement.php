@@ -37,7 +37,7 @@ trait HasProcurement
      */
     public function scopeGarantieLaeuftAb(Builder $query, ?int $tage = null): Builder
     {
-        $tage ??= Setting::fristGarantie();
+        $tage ??= Setting::warrantyDeadline();
 
         return $query->whereNotNull('warranty_until')
             ->whereDate('warranty_until', '<=', now()->addDays($tage));
@@ -47,7 +47,7 @@ trait HasProcurement
      * Tage bis zum Garantieende - negativ, wenn sie schon abgelaufen ist.
      * Null, wenn kein Datum erfasst wurde.
      */
-    public function garantieTage(): ?int
+    public function warrantyDays(): ?int
     {
         if (! $this->warranty_until) {
             return null;
@@ -58,6 +58,6 @@ trait HasProcurement
 
     public function warrantyExpired(): bool
     {
-        return ($this->garantieTage() ?? 1) < 0;
+        return ($this->warrantyDays() ?? 1) < 0;
     }
 }

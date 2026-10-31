@@ -78,7 +78,7 @@ test('die Bremse stoppt das reihenweise Abgreifen', function () {
     $test = Livewire::test(SecretField::class, ['modell' => Firewall::class, 'id' => $fw->id, 'feld' => 'cloud_backup_password']);
 
     $test->call('show')->assertSet('offen', true);
-    $test->call('verbergen')
+    $test->call('hide')
         ->call('show')
         ->assertSet('offen', false)
         ->assertHasErrors('kennwort');

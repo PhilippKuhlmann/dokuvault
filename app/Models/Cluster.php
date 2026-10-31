@@ -59,7 +59,7 @@ class Cluster extends Model
      * aus der Konfiguration entfernt) gibt den Rohwert zurueck statt zu
      * verschwinden - er stand ja einmal bewusst da.
      */
-    public function typBezeichnung(): ?string
+    public function typeLabel(): ?string
     {
         if (blank($this->type)) {
             return null;

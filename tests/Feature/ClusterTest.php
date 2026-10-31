@@ -45,7 +45,7 @@ test('ein Cluster laesst sich anlegen und landet beim Kunden', function () {
     expect($cluster->customer_id)->toBe($customer->id);
     expect($cluster->type)->toBe('ceph');
     // Ausgeschrieben fuer die Anzeige, nicht der rohe Schluessel.
-    expect($cluster->typBezeichnung())->toBe('Ceph (verteilter Speicher)');
+    expect($cluster->typeLabel())->toBe('Ceph (verteilter Speicher)');
 });
 
 test('eine unbekannte Art wird abgelehnt', function () {

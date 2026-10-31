@@ -76,7 +76,7 @@ class BackupHealth
         // this was noted, the newest file in the local folder.
         $letzte = collect($disks)
             ->map(fn ($disk) => $zeit($status[$disk]['ok'] ?? null))
-            ->filter()->max() ?? self::neuesteLokaleDatei();
+            ->filter()->max() ?? self::latestLocalFile();
 
         $ergebnis = fn (string $stufe, string $text) => ['stufe' => $stufe, 'text' => $text, 'letzte' => $letzte];
 
@@ -119,7 +119,7 @@ class BackupHealth
         return $ergebnis('ok', count($disks) > 1 ? __('Läuft – lokal und extern.') : __('Läuft – extern.'));
     }
 
-    protected static function neuesteLokaleDatei(): ?Carbon
+    protected static function latestLocalFile(): ?Carbon
     {
         try {
             $disk = Storage::disk('local');

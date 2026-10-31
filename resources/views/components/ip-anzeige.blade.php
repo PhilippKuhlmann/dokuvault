@@ -6,7 +6,7 @@
      Wert anzubieten - mit Kopierknopf daneben - laedt dazu ein, sich darauf
      zu verlassen. Deshalb ohne Knopf: "DHCP" kopiert niemand. --}}
 @if ($adresse?->istDhcp())
-    <span class="text-gray-500 dark:text-gray-400">{{ __($adresse->anzeige()) }}</span>
+    <span class="text-gray-500 dark:text-gray-400">{{ __($adresse->label()) }}</span>
 @elseif ($adresse)
     <x-copy :value="$adresse->address" />
 @endif

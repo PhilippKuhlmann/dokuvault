@@ -65,7 +65,7 @@ class CustomerDashboard
 
         return LicenseSoftware::where('customer_id', $this->kunde->id)
             ->whereNotNull('end_date')
-            ->whereDate('end_date', '<=', now()->addDays(Setting::fristVertraege()))
+            ->whereDate('end_date', '<=', now()->addDays(Setting::contractDeadline()))
             ->orderBy('end_date')
             ->get()
             ->map(fn ($lizenz) => $this->zeile(
@@ -87,7 +87,7 @@ class CustomerDashboard
 
         return Certificate::where('customer_id', $this->kunde->id)
             ->whereNotNull('expiry_date')
-            ->whereDate('expiry_date', '<=', now()->addDays(Setting::fristVertraege()))
+            ->whereDate('expiry_date', '<=', now()->addDays(Setting::contractDeadline()))
             ->orderBy('expiry_date')
             ->get()
             ->map(fn ($zertifikat) => $this->zeile(
@@ -110,9 +110,9 @@ class CustomerDashboard
      */
     public function garantien(?int $tage = null): Collection
     {
-        $tage ??= Setting::fristGarantie();
+        $tage ??= Setting::warrantyDeadline();
 
-        return $this->beschaffungsarten()
+        return $this->procurementTypes()
             ->flatMap(function ($eintrag, $slug) use ($tage) {
                 [$klasse, $bezeichnung] = $eintrag;
 
@@ -128,7 +128,7 @@ class CustomerDashboard
                         $geraet->warranty_until,
                         $slug,
                         $geraet->id,
-                        $geraet->garantieTage(),
+                        $geraet->warrantyDays(),
                     ));
             })
             ->sortBy('datum')
@@ -146,9 +146,9 @@ class CustomerDashboard
      */
     public function supportEnde(): Collection
     {
-        $grenze = now()->addDays(Setting::fristEol())->toDateString();
+        $grenze = now()->addDays(Setting::eolDeadline())->toDateString();
 
-        $geraete = $this->beschaffungsarten()
+        $geraete = $this->procurementTypes()
             ->flatMap(fn ($eintrag, $slug) => $eintrag[0]::where('customer_id', $this->kunde->id)
                 ->whereNotNull('eol_date')
                 ->whereDate('eol_date', '<=', $grenze)
@@ -182,7 +182,7 @@ class CustomerDashboard
     }
 
     /** Die Standorte des Kunden. */
-    public function standorte(): Collection
+    public function sites(): Collection
     {
         return $this->darf('site')
             ? Site::where('customer_id', $this->kunde->id)->orderBy('name')->get()
@@ -190,7 +190,7 @@ class CustomerDashboard
     }
 
     /** Die Ansprechpartner des Kunden. */
-    public function ansprechpartner(): Collection
+    public function contactPersons(): Collection
     {
         // Nach Nachnamen: contact_people hat keine name-Spalte, der Name
         // entsteht erst aus first_name und last_name.
@@ -335,7 +335,7 @@ class CustomerDashboard
      *
      * @return Collection<string, array{0: class-string<Model>, 1: string}>
      */
-    private function beschaffungsarten(): Collection
+    private function procurementTypes(): Collection
     {
         return collect(config('custom.trashables'))
             ->filter(fn ($eintrag, $slug) => in_array(HasProcurement::class, class_uses_recursive($eintrag[0]), true)

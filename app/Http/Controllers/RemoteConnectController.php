@@ -33,7 +33,7 @@ class RemoteConnectController extends Controller
         // does for the routes below /{customer}).
         $geraet = $klasse::findOrFail($id);
         abort_if(auth()->user()->hasCustomer() && (int) $geraet->customer_id !== (int) auth()->user()->customer_id, 403);
-        $link = Setting::fernwartungsLink($geraet->remoteID, $geraet->remotePassword);
+        $link = Setting::remoteAccessLink($geraet->remoteID, $geraet->remotePassword);
         abort_unless($link, 404);
 
         $schluessel = 'kennwort-ansehen:'.auth()->id();
@@ -47,7 +47,7 @@ class RemoteConnectController extends Controller
             ->withProperties([
                 'objekt' => $geraet->name,
                 'attributes' => array_filter([
-                    'Werkzeug' => Setting::fernwartung()['label'] ?? null,
+                    'Werkzeug' => Setting::remoteAccess()['label'] ?? null,
                     'IP' => request()->ip(),
                 ]),
             ])

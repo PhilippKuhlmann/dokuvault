@@ -1,7 +1,7 @@
 {{-- Ein Eintrag in der Liste. Die Karte bleibt beim Typ. --}}
         @php
             $adressen = $eintrag->relationLoaded('ipAddresses') ? $eintrag->ipAddresses : $eintrag->ipAddresses()->get();
-            $primaer = $adressen->first()?->anzeige();
+            $primaer = $adressen->first()?->label();
             $anzahlIps = $adressen->count();
         @endphp
         <x-card>

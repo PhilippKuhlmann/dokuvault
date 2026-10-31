@@ -73,7 +73,7 @@ test('ein Token laesst sich anlegen und wird genau einmal gezeigt', function () 
     expect($klartext)->not->toContain($gespeichert);
 
     // Nach dem Verbergen ist er auch aus der Komponente weg.
-    $test->call('verbergen')->assertSet('frischerToken', null);
+    $test->call('hide')->assertSet('frischerToken', null);
 });
 
 test('ohne Bezeichnung entsteht kein Token', function () {

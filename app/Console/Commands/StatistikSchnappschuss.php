@@ -44,9 +44,9 @@ class StatistikSchnappschuss extends Command
 
         $system = [
             'db_bytes' => SystemMetrics::datenbankBytes(),
-            'dateien_bytes' => SystemMetrics::dateienBytes(),
+            'dateien_bytes' => SystemMetrics::fileBytes(),
             'backup_bytes' => SystemMetrics::backupBytes(),
-            'disk_frei_bytes' => SystemMetrics::platteFreiBytes(),
+            'disk_frei_bytes' => SystemMetrics::diskFreeBytes(),
             'disk_gesamt_bytes' => SystemMetrics::platteGesamtBytes(),
         ];
         foreach ($system as $kennzahl => $wert) {

@@ -48,7 +48,7 @@ test('eine unbekannte Zone wird nicht übernommen', function () {
 });
 
 test('die Auswahl enthält UTC und Berlin', function () {
-    expect(LocalTime::auswahl())->toContain('UTC')->toContain('Europe/Berlin');
+    expect(LocalTime::options())->toContain('UTC')->toContain('Europe/Berlin');
 });
 
 test('die Benutzerliste zeigt die Zeit in der eingestellten Zone', function () {

@@ -36,7 +36,7 @@ class AdminBackups extends Component
     {
         Gate::authorize('admin_backup');
 
-        $this->anzahl = Setting::backupVerlauf();
+        $this->anzahl = Setting::backupHistory();
         $this->aufbewahrung = Setting::backupAufbewahrung();
     }
 

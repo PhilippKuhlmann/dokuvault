@@ -106,19 +106,19 @@ test('ein IPv6-Netz wird angenommen', function () {
 });
 
 test('der nutzbare Bereich rechnet Netz- und Broadcast-Adresse heraus', function () {
-    expect((new InternetConnection(['subnet' => '203.0.113.16/28']))->nutzbarerBereich())
+    expect((new InternetConnection(['subnet' => '203.0.113.16/28']))->usableRange())
         ->toBe('203.0.113.17 – 203.0.113.30 (14 Adressen)');
 
-    expect((new InternetConnection(['subnet' => '192.0.2.0/24']))->nutzbarerBereich())
+    expect((new InternetConnection(['subnet' => '192.0.2.0/24']))->usableRange())
         ->toBe('192.0.2.1 – 192.0.2.254 (254 Adressen)');
 });
 
 test('ohne Netz, bei IPv6 und bei winzigen Präfixen gibt es keinen Bereich', function () {
     // /31 und /32 haben keinen nutzbaren Bereich in diesem Sinn, IPv6 keine
     // Broadcast-Adresse - dort waere jede Zahl irrefuehrend.
-    expect((new InternetConnection)->nutzbarerBereich())->toBeNull();
-    expect((new InternetConnection(['subnet' => '203.0.113.16/31']))->nutzbarerBereich())->toBeNull();
-    expect((new InternetConnection(['subnet' => '2001:db8::/64']))->nutzbarerBereich())->toBeNull();
+    expect((new InternetConnection)->usableRange())->toBeNull();
+    expect((new InternetConnection(['subnet' => '203.0.113.16/31']))->usableRange())->toBeNull();
+    expect((new InternetConnection(['subnet' => '2001:db8::/64']))->usableRange())->toBeNull();
 });
 
 test('die Liste zeigt das Netz nur, wenn eines hinterlegt ist', function () {

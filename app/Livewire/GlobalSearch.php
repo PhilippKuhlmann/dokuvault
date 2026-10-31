@@ -23,7 +23,7 @@ class GlobalSearch extends Component
     #[Computed]
     public function groups()
     {
-        return app(Search::class)->gruppen(auth()->user(), (string) $this->search);
+        return app(Search::class)->groups(auth()->user(), (string) $this->search);
     }
 
     public function render()

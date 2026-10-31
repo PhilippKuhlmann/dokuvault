@@ -148,7 +148,7 @@ class NetworkController extends Controller
             'dns2' => $network->dns2,
             'dhcp_start' => $network->dhcpStart,
             'dhcp_ende' => $network->dhcpEnd,
-            'naechste_freie' => $network->naechsteFreieAdresse(),
+            'naechste_freie' => $network->nextFreeAddress(),
             'kunde' => $this->objekte->kunde($network->customer),
             'darf_bearbeiten' => Gate::forUser($nutzer)->allows('network_update'),
             'darf_loeschen' => Gate::forUser($nutzer)->allows('network_delete'),
@@ -170,12 +170,12 @@ class NetworkController extends Controller
                 // A used address inside a reserved range: what the range is for.
                 'reservierung' => $z['reservierung'] ?? null,
                 'farbe' => $this->farbe($z['farbe'] ?? []),
-                'geraete' => $this->geraete($z['geraete']),
+                'geraete' => $this->devices($z['geraete']),
             ])->values(),
             // Over 8192 hosts the plan stops - the app says so.
             'gekuerzt' => $plan['truncated'] ?? false,
             // DHCP devices of a network without a DHCP range: no row to stand at.
-            'dhcp_ohne_bereich' => $this->geraete($plan['dhcpOhneBereich'] ?? []),
+            'dhcp_ohne_bereich' => $this->devices($plan['dhcpOhneBereich'] ?? []),
         ];
     }
 
@@ -184,7 +184,7 @@ class NetworkController extends Controller
     {
         return [
             'id' => $network->id,
-            'name' => $network->anzeige() ?: $network->network,
+            'name' => $network->label() ?: $network->network,
             'bezeichnung' => $network->description,
             // As numbers - the columns are text in some installations.
             'vlan' => is_numeric($network->vlanId) ? (int) $network->vlanId : null,
@@ -205,7 +205,7 @@ class NetworkController extends Controller
         ];
     }
 
-    private function geraete(array $eintraege): array
+    private function devices(array $eintraege): array
     {
         return array_map(fn ($e) => [
             'name' => $e['name'],
@@ -229,7 +229,7 @@ class NetworkController extends Controller
             $typ = $geraet ? $this->typ($geraet::class, $nutzer) : null;
 
             return [
-                'name' => IpPlan::geraetName($geraet).$zusatz,
+                'name' => IpPlan::deviceName($geraet).$zusatz,
                 'typ' => $typ,
                 'id' => $typ ? $geraet->getKey() : null,
             ];
@@ -239,7 +239,7 @@ class NetworkController extends Controller
     private function typ(string $klasse, User $nutzer): ?string
     {
         if (! array_key_exists($klasse, $this->typen)) {
-            $this->typen[$klasse] = collect($this->objekte->sichtbareTypen($nutzer))
+            $this->typen[$klasse] = collect($this->objekte->visibleKinds($nutzer))
                 ->search(fn ($typ) => $typ[0] === $klasse) ?: null;
         }
 

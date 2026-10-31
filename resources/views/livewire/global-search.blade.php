@@ -116,7 +116,7 @@
                                                  deshalb "#14", ausgerechnet in der Suche nach
                                                  seiner MAC. --}}
                                             <span class="block truncate uppercase tracking-[0.06em] text-gray-900 dark:text-gray-100">
-                                                {{ $treffer->protokollName() ?? '#'.$treffer->id }}
+                                                {{ $treffer->activityName() ?? '#'.$treffer->id }}
                                             </span>
                                             @if ($adresse = $treffer->ip ?? $treffer->ip1 ?? null)
                                                 <span class="block truncate font-mono text-xs text-gray-400 dark:text-gray-500">

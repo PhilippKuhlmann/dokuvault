@@ -11,16 +11,16 @@ use App\Models\Site;
 use Livewire\Livewire;
 
 test('ohne Einstellung gilt die Konfiguration', function () {
-    expect(Setting::fristVertraege())->toBe(config('custom.fristen.vertraege_tage'))
-        ->and(Setting::fristGarantie())->toBe(config('custom.fristen.garantie_tage'))
-        ->and(Setting::fristEol())->toBe(config('custom.fristen.eol_tage'))
+    expect(Setting::contractDeadline())->toBe(config('custom.fristen.vertraege_tage'))
+        ->and(Setting::warrantyDeadline())->toBe(config('custom.fristen.garantie_tage'))
+        ->and(Setting::eolDeadline())->toBe(config('custom.fristen.eol_tage'))
         ->and(Setting::pdfStunden())->toBe(config('custom.fristen.pdf_stunden'));
 });
 
 test('eine eigene Frist verdrängt die Konfiguration', function () {
     Setting::setzen(Setting::FRIST_VERTRAEGE, 120);
 
-    expect(Setting::fristVertraege())->toBe(120);
+    expect(Setting::contractDeadline())->toBe(120);
 });
 
 /*
@@ -92,7 +92,7 @@ test('die Garantiefrist hat ihre eigene Zahl', function () {
         ->assertViewHas('expiringWarranties', fn ($l) => $l->pluck('name')->contains('SRV-GARANTIE'));
 
     // Und die Vertragsfrist hat sie nicht mitgezogen.
-    expect(Setting::fristVertraege())->toBe(config('custom.fristen.vertraege_tage'));
+    expect(Setting::contractDeadline())->toBe(config('custom.fristen.vertraege_tage'));
 });
 
 test('die EOL-Frist entscheidet über das Abzeichen am Betriebssystem', function () {
@@ -169,9 +169,9 @@ test('die Seite speichert beim Ändern, ohne Knopf', function () {
         ->set('pdfStunden', 4)
         ->assertHasNoErrors();
 
-    expect(Setting::fristVertraege())->toBe(90)
-        ->and(Setting::fristGarantie())->toBe(45)
-        ->and(Setting::fristEol())->toBe(365)
+    expect(Setting::contractDeadline())->toBe(90)
+        ->and(Setting::warrantyDeadline())->toBe(45)
+        ->and(Setting::eolDeadline())->toBe(365)
         ->and(Setting::pdfStunden())->toBe(4);
 });
 
@@ -183,7 +183,7 @@ test('null Tage wäre keine Frist, sondern eine abgeschaltete Warnung', function
         ->assertHasErrors(['vertraege']);
 
     // Und die bisherige Frist steht noch.
-    expect(Setting::fristVertraege())->toBe(config('custom.fristen.vertraege_tage'));
+    expect(Setting::contractDeadline())->toBe(config('custom.fristen.vertraege_tage'));
 });
 
 test('ein vertippter Wert wird abgewiesen', function () {

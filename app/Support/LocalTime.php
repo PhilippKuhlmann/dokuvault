@@ -73,7 +73,7 @@ class LocalTime
      *
      * @return array<int, string>
      */
-    public static function auswahl(): array
+    public static function options(): array
     {
         return array_values(array_unique(array_merge(
             ['UTC'],

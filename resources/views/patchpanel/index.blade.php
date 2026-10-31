@@ -29,7 +29,7 @@
                 <x-patchpanel.face :panel="$patchpanel" />
 
                 <x-minitablecard :title="__('Allgemein')" :array="[
-                    'Rack' => $patchpanel->einbauort(),
+                    'Rack' => $patchpanel->mountLocation(),
                     'Standort' => $customer->sites->firstWhere('id', $patchpanel->site_id)?->name,
                     'Hersteller' => $patchpanel->manufacturer,
                     'Modell' => $patchpanel->model,

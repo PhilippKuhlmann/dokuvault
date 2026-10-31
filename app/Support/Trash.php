@@ -53,7 +53,7 @@ class Trash
     {
         $eintraege = collect();
 
-        foreach ($this->arten() as $slug => [$klasse, $bezeichnung]) {
+        foreach ($this->types() as $slug => [$klasse, $bezeichnung]) {
             $geloescht = $klasse::onlyTrashed()
                 ->where('customer_id', $this->kunde->id)
                 ->orderByDesc('deleted_at')
@@ -84,7 +84,7 @@ class Trash
     {
         $gekuerzt = [];
 
-        foreach ($this->arten() as $slug => [$klasse, $bezeichnung]) {
+        foreach ($this->types() as $slug => [$klasse, $bezeichnung]) {
             $vorhanden = $klasse::onlyTrashed()->where('customer_id', $this->kunde->id)->count();
 
             if ($vorhanden > self::JE_ART) {
@@ -131,7 +131,7 @@ class Trash
      *
      * @return array<string, array{0: class-string<Model>, 1: string}>
      */
-    private function arten(): array
+    private function types(): array
     {
         return array_filter(
             config('custom.trashables'),

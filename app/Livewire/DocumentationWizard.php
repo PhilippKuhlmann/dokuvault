@@ -175,7 +175,7 @@ class DocumentationWizard extends Component
      */
     protected function allowedSteps(): array
     {
-        return $this->ablauf()->schritte();
+        return $this->ablauf()->steps();
     }
 
     /**
@@ -291,7 +291,7 @@ class DocumentationWizard extends Component
         return $step ? $this->rulesForStep($step, $customer->id) : [];
     }
 
-    protected function feldnamen(): array
+    protected function fieldNames(): array
     {
         [, $run] = $this->guard();
         $step = $this->currentStep($run);
@@ -515,9 +515,9 @@ class DocumentationWizard extends Component
         // Only a model's own protokollName(), not the generic one from
         // TracksChanges - that picks the first filled name field and would
         // change what other steps show.
-        $eigener = method_exists($model, 'protokollName')
-            && (new \ReflectionMethod($model, 'protokollName'))->getDeclaringClass()->getName() === $model::class;
-        $name = $eigener ? $model->protokollName() : $model->{$feld};
+        $eigener = method_exists($model, 'activityName')
+            && (new \ReflectionMethod($model, 'activityName'))->getDeclaringClass()->getName() === $model::class;
+        $name = $eigener ? $model->activityName() : $model->{$feld};
 
         return filled($name) ? (string) $name : '—';
     }

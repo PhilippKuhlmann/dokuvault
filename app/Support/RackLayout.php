@@ -121,7 +121,7 @@ class RackLayout
      */
     public function dimensions($device): array
     {
-        $modell = DeviceModel::fuerGeraet($device);
+        $modell = DeviceModel::forDevice($device);
 
         $he = (int) ($device->height_units ?? 0)
             ?: (int) ($modell->height_units ?? 0)

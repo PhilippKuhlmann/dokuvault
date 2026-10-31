@@ -72,7 +72,7 @@ test('previous passwords share the brake of every other reveal', function () {
     $component = Livewire::test(ActivityLogPassword::class, ['ids' => $ids, 'felder' => ['cloud_backup_password']]);
 
     for ($i = 0; $i < Setting::kennwortAbrufe(); $i++) {
-        $component->call('show')->call('verbergen');
+        $component->call('show')->call('hide');
     }
 
     $component->call('show')

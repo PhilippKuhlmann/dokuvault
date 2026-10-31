@@ -150,7 +150,7 @@ test('bei DHCP wird keine Adresse gespeichert, nur das Netz', function () {
     $adresse = $ap->ipAddresses()->first();
     expect($adresse->address)->toBeNull();
     expect($adresse->network_id)->toBe($netz->id);
-    expect($adresse->anzeige())->toBe('DHCP');
+    expect($adresse->label())->toBe('DHCP');
     expect($adresse->istDhcp())->toBeTrue();
 });
 
@@ -168,7 +168,7 @@ test('der Schalter im Formular setzt DHCP', function () {
 
     $adresse = $ap->fresh()->ipAddresses()->first();
     expect($adresse->istDhcp())->toBeTrue();
-    expect($adresse->anzeige())->toBe('DHCP');
+    expect($adresse->label())->toBe('DHCP');
 });
 
 test('ohne den Schalter bleibt die Adresse eine feste', function () {
@@ -250,7 +250,7 @@ test('das Wort DHCP in der Bezeichnung loest nichts mehr aus', function () {
 
     $adresse = $ap->fresh()->ipAddresses()->first();
     expect($adresse->istDhcp())->toBeFalse();
-    expect($adresse->anzeige())->toBe('10.0.0.150');
+    expect($adresse->label())->toBe('10.0.0.150');
 });
 
 test('der Agent setzt die Spalte, nicht die Bezeichnung', function () {

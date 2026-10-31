@@ -21,7 +21,7 @@ class ContactPerson extends Model
      * wenig wie "Ahlers", und die zentrale Liste in config/custom.php kann
      * nur ein Feld nehmen, nicht zwei.
      */
-    public function protokollName(): ?string
+    public function activityName(): ?string
     {
         return trim($this->first_name.' '.$this->last_name) ?: null;
     }

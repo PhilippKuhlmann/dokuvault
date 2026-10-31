@@ -95,11 +95,11 @@ class AdminActivityLog extends Component
 
         return view('livewire.admin-activity-log', [
             'activities' => $activities,
-            'kundeVon' => $this->kundenDerEintraege($activities->getCollection()),
+            'kundeVon' => $this->customersOfEntries($activities->getCollection()),
             'kunden' => Customer::orderBy('name')->pluck('name', 'id')->all(),
             'gesamt' => Activity::count(),
             'ereignisse' => config('custom.activity_events'),
-            'arten' => $this->arten(),
+            'arten' => $this->types(),
             // Nicht 'benutzer': So heisst schon die Filter-Eigenschaft, und die
             // gewinnt in der View - die Auswahlliste waere dort ein String.
             'benutzerListe' => $this->verursacher(),
@@ -126,7 +126,7 @@ class AdminActivityLog extends Component
      *
      * @return array<int, string> activity id => customer name
      */
-    protected function kundenDerEintraege(Collection $eintraege): array
+    protected function customersOfEntries(Collection $eintraege): array
     {
         $namen = Customer::whereIn('id', $eintraege->pluck('customer_id')->filter()->unique())->pluck('name', 'id');
 
@@ -155,7 +155,7 @@ class AdminActivityLog extends Component
      * Aus der Tabelle und nicht aus einer Liste: Protokolliert wird auch, was
      * nicht im Papierkorb steht - IP-Adressen, Rollen, Zugangsdaten-Verknüpfungen.
      */
-    protected function arten(): array
+    protected function types(): array
     {
         return Activity::query()
             ->whereNotNull('subject_type')

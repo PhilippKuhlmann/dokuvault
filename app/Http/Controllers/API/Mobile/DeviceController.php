@@ -92,8 +92,8 @@ class DeviceController extends Controller
             'netze' => Network::where('customer_id', $geraet->customer_id)->orderBy('vlanId')->get()
                 ->map(fn (Network $netz) => [
                     'id' => $netz->id,
-                    'name' => $netz->protokollName(),
-                    'naechste_freie' => $netz->naechsteFreieAdresse(),
+                    'name' => $netz->activityName(),
+                    'naechste_freie' => $netz->nextFreeAddress(),
                 ])->values(),
         ]);
     }

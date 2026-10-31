@@ -216,7 +216,7 @@ class NetworkQuickCreate extends Component
     }
 
     /** Die Beschriftungen fuer die Meldungen - "Bitte Bezeichnung angeben.". */
-    protected function feldnamen(): array
+    protected function fieldNames(): array
     {
         return app(NetworkEditing::class)->attributeNames();
     }
@@ -227,7 +227,7 @@ class NetworkQuickCreate extends Component
 
         $this->enableCheck();
 
-        $daten = $this->validate($this->regeln(), [], $this->feldnamen());
+        $daten = $this->validate($this->regeln(), [], $this->fieldNames());
 
         $werte = app(NetworkEditing::class)->values(
             $daten, $this->siteId && ! $this->bearbeiteId ? $this->siteId : (int) $daten['site_id']

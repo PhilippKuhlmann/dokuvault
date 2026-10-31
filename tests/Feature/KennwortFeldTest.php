@@ -71,7 +71,7 @@ test('das Verbergen räumt den Wert wieder weg', function () {
 
     Livewire::test(PasswordField::class, ['linkId' => $link->id])
         ->call('show')->assertSee('Kommt-Und-Geht-2026')
-        ->call('verbergen')
+        ->call('hide')
         ->assertSet('wert', null)
         ->assertDontSee('Kommt-Und-Geht-2026');
 });
@@ -115,7 +115,7 @@ test('die Bremse stoppt das reihenweise Abgreifen', function () {
     $test->call('show')->assertSet('offen', true);
 
     // Zweiter Abruf läuft ins Limit: kein Wert, ein Hinweis.
-    $test->call('verbergen')
+    $test->call('hide')
         ->call('show')
         ->assertSet('offen', false)
         ->assertHasErrors('kennwort');

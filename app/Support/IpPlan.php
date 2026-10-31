@@ -51,7 +51,7 @@ class IpPlan
         $used = $this->collectUsedIps($customer);
 
         // Geraete ohne feste Adresse: Sie haengen am Netz, nicht an einer Zeile.
-        $perDhcp = $this->collectDhcpGeraete($customer);
+        $perDhcp = $this->collectDhcpDevices($customer);
 
         // Reservierte Bereiche je Netz. Sie belegen nichts - sie sagen, wofuer
         // ein Stueck gedacht ist, auch wenn davon noch keine Adresse vergeben
@@ -74,7 +74,7 @@ class IpPlan
     /**
      * Der Name eines Geräts im Plan - für beide Aufrufer gleich.
      */
-    public static function geraetName(?Model $geraet): string
+    public static function deviceName(?Model $geraet): string
     {
         if (! $geraet) {
             return 'Gerät';
@@ -136,7 +136,7 @@ class IpPlan
      * deshalb am DHCP-Bereich und nicht auf einer Zeile, die morgen eine
      * andere wäre.
      */
-    protected function collectDhcpGeraete(Customer $customer): array
+    protected function collectDhcpDevices(Customer $customer): array
     {
         $je = [];
 
@@ -183,7 +183,7 @@ class IpPlan
             }
         }
 
-        $dhcp = $network->dhcpBereich();
+        $dhcp = $network->dhcpRange();
 
         // Je Adresse die Beschriftung des Bereichs, in dem sie liegt. Als
         // Nachschlagetabelle statt einer Schleife je Adresse: Ein /16 haette

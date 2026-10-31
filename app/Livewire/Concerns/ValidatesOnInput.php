@@ -34,7 +34,7 @@ trait ValidatesOnInput
     abstract protected function regeln(): array;
 
     /** Beschriftungen fuer die Meldungen - "Bitte Bezeichnung angeben.". */
-    protected function feldnamen(): array
+    protected function fieldNames(): array
     {
         return [];
     }
@@ -81,6 +81,6 @@ trait ValidatesOnInput
             return;
         }
 
-        $this->validateOnly($eigenschaft, $regeln, [], $this->feldnamen());
+        $this->validateOnly($eigenschaft, $regeln, [], $this->fieldNames());
     }
 }

@@ -92,7 +92,7 @@ class AdminGeneral extends Component
         $this->anmeldeHinweis = Setting::anmeldeHinweis();
         $this->seiteListe = Setting::seiteListe();
         $this->seiteAdmin = Setting::seiteAdmin();
-        $this->endungen = Setting::dateiFormate();
+        $this->endungen = Setting::fileFormats();
     }
 
     /**
@@ -142,7 +142,7 @@ class AdminGeneral extends Component
         Gate::authorize('admin_setting');
 
         $this->validate(
-            ['zeitzone' => ['required', Rule::in(LocalTime::auswahl())]],
+            ['zeitzone' => ['required', Rule::in(LocalTime::options())]],
             [],
             ['zeitzone' => __('Zeitzone')]
         );
@@ -281,7 +281,7 @@ class AdminGeneral extends Component
         $this->{$eigenschaft} = null;
 
         $this->dispatch('notice', text: __('Logo gespeichert.'));
-        $this->seiteNeu();
+        $this->createPage();
     }
 
     /** Ein Logo entfernen - ein Knopf, keine Ankreuzbox mit Speichern danach. */
@@ -294,7 +294,7 @@ class AdminGeneral extends Component
         Setting::setzen(Setting::logoSchluessel($stelle), null);
 
         $this->dispatch('notice', text: __('Logo entfernt.'));
-        $this->seiteNeu();
+        $this->createPage();
     }
 
     /**
@@ -305,7 +305,7 @@ class AdminGeneral extends Component
      * daneben aber noch das alte. Beim Tippen des Namens waere ein Neuladen
      * dagegen stoerend, dort bleibt es aus.
      */
-    private function seiteNeu(): void
+    private function createPage(): void
     {
         $this->redirect(route('admin.general.index'));
     }
@@ -331,7 +331,7 @@ class AdminGeneral extends Component
                     'vorhanden' => Setting::logoPfad($stelle) !== null,
                 ])->values()->all(),
             'formate' => config('custom.bild_formate'),
-            'zonen' => LocalTime::auswahl(),
+            'zonen' => LocalTime::options(),
             // Damit die Seite zeigen kann, was die Umstellung bewirkt.
             'jetzt' => LocalTime::display(now(), 'd.m.Y H:i'),
             // Damit auf der Seite steht, was der Server ueberhaupt hergibt.

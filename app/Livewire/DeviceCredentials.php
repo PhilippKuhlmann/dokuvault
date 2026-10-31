@@ -74,7 +74,7 @@ class DeviceCredentials extends Component
         ];
     }
 
-    protected function feldnamen(): array
+    protected function fieldNames(): array
     {
         return app(CredentialLinking::class)->attributeNames();
     }
@@ -108,7 +108,7 @@ class DeviceCredentials extends Component
      *
      * @return array<int, string>
      */
-    protected function sichtbareArten(): array
+    protected function visibleTypes(): array
     {
         return app(CredentialLinking::class)->visibleKinds(auth()->user());
     }
@@ -120,7 +120,7 @@ class DeviceCredentials extends Component
         Gate::authorize(strtolower(class_basename($this->modelClass)).'_update');
 
         // Eine der beiden Arten genuegt - welche, entscheidet sichtbareArten().
-        abort_if($this->sichtbareArten() === [], 403);
+        abort_if($this->visibleTypes() === [], 403);
 
         $user = auth()->user();
         abort_if($user->customer_id && $user->customer_id !== $device->customer_id, 403);
@@ -136,7 +136,7 @@ class DeviceCredentials extends Component
         $this->enableCheck();
 
         $validated = $this->validate(
-            Arr::only($this->regeln(), ['login_id', 'note']), [], $this->feldnamen()
+            Arr::only($this->regeln(), ['login_id', 'note']), [], $this->fieldNames()
         );
 
         $this->verknuepfen($device, (int) $validated['login_id'], $validated['note']);
@@ -153,7 +153,7 @@ class DeviceCredentials extends Component
         $this->enableCheck();
 
         $validated = $this->validate(
-            Arr::only($this->regeln(), ['name', 'username', 'password', 'note']), [], $this->feldnamen()
+            Arr::only($this->regeln(), ['name', 'username', 'password', 'note']), [], $this->fieldNames()
         );
 
         app(CredentialLinking::class)->create($device, $validated);
@@ -186,7 +186,7 @@ class DeviceCredentials extends Component
     public function render()
     {
         $device = $this->modelClass::find($this->modelId);
-        $arten = $this->sichtbareArten();
+        $arten = $this->visibleTypes();
         $entries = ($device ? $device->zugangsdaten() : collect())
             ->filter(fn ($link) => in_array($link->login->kind, $arten, true))
             ->values();

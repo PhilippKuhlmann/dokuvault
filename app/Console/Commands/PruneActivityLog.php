@@ -25,7 +25,7 @@ class PruneActivityLog extends Command
 
     public function handle(): int
     {
-        $tage = Setting::protokollTage();
+        $tage = Setting::activityDays();
 
         if ($tage < 1) {
             $this->info('Keine Frist eingestellt — das Protokoll bleibt unangetastet.');

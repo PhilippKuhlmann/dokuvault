@@ -43,8 +43,8 @@ class TwoFactorCheck
         $mitZettel = ! $mitCode && $nutzer->useRecoveryCode($eingabe);
 
         if (! $mitCode && ! $mitZettel) {
-            RateLimiter::hit($this->schluessel($nutzer, $ip), Setting::anmeldungSperreSekunden());
-            RateLimiter::hit($this->nutzerSchluessel($nutzer), Setting::anmeldungSperreSekunden());
+            RateLimiter::hit($this->schluessel($nutzer, $ip), Setting::loginLockoutSeconds());
+            RateLimiter::hit($this->userKey($nutzer), Setting::loginLockoutSeconds());
 
             // Ein falscher zweiter Faktor loest kein Auth\Events\Failed aus -
             // das Kennwort stimmte ja. Genau dieser Fall ist aber der
@@ -69,7 +69,7 @@ class TwoFactorCheck
         }
 
         RateLimiter::clear($this->schluessel($nutzer, $ip));
-        RateLimiter::clear($this->nutzerSchluessel($nutzer));
+        RateLimiter::clear($this->userKey($nutzer));
 
         return $mitZettel;
     }
@@ -81,7 +81,7 @@ class TwoFactorCheck
      */
     private function codeAnnehmen(User $nutzer, string $eingabe): bool
     {
-        $schritt = $this->zweiteStufe->neuerSchritt(
+        $schritt = $this->zweiteStufe->newStep(
             $nutzer->two_factor_secret,
             $eingabe,
             $nutzer->two_factor_last_step,
@@ -102,7 +102,7 @@ class TwoFactorCheck
     }
 
     /** Counts across all addresses, so guessing from many IPs is slowed down too. */
-    private function nutzerSchluessel(User $nutzer): string
+    private function userKey(User $nutzer): string
     {
         return 'zweite-stufe|'.$nutzer->id;
     }
@@ -122,9 +122,9 @@ class TwoFactorCheck
 
         // Per user the limit is higher, so one noisy address does not lock out
         // the real owner, but a distributed guess still runs into it.
-        if (RateLimiter::tooManyAttempts($this->nutzerSchluessel($nutzer), Setting::anmeldungVersuche() * 4)) {
-            $schluessel = $this->nutzerSchluessel($nutzer);
-        } elseif (! RateLimiter::tooManyAttempts($schluessel, Setting::anmeldungVersuche())) {
+        if (RateLimiter::tooManyAttempts($this->userKey($nutzer), Setting::loginAttempts() * 4)) {
+            $schluessel = $this->userKey($nutzer);
+        } elseif (! RateLimiter::tooManyAttempts($schluessel, Setting::loginAttempts())) {
             return;
         }
 

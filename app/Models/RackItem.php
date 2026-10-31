@@ -46,9 +46,9 @@ class RackItem extends Model
      * Ueber Hersteller und Modell des Geraets gefunden, nicht ueber eine
      * Verweisspalte - siehe DeviceModel.
      */
-    public function geraeteModell(): ?DeviceModel
+    public function deviceModel(): ?DeviceModel
     {
-        return DeviceModel::fuerGeraet($this->device);
+        return DeviceModel::forDevice($this->device);
     }
 
     /**
@@ -60,19 +60,19 @@ class RackItem extends Model
      */
     public function imageUrl(): ?string
     {
-        return $this->catalogItem?->imageUrl() ?? $this->geraeteModell()?->imageUrl();
+        return $this->catalogItem?->imageUrl() ?? $this->deviceModel()?->imageUrl();
     }
 
     /** Schluessel einer eigenen Zeichnung des Geraetemodells, oder null. */
     public function zeichnung(): ?string
     {
-        return $this->geraeteModell()?->drawing;
+        return $this->deviceModel()?->drawing;
     }
 
     /** Dasselbe als Dateipfad - fuer den PDF-Export, der kein HTTP kann. */
     public function imagePath(): ?string
     {
-        return $this->catalogItem?->imagePath() ?? $this->geraeteModell()?->imagePath();
+        return $this->catalogItem?->imagePath() ?? $this->deviceModel()?->imagePath();
     }
 
     /**
@@ -133,7 +133,7 @@ class RackItem extends Model
     /**
      * Ein Einbau heisst wie das Geraet, das eingebaut ist.
      */
-    public function protokollName(): ?string
+    public function activityName(): ?string
     {
         return $this->label() ?: null;
     }

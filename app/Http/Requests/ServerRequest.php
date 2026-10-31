@@ -56,7 +56,7 @@ class ServerRequest extends FormRequest
             'operating_system_id' => 'required',
             'remoteID' => '',
             'remotePassword' => '',
-            ...$this->beschaffungRegeln(),
+            ...$this->procurementRules(),
         ];
     }
 
@@ -75,9 +75,9 @@ class ServerRequest extends FormRequest
             'bmcPassword' => 'BMC Passwort',
             'services' => 'Dienste',
             'operating_system_id' => 'Betriebssystem',
-            'remoteID' => Setting::fernwartung()['id_label'],
-            'remotePassword' => Setting::fernwartung()['password_label'],
-            ...$this->beschaffungBezeichnungen(),
+            'remoteID' => Setting::remoteAccess()['id_label'],
+            'remotePassword' => Setting::remoteAccess()['password_label'],
+            ...$this->procurementLabels(),
         ];
     }
 }

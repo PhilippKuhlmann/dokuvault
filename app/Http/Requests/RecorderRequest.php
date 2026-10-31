@@ -33,7 +33,7 @@ class RecorderRequest extends FormRequest
             'model' => '',
             'serialNumber' => '',
             'port' => 'required',
-            ...$this->beschaffungRegeln(),
+            ...$this->procurementRules(),
         ];
     }
 
@@ -46,7 +46,7 @@ class RecorderRequest extends FormRequest
             'model' => 'Modell',
             'serialNumber' => 'Seriennummer',
             'port' => 'Port',
-            ...$this->beschaffungBezeichnungen(),
+            ...$this->procurementLabels(),
         ];
     }
 }

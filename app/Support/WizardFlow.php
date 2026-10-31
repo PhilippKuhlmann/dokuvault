@@ -33,11 +33,11 @@ class WizardFlow
      *
      * @return array<int, array<string, mixed>>
      */
-    public function schritte(): array
+    public function steps(): array
     {
         return collect(config('custom.wizard_steps'))
             ->filter(fn (array $schritt) => Gate::forUser($this->nutzer)->allows($schritt['permission']))
-            ->map(fn (array $schritt) => $this->fernwartungBeschriften($schritt))
+            ->map(fn (array $schritt) => $this->labelRemoteAccess($schritt))
             ->values()
             ->all();
     }
@@ -53,9 +53,9 @@ class WizardFlow
      * @param  array<string, mixed>  $schritt
      * @return array<string, mixed>
      */
-    public function fernwartungBeschriften(array $schritt): array
+    public function labelRemoteAccess(array $schritt): array
     {
-        $werkzeug = Setting::fernwartung();
+        $werkzeug = Setting::remoteAccess();
 
         $schritt['fields'] = collect($schritt['fields'] ?? [])->map(function (array $feld) use ($werkzeug) {
             $feld['label'] = match ($feld['name'] ?? null) {
@@ -86,7 +86,7 @@ class WizardFlow
         return $this->durchlauf() ?? DocumentationRun::create([
             'customer_id' => $this->kunde->id,
             'user_id' => $this->nutzer->id,
-            'current_step' => $this->schritte()[0]['key'] ?? null,
+            'current_step' => $this->steps()[0]['key'] ?? null,
             'completed_steps' => [],
             'skipped_steps' => [],
         ]);
@@ -99,13 +99,13 @@ class WizardFlow
             return null;
         }
 
-        return collect($this->schritte())->firstWhere('key', $durchlauf->current_step);
+        return collect($this->steps())->firstWhere('key', $durchlauf->current_step);
     }
 
     /** Ob dieser Schluessel ein Schritt ist, den der Nutzer sehen darf. */
     public function erlaubt(string $schluessel): bool
     {
-        return collect($this->schritte())->contains(fn ($schritt) => $schritt['key'] === $schluessel);
+        return collect($this->steps())->contains(fn ($schritt) => $schritt['key'] === $schluessel);
     }
 
     /**
@@ -130,7 +130,7 @@ class WizardFlow
      */
     public function weiter(DocumentationRun $durchlauf): void
     {
-        $schluessel = array_column($this->schritte(), 'key');
+        $schluessel = array_column($this->steps(), 'key');
         $stelle = array_search($durchlauf->current_step, $schluessel, true);
         $naechster = ($stelle !== false && isset($schluessel[$stelle + 1])) ? $schluessel[$stelle + 1] : null;
 
@@ -144,7 +144,7 @@ class WizardFlow
     /** Einen Schritt zurueck. Am Anfang bleibt es, wo es ist. */
     public function zurueck(DocumentationRun $durchlauf): void
     {
-        $schluessel = array_column($this->schritte(), 'key');
+        $schluessel = array_column($this->steps(), 'key');
         $stelle = array_search($durchlauf->current_step, $schluessel, true);
 
         if ($stelle !== false && $stelle > 0) {
@@ -178,7 +178,7 @@ class WizardFlow
      */
     public function skipGroup(DocumentationRun $durchlauf): void
     {
-        $schritte = $this->schritte();
+        $schritte = $this->steps();
         $aktuell = $this->aktueller($durchlauf);
 
         if (! $aktuell) {

@@ -31,9 +31,9 @@ class AdminAgentSettings extends Component
         Gate::authorize('admin_setting');
 
         $this->intervall = Setting::agentIntervall();
-        $this->stillStunden = Setting::agentStillStunden();
-        $this->tokenTage = Setting::agentTokenTage();
-        $this->tokenMaxTage = Setting::agentTokenMaxTage();
+        $this->stillStunden = Setting::agentSilentHours();
+        $this->tokenTage = Setting::agentTokenDays();
+        $this->tokenMaxTage = Setting::agentTokenMaxDays();
         $this->autoCheck = Setting::autoCheck();
     }
 

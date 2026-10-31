@@ -94,7 +94,7 @@ class FileList extends Component
         $abfrage = File::where('customer_id', $this->customerId)
             ->when($this->suche !== '', fn ($a) => $a->whereEnthaelt(['name', 'extension'], $this->suche))
             ->when($this->tage > 0, fn ($a) => $a->where('created_at', '>=', $this->grenze()))
-            ->when($this->art !== '', fn ($a) => $this->artEinschraenken($a));
+            ->when($this->art !== '', fn ($a) => $this->limitToType($a));
 
         $abfrage = match ($this->sortierung) {
             'aelteste' => $abfrage->oldest(),
@@ -120,7 +120,7 @@ class FileList extends Component
      * "datei" ist der Rest - alles, was in keiner Endungsliste steht. Das
      * laesst sich nicht als Liste formulieren, sondern nur als Gegenteil.
      */
-    private function artEinschraenken($abfrage)
+    private function limitToType($abfrage)
     {
         // Kleingeschrieben vergleichen: Die Endung wird gespeichert, wie sie
         // hochgeladen wurde - "Vertrag.PDF" ist eine PDF-Datei und soll im
@@ -132,7 +132,7 @@ class FileList extends Component
             return $abfrage->whereNotIn($spalte, File::bekannteEndungen());
         }
 
-        return $abfrage->whereIn($spalte, File::endungenFuerArt($this->art));
+        return $abfrage->whereIn($spalte, File::extensionsForType($this->art));
     }
 
     /**

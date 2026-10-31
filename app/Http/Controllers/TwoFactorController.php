@@ -205,11 +205,11 @@ class TwoFactorController extends Controller
         // sonst waere die Pflicht ein Knopf, den man einmal drueckt.
         if ($request->user()->two_factor_required) {
             return Redirect::route('profile.edit')
-                ->withErrors(['password' => __('Ihr Administrator verlangt die zweite Stufe. Sie lässt sich nicht abschalten.')], 'zweiteStufeAus')
+                ->withErrors(['password' => __('Ihr Administrator verlangt die zweite Stufe. Sie lässt sich nicht abschalten.')], 'disableTwoFactor')
                 ->withFragment('two-factor');
         }
 
-        $request->validateWithBag('zweiteStufeAus', [
+        $request->validateWithBag('disableTwoFactor', [
             'password' => ['required', 'current_password'],
         ]);
 

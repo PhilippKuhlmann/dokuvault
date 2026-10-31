@@ -26,7 +26,7 @@
                 {{-- Dieselbe Farbe wie in der Tabelle darueber - die Liste ist
                      deren Legende. Zugeteilt an einer Stelle, siehe
                      IpRange::eingefaerbt(). --}}
-                <span wire:key="bereich-{{ $bereich->id }}"
+                <span wire:key="range-{{ $bereich->id }}"
                     class="inline-flex items-center gap-2 rounded-lg border px-2 py-1 text-xs {{ $bereich->farbe['chip'] ?? '' }}">
                     <span class="font-mono tabular-nums {{ $bereich->farbe['chipText'] ?? '' }}">{{ $bereich->from_ip }} – {{ $bereich->to_ip }}</span>
                     <span class="{{ $bereich->farbe['chipText'] ?? '' }}">{{ $bereich->label }}</span>

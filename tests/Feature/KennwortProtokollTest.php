@@ -164,7 +164,7 @@ test('das Protokoll zeigt das bisherige Kennwort auf Klick', function () {
 
     $test->assertDontSee('Das-Alte-2026');
     $test->call('show')->assertSee('Das-Alte-2026');
-    $test->call('verbergen')->assertDontSee('Das-Alte-2026');
+    $test->call('hide')->assertDontSee('Das-Alte-2026');
 });
 
 test('ohne admin_activity bleibt das Kennwort im Protokoll verborgen', function () {

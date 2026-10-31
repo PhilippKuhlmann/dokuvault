@@ -37,7 +37,7 @@ class AgentScript
      * @param  'powershell'|'bash'  $shell
      * @return array<string, array> key => variant
      */
-    public static function fuerDienst(string $shell = 'powershell'): array
+    public static function forService(string $shell = 'powershell'): array
     {
         $endung = $shell === 'bash' ? '.sh' : '.ps1';
 

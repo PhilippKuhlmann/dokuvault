@@ -31,7 +31,7 @@ class TwoFactorChallengeController extends Controller
 
     public function create(Request $request): View|RedirectResponse
     {
-        $nutzer = $this->wartenderNutzer($request);
+        $nutzer = $this->pendingUser($request);
 
         if (! $nutzer) {
             return redirect()->route('login');
@@ -72,7 +72,7 @@ class TwoFactorChallengeController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $nutzer = $this->wartenderNutzer($request);
+        $nutzer = $this->pendingUser($request);
 
         if (! $nutzer) {
             return redirect()->route('login');
@@ -145,7 +145,7 @@ class TwoFactorChallengeController extends Controller
         return redirect()->route('login');
     }
 
-    private function wartenderNutzer(Request $request): ?User
+    private function pendingUser(Request $request): ?User
     {
         $id = $request->session()->get(self::WARTET);
 

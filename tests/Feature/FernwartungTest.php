@@ -11,30 +11,30 @@ use Spatie\Activitylog\Models\Activity;
 test('ohne Einstellung bleibt es bei RustDesk', function () {
     // Die Loesung war fest verdrahtet, bevor es die Einstellung gab - eine
     // bestehende Installation darf sich durch das Update nicht aendern.
-    $tool = Setting::fernwartung();
+    $tool = Setting::remoteAccess();
 
     expect($tool['key'])->toBe('rustdesk');
-    expect(Setting::fernwartungsLink('123456789', 'geheim'))
+    expect(Setting::remoteAccessLink('123456789', 'geheim'))
         ->toBe('rustdesk://connection/new/123456789?password=geheim');
 });
 
 test('die Umstellung wirkt auf Link und Beschriftung', function () {
     Setting::setzen(Setting::REMOTE_TOOL, 'teamviewer');
 
-    expect(Setting::fernwartung()['id_label'])->toBe('TeamViewer ID');
-    expect(Setting::fernwartungsLink('123456789', 'geheim'))
+    expect(Setting::remoteAccess()['id_label'])->toBe('TeamViewer ID');
+    expect(Setting::remoteAccessLink('123456789', 'geheim'))
         ->toBe('teamviewer10://control?device=123456789');
 
     // TeamViewer kennt keine Kennwortuebergabe - der Knopf verbindet trotzdem.
-    expect(Setting::fernwartungsLink('123456789', null))
+    expect(Setting::remoteAccessLink('123456789', null))
         ->toBe('teamviewer10://control?device=123456789');
 });
 
 test('RustDesk verlangt beides, sonst gibt es keinen Knopf', function () {
     // Ein rustdesk-Link ohne Passwort landet in der Kennwortabfrage - dann ist
     // kein Knopf ehrlicher als ein Knopf, der nicht durchkommt.
-    expect(Setting::fernwartungsLink('123456789', null))->toBeNull();
-    expect(Setting::fernwartungsLink(null, 'geheim'))->toBeNull();
+    expect(Setting::remoteAccessLink('123456789', null))->toBeNull();
+    expect(Setting::remoteAccessLink(null, 'geheim'))->toBeNull();
 });
 
 test('die Geraeteliste zeigt den Knopf der eingestellten Loesung', function () {
@@ -134,7 +134,7 @@ test('ein gueltiges eigenes Muster wird uebernommen', function () {
         'remote_pattern' => 'meintool://connect?id={id}&pw={password}',
     ])->assertRedirect(route('admin.setting.index'));
 
-    expect(Setting::fernwartungsLink('42', 'geheim'))
+    expect(Setting::remoteAccessLink('42', 'geheim'))
         ->toBe('meintool://connect?id=42&pw=geheim');
 });
 

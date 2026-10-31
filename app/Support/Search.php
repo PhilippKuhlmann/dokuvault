@@ -119,7 +119,7 @@ class Search
      * Je Gruppe: typ (eigener Schluessel), slug (die Liste, auf die der
      * Treffer zeigt), label, results, weitere, highlightable.
      */
-    public function gruppen(User $user, string $roh): Collection
+    public function groups(User $user, string $roh): Collection
     {
         $groups = collect();
 

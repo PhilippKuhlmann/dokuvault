@@ -92,11 +92,11 @@ class LoginRequest extends FormRequest
             }
 
             // Falsches Kennwort an einem gesperrten Zugang: genau wie sonst.
-            $this->fehlversuch();
+            $this->failedAttempt();
         }
 
         if (! Auth::attempt($this->only('username', 'password'), $this->boolean('remember'))) {
-            $this->fehlversuch();
+            $this->failedAttempt();
         }
 
         // Auch den Herkunftszaehler leeren: sonst waere ein Buero, in dem sich
@@ -116,9 +116,9 @@ class LoginRequest extends FormRequest
      *
      * @throws ValidationException
      */
-    protected function fehlversuch(): void
+    protected function failedAttempt(): void
     {
-        $sperre = Setting::anmeldungSperreSekunden();
+        $sperre = Setting::loginLockoutSeconds();
 
         RateLimiter::hit($this->throttleKey(), $sperre);
         RateLimiter::hit($this->herkunftKey(), $sperre);
@@ -137,8 +137,8 @@ class LoginRequest extends FormRequest
      */
     public function ensureIsNotRateLimited()
     {
-        $gesperrt = RateLimiter::tooManyAttempts($this->throttleKey(), Setting::anmeldungVersuche())
-            || RateLimiter::tooManyAttempts($this->herkunftKey(), Setting::anmeldungHerkunft());
+        $gesperrt = RateLimiter::tooManyAttempts($this->throttleKey(), Setting::loginAttempts())
+            || RateLimiter::tooManyAttempts($this->herkunftKey(), Setting::loginOrigin());
 
         if (! $gesperrt) {
             return;

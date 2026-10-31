@@ -35,7 +35,7 @@ class PhoneRequest extends FormRequest
             'serialNumber' => 'max:255',
             'port' => 'max:255',
             'mac' => 'max:255',
-            ...$this->beschaffungRegeln(),
+            ...$this->procurementRules(),
         ];
     }
 
@@ -49,7 +49,7 @@ class PhoneRequest extends FormRequest
             'serialNumber' => 'Seriennummer',
             'port' => 'Port',
             'mac' => 'MAC-Adresse',
-            ...$this->beschaffungBezeichnungen(),
+            ...$this->procurementLabels(),
         ];
     }
 }

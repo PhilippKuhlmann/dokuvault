@@ -64,7 +64,7 @@ class IpRanges extends Component
         return app(IpRangeEditing::class)->rules();
     }
 
-    protected function feldnamen(): array
+    protected function fieldNames(): array
     {
         return app(IpRangeEditing::class)->attributeNames();
     }
@@ -89,7 +89,7 @@ class IpRanges extends Component
         Gate::authorize('network_update');
 
         $this->enableCheck();
-        $daten = $this->validate($this->regeln(), [], $this->feldnamen());
+        $daten = $this->validate($this->regeln(), [], $this->fieldNames());
 
         app(IpRangeEditing::class)->create($this->netz(), $daten);
 

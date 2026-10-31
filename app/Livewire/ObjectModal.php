@@ -99,13 +99,13 @@ class ObjectModal extends Component
         $this->clearForm();
     }
 
-    protected function einstellung(): array
+    protected function setting(): array
     {
         return config('forms.'.$this->typ);
     }
 
     /** Rules, choices and storing - shared with the iOS app. */
-    protected function objektForm(): ObjectForm
+    protected function objectForm(): ObjectForm
     {
         return new ObjectForm($this->typ, $this->customerId);
     }
@@ -117,7 +117,7 @@ class ObjectModal extends Component
 
     protected function clearForm(): void
     {
-        $this->form = $this->objektForm()->emptyValues();
+        $this->form = $this->objectForm()->emptyValues();
 
         $this->datei = null;
         $this->modellbild = null;
@@ -145,9 +145,9 @@ class ObjectModal extends Component
 
         Gate::authorize($this->typ.'_update');
 
-        $objekt = $this->objektHolen($id);
+        $objekt = $this->fetchObject($id);
 
-        $this->form = $this->objektForm()->values($objekt);
+        $this->form = $this->objectForm()->values($objekt);
 
         $this->bearbeiteId = $objekt->id;
         $this->loeschenGefragt = false;
@@ -160,9 +160,9 @@ class ObjectModal extends Component
      * Immer ueber den Kunden geladen: Eine fremde Id darf hier nicht
      * durchkommen, auch wenn sie von aussen mitgeschickt wird.
      */
-    protected function objektHolen(int $id)
+    protected function fetchObject(int $id)
     {
-        return $this->objektForm()->find($id);
+        return $this->objectForm()->find($id);
     }
 
     public function cancel(): void
@@ -182,7 +182,7 @@ class ObjectModal extends Component
     {
         Gate::authorize($this->bearbeiteId ? $this->typ.'_update' : $this->typ.'_create');
 
-        $klasse = $this->einstellung()['erzeuger'] ?? null;
+        $klasse = $this->setting()['erzeuger'] ?? null;
         abort_if($klasse === null, 404);
 
         try {
@@ -200,12 +200,12 @@ class ObjectModal extends Component
      */
     protected function regeln(): array
     {
-        return $this->objektForm()->rules($this->form, 'form.');
+        return $this->objectForm()->rules($this->form, 'form.');
     }
 
-    protected function feldnamen(): array
+    protected function fieldNames(): array
     {
-        return $this->objektForm()->attributeNames('form.');
+        return $this->objectForm()->attributeNames('form.');
     }
 
     public function save(): void
@@ -216,12 +216,12 @@ class ObjectModal extends Component
 
         $this->enableCheck();
 
-        $daten = $this->validate($this->regeln(), [], $this->feldnamen())['form'];
+        $daten = $this->validate($this->regeln(), [], $this->fieldNames())['form'];
 
-        $bisher = $this->bearbeiteId ? $this->objektHolen($this->bearbeiteId) : null;
-        $this->objektForm()->save($daten, $bisher, $this->datei);
+        $bisher = $this->bearbeiteId ? $this->fetchObject($this->bearbeiteId) : null;
+        $this->objectForm()->save($daten, $bisher, $this->datei);
 
-        $meldung = $this->einstellung()['einzahl'].($bisher ? ' gespeichert.' : ' angelegt.');
+        $meldung = $this->setting()['einzahl'].($bisher ? ' gespeichert.' : ' angelegt.');
 
         // Nach dem Geraet, aber vor dem Leeren des Formulars: Die Zuordnung
         // braucht Hersteller und Modell, die dort stehen.
@@ -253,7 +253,7 @@ class ObjectModal extends Component
      */
     public function updatingForm($wert, $schluessel): void
     {
-        $feld = $this->fuellendesHostFeld($schluessel);
+        $feld = $this->fillingHostField($schluessel);
         if (! $feld) {
             return;
         }
@@ -275,9 +275,9 @@ class ObjectModal extends Component
     }
 
     /** The 'host' field with this name, if it prefills other fields. */
-    protected function fuellendesHostFeld(string $name): ?array
+    protected function fillingHostField(string $name): ?array
     {
-        $feld = collect($this->einstellung()['felder'])->firstWhere('name', $name);
+        $feld = collect($this->setting()['felder'])->firstWhere('name', $name);
 
         return $feld && $feld['type'] === 'host' && ! empty($feld['fuellt']) && ! ($feld['mehrfach'] ?? false) ? $feld : null;
     }
@@ -302,7 +302,7 @@ class ObjectModal extends Component
      */
     public function updatedDatei(): void
     {
-        $feld = collect($this->einstellung()['felder'])->firstWhere('type', 'datei');
+        $feld = collect($this->setting()['felder'])->firstWhere('type', 'datei');
 
         if (! $feld || ! $this->datei || filled($this->form[$feld['name_feld']] ?? null)) {
             return;
@@ -398,7 +398,7 @@ class ObjectModal extends Component
 
     protected function reloadPageIfNeeded(): void
     {
-        if ($this->einstellung()['seite_neu_laden'] ?? false) {
+        if ($this->setting()['seite_neu_laden'] ?? false) {
             $this->js('window.location.reload()');
         }
     }
@@ -407,12 +407,12 @@ class ObjectModal extends Component
     {
         Gate::authorize($this->typ.'_delete');
 
-        $this->objektHolen($this->bearbeiteId)->delete();
+        $this->fetchObject($this->bearbeiteId)->delete();
 
         $this->offen = false;
         $this->clearForm();
 
-        $this->dispatch('notice', text: __($this->einstellung()['einzahl'].' gelöscht.'));
+        $this->dispatch('notice', text: __($this->setting()['einzahl'].' gelöscht.'));
         $this->dispatch('object-saved', typ: $this->typ);
 
         $this->reloadPageIfNeeded();
@@ -424,13 +424,13 @@ class ObjectModal extends Component
      * Eine Abfrage fuer alle Felder statt einer je Feld, und ohne den Wert -
      * der wird erst geholt, wenn jemand darauf klickt.
      */
-    protected function verlaufsUebersicht($objekt): array
+    protected function historySummary($objekt): array
     {
-        if (! $objekt || ! method_exists($objekt, 'kennwortVerlauf')) {
+        if (! $objekt || ! method_exists($objekt, 'passwordHistory')) {
             return [];
         }
 
-        return $objekt->kennwortVerlauf()
+        return $objekt->passwordHistory()
             ->selectRaw('field, count(*) as anzahl, max(created_at) as zuletzt')
             ->groupBy('field')
             ->get()
@@ -456,8 +456,8 @@ class ObjectModal extends Component
             return;
         }
 
-        $this->gezeigterVerlauf[$feld] = $this->objektHolen($this->bearbeiteId)
-            ->kennwortVerlauf()
+        $this->gezeigterVerlauf[$feld] = $this->fetchObject($this->bearbeiteId)
+            ->passwordHistory()
             ->where('field', $feld)
             ->with('user:id,name')
             ->limit(10)
@@ -478,20 +478,20 @@ class ObjectModal extends Component
 
     public function render()
     {
-        $einstellung = $this->einstellung();
+        $einstellung = $this->setting();
 
         // Geraete fuehren IP-Adressen und Zugangsdaten in eigenen Bloecken. Die
         // haengen am gespeicherten Objekt und koennen deshalb erst beim
         // Bearbeiten erscheinen - ohne sie waere das Modal ein Rueckschritt
         // gegenueber der Seite, die es ersetzt.
-        $objekt = $this->bearbeiteId ? $this->objektHolen($this->bearbeiteId) : null;
+        $objekt = $this->bearbeiteId ? $this->fetchObject($this->bearbeiteId) : null;
 
-        $felder = $this->objektForm()->displayFields();
+        $felder = $this->objectForm()->displayFields();
 
         return view('livewire.object-modal', [
             'objekt' => $objekt,
             // Nur Anzahl und Zeitpunkt - der Wert kommt erst auf Klick.
-            'verlauf' => $this->verlaufsUebersicht($objekt),
+            'verlauf' => $this->historySummary($objekt),
             'mitBloecken' => (bool) ($einstellung['bloecke'] ?? false),
             // Breiter als die Bloecke sonst bekommen: nur wo das Formular selbst
             // kaum Felder hat und der Block den Inhalt ausmacht.
@@ -518,12 +518,12 @@ class ObjectModal extends Component
             'kunde' => $this->kunde(),
             // Machines of the customer, only where a 'host' field exists.
             'hosts' => collect($einstellung['felder'])->contains('type', 'host')
-                ? ADDomainHost::options($this->customerId, $this->objektForm()->hostTypes())
+                ? ADDomainHost::options($this->customerId, $this->objectForm()->hostTypes())
                 : [],
             // Options of many-to-many fields, only this customer's entries.
             'verknuepfungen' => collect($einstellung['felder'])
                 ->where('type', 'verknuepfung')
-                ->mapWithKeys(fn ($feld) => [$feld['name'] => $this->objektForm()->linkOptions($feld)]),
+                ->mapWithKeys(fn ($feld) => [$feld['name'] => $this->objectForm()->linkOptions($feld)]),
             // Nur laden, wenn ein Standortfeld vorkommt.
             'sites' => collect($einstellung['felder'])->contains('type', 'standort')
                 ? Site::where('customer_id', $this->customerId)->orderBy('name')->get()
@@ -531,7 +531,7 @@ class ObjectModal extends Component
             // Auswahllisten aus einer Tabelle, siehe ObjectForm::selectOptions().
             'auswahlen' => collect($einstellung['felder'])
                 ->where('type', 'auswahl')
-                ->mapWithKeys(fn ($feld) => [$feld['name'] => collect($this->objektForm()->selectOptions($feld))]),
+                ->mapWithKeys(fn ($feld) => [$feld['name'] => collect($this->objectForm()->selectOptions($feld))]),
         ]);
     }
 }

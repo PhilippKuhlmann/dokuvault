@@ -45,9 +45,9 @@ test('Telefon, DECT und Ansprechpartner heissen nach dem, was sie ausmacht', fun
         'first_name' => 'Torben', 'last_name' => 'Ahlers',
     ]);
 
-    expect($telefon->protokollName())->toBe('21 - Einkauf');
-    expect($dect->protokollName())->toBe('Halle Filetierung');
-    expect($kontakt->protokollName())->toBe('Torben Ahlers');
+    expect($telefon->activityName())->toBe('21 - Einkauf');
+    expect($dect->activityName())->toBe('Halle Filetierung');
+    expect($kontakt->activityName())->toBe('Torben Ahlers');
 });
 
 test('die TK-Anlage heisst nach Hersteller und Modell, nicht nach ihrem Benutzernamen', function () {
@@ -59,11 +59,11 @@ test('die TK-Anlage heisst nach Hersteller und Modell, nicht nach ihrem Benutzer
         'username' => 'admin',
     ]);
 
-    expect($anlage->protokollName())->toBe('Auerswald 6000R');
+    expect($anlage->activityName())->toBe('Auerswald 6000R');
 
     // Gegenprobe: Ohne die eigene Methode faellt die zentrale Liste auf
     // username zurueck - im Protokoll stuende dann "admin".
-    expect($anlage->protokollName())->not->toBe('admin');
+    expect($anlage->activityName())->not->toBe('admin');
 });
 
 test('die Nebenstelle steht vor dem Benutzernamen', function () {
@@ -100,7 +100,7 @@ test('jede Trefferart der Suche kann sich benennen', function () {
     expect($typen)->not->toBeEmpty();
 
     foreach ($typen as $slug => $eintrag) {
-        expect(method_exists($eintrag[0], 'protokollName'))
+        expect(method_exists($eintrag[0], 'activityName'))
             ->toBeTrue("{$slug} ({$eintrag[0]}) kennt protokollName() nicht und erschiene als Nummer.");
     }
 });
@@ -117,7 +117,7 @@ test('eine Netzwerkdose heisst nach ihrem Aufdruck', function () {
     $dose = PatchPort::where('patch_panel_id', $feld->id)->where('number', 3)->firstOrFail();
     $dose->update(['outlet' => '2.14', 'label' => 'Besprechung']);
 
-    expect($dose->fresh()->protokollName())->toContain('2.14');
+    expect($dose->fresh()->activityName())->toContain('2.14');
 });
 
 // --- Kennwortregeln ---

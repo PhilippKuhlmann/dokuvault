@@ -46,7 +46,7 @@ class TwoFactor
      *
      * @return int|false the time step of the code, to be stored by the caller
      */
-    public function neuerSchritt(string $geheimnis, string $code, ?int $letzter): int|false
+    public function newStep(string $geheimnis, string $code, ?int $letzter): int|false
     {
         return $this->google2fa->verifyKeyNewer($geheimnis, trim($code), $letzter ?? 0);
     }
@@ -56,7 +56,7 @@ class TwoFactor
      * erscheint in der App als Ueberschrift - deshalb der Anwendungsname und
      * nicht die nackte Kennung.
      */
-    public function adresse(User $nutzer, string $geheimnis): string
+    public function url(User $nutzer, string $geheimnis): string
     {
         return $this->google2fa->getQRCodeUrl(
             config('app.name'),

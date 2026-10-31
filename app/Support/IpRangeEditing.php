@@ -55,7 +55,7 @@ class IpRangeEditing
         foreach (['from_ip', 'to_ip'] as $feld) {
             if (! $netz->containsUrl($daten[$feld])) {
                 throw ValidationException::withMessages([
-                    $feld => __('Diese Adresse liegt nicht in :netz.', ['netz' => $netz->anzeige() ?: $netz->network]),
+                    $feld => __('Diese Adresse liegt nicht in :netz.', ['netz' => $netz->label() ?: $netz->network]),
                 ]);
             }
         }

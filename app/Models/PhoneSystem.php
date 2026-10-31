@@ -32,7 +32,7 @@ class PhoneSystem extends Model
      * Modell. Ohne diese Methode stuende eine solche Anlage im Protokoll ohne
      * Namen da.
      */
-    public function protokollName(): ?string
+    public function activityName(): ?string
     {
         return $this->name ?: (trim($this->manufacturer.' '.($this->model ?: $this->type)) ?: null);
     }
@@ -40,6 +40,6 @@ class PhoneSystem extends Model
     /** Label in the rack: never empty, even without a name. */
     public function rackName(): string
     {
-        return $this->protokollName() ?? '#'.$this->id;
+        return $this->activityName() ?? '#'.$this->id;
     }
 }

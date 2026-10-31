@@ -34,7 +34,7 @@ class NetworkSwitchRequest extends FormRequest
             'model' => 'nullable|max:255',
             'serialNumber' => 'nullable|max:255',
             'port' => 'nullable|numeric',
-            ...$this->beschaffungRegeln(),
+            ...$this->procurementRules(),
         ];
     }
 
@@ -48,7 +48,7 @@ class NetworkSwitchRequest extends FormRequest
             'model' => 'Modell',
             'serialNumber' => 'Seriennummer',
             'port' => 'Port',
-            ...$this->beschaffungBezeichnungen(),
+            ...$this->procurementLabels(),
         ];
     }
 }

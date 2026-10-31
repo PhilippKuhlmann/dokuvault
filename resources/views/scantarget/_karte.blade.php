@@ -6,7 +6,7 @@
                 {{ $eintrag->name ?: $eintrag->target }}
 
                     <x-slot:kernwerte>
-                        <x-kernwert :label="__('Art')">{{ $eintrag->artName() }}</x-kernwert>
+                        <x-kernwert :label="__('Art')">{{ $eintrag->typeName() }}</x-kernwert>
                     </x-slot>
                 </x-show.header>
         </x-slot>

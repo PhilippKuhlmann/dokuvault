@@ -53,7 +53,7 @@ class AdminApiToken extends Component
         ];
     }
 
-    protected function feldnamen(): array
+    protected function fieldNames(): array
     {
         return ['name' => __('Bezeichnung'), 'expiresAt' => __('Läuft ab am')];
     }
@@ -62,7 +62,7 @@ class AdminApiToken extends Component
     {
         Gate::authorize('admin_apitoken');
 
-        $this->expiresAt = $this->standardFrist();
+        $this->expiresAt = $this->defaultDeadline();
     }
 
     public function anlegen(): void
@@ -71,7 +71,7 @@ class AdminApiToken extends Component
 
         $this->enableCheck();
 
-        $this->validate($this->regeln(), [], $this->feldnamen());
+        $this->validate($this->regeln(), [], $this->fieldNames());
 
         // Dritter Parameter von createToken ist der Ablauf - Sanctum weist einen
         // abgelaufenen Token danach von selbst ab.
@@ -80,11 +80,11 @@ class AdminApiToken extends Component
             ->plainTextToken;
 
         $this->name = '';
-        $this->expiresAt = $this->standardFrist();
+        $this->expiresAt = $this->defaultDeadline();
     }
 
     /** Die vorgefüllte Frist: heute plus die Vorgabe aus der Konfiguration. */
-    private function standardFrist(): string
+    private function defaultDeadline(): string
     {
         return now()->addDays(config('custom.api_token.gueltigkeit_tage_standard'))->format('Y-m-d');
     }
@@ -100,7 +100,7 @@ class AdminApiToken extends Component
         $this->dispatch('notice', text: __('Token widerrufen.'));
     }
 
-    public function verbergen(): void
+    public function hide(): void
     {
         $this->frischerToken = null;
     }

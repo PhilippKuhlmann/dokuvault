@@ -3,7 +3,7 @@
             @php
                 $adressen = $eintrag->relationLoaded('ipAddresses') ? $eintrag->ipAddresses : $eintrag->ipAddresses()->get();
                 $anzahlIps = $adressen->count();
-                $primaer = $adressen->first()?->anzeige();
+                $primaer = $adressen->first()?->label();
             @endphp
 
             <x-slot:head>
@@ -31,8 +31,8 @@
                             </x-kernwert>
                         @endif
 
-                        @if ($eintrag->einbauort())
-                            <x-kernwert :label="__('Rack')">{{ $eintrag->einbauort() }}</x-kernwert>
+                        @if ($eintrag->mountLocation())
+                            <x-kernwert :label="__('Rack')">{{ $eintrag->mountLocation() }}</x-kernwert>
                         @endif
                     </x-slot>
                 </x-show.header>
@@ -53,7 +53,7 @@
                 {{-- Die Fernwartungs-Kennung auch als Text: Wenn der Knopf nicht greift
                      (anderer Rechner, kein Client), braucht man die ID zum Abtippen. --}}
                 <x-minitablecard :title="__('Fernwartung')" :array="[
-                    \App\Models\Setting::fernwartung()['id_label'] => $eintrag->remoteID,
+                    \App\Models\Setting::remoteAccess()['id_label'] => $eintrag->remoteID,
                     'Passwort' => [$eintrag, 'remotePassword'],
                 ]" />
 

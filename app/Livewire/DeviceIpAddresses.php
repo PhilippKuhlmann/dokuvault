@@ -78,7 +78,7 @@ class DeviceIpAddresses extends Component
             return;
         }
 
-        $this->address = $netz->naechsteFreieAdresse() ?? '';
+        $this->address = $netz->nextFreeAddress() ?? '';
         $this->resetValidation('address');
     }
 
@@ -96,7 +96,7 @@ class DeviceIpAddresses extends Component
         return app(IpAssignment::class)->rules($this->customerId, $this->dhcp);
     }
 
-    protected function feldnamen(): array
+    protected function fieldNames(): array
     {
         return app(IpAssignment::class)->attributeNames();
     }
@@ -140,7 +140,7 @@ class DeviceIpAddresses extends Component
 
         $this->enableCheck();
 
-        $validated = $this->validate($this->regeln(), app(IpAssignment::class)->messages(), $this->feldnamen());
+        $validated = $this->validate($this->regeln(), app(IpAssignment::class)->messages(), $this->fieldNames());
 
         app(IpAssignment::class)->add($device, $validated, $this->dhcp);
 

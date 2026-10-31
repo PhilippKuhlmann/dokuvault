@@ -42,7 +42,7 @@
                             @endif
                         </td>
                         <td class="py-2 pr-4 text-gray-600 dark:text-gray-300">
-                            {{ $entry->network?->anzeige() ?: '—' }}
+                            {{ $entry->network?->label() ?: '—' }}
                         </td>
                         <td class="py-2 pr-4 text-gray-600 dark:text-gray-300">{{ $entry->label ?: '—' }}</td>
                         <td class="py-2 text-right">
@@ -104,7 +104,7 @@
                 <x-input.select name="network_id" wire:model.live="network_id" class="mt-1 w-full">
                     <option value="">— kein VLAN —</option>
                     @foreach ($networks as $network)
-                        <option value="{{ $network->id }}">{{ $network->anzeige() }} ({{ $network->network }}/{{ $network->cidr }})</option>
+                        <option value="{{ $network->id }}">{{ $network->label() }} ({{ $network->network }}/{{ $network->cidr }})</option>
                     @endforeach
                 </x-input.select>
                 <x-input.fehler feld="network_id" />

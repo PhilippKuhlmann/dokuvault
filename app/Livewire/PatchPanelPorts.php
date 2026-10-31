@@ -101,7 +101,7 @@ class PatchPanelPorts extends Component
 
         $this->enableCheck();
 
-        $this->validate($this->regeln(), [], $this->fehlerNamen($ports));
+        $this->validate($this->regeln(), [], $this->errorNames($ports));
 
         app(PatchPortEditing::class)->save($panel, $ports->map(fn ($port, $id) => [
             'outlet' => $this->outlet[$id] ?? null,
@@ -192,7 +192,7 @@ class PatchPanelPorts extends Component
     }
 
     /** Fehlermeldungen sollen die Portnummer nennen, nicht den Array-Index. */
-    private function fehlerNamen($ports): array
+    private function errorNames($ports): array
     {
         $namen = [];
         foreach ($ports as $id => $port) {

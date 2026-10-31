@@ -2,7 +2,7 @@
         @php
             $adressen = $eintrag->relationLoaded('ipAddresses') ? $eintrag->ipAddresses : $eintrag->ipAddresses()->get();
             $anzahlIps = $adressen->count();
-            $primaer = $adressen->first()?->anzeige();
+            $primaer = $adressen->first()?->label();
         @endphp
 
         <x-card>
@@ -104,7 +104,7 @@
                 {{-- Die Fernwartungs-Kennung auch als Text: Wenn der Knopf nicht greift
                      (anderer Rechner, kein Client), braucht man die ID zum Abtippen. --}}
                 <x-minitablecard :title="__('Fernwartung')" :array="[
-                    \App\Models\Setting::fernwartung()['id_label'] => $eintrag->remoteID,
+                    \App\Models\Setting::remoteAccess()['id_label'] => $eintrag->remoteID,
                     'Passwort' => [$eintrag, 'remotePassword'],
                 ]" />
 

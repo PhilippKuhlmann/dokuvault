@@ -73,12 +73,12 @@ class SystemMetrics
     }
 
     /** Documents and other uploads below storage/app, without the backups. */
-    public static function dateienBytes(): int
+    public static function fileBytes(): int
     {
         return max(0, self::verzeichnisBytes(storage_path('app')) - self::backupBytes());
     }
 
-    public static function platteFreiBytes(): ?int
+    public static function diskFreeBytes(): ?int
     {
         $wert = @disk_free_space(base_path());
 
@@ -93,7 +93,7 @@ class SystemMetrics
     }
 
     /** Waiting and failed background jobs. */
-    public static function warteschlange(): array
+    public static function queue(): array
     {
         return [
             'wartend' => Schema::hasTable('jobs') ? DB::table('jobs')->count() : null,
@@ -102,7 +102,7 @@ class SystemMetrics
     }
 
     /** Memory of the machine from /proc/meminfo (Linux), in bytes. */
-    public static function arbeitsspeicher(): ?array
+    public static function memory(): ?array
     {
         if (! is_readable('/proc/meminfo')) {
             return null;

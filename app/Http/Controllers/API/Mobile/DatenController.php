@@ -41,7 +41,7 @@ class DatenController extends Controller
     /** Der Kunde mit den Objektarten, die bei ihm dokumentiert sind. */
     public function kunde(Request $request, Customer $customer): JsonResponse
     {
-        $typen = collect($this->objekte->sichtbareTypen($request->user()))
+        $typen = collect($this->objekte->visibleKinds($request->user()))
             ->map(fn ($typ, $slug) => [
                 'typ' => $slug,
                 'titel' => $this->objekte->titel($slug),
@@ -60,7 +60,7 @@ class DatenController extends Controller
     /** Alle Objekte einer Art bei einem Kunden. */
     public function liste(Request $request, Customer $customer, string $typ): JsonResponse
     {
-        $eintrag = $this->objekte->sichtbareTypen($request->user())[$typ] ?? abort(404);
+        $eintrag = $this->objekte->visibleKinds($request->user())[$typ] ?? abort(404);
         $klasse = $eintrag[0];
 
         $mitStandort = method_exists($klasse, 'site');
@@ -103,7 +103,7 @@ class DatenController extends Controller
     /** Dieselbe Suche wie im Browser, siehe GlobaleSuche. */
     public function suche(Request $request, Search $suche): JsonResponse
     {
-        $gruppen = $suche->gruppen($request->user(), (string) $request->query('q'))
+        $gruppen = $suche->groups($request->user(), (string) $request->query('q'))
             ->reject(fn ($gruppe) => $gruppe['detailseite'])
             ->map(fn ($gruppe) => [
                 'typ' => $gruppe['typ'],
@@ -140,7 +140,7 @@ class DatenController extends Controller
     {
         $objekt = $this->objekte->finden($typ, $id, $request->user());
 
-        $wert = $abruf->ausFeld($objekt::class, $objekt->getKey(), $feld, $request->user());
+        $wert = $abruf->fromField($objekt::class, $objekt->getKey(), $feld, $request->user());
 
         return $wert === null
             ? response()->json(['message' => __('Kein Kennwort hinterlegt.')], 404)

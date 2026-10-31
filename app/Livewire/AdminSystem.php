@@ -39,20 +39,20 @@ class AdminSystem extends Component
                 'text' => Carbon::parse($z->datum)->format('d.m.Y').' · '.SystemMetrics::lesbar((int) $z->wert),
             ])->values()->all());
 
-        $frei = SystemMetrics::platteFreiBytes();
+        $frei = SystemMetrics::diskFreeBytes();
         $gesamt = SystemMetrics::platteGesamtBytes();
 
         return view('livewire.admin-system', [
             'db' => SystemMetrics::datenbankBytes(),
             'tabellen' => SystemMetrics::groessteTabellen(),
-            'dateien' => SystemMetrics::dateienBytes(),
+            'dateien' => SystemMetrics::fileBytes(),
             'backups' => SystemMetrics::backupBytes(),
             'frei' => $frei,
             'gesamt' => $gesamt,
             'belegtProzent' => $frei !== null && $gesamt ? (int) round(100 - $frei / $gesamt * 100) : null,
-            'speicher' => SystemMetrics::arbeitsspeicher(),
+            'speicher' => SystemMetrics::memory(),
             'last' => SystemMetrics::last(),
-            'warteschlange' => SystemMetrics::warteschlange(),
+            'warteschlange' => SystemMetrics::queue(),
             'verlauf' => $verlauf,
             'php' => PHP_VERSION,
             'laravel' => app()->version(),

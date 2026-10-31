@@ -22,7 +22,7 @@ function kennwortPasst(string $kennwort): bool
 
 test('ohne Einstellung gilt, was bisher stillschweigend galt', function () {
     // Acht Zeichen, sonst nichts - Laravels Vorgabe. Sie stand nirgends.
-    expect(Setting::kennwortMindestlaenge())->toBe(8)
+    expect(Setting::passwordMinLength())->toBe(8)
         ->and(kennwortPasst('abcdefgh'))->toBeTrue()
         ->and(kennwortPasst('abcdefg'))->toBeFalse();
 });
@@ -91,7 +91,7 @@ test('der Hinweis nennt, was verlangt wird', function () {
     Setting::setzen(Setting::PW_MIXED, 1);
     Setting::setzen(Setting::PW_SYMBOLS, 1);
 
-    expect(Setting::kennwortHinweis())
+    expect(Setting::passwordNotice())
         ->toContain('12')
         ->toContain('Groß- und Kleinbuchstaben')
         ->toContain('ein Sonderzeichen');

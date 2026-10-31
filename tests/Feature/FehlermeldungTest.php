@@ -253,7 +253,7 @@ test('wer den Baustein einbindet und updated() selbst schreibt, muss ihn rufen',
 
         // Ein eigenes updated() - nicht updatedFoo(), das laeuft zusaetzlich.
         if (preg_match('/function updated\(/', $inhalt)
-            && ! str_contains($inhalt, 'waehrendDerEingabePruefen')) {
+            && ! str_contains($inhalt, 'validateOnInput')) {
             $verdaechtig[] = basename($datei);
         }
     }

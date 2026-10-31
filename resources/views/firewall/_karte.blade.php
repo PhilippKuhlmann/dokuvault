@@ -1,7 +1,7 @@
 {{-- Eine Firewall in der Liste. Die Karte bleibt beim Typ. --}}
         @php
             $adressen = $eintrag->relationLoaded('ipAddresses') ? $eintrag->ipAddresses : $eintrag->ipAddresses()->get();
-            $primaer = $adressen->first()?->anzeige();
+            $primaer = $adressen->first()?->label();
             $anzahlIps = $adressen->count();
         @endphp
         <x-card>
@@ -22,8 +22,8 @@
                             <x-kernwert :label="__('Firmware')">{{ $eintrag->firmware }}</x-kernwert>
                         @endif
 
-                        @if ($eintrag->einbauort())
-                            <x-kernwert :label="__('Rack')">{{ $eintrag->einbauort() }}</x-kernwert>
+                        @if ($eintrag->mountLocation())
+                            <x-kernwert :label="__('Rack')">{{ $eintrag->mountLocation() }}</x-kernwert>
                         @endif
                     </x-slot>
                 </x-show.header>

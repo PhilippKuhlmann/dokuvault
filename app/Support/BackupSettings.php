@@ -89,7 +89,7 @@ class BackupSettings
     }
 
     /** "HH:MM", checked - a broken value must not stop the scheduler. */
-    public static function uhrzeit(): string
+    public static function timeOfDay(): string
     {
         $zeit = (string) self::werte()['backup_uhrzeit'];
 

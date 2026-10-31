@@ -116,7 +116,7 @@ class RackController extends Controller
             ? $this->layout->placeDevice($rack, $data['seite'], $data['typ'], $data['id'], $data['position'] ?? null)
             : $this->layout->placeCatalog($rack, $data['seite'], $data['katalog_id'], $data['position'] ?? null);
 
-        return response()->json($this->einbau($item->fresh()), 201);
+        return response()->json($this->mount($item->fresh()), 201);
     }
 
     /** Move and/or resize - on the side the item is fitted on. */
@@ -137,7 +137,7 @@ class RackController extends Controller
             $this->layout->move($rack, $item, $data['position']);
         }
 
-        return response()->json($this->einbau($item->fresh()));
+        return response()->json($this->mount($item->fresh()));
     }
 
     public function destroyItem(Customer $customer, Rack $rack, RackItem $item): JsonResponse
@@ -166,11 +166,11 @@ class RackController extends Controller
             'seiten' => collect(Rack::SEITEN)->map(fn ($titel, $seite) => ['seite' => $seite, 'titel' => __($titel)])->values(),
             // Highest first, as in the front view. A full-depth item occupies
             // the other side as well, see RackItem::belegtSeite().
-            'einbauten' => $rack->items->map(fn ($item) => $this->einbau($item))->values(),
+            'einbauten' => $rack->items->map(fn ($item) => $this->mount($item))->values(),
         ];
     }
 
-    private function einbau(RackItem $item): array
+    private function mount(RackItem $item): array
     {
         return [
             'id' => $item->id,

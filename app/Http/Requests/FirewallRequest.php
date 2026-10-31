@@ -42,7 +42,7 @@ class FirewallRequest extends FormRequest
             'height_units' => 'nullable|integer|min:1|max:48',
             'full_depth' => 'nullable|boolean',
             'notes' => 'nullable',
-            ...$this->beschaffungRegeln(),
+            ...$this->procurementRules(),
         ];
     }
 
@@ -66,7 +66,7 @@ class FirewallRequest extends FormRequest
             'height_units' => 'Höheneinheiten',
             'full_depth' => 'Volle Tiefe',
             'notes' => 'Notizen',
-            ...$this->beschaffungBezeichnungen(),
+            ...$this->procurementLabels(),
         ];
     }
 }

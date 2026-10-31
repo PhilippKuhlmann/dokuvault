@@ -96,7 +96,7 @@ class NetworkMap
         $this->networks = Network::where('customer_id', $customer->id)->orderBy('vlanId')->get();
 
         foreach ($this->networks as $network) {
-            if ($range = $network->bereich()) {
+            if ($range = $network->range()) {
                 $this->ranges[$network->id] = $range;
             }
         }
@@ -233,7 +233,7 @@ class NetworkMap
             ->map(fn (Collection $ips, string $class) => [
                 'label' => self::TYPES[$class],
                 'devices' => $ips
-                    ->map(fn (IpAddress $ip) => $this->node($ip->ipable) + ['address' => $ip->anzeige()])
+                    ->map(fn (IpAddress $ip) => $this->node($ip->ipable) + ['address' => $ip->label()])
                     ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
                     ->values()
                     ->all(),
@@ -252,7 +252,7 @@ class NetworkMap
             ->whereNull('map_network_id')
             ->filter(fn (IpAddress $ip) => (int) $ip->ipable->getAttribute('site_id') === $site->id)
             ->reject(fn (IpAddress $ip) => in_array($ip->ipable::class, self::EDGE_TYPES, true))
-            ->map(fn (IpAddress $ip) => $this->node($ip->ipable) + ['address' => $ip->anzeige()])
+            ->map(fn (IpAddress $ip) => $this->node($ip->ipable) + ['address' => $ip->label()])
             ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
             ->values()
             ->all();

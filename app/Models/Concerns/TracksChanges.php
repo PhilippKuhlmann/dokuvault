@@ -35,7 +35,7 @@ trait TracksChanges
     /**
      * Die bisherigen Kennwoerter dieses Objekts, neueste zuerst.
      */
-    public function kennwortVerlauf(): MorphMany
+    public function passwordHistory(): MorphMany
     {
         return $this->morphMany(PasswordHistory::class, 'subject')->latest('id');
     }
@@ -76,7 +76,7 @@ trait TracksChanges
      */
     public function tapActivity(Activity $aktivitaet, string $ereignis): void
     {
-        $name = $this->protokollName();
+        $name = $this->activityName();
 
         if (blank($name)) {
             return;
@@ -93,7 +93,7 @@ trait TracksChanges
      * sie verbinden. Ohne das stand in mehr als der Haelfte aller Zeilen nur
      * eine Nummer.
      */
-    public function protokollName(): ?string
+    public function activityName(): ?string
     {
         foreach (config('custom.name_fields') as $feld) {
             if (filled($this->{$feld} ?? null)) {
@@ -153,7 +153,7 @@ trait TracksChanges
             // bricht beim Auflösen die ganze Protokollseite.
             ->withProperties([
                 'felder' => $geaendert,
-                'objekt' => $this->protokollName(),
+                'objekt' => $this->activityName(),
                 // Verweise, keine Werte: Das Protokoll zeigt das bisherige
                 // Kennwort, holt es aber beim Anzeigen aus der Historie. Damit
                 // steht es nicht im Protokolleintrag, der ewig bleibt, und
@@ -204,7 +204,7 @@ trait TracksChanges
             // hier bisher nichts - und ein aufgehobenes Kennwort ohne Angabe,
             // wozu es gehoerte, ist genau dann wertlos, wenn man es braucht:
             // wenn das Geraet laengst weg ist.
-            'subject_name' => $this->protokollName(),
+            'subject_name' => $this->activityName(),
             'field' => $spalte,
             'value' => $alt,
             'user_id' => auth()->id(),

@@ -37,7 +37,7 @@ class ComputerRequest extends FormRequest
             'operating_system_id' => 'required',
             'remoteID' => '',
             'remotePassword' => '',
-            ...$this->beschaffungRegeln(),
+            ...$this->procurementRules(),
         ];
     }
 
@@ -49,9 +49,9 @@ class ComputerRequest extends FormRequest
             'manufavtuter' => 'Hersteller',
             'model' => 'Modell',
             'serialNumber' => 'Seriennummer',
-            'remoteID' => Setting::fernwartung()['id_label'],
-            'remotePassword' => Setting::fernwartung()['password_label'],
-            ...$this->beschaffungBezeichnungen(),
+            'remoteID' => Setting::remoteAccess()['id_label'],
+            'remotePassword' => Setting::remoteAccess()['password_label'],
+            ...$this->procurementLabels(),
         ];
     }
 }

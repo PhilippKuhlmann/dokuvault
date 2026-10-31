@@ -113,7 +113,7 @@ class AdminTrash extends Component
                     'art' => $bezeichnung,
                     'id' => $eintrag->id,
                     'kunde' => $eintrag->customer_id,
-                    'name' => $this->anzeigename($eintrag),
+                    'name' => $this->displayName($eintrag),
                     'geloescht' => $eintrag->deleted_at,
                 ]);
             }
@@ -129,9 +129,9 @@ class AdminTrash extends Component
      * steht in config/custom.php, und ein Model, das es besser weiss,
      * ueberschreibt protokollName().
      */
-    protected function anzeigename($eintrag): string
+    protected function displayName($eintrag): string
     {
-        return $eintrag->protokollName() ?? '#'.$eintrag->id;
+        return $eintrag->activityName() ?? '#'.$eintrag->id;
     }
 
     /**
@@ -210,7 +210,7 @@ class AdminTrash extends Component
         // Geraets liegen - verschluesselt, aber ohne Objekt, zu dem sie
         // gehoeren, und ohne Frist, die sie je erreichen wuerde.
         if (in_array(TracksChanges::class, $traits, true)) {
-            $objekt->kennwortVerlauf()->delete();
+            $objekt->passwordHistory()->delete();
         }
 
         $objekt->forceDelete();

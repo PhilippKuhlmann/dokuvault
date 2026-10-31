@@ -30,7 +30,7 @@ class IpPlanController extends Controller
             ->orderBy('vlanId')
             ->get();
 
-        $plans = (new IpPlan($this->geraetEintrag(...)))->plans($customer, $networks);
+        $plans = (new IpPlan($this->deviceEntry(...)))->plans($customer, $networks);
 
         $totalUsed = $plans->sum(fn ($entry) => $entry['plan']['usedCount'] ?? 0);
         $totalAddresses = $plans->sum(fn ($entry) => $entry['plan']['total'] ?? 0);
@@ -45,12 +45,12 @@ class IpPlanController extends Controller
      *
      * @return array{name: string, url: ?string}
      */
-    protected function geraetEintrag(?Model $geraet, string $zusatz = ''): array
+    protected function deviceEntry(?Model $geraet, string $zusatz = ''): array
     {
-        $typ = $geraet ? $this->listenTyp($geraet::class) : null;
+        $typ = $geraet ? $this->listType($geraet::class) : null;
 
         return [
-            'name' => IpPlan::geraetName($geraet).$zusatz,
+            'name' => IpPlan::deviceName($geraet).$zusatz,
             'url' => $typ
                 ? route($typ.'.index', [$this->kunde, 'highlight' => $geraet->id])
                 : null,
@@ -62,7 +62,7 @@ class IpPlanController extends Controller
      * null, wenn es keine gibt oder der Nutzer sie nicht sehen darf. Ein
      * Link auf eine verbotene Seite wäre nur ein Umweg zur Fehlermeldung.
      */
-    protected function listenTyp(string $klasse): ?string
+    protected function listType(string $klasse): ?string
     {
         if (! array_key_exists($klasse, $this->listen)) {
             $typ = collect(config('forms'))->search(fn ($d) => ($d['model'] ?? null) === $klasse) ?: null;

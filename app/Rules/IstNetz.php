@@ -43,14 +43,14 @@ class IstNetz implements ValidationRule
             return;
         }
 
-        $netz = self::netzadresse($roh, (int) $praefix);
+        $netz = self::networkAddress($roh, (int) $praefix);
         if ($netz !== $roh) {
             $fail('Das ist keine Netzadresse. Gemeint ist vermutlich '.inet_ntop($netz).'/'.(int) $praefix.'.');
         }
     }
 
     /** Hostbits auf null setzen. */
-    public static function netzadresse(string $roh, int $praefix): string
+    public static function networkAddress(string $roh, int $praefix): string
     {
         $bytes = str_split($roh);
         foreach ($bytes as $i => $byte) {
