@@ -7,12 +7,12 @@ use Faker\Factory;
 use Illuminate\Console\Command;
 
 /**
- * Setzt die Demo-Instanz auf den Auslieferungsstand zurueck.
+ * Resets the demo instance to its as-delivered state.
  *
- * Der Befehl loescht die komplette Datenbank. Er ist deshalb an DEMO_MODE
- * gebunden und verweigert den Dienst auf jeder anderen Installation - auf
- * einem echten Server waere ein versehentlicher Aufruf der Totalverlust der
- * Kundendokumentation.
+ * The command deletes the entire database. It is therefore tied to
+ * DEMO_MODE and refuses service on every other installation - on a real
+ * server an accidental call would be the total loss of the customer
+ * documentation.
  */
 class DemoReset extends Command
 {
@@ -29,9 +29,9 @@ class DemoReset extends Command
             return self::FAILURE;
         }
 
-        // Die Demo-Daten stammen aus dem LocalDatabaseSeeder und brauchen Faker.
-        // Er wird direkt aufgerufen, weil DatabaseSeeder nach APP_ENV verzweigt
-        // und auf der Demo (APP_ENV=production) sonst die Startdaten laufen.
+        // The demo data comes from the LocalDatabaseSeeder and needs Faker. It
+        // is called directly because DatabaseSeeder branches on APP_ENV and the
+        // production seed would otherwise run on the demo (APP_ENV=production).
         if (! class_exists(Factory::class)) {
             $this->error('Faker fehlt - die Demo-Instanz muss mit Dev-Abhaengigkeiten installiert sein.');
             $this->line('composer install (ohne --no-dev)');
@@ -39,14 +39,14 @@ class DemoReset extends Command
             return self::FAILURE;
         }
 
-        // Wartungsmodus, solange das Schema neu entsteht. migrate:fresh
-        // loescht und legt die Tabellen wieder an; eine Anfrage, die genau in
-        // diese Sekunden faellt, traf bisher auf ein halbfertiges Schema und
-        // endete mit einem Fehler 500 im Log - am 29.10. etwa eine
-        // gescheiterte Anmeldung, deren Protokolleintrag in ein
-        // activity_log ohne customer_id schreiben wollte. Jetzt sieht der
-        // Besucher dieselbe 503-Seite wie beim Deploy und ist nach wenigen
-        // Sekunden wieder da.
+        // Maintenance mode while the schema is rebuilt. migrate:fresh drops
+        // the tables and creates them again; a request falling exactly into
+        // those seconds used to meet a half-built schema and ended in a 500 in
+        // the log - on 29 October, for one, a failed sign-in whose activity
+        // entry tried to write into an activity_log without customer_id. The
+        // visitor now sees the same 503 page as during a deploy and is back
+        // after a few seconds.
+        //
         $this->call('down', ['--retry' => 15]);
 
         try {
@@ -56,9 +56,9 @@ class DemoReset extends Command
                 '--force' => true,
             ]);
         } finally {
-            // Auch wenn migrate oder der Seeder abbrechen: Die Demo darf nicht
-            // im Wartungsmodus stehenbleiben, sonst waere sie bis zum
-            // naechsten Lauf eine 503-Seite.
+            // Even if migrate or the seeder break off: the demo must not stay
+            // in maintenance mode, or it would be a 503 page until the next
+            // run.
             $this->call('up');
         }
 

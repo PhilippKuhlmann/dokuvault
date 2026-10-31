@@ -2,7 +2,7 @@ import './bootstrap';
 
 import 'flowbite';
 
-// Text in die Zwischenablage kopieren – mit Fallback für unsichere Kontexte
+// Copy text to the clipboard - with a fallback for insecure contexts
 // (z. B. lokale .test-Domain über http, wo navigator.clipboard fehlt).
 window.copyText = function (text) {
     if (navigator.clipboard && window.isSecureContext) {
@@ -20,11 +20,11 @@ window.copyText = function (text) {
     return Promise.resolve();
 };
 
-// Livewire 3 bringt seine eigene Alpine-Instanz mit und startet sie selbst als Teil von
-// Livewire.start(). Ein zusätzlicher eigener `import Alpine from 'alpinejs'; Alpine.start()`
-// davor erzeugte zwei konkurrierende Alpine/Livewire-Instanzen auf jeder Seite (Konsolen-
-// warnungen "Detected multiple instances of ..." und ein Crash bei der zweiten Registrierung
-// von Alpine-Magics wie $persist), wodurch wire:click/wire:model teils gar nicht mehr feuerten.
+// Livewire 3 brings its own Alpine instance and starts it itself as part of
+// Livewire.start(). An additional `import Alpine from 'alpinejs'; Alpine.start()`
+// in front of that created two competing Alpine/Livewire instances on every page
+// (console warnings "Detected multiple instances of ..." and a crash on the second
+// registration of Alpine magics such as $persist), so wire:click/wire:model partly stopped firing.
 //
 // The CSP build: Alpine evaluates its expressions with its own parser instead
 // of new Function, so the Content-Security-Policy needs no 'unsafe-eval'. An
@@ -41,18 +41,18 @@ komponentenRegistrieren(Alpine);
 rackRegistrieren(Alpine);
 auswahlRegistrieren(Alpine);
 
-// Abgelaufene Seite abfangen (HTTP 419). Livewire zeigt sonst einen blockierenden
-// confirm()-Dialog "This page has expired." - ein Sackgassen-Erlebnis, das besonders
-// im Assistenten auftrat, wenn eine laenger offene Seite ihren ersten Livewire-Aufruf
-// (z. B. ein wire:model.live waehrend der Eingabe) mit veraltetem CSRF-Token abschickt.
+// Catch an expired page (HTTP 419). Livewire otherwise shows a blocking
+// confirm() dialog "This page has expired." - a dead end that came up
+// especially in the wizard, when a page left open for a while sends its first
+// Livewire call (a wire:model.live while typing, say) with a stale CSRF token.
 //
-// Statt des Dialogs laden wir die Seite einmal neu und holen so ein frisches Token und
-// eine gueltige Session. Der Fortschritt des Assistenten liegt serverseitig im
-// DocumentationRun, es geht also hoechstens ein gerade halb getipptes Feld verloren.
+// Instead of the dialog we reload the page once and get a fresh token and a
+// valid session that way. The wizard's progress lies on the server in the
+// DocumentationRun, so at most a half-typed field is lost.
 //
-// Schutz gegen Endlosschleife: Kann die Session gar nicht bestehen (z. B. blockierte
-// Cookies), wuerde ein Reload sofort wieder 419 liefern. Passiert das zweimal in kurzer
-// Folge, ueberlassen wir Livewire wieder seinen Dialog, statt den Nutzer in Reloads zu fangen.
+// Guard against an endless loop: if the session cannot exist at all (blocked
+// cookies, say), a reload would return 419 again at once. If that happens twice in
+// quick succession we leave Livewire its dialog again rather than trapping the user in reloads.
 Livewire.hook('request', ({ fail }) => {
     fail(({ status, preventDefault }) => {
         if (status !== 419) {
@@ -73,18 +73,18 @@ Livewire.hook('request', ({ fail }) => {
     });
 });
 
-// Das Semikolon ist Pflicht, nicht Geschmack: Ohne es wuerde eine folgende
-// Zeile, die mit ( oder [ beginnt, als Fortsetzung dieses Ausdrucks gelesen -
-// aus Livewire.start() gefolgt von (function(){...})() wird dann
+// The semicolon is mandatory, not taste: without it a following line starting
+// with ( or [ would be read as a continuation of this expression - from
+// Livewire.start() followed by (function(){...})() comes
 // Livewire.start()(function(){...})().
 Livewire.start();
 
 
 
-// Der Umschalter steht nur in den Navigationsleisten. Auf Seiten ohne Navigation –
-// der Anmeldeseite etwa – fehlen Knopf und Icons. Ungeprüft zugegriffen brach das
-// die Ausführung dieser Datei an dieser Stelle ab, und alles Nachfolgende lief dort
-// nicht mehr. Deshalb gekapselt mit frühem Ausstieg.
+// The switch sits in the navigation bars only. On pages without navigation -
+// the sign-in page, for one - button and icons are missing. Accessed unchecked,
+// that broke the execution of this file at this point, and everything after it
+// stopped running there. Hence wrapped with an early exit.
 (function () {
 
 const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');

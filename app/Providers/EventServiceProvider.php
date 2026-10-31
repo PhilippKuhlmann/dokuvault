@@ -23,8 +23,8 @@ class EventServiceProvider extends ServiceProvider
             SendEmailVerificationNotification::class,
         ],
 
-        // Wer sich anmeldet, woher, und wer es vergeblich versucht - siehe
-        // AnmeldungProtokollieren.
+        // Who signs in, from where, and who tries in vain - see
+        // LogLogin.
         Login::class => [
             [LogLogin::class, 'handleLogin'],
         ],

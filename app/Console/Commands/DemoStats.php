@@ -7,11 +7,11 @@ use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 /**
- * Wertet die von RecordDemoUsage geschriebenen Dateien aus.
+ * Evaluates the files written by RecordDemoUsage.
  *
- * Ein Besuch ist eine Sitzung (Zufallskennung), nicht eine Person: wer nach
- * Ablauf der Sitzung wiederkommt, zaehlt erneut. Genauer geht es ohne
- * Personenbezug nicht, und fuer die Frage "wird die Demo genutzt" reicht es.
+ * A visit is a session (random identifier), not a person: whoever comes back
+ * after the session has expired counts again. Without identifying people it
+ * cannot be more precise, and for the question "is the demo being used" it is enough.
  */
 class DemoStats extends Command
 {
@@ -90,7 +90,7 @@ class DemoStats extends Command
             fn ($b) => $b['erste']->diffInSeconds($b['letzte']),
             array_values($besuche)
         );
-        // Median statt Mittelwert: ein einzelner langer Besuch verzerrt sonst alles.
+        // Median instead of mean: a single long visit would otherwise skew everything.
         sort($dauern);
         $median = $dauern ? $dauern[intdiv(count($dauern), 2)] : 0;
 
@@ -143,7 +143,7 @@ class DemoStats extends Command
         }
     }
 
-    /** Die Rollennamen aus der Datenbank sind technisch - hier lesbar machen. */
+    /** The role names from the database are technical - made readable here. */
     private const ROLLENNAMEN = [
         'general_full' => 'Kunde (lesen und schreiben)',
         'general_read' => 'Kunde (nur lesen)',
@@ -187,8 +187,8 @@ class DemoStats extends Command
             default => '  Gekuerzt auf das Netz: /24 bei IPv4, /48 bei IPv6.',
         });
 
-        // Alles Weitere zaehlt Besuche, nicht Seitenaufrufe - sonst stuende ein
-        // langer Besuch fuer viele Herkuenfte.
+        // Everything further counts visits, not page views - otherwise one long
+        // visit would stand for many origins.
         $this->table(
             ['Netz', 'Besuche'],
             collect($netze)->take(20)->map(fn ($n, $netz) => [$netz, $n])->values()->all()
@@ -202,9 +202,9 @@ class DemoStats extends Command
     }
 
     /**
-     * Private Adressen bedeuten fast immer: vor der App steht ein Proxy, dem
-     * sie nicht vertraut - dann zeichnet sie dessen Adresse auf statt der des
-     * Besuchers. Ohne Hinweis liest man die Zahlen sonst als Ergebnis.
+     * Private addresses almost always mean: there is a proxy in front of the
+     * app that it does not trust - then it records that proxy's address
+     * instead of the visitor's. Without a note one reads the numbers as a result.
      */
     private function proxyNotice(array $netze): void
     {

@@ -34,20 +34,20 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('see_hidden', [GeneralPolicy::class, 'see_hidden']);
         Gate::define('create_pdf', [GeneralPolicy::class, 'create_pdf']);
 
-        // Die Rolle 1 darf alles - unabhaengig davon, was angehakt ist.
+        // Role 1 may do everything - regardless of what is ticked.
         //
-        // Das ist die Absicherung gegen das Aussperren: Wer in der
-        // Rollenverwaltung versehentlich "Rollen und Rechte verwalten"
-        // abwaehlt, kaeme sonst nie wieder an die Rollenverwaltung, und die
-        // Installation waere nur noch ueber die Datenbank zu retten.
+        // That is the safeguard against locking oneself out: whoever
+        // accidentally unticks "manage roles and permissions" in the role
+        // management would otherwise never get back to the role management,
+        // and the installation could only be rescued through the database.
         //
-        // before() liefert null fuer alle anderen Rollen - dann entscheiden
-        // die Gates weiter unten.
+        // before() returns null for every other role - then the gates further
+        // down decide.
         Gate::before(function (User $user, string $ability) {
-            // isCustomer ist eine Frage nach der Zugehoerigkeit, kein Recht.
-            // Ein pauschales "darf alles" verfaelscht sie ins Gegenteil: Der
-            // Admin galte damit als Kundennutzer, und die Kopfzeile verloere
-            // fuer ihn die internen Suchen.
+            // isCustomer is a question of membership, not a permission. A
+            // blanket "may do everything" turns it into its opposite: the
+            // admin would count as a customer user, and the header would lose
+            // the internal searches for them.
             if ($ability === 'isCustomer') {
                 return null;
             }
@@ -55,13 +55,13 @@ class AuthServiceProvider extends ServiceProvider
             return $user->role_id === Role::IS_ADMIN ? true : null;
         });
 
-        // Ein Recht je Admin-Menuepunkt, dazu die Fernwartungs-Suche. Vorher
-        // hingen beide Bereiche an einer festen Rollen-Id: entweder ganz oder
-        // gar nicht.
+        // One permission per admin menu item, plus the remote search. Before,
+        // both areas hung on a fixed role id: either all of it or none.
         //
-        // Die admin_*-Rechte nie fuer einen Nutzer, der auf einen Kunden
-        // festgelegt ist: Sie gelten ueber alle Kunden. Eine versehentlich angehakte Rolle
-        // gaebe einem Kundennutzer sonst den Zugriff auf fremde Kunden.
+        //
+        // Never the admin_* rights for a user tied to one customer: they apply
+        // across customers. A role ticked by accident would otherwise give a
+        // customer user access to other customers.
         foreach (array_merge(config('custom.admin_permissions'), config('custom.extra_permissions')) as $recht => $beschreibung) {
             // The remote search is meant for customer users too; only the
             // admin_* rights are cross-customer.
@@ -71,9 +71,9 @@ class AuthServiceProvider extends ServiceProvider
                 && $user->hasPermission($recht));
         }
 
-        // "Darf ueberhaupt hinein" - fuer die Middleware und den Link im
-        // Benutzermenue. Welchen Bereich genau, entscheidet das Recht an der
-        // jeweiligen Route.
+        // "May get in at all" - for the middleware and the link in the user
+        // menu. Which area exactly is decided by the permission on the
+        // respective route.
         Gate::define('admin_bereich', fn (User $user) => collect(array_keys(config('custom.admin_permissions')))
             ->contains(fn ($recht) => Gate::forUser($user)->allows($recht)));
 

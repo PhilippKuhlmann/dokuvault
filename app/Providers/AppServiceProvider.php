@@ -80,24 +80,24 @@ class AppServiceProvider extends ServiceProvider
         $this->registerSearch();
         $this->applyMailSettings();
 
-        // Wie ein Kennwort aussehen muss - an einer Stelle gesetzt, wirksam an
-        // allen vier: eigenes Profil, Anlegen durch einen Administrator,
-        // Kennwort vergessen, Einladung einloesen. Bis dahin stand hier nichts,
-        // und es galt stillschweigend Laravels Vorgabe von acht Zeichen.
+        // What a password has to look like - set in one place, effective in
+        // all four: own profile, creation by an administrator, forgotten
+        // password, redeeming an invitation. Until then nothing stood here and
+        // Laravel's default of eight characters applied silently.
         //
-        // Als Funktion, nicht als Wert: So wird die Einstellung erst beim
-        // Pruefen gelesen und nicht beim Hochfahren - dort gibt es die Tabelle
-        // beim ersten "artisan migrate" noch gar nicht.
+        // As a function, not as a value: that way the setting is read when
+        // checking and not at boot - at boot the table does not even exist on
+        // the first "artisan migrate".
         Password::defaults(fn () => Setting::passwordRule());
 
-        // Livewire prueft temporaere Uploads mit einer eigenen Regel und laesst
-        // ohne Angabe hoechstens 12 MB durch. Die Anwendung erlaubt mehr -
-        // ueber ein gewoehnliches Formular ging das auch, ueber ein Modal nicht.
-        // Zwei Grenzen, von denen niemand die kleinere kannte. Jetzt gilt
-        // ueberall dieselbe Zahl, gepflegt im Adminbereich.
+        // Livewire checks temporary uploads with a rule of its own and lets
+        // through at most 12 MB unless told otherwise. The application allows
+        // more - through an ordinary form that worked, through a modal it did
+        // not. Two limits, and nobody knew the smaller one. Now the same
+        // number applies everywhere, maintained in the admin area.
         //
-        // try: Die Zahl kommt aus der Datenbank, und diese Zeile laeuft auch
-        // beim ersten "artisan migrate", wenn es die Tabelle noch nicht gibt.
+        // try: the number comes from the database, and this line also runs on
+        // the first "artisan migrate", when the table does not exist yet.
         try {
             $grenze = Setting::uploadMaxKb();
         } catch (Throwable) {
@@ -116,61 +116,61 @@ class AppServiceProvider extends ServiceProvider
         });
 
         /*
-         * Ist dieser Nutzer auf einen Kunden festgelegt?
+         * Is this user tied to one customer?
          *
-         * An der customer_id, nicht an der Rolle. Vorher fragte das Gate nach
-         * den Rollen-Ids 98 und 99 - aus einer Zeit, in der es feste Rollen
-         * gab. Rollen entstehen laengst im Adminbereich und bekommen dort
-         * fortlaufende Nummern; die Kundenrollen dieser Installation haben 11
-         * und 12. Das Gate war damit nie wahr, und die Kopfzeile bot jedem
-         * Kundennutzer die Kundensuche und die Fernwartung an - beides fuehrt
-         * fuer ihn ins Leere.
+         * By customer_id, not by role. The gate used to ask for the role ids
+         * 98 and 99 - from a time when roles were fixed. Roles have long been
+         * created in the admin area and get consecutive numbers there; the
+         * customer roles of this installation have 11 and 12. The gate was
+         * therefore never true, and the header offered every customer user the
+         * customer search and remote access - both of which lead nowhere for
+         * them.
          *
-         * Dieselbe Frage stellen die isCustomer-Middleware und die API
-         * laengst so. Die frueheren Abstufungen isCustomerR und isCustomerRW
-         * sind entfallen: Ob jemand nur lesen darf, sagt die Rechtematrix.
+         * The isCustomer middleware and the API have long asked the same
+         * question this way. The earlier gradations isCustomerR and
+         * isCustomerRW are gone: whether someone may only read is told by the
          */
         Gate::define('isCustomer', function (User $user) {
             return $user->customer_id !== null;
         });
 
-        // Die Versionsnummer steht im Schriftkopf der Anmeldeseite und in der
-        // Seitenleiste. Der Composer bleibt auf '*', weil beide Views sie
-        // brauchen - das Lesen der Datei kostet dank Changelog::version() nur
-        // noch einmal je Anfrage, nicht einmal je gerendertem View.
+        // The version number stands in the masthead of the sign-in page and in
+        // the sidebar. The composer stays on '*' because both views need it -
+        // thanks to Changelog::version() reading the file costs one access per
+        // request, not one per rendered view.
         View::composer('*', function ($view) {
             $view->with('version', Changelog::version());
         });
     }
 
     /**
-     * Freitextsuche ueber eine oder mehrere Spalten.
+     * Free-text search across one or more columns.
      *
-     * Der Grund fuer die eigene Methode sind die Platzhalter von LIKE. Ein
-     * Suchbegriff wie "SRV_01" fand ohne Maskierung auch "SRV101", und die
-     * Suche nach "%" lieferte den gesamten Bestand - gemessen: 863 von 863
-     * Protokolleintraegen.
+     * The reason for a method of its own are the LIKE placeholders. A search
+     * term like "SRV_01" also found "SRV101" without escaping, and a search
+     * for "%" returned the entire stock - measured: 863 of 863 activity
+     * entries.
      *
-     * Die ESCAPE-Klausel ist nicht optional. MySQL nimmt den Backslash von
-     * selbst als Escape-Zeichen, SQLite nicht: Dort fand das maskierte Muster
-     * ohne ESCAPE gar nichts mehr. Da die Tests auf SQLite laufen und die
-     * Produktion auf MySQL, muss beides stimmen.
+     * The ESCAPE clause is not optional. MySQL takes the backslash as an
+     * escape character by itself, SQLite does not: there the escaped pattern
+     * found nothing at all without ESCAPE. Since the tests run on SQLite and
+     * production on MySQL, both have to be right.
      */
     protected function registerSearch(): void
     {
-        // "%begriff%" - findet den Begriff an jeder Stelle.
+        // "%term%" - finds the term in any position.
         Builder::macro('whereEnthaelt', fn (string|array $spalten, string $begriff) => $this->sucheAnwenden($spalten, '%'.static::sucheMaskieren($begriff).'%'));
 
-        // "begriff%" - nur am Anfang. Teurer Unterschied: Auf einer indizierten
-        // Spalte kann die Praefix-Form den Index nutzen, "%begriff%" nicht.
-        // Gemessen bei 4 Millionen AD-Benutzern: 3 ms gegen 2788 ms.
+        // "term%" - only at the start. An expensive difference: on an indexed
+        // column the prefix form can use the index, "%term%" cannot.
+        // Measured at 4 million AD users: 3 ms against 2788 ms.
         Builder::macro('whereBeginntMit', fn (string|array $spalten, string $begriff) => $this->sucheAnwenden($spalten, static::sucheMaskieren($begriff).'%'));
 
         Builder::macro('sucheAnwenden', function (string|array $spalten, string $muster) {
             return $this->where(function ($abfrage) use ($spalten, $muster) {
                 foreach ((array) $spalten as $spalte) {
-                    // ESCAPE gebunden statt als Literal: MySQL und SQLite
-                    // behandeln Backslashes in Zeichenketten unterschiedlich.
+                    // ESCAPE bound instead of as a literal: MySQL and SQLite
+                    // treat backslashes in strings differently.
                     $abfrage->orWhereRaw(
                         $abfrage->getGrammar()->wrap($spalte).' LIKE ? ESCAPE ?',
                         [$muster, '\\']
@@ -183,34 +183,34 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Die im Adminbereich gepflegten SMTP-Daten ueber die .env legen.
+     * Put the SMTP data maintained in the admin area over the .env.
      *
-     * Nur was gesetzt ist: Wer nichts eintraegt, behaelt die Werte aus der
-     * .env - so wie vor dieser Einstellung. Damit bleibt auch eine
-     * Installation lauffaehig, die ihren Versand ueber die Umgebung
-     * konfiguriert.
+     * Only what is set: whoever enters nothing keeps the values from the
+     * .env - just as before this setting existed. That keeps an installation
+     * running that configures its sending through the environment.
      *
-     * Der Zugriff ist gekapselt, weil er frueh laeuft: Bei einer frischen
-     * Installation gibt es die Tabelle noch nicht, und ein "artisan migrate"
-     * darf daran nicht scheitern.
+     *
+     * The access is wrapped because it runs early: on a fresh installation
+     * the table does not exist yet, and an "artisan migrate" must not fail
+     * over it.
      */
 
     /**
-     * Sitzungsdauer und "Angemeldet bleiben" aus den Einstellungen.
+     * Session lifetime and "stay signed in" from the settings.
      *
-     * Die Werte kommen aus der Datenbank, gelesen bevor die Sitzung startet -
-     * StartSession laeuft als Middleware, also nach den Providern. Steht in
-     * den Einstellungen nichts, bleibt es bei SESSION_LIFETIME aus der .env.
+     * The values come from the database, read before the session starts -
+     * StartSession runs as middleware, so after the providers. If the
+     * settings hold nothing, SESSION_LIFETIME from the .env applies.
      *
-     * try: Diese Zeilen laufen auch beim ersten "composer install" auf einem
-     * frischen Auscheck-Verzeichnis - package:discover startet, bevor es eine
-     * .env oder eine Tabelle gibt. Genau daran ist schon ein CI-Lauf
+     * try: these lines also run on the first "composer install" in a fresh
+     * checkout - package:discover starts before there is an .env or a table.
+     * A CI run has failed over exactly that before.
      * gescheitert.
      */
     private function applySessionSettings(): void
     {
-        // Ohne Schluessel gar nicht erst anfangen: Der Guard zieht die Sitzung,
-        // die Sitzung ist verschluesselt, und ohne APP_KEY wirft der
+        // Do not even start without a key: the guard pulls the session, the
+        // session is encrypted, and without APP_KEY the encrypter throws.
         // Verschluessler.
         if (! config('app.key')) {
             return;
@@ -224,16 +224,16 @@ class AppServiceProvider extends ServiceProvider
                 'session.expire_on_close' => Setting::sitzungBeimSchliessen(),
             ]);
         } catch (Throwable) {
-            // Ohne Tabelle die Vorgabe. Fuer die Sitzung steht sie ohnehin
-            // schon in der Konfiguration, hier fehlt nur die Zahl.
+            // Without a table the default. For the session it already stands
+            // in the configuration anyway, only the number is missing here.
             $tage = (int) config('custom.remember_days', 30);
         }
 
-        // Ausserhalb des try, und das ist der Punkt: Ohne diesen Aufruf gilt
-        // Laravels Vorgabe von 400 Tagen. Stand er innen, hiess ein Fehler
-        // beim Lesen der Einstellung nicht "es bleibt bei 30", sondern "es
-        // sind wieder 400" - ein gestohlenes Notebook waere ein Dauerzugang.
-        // Ein bestehender Test hat genau das aufgedeckt.
+        // Outside the try, and that is the point: without this call Laravel's
+        // default of 400 days applies. Inside it, an error reading the setting
+        // would not mean "it stays at 30" but "it is 400 again" - a stolen
+        // laptop would be permanent access. An existing test uncovered exactly
+        // that.
         Auth::guard('web')->setRememberDuration(60 * 24 * $tage);
     }
 
@@ -257,8 +257,8 @@ class AppServiceProvider extends ServiceProvider
             'mail.mailers.smtp.port' => (int) Setting::wert(Setting::MAIL_PORT, 587),
             'mail.mailers.smtp.username' => Setting::wert(Setting::MAIL_USERNAME) ?: null,
             'mail.mailers.smtp.password' => $kennwort,
-            // Leer heisst wirklich "ohne" - null waere hier dasselbe, aber die
-            // Auswahl kennt drei Zustaende und soll alle drei treffen koennen.
+            // Empty really means "without" - null would be the same here, but
+            // the select knows three states and should be able to hit all three.
             'mail.mailers.smtp.encryption' => Setting::wert(Setting::MAIL_ENCRYPTION) ?: null,
         ]);
 

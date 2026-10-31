@@ -8,14 +8,14 @@ use Illuminate\Console\Command;
 use Spatie\Activitylog\Models\Activity;
 
 /**
- * Protokolleintraege loeschen, sobald die eingestellte Frist abgelaufen ist.
+ * Delete activity entries once the configured deadline has passed.
  *
- * Ohne Frist passiert nichts - das ist die Vorgabe. Ein Protokoll, das sich
- * ungefragt selbst leert, waere kein Protokoll mehr.
+ * Without a deadline nothing happens - that is the default. A log that
+ * empties itself unasked would be no log any more.
  *
- * Die bisherigen Kennwoerter gehen mit: Sie sind das, was ein Eintrag ueber
- * eine Kennwortaenderung zu zeigen hat. Bliebe die Historie stehen, waeren die
- * alten Werte laenger da als der Eintrag, der auf sie verweist.
+ * The previous passwords go with them: they are what an entry about a
+ * password change has to show. If the history stayed, the old values would
+ * be around longer than the entry pointing at them.
  */
 class PruneActivityLog extends Command
 {
@@ -47,8 +47,8 @@ class PruneActivityLog extends Command
             return self::SUCCESS;
         }
 
-        // Die Kennwoerter zuerst: Braeche der Lauf dazwischen ab, waeren lieber
-        // die Werte weg als die Eintraege, die von ihnen erzaehlen.
+        // The passwords first: if the run broke off in between, better the
+        // values gone than the entries telling of them.
         $kennwoerter->delete();
         $eintraege->delete();
 
