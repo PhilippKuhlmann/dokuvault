@@ -22,7 +22,7 @@ class ClusterRequest extends FormRequest
         return [
             'site_id' => ['required', new BelongsToCustomer('sites')],
             'name' => 'required|max:255',
-            // Rule::in gegen die Konfiguration: Sonst liesse sich ueber ein
+            // Rule::in against the configuration: otherwise a value outside
             // gefaelschtes Formular ein beliebiger Typ hineinschreiben.
             'type' => ['nullable', Rule::in(array_keys(config('custom.cluster_types')))],
             'note' => 'nullable|max:255',

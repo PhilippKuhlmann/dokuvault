@@ -13,7 +13,7 @@ class ProfileUpdateRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\Rule|array|string>
      */
-    /** Leere Auswahl heisst "der Browsersprache folgen", nicht Leerstring. */
+    /** An empty choice means "follow the browser language", not an empty string. */
     protected function prepareForValidation(): void
     {
         if ($this->input('locale') === '') {

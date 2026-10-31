@@ -11,8 +11,8 @@ class ContactPersonController extends Controller
     {
         $this->authorize('viewAny', ContactPerson::class);
 
-        // Liste und Formular sind Livewire (siehe config/forms.php):
-        // Die Ansicht braucht deshalb nur den Kunden.
+        // List and form are Livewire (see config/forms.php):
+        // the view therefore needs the customer only.
         return view('contactperson.index', compact('customer'));
     }
 }

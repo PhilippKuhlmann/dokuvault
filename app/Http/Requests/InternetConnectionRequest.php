@@ -25,7 +25,7 @@ class InternetConnectionRequest extends FormRequest
             'bandwidth_down' => 'max:255',
             'bandwidth_up' => 'max:255',
             'wan_ip' => 'max:255',
-            // Einwahldaten des Anschlusses - das Passwort liegt verschluesselt.
+            // Dial-in details of the connection - the password is stored encrypted.
             'pppoe_user' => 'nullable|max:255',
             'pppoe_password' => 'nullable|max:255',
             // Optional: viele Anschluesse bringen zusaetzlich ein geroutetes

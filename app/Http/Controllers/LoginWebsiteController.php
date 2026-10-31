@@ -11,8 +11,8 @@ class LoginWebsiteController extends Controller
     {
         $this->authorize('viewAny', LoginWebsite::class);
 
-        // Liste und Formular sind Livewire (siehe config/forms.php):
-        // Die Ansicht braucht deshalb nur den Kunden.
+        // List and form are Livewire (see config/forms.php):
+        // the view therefore needs the customer only.
         return view('loginwebsite.index', compact('customer'));
     }
 }

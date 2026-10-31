@@ -21,7 +21,7 @@ class PatchPanelRequest extends FormRequest
         return [
             'site_id' => ['required', new BelongsToCustomer('sites')],
             'name' => 'required|max:255',
-            // 96 Ports deckt auch die groessten Felder ab; darueber wird die
+            // 96 ports covers even the largest panels; above that the
             // Zeichnung ohnehin unlesbar.
             'port_count' => 'required|integer|between:1,96',
             'height_units' => 'required|integer|between:1,10',

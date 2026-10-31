@@ -25,7 +25,7 @@ class ContactPersonRequest extends FormRequest
         return [
             'first_name' => 'required',
             'last_name' => 'required',
-            // Wer wofuer zustaendig ist, entscheidet, wen man anruft.
+            // Who is responsible for what decides whom one calls.
             'role' => 'nullable|max:255',
             'phone' => '',
             'mail' => '',

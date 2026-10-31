@@ -11,8 +11,8 @@ class CameraController extends Controller
     {
         $this->authorize('viewAny', Camera::class);
 
-        // Liste und Formular sind Livewire (siehe config/forms.php):
-        // Die Ansicht braucht deshalb nur den Kunden.
+        // List and form are Livewire (see config/forms.php):
+        // the view therefore needs the customer only.
         return view('camera.index', compact('customer'));
     }
 }
