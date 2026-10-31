@@ -99,7 +99,7 @@ test('the Linux installer is the shared one with KIND linux', function () {
     $this->post(route('agent.store', $customer), ['name' => 'Linux', 'site_id' => $site->id, 'expires_at' => now()->addMonth()->format('Y-m-d')]);
     $plain = session('newToken');
 
-    $antwort = $this->get(route('agent.dienst.linux', $customer))->assertOk();
+    $antwort = $this->get(route('agent.service.linux', $customer))->assertOk();
 
     expect($antwort->getContent())->toContain('KIND="linux"')->toContain('TOKEN="'.$plain.'"');
     expect($antwort->headers->get('Content-Disposition'))->toContain('dokuvault-agent-linux.sh');

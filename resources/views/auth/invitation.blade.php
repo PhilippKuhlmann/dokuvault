@@ -2,7 +2,7 @@
     {{-- Das Erste, was ein neuer Benutzer von DokuVault sieht. --}}
     <x-anmeldeblatt :kopf="__('Einladung')">
 
-        <form method="POST" action="{{ route('einladung.speichern') }}">
+        <form method="POST" action="{{ route('invitation.store') }}">
             @csrf
 
             <input type="hidden" name="token" value="{{ $token }}">

@@ -93,7 +93,7 @@
         @elseif ($key == 'status')
             {{-- true/false/null als Haken, Kreuz oder Strich. --}}
             <td scope="row" class="py-2.5 px-4"><x-statusicon :value="$value" /></td>
-        @elseif ($key == 'einladung')
+        @elseif ($key == 'invitation')
             {{-- $value ist der Benutzer selbst: Ob die Einladung offen oder
                  abgelaufen ist, haengt an der Frist aus config/auth.php - das
                  weiss das Modell, nicht die Tabelle. --}}

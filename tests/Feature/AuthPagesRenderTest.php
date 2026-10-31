@@ -46,7 +46,7 @@ test('es gibt keine Seite zum Kennwort bestätigen mehr', function () {
  * Beide brauchen einen Zustand und passen deshalb nicht in die Liste oben.
  */
 test('die Einladung rendert ihr Blatt', function () {
-    $antwort = $this->get(route('einladung.formular', [
+    $antwort = $this->get(route('invitation.form', [
         'token' => 'ein-beliebiger-token',
         'username' => 'neue.kollegin',
     ]));

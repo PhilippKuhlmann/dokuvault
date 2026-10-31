@@ -95,7 +95,7 @@ test('erneuern macht den alten Klartext ungültig und setzt eine neue Frist', fu
     // Der alte Wert funktioniert - noch.
     expect($this->withToken($alt)->postJson('/api/agent/proxmox', [])->status())->not->toBe(401);
 
-    $this->post(route('agent.erneuern', [$customer, $token]));
+    $this->post(route('agent.renew', [$customer, $token]));
     $neu = session('newToken');
 
     expect($neu)->not->toBe($alt);

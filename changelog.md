@@ -2,6 +2,10 @@
 
 ## 26.10.31
 
+### Changed
+
+- **Alle Adressen sind jetzt englisch.** Die Oberfläche bleibt deutsch, die Adressen in der Adresszeile nicht mehr: `/admin/auslastung` heißt `/admin/api-load`, `/admin/fristen` heißt `/admin/retention`, `/admin/statistik/...` heißt `/admin/stats/...`, `einladung/{token}` heißt `invitation/{token}`, die Agent-Downloads heißen `agent/service.exe` statt `agent/dienst.exe`. Ein verschickter Einladungslink gilt eine Woche – die alte Adresse leitet darum dauerhaft auf die neue weiter, ebenso die schon vorher umgestellten `/admin/papierkorb` und `/admin/protokoll-historie`. Für Lesezeichen auf die Admin-Seiten gilt das nicht: Die ruft man über das Menü auf. Die Adresse, unter der installierte Agenten ihr Update holen, ist unverändert.
+
 ### Added
 
 - **Montageort: wo ein Gerät hängt.** DECT-Sender, Accesspoints, Kameras, Switches und IoT-Geräte haben ein neues Feld „Montageort" für eine Notiz wie „Halle 1, über der Tür". Der Standort sagt bisher nur, in welchem Gebäude ein Gerät steht – wer einen DECT-Sender unter der Decke sucht, hat davon nichts. Das Feld steht im Formular direkt unter dem Standort, als erste Zeile unter „Allgemein" in der Liste und im Kunden-PDF, und die Suche der Liste findet darüber: „Halle 1" zeigt alles, was dort hängt. Freitext, kein Raum-Katalog.

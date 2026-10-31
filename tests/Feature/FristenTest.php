@@ -207,5 +207,5 @@ test('eine PDF-Frist unter einer Stunde wäre eine Zahl ohne Wirkung', function 
 test('ohne das Recht kommt niemand auf die Seite', function () {
     $this->actingAs(userWithPermissions([]));
 
-    $this->get(route('admin.fristen.index'))->assertForbidden();
+    $this->get(route('admin.retention.index'))->assertForbidden();
 });

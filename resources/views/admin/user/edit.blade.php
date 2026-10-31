@@ -52,10 +52,10 @@
 
         </x-create.main>
 
-        @if ($errors->has('einladung'))
+        @if ($errors->has('invitation'))
             <div class="mx-auto mt-4 max-w-3xl px-3">
                 <div class="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/25 dark:text-red-300">
-                    {{ $errors->first('einladung') }}
+                    {{ $errors->first('invitation') }}
                 </div>
             </div>
         @endif
@@ -97,7 +97,7 @@
                 </div>
 
                 @if ($user->email)
-                    <form method="post" action="{{ route('admin.user.einladung', $user) }}" class="shrink-0">
+                    <form method="post" action="{{ route('admin.user.invite', $user) }}" class="shrink-0">
                         @csrf
                         <x-input.button color="gray" :label="__('Einladung senden')" />
                     </form>

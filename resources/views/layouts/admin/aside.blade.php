@@ -57,12 +57,12 @@
                             <x-aside.dropdownlink :label="__('Fernwartung')" href="{{ route('admin.setting.index') }}" />
                             <x-aside.dropdownlink :label="__('Mail')" href="{{ route('admin.mail.index') }}" />
                             <x-aside.dropdownlink :label="__('Sicherheit')" href="{{ route('admin.security.index') }}" />
-                            <x-aside.dropdownlink :label="__('Fristen')" href="{{ route('admin.fristen.index') }}" />
+                            <x-aside.dropdownlink :label="__('Fristen')" href="{{ route('admin.retention.index') }}" />
                             <x-aside.dropdownlink :label="__('Benachrichtigungen')" href="{{ route('admin.notifications') }}" />
-                            <x-aside.dropdownlink :label="__('Agenten')" href="{{ route('admin.agenten.einstellungen') }}" />
+                            <x-aside.dropdownlink :label="__('Agenten')" href="{{ route('admin.agents.settings') }}" />
                         @endcan
                         @can('isAdmin')
-                            <x-aside.dropdownlink :label="__('Backup')" href="{{ route('admin.backup.einstellungen') }}" />
+                            <x-aside.dropdownlink :label="__('Backup')" href="{{ route('admin.backup.settings') }}" />
                         @endcan
                         {{-- Die Aufbewahrungsfrist gehoert zum Protokoll, nicht zu
                              den uebrigen Einstellungen. --}}
@@ -81,11 +81,11 @@
             @can('admin_statistik')
                 <x-aside.dropdown :label="__('Statistik')" svg="svg.chart" >
                     <x-slot:links>
-                        <x-aside.dropdownlink :label="__('System')" href="{{ route('admin.statistik.system') }}" />
-                        <x-aside.dropdownlink :label="__('API-Auslastung')" href="{{ route('admin.auslastung') }}" />
-                        <x-aside.dropdownlink :label="__('Datenwachstum')" href="{{ route('admin.statistik.wachstum') }}" />
-                        <x-aside.dropdownlink :label="__('Agenten')" href="{{ route('admin.statistik.agenten') }}" />
-                        <x-aside.dropdownlink :label="__('Nutzung')" href="{{ route('admin.statistik.nutzung') }}" />
+                        <x-aside.dropdownlink :label="__('System')" href="{{ route('admin.stats.system') }}" />
+                        <x-aside.dropdownlink :label="__('API-Auslastung')" href="{{ route('admin.api-load') }}" />
+                        <x-aside.dropdownlink :label="__('Datenwachstum')" href="{{ route('admin.stats.data-growth') }}" />
+                        <x-aside.dropdownlink :label="__('Agenten')" href="{{ route('admin.stats.agents') }}" />
+                        <x-aside.dropdownlink :label="__('Nutzung')" href="{{ route('admin.stats.usage') }}" />
                     </x-slot:links>
                 </x-aside.dropdown>
             @endcan

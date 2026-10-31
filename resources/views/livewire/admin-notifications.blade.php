@@ -28,7 +28,7 @@
 
         <p class="mt-4 text-xs text-gray-500 dark:text-gray-400">
             {{ __('Die Vorwarnzeit steht unter') }}
-            <a href="{{ route('admin.fristen.index') }}" class="text-cerulean-600 hover:underline dark:text-cerulean-400">{{ __('Fristen') }}</a>,
+            <a href="{{ route('admin.retention.index') }}" class="text-cerulean-600 hover:underline dark:text-cerulean-400">{{ __('Fristen') }}</a>,
             {{ __('der Mailserver unter') }}
             <a href="{{ route('admin.mail.index') }}" class="text-cerulean-600 hover:underline dark:text-cerulean-400">{{ __('Mail') }}</a>.
         </p>

@@ -160,19 +160,19 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             Route::get('/security', AdminSicherheit::class)->name('admin.security.index');
 
             // Vorwarnzeiten und die Aufbewahrung der PDF-Ausgaben.
-            Route::get('/fristen', AdminFristen::class)->name('admin.fristen.index');
+            Route::get('/retention', AdminFristen::class)->name('admin.retention.index');
 
             // Who gets the daily expiry mail, and what it reports.
             Route::get('/notifications', AdminNotifications::class)->name('admin.notifications');
 
             // Backup of DokuVault itself: schedule, external target, retention.
             // Defaults for the agents of all customers.
-            Route::get('/agents', AdminAgentenEinstellungen::class)->name('admin.agenten.einstellungen');
+            Route::get('/agents', AdminAgentenEinstellungen::class)->name('admin.agents.settings');
 
             // Admin role only, not admin_setting: whoever sets the target and
             // the archive password can take every customer's data with them.
             Route::middleware('can:isAdmin')->group(function () {
-                Route::get('/backup', AdminBackupEinstellungen::class)->name('admin.backup.einstellungen');
+                Route::get('/backup', AdminBackupEinstellungen::class)->name('admin.backup.settings');
                 Route::get('/backup/download', BackupDownloadController::class)->name('admin.backup.download');
             });
 
@@ -184,8 +184,8 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             Route::get('/mail', [MailSettingController::class, 'index'])->name('admin.mail.index');
             Route::patch('/mail', [MailSettingController::class, 'update'])->name('admin.mail.update');
             Route::post('/mail/test', [MailSettingController::class, 'test'])->name('admin.mail.test');
-            Route::delete('/mail/kennwort', [MailSettingController::class, 'kennwortLoeschen'])
-                ->name('admin.mail.kennwort');
+            Route::delete('/mail/password', [MailSettingController::class, 'kennwortLoeschen'])
+                ->name('admin.mail.password');
         });
 
         // Aktivitätsprotokoll - mit Suche und Filtern, deshalb Livewire.
@@ -200,13 +200,13 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
         // Statistik: requests to the API per hour - when the load comes,
         // whether the server keeps up. Own right, more pages follow.
-        Route::get('/auslastung', AdminAuslastung::class)
-            ->middleware('can:admin_statistik')->name('admin.auslastung');
-        Route::middleware('can:admin_statistik')->prefix('statistik')->group(function () {
-            Route::get('/system', AdminSystem::class)->name('admin.statistik.system');
-            Route::get('/datenwachstum', AdminDatenwachstum::class)->name('admin.statistik.wachstum');
-            Route::get('/agenten', AdminAgentenStatistik::class)->name('admin.statistik.agenten');
-            Route::get('/nutzung', AdminNutzung::class)->name('admin.statistik.nutzung');
+        Route::get('/api-load', AdminAuslastung::class)
+            ->middleware('can:admin_statistik')->name('admin.api-load');
+        Route::middleware('can:admin_statistik')->prefix('stats')->group(function () {
+            Route::get('/system', AdminSystem::class)->name('admin.stats.system');
+            Route::get('/data-growth', AdminDatenwachstum::class)->name('admin.stats.data-growth');
+            Route::get('/agents', AdminAgentenStatistik::class)->name('admin.stats.agents');
+            Route::get('/usage', AdminNutzung::class)->name('admin.stats.usage');
         });
 
         // Backups of all customers with their last runs (reported by agents).
@@ -236,13 +236,13 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             // Verlorenes Telefon: Ohne diesen Weg waere ein Nutzer mit
             // eingeschalteter zweiter Stufe und ohne Wiederherstellungscode
             // dauerhaft ausgesperrt.
-            Route::delete('/user/{user}/zweite-stufe', [UserController::class, 'zweiteStufeZuruecksetzen'])
+            Route::delete('/user/{user}/two-factor', [UserController::class, 'zweiteStufeZuruecksetzen'])
                 ->name('admin.user.two-factor');
 
             // Einladung erneut schicken: im Spam gelandet, Link abgelaufen,
             // versehentlich geloescht - das ist der Alltag, nicht der Fehler.
-            Route::post('/user/{user}/einladung', [UserController::class, 'einladen'])
-                ->name('admin.user.einladung');
+            Route::post('/user/{user}/invite', [UserController::class, 'einladen'])
+                ->name('admin.user.invite');
         });
 
         // Rolen
@@ -362,15 +362,15 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::get('agent', [AgentTokenController::class, 'index'])->name('agent.index');
             Route::post('agent', [AgentTokenController::class, 'store'])->name('agent.store');
             Route::delete('agent/{agentToken}', [AgentTokenController::class, 'destroy'])->name('agent.destroy');
-            Route::post('agent/{agentToken}/erneuern', [AgentTokenController::class, 'erneuern'])->name('agent.erneuern');
+            Route::post('agent/{agentToken}/renew', [AgentTokenController::class, 'erneuern'])->name('agent.renew');
             Route::post('agent/{agentToken}/lock', [AgentTokenController::class, 'lock'])->name('agent.lock');
             Route::post('agent/{agentToken}/unlock', [AgentTokenController::class, 'unlock'])->name('agent.unlock');
-            Route::get('agent/dienst.exe', [AgentTokenController::class, 'dienstExe'])->name('agent.dienst');
+            Route::get('agent/service.exe', [AgentTokenController::class, 'dienstExe'])->name('agent.service');
             Route::put('agent/installation/{agentInstallation}', [AgentTokenController::class, 'updateInstallation'])->name('agent.installation.update');
             Route::post('agent/installation/{agentInstallation}/run', [AgentTokenController::class, 'runInstallation'])->name('agent.installation.run');
             Route::delete('agent/installation/{agentInstallation}', [AgentTokenController::class, 'destroyInstallation'])->name('agent.installation.destroy');
-            Route::get('agent/dienst-proxmox.sh', [AgentTokenController::class, 'dienstProxmox'])->name('agent.dienst.proxmox');
-            Route::get('agent/dienst-linux.sh', [AgentTokenController::class, 'dienstLinux'])->name('agent.dienst.linux');
+            Route::get('agent/service-proxmox.sh', [AgentTokenController::class, 'dienstProxmox'])->name('agent.service.proxmox');
+            Route::get('agent/service-linux.sh', [AgentTokenController::class, 'dienstLinux'])->name('agent.service.linux');
 
             // Dokumentations-Assistent (geführte Erstaufnahme)
             Route::get('wizard', [WizardController::class, 'index'])->name('wizard.index');

@@ -111,7 +111,7 @@ return [
          * Own table: sharing password_resets made every "forgot password"
          * link a week-long invitation link as well.
          */
-        'einladung' => [
+        'invitation' => [
             'provider' => 'users',
             'table' => 'invitation_tokens',
             'expire' => 60 * 24 * 7,

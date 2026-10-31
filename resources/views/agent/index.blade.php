@@ -389,7 +389,7 @@
                         {{-- Erneuern: neuer Klartext, alter sofort ungültig -
                              der Weg, einen verbrannten oder ablaufenden Token zu
                              wechseln, ohne Kunde und Standort neu einzurichten. --}}
-                        <form method="POST" action="{{ route('agent.erneuern', [$customer, $token]) }}">
+                        <form method="POST" action="{{ route('agent.renew', [$customer, $token]) }}">
                             @csrf
                             <x-input.button type="submit" size="sm" :label="__('Erneuern')" />
                         </form>

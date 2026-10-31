@@ -5,9 +5,9 @@
     <div x-data="{ einladen: {{ old('einladen') ? 'true' : 'false' }} }">
     <x-create.main :header="__('Neuer Benutzer')" action="{{ route('admin.user.store') }}">
 
-        @if ($errors->has('einladung'))
+        @if ($errors->has('invitation'))
             <div class="mt-2 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/25 dark:text-red-300">
-                {{ $errors->first('einladung') }}
+                {{ $errors->first('invitation') }}
             </div>
         @endif
 

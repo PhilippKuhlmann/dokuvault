@@ -22,7 +22,7 @@ test('a forgot-password token does not work as an invitation', function () {
     $user = User::factory()->create(['email' => 'nutzer@example.test', 'invited_at' => now()]);
     $resetToken = Password::broker()->createToken($user);
 
-    $this->post(route('einladung.speichern'), invitationForm($user, $resetToken))
+    $this->post(route('invitation.store'), invitationForm($user, $resetToken))
         ->assertSessionHasErrors('username');
 
     expect(Hash::check('Ein-Neues-Kennwort-2026', $user->fresh()->password))->toBeFalse();
@@ -30,9 +30,9 @@ test('a forgot-password token does not work as an invitation', function () {
 
 test('an invitation token still works', function () {
     $user = User::factory()->create(['email' => 'neu@example.test', 'invited_at' => now()]);
-    $token = Password::broker('einladung')->createToken($user);
+    $token = Password::broker('invitation')->createToken($user);
 
-    $this->post(route('einladung.speichern'), invitationForm($user, $token))
+    $this->post(route('invitation.store'), invitationForm($user, $token))
         ->assertRedirect(route('login'));
 
     expect(Hash::check('Ein-Neues-Kennwort-2026', $user->fresh()->password))->toBeTrue()
@@ -41,9 +41,9 @@ test('an invitation token still works', function () {
 
 test('an account without an open invitation is refused on /einladung', function () {
     $user = User::factory()->create(['email' => 'alt@example.test', 'invited_at' => null]);
-    $token = Password::broker('einladung')->createToken($user);
+    $token = Password::broker('invitation')->createToken($user);
 
-    $this->post(route('einladung.speichern'), invitationForm($user, $token))
+    $this->post(route('invitation.store'), invitationForm($user, $token))
         ->assertSessionHasErrors('username');
 
     expect(Hash::check('Ein-Neues-Kennwort-2026', $user->fresh()->password))->toBeFalse();

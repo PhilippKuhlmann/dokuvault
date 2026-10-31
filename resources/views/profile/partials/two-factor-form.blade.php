@@ -1,4 +1,4 @@
-<section id="zweite-stufe">
+<section id="two-factor">
     <header>
         <h2 class="font-mono text-[11px] uppercase tracking-[0.12em] text-cerulean-600 dark:text-cerulean-400">
             {{ __('Zweite Stufe der Anmeldung') }}
@@ -112,7 +112,7 @@
                     </div>
                 </form>
 
-                <form method="post" action="{{ route('two-factor.verwerfen') }}">
+                <form method="post" action="{{ route('two-factor.discard') }}">
                     @csrf
                     <button type="submit" class="text-sm text-gray-500 underline hover:text-gray-700 dark:hover:text-gray-300">
                         {{ __('Abbrechen') }}

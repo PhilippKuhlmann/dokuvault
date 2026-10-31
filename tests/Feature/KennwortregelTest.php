@@ -112,7 +112,7 @@ test('der Hinweis steht unter jedem Kennwortfeld', function () {
     nutzerWechseln(userWithPermissions([]));
     $this->post('/logout');
 
-    $this->get('/einladung/probe-token')->assertSee('Mindestens 14 Zeichen');
+    $this->get('/invitation/probe-token')->assertSee('Mindestens 14 Zeichen');
     $this->get('/reset-password/probe-token')->assertSee('Mindestens 14 Zeichen');
 });
 
@@ -159,9 +159,9 @@ test('die Regel gilt beim Einlösen einer Einladung', function () {
     $nutzer = userWithPermissions([]);
     $nutzer->forceFill(['email' => 'eingeladen@example.test'])->save();
 
-    $token = PasswordBroker::broker('einladung')->createToken($nutzer->fresh());
+    $token = PasswordBroker::broker('invitation')->createToken($nutzer->fresh());
 
-    $this->post(route('einladung.speichern'), [
+    $this->post(route('invitation.store'), [
         'token' => $token,
         'username' => $nutzer->username,
         'password' => 'ZuKurz-2026',

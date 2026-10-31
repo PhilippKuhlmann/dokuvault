@@ -103,7 +103,7 @@
         </form>
 
         @if ($hatKennwort)
-            <form method="POST" action="{{ route('admin.mail.kennwort') }}" class="max-w-3xl">
+            <form method="POST" action="{{ route('admin.mail.password') }}" class="max-w-3xl">
                 @csrf
                 @method('delete')
                 <button type="submit" class="text-sm text-gray-500 underline hover:text-gray-700 dark:hover:text-gray-300">

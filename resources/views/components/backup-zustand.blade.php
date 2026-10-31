@@ -27,8 +27,8 @@
         <div class="truncate text-xs text-gray-600 dark:text-gray-300" title="{{ $zustand['text'] }}">{{ $zustand['text'] }}</div>
     </div>
     @can('admin_setting')
-        @unless (request()->routeIs('admin.backup.einstellungen'))
-            <a href="{{ route('admin.backup.einstellungen') }}" class="shrink-0 text-sm text-cerulean-600 hover:underline dark:text-cerulean-400">{{ __('Einstellungen') }}</a>
+        @unless (request()->routeIs('admin.backup.settings'))
+            <a href="{{ route('admin.backup.settings') }}" class="shrink-0 text-sm text-cerulean-600 hover:underline dark:text-cerulean-400">{{ __('Einstellungen') }}</a>
         @endunless
     @endcan
 </div>

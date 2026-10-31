@@ -76,7 +76,7 @@ Schedule::command('protokoll:aufraeumen')->dailyAt('03:40');
 // "wann kommt die Last, reicht der Server" genuegt ein Quartal.
 Schedule::call(fn () => DB::table('api_request_stats')
     ->where('stunde', '<', now()->subDays(Setting::statistikApiTage()))->delete())
-    ->dailyAt('03:50')->name('api-statistik-aufraeumen');
+    ->dailyAt('03:50')->name('api-stats-cleanup');
 
 // Domains and certificates checked against the internet (RDAP, DNS, TLS) -
 // before the expiry mail, so it already reports the dates found tonight.

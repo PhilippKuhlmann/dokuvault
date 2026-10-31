@@ -664,11 +664,11 @@ class AgentController extends Controller
      * before replacing itself. proxmox: the installer, rendered with the token
      * the agent authenticated with; run.sh applies it with --update.
      */
-    public function update(Request $request, string $dienst)
+    public function update(Request $request, string $service)
     {
         $gemeldet = (string) $request->query('version', '');
 
-        if ($dienst === 'windows') {
+        if ($service === 'windows') {
             $aktuell = AgentSkript::exeVersion();
             $datei = public_path('downloads/dokuvault-agent.exe');
             abort_unless($aktuell && is_file($datei), 404);
@@ -693,7 +693,7 @@ class AgentController extends Controller
 
         $token = $request->bearerToken() ?: $request->header('X-Agent-Token');
 
-        return response(AgentSkript::rendernInstaller('linux-agent.sh', $token, $dienst), 200, [
+        return response(AgentSkript::rendernInstaller('linux-agent.sh', $token, $service), 200, [
             'Content-Type' => 'text/x-shellscript; charset=utf-8',
             'X-Agent-Version' => $aktuell,
             'Cache-Control' => 'no-store',

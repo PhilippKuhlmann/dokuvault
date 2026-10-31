@@ -108,7 +108,7 @@ test('a target without server or user is refused', function () {
 test('without the admin role the backup page stays closed, even with admin_setting', function () {
     $this->actingAs(userWithPermissions(['admin_setting']));
 
-    $this->get(route('admin.backup.einstellungen'))->assertForbidden();
+    $this->get(route('admin.backup.settings'))->assertForbidden();
 });
 
 test('an existing backup can be downloaded, other paths cannot', function () {

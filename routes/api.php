@@ -70,7 +70,7 @@ Route::middleware(['throttle:agent', 'agent'])->withoutMiddleware('throttle:api'
     // The Windows service fetches the current script before every run.
     Route::get('/script/{agent}', [AgentController::class, 'script'])->where('agent', '[a-z0-9-]+');
     // Installed agents update themselves (the agent program, not only the script).
-    Route::get('/update/{dienst}', [AgentController::class, 'update'])->where('dienst', 'windows|proxmox|linux');
+    Route::get('/update/{service}', [AgentController::class, 'update'])->where('service', 'windows|proxmox|linux');
 });
 
 // The AD script of a checklist reports back. Its own key (one checklist,

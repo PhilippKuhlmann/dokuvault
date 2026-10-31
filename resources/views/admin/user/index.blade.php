@@ -46,7 +46,7 @@
                         'zweitestufe' => $user->hatZweiteStufe()
                             ? 'eingerichtet'
                             : ($user->two_factor_required ? 'offen' : null),
-                        'einladung' => $user,
+                        'invitation' => $user,
                         Zeit::anzeigen($user->last_login_at, 'd.m.Y H:i', __('noch nie')),
                     ]"
 

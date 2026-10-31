@@ -24,6 +24,6 @@ test('confirming the second factor is throttled', function () {
 
 test('the two-factor URLs are English', function () {
     expect(route('two-factor.confirm', absolute: false))->toBe('/two-factor/confirm')
-        ->and(route('two-factor.verwerfen', absolute: false))->toBe('/two-factor/cancel')
+        ->and(route('two-factor.discard', absolute: false))->toBe('/two-factor/cancel')
         ->and(route('two-factor.codes', absolute: false))->toBe('/two-factor/recovery-codes');
 });

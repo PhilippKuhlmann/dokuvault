@@ -51,7 +51,7 @@ test('without the statistics right the pages stay closed', function (string $rou
     $this->actingAs(userWithPermissions(['admin_setting']));
 
     $this->get(route($route))->assertForbidden();
-})->with(['admin.statistik.system', 'admin.statistik.wachstum', 'admin.statistik.agenten', 'admin.statistik.nutzung']);
+})->with(['admin.stats.system', 'admin.stats.data-growth', 'admin.stats.agents', 'admin.stats.usage']);
 
 test('the agents page puts silent and outdated agents first', function () {
     $customer = Customer::factory()->create(['name' => 'Nordwind']);

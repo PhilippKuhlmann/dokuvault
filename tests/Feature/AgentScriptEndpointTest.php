@@ -58,8 +58,8 @@ test('after creating a token the agent page offers the service with a ready inst
         ->post(route('agent.store', $customer), ['name' => 'Dienst', 'site_id' => $site->id, 'expires_at' => now()->addMonth()->format('Y-m-d')])
         ->assertOk();
 
-    $seite->assertSee(route('agent.dienst', $customer), false)
-        ->assertSee(route('agent.dienst.proxmox', $customer), false)
+    $seite->assertSee(route('agent.service', $customer), false)
+        ->assertSee(route('agent.service.proxmox', $customer), false)
         ->assertSee('dokuvault-agent.exe install -url '.url('/').' -token '.session('newToken'), false);
 
     expect(file_exists(public_path('downloads/dokuvault-agent.exe')))->toBeTrue();
@@ -79,7 +79,7 @@ test('the preconfigured exe carries URL and token at its end', function () {
     $this->actingAs(userWithPermissions(['agent_manage']));
     [$customer, $plain] = tokenFuerDienstExe();
 
-    $antwort = $this->get(route('agent.dienst', $customer))->assertOk();
+    $antwort = $this->get(route('agent.service', $customer))->assertOk();
     $inhalt = $antwort->getContent();
 
     // Layout read by agent/windows-service/embedded.go: JSON, uint32 LE, marker.
@@ -97,17 +97,17 @@ test('the preconfigured exe is only available shortly after creating a token, fo
     [$customer] = tokenFuerDienstExe();
     $anderer = Customer::factory()->create();
 
-    $this->get(route('agent.dienst', $anderer))->assertStatus(410);
+    $this->get(route('agent.service', $anderer))->assertStatus(410);
 
     $this->travel(31)->minutes();
-    $this->get(route('agent.dienst', $customer))->assertStatus(410);
+    $this->get(route('agent.service', $customer))->assertStatus(410);
 });
 
 test('without the right to agents there is no exe', function () {
     $this->actingAs(userWithPermissions([]));
     $customer = Customer::factory()->create();
 
-    $this->get(route('agent.dienst', $customer))->assertForbidden();
+    $this->get(route('agent.service', $customer))->assertForbidden();
 });
 
 test('the Proxmox agent fetches the bash script, unattended bash agents only', function () {
@@ -129,7 +129,7 @@ test('the Proxmox installer comes with address and token filled in', function ()
     $this->actingAs(userWithPermissions(['agent_manage']));
     [$customer, $plain] = tokenFuerDienstExe();
 
-    $antwort = $this->get(route('agent.dienst.proxmox', $customer))->assertOk();
+    $antwort = $this->get(route('agent.service.proxmox', $customer))->assertOk();
     $inhalt = $antwort->getContent();
 
     expect($inhalt)
@@ -142,7 +142,7 @@ test('the Proxmox installer comes with address and token filled in', function ()
     expect($antwort->headers->get('Content-Disposition'))->toContain('dokuvault-agent-proxmox.sh');
 
     $this->travel(31)->minutes();
-    $this->get(route('agent.dienst.proxmox', $customer))->assertStatus(410);
+    $this->get(route('agent.service.proxmox', $customer))->assertStatus(410);
 });
 
 test('the agent page always says how to uninstall each agent', function () {
@@ -199,11 +199,11 @@ test('der vorkonfigurierte Download gilt nur einmal', function () {
     $this->actingAs(userWithPermissions(['agent_manage']));
     [$customer] = tokenFuerDienstExe();
 
-    $this->get(route('agent.dienst', $customer))->assertOk();
+    $this->get(route('agent.service', $customer))->assertOk();
 
     // Ein Token gehört genau einem Agenten - ein zweiter Installer daraus
     // hätte keinen Zweck, und der Klartext soll nicht länger in der Session
     // liegen als für den einen Download.
-    $this->get(route('agent.dienst', $customer))->assertStatus(410);
-    $this->get(route('agent.dienst.linux', $customer))->assertStatus(410);
+    $this->get(route('agent.service', $customer))->assertStatus(410);
+    $this->get(route('agent.service.linux', $customer))->assertStatus(410);
 });

@@ -58,5 +58,5 @@ test('the load page shows the figures and needs the statistics right', function 
 test('the settings right alone does not open the load page', function () {
     $this->actingAs(userWithPermissions(['admin_setting']));
 
-    $this->get(route('admin.auslastung'))->assertForbidden();
+    $this->get(route('admin.api-load'))->assertForbidden();
 });

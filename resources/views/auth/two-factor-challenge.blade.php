@@ -27,7 +27,7 @@
         {{-- Eigenes Formular, deshalb im Fuss und nicht im Formular darueber -
              verschachtelte Formulare erlaubt HTML nicht. --}}
         <x-slot:fuss>
-            <form method="POST" action="{{ route('two-factor.abbrechen') }}">
+            <form method="POST" action="{{ route('two-factor.cancel') }}">
                 @csrf
                 <button type="submit"
                     class="text-sm text-gray-500 underline decoration-gray-300 underline-offset-2

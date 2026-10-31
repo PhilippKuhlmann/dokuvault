@@ -80,12 +80,12 @@ class UserController extends Controller
     {
         if (! $user->email) {
             return redirect($ziel)->withErrors([
-                'einladung' => __('Ohne E-Mail-Adresse lässt sich keine Einladung verschicken.'),
+                'invitation' => __('Ohne E-Mail-Adresse lässt sich keine Einladung verschicken.'),
             ]);
         }
 
         try {
-            $token = Password::broker('einladung')->createToken($user);
+            $token = Password::broker('invitation')->createToken($user);
 
             $user->notify(new Einladung($token));
 
@@ -97,7 +97,7 @@ class UserController extends Controller
             report($fehler);
 
             return redirect($ziel)->withErrors([
-                'einladung' => __('Die Einladung konnte nicht verschickt werden. Stimmen die Mail-Einstellungen?'),
+                'invitation' => __('Die Einladung konnte nicht verschickt werden. Stimmen die Mail-Einstellungen?'),
             ]);
         }
 

@@ -247,7 +247,7 @@ class User extends Authenticatable
     public function einladungAbgelaufen(): bool
     {
         return $this->einladungOffen()
-            && $this->invited_at->addMinutes((int) config('auth.passwords.einladung.expire'))->isPast();
+            && $this->invited_at->addMinutes((int) config('auth.passwords.invitation.expire'))->isPast();
     }
 
     /**

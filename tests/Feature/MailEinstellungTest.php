@@ -75,7 +75,7 @@ test('zum Entfernen gibt es einen eigenen Weg', function () {
     alsEinstellungsverwaltung();
 
     $this->patch(route('admin.mail.update'), mailFormular());
-    $this->delete(route('admin.mail.kennwort'))->assertRedirect(route('admin.mail.index'));
+    $this->delete(route('admin.mail.password'))->assertRedirect(route('admin.mail.index'));
 
     expect(Setting::mailKennwort())->toBeNull();
 });

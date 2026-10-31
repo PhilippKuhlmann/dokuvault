@@ -260,7 +260,7 @@ test('wer sie einrichten muss, kommt nur bis zum eigenen Profil', function () {
     $this->actingAs($nutzer);
 
     // Mit Sprungmarke auf den Abschnitt, um den es geht.
-    $ziel = route('profile.edit').'#zweite-stufe';
+    $ziel = route('profile.edit').'#two-factor';
 
     $this->get(route('customer.search'))->assertRedirect($ziel);
     $this->get(route('admin.dashboard'))->assertRedirect($ziel);

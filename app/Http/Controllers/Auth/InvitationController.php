@@ -45,7 +45,7 @@ class InvitationController extends Controller
                 ->withErrors(['username' => __(Password::INVALID_TOKEN)]);
         }
 
-        $status = Password::broker('einladung')->reset(
+        $status = Password::broker('invitation')->reset(
             $request->only('username', 'password', 'password_confirmation', 'token'),
             function ($user) use ($request) {
                 $user->forceFill([

@@ -30,7 +30,7 @@ class VerlangtZweiteStufe
     private const OFFEN = [
         'profile.edit',
         'two-factor.begin',
-        'two-factor.verwerfen',
+        'two-factor.discard',
         'two-factor.confirm',
         'logout',
         'locale.update',
@@ -70,7 +70,7 @@ class VerlangtZweiteStufe
             return $next($request);
         }
 
-        return redirect()->route('profile.edit')->withFragment('zweite-stufe');
+        return redirect()->route('profile.edit')->withFragment('two-factor');
     }
 
     /**

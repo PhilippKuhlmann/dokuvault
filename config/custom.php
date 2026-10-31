@@ -1125,7 +1125,7 @@ return [
             'name' => 'Windows',
             'kurz' => 'Dienst für Windows-Server und -PCs, meldet stündlich',
             'datei' => 'dokuvault-agent.exe',
-            'download' => 'agent.dienst',
+            'download' => 'agent.service',
             'beschreibung' => 'Auf den Rechner kopieren und doppelklicken – Adresse und Token sind schon enthalten. Der Dienst erkennt die Rollen des Rechners selbst (Server, Domänencontroller, Hyper-V, Arbeitsplatz) und meldet stündlich; was er meldet und wie oft, stellst du danach hier unter „Installierte Agenten“ ein – dort gibt es auch „Jetzt melden“. Der Download ist 30 Minuten lang möglich und so vertraulich wie der Token.',
             'befehl' => '.\dokuvault-agent.exe install -url :url -token :token',
             // What an installed agent can do - switched on and off per
@@ -1158,7 +1158,7 @@ return [
             'name' => 'Proxmox',
             'kurz' => 'systemd-Timer auf dem Proxmox-Host, meldet stündlich',
             'datei' => 'dokuvault-agent-proxmox.sh',
-            'download' => 'agent.dienst.proxmox',
+            'download' => 'agent.service.proxmox',
             'beschreibung' => 'Auf den Proxmox-Host kopieren und als root ausführen – Adresse und Token sind schon enthalten. Der Agent meldet sofort und dann stündlich Host, VMs und Container; Intervall und „Jetzt melden“ hier unter „Installierte Agenten“. Der Download ist 30 Minuten lang möglich und so vertraulich wie der Token.',
             'befehl' => 'bash dokuvault-agent-proxmox.sh',
             'rollen' => [
@@ -1180,7 +1180,7 @@ return [
             'name' => 'Linux',
             'kurz' => 'systemd-Timer auf Debian/Ubuntu-Servern, meldet stündlich',
             'datei' => 'dokuvault-agent-linux.sh',
-            'download' => 'agent.dienst.linux',
+            'download' => 'agent.service.linux',
             'beschreibung' => 'Auf den Linux-Server (Debian/Ubuntu) kopieren und als root ausführen – Adresse und Token sind schon enthalten. Der Agent meldet Hardware, Betriebssystem, IP-Adresse und laufende Dienste; eine VM ergänzt den Eintrag, den der Proxmox- oder Hyper-V-Agent schon angelegt hat. Für Proxmox-Hosts den Proxmox-Agenten nehmen. Der Download ist 30 Minuten lang möglich und so vertraulich wie der Token.',
             'befehl' => 'bash dokuvault-agent-linux.sh',
             'rollen' => [

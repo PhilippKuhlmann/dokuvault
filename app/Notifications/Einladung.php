@@ -39,7 +39,7 @@ class Einladung extends Notification
             ->subject(__('Ihr Zugang zu :anwendung', ['anwendung' => $name]))
             ->greeting(__('Hallo :name,', ['name' => $empfaenger]))
             ->line(__('Sie haben jetzt Zugang zu :anwendung. Es fehlt nur noch Ihr Kennwort.', ['anwendung' => $name]))
-            ->action(__('Kennwort festlegen'), route('einladung.formular', [
+            ->action(__('Kennwort festlegen'), route('invitation.form', [
                 'token' => $this->token,
                 'username' => $notifiable->username,
             ]))

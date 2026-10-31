@@ -62,7 +62,7 @@ class TwoFactorController extends Controller
 
                 return Redirect::route('profile.edit')
                     ->withErrors(['einrichtung' => __('Die Mail mit dem Bestätigungscode ließ sich nicht senden. Bitte wenden Sie sich an Ihre Administration.')], 'zweiteStufe')
-                    ->withFragment('zweite-stufe');
+                    ->withFragment('two-factor');
             }
 
             $request->session()->put(self::MAILCODE, [
@@ -73,7 +73,7 @@ class TwoFactorController extends Controller
 
         $request->session()->put(self::IN_ARBEIT, $this->zweiteStufe->geheimnisErzeugen());
 
-        return Redirect::route('profile.edit')->withFragment('zweite-stufe');
+        return Redirect::route('profile.edit')->withFragment('two-factor');
     }
 
     private function mailcodeHash(string $code): string
@@ -112,7 +112,7 @@ class TwoFactorController extends Controller
     {
         $request->session()->forget([self::IN_ARBEIT, self::MAILCODE]);
 
-        return Redirect::route('profile.edit')->withFragment('zweite-stufe');
+        return Redirect::route('profile.edit')->withFragment('two-factor');
     }
 
     /**
@@ -130,7 +130,7 @@ class TwoFactorController extends Controller
         if (! $geheimnis) {
             return Redirect::route('profile.edit')
                 ->withErrors(['code' => __('Die Einrichtung wurde nicht begonnen oder ist abgelaufen.')], 'zweiteStufe')
-                ->withFragment('zweite-stufe');
+                ->withFragment('two-factor');
         }
 
         $request->validateWithBag('zweiteStufe', ['code' => ['required', 'string']]);
@@ -167,7 +167,7 @@ class TwoFactorController extends Controller
         // sie noch einmal herzuzeigen hiesse, sie noch einmal preiszugeben.
         return Redirect::route('profile.edit')
             ->with('zweite-stufe-codes', $codes)
-            ->withFragment('zweite-stufe');
+            ->withFragment('two-factor');
     }
 
     /**
@@ -191,7 +191,7 @@ class TwoFactorController extends Controller
 
         return Redirect::route('profile.edit')
             ->with('zweite-stufe-codes', $codes)
-            ->withFragment('zweite-stufe');
+            ->withFragment('two-factor');
     }
 
     /** Abschalten - ebenfalls nur mit Kennwort. */
@@ -206,7 +206,7 @@ class TwoFactorController extends Controller
         if ($request->user()->two_factor_required) {
             return Redirect::route('profile.edit')
                 ->withErrors(['password' => __('Ihr Administrator verlangt die zweite Stufe. Sie lässt sich nicht abschalten.')], 'zweiteStufeAus')
-                ->withFragment('zweite-stufe');
+                ->withFragment('two-factor');
         }
 
         $request->validateWithBag('zweiteStufeAus', [
@@ -222,7 +222,7 @@ class TwoFactorController extends Controller
 
         $request->session()->forget(self::IN_ARBEIT);
 
-        return Redirect::route('profile.edit')->withFragment('zweite-stufe');
+        return Redirect::route('profile.edit')->withFragment('two-factor');
     }
 
     /**
@@ -238,6 +238,6 @@ class TwoFactorController extends Controller
 
         return Redirect::route('profile.edit')
             ->withErrors(['demo' => __('Dieser Demo-Zugang ist gesperrt und lässt sich nicht ändern.')], 'zweiteStufe')
-            ->withFragment('zweite-stufe');
+            ->withFragment('two-factor');
     }
 }

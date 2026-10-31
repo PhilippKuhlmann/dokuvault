@@ -35,12 +35,16 @@ Route::middleware('guest')->group(function () {
 
     // Einladung: Der neue Benutzer gibt sich sein Kennwort selbst. Gedrosselt
     // wie das Zuruecksetzen - dahinter steckt derselbe ratbare Token.
-    Route::get('einladung/{token}', [InvitationController::class, 'create'])
-        ->name('einladung.formular');
+    Route::get('invitation/{token}', [InvitationController::class, 'create'])
+        ->name('invitation.form');
 
-    Route::post('einladung', [InvitationController::class, 'store'])
+    // Die Adresse hiess bis 31.10.2026 'einladung/{token}'. Verschickte
+    // Einladungen gelten eine Woche, ihre Links sollen nicht ins Leere laufen.
+    Route::permanentRedirect('einladung/{token}', 'invitation/{token}');
+
+    Route::post('invitation', [InvitationController::class, 'store'])
         ->middleware('throttle:5,15')
-        ->name('einladung.speichern');
+        ->name('invitation.store');
 
     // First administrator of a fresh install - only while setup is pending,
     // otherwise 404. Throttled: the setup code can be guessed.
@@ -59,8 +63,8 @@ Route::middleware('guest')->group(function () {
 
     Route::post('two-factor-challenge', [TwoFactorChallengeController::class, 'store']);
 
-    Route::post('two-factor-challenge/abbrechen', [TwoFactorChallengeController::class, 'destroy'])
-        ->name('two-factor.abbrechen');
+    Route::post('two-factor-challenge/cancel', [TwoFactorChallengeController::class, 'destroy'])
+        ->name('two-factor.cancel');
 });
 
 Route::middleware('auth')->group(function () {
@@ -75,7 +79,7 @@ Route::middleware('auth')->group(function () {
         ->name('two-factor.begin');
 
     Route::post('two-factor/cancel', [TwoFactorController::class, 'cancel'])
-        ->name('two-factor.verwerfen');
+        ->name('two-factor.discard');
 
     // Throttled like every other place a code is typed: without it, whoever
     // holds the session could guess the six digits for a pending secret.

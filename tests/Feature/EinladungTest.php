@@ -90,7 +90,7 @@ test('der Link führt auf ein Formular, in dem der Benutzer sein Kennwort vergib
     Notification::assertSentTo($neu, Einladung::class, function ($benachrichtigung) use (&$token, $neu) {
         // Den Token aus dem Link ziehen, den der Benutzer wirklich bekommt.
         $nachricht = $benachrichtigung->toMail($neu);
-        preg_match('#/einladung/([^?]+)#', $nachricht->actionUrl, $treffer);
+        preg_match('#/invitation/([^?]+)#', $nachricht->actionUrl, $treffer);
         $token = $treffer[1] ?? null;
 
         return $token !== null;
@@ -102,7 +102,7 @@ test('der Link führt auf ein Formular, in dem der Benutzer sein Kennwort vergib
     // das Kennwort des neuen Benutzers.
     $this->post('/logout');
 
-    $this->post(route('einladung.speichern'), [
+    $this->post(route('invitation.store'), [
         'token' => $token,
         'username' => $neu->username,
         'password' => 'Selbst-Gewaehlt-2026',
@@ -122,7 +122,7 @@ test('ein geratener Token setzt kein Kennwort', function () {
     $nutzer->refresh();
     $altesKennwort = $nutzer->password;
 
-    $this->post(route('einladung.speichern'), [
+    $this->post(route('invitation.store'), [
         'token' => 'geraten',
         'username' => $nutzer->username,
         'password' => 'Fremd-Gesetzt-2026',
@@ -135,7 +135,7 @@ test('ein geratener Token setzt kein Kennwort', function () {
 test('der Einladungslink gilt eine Woche, nicht eine Stunde', function () {
     // Eine Stunde reicht fuer "ich habe mein Kennwort vergessen". Eine
     // Einladung geht an jemanden, der vielleicht im Urlaub ist.
-    expect(config('auth.passwords.einladung.expire'))->toBe(60 * 24 * 7)
+    expect(config('auth.passwords.invitation.expire'))->toBe(60 * 24 * 7)
         ->and(config('auth.passwords.users.expire'))->toBe(60);
 });
 
@@ -146,7 +146,7 @@ test('ein Administrator kann die Einladung erneut schicken', function () {
     $nutzer = userWithPermissions([]);
     $nutzer->forceFill(['email' => 'wieder@example.test'])->save();
 
-    $this->post(route('admin.user.einladung', $nutzer))
+    $this->post(route('admin.user.invite', $nutzer))
         ->assertRedirect(route('admin.user.edit', $nutzer));
 
     Notification::assertSentTo($nutzer->fresh(), Einladung::class);
@@ -159,7 +159,7 @@ test('ohne Adresse sagt das erneute Einladen, woran es liegt', function () {
     $nutzer = userWithPermissions([]);
     $nutzer->forceFill(['email' => null])->save();
 
-    $this->post(route('admin.user.einladung', $nutzer))->assertSessionHasErrors('einladung');
+    $this->post(route('admin.user.invite', $nutzer))->assertSessionHasErrors('invitation');
 
     Notification::assertNothingSent();
 });
@@ -171,7 +171,7 @@ test('ohne das Recht admin_user lädt niemand ein', function () {
     $nutzer = userWithPermissions([]);
     $nutzer->forceFill(['email' => 'fremd@example.test'])->save();
 
-    $this->post(route('admin.user.einladung', $nutzer))->assertForbidden();
+    $this->post(route('admin.user.invite', $nutzer))->assertForbidden();
 
     Notification::assertNothingSent();
 });
@@ -185,10 +185,10 @@ test('das Einladungsformular ist gedrosselt', function () {
     ];
 
     foreach (range(1, 5) as $ignoriert) {
-        $this->post(route('einladung.speichern'), $daten);
+        $this->post(route('invitation.store'), $daten);
     }
 
-    $this->post(route('einladung.speichern'), $daten)->assertStatus(429);
+    $this->post(route('invitation.store'), $daten)->assertStatus(429);
 });
 
 // --- Kennwort vergessen: dieselbe Maschinerie -------------------------------
@@ -267,10 +267,10 @@ test('nach dem Einlösen ist sie nicht mehr offen', function () {
     $this->post(route('admin.user.store'), einladungsdaten());
     $neu = User::where('username', 'neue.kollegin')->first();
 
-    $token = Password::broker('einladung')->createToken($neu);
+    $token = Password::broker('invitation')->createToken($neu);
 
     $this->post('/logout');
-    $this->post(route('einladung.speichern'), [
+    $this->post(route('invitation.store'), [
         'token' => $token,
         'username' => $neu->username,
         'password' => 'Selbst-Gewaehlt-2026',
@@ -286,10 +286,10 @@ test('das Einlösen hält fest, wann es war', function () {
 
     $this->post(route('admin.user.store'), einladungsdaten());
     $neu = User::where('username', 'neue.kollegin')->first();
-    $token = Password::broker('einladung')->createToken($neu);
+    $token = Password::broker('invitation')->createToken($neu);
 
     $this->post('/logout');
-    $this->post(route('einladung.speichern'), [
+    $this->post(route('invitation.store'), [
         'token' => $token,
         'username' => $neu->username,
         'password' => 'Selbst-Gewaehlt-2026',
@@ -311,11 +311,11 @@ test('der Einladungslink trägt nur einmal', function () {
 
     $this->post(route('admin.user.store'), einladungsdaten());
     $neu = User::where('username', 'neue.kollegin')->first();
-    $token = Password::broker('einladung')->createToken($neu);
+    $token = Password::broker('invitation')->createToken($neu);
 
     $this->post('/logout');
 
-    $einloesen = fn (string $kennwort) => $this->post(route('einladung.speichern'), [
+    $einloesen = fn (string $kennwort) => $this->post(route('invitation.store'), [
         'token' => $token,
         'username' => $neu->username,
         'password' => $kennwort,
@@ -353,7 +353,7 @@ test('nach einer Woche gilt sie als abgelaufen', function () {
     // noch einmal aufgeschrieben.
     $nutzer = userWithPermissions([]);
     $nutzer->forceFill([
-        'invited_at' => now()->subMinutes((int) config('auth.passwords.einladung.expire') + 1),
+        'invited_at' => now()->subMinutes((int) config('auth.passwords.invitation.expire') + 1),
     ])->saveQuietly();
 
     expect($nutzer->fresh()->einladungAbgelaufen())->toBeTrue();
@@ -367,7 +367,7 @@ test('die Benutzerliste zeigt offene und abgelaufene Einladungen', function () {
 
     $abgelaufen = userWithPermissions([]);
     $abgelaufen->forceFill([
-        'invited_at' => now()->subMinutes((int) config('auth.passwords.einladung.expire') + 1),
+        'invited_at' => now()->subMinutes((int) config('auth.passwords.invitation.expire') + 1),
     ])->saveQuietly();
 
     $this->actingAs($verwalter)
@@ -397,7 +397,7 @@ test('das Verschicken erzeugt keinen Änderungseintrag im Protokoll', function (
     $vorher = Activity::where('subject_id', $nutzer->id)
         ->where('event', 'updated')->count();
 
-    $this->post(route('admin.user.einladung', $nutzer));
+    $this->post(route('admin.user.invite', $nutzer));
 
     expect(Activity::where('subject_id', $nutzer->id)
         ->where('event', 'updated')->count())->toBe($vorher);
