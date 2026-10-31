@@ -13,15 +13,15 @@ use Livewire\Attributes\On;
 use Livewire\Component;
 
 /**
- * VLAN anlegen, ohne die Seite zu wechseln.
+ * Create a VLAN without leaving the page.
  *
- * Zwei Einsatzorte: im Block "Weitere IP-Adressen" am Geraet (dort merkt man
- * beim Eintragen einer Adresse, dass das Netz fehlt) und ueber der VLAN-Liste.
- * Deshalb eine eigene Komponente statt zweier Kopien - dasselbe Formular an
- * zwei Stellen zu pflegen ginge schief.
+ * Two places of use: in the block "Weitere IP-Adressen" on the device (where
+ * one notices while entering an address that the network is missing) and above
+ * the VLAN list. Hence a component of its own instead of two copies - the same
+ * form in two places would go wrong.
  *
- * Der Standort kommt vom aufrufenden Geraet, wenn es eins gibt; sonst waehlt
- * man ihn im Modal. customer_id kommt immer aus der Komponente, nie aus dem
+ * The site comes from the calling device if there is one; otherwise one picks
+ * it in the modal. customer_id always comes from the component, never from the
  * Formular.
  */
 class NetworkQuickCreate extends Component
@@ -32,16 +32,16 @@ class NetworkQuickCreate extends Component
     #[Locked]
     public int $customerId;
 
-    /** Vom Geraet vorgegeben - dann entfaellt die Auswahl im Modal. */
+    /** Given by the device - then the select in the modal is dropped. */
     #[Locked]
     public ?int $siteId = null;
 
     public bool $offen = false;
 
-    /** Gesetzt heisst: bearbeiten statt anlegen. */
+    /** Set means: edit instead of create. */
     public ?int $bearbeiteId = null;
 
-    /** Rueckfrage vor dem Loeschen - als eigene Ansicht statt als Browser-Dialog. */
+    /** A confirmation before deleting - as a view of its own instead of a browser dialog. */
     public bool $loeschenGefragt = false;
 
     public $site_id = '';
@@ -54,7 +54,7 @@ class NetworkQuickCreate extends Component
 
     public string $subnetmask = '255.255.255.0';
 
-    /** Passt zur Vorgabe der Maske - beide Felder starten uebereinstimmend. */
+    /** Matches the default of the mask - both fields start in agreement. */
     public $cidr = 24;
 
     public string $gateway = '';
@@ -67,7 +67,7 @@ class NetworkQuickCreate extends Component
 
     public string $dhcpEnd = '';
 
-    /** Aussehen des ausloesenden Knopfes - Textlink am Geraet, voller Knopf in der Liste. */
+    /** Look of the triggering button - a text link on the device, a full button in the list. */
     public string $knopfKlassen = '';
 
     public string $label = '';
@@ -75,10 +75,10 @@ class NetworkQuickCreate extends Component
     public bool $mitSymbol = false;
 
     /**
-     * Ob der eigene Ausloese-Knopf gezeigt wird. Im Dokumentations-Assistenten
-     * wird nur das Bearbeiten-Modal eingebettet (geoeffnet ueber das Event
-     * vlan-edit) - dort legt der Assistent selbst an, ein zweiter
-     * "+ Neues VLAN"-Knopf waere doppelt.
+     * Whether the own trigger button is shown. In the documentation wizard
+     * only the edit modal is embedded (opened through the event vlan-edit) -
+     * there the wizard creates things itself, and a second "+ new VLAN"
+     * button would be one too many.
      */
     #[Locked]
     public bool $mitKnopf = true;
@@ -96,10 +96,10 @@ class NetworkQuickCreate extends Component
     }
 
     /**
-     * Stift in der Liste: dasselbe Modal, nur mit geladenen Werten.
+     * The pencil in the list: the same modal, only with loaded values.
      *
-     * Das Netz wird gegen den Kunden geprueft - die ID kommt aus dem Browser,
-     * und ohne die Pruefung liesse sich damit ein fremdes Netz oeffnen.
+     * The network is checked against the customer - the id comes from the
+     * browser, and without the check a foreign network could be opened with it.
      */
     #[On('vlan-edit')]
     public function bearbeiten(int $id): void
@@ -114,8 +114,8 @@ class NetworkQuickCreate extends Component
         $this->vlanId = $netz->vlanId;
         $this->network = (string) $netz->network;
         $this->subnetmask = (string) $netz->subnetmask;
-        // Bestandsnetze haben teils nur die Maske. Dann die Zahl daraus
-        // ergaenzen, statt das Feld leer zu zeigen.
+        // Legacy networks partly have the mask only. Then derive the number
+        // from it instead of showing the field empty.
         $this->cidr = $netz->cidr ?? Network::cidrAusMaske($netz->subnetmask) ?? '';
         $this->gateway = (string) $netz->gateway;
         $this->dns1 = (string) $netz->dns1;
@@ -129,12 +129,12 @@ class NetworkQuickCreate extends Component
     }
 
     /**
-     * Maske und CIDR sagen dasselbe in zwei Schreibweisen - wer eines
-     * eintraegt, bekommt das andere dazu.
+     * Mask and CIDR say the same thing in two notations - whoever enters one
+     * gets the other with it.
      *
-     * Ergibt die Eingabe keine gueltige Maske (Tippfehler, halb getippt),
-     * bleibt das Partnerfeld unberuehrt, statt es zu leeren: Sonst waere die
-     * Angabe weg, sobald man sich einmal vertippt.
+     * If the input yields no valid mask (a typo, half typed), the partner
+     * field is left untouched instead of being emptied: otherwise the value
+     * would be gone as soon as one mistypes once.
      */
     public function updatedSubnetmask(): void
     {
@@ -142,8 +142,8 @@ class NetworkQuickCreate extends Component
 
         if ($cidr !== null) {
             $this->cidr = $cidr;
-            // Das Partnerfeld hat gerade einen gueltigen Wert bekommen - sein
-            // roter Rahmen gehoert weg. updated() lief schon, bevor dieser
+            // The partner field has just received a valid value - its red
+            // border should go. updated() ran before this value was there.
             // Wert stand.
             $this->checkPeer('cidr');
         }
@@ -159,21 +159,21 @@ class NetworkQuickCreate extends Component
         }
     }
 
-    /** Maske und CIDR setzen sich gegenseitig - siehe updatedSubnetmask(). */
+    /** Mask and CIDR set each other - see updatedSubnetmask(). */
     private function checkPeer(string $feld): void
     {
         $this->validateOnInput($feld);
     }
 
     /**
-     * Alles zurueck auf Anfang - ein Ort dafuer, weil es sonst an vier Stellen
-     * dieselbe lange Feldliste waere und eine davon irgendwann abweicht.
+     * Everything back to the start - one place for it, because it would
+     * otherwise be the same long field list in four places and one would drift.
      */
     protected function clearForm(): void
     {
-        // subnetmask und cidr sind mit dabei: reset() setzt auf die Vorgaben
-        // der Klasse zurueck, also auf 255.255.255.0 und 24 - die beiden
-        // gehoeren zusammen und sollen es auch beim Aufraeumen bleiben.
+        // subnetmask and cidr are included: reset() falls back to the class
+        // defaults, so to 255.255.255.0 and 24 - the two belong together and
+        // should stay that way when cleaning up.
         $this->reset('offen', 'bearbeiteId', 'loeschenGefragt', 'site_id', 'description',
             'vlanId', 'network', 'subnetmask', 'cidr', 'gateway', 'dns1', 'dns2',
             'dhcpStart', 'dhcpEnd', 'geprueft');
@@ -181,12 +181,12 @@ class NetworkQuickCreate extends Component
     }
 
     /**
-     * Der Knopf "Neu".
+     * The "new" button.
      *
-     * Vorher setzte er nur offen=true. Wer davor ein VLAN bearbeitet und
-     * abgebrochen hatte, bekam das Modal mit "VLAN bearbeiten", den alten
-     * Werten und der alten bearbeiteId - ein Speichern haette das bestehende
-     * Netz ueberschrieben statt ein neues anzulegen.
+     * It used to set only offen=true. Whoever had edited a VLAN before and
+     * cancelled got the modal with "edit VLAN", the old values and the old
+     * editedId - saving would have overwritten the existing network instead of
+     * creating a new one.
      */
     public function neu(): void
     {
@@ -195,8 +195,8 @@ class NetworkQuickCreate extends Component
     }
 
     /**
-     * Abbrechen und Escape: schliessen und aufraeumen. Nur zu schliessen
-     * reicht nicht, der Zustand bliebe sonst im naechsten Aufschlag stehen.
+     * Cancel and escape: close and clean up. Closing alone is not enough, the
+     * state would otherwise still be there on the next opening.
      */
     public function cancel(): void
     {
@@ -204,18 +204,18 @@ class NetworkQuickCreate extends Component
     }
 
     /**
-     * Die Regeln - eine Quelle fuer das Speichern und fuer die laufende
-     * Pruefung waehrend der Eingabe. Zweimal dieselbe Liste liefe frueher oder
+     * The rules - one source for saving and for the running check while
+     * typing. The same list twice would drift apart sooner or later.
      * spaeter auseinander.
      */
     protected function regeln(): array
     {
-        // Ohne vorgegebenen Standort muss einer gewaehlt werden. Die Regeln
-        // stehen in NetworkEditing - dieselben fuer die iOS-App.
+        // Without a given site one has to be chosen. The rules sit in
+        // NetworkEditing - the same ones for the iOS app.
         return app(NetworkEditing::class)->rules($this->customerId, ! $this->siteId || $this->bearbeiteId);
     }
 
-    /** Die Beschriftungen fuer die Meldungen - "Bitte Bezeichnung angeben.". */
+    /** The labels for the messages - "Bitte Bezeichnung angeben.". */
     protected function fieldNames(): array
     {
         return app(NetworkEditing::class)->attributeNames();
@@ -234,8 +234,8 @@ class NetworkQuickCreate extends Component
         );
 
         if ($this->bearbeiteId) {
-            // Erneut gegen den Kunden geprueft: bearbeiteId ist zwischen dem
-            // Oeffnen und dem Speichern manipulierbar.
+            // Checked against the customer again: editedId can be manipulated
+            // between opening and saving.
             $netz = Network::where('customer_id', $this->customerId)->findOrFail($this->bearbeiteId);
             $netz->update($werte);
         } else {
@@ -246,24 +246,24 @@ class NetworkQuickCreate extends Component
             ? __('VLAN gespeichert.')
             : __('VLAN angelegt.'));
 
-        // Erst nach der Meldung: bearbeiteId entscheidet ueber ihren Wortlaut.
+        // Only after the message: editedId decides on its wording.
         $this->clearForm();
 
-        // Der IP-Block waehlt das neue Netz damit gleich aus, die Liste rendert
-        // neu. Kein Redirect mehr: Seit die Liste selbst Livewire ist, genuegt
-        // das Event - das erspart den Seitenwechsel samt seiner Fallstricke
-        // (405 auf der Update-Adresse, verlorener Dunkelmodus).
+        // The IP block picks the new network straight away, the list
+        // re-renders. No redirect any more: since the list is Livewire itself
+        // the event is enough - that saves the page change and its pitfalls
+        // (405 on the update address, lost dark mode).
         $this->dispatch('vlan-created', id: $netz->id);
     }
 
     /**
-     * Loeschen aus dem Bearbeiten-Modal - im eigenen Formular gab es dafuer die
-     * Loeschen-Karte, hier fehlte der Weg.
+     * Delete from the edit modal - the own form had the delete card for that,
+     * here the way was missing.
      *
-     * Wie beim Speichern gegen den Kunden geprueft; die ID kommt aus dem
-     * Browser. Das Netz landet im Papierkorb (SoftDelete), verknuepfte
-     * IP-Adressen behalten ihre network_id und laufen ins Leere - dasselbe
-     * Verhalten wie beim Loeschen ueber die alte Seite.
+     * Checked against the customer as when saving; the id comes from the
+     * browser. The network lands in the trash (soft delete), linked IP
+     * addresses keep their network_id and point at nothing - the same
+     * behaviour as deleting through the old page.
      */
     public function delete(): void
     {
@@ -286,9 +286,9 @@ class NetworkQuickCreate extends Component
     public function render()
     {
         return view('livewire.network-quick-create', [
-            // Nur wenn kein Standort vorgegeben ist - sonst waere die Liste unnoetig.
-            // Beim Bearbeiten immer zeigen: Der Standort eines bestehenden
-            // Netzes soll aenderbar sein, auch wenn das Modal am Geraet haengt.
+            // Only when no site is given - otherwise the list would be pointless.
+            // Always show when editing: the site of an existing network should
+            // be changeable, even when the modal hangs on the device.
             'sites' => $this->siteId && ! $this->bearbeiteId
                 ? collect()
                 : Site::where('customer_id', $this->customerId)->orderBy('name')->get(),

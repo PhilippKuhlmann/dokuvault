@@ -11,70 +11,70 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 
 /**
- * Name und Logos der Installation - ohne Speichern-Knopf.
+ * Name and logos of the installation - without a save button.
  *
- * Jede Aenderung geht sofort in die Einstellungen: Wer ein Logo auswaehlt,
- * hat es damit gesetzt, und wer den Namen tippt, sieht ihn nach kurzer Pause
- * uebernommen. Ein Formular mit Speichern-Knopf laesst offen, ob die letzte
- * Aenderung noch drin war - hier gibt es diesen Zwischenzustand nicht.
+ * Every change goes into the settings at once: whoever picks a logo has set
+ * it, and whoever types the name sees it taken over after a short pause. A
+ * form with a save button leaves it open whether the last change made it in
+ * - here that in-between state does not exist.
  */
 class AdminGeneral extends Component
 {
     use WithFileUploads;
 
-    /** Eigener Name, leer heisst: der aus der Konfiguration. */
+    /** Own name; empty means the one from the configuration. */
     public string $name = '';
 
     /**
-     * Zeitzone der Anzeige.
+     * Timezone of the display.
      *
-     * Nur der Anzeige: Gespeichert wird weiter in UTC. Waere es anders,
-     * schriebe die Anwendung ab der Umstellung lokale Zeiten in dieselben
-     * Spalten, in denen bereits UTC steht - zwei Zeitzonen in einer Spalte
-     * ohne Merkmal, welche Zeile welche ist. Siehe App\Support\Zeit.
+     * Of the display only: storage stays UTC. Were it otherwise, the
+     * application would write local times into the very columns that already
+     * hold UTC from the switch onwards - two timezones in one column,
+     * with nothing to tell which row is which. See App\Support\LocalTime.
      */
     public string $zeitzone = '';
 
     /**
      * Groesste erlaubte Datei in Megabyte.
      *
-     * In MB, nicht in Kilobyte: Wer eine Grenze setzt, denkt in Megabyte.
-     * Gespeichert wird weiterhin in KB, weil die Validierungsregeln so
-     * rechnen.
+     * In MB, not in kilobytes: whoever sets a limit thinks in megabytes.
+     * Storage stays in KB, because that is how the validation rules
+     * compute.
      */
     public int $uploadMb = 0;
 
-    /** Sprache der Installation - die letzte Stufe, wenn Nutzer und Browser nichts sagen. */
+    /** Language of the installation - the last stage when user and browser say nothing. */
     public string $sprache = '';
 
     /**
-     * Ein Satz auf der Anmeldeseite, etwa wer bei Fragen hilft.
+     * A sentence on the sign-in page, for instance who helps with questions.
      *
-     * Escaped ausgegeben, kein {!! !!}: Sonst waere das Feld ein Weg, HTML in
-     * die Anmeldeseite zu schreiben - die eine Seite, die jeder sieht, auch
-     * ohne Zugang.
+     * Output escaped, no {!! !!}: otherwise the field would be a way to write
+     * HTML into the sign-in page - the one page everybody sees, even without
+     * an account.
      */
     public string $anmeldeHinweis = '';
 
     /**
-     * Erlaubte Dateiendungen - eine Auswahl aus der Liste in der Konfiguration.
+     * Allowed file extensions - a selection from the list in the configuration.
      *
-     * Auswahl, keine Freitexteingabe: Eine Positivliste, in die jemand "php"
-     * eintragen kann, ist keine.
+     * A selection, not free text: an allowlist anyone can enter "php" into is
+     * none.
      *
-     * Nicht "formate": render() gibt eine Ansichtsvariable dieses Namens mit
-     * den Bildformaten fuer den Logo-Hinweis heraus, und eine oeffentliche
-     * Eigenschaft haette sie ueberdeckt. Der Hinweis unter den Logos listete
-     * dann Dokumentformate - im Browser gesehen, kein Test hat es gemerkt.
+     * Not "formate": render() hands out a view variable of that name holding
+     * the image formats for the logo note, and a public property would have
+     * shadowed it. The note under the logos then listed document formats -
+     * seen in the browser, no test noticed it.
      */
     public array $endungen = [];
 
-    /** Zeilen je Seite, in den Kundenlisten und im Adminbereich. */
+    /** Rows per page, in the customer lists and in the admin area. */
     public int $seiteListe = 0;
 
     public int $seiteAdmin = 0;
 
-    /** Je Stelle ein Upload-Feld; die Namen muessen die Stellen spiegeln. */
+    /** One upload field per place; the names have to mirror the places. */
     public $logo_login;
 
     public $logo_header;
@@ -96,10 +96,10 @@ class AdminGeneral extends Component
     }
 
     /**
-     * Der Name wird beim Tippen gespeichert.
+     * The name is saved while typing.
      *
-     * Leer heisst "wieder den aus der Konfiguration nehmen", nicht "kein
-     * Name" - deshalb null statt Leerstring.
+     * Empty means "take the one from the configuration again", not "no name" -
+     * hence null instead of an empty string.
      */
     public function updatedName(): void
     {
@@ -113,11 +113,11 @@ class AdminGeneral extends Component
     }
 
     /**
-     * Die Obergrenze fuer Uploads.
+     * The upper limit for uploads.
      *
-     * Nach oben durch den Server begrenzt: Ein hoeherer Wert waere ein
-     * Versprechen, das nicht haelt - der Upload braeche mitten im Hochladen
-     * ab, ohne verstaendliche Meldung.
+     * Capped by the server: a higher value would be a promise that does not
+     * hold - the upload would break mid-transfer, without a message anyone
+     * can understand.
      */
     public function updatedUploadMb(): void
     {
@@ -136,7 +136,7 @@ class AdminGeneral extends Component
         $this->dispatch('notice', text: __('Obergrenze gespeichert.'));
     }
 
-    /** Die Zeitzone gilt sofort - wie der Name. */
+    /** The timezone applies at once - like the name. */
     public function updatedZeitzone(): void
     {
         Gate::authorize('admin_setting');
@@ -152,7 +152,7 @@ class AdminGeneral extends Component
         $this->dispatch('notice', text: __('Zeitzone gespeichert.'));
     }
 
-    /** Die Sprache der Installation - wirkt, wo Nutzer und Browser nichts sagen. */
+    /** The language of the installation - takes effect where user and browser say nothing. */
     public function updatedSprache(): void
     {
         Gate::authorize('admin_setting');
@@ -169,11 +169,11 @@ class AdminGeneral extends Component
     }
 
     /**
-     * Der Hinweis auf der Anmeldeseite.
+     * The notice on the sign-in page.
      *
-     * 200 Zeichen: Es ist ein Satz, kein Aushang. Ausgegeben wird er escaped -
-     * die Anmeldeseite ist die eine Seite, die jeder erreicht, auch ohne
-     * Zugang.
+     * 200 characters: it is a sentence, not a notice board. It is output
+     * escaped - the sign-in page is the one page everybody reaches, even
+     * without an account.
      */
     public function updatedAnmeldeHinweis(): void
     {
@@ -191,11 +191,11 @@ class AdminGeneral extends Component
     }
 
     /**
-     * Die erlaubten Dateiendungen.
+     * The allowed file extensions.
      *
-     * Mindestens eine: Ohne Auswahl gilt wieder die ganze Liste aus der
-     * Konfiguration, und ein leergeraeumtes Feld haette damit das Gegenteil
-     * dessen bewirkt, was der Haken sagt - alles erlaubt statt nichts.
+     * At least one: without a selection the whole list from the configuration
+     * applies again, and an emptied field would have achieved the opposite of
+     * what the checkbox says - everything allowed instead of nothing.
      */
     public function updatedEndungen(): void
     {
@@ -208,8 +208,8 @@ class AdminGeneral extends Component
             'endungen.*' => [Rule::in($erlaubt)],
         ], [], ['endungen' => __('Erlaubte Dateiendungen')]);
 
-        // In der Reihenfolge der Konfiguration ablegen, nicht in der des
-        // Anklickens - sonst steht dieselbe Auswahl je nach Weg anders da.
+        // Stored in the order of the configuration, not in the order of
+        // clicking - or the same selection would read differently per path.
         $auswahl = array_values(array_intersect($erlaubt, $this->endungen));
 
         Setting::setzen(Setting::DATEI_FORMATE, implode(',', $auswahl));
@@ -228,11 +228,11 @@ class AdminGeneral extends Component
     }
 
     /**
-     * Zeilen je Seite.
+     * Rows per page.
      *
-     * Hoechstens 200: Eine Liste, die alles auf einmal zeigt, laedt bei einem
-     * grossen Kunden jede Zeile samt Beziehungen - die Seite waere dann
-     * langsam, ohne dass jemand den Zusammenhang zur Einstellung sieht.
+     * At most 200: a list that shows everything at once loads every row with
+     * its relations at a large customer - the page would then be slow without
+     * anyone seeing the connection to the setting.
      */
     private function seitengroesse(string $feld, string $schluessel, string $bezeichnung): void
     {
@@ -250,10 +250,10 @@ class AdminGeneral extends Component
     }
 
     /**
-     * Ein ausgewaehltes Logo sofort ablegen.
+     * Store a chosen logo at once.
      *
-     * Livewire ruft updated() nach jeder Aenderung auf - der Dateiname sagt,
-     * welche Stelle gemeint war ("logo_header" -> "header").
+     * Livewire calls updated() after every change - the field name says which
+     * place was meant ("logo_header" -> "header").
      */
     public function updated(string $eigenschaft): void
     {
@@ -270,21 +270,21 @@ class AdminGeneral extends Component
             $eigenschaft => ['required', 'image', 'mimes:'.implode(',', config('custom.bild_formate')), 'max:512'],
         ], [], [$eigenschaft => __('Logo')]);
 
-        // Erst das alte weg, sonst bleibt bei jedem Wechsel eine Datei liegen,
-        // die niemand mehr findet.
+        // The old one first, or a file stays behind with every change that
+        // nobody finds any more.
         $this->deleteOld($stelle);
 
         Setting::setzen(Setting::logoSchluessel($stelle), $this->{$eigenschaft}->store('branding', 'local'));
 
-        // Das Feld leeren: Sonst haengt die Vorschau am hochgeladenen
-        // Zwischenspeicher statt an der abgelegten Datei.
+        // Empty the field: otherwise the preview hangs on the uploaded
+        // temporary file instead of on the stored one.
         $this->{$eigenschaft} = null;
 
         $this->dispatch('notice', text: __('Logo gespeichert.'));
         $this->createPage();
     }
 
-    /** Ein Logo entfernen - ein Knopf, keine Ankreuzbox mit Speichern danach. */
+    /** Remove a logo - one button, not a checkbox with a save afterwards. */
     public function entfernen(string $stelle): void
     {
         Gate::authorize('admin_setting');
@@ -298,12 +298,12 @@ class AdminGeneral extends Component
     }
 
     /**
-     * Nach einem Logo-Wechsel die Seite neu laden.
+     * Reload the page after a logo change.
      *
-     * Kopfzeile und Favicon stehen im Layout, nicht in dieser Komponente -
-     * ohne Neuladen zeigte die Vorschau schon das neue Logo, die Kopfzeile
-     * daneben aber noch das alte. Beim Tippen des Namens waere ein Neuladen
-     * dagegen stoerend, dort bleibt es aus.
+     * Header and favicon sit in the layout, not in this component - without a
+     * reload the preview already showed the new logo while the header beside
+     * it still showed the old one. While typing the name a reload would be
+     * disturbing, so there it stays off.
      */
     private function createPage(): void
     {
@@ -332,9 +332,9 @@ class AdminGeneral extends Component
                 ])->values()->all(),
             'formate' => config('custom.bild_formate'),
             'zonen' => LocalTime::options(),
-            // Damit die Seite zeigen kann, was die Umstellung bewirkt.
+            // So the page can show what the change brings about.
             'jetzt' => LocalTime::display(now(), 'd.m.Y H:i'),
-            // Damit auf der Seite steht, was der Server ueberhaupt hergibt.
+            // So the page states what the server actually offers.
             'serverMb' => (int) floor(Setting::serverGrenzeKb() / 1024),
             'phpWerte' => [
                 'upload_max_filesize' => ini_get('upload_max_filesize'),
