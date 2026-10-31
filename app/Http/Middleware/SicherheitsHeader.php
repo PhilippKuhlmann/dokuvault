@@ -15,7 +15,9 @@ use Symfony\Component\HttpFoundation\Response;
  * (Clickjacking), keine vollen Adressen an fremde Ziele weitergeben und
  * Kamera/Mikrofon/Standort gar nicht erst anbieten.
  *
- * Die Content-Security-Policy ist der fuenfte. Skripte nur von der eigenen
+ * Dazu kommt HSTS, sobald https im Spiel ist (siehe handle).
+ *
+ * Die Content-Security-Policy ist der letzte. Skripte nur von der eigenen
  * Domain oder mit der Nonce dieser Anfrage, ohne 'unsafe-eval': Alpine laeuft
  * im CSP-Build und wertet seine Ausdruecke mit einem eigenen Parser aus statt
  * mit new Function (resources/js/app.js). Dazu Rahmen, Formularziele und
@@ -44,6 +46,15 @@ class SicherheitsHeader
         $response->headers->set('Referrer-Policy', 'same-origin', false);
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()', false);
         $response->headers->set('Content-Security-Policy', $this->csp($nonce), false);
+
+        // HSTS only where https is actually in use: the browser then refuses
+        // http for a year, for this host and its subdomains. Sent on a secure
+        // request and whenever APP_URL is https - behind a proxy that is not
+        // in TRUSTED_PROXIES the request itself looks like http, and the
+        // header would otherwise be missing exactly where it matters.
+        if ($request->secure() || str_starts_with((string) config('app.url'), 'https://')) {
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains', false);
+        }
 
         return $response;
     }

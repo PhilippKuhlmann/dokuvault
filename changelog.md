@@ -1,5 +1,17 @@
 # Changelog
 
+## 26.10.31
+
+### Security
+
+- **HSTS: Wer DokuVault einmal über https erreicht hat, kommt nicht mehr über http hin.** Läuft die Installation unter einer https-Adresse, schickt jede Antwort `Strict-Transport-Security` mit einem Jahr Gültigkeit, für die Adresse und ihre Subdomains. Der Browser wechselt danach von allein auf https, auch wenn ein Link oder eine eingetippte Adresse auf http zeigt – ein Angreifer im Netzweg kann die erste Anfrage nicht mehr abfangen. Der Header kommt nur mit, wenn die Anfrage über https läuft oder `APP_URL` mit `https://` beginnt; eine reine http-Installation merkt davon nichts.
+
+- **Der Container antwortet nur noch unter seinem eigenen Namen.** nginx hörte auf jeden Host-Namen. Jetzt setzt der Start den Namen aus `APP_URL` ein, samt Subdomains, und jede Anfrage mit einem fremden Host wird ohne Antwort geschlossen (444) – vor der Anwendung, die so eine Anfrage bisher als Erste abfing. Steht in `APP_URL` kein Name (oder `localhost`), bleibt es beim Annehmen jedes Hosts, sonst wäre der Container über seine IP nicht erreichbar. Beim Start steht in der Ausgabe, welcher Fall gilt. Betrifft nur den Docker-Betrieb.
+
+- **Der vorkonfigurierte Agent-Download gilt nur noch einmal.** Nach dem Erzeugen eines Tokens lag sein Klartext eine halbe Stunde in der Sitzung, damit der Download der fertigen `.exe` bzw. des Linux-Installers im zweiten Schritt noch daran kommt. Da ein Token inzwischen zu genau einem Agenten gehört, ist der Download nach dem ersten Mal verbraucht: Der Klartext verschwindet mit ihm aus der Sitzung. Ein zweiter Versuch sagt, dass man dafür einen neuen Token erzeugt.
+
+- **Agent-Tokens aus der Zeit vor der Ablauf-Pflicht haben jetzt eine Frist.** Sie liefen unbegrenzt. Eine Migration setzt ihnen ein Jahr – nicht sofort Schluss, damit kein laufender Agent ausfällt – und das Datum steht ab jetzt wie bei jedem anderen Token in der Liste. Wer länger braucht, verlängert mit „Erneuern".
+
 ## 26.10.29
 
 ### Internal

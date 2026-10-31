@@ -194,3 +194,16 @@ test('updates need a valid token and a known agent', function () {
     [, $plain] = dienstToken();
     $this->withToken($plain)->get('/api/agent/update/unifi?version=x')->assertNotFound();
 });
+
+test('der vorkonfigurierte Download gilt nur einmal', function () {
+    $this->actingAs(userWithPermissions(['agent_manage']));
+    [$customer] = tokenFuerDienstExe();
+
+    $this->get(route('agent.dienst', $customer))->assertOk();
+
+    // Ein Token gehört genau einem Agenten - ein zweiter Installer daraus
+    // hätte keinen Zweck, und der Klartext soll nicht länger in der Session
+    // liegen als für den einen Download.
+    $this->get(route('agent.dienst', $customer))->assertStatus(410);
+    $this->get(route('agent.dienst.linux', $customer))->assertStatus(410);
+});

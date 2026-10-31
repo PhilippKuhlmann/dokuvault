@@ -156,3 +156,20 @@ test('jeder Token steht in der Liste, nicht darunter', function () {
     $html = $this->get(route('agent.index', $customer))->assertOk()->getContent();
     expect(substr_count($html, '</div>'))->toBe(preg_match_all('/<div\b/', $html));
 });
+
+test('die Migration gibt Altbestands-Token eine Frist', function () {
+    [$customer, $site] = agentKundeStandort();
+    [$ohneFrist] = AgentToken::generateFor($customer, $site, 'Altbestand', null);
+    [$mitFrist] = AgentToken::generateFor($customer, $site, 'Neu', now()->addDays(30));
+
+    $vorher = $mitFrist->fresh()->expires_at;
+
+    (require base_path('database/migrations/2026_10_31_120000_set_expiry_for_legacy_agent_tokens.php'))->up();
+
+    // Nicht sofort tot, sondern ein Jahr - ein laufender Agent läuft weiter,
+    // und das Datum steht ab jetzt in der Liste.
+    expect($ohneFrist->fresh()->expires_at->toDateString())
+        ->toBe(now()->addDays(365)->toDateString());
+    // Ein Token mit eigener Frist bleibt unangetastet.
+    expect($mitFrist->fresh()->expires_at->toDateTimeString())->toBe($vorher->toDateTimeString());
+});

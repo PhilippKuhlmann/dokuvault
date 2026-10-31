@@ -40,6 +40,29 @@ fi
 # entsteht jetzt, wo eine da ist.
 php artisan package:discover --no-interaction >/dev/null
 
+# nginx soll nur auf den eigenen Namen hoeren. Der Host kommt aus APP_URL
+# (Schema, Port und Pfad abgeschnitten), Subdomains kommen mit - dieselbe
+# Regel wie in TrustHosts. Fremde Hosts faengt der 444-Block in nginx.conf.
+#
+# Ohne brauchbaren Host bleibt es beim Annehmen jedes Hosts, sonst waere der
+# Container ueber seine IP oder ueber localhost nicht mehr erreichbar: Der
+# Fang-Block fliegt raus, und der Anwendungsblock wird wieder der Standard.
+APP_HOST="$(grep -m1 '^APP_URL=' .env | cut -d= -f2- | tr -d '"' \
+    | sed -e 's#^[a-zA-Z][a-zA-Z0-9+.-]*://##' -e 's#[/?].*$##' -e 's#:[0-9]*$##')"
+
+case "$APP_HOST" in
+    ''|localhost|127.0.0.1|'[::1]'|*[!a-zA-Z0-9.-]*)
+        sed -i -e '/# >>> catchall/,/# <<< catchall/d' \
+               -e 's/^        listen 8000;$/        listen 8000 default_server;/' \
+               -e 's/__SERVER_NAMES__/_/' /etc/nginx/nginx.conf
+        echo "==> nginx nimmt jeden Host an (kein Host in APP_URL)"
+        ;;
+    *)
+        sed -i "s/__SERVER_NAMES__/${APP_HOST} *.${APP_HOST}/" /etc/nginx/nginx.conf
+        echo "==> nginx hoert auf ${APP_HOST} und Subdomains, fremde Hosts: 444"
+        ;;
+esac
+
 echo "==> Warte auf die Datenbank"
 i=0
 until php -r '

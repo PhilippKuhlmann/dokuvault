@@ -57,3 +57,24 @@ test('ausserhalb der lokalen Umgebung steht kein Entwicklungsserver in der CSP',
 
     expect($csp)->not->toContain('5173');
 });
+
+/**
+ * HSTS nur dort, wo https wirklich im Spiel ist: Auf einer http-Installation
+ * würde der Header den Browser für ein Jahr auf eine Adresse festlegen, die
+ * es dort nicht gibt.
+ */
+test('HSTS steht auf der Antwort, wenn APP_URL auf https zeigt', function () {
+    config(['app.url' => 'https://doku.example.test']);
+
+    $antwort = $this->get('/login');
+
+    expect($antwort->headers->get('Strict-Transport-Security'))
+        ->toBe('max-age=31536000; includeSubDomains');
+});
+
+test('ohne https kommt kein HSTS mit', function () {
+    config(['app.url' => 'http://doku.example.test']);
+
+    // Die Testanfrage selbst läuft über http - beide Bedingungen fehlen.
+    expect($this->get('/login')->headers->has('Strict-Transport-Security'))->toBeFalse();
+});

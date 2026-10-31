@@ -225,8 +225,8 @@ class AgentTokenController extends Controller
 
         // For the preconfigured service exe (dienstExe): the plain token is
         // gone after this redirect, but the download is a second request.
-        // Kept for half an hour and only for this customer - enough to fetch
-        // it for a few servers, short enough not to linger.
+        // Kept for half an hour, only for this customer and only until the
+        // first download (dienstToken).
         session()->put('agentDienst', [
             'customer_id' => $customer->id,
             'token' => $plain,
@@ -301,7 +301,8 @@ class AgentTokenController extends Controller
 
     /**
      * The plain token kept after creating it (mitNeuemToken) - only for this
-     * customer and only for half an hour; otherwise 410.
+     * customer, only for half an hour, and only for one download; otherwise
+     * 410.
      */
     protected function dienstToken(Customer $customer): string
     {
@@ -313,6 +314,12 @@ class AgentTokenController extends Controller
             410,
             __('Der Download ist nur kurz nach dem Erzeugen eines Tokens möglich. Bitte einen neuen Token erzeugen.')
         );
+
+        // Gone with the first download: a token belongs to exactly one agent
+        // (machine_id), so a second installer from the same token has no use -
+        // and the plain token should not sit in the session any longer than
+        // the one download it was kept for.
+        session()->forget('agentDienst');
 
         return $dienst['token'];
     }
