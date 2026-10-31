@@ -2,13 +2,13 @@
 
 use App\Livewire\AdminAllgemein;
 use App\Models\Setting;
-use App\Support\Zeit;
+use App\Support\LocalTime;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 test('ohne Einstellung gilt die Konfiguration', function () {
-    expect(Zeit::zone())->toBe(config('app.timezone'));
+    expect(LocalTime::zone())->toBe(config('app.timezone'));
 });
 
 test('die eingestellte Zone verschiebt die Anzeige', function () {
@@ -17,7 +17,7 @@ test('die eingestellte Zone verschiebt die Anzeige', function () {
     // 16:00 UTC ist im Sommer 18:00 in Berlin.
     $zeitpunkt = Carbon::parse('2026-07-01 16:00:00', 'UTC');
 
-    expect(Zeit::anzeigen($zeitpunkt))->toBe('01.07.2026 18:00');
+    expect(LocalTime::anzeigen($zeitpunkt))->toBe('01.07.2026 18:00');
 });
 
 test('gespeichert wird weiter in UTC', function () {
@@ -33,22 +33,22 @@ test('gespeichert wird weiter in UTC', function () {
     $roh = DB::table('users')->where('id', $nutzer->id)->value('last_login_at');
 
     expect($roh)->toStartWith('2026-07-01 16:00')
-        ->and(Zeit::anzeigen($nutzer->fresh()->last_login_at))->toBe('01.07.2026 18:00');
+        ->and(LocalTime::anzeigen($nutzer->fresh()->last_login_at))->toBe('01.07.2026 18:00');
 });
 
 test('ein fehlender Zeitpunkt bekommt einen lesbaren Ersatz', function () {
-    expect(Zeit::anzeigen(null, 'd.m.Y H:i', 'noch nie'))->toBe('noch nie')
-        ->and(Zeit::anzeigen(null))->toBe('');
+    expect(LocalTime::anzeigen(null, 'd.m.Y H:i', 'noch nie'))->toBe('noch nie')
+        ->and(LocalTime::anzeigen(null))->toBe('');
 });
 
 test('eine unbekannte Zone wird nicht übernommen', function () {
     Setting::setzen(Setting::APP_TIMEZONE, 'Mars/Olympus');
 
-    expect(Zeit::zone())->toBe(config('app.timezone'));
+    expect(LocalTime::zone())->toBe(config('app.timezone'));
 });
 
 test('die Auswahl enthält UTC und Berlin', function () {
-    expect(Zeit::auswahl())->toContain('UTC')->toContain('Europe/Berlin');
+    expect(LocalTime::auswahl())->toContain('UTC')->toContain('Europe/Berlin');
 });
 
 test('die Benutzerliste zeigt die Zeit in der eingestellten Zone', function () {

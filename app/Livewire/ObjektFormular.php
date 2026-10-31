@@ -10,8 +10,8 @@ use App\Models\Concerns\HasIpAddresses;
 use App\Models\Customer;
 use App\Models\DeviceModel;
 use App\Models\Site;
+use App\Support\LocalTime;
 use App\Support\ObjectForm;
-use App\Support\Zeit;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -464,7 +464,7 @@ class ObjektFormular extends Component
             ->get()
             ->map(fn ($eintrag) => [
                 'wert' => $eintrag->value,
-                'wann' => Zeit::anzeigen($eintrag->created_at),
+                'wann' => LocalTime::anzeigen($eintrag->created_at),
                 'seit' => $eintrag->created_at->diffForHumans(),
                 'wer' => $eintrag->user?->name,
             ])

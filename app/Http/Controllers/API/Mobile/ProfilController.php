@@ -8,7 +8,7 @@ use App\Notifications\EmailChanged;
 use App\Notifications\ZweiteStufeCode;
 use App\Notifications\ZweiteStufeEingerichtet;
 use App\Support\Changelog;
-use App\Support\ZweiteStufe;
+use App\Support\TwoFactor;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -127,7 +127,7 @@ class ProfilController extends Controller
      * der Mail: Das Kennwort allein liesse jeden, der es kennt, seine eigene
      * App einrichten und den Inhaber aussperren.
      */
-    public function zweiteStufeBeginnen(Request $request, ZweiteStufe $zweiteStufe): JsonResponse
+    public function zweiteStufeBeginnen(Request $request, TwoFactor $zweiteStufe): JsonResponse
     {
         $nutzer = $request->user();
 
@@ -178,7 +178,7 @@ class ProfilController extends Controller
      * wieder. Sie liegen verschluesselt; sie noch einmal herzuzeigen hiesse,
      * sie noch einmal preiszugeben.
      */
-    public function zweiteStufeBestaetigen(Request $request, ZweiteStufe $zweiteStufe): JsonResponse
+    public function zweiteStufeBestaetigen(Request $request, TwoFactor $zweiteStufe): JsonResponse
     {
         $nutzer = $request->user();
 
@@ -237,7 +237,7 @@ class ProfilController extends Controller
      * offenen Geraet sitzt, soll sich nicht acht Dauerzugaenge ausdrucken
      * koennen.
      */
-    public function wiederherstellungscodes(Request $request, ZweiteStufe $zweiteStufe): JsonResponse
+    public function wiederherstellungscodes(Request $request, TwoFactor $zweiteStufe): JsonResponse
     {
         $nutzer = $request->user();
 

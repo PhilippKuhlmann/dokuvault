@@ -8,25 +8,25 @@ use App\Models\Setting;
 use App\Models\Site;
 use App\Models\SshKey;
 use App\Models\User;
-use App\Support\Adresse;
-use App\Support\BildTyp;
 use App\Support\ChecklistAdScript;
 use App\Support\CredentialLinking;
+use App\Support\ImageType;
+use App\Support\SafeUrl;
 use Laravel\Sanctum\PersonalAccessToken;
 
 // Security audit, small hardening notes.
 
-test('Adresse::pfad rejects tabs and line breaks that browsers drop from a URL', function () {
-    expect(Adresse::pfad("/\t/example.test"))->toBeNull()
-        ->and(Adresse::pfad("/\n/example.test"))->toBeNull()
-        ->and(Adresse::pfad('/kunden/1'))->toBe('/kunden/1');
+test('SafeUrl::pfad rejects tabs and line breaks that browsers drop from a URL', function () {
+    expect(SafeUrl::pfad("/\t/example.test"))->toBeNull()
+        ->and(SafeUrl::pfad("/\n/example.test"))->toBeNull()
+        ->and(SafeUrl::pfad('/kunden/1'))->toBe('/kunden/1');
 });
 
 test('BildTyp serves only a fixed list of image types', function () {
-    expect(BildTyp::fuer('logos/a.PNG'))->toBe('image/png')
-        ->and(BildTyp::fuer('logos/a.jpg'))->toBe('image/jpeg')
-        ->and(BildTyp::fuer('logos/a.svg'))->toBe('application/octet-stream')
-        ->and(BildTyp::fuer('logos/a'))->toBe('application/octet-stream');
+    expect(ImageType::fuer('logos/a.PNG'))->toBe('image/png')
+        ->and(ImageType::fuer('logos/a.jpg'))->toBe('image/jpeg')
+        ->and(ImageType::fuer('logos/a.svg'))->toBe('application/octet-stream')
+        ->and(ImageType::fuer('logos/a'))->toBe('application/octet-stream');
 });
 
 test('the checklist script file name contains only plain characters', function () {

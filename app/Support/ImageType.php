@@ -9,7 +9,7 @@ namespace App\Support;
  * ones config('custom.bild_formate') allows, and anything else is served as
  * an opaque download.
  */
-class BildTyp
+class ImageType
 {
     private const TYPEN = [
         'png' => 'image/png',

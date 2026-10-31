@@ -68,7 +68,7 @@
                     'Höheneinheiten' => $eintrag->form_factor === 'rack' ? $eintrag->height_units.' HE' : null,
                 ]" />
 
-                <x-agentcard :device="$eintrag" :bloecke="\App\Support\AgentAnzeige::server($eintrag)" />
+                <x-agentcard :device="$eintrag" :bloecke="\App\Support\AgentReportCards::server($eintrag)" />
 
                 {{-- Betriebssystem steht jetzt in der Kopfzeile - hier waere es doppelt. --}}
                 <x-minitagcard :title="__('Dienste')" :array="$eintrag->services" />

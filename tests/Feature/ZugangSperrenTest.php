@@ -1,8 +1,8 @@
 <?php
 
 use App\Models\User;
-use App\Support\Zeit;
-use App\Support\ZweiteStufe;
+use App\Support\LocalTime;
+use App\Support\TwoFactor;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\Sanctum;
@@ -209,13 +209,13 @@ test('der abgewiesene Versuch steht nicht als Anmeldung im Protokoll', function 
  * einen verbrauchten Wiederherstellungscode und einen Eintrag "Angemeldet".
  */
 test('die zweite Stufe laesst einen zwischenzeitlich Gesperrten nicht herein', function () {
-    $geheimnis = app(ZweiteStufe::class)->geheimnisErzeugen();
+    $geheimnis = app(TwoFactor::class)->geheimnisErzeugen();
 
     $nutzer = userWithPermissions([]);
     $nutzer->forceFill([
         'password' => Hash::make('Ein-Gutes-Kennwort-2026'),
         'two_factor_secret' => $geheimnis,
-        'two_factor_recovery_codes' => app(ZweiteStufe::class)->wiederherstellungscodes(),
+        'two_factor_recovery_codes' => app(TwoFactor::class)->wiederherstellungscodes(),
         'two_factor_confirmed_at' => now(),
     ])->save();
 
@@ -239,13 +239,13 @@ test('die zweite Stufe laesst einen zwischenzeitlich Gesperrten nicht herein', f
 });
 
 test('die Codemaske selbst steht einem Gesperrten nicht mehr offen', function () {
-    $geheimnis = app(ZweiteStufe::class)->geheimnisErzeugen();
+    $geheimnis = app(TwoFactor::class)->geheimnisErzeugen();
 
     $nutzer = userWithPermissions([]);
     $nutzer->forceFill([
         'password' => Hash::make('Ein-Gutes-Kennwort-2026'),
         'two_factor_secret' => $geheimnis,
-        'two_factor_recovery_codes' => app(ZweiteStufe::class)->wiederherstellungscodes(),
+        'two_factor_recovery_codes' => app(TwoFactor::class)->wiederherstellungscodes(),
         'two_factor_confirmed_at' => now(),
     ])->save();
 
@@ -306,5 +306,5 @@ test('das Bearbeiten-Formular zeigt, seit wann gesperrt ist', function () {
         ->get(route('admin.user.edit', $gesperrt))
         ->assertOk()
         ->assertSee(__('gesperrt seit'))
-        ->assertSee(Zeit::anzeigen($gesperrt->fresh()->deactivated_at, 'd.m.Y H:i'));
+        ->assertSee(LocalTime::anzeigen($gesperrt->fresh()->deactivated_at, 'd.m.Y H:i'));
 });

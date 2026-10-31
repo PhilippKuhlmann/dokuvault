@@ -6,16 +6,16 @@ use App\Models\Customer;
 use App\Models\User;
 use App\Notifications\ZweiteStufeCode;
 use App\Notifications\ZweiteStufeEingerichtet;
-use App\Support\ZweiteStufe;
+use App\Support\TwoFactor;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Spatie\Activitylog\Models\Activity;
 
-function stufe(): ZweiteStufe
+function stufe(): TwoFactor
 {
-    return app(ZweiteStufe::class);
+    return app(TwoFactor::class);
 }
 
 function nutzerMitZweiterStufe(string $kennwort = 'Ein-Gutes-Kennwort-2026'): array
@@ -83,7 +83,7 @@ test('beim Einschalten gibt es Wiederherstellungscodes - genau einmal', function
 
     $this->post(route('two-factor.confirm'), ['code' => gueltigerCode(session(TwoFactorController::IN_ARBEIT))]);
 
-    expect(session('zweite-stufe-codes'))->toHaveCount(ZweiteStufe::CODES);
+    expect(session('zweite-stufe-codes'))->toHaveCount(TwoFactor::CODES);
 
     // Beim naechsten Aufruf der Seite stehen sie nicht mehr da.
     $this->get(route('profile.edit'))->assertDontSee(session('zweite-stufe-codes')[0] ?? 'nichts');
@@ -142,7 +142,7 @@ test('ein Wiederherstellungscode geht auch - aber nur einmal', function () {
     $this->post(route('two-factor.login'), ['code' => $codes[0]]);
 
     $this->assertAuthenticatedAs($nutzer);
-    expect($nutzer->fresh()->two_factor_recovery_codes)->toHaveCount(ZweiteStufe::CODES - 1);
+    expect($nutzer->fresh()->two_factor_recovery_codes)->toHaveCount(TwoFactor::CODES - 1);
 
     // Derselbe Zettel ein zweites Mal: nein.
     $this->post('/logout');
@@ -349,7 +349,7 @@ test('ein verbrauchter Wiederherstellungscode sagt, wie viele noch da sind', fun
     $this->post('/login', ['username' => $nutzer->username, 'password' => 'Ein-Gutes-Kennwort-2026']);
     $this->post(route('two-factor.login'), ['code' => $codes[0]]);
 
-    expect(session('warnung'))->toContain((string) (ZweiteStufe::CODES - 1));
+    expect(session('warnung'))->toContain((string) (TwoFactor::CODES - 1));
 });
 
 test('beim letzten Code steht da, was zu tun ist', function () {

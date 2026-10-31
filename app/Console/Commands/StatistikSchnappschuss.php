@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Setting;
-use App\Support\SystemWerte;
+use App\Support\SystemMetrics;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -43,11 +43,11 @@ class StatistikSchnappschuss extends Command
         }
 
         $system = [
-            'db_bytes' => SystemWerte::datenbankBytes(),
-            'dateien_bytes' => SystemWerte::dateienBytes(),
-            'backup_bytes' => SystemWerte::backupBytes(),
-            'disk_frei_bytes' => SystemWerte::platteFreiBytes(),
-            'disk_gesamt_bytes' => SystemWerte::platteGesamtBytes(),
+            'db_bytes' => SystemMetrics::datenbankBytes(),
+            'dateien_bytes' => SystemMetrics::dateienBytes(),
+            'backup_bytes' => SystemMetrics::backupBytes(),
+            'disk_frei_bytes' => SystemMetrics::platteFreiBytes(),
+            'disk_gesamt_bytes' => SystemMetrics::platteGesamtBytes(),
         ];
         foreach ($system as $kennzahl => $wert) {
             if ($wert !== null) {

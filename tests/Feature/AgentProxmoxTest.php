@@ -9,7 +9,7 @@ use App\Models\Server;
 use App\Models\Service;
 use App\Models\Site;
 use App\Models\VM;
-use App\Support\AgentAnzeige;
+use App\Support\AgentReportCards;
 
 function proxmoxPayload(): array
 {
@@ -490,7 +490,7 @@ test('storage turns amber from 80 % and red from 90 %', function () {
 });
 
 test('sizes read like the rest of the app', function (float $gb, string $text) {
-    expect(AgentAnzeige::gb($gb))->toBe($text);
+    expect(AgentReportCards::gb($gb))->toBe($text);
 })->with([
     [8, '8 GB'],
     [24.5, '24,5 GB'],
@@ -506,11 +506,11 @@ test('a VM at its memory limit stays neutral, a container warns', function () {
     $payload['guests'][1] += ['memory_gb' => 1, 'memory_used_gb' => 0.95];
     $this->withToken($plain)->postJson('/api/agent/proxmox', $payload)->assertOk();
 
-    $karten = AgentAnzeige::vm(VM::where('agent_identifier', 'pve01/qemu/100')->sole());
+    $karten = AgentReportCards::vm(VM::where('agent_identifier', 'pve01/qemu/100')->sole());
     $ram = collect($karten['System'])->firstWhere(0, 'Arbeitsspeicher');
     expect($ram[2]['warnen'])->toBeFalse();
 
-    $karten = AgentAnzeige::vm(VM::where('agent_identifier', 'pve01/lxc/200')->sole());
+    $karten = AgentReportCards::vm(VM::where('agent_identifier', 'pve01/lxc/200')->sole());
     $ram = collect($karten['System'])->firstWhere(0, 'Arbeitsspeicher');
     expect($ram[2]['warnen'])->toBeTrue();
 });

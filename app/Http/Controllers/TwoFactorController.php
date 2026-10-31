@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Notifications\ZweiteStufeCode;
 use App\Notifications\ZweiteStufeEingerichtet;
-use App\Support\ZweiteStufe;
+use App\Support\TwoFactor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -30,7 +30,7 @@ class TwoFactorController extends Controller
     /** How long the mail code holds, in minutes. */
     public const MAILCODE_MINUTEN = 15;
 
-    public function __construct(private ZweiteStufe $zweiteStufe)
+    public function __construct(private TwoFactor $zweiteStufe)
     {
         $this->middleware(['auth']);
     }

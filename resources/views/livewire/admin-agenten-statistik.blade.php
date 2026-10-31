@@ -1,4 +1,4 @@
-@use('App\Support\Zeit')
+@use('App\Support\LocalTime')
 <div class="p-3 sm:p-5 space-y-4">
     <div>
         <div class="text-3xl font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Agenten') }}</div>
@@ -44,7 +44,7 @@
                                 <span class="text-green-700 dark:text-green-400">{{ __('in Ordnung') }}</span>
                             @endif
                         </td>
-                        <td class="whitespace-nowrap px-4 py-2">{{ Zeit::anzeigen($a->last_run_at, 'd.m.Y H:i', __('noch nie')) }}</td>
+                        <td class="whitespace-nowrap px-4 py-2">{{ LocalTime::anzeigen($a->last_run_at, 'd.m.Y H:i', __('noch nie')) }}</td>
                         <td @class(['px-4 py-2 font-mono text-xs', 'text-amber-600 dark:text-amber-400' => $a->veraltet])>
                             {{ $a->version ?? '—' }}@if ($a->veraltet) <span class="font-sans">({{ __('aktuell: :v', ['v' => $aktuell[$a->kind]]) }})</span>@endif
                         </td>

@@ -21,7 +21,7 @@ use Spatie\Backup\Listeners\EncryptBackupArchive;
  * (anwenden()), so backup:run, backup:clean and the admin page all see the
  * same. Secrets (passwords, SSH key) are stored encrypted.
  */
-class BackupEinstellungen
+class BackupSettings
 {
     /** Disk name of the external target in config('filesystems.disks'). */
     public const ZIEL_DISK = 'dokuvault_extern';

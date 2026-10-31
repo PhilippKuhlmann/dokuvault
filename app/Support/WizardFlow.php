@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Gate;
  * Formular, das der Server ohnehin schon beschreibt
  * (`customers/{slug}/forms/{typ}`).
  */
-class Erstaufnahme
+class WizardFlow
 {
     public function __construct(
         private Customer $kunde,

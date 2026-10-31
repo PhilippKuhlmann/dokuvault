@@ -5,7 +5,7 @@ use App\Models\AgentToken;
 use App\Models\Customer;
 use App\Models\Site;
 use App\Models\Wifi;
-use App\Support\Protokoll;
+use App\Support\ActivityCauser;
 use Livewire\Livewire;
 use Spatie\Activitylog\Models\Activity;
 
@@ -38,7 +38,7 @@ test('ein vom Agenten angelegtes Objekt nennt den Token als Verursacher', functi
     expect($eintrag)->not->toBeNull();
     expect($eintrag->causer_type)->toBe(AgentToken::class);
     expect($eintrag->causer_id)->toBe($token->id);
-    expect(Protokoll::verursacher($eintrag->causer))->toBe('Agent · UniFi Werkstatt');
+    expect(ActivityCauser::verursacher($eintrag->causer))->toBe('Agent · UniFi Werkstatt');
 });
 
 test('auch eine Kennwortaenderung durch den Agenten hat einen Verursacher', function () {
@@ -62,7 +62,7 @@ test('auch eine Kennwortaenderung durch den Agenten hat einen Verursacher', func
 test('ohne Verursacher bleibt es "System"', function () {
     // Seeder, Konsolenbefehle, geplante Aufgaben: dort gibt es wirklich
     // niemanden, und etwas zu erfinden waere schlimmer als "System".
-    expect(Protokoll::verursacher(null))->toBe('System');
+    expect(ActivityCauser::verursacher(null))->toBe('System');
 });
 
 test('ein Token ohne Bezeichnung bleibt erkennbar', function () {
@@ -70,7 +70,7 @@ test('ein Token ohne Bezeichnung bleibt erkennbar', function () {
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     [$token] = AgentToken::generateFor($customer, $site);
 
-    expect(Protokoll::verursacher($token))->toBe('Agent · Token #'.$token->id);
+    expect(ActivityCauser::verursacher($token))->toBe('Agent · Token #'.$token->id);
 });
 
 test('der Filter verwechselt einen Token nicht mit dem Benutzer gleicher Id', function () {

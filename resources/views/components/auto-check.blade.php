@@ -20,7 +20,7 @@
         <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
             <span>
                 {{ $eintrag->checked_at
-                    ? __('Geprüft am :datum', ['datum' => \App\Support\Zeit::anzeigen($eintrag->checked_at)])
+                    ? __('Geprüft am :datum', ['datum' => \App\Support\LocalTime::anzeigen($eintrag->checked_at)])
                     : __('Noch nicht geprüft') }}
             </span>
             @can($can)

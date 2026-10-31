@@ -3,7 +3,7 @@
 use App\Models\AgentToken;
 use App\Models\Customer;
 use App\Models\Site;
-use App\Support\AgentSkript;
+use App\Support\AgentScript;
 
 /*
  * The Windows service fetches the current script before every run, so
@@ -160,7 +160,7 @@ test('the agent page always says how to uninstall each agent', function () {
 
 test('the Windows agent gets an update only when its version differs', function () {
     [, $plain] = dienstToken();
-    $aktuell = AgentSkript::exeVersion();
+    $aktuell = AgentScript::exeVersion();
     expect($aktuell)->not->toBeEmpty();
 
     $this->withToken($plain)->get('/api/agent/update/windows?version='.urlencode($aktuell))->assertNoContent();
@@ -172,7 +172,7 @@ test('the Windows agent gets an update only when its version differs', function 
 
 test('the Proxmox agent gets the current installer with its own token', function () {
     [, $plain] = dienstToken();
-    $aktuell = AgentSkript::installerVersion('linux-agent.sh');
+    $aktuell = AgentScript::installerVersion('linux-agent.sh');
 
     $this->withToken($plain)->get('/api/agent/update/proxmox?version='.$aktuell)->assertNoContent();
 

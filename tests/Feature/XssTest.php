@@ -4,22 +4,22 @@ use App\Models\Customer;
 use App\Models\Firewall;
 use App\Models\Network;
 use App\Models\Site;
-use App\Support\Adresse;
+use App\Support\SafeUrl;
 
 // --- Adressen, die sich anklicken lassen -------------------------------------
 
 test('nur http und https werden verlinkt', function () {
     // Positivliste: Andersherum müsste man jedes Schema kennen, das ein
     // Browser ausführt - javascript, data, vbscript, und das nächste.
-    expect(Adresse::sicher('https://example.com'))->toBe('https://example.com')
-        ->and(Adresse::sicher('http://192.168.178.1'))->toBe('http://192.168.178.1')
-        ->and(Adresse::sicher('javascript:alert(1)'))->toBeNull()
-        ->and(Adresse::sicher('JaVaScRiPt://x/%0aalert(1)'))->toBeNull()
-        ->and(Adresse::sicher('data:text/html,<script>alert(1)</script>'))->toBeNull()
+    expect(SafeUrl::sicher('https://example.com'))->toBe('https://example.com')
+        ->and(SafeUrl::sicher('http://192.168.178.1'))->toBe('http://192.168.178.1')
+        ->and(SafeUrl::sicher('javascript:alert(1)'))->toBeNull()
+        ->and(SafeUrl::sicher('JaVaScRiPt://x/%0aalert(1)'))->toBeNull()
+        ->and(SafeUrl::sicher('data:text/html,<script>alert(1)</script>'))->toBeNull()
         // Eine nackte IP ist keine Adresse zum Anklicken, aber sie soll
         // weiterhin in der Karte stehen.
-        ->and(Adresse::sicher('192.168.178.1'))->toBeNull()
-        ->and(Adresse::sicher(null))->toBeNull();
+        ->and(SafeUrl::sicher('192.168.178.1'))->toBeNull()
+        ->and(SafeUrl::sicher(null))->toBeNull();
 });
 
 test('ein führender Schrägstrich macht noch keine Adresse', function () {
@@ -30,16 +30,16 @@ test('ein führender Schrägstrich macht noch keine Adresse', function () {
     //
     // Aus dem Wert allein ist das nicht zu unterscheiden. Wer einen internen
     // Link ausgeben will, gibt eine vollstaendige Adresse mit.
-    expect(Adresse::sicher('/24'))->toBeNull()
-        ->and(Adresse::sicher('/mustermann'))->toBeNull()
-        ->and(Adresse::sicher('//evil.example'))->toBeNull();
+    expect(SafeUrl::sicher('/24'))->toBeNull()
+        ->and(SafeUrl::sicher('/mustermann'))->toBeNull()
+        ->and(SafeUrl::sicher('//evil.example'))->toBeNull();
 
     // Wo die Ansicht es ausdruecklich sagt, geht der Pfad durch - aber nur,
     // wenn er wirklich einer ist.
-    expect(Adresse::pfad('/mustermann'))->toBe('/mustermann')
-        ->and(Adresse::pfad('//evil.example'))->toBeNull()
-        ->and(Adresse::pfad('/\\evil.example'))->toBeNull()
-        ->and(Adresse::pfad('mustermann'))->toBeNull();
+    expect(SafeUrl::pfad('/mustermann'))->toBe('/mustermann')
+        ->and(SafeUrl::pfad('//evil.example'))->toBeNull()
+        ->and(SafeUrl::pfad('/\\evil.example'))->toBeNull()
+        ->and(SafeUrl::pfad('mustermann'))->toBeNull();
 });
 
 test('die Netzmaske in der VLAN-Liste ist kein Link', function () {

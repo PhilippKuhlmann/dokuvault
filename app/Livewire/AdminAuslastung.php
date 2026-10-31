@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\AgentInstallation;
-use App\Support\Zeit;
+use App\Support\LocalTime;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -41,7 +41,7 @@ class AdminAuslastung extends Component
 
         // Hours of the day in the display zone: "most load at 8" means 8
         // o'clock local time, not UTC. Stored is UTC (app.timezone).
-        $zone = Zeit::zone();
+        $zone = LocalTime::zone();
         $bis = now($zone)->startOfHour();
         $von = match ($this->zeitraum) {
             '24h' => $bis->copy()->subHours(23),
@@ -80,7 +80,7 @@ class AdminAuslastung extends Component
             'dauer_schnitt' => $anzahl ? (int) round($zeilen->sum('dauer_ms_summe') / $anzahl) : 0,
             'dauer_max' => (int) $zeilen->max('dauer_ms_max'),
             'spitze' => (int) $jeStunde->max(),
-            'spitze_wann' => $jeStunde->isNotEmpty() ? Carbon::createFromFormat('Y-m-d H', $jeStunde->sort()->keys()->last(), Zeit::zone()) : null,
+            'spitze_wann' => $jeStunde->isNotEmpty() ? Carbon::createFromFormat('Y-m-d H', $jeStunde->sort()->keys()->last(), LocalTime::zone()) : null,
         ];
     }
 

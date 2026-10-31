@@ -38,7 +38,7 @@ use Spatie\Activitylog\Models\Activity;
  * derselbe, und auf dem Dashboard darf nichts stehen, dessen Liste der
  * Nutzer nicht oeffnen darf.
  */
-class Kundenuebersicht
+class CustomerDashboard
 {
     /**
      * Wie viele Zeilen je Geraeteart hoechstens.

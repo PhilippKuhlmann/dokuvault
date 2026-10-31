@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Exceptions\ZuVieleKennwortabrufe;
-use App\Support\Kennwortabruf;
+use App\Support\PasswordReveal;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -83,7 +83,7 @@ class GeheimFeld extends Component
     private function wertHolen(): ?string
     {
         try {
-            return app(Kennwortabruf::class)->ausFeld($this->modell, $this->id, $this->feld, auth()->user());
+            return app(PasswordReveal::class)->ausFeld($this->modell, $this->id, $this->feld, auth()->user());
         } catch (ZuVieleKennwortabrufe $bremse) {
             $this->addError('kennwort', $bremse->getMessage());
 

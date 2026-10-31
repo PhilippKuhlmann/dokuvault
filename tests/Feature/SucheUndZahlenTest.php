@@ -8,7 +8,7 @@ use App\Models\Role;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\User;
-use App\Support\GlobaleSuche;
+use App\Support\Search;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
@@ -48,7 +48,7 @@ test('kleine Tabellen werden weiter mitten im Wort durchsucht', function () {
 test('die Massentabellen stehen in der Praefix-Liste', function () {
     // Die Zuordnung selbst ist die Entscheidung: 4 Mio AD-Benutzer, 2 Mio
     // Computer, 1 Mio VMs - dort kostete "%begriff%" Sekunden.
-    $spiegel = new ReflectionClass(GlobaleSuche::class);
+    $spiegel = new ReflectionClass(Search::class);
 
     expect($spiegel->getConstant('MASSENHAFT'))
         ->toContain('aduser')->toContain('computer')->toContain('vm');

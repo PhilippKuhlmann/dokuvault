@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Concerns\LeitetNachAnmeldungWeiter;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Support\ZweiteStufePruefung;
+use App\Support\TwoFactorCheck;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,7 +27,7 @@ class TwoFactorChallengeController extends Controller
 
     public const GEMERKT = 'zweite-stufe.gemerkt';
 
-    public function __construct(private ZweiteStufePruefung $pruefung) {}
+    public function __construct(private TwoFactorCheck $pruefung) {}
 
     public function create(Request $request): View|RedirectResponse
     {

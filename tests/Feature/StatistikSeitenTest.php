@@ -11,7 +11,7 @@ use App\Models\Domain;
 use App\Models\OperatingSystem;
 use App\Models\Server;
 use App\Models\Site;
-use App\Support\AgentSkript;
+use App\Support\AgentScript;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
@@ -57,9 +57,9 @@ test('the agents page puts silent and outdated agents first', function () {
     $customer = Customer::factory()->create(['name' => 'Nordwind']);
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     [$token] = AgentToken::generateFor($customer, $site, 'T', now()->addYear());
-    AgentInstallation::checkin($token, 'proxmox', 'ok-1', 'pve-ok', null, AgentSkript::installerVersion('linux-agent.sh'), ['proxmox']);
+    AgentInstallation::checkin($token, 'proxmox', 'ok-1', 'pve-ok', null, AgentScript::installerVersion('linux-agent.sh'), ['proxmox']);
     AgentInstallation::checkin($token, 'proxmox', 'alt-1', 'pve-alt', null, 'altversion', ['proxmox']);
-    AgentInstallation::checkin($token, 'proxmox', 'still-1', 'pve-still', null, AgentSkript::installerVersion('linux-agent.sh'), ['proxmox']);
+    AgentInstallation::checkin($token, 'proxmox', 'still-1', 'pve-still', null, AgentScript::installerVersion('linux-agent.sh'), ['proxmox']);
     AgentInstallation::where('machine_id', 'still-1')->update(['last_seen_at' => now()->subDay()]);
 
     $this->actingAs(userWithPermissions(['admin_statistik']));

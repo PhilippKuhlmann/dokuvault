@@ -5,8 +5,8 @@ namespace App\Http\Controllers\API\Mobile;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\DocumentationRun;
-use App\Support\Erstaufnahme;
-use App\Support\MobilObjekte;
+use App\Support\MobileObjects;
+use App\Support\WizardFlow;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -22,7 +22,7 @@ use Illuminate\Http\Request;
  */
 class WizardController extends Controller
 {
-    public function __construct(private MobilObjekte $objekte) {}
+    public function __construct(private MobileObjects $objekte) {}
 
     public function index(Request $request, Customer $customer): JsonResponse
     {
@@ -113,16 +113,16 @@ class WizardController extends Controller
      * Ohne ein einziges _create-Recht aus den Schritten gibt es nichts zu
      * tun - dann ist der Assistent fuer diesen Nutzer gesperrt.
      */
-    private function ablauf(Request $request, Customer $customer): Erstaufnahme
+    private function ablauf(Request $request, Customer $customer): WizardFlow
     {
-        $ablauf = new Erstaufnahme($customer, $request->user());
+        $ablauf = new WizardFlow($customer, $request->user());
 
         abort_if(empty($ablauf->schritte()), 403);
 
         return $ablauf;
     }
 
-    private function stand(Erstaufnahme $ablauf, ?DocumentationRun $durchlauf): JsonResponse
+    private function stand(WizardFlow $ablauf, ?DocumentationRun $durchlauf): JsonResponse
     {
         $erledigt = $durchlauf?->completed_steps ?? [];
         $uebersprungen = $durchlauf?->skipped_steps ?? [];

@@ -45,7 +45,7 @@ use Illuminate\Support\Facades\Gate;
  * Antwort auf dieselbe Frage; zwei Kopien haetten bald zwei Meinungen darueber,
  * wer was sehen darf.
  */
-class GlobaleSuche
+class Search
 {
     /**
      * Durchsuchbare Typen: Slug => [Model, Anzeigename, Permission-Prefix, Suchspalten]

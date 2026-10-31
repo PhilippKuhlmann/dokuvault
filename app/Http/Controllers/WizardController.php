@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
-use App\Support\Erstaufnahme;
+use App\Support\WizardFlow;
 use Illuminate\Support\Facades\Gate;
 
 class WizardController extends Controller
@@ -25,7 +25,7 @@ class WizardController extends Controller
     {
         $this->authorizeWizard();
 
-        (new Erstaufnahme($customer, auth()->user()))->abschliessen();
+        (new WizardFlow($customer, auth()->user()))->abschliessen();
 
         return redirect()->route('customer.dashboard', $customer);
     }

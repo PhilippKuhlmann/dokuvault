@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Gate;
  * Browser und vom Mobile\ChecklistController. Die Regel, dass ein Punkt vor
  * der Freigabe nicht abgehakt werden darf, gehoert an eine Stelle.
  */
-class Checklistenpflege
+class ChecklistActions
 {
     /**
      * Einen Punkt abhaken oder den Haken wieder wegnehmen.

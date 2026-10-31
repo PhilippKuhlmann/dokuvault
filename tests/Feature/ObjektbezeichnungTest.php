@@ -11,7 +11,7 @@ use App\Models\Phone;
 use App\Models\PhoneSystem;
 use App\Models\Printer;
 use App\Models\Site;
-use App\Support\GlobaleSuche;
+use App\Support\Search;
 use Livewire\Livewire;
 
 /**
@@ -94,7 +94,7 @@ test('jede Trefferart der Suche kann sich benennen', function () {
     // Die Ansicht ruft protokollName() auf jedem Treffer auf. Ein Model ohne
     // die Methode brach die Seite nicht, zeigte aber eine Nummer - so kam die
     // Netzwerkdose beinahe abhanden.
-    $spiegel = new ReflectionClass(GlobaleSuche::class);
+    $spiegel = new ReflectionClass(Search::class);
     $typen = collect($spiegel->getConstants())->first(fn ($wert) => is_array($wert) && count($wert) > 5);
 
     expect($typen)->not->toBeEmpty();

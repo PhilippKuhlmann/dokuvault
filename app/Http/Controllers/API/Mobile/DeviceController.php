@@ -9,7 +9,7 @@ use App\Models\Scanner;
 use App\Models\ScanTarget;
 use App\Support\CredentialLinking;
 use App\Support\IpAssignment;
-use App\Support\MobilObjekte;
+use App\Support\MobileObjects;
 use App\Support\ScanTargetLinking;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Validator;
  */
 class DeviceController extends Controller
 {
-    public function __construct(private MobilObjekte $objekte) {}
+    public function __construct(private MobileObjects $objekte) {}
 
     // --- Zugangsdaten ----------------------------------------------------------
 

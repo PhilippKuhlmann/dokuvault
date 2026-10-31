@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Setting;
-use App\Support\Zeit;
+use App\Support\LocalTime;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -86,7 +86,7 @@ class AdminAllgemein extends Component
         Gate::authorize('admin_setting');
 
         $this->name = (string) Setting::wert(Setting::APP_NAME);
-        $this->zeitzone = Zeit::zone();
+        $this->zeitzone = LocalTime::zone();
         $this->uploadMb = (int) round(Setting::uploadMaxKb() / 1024);
         $this->sprache = Setting::sprache();
         $this->anmeldeHinweis = Setting::anmeldeHinweis();
@@ -142,7 +142,7 @@ class AdminAllgemein extends Component
         Gate::authorize('admin_setting');
 
         $this->validate(
-            ['zeitzone' => ['required', Rule::in(Zeit::auswahl())]],
+            ['zeitzone' => ['required', Rule::in(LocalTime::auswahl())]],
             [],
             ['zeitzone' => __('Zeitzone')]
         );
@@ -331,9 +331,9 @@ class AdminAllgemein extends Component
                     'vorhanden' => Setting::logoPfad($stelle) !== null,
                 ])->values()->all(),
             'formate' => config('custom.bild_formate'),
-            'zonen' => Zeit::auswahl(),
+            'zonen' => LocalTime::auswahl(),
             // Damit die Seite zeigen kann, was die Umstellung bewirkt.
-            'jetzt' => Zeit::anzeigen(now(), 'd.m.Y H:i'),
+            'jetzt' => LocalTime::anzeigen(now(), 'd.m.Y H:i'),
             // Damit auf der Seite steht, was der Server ueberhaupt hergibt.
             'serverMb' => (int) floor(Setting::serverGrenzeKb() / 1024),
             'phpWerte' => [

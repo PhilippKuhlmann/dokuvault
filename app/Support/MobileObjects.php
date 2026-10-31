@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Gate;
  * ist. Den Wert gibt es einzeln ueber App\Support\Kennwortabruf - mit Bremse
  * und Protokolleintrag, wie im Browser.
  */
-class MobilObjekte
+class MobileObjects
 {
     /**
      * Feldarten, die die App nicht zeigt: Dateien sind dort nicht zu oeffnen,
@@ -54,7 +54,7 @@ class MobilObjekte
 
         // Not the types with a page of their own (checklists): the app has no
         // view for them yet and would list entries it cannot open.
-        foreach (array_diff_key(GlobaleSuche::TYPES, array_flip(GlobaleSuche::ZUR_DETAILSEITE)) as $slug => $eintrag) {
+        foreach (array_diff_key(Search::TYPES, array_flip(Search::ZUR_DETAILSEITE)) as $slug => $eintrag) {
             $typen[$slug] ??= [$eintrag[0], $eintrag[2], null];
         }
 
@@ -92,7 +92,7 @@ class MobilObjekte
     {
         return __(config('custom.list_titles')[$slug]
             ?? config('custom.trashables')[$slug][1]
-            ?? GlobaleSuche::TYPES[$slug][1]
+            ?? Search::TYPES[$slug][1]
             ?? $slug);
     }
 
@@ -101,7 +101,7 @@ class MobilObjekte
     {
         return __(config('forms')[$slug]['einzahl']
             ?? config('custom.trashables')[$slug][1]
-            ?? GlobaleSuche::TYPES[$slug][1]
+            ?? Search::TYPES[$slug][1]
             ?? $slug);
     }
 

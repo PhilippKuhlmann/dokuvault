@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * Bleibt "System" fuer alles ohne Verursacher: Seeder, Konsolenbefehle,
  * geplante Aufgaben. Dort gibt es wirklich niemanden.
  */
-class Protokoll
+class ActivityCauser
 {
     public static function verursacher(?Model $causer): string
     {

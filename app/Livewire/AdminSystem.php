@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Support\SystemWerte;
+use App\Support\SystemMetrics;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -36,23 +36,23 @@ class AdminSystem extends Component
                 'beschriftung' => Carbon::parse($z->datum)->format('d.m.'),
                 'titel' => Carbon::parse($z->datum)->format('d.m.Y'),
                 'wert' => (int) round($z->wert / 1048576),
-                'text' => Carbon::parse($z->datum)->format('d.m.Y').' · '.SystemWerte::lesbar((int) $z->wert),
+                'text' => Carbon::parse($z->datum)->format('d.m.Y').' · '.SystemMetrics::lesbar((int) $z->wert),
             ])->values()->all());
 
-        $frei = SystemWerte::platteFreiBytes();
-        $gesamt = SystemWerte::platteGesamtBytes();
+        $frei = SystemMetrics::platteFreiBytes();
+        $gesamt = SystemMetrics::platteGesamtBytes();
 
         return view('livewire.admin-system', [
-            'db' => SystemWerte::datenbankBytes(),
-            'tabellen' => SystemWerte::groessteTabellen(),
-            'dateien' => SystemWerte::dateienBytes(),
-            'backups' => SystemWerte::backupBytes(),
+            'db' => SystemMetrics::datenbankBytes(),
+            'tabellen' => SystemMetrics::groessteTabellen(),
+            'dateien' => SystemMetrics::dateienBytes(),
+            'backups' => SystemMetrics::backupBytes(),
             'frei' => $frei,
             'gesamt' => $gesamt,
             'belegtProzent' => $frei !== null && $gesamt ? (int) round(100 - $frei / $gesamt * 100) : null,
-            'speicher' => SystemWerte::arbeitsspeicher(),
-            'last' => SystemWerte::last(),
-            'warteschlange' => SystemWerte::warteschlange(),
+            'speicher' => SystemMetrics::arbeitsspeicher(),
+            'last' => SystemMetrics::last(),
+            'warteschlange' => SystemMetrics::warteschlange(),
             'verlauf' => $verlauf,
             'php' => PHP_VERSION,
             'laravel' => app()->version(),

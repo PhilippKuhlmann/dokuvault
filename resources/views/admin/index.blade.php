@@ -103,7 +103,7 @@
                             <div class="min-w-0">
                                 <span class="text-sm font-medium {{ $eventColors[$a->description] ?? 'text-gray-700 dark:text-gray-300' }}">{{ __($eventLabels[$a->description] ?? $a->description) }}</span>
                                 <span class="text-sm text-gray-700 dark:text-gray-300">{{ $a->subject_type ? class_basename($a->subject_type) : '' }}</span>
-                                <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ \App\Support\Protokoll::verursacher($a->causer) }}</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ \App\Support\ActivityCauser::verursacher($a->causer) }}</div>
                             </div>
                             <div class="shrink-0 text-xs text-gray-400 dark:text-gray-500">{{ $a->created_at->diffForHumans() }}</div>
                         </div>

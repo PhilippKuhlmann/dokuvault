@@ -7,7 +7,7 @@ use App\Http\Requests\PatchPanelRequest;
 use App\Models\Customer;
 use App\Models\NetworkSwitch;
 use App\Models\PatchPanel;
-use App\Support\MobilObjekte;
+use App\Support\MobileObjects;
 use App\Support\PatchPortEditing;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Validator;
  */
 class PatchPanelController extends Controller
 {
-    public function __construct(private MobilObjekte $objekte) {}
+    public function __construct(private MobileObjects $objekte) {}
 
     public function show(Request $request, Customer $customer, PatchPanel $patchpanel): JsonResponse
     {

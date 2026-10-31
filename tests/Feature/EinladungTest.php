@@ -3,7 +3,7 @@
 use App\Models\Role;
 use App\Models\User;
 use App\Notifications\Einladung;
-use App\Support\Zeit;
+use App\Support\LocalTime;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -343,7 +343,7 @@ test('die Benutzerliste zeigt eine eingelöste Einladung als Haken mit Datum', f
         ->get(route('admin.user.index'))
         ->assertOk()
         ->assertSee('aria-label="'.__('eingelöst').'"', false)
-        ->assertSee(Zeit::anzeigen($eingeloest->invitation_accepted_at, 'd.m.Y'))
+        ->assertSee(LocalTime::anzeigen($eingeloest->invitation_accepted_at, 'd.m.Y'))
         ->assertSee('title="'.__('nie eingeladen').'"', false)
         ->assertSee('text-green-600', false);
 });
@@ -380,8 +380,8 @@ test('die Benutzerliste zeigt offene und abgelaufene Einladungen', function () {
         ->assertSee('aria-label="'.__('abgelaufen').'"', false)
         // Das Datum ist bei einer offenen Einladung die eigentliche Auskunft -
         // es darf nicht mit dem Wort verschwinden.
-        ->assertSee(Zeit::anzeigen($offen->invited_at, 'd.m.Y'))
-        ->assertSee(Zeit::anzeigen($abgelaufen->invited_at, 'd.m.Y'))
+        ->assertSee(LocalTime::anzeigen($offen->invited_at, 'd.m.Y'))
+        ->assertSee(LocalTime::anzeigen($abgelaufen->invited_at, 'd.m.Y'))
         // Zwei Zustaende, zwei Farben.
         ->assertSee('text-amber-600', false)
         ->assertSee('text-rose-600', false);

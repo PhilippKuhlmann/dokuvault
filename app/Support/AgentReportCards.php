@@ -14,7 +14,7 @@ use Illuminate\Support\Collection;
  * guest's cores of the host's) are sums over several records, and the cards
  * should only lay out.
  */
-class AgentAnzeige
+class AgentReportCards
 {
     /** @return array<string, array<int, array>> */
     public static function server(Server $server): array

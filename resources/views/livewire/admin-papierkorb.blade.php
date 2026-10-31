@@ -1,4 +1,4 @@
-@use('App\Support\Zeit')
+@use('App\Support\LocalTime')
 <div class="p-3 sm:p-5 space-y-4">
 
     <div class="flex flex-wrap items-baseline justify-between gap-3">
@@ -120,7 +120,7 @@
                                 </span>
                             </td>
                             <td class="px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100">{{ $zeile['name'] }}</td>
-                            <td class="whitespace-nowrap px-4 py-2.5" title="{{ Zeit::anzeigen($zeile['geloescht']) }}">
+                            <td class="whitespace-nowrap px-4 py-2.5" title="{{ LocalTime::anzeigen($zeile['geloescht']) }}">
                                 {{ $zeile['geloescht']?->diffForHumans() }}
                             </td>
                             <td class="px-4 py-2.5 text-right">

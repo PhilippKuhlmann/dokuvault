@@ -4,7 +4,7 @@ namespace App\Livewire;
 
 use App\Exceptions\ZuVieleKennwortabrufe;
 use App\Models\PasswordHistory;
-use App\Support\Kennwortabruf;
+use App\Support\PasswordReveal;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -45,7 +45,7 @@ class ProtokollKennwort extends Component
                 ->get()
                 ->map(fn ($eintrag) => [
                     'feld' => config('custom.secret_field_labels')[$eintrag->field] ?? $eintrag->field,
-                    'wert' => app(Kennwortabruf::class)->ausVerlauf($eintrag, auth()->user()),
+                    'wert' => app(PasswordReveal::class)->ausVerlauf($eintrag, auth()->user()),
                 ])
                 ->filter(fn ($eintrag) => $eintrag['wert'] !== null)
                 ->values()

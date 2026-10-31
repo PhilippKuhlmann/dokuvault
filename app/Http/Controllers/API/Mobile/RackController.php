@@ -8,7 +8,7 @@ use App\Models\Customer;
 use App\Models\Rack;
 use App\Models\RackCatalogItem;
 use App\Models\RackItem;
-use App\Support\MobilObjekte;
+use App\Support\MobileObjects;
 use App\Support\RackLayout;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,7 +25,7 @@ use Illuminate\Validation\Rule;
  */
 class RackController extends Controller
 {
-    public function __construct(private RackLayout $layout, private MobilObjekte $objekte) {}
+    public function __construct(private RackLayout $layout, private MobileObjects $objekte) {}
 
     public function show(Request $request, Customer $customer, Rack $rack): JsonResponse
     {

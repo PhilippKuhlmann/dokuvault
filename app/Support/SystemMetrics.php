@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Schema;
  * Every value that cannot be read (other database, no /proc) is null
  * instead of a wrong number.
  */
-class SystemWerte
+class SystemMetrics
 {
     /** Size of the database in bytes (MySQL/MariaDB: tables, SQLite: file). */
     public static function datenbankBytes(): ?int

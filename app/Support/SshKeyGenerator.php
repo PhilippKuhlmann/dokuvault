@@ -15,7 +15,7 @@ use Symfony\Component\Process\Process;
  * falsch - und das faellt erst auf, wenn er nachts um drei nicht angenommen
  * wird. ssh-keygen liegt auf jedem Server, der diese Anwendung traegt.
  */
-class SshKeyGenerator implements Erzeuger
+class SshKeyGenerator implements FieldGenerator
 {
     /** RSA unter 3072 gilt als zu kurz; 4096 ist die uebliche Vorgabe. */
     private const BITS = ['rsa' => '4096', 'ecdsa' => '521'];

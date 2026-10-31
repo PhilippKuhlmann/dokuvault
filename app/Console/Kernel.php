@@ -2,8 +2,8 @@
 
 namespace App\Console;
 
-use App\Support\BackupEinstellungen;
-use App\Support\Zeit;
+use App\Support\BackupSettings;
+use App\Support\LocalTime;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -24,9 +24,9 @@ class Kernel extends ConsoleKernel
         // "01:30" in the form is 01:30 local, not UTC (that was 03:30 in
         // Germany). Stored and logged stays UTC, see App\Support\Zeit.
         try {
-            $aktiv = BackupEinstellungen::aktiv();
-            $uhrzeit = BackupEinstellungen::uhrzeit();
-            $zone = Zeit::zone();
+            $aktiv = BackupSettings::aktiv();
+            $uhrzeit = BackupSettings::uhrzeit();
+            $zone = LocalTime::zone();
         } catch (\Throwable) {
             [$aktiv, $uhrzeit, $zone] = [true, '01:30', config('app.timezone')];
         }

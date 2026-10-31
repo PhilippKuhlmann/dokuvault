@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\CredentialLink;
 use App\Models\Customer;
 use App\Models\Site;
-use App\Support\GlobaleSuche;
-use App\Support\Kennwortabruf;
-use App\Support\MobilObjekte;
+use App\Support\MobileObjects;
+use App\Support\PasswordReveal;
+use App\Support\Search;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -21,7 +21,7 @@ use Illuminate\Http\Request;
  */
 class DatenController extends Controller
 {
-    public function __construct(private MobilObjekte $objekte) {}
+    public function __construct(private MobileObjects $objekte) {}
 
     public function kunden(Request $request): JsonResponse
     {
@@ -32,7 +32,7 @@ class DatenController extends Controller
             ->when($nutzer->hasCustomer(), fn ($abfrage) => $abfrage->whereKey($nutzer->customer_id))
             ->when($suche !== '', fn ($abfrage) => $abfrage->whereEnthaelt('name', $suche))
             ->orderBy('name')
-            ->limit(MobilObjekte::LISTE_HOECHSTENS)
+            ->limit(MobileObjects::LISTE_HOECHSTENS)
             ->get();
 
         return response()->json($kunden->map(fn ($kunde) => $this->objekte->kunde($kunde))->values());
@@ -78,10 +78,10 @@ class DatenController extends Controller
         $objekte = $klasse::with($mitladen)
             ->where('customer_id', $customer->id)
             ->when($standort, fn ($abfrage) => $abfrage->where('site_id', $standort))
-            ->limit(MobilObjekte::LISTE_HOECHSTENS + 1)
+            ->limit(MobileObjects::LISTE_HOECHSTENS + 1)
             ->get();
 
-        $zeilen = $objekte->take(MobilObjekte::LISTE_HOECHSTENS)
+        $zeilen = $objekte->take(MobileObjects::LISTE_HOECHSTENS)
             ->map(fn ($objekt) => $this->objekte->kurz($objekt, $typ))
             ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
             ->values();
@@ -90,7 +90,7 @@ class DatenController extends Controller
             'typ' => $typ,
             'titel' => $this->objekte->titel($typ),
             'eintraege' => $zeilen,
-            'weitere' => $objekte->count() > MobilObjekte::LISTE_HOECHSTENS,
+            'weitere' => $objekte->count() > MobileObjects::LISTE_HOECHSTENS,
             'darf_anlegen' => $this->objekte->darfAnlegen($request->user(), $typ),
             // Die Auswahl fuer den Standortfilter. Nur wo die Art ueberhaupt
             // an einem Standort haengt - sonst gaebe es nichts zu filtern.
@@ -101,7 +101,7 @@ class DatenController extends Controller
     }
 
     /** Dieselbe Suche wie im Browser, siehe GlobaleSuche. */
-    public function suche(Request $request, GlobaleSuche $suche): JsonResponse
+    public function suche(Request $request, Search $suche): JsonResponse
     {
         $gruppen = $suche->gruppen($request->user(), (string) $request->query('q'))
             ->reject(fn ($gruppe) => $gruppe['detailseite'])
@@ -126,7 +126,7 @@ class DatenController extends Controller
     }
 
     /** Das Kennwort hinter einer Verknuepfung - einzeln, gebremst, protokolliert. */
-    public function kennwort(Request $request, CredentialLink $link, Kennwortabruf $abruf): JsonResponse
+    public function kennwort(Request $request, CredentialLink $link, PasswordReveal $abruf): JsonResponse
     {
         $wert = $abruf->ausVerknuepfung($link, $request->user());
 
@@ -136,7 +136,7 @@ class DatenController extends Controller
     }
 
     /** Ein Geheimnis direkt am Objekt (BMC-Passwort, PIN ...). */
-    public function geheimnis(Request $request, string $typ, int $id, string $feld, Kennwortabruf $abruf): JsonResponse
+    public function geheimnis(Request $request, string $typ, int $id, string $feld, PasswordReveal $abruf): JsonResponse
     {
         $objekt = $this->objekte->finden($typ, $id, $request->user());
 

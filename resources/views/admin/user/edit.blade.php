@@ -87,11 +87,11 @@
                          schickt oder zum ersten Mal. --}}
                     @if ($user->einladungAbgelaufen())
                         <p class="mt-2 text-amber-700 dark:text-amber-400">
-                            {{ __('Die Einladung vom :datum ist abgelaufen und wurde nicht eingelöst.', ['datum' => \App\Support\Zeit::anzeigen($user->invited_at, 'd.m.Y')]) }}
+                            {{ __('Die Einladung vom :datum ist abgelaufen und wurde nicht eingelöst.', ['datum' => \App\Support\LocalTime::anzeigen($user->invited_at, 'd.m.Y')]) }}
                         </p>
                     @elseif ($user->einladungOffen())
                         <p class="mt-2 text-gray-500 dark:text-gray-400">
-                            {{ __('Verschickt am :datum, noch nicht eingelöst.', ['datum' => \App\Support\Zeit::anzeigen($user->invited_at, 'd.m.Y H:i')]) }}
+                            {{ __('Verschickt am :datum, noch nicht eingelöst.', ['datum' => \App\Support\LocalTime::anzeigen($user->invited_at, 'd.m.Y H:i')]) }}
                         </p>
                     @endif
                 </div>

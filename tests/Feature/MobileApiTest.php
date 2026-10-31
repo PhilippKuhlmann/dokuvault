@@ -13,8 +13,8 @@ use App\Models\Setting;
 use App\Models\Site;
 use App\Models\SshKey;
 use App\Models\User;
-use App\Support\MobilObjekte;
-use App\Support\ZweiteStufe;
+use App\Support\MobileObjects;
+use App\Support\TwoFactor;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use PragmaRX\Google2FA\Google2FA;
@@ -71,11 +71,11 @@ function mobilZugang(Server $server, string $kennwort = 'LOGIN-GEHEIM')
 
 function mobilZweiteStufe(User $nutzer): string
 {
-    $geheimnis = app(ZweiteStufe::class)->geheimnisErzeugen();
+    $geheimnis = app(TwoFactor::class)->geheimnisErzeugen();
 
     $nutzer->forceFill([
         'two_factor_secret' => $geheimnis,
-        'two_factor_recovery_codes' => app(ZweiteStufe::class)->wiederherstellungscodes(),
+        'two_factor_recovery_codes' => app(TwoFactor::class)->wiederherstellungscodes(),
         'two_factor_confirmed_at' => now(),
     ])->save();
 
@@ -306,7 +306,7 @@ test('AD-Benutzer und AD-Gruppen lassen sich auflisten und oeffnen', function ()
 // Liste und Detail laden den Kunden mit - ohne die Beziehung brach die Liste
 // mit einem 500er ab (AD-Benutzer, Logins, Kontakte ...).
 test('jede Art der App kennt ihren Kunden', function () {
-    foreach ((new MobilObjekte)->typen() as $slug => [$klasse]) {
+    foreach ((new MobileObjects)->typen() as $slug => [$klasse]) {
         expect(method_exists($klasse, 'customer'))->toBeTrue("{$slug} ohne customer()");
     }
 });

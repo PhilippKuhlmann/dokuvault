@@ -18,7 +18,7 @@
             <span class="mt-0.5 block text-gray-600 dark:text-gray-400">
                 {{ __('Keine Anmeldung mehr. Eine laufende Sitzung endet beim nächsten Aufruf, API-Token werden abgewiesen. Der Benutzer bleibt mit allem, was er dokumentiert hat, erhalten.') }}
                 @if ($seit)
-                    <span class="mt-1 block font-mono text-xs">{{ __('gesperrt seit') }} {{ \App\Support\Zeit::anzeigen($seit, 'd.m.Y H:i') }}</span>
+                    <span class="mt-1 block font-mono text-xs">{{ __('gesperrt seit') }} {{ \App\Support\LocalTime::anzeigen($seit, 'd.m.Y H:i') }}</span>
                 @endif
             </span>
         </span>

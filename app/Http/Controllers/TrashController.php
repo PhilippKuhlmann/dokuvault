@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
-use App\Support\Papierkorb;
+use App\Support\Trash;
 use Illuminate\Support\Facades\Gate;
 
 class TrashController extends Controller
@@ -15,7 +15,7 @@ class TrashController extends Controller
         // Gerechnet wird in Papierkorb - dieselbe Klasse bedient die
         // iOS-App, damit beide dieselben Eintraege und dieselbe Grenze
         // kennen.
-        $papierkorb = new Papierkorb($customer, auth()->user());
+        $papierkorb = new Trash($customer, auth()->user());
 
         return view('trash.index', [
             'customer' => $customer,
@@ -28,7 +28,7 @@ class TrashController extends Controller
     {
         Gate::authorize('see_hidden');
 
-        (new Papierkorb($customer, auth()->user()))->wiederherstellen($type, $id);
+        (new Trash($customer, auth()->user()))->wiederherstellen($type, $id);
 
         return redirect(route('trash.index', $customer))
             ->with('success', 'Objekt wiederhergestellt.');

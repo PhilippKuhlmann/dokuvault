@@ -4,7 +4,7 @@ namespace App\Http\Controllers\API\Mobile;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
-use App\Support\MobilObjekte;
+use App\Support\MobileObjects;
 use App\Support\ObjectForm;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -30,7 +30,7 @@ class ObjectController extends Controller
     /** Kinds the app does not get: hidden fields are not shown in the browser either. */
     private const OHNE = ['versteckt'];
 
-    public function __construct(private MobilObjekte $objekte) {}
+    public function __construct(private MobileObjects $objekte) {}
 
     /** The empty form for a new object. */
     public function createForm(Customer $customer, string $typ): JsonResponse

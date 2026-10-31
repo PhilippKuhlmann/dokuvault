@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\AgentInstallation;
-use App\Support\AgentSkript;
+use App\Support\AgentScript;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
@@ -27,9 +27,9 @@ class AdminAgentenStatistik extends Component
         // Current version per kind: the Windows exe, for Linux/Proxmox the
         // shared installer (see AgentController::update).
         $aktuell = [
-            'windows' => AgentSkript::exeVersion(),
-            'proxmox' => AgentSkript::installerVersion('linux-agent.sh'),
-            'linux' => AgentSkript::installerVersion('linux-agent.sh'),
+            'windows' => AgentScript::exeVersion(),
+            'proxmox' => AgentScript::installerVersion('linux-agent.sh'),
+            'linux' => AgentScript::installerVersion('linux-agent.sh'),
         ];
 
         $agenten = AgentInstallation::with('customer:id,name,slug')->get()

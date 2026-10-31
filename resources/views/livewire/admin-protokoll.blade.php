@@ -1,4 +1,4 @@
-@use('App\Support\Zeit')
+@use('App\Support\LocalTime')
 <div class="p-3 sm:p-5 space-y-4">
 
     <div class="flex flex-wrap items-baseline justify-between gap-3">
@@ -132,11 +132,11 @@
                         @endphp
                         <tr wire:key="aktivitaet-{{ $activity->id }}" x-data="{ open: false }"
                             class="border-b border-gray-100 last:border-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/50">
-                            <td class="whitespace-nowrap px-4 py-2.5" title="{{ Zeit::anzeigen($activity->created_at, 'd.m.Y H:i:s') }}">
-                                {{ Zeit::anzeigen($activity->created_at) }}
+                            <td class="whitespace-nowrap px-4 py-2.5" title="{{ LocalTime::anzeigen($activity->created_at, 'd.m.Y H:i:s') }}">
+                                {{ LocalTime::anzeigen($activity->created_at) }}
                             </td>
                             <td class="px-4 py-2.5 text-gray-900 dark:text-gray-100">
-                                {{ \App\Support\Protokoll::verursacher($activity->causer) }}
+                                {{ \App\Support\ActivityCauser::verursacher($activity->causer) }}
                                 {{-- Der Kunde dahinter, wenn es ein Kundenzugang
                                      war: Sonst steht dort nur ein Name, und wer
                                      das war, muesste man anderswo nachschlagen. --}}

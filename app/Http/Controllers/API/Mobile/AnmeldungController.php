@@ -5,7 +5,7 @@ namespace App\Http\Controllers\API\Mobile;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\MobileLoginRequest;
 use App\Models\User;
-use App\Support\ZweiteStufePruefung;
+use App\Support\TwoFactorCheck;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\JsonResponse;
@@ -25,7 +25,7 @@ use Illuminate\Validation\ValidationException;
  */
 class AnmeldungController extends Controller
 {
-    public function __construct(private ZweiteStufePruefung $pruefung) {}
+    public function __construct(private TwoFactorCheck $pruefung) {}
 
     public function anmelden(MobileLoginRequest $request): JsonResponse
     {

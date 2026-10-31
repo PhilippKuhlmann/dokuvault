@@ -8,7 +8,7 @@ namespace App\Support;
  * Damit bleibt das generische Modal generisch: Es kennt nur "dieser Typ hat
  * einen Erzeuger" (config/forms.php), nicht dessen Innenleben.
  */
-interface Erzeuger
+interface FieldGenerator
 {
     /**
      * @param  array<string, mixed>  $form  Der bisherige Formularstand

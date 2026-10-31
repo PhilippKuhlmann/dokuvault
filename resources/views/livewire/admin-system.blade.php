@@ -1,4 +1,4 @@
-@use('App\Support\SystemWerte')
+@use('App\Support\SystemMetrics')
 <div class="p-3 sm:p-5 space-y-4">
     <div>
         <div class="text-3xl font-CoconPro text-gray-900 dark:text-gray-100">{{ __('System') }}</div>
@@ -10,14 +10,14 @@
     <x-backup-zustand />
 
     <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <x-statistik.kennzahl :titel="__('Datenbank')" :wert="SystemWerte::lesbar($db)" :zusatz="__('Tabellen und Indizes')" />
-        <x-statistik.kennzahl :titel="__('Dateien')" :wert="SystemWerte::lesbar($dateien)" :zusatz="__('Dokumente und Uploads')" />
-        <x-statistik.kennzahl :titel="__('Backups')" :wert="SystemWerte::lesbar($backups)" :zusatz="__('Sicherungen von DokuVault auf diesem Server')" />
+        <x-statistik.kennzahl :titel="__('Datenbank')" :wert="SystemMetrics::lesbar($db)" :zusatz="__('Tabellen und Indizes')" />
+        <x-statistik.kennzahl :titel="__('Dateien')" :wert="SystemMetrics::lesbar($dateien)" :zusatz="__('Dokumente und Uploads')" />
+        <x-statistik.kennzahl :titel="__('Backups')" :wert="SystemMetrics::lesbar($backups)" :zusatz="__('Sicherungen von DokuVault auf diesem Server')" />
         <x-statistik.kennzahl :titel="__('Platte')" :wert="$belegtProzent !== null ? $belegtProzent.' % '.__('belegt') : '—'"
-            :zusatz="SystemWerte::lesbar($frei).' '.__('frei von').' '.SystemWerte::lesbar($gesamt)" :warnung="$belegtProzent !== null && $belegtProzent >= 85" />
+            :zusatz="SystemMetrics::lesbar($frei).' '.__('frei von').' '.SystemMetrics::lesbar($gesamt)" :warnung="$belegtProzent !== null && $belegtProzent >= 85" />
         <x-statistik.kennzahl :titel="__('Arbeitsspeicher')"
             :wert="$speicher ? (int) round(100 - $speicher['frei'] / $speicher['gesamt'] * 100).' % '.__('belegt') : '—'"
-            :zusatz="$speicher ? SystemWerte::lesbar($speicher['frei']).' '.__('frei von').' '.SystemWerte::lesbar($speicher['gesamt']) : __('nur unter Linux lesbar')"
+            :zusatz="$speicher ? SystemMetrics::lesbar($speicher['frei']).' '.__('frei von').' '.SystemMetrics::lesbar($speicher['gesamt']) : __('nur unter Linux lesbar')"
             :warnung="$speicher && $speicher['frei'] / $speicher['gesamt'] < 0.1" />
         <x-statistik.kennzahl :titel="__('Last')"
             :wert="$last ? number_format($last['werte'][0], 2, ',', '.') : '—'"
@@ -53,7 +53,7 @@
                 @foreach ($tabellen as $name => $bytes)
                     <tr class="border-b border-gray-100 last:border-0 dark:border-gray-700">
                         <td class="py-1.5 font-mono text-xs text-gray-900 dark:text-gray-100">{{ $name }}</td>
-                        <td class="py-1.5 text-right text-gray-600 dark:text-gray-300">{{ SystemWerte::lesbar($bytes) }}</td>
+                        <td class="py-1.5 text-right text-gray-600 dark:text-gray-300">{{ SystemMetrics::lesbar($bytes) }}</td>
                     </tr>
                 @endforeach
             </table>

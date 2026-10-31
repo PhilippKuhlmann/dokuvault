@@ -8,9 +8,9 @@ use App\Models\Backup;
 use App\Models\BackupRun;
 use App\Models\Customer;
 use App\Models\Site;
-use App\Support\AgentSkript;
-use App\Support\BackupEinstellungen;
-use App\Support\BackupZustand;
+use App\Support\AgentScript;
+use App\Support\BackupHealth;
+use App\Support\BackupSettings;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -48,8 +48,8 @@ class DemoAgentSeeder extends Seeder
 
     private function agenten(Customer $kunde, AgentToken $token): void
     {
-        $exe = AgentSkript::exeVersion() ?: '26.10.06-1941';
-        $linux = AgentSkript::installerVersion('linux-agent.sh') ?: '26.10.05';
+        $exe = AgentScript::exeVersion() ?: '26.10.06-1941';
+        $linux = AgentScript::installerVersion('linux-agent.sh') ?: '26.10.05';
 
         $ok = fn (string $meldung, int $minuten) => ['ok' => true, 'message' => $meldung, 'at' => now()->subMinutes($minuten)->toIso8601String()];
         $fehler = fn (string $meldung, int $minuten) => ['ok' => false, 'message' => $meldung, 'at' => now()->subMinutes($minuten)->toIso8601String()];
@@ -192,7 +192,7 @@ class DemoAgentSeeder extends Seeder
      */
     private function eigeneSicherung(): void
     {
-        BackupEinstellungen::speichern(['backup_geheim_archivpasswort' => Str::random(24)]);
-        BackupZustand::merken('local', null);
+        BackupSettings::speichern(['backup_geheim_archivpasswort' => Str::random(24)]);
+        BackupHealth::merken('local', null);
     }
 }

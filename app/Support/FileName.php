@@ -16,7 +16,7 @@ use Illuminate\Http\UploadedFile;
  * Die Endung kommt genauso wenig ungeprüft durch: Sie stammt aus dem
  * Dateinamen, den der Browser mitschickt, und den bestimmt der Absender.
  */
-class Dateiname
+class FileName
 {
     /** Was von einer Bezeichnung übrig bleibt: Buchstaben, Ziffern, _ und -. */
     public static function bereinigen(string $roh): string

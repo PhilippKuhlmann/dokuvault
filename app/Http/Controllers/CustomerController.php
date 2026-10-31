@@ -8,7 +8,7 @@ use App\Models\Customer;
 use App\Models\DocumentationRun;
 use App\Models\PdfExport;
 use App\Models\Setting;
-use App\Support\Kundenuebersicht;
+use App\Support\CustomerDashboard;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -44,7 +44,7 @@ class CustomerController extends Controller
         // Fristen, Standorte, Ansprechpartner, Agenten und die letzten
         // Aenderungen rechnet Kundenuebersicht - dieselbe Klasse bedient die
         // iOS-App, damit beide dieselben Tage zeigen.
-        $uebersicht = new Kundenuebersicht($customer, auth()->user());
+        $uebersicht = new CustomerDashboard($customer, auth()->user());
 
         $sites = $uebersicht->standorte();
         $contactpersons = $uebersicht->ansprechpartner();

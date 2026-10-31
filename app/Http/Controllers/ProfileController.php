@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Notifications\EmailChanged;
-use App\Support\ZweiteStufe;
+use App\Support\TwoFactor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -24,7 +24,7 @@ class ProfileController extends Controller
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request, ZweiteStufe $zweiteStufe): View
+    public function edit(Request $request, TwoFactor $zweiteStufe): View
     {
         // Ein begonnenes, aber noch nicht bestaetigtes Geheimnis liegt in der
         // Sitzung - siehe TwoFactorController. Nur dann gibt es einen QR-Code

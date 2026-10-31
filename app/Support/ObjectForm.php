@@ -496,7 +496,7 @@ class ObjectForm
         // beides bestimmt der Absender. Ungeprueft in den Ablagepfad gesetzt,
         // schrieb "../../../../fremder-kunde/files/x" die Datei in das
         // Verzeichnis eines anderen Kunden und ueberschrieb, was dort lag.
-        $dateiname = Dateiname::fuer($datei, $daten[$feld['name_feld']] ?? null);
+        $dateiname = FileName::fuer($datei, $daten[$feld['name_feld']] ?? null);
         $pfad = $datei->storeAs($this->customer()->slug.'/'.$feld['ordner'], $dateiname, 'local');
 
         $alterPfad = $objekt?->{$feld['pfad_feld']};

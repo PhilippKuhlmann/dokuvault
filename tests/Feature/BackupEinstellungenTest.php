@@ -2,7 +2,7 @@
 
 use App\Livewire\AdminBackupEinstellungen;
 use App\Models\Setting;
-use App\Support\BackupEinstellungen;
+use App\Support\BackupSettings;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -14,26 +14,26 @@ use Spatie\Backup\Listeners\EncryptBackupArchive;
  */
 
 test('without settings the backup stays local at 01:30, without mails to nowhere', function () {
-    BackupEinstellungen::anwenden();
+    BackupSettings::anwenden();
 
     expect(config('backup.backup.destination.disks'))->toBe(['local'])
-        ->and(BackupEinstellungen::uhrzeit())->toBe('01:30')
+        ->and(BackupSettings::uhrzeit())->toBe('01:30')
         ->and(collect(config('backup.notifications.notifications'))->flatten()->all())->toBe([]);
 });
 
 test('an SFTP target becomes a disk, retention and archive password are applied', function () {
-    BackupEinstellungen::speichern([
+    BackupSettings::speichern([
         'backup_ziel_art' => 'sftp', 'backup_ziel_host' => 'nas.firma.local', 'backup_ziel_benutzer' => 'backup',
         'backup_ziel_geheim_passwort' => 'geheim123', 'backup_ziel_pfad' => '/sicherung',
         'backup_tage_taeglich' => '14', 'backup_geheim_archivpasswort' => 'archiv-passwort', 'backup_mail' => 'it@firma.de',
     ]);
-    BackupEinstellungen::anwenden();
-    BackupEinstellungen::anwenden();
+    BackupSettings::anwenden();
+    BackupSettings::anwenden();
 
-    expect(config('backup.backup.destination.disks'))->toBe(['local', BackupEinstellungen::ZIEL_DISK])
-        ->and(config('filesystems.disks.'.BackupEinstellungen::ZIEL_DISK.'.driver'))->toBe('sftp')
-        ->and(config('filesystems.disks.'.BackupEinstellungen::ZIEL_DISK.'.port'))->toBe(22)
-        ->and(config('filesystems.disks.'.BackupEinstellungen::ZIEL_DISK.'.password'))->toBe('geheim123')
+    expect(config('backup.backup.destination.disks'))->toBe(['local', BackupSettings::ZIEL_DISK])
+        ->and(config('filesystems.disks.'.BackupSettings::ZIEL_DISK.'.driver'))->toBe('sftp')
+        ->and(config('filesystems.disks.'.BackupSettings::ZIEL_DISK.'.port'))->toBe(22)
+        ->and(config('filesystems.disks.'.BackupSettings::ZIEL_DISK.'.password'))->toBe('geheim123')
         ->and(config('backup.cleanup.default_strategy.keep_daily_backups_for_days'))->toBe(14)
         ->and(config('backup.backup.password'))->toBe('archiv-passwort')
         // Encrypted archive: the .env with APP_KEY goes in.
@@ -50,24 +50,24 @@ test('an SFTP target becomes a disk, retention and archive password are applied'
 
 test('an empty BACKUP_ARCHIVE_PASSWORD is no password', function () {
     config(['backup.backup.password' => '']);
-    BackupEinstellungen::anwenden();
+    BackupSettings::anwenden();
 
     expect(config('backup.backup.password'))->toBeNull()
         ->and(EncryptBackupArchive::shouldEncrypt())->toBeFalse();
 });
 
 test('without an archive password the .env stays out of the backup', function () {
-    BackupEinstellungen::anwenden();
+    BackupSettings::anwenden();
 
     expect(config('backup.backup.source.files.exclude'))->toContain(base_path('.env'));
 });
 
 test('FTP without keeping local writes only to the target', function () {
-    BackupEinstellungen::speichern(['backup_ziel_art' => 'ftp', 'backup_ziel_host' => 'ftp.firma.de', 'backup_ziel_benutzer' => 'u', 'backup_lokal_behalten' => '0', 'backup_ziel_ftps' => '1']);
-    BackupEinstellungen::anwenden();
+    BackupSettings::speichern(['backup_ziel_art' => 'ftp', 'backup_ziel_host' => 'ftp.firma.de', 'backup_ziel_benutzer' => 'u', 'backup_lokal_behalten' => '0', 'backup_ziel_ftps' => '1']);
+    BackupSettings::anwenden();
 
-    expect(config('backup.backup.destination.disks'))->toBe([BackupEinstellungen::ZIEL_DISK])
-        ->and(config('filesystems.disks.'.BackupEinstellungen::ZIEL_DISK.'.ssl'))->toBeTrue();
+    expect(config('backup.backup.destination.disks'))->toBe([BackupSettings::ZIEL_DISK])
+        ->and(config('filesystems.disks.'.BackupSettings::ZIEL_DISK.'.ssl'))->toBeTrue();
 });
 
 test('the settings page saves, keeps secrets when left empty and needs the settings right', function () {
@@ -90,7 +90,7 @@ test('the settings page saves, keeps secrets when left empty and needs the setti
         ->call('speichern')
         ->assertHasNoErrors();
 
-    $werte = BackupEinstellungen::werte();
+    $werte = BackupSettings::werte();
     expect($werte['backup_uhrzeit'])->toBe('03:15')
         ->and($werte['backup_ziel_host'])->toBe('127.0.0.2')
         ->and($werte['backup_ziel_geheim_passwort'])->toBe('erstes-passwort');

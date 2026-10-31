@@ -7,8 +7,8 @@ use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\AlpineJson;
-use App\Support\BackupEinstellungen;
-use App\Support\BackupZustand;
+use App\Support\BackupHealth;
+use App\Support\BackupSettings;
 use App\Support\Changelog;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
@@ -50,13 +50,13 @@ class AppServiceProvider extends ServiceProvider
         // The DokuVault backup is configured in the admin area; its settings
         // replace config/backup.php at runtime. Never at the price of booting.
         try {
-            BackupEinstellungen::anwenden();
+            BackupSettings::anwenden();
         } catch (Throwable) {
         }
 
         // Outcome of each backup run, for the state on the dashboard.
-        Event::listen(BackupWasSuccessful::class, [BackupZustand::class, 'erfolg']);
-        Event::listen(BackupHasFailed::class, [BackupZustand::class, 'fehler']);
+        Event::listen(BackupWasSuccessful::class, [BackupHealth::class, 'erfolg']);
+        Event::listen(BackupHasFailed::class, [BackupHealth::class, 'fehler']);
 
         // Every log entry carries its customer: the customer itself, or the
         // customer of the changed object. The customer dashboard and the

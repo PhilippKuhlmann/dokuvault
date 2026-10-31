@@ -9,9 +9,9 @@ use App\Models\ChecklistItem;
 use App\Models\ChecklistOption;
 use App\Models\Customer;
 use App\Models\NetworkShare;
+use App\Support\ChecklistActions;
 use App\Support\ChecklistAdScript;
 use App\Support\ChecklistBuilder;
-use App\Support\Checklistenpflege;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -217,7 +217,7 @@ class ChecklistController extends Controller
      */
     public function toggle(Request $request, Customer $customer, Checklist $checklist, ChecklistItem $item): JsonResponse
     {
-        $grund = Checklistenpflege::umschalten($item, $request->user());
+        $grund = ChecklistActions::umschalten($item, $request->user());
 
         if ($grund !== null) {
             return response()->json(['message' => $grund], 409);
@@ -231,7 +231,7 @@ class ChecklistController extends Controller
 
     public function approve(Request $request, Customer $customer, Checklist $checklist, ChecklistItem $item): JsonResponse
     {
-        Checklistenpflege::freigeben($item, $request->user());
+        ChecklistActions::freigeben($item, $request->user());
 
         return response()->json(['freigegeben' => true]);
     }

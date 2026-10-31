@@ -4,8 +4,8 @@ namespace App\Http\Controllers\API\Mobile;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
-use App\Support\MobilObjekte;
-use App\Support\Papierkorb;
+use App\Support\MobileObjects;
+use App\Support\Trash;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -19,13 +19,13 @@ use Illuminate\Support\Facades\Gate;
  */
 class TrashController extends Controller
 {
-    public function __construct(private MobilObjekte $objekte) {}
+    public function __construct(private MobileObjects $objekte) {}
 
     public function index(Request $request, Customer $customer): JsonResponse
     {
         Gate::authorize('see_hidden');
 
-        $papierkorb = new Papierkorb($customer, $request->user());
+        $papierkorb = new Trash($customer, $request->user());
 
         return response()->json([
             'eintraege' => $papierkorb->eintraege()->map(fn ($eintrag) => [
@@ -51,7 +51,7 @@ class TrashController extends Controller
     {
         Gate::authorize('see_hidden');
 
-        $objekt = (new Papierkorb($customer, $request->user()))->wiederherstellen($typ, $id);
+        $objekt = (new Trash($customer, $request->user()))->wiederherstellen($typ, $id);
 
         return response()->json([
             'objekt' => array_key_exists($typ, $this->objekte->typen())

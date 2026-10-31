@@ -18,7 +18,7 @@ use PragmaRX\Google2FA\Google2FA;
  * an einen fremden Server zu schicken, nur damit er ein Bild daraus malt,
  * waere genau das Gegenteil dessen, was diese Stufe leisten soll.
  */
-class ZweiteStufe
+class TwoFactor
 {
     /** Wie viele Wiederherstellungscodes es gibt. */
     public const CODES = 8;

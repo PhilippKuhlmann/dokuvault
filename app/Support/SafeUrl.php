@@ -15,7 +15,7 @@ namespace App\Support;
  * Regel darf nicht streng sein - dort steht oft nur "192.168.178.1", und das
  * soll weiterhin gehen. Es wird dann nur nicht verlinkt.
  */
-class Adresse
+class SafeUrl
 {
     /**
      * Die Adresse, wenn man sie gefahrlos verlinken kann - sonst null.

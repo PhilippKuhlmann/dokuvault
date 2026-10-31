@@ -4,8 +4,8 @@ namespace App\Http\Controllers\API\Mobile;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
-use App\Support\Kundenuebersicht;
-use App\Support\MobilObjekte;
+use App\Support\CustomerDashboard;
+use App\Support\MobileObjects;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -24,12 +24,12 @@ use Illuminate\Support\Collection;
  */
 class DashboardController extends Controller
 {
-    public function __construct(private MobilObjekte $objekte) {}
+    public function __construct(private MobileObjects $objekte) {}
 
     public function zeigen(Request $request, Customer $customer): JsonResponse
     {
         $nutzer = $request->user();
-        $uebersicht = new Kundenuebersicht($customer, $nutzer);
+        $uebersicht = new CustomerDashboard($customer, $nutzer);
 
         return response()->json([
             ...$this->objekte->kunde($customer),
@@ -87,7 +87,7 @@ class DashboardController extends Controller
      * Der Typ, wenn die App ihn oeffnen kann - sonst null.
      *
      * Die Fristen sammeln ueber config('custom.trashables'), die App kennt
-     * MobilObjekte::typen(). Das ist nicht dasselbe: Eine Checkliste steht im
+     * MobileObjects::typen(). Das ist nicht dasselbe: Eine Checkliste steht im
      * Papierkorb, hat in der App aber keine Ansicht.
      */
     private function oeffenbar(?string $typ): ?string

@@ -1,5 +1,5 @@
-@use('App\Support\SystemWerte')
-@use('App\Support\Zeit')
+@use('App\Support\SystemMetrics')
+@use('App\Support\LocalTime')
 @php
     $cb = 'h-4 w-4 rounded border-gray-300 text-cerulean-600 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700';
 @endphp
@@ -22,7 +22,7 @@
                     <input type="checkbox" wire:model="form.backup_aktiv" class="{{ $cb }}"> {{ __('Täglich sichern') }}
                 </label>
                 <div>
-                    <x-input.label for="uhrzeit" :value="__('Uhrzeit').' ('.\App\Support\Zeit::zone().')'" />
+                    <x-input.label for="uhrzeit" :value="__('Uhrzeit').' ('.\App\Support\LocalTime::zone().')'" />
                     <x-input.field id="uhrzeit" type="time" wire:model="form.backup_uhrzeit" class="mt-1 w-full dark:scheme-dark" />
                     <x-input.fehler feld="form.backup_uhrzeit" />
                 </div>
@@ -188,10 +188,10 @@
                         @if (isset($s['fehler']))
                             <td class="px-4 py-2" colspan="5"><span class="text-red-600 dark:text-red-400">{{ $s['ziel'] }}: {{ __('nicht lesbar') }} – {{ $s['fehler'] }}</span></td>
                         @else
-                            <td class="whitespace-nowrap px-4 py-2 text-gray-900 dark:text-gray-100">{{ Zeit::anzeigen($s['datum'], 'd.m.Y H:i') }}</td>
+                            <td class="whitespace-nowrap px-4 py-2 text-gray-900 dark:text-gray-100">{{ LocalTime::anzeigen($s['datum'], 'd.m.Y H:i') }}</td>
                             <td class="px-4 py-2">{{ $s['ziel'] }}</td>
                             <td class="px-4 py-2 font-mono text-xs">{{ basename($s['pfad']) }}</td>
-                            <td class="px-4 py-2 text-right">{{ SystemWerte::lesbar($s['groesse']) }}</td>
+                            <td class="px-4 py-2 text-right">{{ SystemMetrics::lesbar($s['groesse']) }}</td>
                             <td class="px-4 py-2 text-right">
                                 {{-- A plain link, not a Livewire action: Livewire would push the whole archive base64 through JSON. --}}
                                 <a href="{{ route('admin.backup.download', ['disk' => $s['disk'], 'pfad' => $s['pfad']]) }}"

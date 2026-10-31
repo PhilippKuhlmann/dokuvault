@@ -9,7 +9,7 @@ use App\Models\Rack;
 use App\Models\Role;
 use App\Models\ScanTarget;
 use App\Models\User;
-use App\Support\BackupEinstellungen;
+use App\Support\BackupSettings;
 
 test('ohne Einstellung entscheidet die Browsersprache', function () {
     $this->withHeaders(['Accept-Language' => 'en-US,en'])->get('/login')->assertOk();
@@ -233,7 +233,7 @@ test('jede Zeichenkette in lang/en.json wird auch verwendet', function () {
         )))
         // Backup status, target kinds and the period buttons of the statistics.
         ->merge(array_values(Backup::STATUS))
-        ->merge(array_values(BackupEinstellungen::ARTEN))
+        ->merge(array_values(BackupSettings::ARTEN))
         ->merge(array_values(AdminAuslastung::ZEITRAEUME))
         ->merge(array_values(AdminNutzung::ZEITRAEUME))
         ->merge(array_values(AdminDatenwachstum::ZEITRAEUME))

@@ -14,9 +14,9 @@ use Illuminate\Validation\ValidationException;
  * ohne Sitzung an und braucht dieselbe Pruefung mit derselben Bremse: Zwei
  * Eingaenge mit getrennten Zaehlern waeren doppelt so viele Versuche.
  */
-class ZweiteStufePruefung
+class TwoFactorCheck
 {
-    public function __construct(private ZweiteStufe $zweiteStufe) {}
+    public function __construct(private TwoFactor $zweiteStufe) {}
 
     /**
      * Prueft den Einmal- oder Wiederherstellungscode.

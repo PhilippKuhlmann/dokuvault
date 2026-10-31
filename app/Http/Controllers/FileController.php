@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\File;
 use App\Models\Setting;
-use App\Support\Dateiname;
+use App\Support\FileName;
 use App\Support\StoragePath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -34,7 +34,7 @@ class FileController extends Controller
         $this->authorize('create', File::class);
 
         // Der Anzeigename wird begrenzt; fuer den Ablagepfad wird er in
-        // Dateiname::fuer() auf unbedenkliche Zeichen reduziert - dort
+        // FileName::fuer() auf unbedenkliche Zeichen reduziert - dort
         // zusammen mit der Endung, die genauso aus dem Browser kommt.
         $validated = $request->validate([
             'file' => [
@@ -47,13 +47,13 @@ class FileController extends Controller
         ], [], ['file' => __('Datei'), 'name' => __('Name')]);
 
         $file = $request->file('file');
-        $fileName = Dateiname::fuer($file, $validated['name']);
+        $fileName = FileName::fuer($file, $validated['name']);
         $filePath = $file->storeAs($customer->slug.'/files', $fileName, 'local');
 
         $customer->files()->create([
             'file_path' => $filePath,
             'name' => $validated['name'],
-            'extension' => Dateiname::extension($file),
+            'extension' => FileName::extension($file),
             // Beim Hochladen mitschreiben: Sie spaeter von der Platte zu lesen
             // waere ein Dateizugriff je Zeile der Liste.
             'size' => $file->getSize(),

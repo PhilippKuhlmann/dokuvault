@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\User;
-use App\Support\ZweiteStufe;
+use App\Support\TwoFactor;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Activitylog\Models\Activity;
 
@@ -68,7 +68,7 @@ test('ein falscher zweiter Faktor steht im Protokoll', function () {
     // Das Kennwort stimmte - Laravel loest hier kein Failed aus. Genau dieser
     // Fall ist aber der interessante.
     $nutzer = anmeldbarerNutzer();
-    $geheimnis = app(ZweiteStufe::class)->geheimnisErzeugen();
+    $geheimnis = app(TwoFactor::class)->geheimnisErzeugen();
     $nutzer->forceFill([
         'two_factor_secret' => $geheimnis,
         'two_factor_confirmed_at' => now(),

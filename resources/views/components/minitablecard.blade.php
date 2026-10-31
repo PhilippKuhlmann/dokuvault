@@ -96,7 +96,7 @@
                                 </div>
                             </div>
                         </td>
-                    @elseif ($ziel = \App\Support\Adresse::sicher($value))
+                    @elseif ($ziel = \App\Support\SafeUrl::sicher($value))
                         {{-- Am Wert, nicht an der Beschriftung. Vorher stand hier
                              eine Liste von vier Beschriftungen, und die
                              Verwaltungsoberflaeche einer Firewall heisst

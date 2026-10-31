@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\RateLimiter;
  * Browser waren die Ids von Livewire gesperrt und kamen nur von einer Seite,
  * die schon nach Kunde gefiltert war. Die App schickt die Id selbst.
  */
-class Kennwortabruf
+class PasswordReveal
 {
     /** Das Kennwort hinter einer Verknuepfung an einem Geraet. */
     public function ausVerknuepfung(CredentialLink $link, User $nutzer): ?string

@@ -1,4 +1,4 @@
-@use('App\Support\Zeit')
+@use('App\Support\LocalTime')
 <x-app-layout :$customer>
 
     {{-- Kopfzeile wie in den uebrigen Listen, mit Anzahl statt eines nackten
@@ -65,7 +65,7 @@
                                 {{-- "vor 3 Tagen" beantwortet die Frage, die man hier
                                      stellt; der genaue Zeitpunkt steht im Hover. --}}
                                 <td class="whitespace-nowrap px-4 py-2.5"
-                                    title="{{ Zeit::anzeigen($item['geloescht_am']) }}">
+                                    title="{{ LocalTime::anzeigen($item['geloescht_am']) }}">
                                     {{ $item['geloescht_am']->diffForHumans() }}
                                 </td>
 

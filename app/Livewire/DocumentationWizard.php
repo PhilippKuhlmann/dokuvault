@@ -10,7 +10,7 @@ use App\Models\OperatingSystem;
 use App\Models\Server;
 use App\Models\Site;
 use App\Rules\BelongsToCustomer;
-use App\Support\Erstaufnahme;
+use App\Support\WizardFlow;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -183,9 +183,9 @@ class DocumentationWizard extends Component
      * naechstes. Dieselbe Klasse bedient die iOS-App; zwei Ablaeufe fuer
      * denselben Assistenten waeren zwei Wahrheiten.
      */
-    protected function ablauf(): Erstaufnahme
+    protected function ablauf(): WizardFlow
     {
-        return new Erstaufnahme(Customer::findOrFail($this->customerId), auth()->user());
+        return new WizardFlow(Customer::findOrFail($this->customerId), auth()->user());
     }
 
     protected function currentStep(DocumentationRun $run): ?array

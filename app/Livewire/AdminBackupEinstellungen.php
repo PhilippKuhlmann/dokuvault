@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Setting;
-use App\Support\BackupEinstellungen;
+use App\Support\BackupSettings;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -36,7 +36,7 @@ class AdminBackupEinstellungen extends Component
     {
         Gate::authorize('isAdmin');
 
-        $this->form = BackupEinstellungen::werte();
+        $this->form = BackupSettings::werte();
         // Secrets are never sent to the browser - an empty field keeps them.
         foreach (array_keys($this->form) as $schluessel) {
             if (str_contains($schluessel, '_geheim_')) {
@@ -50,7 +50,7 @@ class AdminBackupEinstellungen extends Component
         return [
             'form.backup_aktiv' => ['boolean'],
             'form.backup_uhrzeit' => ['required', 'regex:/^([01]\d|2[0-3]):[0-5]\d$/'],
-            'form.backup_ziel_art' => ['required', 'in:'.implode(',', array_keys(BackupEinstellungen::ARTEN))],
+            'form.backup_ziel_art' => ['required', 'in:'.implode(',', array_keys(BackupSettings::ARTEN))],
             'form.backup_ziel_host' => ['required_unless:form.backup_ziel_art,keins', 'nullable', 'string', 'max:255'],
             'form.backup_ziel_port' => ['nullable', 'integer', 'min:1', 'max:65535'],
             'form.backup_ziel_benutzer' => ['required_unless:form.backup_ziel_art,keins', 'nullable', 'string', 'max:255'],
@@ -90,13 +90,13 @@ class AdminBackupEinstellungen extends Component
         Gate::authorize('isAdmin');
         $this->validate($this->regeln(), [], ['form.backup_ziel_host' => __('Server'), 'form.backup_ziel_benutzer' => __('Benutzer')]);
 
-        BackupEinstellungen::speichern($this->zuSpeichern());
-        BackupEinstellungen::anwenden();
+        BackupSettings::speichern($this->zuSpeichern());
+        BackupSettings::anwenden();
 
         // The folder now, not in the first night: a backup into a missing
         // folder fails.
         try {
-            BackupEinstellungen::zielordnerAnlegen();
+            BackupSettings::zielordnerAnlegen();
         } catch (\Throwable) {
             // Reported by "Verbindung testen" with the reason.
         }
@@ -109,10 +109,10 @@ class AdminBackupEinstellungen extends Component
     public function geheimnisLoeschen(string $schluessel): void
     {
         Gate::authorize('isAdmin');
-        abort_unless(str_contains($schluessel, '_geheim_') && array_key_exists($schluessel, BackupEinstellungen::STANDARD), 404);
+        abort_unless(str_contains($schluessel, '_geheim_') && array_key_exists($schluessel, BackupSettings::STANDARD), 404);
 
         Setting::setzen($schluessel, '');
-        BackupEinstellungen::anwenden();
+        BackupSettings::anwenden();
         $this->dispatch('hinweis', text: __('Gelöscht.'));
     }
 
@@ -126,8 +126,8 @@ class AdminBackupEinstellungen extends Component
         Gate::authorize('isAdmin');
         $this->validate($this->regeln());
 
-        $werte = array_merge(BackupEinstellungen::werte(), $this->zuSpeichern());
-        $disk = BackupEinstellungen::zielDisk($werte);
+        $werte = array_merge(BackupSettings::werte(), $this->zuSpeichern());
+        $disk = BackupSettings::zielDisk($werte);
         if (! $disk) {
             $this->test = [false, __('Kein externes Ziel gewählt.')];
 
@@ -135,7 +135,7 @@ class AdminBackupEinstellungen extends Component
         }
 
         try {
-            BackupEinstellungen::zielordnerAnlegen($werte);
+            BackupSettings::zielordnerAnlegen($werte);
             $ziel = Storage::build(['throw' => true] + $disk);
             $datei = 'dokuvault-verbindungstest-'.bin2hex(random_bytes(4)).'.txt';
             $ziel->put($datei, 'DokuVault '.now()->toIso8601String());
@@ -169,10 +169,10 @@ class AdminBackupEinstellungen extends Component
         $liste = [];
 
         foreach (config('backup.backup.destination.disks', []) as $disk) {
-            if ($disk === BackupEinstellungen::ZIEL_DISK && ! $this->externAbrufen) {
+            if ($disk === BackupSettings::ZIEL_DISK && ! $this->externAbrufen) {
                 continue;
             }
-            $ziel = $disk === BackupEinstellungen::ZIEL_DISK ? __('extern') : __('lokal');
+            $ziel = $disk === BackupSettings::ZIEL_DISK ? __('extern') : __('lokal');
             try {
                 foreach (BackupDestination::create($disk, $name)->backups() as $sicherung) {
                     $liste[] = [
@@ -196,10 +196,10 @@ class AdminBackupEinstellungen extends Component
         Gate::authorize('isAdmin');
 
         return view('livewire.admin-backup-einstellungen', [
-            'arten' => BackupEinstellungen::ARTEN,
-            'gespeichert' => BackupEinstellungen::werte(),
+            'arten' => BackupSettings::ARTEN,
+            'gespeichert' => BackupSettings::werte(),
             'sicherungen' => $this->sicherungen(),
-            'hatExtern' => in_array(BackupEinstellungen::ZIEL_DISK, config('backup.backup.destination.disks', []), true),
+            'hatExtern' => in_array(BackupSettings::ZIEL_DISK, config('backup.backup.destination.disks', []), true),
         ])->layout('layouts.admin.app');
     }
 }

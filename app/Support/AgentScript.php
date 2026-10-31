@@ -10,7 +10,7 @@ namespace App\Support;
  * the Windows service, which fetches the current script before every run
  * (AgentController::script). One place, so both always hand out the same.
  */
-class AgentSkript
+class AgentScript
 {
     /**
      * @param  array{skript: string}  $variante  One entry of config('custom.agenten.*.varianten')

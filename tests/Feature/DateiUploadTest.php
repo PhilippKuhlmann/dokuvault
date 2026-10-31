@@ -4,7 +4,7 @@ use App\Livewire\AdminAllgemein;
 use App\Livewire\ObjektFormular;
 use App\Models\Customer;
 use App\Models\Setting;
-use App\Support\Dateiname;
+use App\Support\FileName;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -140,14 +140,14 @@ test('die Kundendateien prüfen Größe und Typ ebenso', function () {
 // --- Der Helfer selbst ------------------------------------------------------
 
 test('aus einer Bezeichnung wird ein Dateiname und nichts anderes', function () {
-    expect(Dateiname::bereinigen('../../etc/passwd'))->toBe('etc_passwd')
-        ->and(Dateiname::bereinigen('Lizenz 2026'))->toBe('Lizenz_2026')
+    expect(FileName::bereinigen('../../etc/passwd'))->toBe('etc_passwd')
+        ->and(FileName::bereinigen('Lizenz 2026'))->toBe('Lizenz_2026')
         // Nur Sonderzeichen heisst: Es war nichts Brauchbares dabei.
-        ->and(Dateiname::bereinigen('///'))->toBe('datei');
+        ->and(FileName::bereinigen('///'))->toBe('datei');
 });
 
 test('die Endung kommt kleingeschrieben und ohne Sonderzeichen an', function () {
-    $name = Dateiname::fuer(UploadedFile::fake()->create('x.PDF', 1), 'Urkunde');
+    $name = FileName::fuer(UploadedFile::fake()->create('x.PDF', 1), 'Urkunde');
 
     expect($name)->toEndWith('_Urkunde.pdf');
 });

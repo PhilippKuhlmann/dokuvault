@@ -1,4 +1,4 @@
-@use('App\Support\Zeit')
+@use('App\Support\LocalTime')
 <x-admin-layout>
 
     <div class="flex w-full pl-3 pt-3 gap-3">
@@ -47,7 +47,7 @@
                             ? 'eingerichtet'
                             : ($user->two_factor_required ? 'offen' : null),
                         'invitation' => $user,
-                        Zeit::anzeigen($user->last_login_at, 'd.m.Y H:i', __('noch nie')),
+                        LocalTime::anzeigen($user->last_login_at, 'd.m.Y H:i', __('noch nie')),
                     ]"
 
                     {{-- Die Zeile bleibt lesbar, tritt aber zurueck: Ein

@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Support\GlobaleSuche;
+use App\Support\Search;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -23,7 +23,7 @@ class GlobalSearch extends Component
     #[Computed]
     public function groups()
     {
-        return app(GlobaleSuche::class)->gruppen(auth()->user(), (string) $this->search);
+        return app(Search::class)->gruppen(auth()->user(), (string) $this->search);
     }
 
     public function render()

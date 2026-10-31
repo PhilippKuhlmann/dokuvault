@@ -147,7 +147,7 @@ test('die Protokollseite zeigt die Kennwortaenderung', function () {
 
 test('das Protokoll zeigt das bisherige Kennwort auf Klick', function () {
     // firewall_viewAny: Wer keine Firewalls sehen darf, sieht auch ihre
-    // bisherigen Kennwoerter nicht - siehe Kennwortabruf::ausVerlauf().
+    // bisherigen Kennwoerter nicht - siehe PasswordReveal::ausVerlauf().
     $this->actingAs(userWithPermissions(['admin_activity', 'firewall_viewAny', 'firewall_update']));
 
     $firewall = eineFirewall(['cloud_backup_password' => 'Das-Alte-2026']);

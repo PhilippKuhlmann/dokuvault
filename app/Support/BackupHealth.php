@@ -16,7 +16,7 @@ use Spatie\Backup\Events\BackupWasSuccessful;
  * A mail on failure needs a working mail server; this needs nothing and is
  * seen by whoever opens the admin area.
  */
-class BackupZustand
+class BackupHealth
 {
     public const SCHLUESSEL = 'backup_status';
 
@@ -68,8 +68,8 @@ class BackupZustand
     public static function zustand(): array
     {
         $status = self::gelesen();
-        $werte = BackupEinstellungen::werte();
-        $disks = BackupEinstellungen::disks($werte);
+        $werte = BackupSettings::werte();
+        $disks = BackupSettings::disks($werte);
         $zeit = fn (?string $wert) => $wert ? Carbon::parse($wert) : null;
 
         // The newest successful copy on any target; for backups from before
@@ -94,7 +94,7 @@ class BackupZustand
             $f = $zeit($eintrag['fehler'] ?? null);
             $ok = $zeit($eintrag['ok'] ?? null);
             if ($f && (! $ok || $f->gt($ok))) {
-                $ziel = $disk === BackupEinstellungen::ZIEL_DISK ? __('Externes Ziel') : __('Lokale Ablage');
+                $ziel = $disk === BackupSettings::ZIEL_DISK ? __('Externes Ziel') : __('Lokale Ablage');
 
                 return $ergebnis('fehler', $ziel.': '.($eintrag['meldung'] ?? ''));
             }
@@ -112,7 +112,7 @@ class BackupZustand
         if (blank($werte['backup_geheim_archivpasswort'])) {
             return $ergebnis('warnung', __('Läuft, aber ohne Archivpasswort – der APP_KEY fehlt in der Sicherung.'));
         }
-        if (BackupEinstellungen::zielDisk($werte) === null) {
+        if (BackupSettings::zielDisk($werte) === null) {
             return $ergebnis('warnung', __('Läuft, liegt aber nur auf diesem Server.'));
         }
 

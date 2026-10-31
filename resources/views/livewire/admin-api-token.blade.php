@@ -1,4 +1,4 @@
-@use('App\Support\Zeit')
+@use('App\Support\LocalTime')
 <div class="p-3 sm:p-5 space-y-4">
 
     <div class="flex flex-wrap items-baseline justify-between gap-3">
@@ -86,14 +86,14 @@
                         <tr wire:key="token-{{ $token->id }}"
                             class="border-b border-gray-100 last:border-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/50">
                             <td class="px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100">{{ $token->name }}</td>
-                            <td class="whitespace-nowrap px-4 py-2.5" title="{{ Zeit::anzeigen($token->created_at) }}">
+                            <td class="whitespace-nowrap px-4 py-2.5" title="{{ LocalTime::anzeigen($token->created_at) }}">
                                 {{-- JUST_NOW, sonst steht beim frisch angelegten
                                      Token "vor 0 Sekunden" da. --}}
                                 {{ $token->created_at->diffForHumans(['options' => Carbon\Carbon::JUST_NOW]) }}
                             </td>
                             <td class="whitespace-nowrap px-4 py-2.5">
                                 @if ($token->last_used_at)
-                                    <span title="{{ Zeit::anzeigen($token->last_used_at) }}">{{ $token->last_used_at->diffForHumans(['options' => Carbon\Carbon::JUST_NOW]) }}</span>
+                                    <span title="{{ LocalTime::anzeigen($token->last_used_at) }}">{{ $token->last_used_at->diffForHumans(['options' => Carbon\Carbon::JUST_NOW]) }}</span>
                                 @else
                                     {{-- Ein Token, der nie benutzt wurde, ist ein
                                          Kandidat zum Widerrufen. --}}
@@ -102,9 +102,9 @@
                             </td>
                             <td class="whitespace-nowrap px-4 py-2.5">
                                 @if ($token->expires_at)
-                                    <span title="{{ Zeit::anzeigen($token->expires_at) }}"
+                                    <span title="{{ LocalTime::anzeigen($token->expires_at) }}"
                                         class="{{ $token->expires_at->isPast() ? 'font-semibold text-red-600 dark:text-red-400' : '' }}">
-                                        {{ $token->expires_at->isPast() ? __('abgelaufen') : Zeit::anzeigen($token->expires_at, 'd.m.Y') }}
+                                        {{ $token->expires_at->isPast() ? __('abgelaufen') : LocalTime::anzeigen($token->expires_at, 'd.m.Y') }}
                                     </span>
                                 @else
                                     {{-- Vor Einfuehrung der Pflicht angelegt: laeuft weiter, bis er widerrufen wird. --}}

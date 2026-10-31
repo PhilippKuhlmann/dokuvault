@@ -108,7 +108,7 @@
                     'Passwort' => [$eintrag, 'remotePassword'],
                 ]" />
 
-                <x-agentcard :device="$eintrag" :bloecke="\App\Support\AgentAnzeige::vm($eintrag)" />
+                <x-agentcard :device="$eintrag" :bloecke="\App\Support\AgentReportCards::vm($eintrag)" />
 
                 <x-minitagcard :title="__('Dienste')" :array="$eintrag->services" />
 

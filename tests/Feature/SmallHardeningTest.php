@@ -1,8 +1,8 @@
 <?php
 
 use App\Models\Customer;
-use App\Support\Dateiname;
 use App\Support\DomainCheck;
+use App\Support\FileName;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 
@@ -44,8 +44,8 @@ test('umlaut domains are asked in their ASCII form', function () {
 test('the stored extension of an upload is cleaned like the name', function () {
     $file = UploadedFile::fake()->create("vertrag.PD\"F\r\nX-Header: 1", 4);
 
-    expect(Dateiname::extension($file))->toMatch('/^[a-z0-9_-]+$/')
-        ->and(Dateiname::extension(UploadedFile::fake()->create('Rechnung.PDF', 4)))->toBe('pdf');
+    expect(FileName::extension($file))->toMatch('/^[a-z0-9_-]+$/')
+        ->and(FileName::extension(UploadedFile::fake()->create('Rechnung.PDF', 4)))->toBe('pdf');
 });
 
 test('the customer slug cannot be set from the form', function () {

@@ -1,4 +1,4 @@
-@use('App\Support\Zeit')
+@use('App\Support\LocalTime')
 <x-app-layout :$customer>
     <div class="p-3 sm:p-5 space-y-4">
 
@@ -375,8 +375,8 @@
                             {{ __('Standort') }}: {{ $token->site?->name ?? '—' }} ·
                             {{-- One token per agent: which one it belongs to. --}}
                             {{ __('Agent') }}: {{ $token->machine_id ? ($boundHosts[$token->machine_id] ?? $token->machine_id) : __('noch keiner') }} ·
-                            {{ __('Zuletzt genutzt') }}: {{ Zeit::anzeigen($token->last_used_at, 'd.m.Y H:i', __('noch nie')) }} ·
-                            {{ __('Läuft ab') }}: {{ Zeit::anzeigen($token->expires_at, 'd.m.Y', __('unbegrenzt')) }}
+                            {{ __('Zuletzt genutzt') }}: {{ LocalTime::anzeigen($token->last_used_at, 'd.m.Y H:i', __('noch nie')) }} ·
+                            {{ __('Läuft ab') }}: {{ LocalTime::anzeigen($token->expires_at, 'd.m.Y', __('unbegrenzt')) }}
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
@@ -453,8 +453,8 @@
                             @if ($installation->domain)
                                 {{ $installation->domain }} ·
                             @endif
-                            {{ __('Letzter Lauf') }}: {{ Zeit::anzeigen($installation->last_run_at, 'd.m.Y H:i', __('noch nie')) }} ·
-                            {{ __('Zuletzt erreichbar') }}: {{ Zeit::anzeigen($installation->last_seen_at, 'd.m.Y H:i', __('noch nie')) }} ·
+                            {{ __('Letzter Lauf') }}: {{ LocalTime::anzeigen($installation->last_run_at, 'd.m.Y H:i', __('noch nie')) }} ·
+                            {{ __('Zuletzt erreichbar') }}: {{ LocalTime::anzeigen($installation->last_seen_at, 'd.m.Y H:i', __('noch nie')) }} ·
                             {{ __('Version') }}: {{ $installation->version ?? '—' }} ·
                             {{ __('Token') }}: {{ $installation->agentToken ? ($installation->agentToken->name ?: 'Token #'.$installation->agentToken->id) : __('widerrufen') }}
                             @if ($installation->agentToken?->isLocked())

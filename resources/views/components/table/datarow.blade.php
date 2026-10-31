@@ -14,7 +14,7 @@
                  der Wert: Ob "/24" ein Pfad ist oder eine Netzmaske, kann die
                  Tabelle nicht wissen - hier weiss es die Ansicht. --}}
             <td scope="row" class="py-2.5 px-4">
-                @if ($ziel = \App\Support\Adresse::pfad($value))
+                @if ($ziel = \App\Support\SafeUrl::pfad($value))
                     <a href="{{ $ziel }}" class="text-cerulean-500 hover:text-cerulean-600">{{ $value }}</a>
                 @else
                     {{ $value }}
@@ -122,10 +122,10 @@
             {{-- Gekuerzt mit Kopier-Knopf: vollstaendig bricht er auf fuenf
                  Zeilen um und bestimmt die Zeilenhoehe. --}}
             <td scope="row" class="py-2.5 px-4"><x-fingerprint :value="$value" /></td>
-        @elseif ($ziel = \App\Support\Adresse::sicher($value))
+        @elseif ($ziel = \App\Support\SafeUrl::sicher($value))
             {{-- Am Wert, nicht am Spaltennamen: Die Spalte hiess frueher "url",
                  und ein Feld wie "management_url" wurde deshalb nicht verlinkt.
-                 Nur http und https - siehe App\Support\Adresse.
+                 Nur http und https - siehe App\Support\SafeUrl.
 
                  Nach den eigenen Spalten, nicht davor: "download" ist ebenfalls
                  eine Adresse, soll aber "Download" heissen und nicht die URL

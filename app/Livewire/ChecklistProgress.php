@@ -7,8 +7,8 @@ use App\Models\Checklist;
 use App\Models\ChecklistSetting;
 use App\Models\Customer;
 use App\Models\NetworkShare;
+use App\Support\ChecklistActions;
 use App\Support\ChecklistAdScript;
-use App\Support\Checklistenpflege;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -88,7 +88,7 @@ class ChecklistProgress extends Component
     {
         // Abhaken und Freigeben stehen in Checklistenpflege - dieselbe
         // Klasse bedient die iOS-App.
-        $grund = Checklistenpflege::umschalten(
+        $grund = ChecklistActions::umschalten(
             $this->checklist()->items()->findOrFail($itemId),
             auth()->user(),
         );
@@ -100,7 +100,7 @@ class ChecklistProgress extends Component
 
     public function approve(int $itemId): void
     {
-        Checklistenpflege::freigeben(
+        ChecklistActions::freigeben(
             $this->checklist()->items()->findOrFail($itemId),
             auth()->user(),
         );

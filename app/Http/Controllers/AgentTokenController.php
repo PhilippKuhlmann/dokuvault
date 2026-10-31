@@ -7,9 +7,9 @@ use App\Models\AgentToken;
 use App\Models\Customer;
 use App\Models\Setting;
 use App\Models\Site;
-use App\Support\AgentSkript;
+use App\Support\AgentScript;
 use App\Support\ExeTag;
-use App\Support\Zeit;
+use App\Support\LocalTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -143,7 +143,7 @@ class AgentTokenController extends Controller
             $customer,
             $site,
             $validated['name'] ?? null,
-            Zeit::tagesende($validated['expires_at']),
+            LocalTime::tagesende($validated['expires_at']),
         );
 
         return $this->mitNeuemToken($customer, $token, $plain);
@@ -200,7 +200,7 @@ class AgentTokenController extends Controller
         Gate::authorize('agent_manage');
         abort_if($agentToken->customer_id !== $customer->id, 403);
 
-        $frist = Zeit::tagesende(now()->addDays(Setting::agentTokenTage()));
+        $frist = LocalTime::tagesende(now()->addDays(Setting::agentTokenTage()));
         $plain = $agentToken->erneuern($frist);
 
         return $this->mitNeuemToken($customer, $agentToken, $plain);
@@ -219,7 +219,7 @@ class AgentTokenController extends Controller
         $skripte = [];
         foreach (config('custom.agenten', []) as $schluessel => $agent) {
             foreach ($agent['varianten'] as $i => $variante) {
-                $skripte[$schluessel][$i] = AgentSkript::rendern($variante, $agent['endpunkt'], $plain);
+                $skripte[$schluessel][$i] = AgentScript::rendern($variante, $agent['endpunkt'], $plain);
             }
         }
 
@@ -290,7 +290,7 @@ class AgentTokenController extends Controller
      */
     protected function linuxInstaller(Customer $customer, string $art)
     {
-        $inhalt = AgentSkript::rendernInstaller('linux-agent.sh', $this->dienstToken($customer), $art);
+        $inhalt = AgentScript::rendernInstaller('linux-agent.sh', $this->dienstToken($customer), $art);
 
         return response($inhalt, 200, [
             'Content-Type' => 'text/x-shellscript; charset=utf-8',

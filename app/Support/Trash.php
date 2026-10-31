@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Gate;
  * config('custom.trashables'), nie aus der Eingabe: Der Typ in der Adresse
  * ist ein Schluessel dieser Liste, sonst 404.
  */
-class Papierkorb
+class Trash
 {
     /**
      * Wie viele Eintraege je Art hoechstens.

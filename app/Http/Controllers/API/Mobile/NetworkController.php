@@ -10,7 +10,7 @@ use App\Models\Site;
 use App\Models\User;
 use App\Support\IpPlan;
 use App\Support\IpRangeEditing;
-use App\Support\MobilObjekte;
+use App\Support\MobileObjects;
 use App\Support\NetworkEditing;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -33,7 +33,7 @@ class NetworkController extends Controller
     /** Model class => type slug the user may open, or null. Per request. */
     private array $typen = [];
 
-    public function __construct(private MobilObjekte $objekte) {}
+    public function __construct(private MobileObjects $objekte) {}
 
     /** All VLANs with their usage. ?standort= limits to one site. */
     public function index(Request $request, Customer $customer): JsonResponse

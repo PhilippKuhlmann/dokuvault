@@ -24,7 +24,7 @@ use App\Models\Server;
 use App\Models\Service;
 use App\Models\VM;
 use App\Models\Wifi;
-use App\Support\AgentSkript;
+use App\Support\AgentScript;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -644,13 +644,13 @@ class AgentController extends Controller
         // ?shell=bash for the Proxmox agent; without it PowerShell, as the
         // Windows service has always asked.
         $shell = $request->query('shell') === 'bash' ? 'bash' : 'powershell';
-        $variante = AgentSkript::fuerDienst($shell)[$agent] ?? null;
+        $variante = AgentScript::fuerDienst($shell)[$agent] ?? null;
         abort_unless($variante, 404);
 
         $token = $request->bearerToken() ?: $request->header('X-Agent-Token');
 
         return response(
-            AgentSkript::rendern($variante, config('custom.agenten')[$agent]['endpunkt'], $token),
+            AgentScript::rendern($variante, config('custom.agenten')[$agent]['endpunkt'], $token),
             200,
             ['Content-Type' => 'text/plain; charset=utf-8', 'Cache-Control' => 'no-store']
         );
@@ -669,7 +669,7 @@ class AgentController extends Controller
         $gemeldet = (string) $request->query('version', '');
 
         if ($service === 'windows') {
-            $aktuell = AgentSkript::exeVersion();
+            $aktuell = AgentScript::exeVersion();
             $datei = public_path('downloads/dokuvault-agent.exe');
             abort_unless($aktuell && is_file($datei), 404);
 
@@ -686,14 +686,14 @@ class AgentController extends Controller
         }
 
         // proxmox, linux: one installer, rendered with the kind asked for.
-        $aktuell = AgentSkript::installerVersion('linux-agent.sh');
+        $aktuell = AgentScript::installerVersion('linux-agent.sh');
         if ($gemeldet === $aktuell) {
             return response()->noContent();
         }
 
         $token = $request->bearerToken() ?: $request->header('X-Agent-Token');
 
-        return response(AgentSkript::rendernInstaller('linux-agent.sh', $token, $service), 200, [
+        return response(AgentScript::rendernInstaller('linux-agent.sh', $token, $service), 200, [
             'Content-Type' => 'text/x-shellscript; charset=utf-8',
             'X-Agent-Version' => $aktuell,
             'Cache-Control' => 'no-store',

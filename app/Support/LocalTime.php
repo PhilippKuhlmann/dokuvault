@@ -20,7 +20,7 @@ use Illuminate\Support\Carbon;
  * nicht hierdurch: Ein Datum um Stunden zu verschieben kann es auf den Vortag
  * kippen lassen.
  */
-class Zeit
+class LocalTime
 {
     /** Ohne Einstellung bleibt es bei dem, was die Konfiguration sagt. */
     public static function zone(): string
