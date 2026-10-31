@@ -11,18 +11,18 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
- * Portbeschriftung eines Patchfelds: welche Dose haengt an welchem Port und auf
- * welchen Switch-Port ist er gepatcht.
+ * Port labelling of a patch panel: which outlet hangs on which port and which
+ * switch port it is patched to.
  *
- * Anders als DeviceIpAddresses wird hier nicht hinzugefuegt, sondern bearbeitet -
- * die Portzeilen legt das Patchfeld beim Anlegen an. Deshalb Arrays je Feld,
- * indiziert nach Port-ID, und ein Speichern-Knopf statt 48 Einzelabfragen.
+ * Unlike DeviceIpAddresses nothing is added here but edited - the port rows
+ * are created by the patch panel when it is created. Hence arrays per field,
+ * indexed by port id, and one save button instead of 48 single requests.
  */
 class PatchPanelPorts extends Component
 {
     use ValidatesOnInput;
 
-    // Skalare statt Model-Instanz: robust bei Livewire-Hydration (wie DeviceIpAddresses).
+    // Scalars instead of a model instance: robust with Livewire hydration (like DeviceIpAddresses).
     #[Locked]
     public int $panelId;
 
@@ -43,9 +43,9 @@ class PatchPanelPorts extends Component
     public bool $saved = false;
 
     /**
-     * Eine Quelle fuer das Speichern und fuer die Pruefung waehrend der
-     * Eingabe. Die Schluessel tragen Platzhalter - ein Patchfeld hat viele
-     * Ports, und "outlet.7" faellt unter "outlet.*".
+     * One source for saving and for the check while typing. The keys carry
+     * placeholders - a patch panel has many ports, and "outlet.7" falls under
+     * "outlet.*".
      */
     protected function regeln(): array
     {
@@ -75,8 +75,8 @@ class PatchPanelPorts extends Component
     }
 
     /**
-     * Bei jeder Aktion neu laden und pruefen: oeffentliche Eigenschaften kommen
-     * vom Client und koennen manipuliert sein.
+     * Reload and check on every action: public properties come from the client
+     * and can be manipulated.
      */
     protected function panel(): PatchPanel
     {
@@ -95,8 +95,8 @@ class PatchPanelPorts extends Component
     {
         $panel = $this->panel();
 
-        // Nur Ports dieses Patchfelds - eine untergeschobene fremde Port-ID
-        // waere sonst beschreibbar.
+        // Only ports of this patch panel - a foreign port id slipped in would
+        // otherwise be writable.
         $ports = $panel->ports()->get()->keyBy('id');
 
         $this->enableCheck();
@@ -114,17 +114,17 @@ class PatchPanelPorts extends Component
         $this->saved = true;
     }
 
-    /** Eine Zeile leeren, ohne alle vier Felder einzeln loeschen zu muessen. */
+    /** Clear a row without having to empty all four fields by hand. */
     /**
-     * Zaehlt die Dosennummer der ersten belegten Zeile fuer alle folgenden
-     * Ports hoch: aus "1.01" wird 1.02, 1.03 ... Fuehrende Nullen und das
-     * Praefix ("1.", "A-", "EG") bleiben erhalten.
+     * Counts the outlet number of the first filled row up for every following
+     * port: "1.01" becomes 1.02, 1.03 ... Leading zeros and the prefix
+     * ("1.", "A-", "EG") are kept.
      *
-     * Ueberschrieben wird nichts: Nur leere Felder werden gefuellt, damit eine
-     * abweichend beschriftete Dose an Port 10 stehen bleibt. Wer sie doch neu
-     * durchzaehlen will, leert sie vorher.
+     * Nothing is overwritten: only empty fields are filled, so an outlet
+     * labelled differently at port 10 stays. Whoever wants to renumber it
+     * anyway empties it first.
      *
-     * Gefuellt wird nur das Formular - gespeichert wird erst mit "Speichern".
+     * Only the form is filled - saving happens with "save".
      */
     public function durchnummerieren(): void
     {
@@ -138,7 +138,7 @@ class PatchPanelPorts extends Component
             return;
         }
 
-        // Ziffernblock am Ende: "1.01" -> Praefix "1." und Zaehler "01".
+        // Digits at the end: "1.01" -> prefix "1." and counter "01".
         if (! preg_match('/^(.*?)(\d+)$/', trim((string) $this->outlet[$start->id]), $treffer)) {
             $this->addError('outlet.'.$start->id, __('Die Dosennummer muss auf eine Zahl enden.'));
 
@@ -163,12 +163,12 @@ class PatchPanelPorts extends Component
     }
 
     /**
-     * Leert alle Dosennummern im Formular - fuer den Fall, dass man sich beim
-     * ersten Feld vertippt hat und neu durchzaehlen will.
+     * Empties every outlet number in the form - for the case that one
+     * mistyped the first field and wants to renumber.
      *
-     * Nur das Formular, nicht die Datenbank: Ein Fehlklick ist folgenlos,
-     * solange nicht gespeichert wird. Raum, Switch und Notiz bleiben stehen,
-     * die haengen nicht an der Nummerierung.
+     * Only the form, not the database: a misclick has no consequence as long
+     * as nothing is saved. Room, switch and note stay, they do not hang on the
+     * numbering.
      */
     public function clearPorts(): void
     {
@@ -191,7 +191,7 @@ class PatchPanelPorts extends Component
         $this->note[$portId] = null;
     }
 
-    /** Fehlermeldungen sollen die Portnummer nennen, nicht den Array-Index. */
+    /** Error messages should name the port number, not the array index. */
     private function errorNames($ports): array
     {
         $namen = [];

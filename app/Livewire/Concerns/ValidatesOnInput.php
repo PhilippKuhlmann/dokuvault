@@ -5,35 +5,35 @@ namespace App\Livewire\Concerns;
 use Illuminate\Support\Str;
 
 /**
- * Ein Formular, das waehrend der Eingabe prueft - aber erst ab dem ersten
- * abgewiesenen Absenden.
+ * A form that checks while typing - but only from the first rejected submit
+ * onwards.
  *
- * Der Zeitpunkt ist der Punkt der Sache. Immer live zu pruefen waere schlechter
- * als gar nicht: Wer "10." getippt hat, bekaeme "Bitte Netz angeben" zu lesen,
- * obwohl er gerade mittendrin ist. Nach einem abgewiesenen Absenden ist es
- * umgekehrt richtig - dort steht schon ein roter Rahmen, und der soll
- * verschwinden, sobald der Wert stimmt.
+ * The timing is the whole point. Checking live always would be worse than not
+ * at all: whoever has typed "10." would read "please enter a network" although
+ * they are in the middle of it. After a rejected submit it is the other way
+ * round - a red border already stands there, and it should disappear as soon
+ * as the value is right.
  *
- * Was eine Komponente dafuer tun muss:
+ * What a component has to do for it:
  *
  *   1. regeln() liefern - dieselben, mit denen sie beim Speichern prueft. Zwei
  *      Listen liefen frueher oder spaeter auseinander.
- *   2. Vor dem validate() im Speichern pruefungEinschalten() rufen.
+ *   2. Call enableCheck() before the validate() in save.
  *   3. Beim Leeren des Formulars "geprueft" mit zuruecksetzen.
  *
- * Hat die Komponente ein eigenes updated(), gewinnt es gegen das hier - dann
- * muss es waehrendDerEingabePruefen() selbst rufen. Ein Test haelt das offen,
- * sonst faellt die Pruefung still aus.
+ * If the component has an updated() of its own, that wins over this one - then
+ * it has to call validateOnInput() itself. A test keeps that open, or the
+ * check fails silently.
  */
 trait ValidatesOnInput
 {
-    /** Ist einmal abgeschickt worden? Erst dann wird waehrend der Eingabe geprueft. */
+    /** Has it been submitted once? Only then is it checked while typing. */
     public bool $geprueft = false;
 
-    /** Die Regeln, mit denen auch das Speichern prueft. */
+    /** The rules that saving checks with as well. */
     abstract protected function regeln(): array;
 
-    /** Beschriftungen fuer die Meldungen - "Bitte Bezeichnung angeben.". */
+    /** Labels for the messages - "Bitte Bezeichnung angeben.". */
     protected function fieldNames(): array
     {
         return [];
@@ -45,10 +45,10 @@ trait ValidatesOnInput
     }
 
     /**
-     * Ab jetzt wird bei jeder Eingabe geprueft.
+     * From now on every input is checked.
      *
-     * Gehoert vor das validate() im Speichern, nicht dahinter: validate() wirft
-     * bei einem Fehler, und genau dann soll es eingeschaltet sein.
+     * Belongs before the validate() in save, not after it: validate() throws
+     * on an error, and that is exactly when it should be switched on.
      */
     protected function enableCheck(): void
     {
@@ -56,11 +56,11 @@ trait ValidatesOnInput
     }
 
     /**
-     * Ein Feld pruefen, wenn es an der Zeit ist.
+     * Check a field when the time has come.
      *
-     * Nur Felder, fuer die es eine Regel gibt: Ein Formular hat mehr
-     * Eigenschaften als Felder - offen, bearbeiteId, Suchtexte -, und die
-     * gehen hier nicht durch die Pruefung.
+     * Only fields that have a rule: a form has more properties than fields -
+     * open, editedId, search texts - and those do not go through the check
+     * here.
      */
     protected function validateOnInput(string $eigenschaft): void
     {
@@ -70,9 +70,9 @@ trait ValidatesOnInput
 
         $regeln = $this->regeln();
 
-        // Str::is wegen der Platzhalter: Ein Patchfeld hat "outlet.*" als Regel
-        // und meldet "outlet.7" als geaendert. Ohne den Abgleich fiele die
-        // Pruefung dort still aus.
+        // Str::is because of the placeholders: a patch panel has "outlet.*" as
+        // a rule and reports "outlet.7" as changed. Without the comparison the
+        // check would fail silently there.
         $passt = collect($regeln)->keys()->contains(
             fn ($muster) => $muster === $eigenschaft || Str::is($muster, $eigenschaft)
         );

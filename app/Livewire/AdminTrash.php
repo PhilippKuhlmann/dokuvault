@@ -15,37 +15,37 @@ use Livewire\Component;
 use Livewire\WithPagination;
 
 /**
- * Der Papierkorb ueber alle Kunden - zum Nachsehen und zum endgueltigen
- * Loeschen.
+ * The trash across all customers - for looking and for deleting for good.
  *
- * Der Papierkorb beim Kunden zeigt dessen eigene Eintraege und kann sie
- * zurueckholen. Hier geht es um das Gegenteil: sehen, was sich ueber die Jahre
- * angesammelt hat, und es loswerden. Geloescht wird von Hand und nur, was der
- * Filter gerade zeigt - ein Zeitplan, der im Hintergrund Daten endgueltig
- * entfernt, waere hier das falsche Werkzeug.
+ *
+ * The customer's trash shows their own entries and can bring them back. Here
+ * it is the opposite: see what has piled up over the years and get rid of it.
+ * Deleting is done by hand and only on what the filter shows right now - a
+ * schedule removing data for good in the background would be the wrong tool
+ * here.
  */
 class AdminTrash extends Component
 {
     use WithPagination;
 
-    /** Nur Eintraege, die laenger als so viele Tage im Papierkorb liegen. 0 = alle. */
+    /** Only entries that have lain in the trash longer than this many days. 0 = all. */
     #[Url]
     public int $aelterAls = 0;
 
-    /** Auf eine Art einschraenken, etwa nur Server. */
+    /** Limit to one kind, servers only for instance. */
     #[Url]
     public string $art = '';
 
-    /** Auf einen Kunden einschraenken. */
+    /** Limit to one customer. */
     #[Url]
     public string $kunde = '';
 
     public bool $loeschenGefragt = false;
 
-    /** Je Art werden hoechstens so viele Eintraege geholt. */
+    /** At most this many entries are fetched per kind. */
     protected const HOECHSTENS_JE_ART = 500;
 
-    /** Wahr, sobald eine Art an die Obergrenze gestossen ist. */
+    /** True as soon as one kind has hit the cap. */
     protected bool $gekuerzt = false;
 
     public function mount(): void
@@ -54,11 +54,11 @@ class AdminTrash extends Component
     }
 
     /**
-     * Nur bei den Filtern zurueck auf Seite eins und die Rueckfrage schliessen.
+     * Back to page one and close the confirmation, but only for the filters.
      *
-     * Ohne den Namen zu pruefen feuert der Hook bei jeder Eigenschaft - auch
-     * bei loeschenGefragt selbst, das sich damit sofort wieder zuruecksetzte.
-     * Der Knopf tat dann schlicht nichts.
+     * Without checking the name the hook fires on every property - including
+     * on deleteAsked itself, which thereby reset at once. The button then
+     * simply did nothing.
      */
     public function updated(string $eigenschaft): void
     {
@@ -71,11 +71,11 @@ class AdminTrash extends Component
     }
 
     /**
-     * Alle passenden Eintraege, quer ueber die Arten.
+     * Every matching entry, across the kinds.
      *
-     * Bewusst im Speicher zusammengefuehrt statt per UNION: Es sind
-     * unterschiedliche Tabellen mit unterschiedlichen Spalten, und die Zahlen
-     * bleiben ueberschaubar - ein Papierkorb ist kein Datenlager.
+     * Deliberately merged in memory instead of by UNION: these are different
+     * tables with different columns, and the numbers stay manageable - a trash
+     * is no data warehouse.
      */
     protected function sammeln(): Collection
     {
@@ -100,9 +100,9 @@ class AdminTrash extends Component
 
             $gefunden = $abfrage->orderByDesc('deleted_at')->limit(static::HOECHSTENS_JE_ART)->get();
 
-            // Wer die Grenze nicht sieht, haelt die Zahl oben fuer den ganzen
-            // Bestand und wundert sich, warum nach dem Loeschen noch etwas da
-            // ist.
+            // Whoever does not see the cap takes the number at the top for the
+            // whole stock and wonders why something is still there after
+            // deleting.
             if ($gefunden->count() === static::HOECHSTENS_JE_ART) {
                 $this->gekuerzt = true;
             }
@@ -123,10 +123,10 @@ class AdminTrash extends Component
     }
 
     /**
-     * Woran man den Eintrag erkennt.
+     * What makes the entry recognisable.
      *
-     * Dieselbe Frage wie im Protokoll und dieselbe Antwort: Die Feldliste
-     * steht in config/custom.php, und ein Model, das es besser weiss,
+     * The same question as in the log and the same answer: the field list sits
+     * in config/custom.php, and a model that knows better overrides
      * ueberschreibt protokollName().
      */
     protected function displayName($eintrag): string
@@ -135,13 +135,13 @@ class AdminTrash extends Component
     }
 
     /**
-     * Einen einzelnen Eintrag endgueltig entfernen.
+     * Remove a single entry for good.
      */
     public function delete(string $slug, int $id): void
     {
         Gate::authorize('admin_trash');
 
-        // Die Klasse kommt aus der Whitelist, nie aus der Anfrage.
+        // The class comes from the allowlist, never from the request.
         $eintrag = config("custom.trashables.$slug");
         abort_unless($eintrag, 404);
 
@@ -154,7 +154,7 @@ class AdminTrash extends Component
     }
 
     /**
-     * Alles loeschen, was der Filter gerade zeigt.
+     * Delete everything the filter shows right now.
      */
     public function deleteAll(): void
     {
@@ -181,11 +181,11 @@ class AdminTrash extends Component
     }
 
     /**
-     * Ein Objekt mitsamt allem, was an ihm haengt.
+     * An object together with everything hanging on it.
      *
-     * Die Datei liegt ausserhalb der Datenbank und verschwindet nicht von
-     * selbst; IP-Adressen und Zugangsdaten haengen polymorph daran und wuerden
-     * auf eine Id zeigen, die es nicht mehr gibt.
+     * The file lies outside the database and does not disappear by itself; IP
+     * addresses and credentials hang on it polymorphically and would point at
+     * an id that no longer exists.
      */
     protected function endgueltig($objekt): void
     {
@@ -206,9 +206,9 @@ class AdminTrash extends Component
             $objekt->credentialLinks()->delete();
         }
 
-        // Sonst blieben die alten Kennwoerter eines endgueltig geloeschten
-        // Geraets liegen - verschluesselt, aber ohne Objekt, zu dem sie
-        // gehoeren, und ohne Frist, die sie je erreichen wuerde.
+        // Otherwise the old passwords of a device deleted for good would stay
+        // behind - encrypted, but without an object they belong to and without
+        // a deadline they would ever reach.
         if (in_array(TracksChanges::class, $traits, true)) {
             $objekt->passwordHistory()->delete();
         }

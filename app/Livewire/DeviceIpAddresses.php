@@ -17,7 +17,7 @@ class DeviceIpAddresses extends Component
     use ScopedToCustomer;
     use ValidatesOnInput;
 
-    // Skalare statt Model-Instanz: robust bei polymorphen Modellen und Livewire-Hydration.
+    // Scalars instead of a model instance: robust with polymorphic models and Livewire hydration.
     #[Locked]
     public string $modelClass;
 
@@ -35,21 +35,21 @@ class DeviceIpAddresses extends Component
     public string $label = '';
 
     /**
-     * Ob die Adresse per DHCP bezogen wird.
+     * Whether the address is obtained by DHCP.
      *
-     * Eigene Angabe und nicht die Bezeichnung: Frueher loeste genau das Wort
-     * "DHCP" in der Bezeichnung es aus - das stand nirgends, klein
-     * geschrieben tat es nichts, und daneben war fuer "Uplink Dachboden" kein
-     * Platz mehr.
+     * A field of its own and not the label: it used to be the very word
+     * "DHCP" in the label that triggered it - that stood nowhere, written in
+     * lower case it did nothing, and beside it there was no room left for
+     * "Uplink Dachboden".
      */
     public bool $dhcp = false;
 
     /**
-     * Beim Anhaken die angefangene Adresse wegnehmen.
+     * Take away the half-typed address when the box is ticked.
      *
-     * Sonst bliebe eine halb getippte stehen, die Pruefung meldete "darf nicht
-     * vorhanden sein", und der Nutzer suchte den Fehler an einem Feld, das er
-     * gerade nicht mehr sieht.
+     * Otherwise a half-typed one would stay, the check would report "must not
+     * be present", and the user would look for the mistake in a field they
+     * cannot see any more.
      */
     public function updatedDhcp(): void
     {
@@ -60,11 +60,11 @@ class DeviceIpAddresses extends Component
     }
 
     /**
-     * VLAN gewählt: die nächste freie Adresse daraus ins Feld schreiben.
+     * VLAN chosen: write the next free address from it into the field.
      *
-     * Eine schon eingetragene Adresse, die in dieses Netz passt, bleibt stehen -
-     * wer sie getippt hat, meinte sie. Eine, die nicht passt, war für ein
-     * anderes Netz gedacht und wird ersetzt.
+     * An address already entered that fits this network stays - whoever typed
+     * it meant it. One that does not fit was meant for another network and is
+     * replaced.
      */
     public function updatedNetworkId($id): void
     {
@@ -82,15 +82,15 @@ class DeviceIpAddresses extends Component
         $this->resetValidation('address');
     }
 
-    // Eingebettet: ohne eigenen Kartenrahmen, weil der Block dann in der Karte
+    // Embedded: without a card frame of its own, because the block then sits in the card
     // des Formulars steht (x-create.main, Slot "nach").
     #[Locked]
     public bool $eingebettet = false;
 
-    /** Im Modal bringt der Rahmen das Padding mit - dann keins vom Block. */
+    /** In the modal the frame brings the padding - then none from the block. */
     public bool $randlos = false;
 
-    /** Eine Quelle fuer das Anlegen und fuer die Pruefung waehrend der Eingabe, siehe IpAssignment. */
+    /** One source for creating and for the check while typing, see IpAssignment. */
     protected function regeln(): array
     {
         return app(IpAssignment::class)->rules($this->customerId, $this->dhcp);
@@ -103,10 +103,10 @@ class DeviceIpAddresses extends Component
 
     public function mount($model, $customer, bool $eingebettet = false, bool $randlos = false): void
     {
-        // Beim Einhaengen, nicht erst bei der Aktion: Ein Block, der sich mit
-        // einem fremden Geraet ueberhaupt aufbauen laesst, hat schon zu viel
-        // gesagt. Die Pruefungen in den Aktionen bleiben - sie fangen den Fall
-        // ab, dass jemand die Nummer spaeter austauscht.
+        // On mounting, not only on the action: a block that can be built at
+        // all with a foreign device has already said too much. The checks in
+        // the actions stay - they catch the case that someone swaps the number
+        // later.
         $this->onlyOwnCustomer($customer->id);
         abort_if($model->customer_id !== $customer->id, 403);
 
@@ -118,8 +118,8 @@ class DeviceIpAddresses extends Component
     }
 
     /**
-     * Autorisierung: Recht zum Bearbeiten des Gerätetyps UND Kundenzugehörigkeit.
-     * (Public Properties sind client-seitig manipulierbar → bei jeder Aktion prüfen.)
+     * Authorisation: permission to edit the device kind AND customer membership.
+     * (Public properties can be manipulated on the client -> check on every action.)
      */
     protected function device()
     {
@@ -145,25 +145,25 @@ class DeviceIpAddresses extends Component
         app(IpAssignment::class)->add($device, $validated, $this->dhcp);
 
         $this->reset('address', 'network_id', 'label', 'dhcp');
-        // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
-        // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
+        // A list around this block shows the addresses or credentials in its
+        // columns - without this message it would stay on the old state.
         $this->dispatch('device-changed');
     }
 
     /**
-     * Das VLAN-Modal ist eine eigene Komponente (auch die VLAN-Liste nutzt sie).
-     * Meldet sie ein neues Netz, wird es hier gleich ausgewaehlt - man war ja
-     * beim Eintragen einer Adresse.
+     * The VLAN modal is a component of its own (the VLAN list uses it too).
+     * When it reports a new network it is selected here at once - one was
+     * entering an address, after all.
      */
     #[On('vlan-created')]
     public function vlanUebernehmen(int $id): void
     {
         $this->network_id = $id;
-        // Programmatisch gesetzt loest den updated-Hook nicht aus - der
-        // Vorschlag soll aber genauso kommen wie bei der Auswahl von Hand.
+        // Set programmatically does not fire the updated hook - the suggestion
+        // should come just as it does when choosing by hand.
         $this->updatedNetworkId($id);
-        // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
-        // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
+        // A list around this block shows the addresses or credentials in its
+        // columns - without this message it would stay on the old state.
         $this->dispatch('device-changed');
     }
 
@@ -172,8 +172,8 @@ class DeviceIpAddresses extends Component
         $device = $this->device();
 
         app(IpAssignment::class)->remove($device, $id);
-        // Eine Liste um diesen Block herum zeigt die Adressen bzw. Zugangsdaten
-        // in ihren Spalten - ohne diese Meldung bliebe sie auf dem alten Stand.
+        // A list around this block shows the addresses or credentials in its
+        // columns - without this message it would stay on the old state.
         $this->dispatch('device-changed');
     }
 
@@ -186,7 +186,7 @@ class DeviceIpAddresses extends Component
                 ? $device->ipAddresses()->with('network')->latest()->get()
                 : collect(),
             'networks' => Network::where('customer_id', $this->customerId)->orderBy('vlanId')->get(),
-            // Fuer das VLAN-Modal: Das neue Netz erbt den Standort des Geraets.
+            // For the VLAN modal: the new network inherits the device's site.
             'kunde' => Customer::find($this->customerId),
             'geraeteStandort' => $device?->site_id,
         ]);
