@@ -45,12 +45,12 @@ return [
          * Times-Roman, Times-Bold, Times-BoldItalic, Times-Italic,
          * Symbol, ZapfDingbats.
          */
-        // DomPDF legt hier seine Schriftenliste (installed-fonts.json) und die
-        // aufbereiteten Schriften ab - es braucht also Schreibrechte. Der
-        // Vorschlag aus der DomPDF-Doku zeigt auf public/fonts; dort darf der
-        // Webserver nicht schreiben, und beim ersten PDF endete das in
-        // "Permission denied" und einer Fehlerseite. Unterhalb von storage/
-        // ist der Ordner ohnehin beschreibbar und liegt nicht im Web.
+        // DomPDF puts its font list (installed-fonts.json) and the prepared
+        // fonts here - so it needs write permission. The suggestion from the
+        // DomPDF docs points at public/fonts; the web server may not write
+        // there, and the first PDF ended in "Permission denied" and an error
+        // page. Below storage/ the folder is writable anyway and does not lie
+        // in the web root.
         'font_dir' => storage_path('fonts'),
 
         /**

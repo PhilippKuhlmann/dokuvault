@@ -45,12 +45,12 @@ return [
                     base_path('.git'),
 
                     /*
-                     * Nicht ins Archiv: die .env traegt den APP_KEY, mit dem
-                     * die Kennwoerter in der Datenbank verschluesselt sind.
-                     * Laege sie neben dem Datenbank-Abzug, haette wer das
-                     * Backup hat den Schluessel UND die damit geschuetzten
-                     * Daten - die Verschluesselung waere umsonst. Der APP_KEY
-                     * gehoert getrennt gesichert (siehe SECURITY.md).
+                     * Not in the archive: the .env carries the APP_KEY the
+                     * passwords in the database are encrypted with. Lying
+                     * beside the database dump, whoever holds the backup would
+                     * have the key AND the data it protects - the encryption
+                     * would be for nothing. The APP_KEY belongs in a separate
+                     * backup (see SECURITY.md).
                      */
                     base_path('.env'),
                     base_path('auth.json'),

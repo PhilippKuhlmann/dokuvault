@@ -65,11 +65,11 @@ use App\Models\Ups;
 use App\Models\VM;
 use App\Models\Wifi;
 
-// Vor dem return, damit sowohl die eigenen Konfigurationsschluessel als auch
-// die Felder des Erstaufnahme-Assistenten dieselbe Liste benutzen.
-// Verfuegbare Sprachen der Oberflaeche. Der Schluessel ist der Locale-Code,
-// der Wert steht in der Auswahl - bewusst in der jeweiligen Sprache, damit man
-// die eigene auch findet, wenn die Oberflaeche gerade fremd ist.
+// Before the return, so that both the own configuration keys and the fields
+// of the initial-survey wizard use the same list.
+// Available languages of the interface. The key is the locale code, the value
+// stands in the select - deliberately in the respective language, so one
+// finds one's own even when the interface is currently foreign.
 $sprachen = [
     'de' => 'Deutsch',
     'en' => 'English',
@@ -160,8 +160,8 @@ return [
     ],
 
     /*
-     * Whitelist für den Papierkorb: URL-Slug => [Model-Klasse, Anzeigename].
-     * Nur Models mit customer_id und SoftDeletes aufnehmen.
+     * Allowlist for the trash: URL slug => [model class, display name].
+     * Only add models with customer_id and SoftDeletes.
      */
     'trashables' => [
         'site' => [Site::class, 'Standort'],
@@ -213,11 +213,11 @@ return [
     ],
 
     /**
-     * Überschrift der Listen-Seiten. Die trashables-Labels oben benennen ein
-     * einzelnes Objekt ("Zertifikat wiederhergestellt") und passen deshalb nicht
-     * als Titel einer Liste. Hier steht die Mehrzahl, und zwar in der Schreibweise
-     * aus der Seitenleiste — der Nutzer klickt dort und erwartet oben dasselbe Wort.
-     * Fehlt ein Schlüssel, greift automatisch das trashables-Label.
+     * Heading of the list pages. The trashables labels above name a single
+     * object ("Zertifikat wiederhergestellt") and therefore do not fit as the
+     * title of a list. Here stands the plural, in the spelling from the
+     * sidebar - the user clicks there and expects the same word at the top.
+     * If a key is missing, the trashables label applies automatically.
      */
     'list_titles' => [
         'site' => 'Standorte',
@@ -260,13 +260,13 @@ return [
     ],
 
     /**
-     * Überschrift der Admin-Listenseiten, Gegenstück zu list_titles oben.
+     * Heading of the admin list pages, the counterpart to list_titles above.
      *
      * Stand vorher als $adminTitles roh in resources/views/components/sitetopmenu.blade.php -
-     * ohne __(), waehrend der Nicht-Admin-Zweig direkt daneben schon uebersetzt wurde. Im
-     * Menue stand deshalb "Rack catalogue", in der Ueberschrift "Rack-Katalog". Hier statt
-     * dort, damit es dieselbe Quelle wie list_titles ist und der Uebersetzungs-Test
-     * (LocaleTest) es findet.
+     * without __(), while the non-admin branch right beside it was already
+     * translated. The menu therefore read "Rack catalogue" and the heading
+     * "Rack-Katalog". Here instead of there, so it is the same source as
+     * list_titles and the translation test (LocaleTest) finds it.
      */
     'admin_list_titles' => [
         'admin.customer' => 'Kunden',
@@ -282,21 +282,21 @@ return [
 
     /**
      * Schritte des Dokumentations-Assistenten (App\Livewire\DocumentationWizard).
-     * Jeder Schritt fragt eine Teilmenge der Felder des zugehörigen FormRequest ab -
-     * Pflichtfelder plus das fachlich Wichtigste, nicht das komplette Formular.
+     * Every step asks for a subset of the fields of its FormRequest -
+     * required fields plus what matters most, not the complete form.
      *
-     * 'request' liefert die Basis-Validierung (App\Livewire\DocumentationWizard::rulesForStep()
-     * übernimmt die Regeln daraus für genau die hier gelisteten Felder und ersetzt, was in
-     * Livewire nicht funktioniert: BelongsToCustomer braucht die {customer}-Route, die es unter
-     * /livewire/update nicht gibt - wird durch Rule::exists(...)->where('customer_id', ...) ersetzt).
+     * 'request' supplies the base validation (App\Livewire\DocumentationWizard::rulesForStep()
+     * takes the rules from it for exactly the fields listed here and replaces what does not
+     * work in Livewire: BelongsToCustomer needs the {customer} route, which does not exist
+     * under /livewire/update - replaced by Rule::exists(...)->where('customer_id', ...)).
      *
-     * 'scope': 'site' => Datensatz bekommt automatisch die run.site_id; 'customer' => Modell hat
-     * gar kein site_id (contact_people, ad_domains, backups - geprüft in den Migrationen).
+     * 'scope': 'site' => the record automatically gets the run.site_id; 'customer' => the model
+     * has no site_id at all (contact_people, ad_domains, backups - checked in the migrations).
      *
-     * 'label_field': welches Feld einen vorhandenen Eintrag in der Liste identifiziert.
+     * 'label_field': which field identifies an existing entry in the list.
      *
-     * Reihenfolge ist bewusst: 'wifi' braucht ein bereits angelegtes VLAN (network_id),
-     * steht deshalb zwingend nach 'network'.
+     * The order is deliberate: 'wifi' needs a VLAN that already exists (network_id),
+     * so it has to come after 'network'.
      */
     'wizard_steps' => [
         [
@@ -405,8 +405,8 @@ return [
             'model' => Wifi::class, 'relation' => 'wifis',
             'request' => WifiRequest::class, 'permission' => 'wifi_create',
             'scope' => 'site', 'label_field' => 'ssid',
-            // password/network_id sind in wifis NOT NULL, obwohl WifiRequest sie nicht als
-            // 'required' führt (geprüft in der Migration) - siehe DocumentationWizard::RULE_OVERRIDES.
+            // password/network_id are NOT NULL in wifis although WifiRequest does not list
+            // them as 'required' (checked in the migration) - see DocumentationWizard::RULE_OVERRIDES.
             'fields' => [
                 ['name' => 'ssid', 'label' => 'SSID', 'type' => 'text'],
                 ['name' => 'password', 'label' => 'Passwort', 'type' => 'password'],
@@ -475,8 +475,8 @@ return [
             'model' => VM::class, 'relation' => 'vms',
             'request' => VMRequest::class, 'permission' => 'vm_create',
             'scope' => 'site', 'label_field' => 'name',
-            // operating_system_id ist in vms NOT NULL, obwohl VMRequest es nicht verlangt
-            // (geprüft in der Migration) - siehe DocumentationWizard::RULE_OVERRIDES.
+            // operating_system_id is NOT NULL in vms although VMRequest does not demand it
+            // (checked in the migration) - see DocumentationWizard::RULE_OVERRIDES.
             'fields' => [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
                 ['name' => 'server_id', 'label' => 'Host-Server', 'type' => 'select', 'options' => 'servers'],
@@ -583,8 +583,8 @@ return [
             'model' => LoginGeneral::class, 'relation' => 'logingenerals',
             'request' => LoginGeneralRequest::class, 'permission' => 'logingeneral_create',
             'scope' => 'customer', 'label_field' => 'name',
-            // LoginGeneral setzt kind nicht selbst; ohne das versteckt der
-            // Global-Scope (kind = 'password') den Eintrag.
+            // LoginGeneral does not set kind itself; without this the global
+            // scope (kind = 'password') hides the entry.
             'defaults' => ['kind' => LoginGeneral::KIND],
             'fields' => [
                 ['name' => 'name', 'label' => 'Bezeichnung', 'type' => 'text'],
@@ -729,7 +729,7 @@ return [
         ],
         'custom' => [
             'label' => 'Andere Lösung',
-            // Wird durch das im Admin-Bereich hinterlegte Muster ersetzt.
+            // Replaced by the pattern stored in the admin area.
             'url' => '',
             'icon' => 'svg.remote',
             'id_label' => 'Fernwartungs-ID',
@@ -765,11 +765,11 @@ return [
     'server_depths' => $serverTiefen,
 
     /*
-     * Geraetetypen, die sich in ein Rack einbauen lassen.
-     * Schluessel = stabiler Bezeichner im Editor (nie Klassennamen vom Client annehmen),
-     * Wert = [Model-Klasse, Anzeigename, Darstellung in der Frontansicht].
-     * Reihenfolge = Reihenfolge der Palette.
-     * Voraussetzung: Model hat customer_id und ein name-Feld.
+     * Device kinds that can be mounted into a rack.
+     * Key = stable identifier in the editor (never accept class names from the client),
+     * value = [model class, display name, appearance in the front view].
+     * Order = order of the palette.
+     * Precondition: the model has customer_id and a name field.
      */
     'rack_device_types' => [
         'server' => [Server::class, 'Server', 'server'],
@@ -787,12 +787,12 @@ return [
     ],
 
     /*
-     * Benutzer, die auf einer Demo-Instanz (DEMO_MODE=true) nicht geloescht
-     * und deren Passwort und Rolle nicht geaendert werden koennen.
+     * Users that cannot be deleted on a demo instance (DEMO_MODE=true) and
+     * whose password and role cannot be changed.
      *
-     * Ohne diesen Schutz sperrt der erste Besucher, der das Admin-Passwort
-     * aendert oder das Konto loescht, alle uebrigen aus - bis zum naechsten
-     * stuendlichen Reset. Ausserhalb des Demo-Modus wirkt die Liste nicht.
+     * Without this protection the first visitor who changes the admin
+     * password or deletes the account locks out everyone else - until the
+     * next hourly reset. Outside demo mode the list has no effect.
      */
     'demo_protected_users' => ['admin', 'techniker', 'kunde-rw', 'kunde-r'],
 
@@ -936,9 +936,9 @@ return [
     |
     */
     'datei_formate' => [
-        // Kein SVG: Ein SVG darf Skripte enthalten, und an einer Lizenz oder
-        // einem Zertifikat hat eines ohnehin nichts zu suchen. Fuer Bilder
-        // steht es aus demselben Grund nicht in bild_formate.
+        // No SVG: an SVG may contain scripts, and one has no business on a
+        // licence or a certificate anyway. For images it is absent for the
+        // same reason in bild_formate.
         'pdf', 'png', 'jpg', 'jpeg', 'webp', 'gif',
         'txt', 'csv', 'rtf',
         'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods',
@@ -946,7 +946,7 @@ return [
         'pem', 'crt', 'cer', 'key', 'p12', 'pfx',
     ],
 
-    /** Groesste erlaubte Datei in Kilobyte. 20 MB, wie bei den Kundendateien. */
+    /** Largest allowed file in kilobytes. 20 MB, as with the customer files. */
     'datei_max_kb' => 20480,
 
     /*
@@ -1074,20 +1074,20 @@ return [
     */
     'anmeldung' => [
 
-        // Fehlversuche je Konto und Herkunft. Laravel liefert fuenf Versuche
-        // je Minute mit; hier gilt dieselbe Zahl, aber mit laengerer Sperre.
+        // Failed attempts per account and origin. Laravel ships five attempts
+        // per minute; the same number applies here, but with a longer lockout.
         'versuche' => 5,
 
-        // Wie lange gesperrt wird, in Minuten. Eine Minute - die Vorgabe des
-        // Geruests - erlaubt 300 Versuche je Stunde und Konto. Eine
-        // Viertelstunde macht daraus 20.
+        // How long the lockout lasts, in minutes. One minute - the framework's
+        // default - allows 300 attempts per hour and account. A quarter of an
+        // hour makes that 20.
         'sperre_minuten' => 15,
 
-        // Fehlversuche je Herkunft ueber alle Konten hinweg. Der Zaehler oben
-        // enthaelt den Nutzernamen - wer ein Kennwort gegen viele Namen
-        // probiert, loest ihn nie aus. Bewusst hoch: Ein ganzes Buero haengt
-        // hinter einer IP, und niemand soll es aussperren koennen, weil sich
-        // morgens ein paar Leute vertippen.
+        // Failed attempts per origin across all accounts. The counter above
+        // includes the username - whoever tries one password against many
+        // names never triggers it. Deliberately high: a whole office sits
+        // behind one IP, and nobody should be able to lock it out because a
+        // few people mistype in the morning.
         'versuche_je_herkunft' => 30,
     ],
 
@@ -1257,23 +1257,23 @@ return [
     */
     'fristen' => [
 
-        // Lizenzen, Zertifikate und Domains. Alle drei werden verlaengert,
-        // nicht ersetzt - eine Frist genuegt fuer alle drei.
+        // Licences, certificates and domains. All three are renewed, not
+        // replaced - one deadline is enough for all three.
         'vertraege_tage' => 60,
 
-        // Garantien. Getrennt von den Vertraegen, weil das die andere Arbeit
-        // ist: Eine Lizenz verlaengert man, ein Geraet ohne Garantie muss
-        // ersetzt werden. Ersatz braucht Budget und einen Termin.
+        // Warranties. Kept apart from the contracts because that is the other
+        // kind of work: a licence is renewed, a device without a warranty has
+        // to be replaced. Replacement needs budget and a date.
         'garantie_tage' => 60,
 
-        // Support-Ende der Betriebssysteme. Ein halbes Jahr, weil ein
-        // Serverwechsel geplant, budgetiert und in ein Wartungsfenster
-        // gelegt werden will.
+        // Support end of the operating systems. Half a year, because
+        // replacing a server wants planning, budgeting and a maintenance
+        // window.
         'eol_tage' => 180,
 
-        // Wie lange eine fertige PDF-Ausgabe liegen bleibt. Die Datei
-        // enthaelt alle Zugangsdaten eines Kunden im Klartext, deshalb in
-        // Stunden statt in Tagen.
+        // How long a finished PDF export stays. The file holds every
+        // credential of a customer in plain text, hence in hours rather than
+        // days.
         'pdf_stunden' => 24,
     ],
 
@@ -1300,9 +1300,9 @@ return [
         'name',
         'ssid',
         'address',
-        // Vor username: Ein Telefon heisst nach seiner Nebenstelle, ein
-        // DECT-Geraet nach seiner Rolle. Beide fuehren daneben einen
-        // Benutzernamen, der oft "admin" ist - als Bezeichnung waere er
+        // Before username: a phone is named after its extension, a DECT
+        // device after its role. Both carry a username beside that, often
+        // "admin" - as a label that would be worse than a number.
         // schlimmer als eine Nummer.
         'extension',
         'role',
@@ -1336,8 +1336,8 @@ return [
     |
     */
     'admin_permissions' => [
-        // Die Beschreibung steht so in der Rollenverwaltung - deshalb mit
-        // Umlauten, anders als die Kommentare in dieser Datei.
+        // The description stands like this in the role management - hence with
+        // umlauts, unlike the comments in this file.
         'admin_customer' => 'Kunden verwalten',
         'admin_user' => 'Benutzer verwalten',
         'admin_role' => 'Rollen und Rechte verwalten',
@@ -1478,9 +1478,9 @@ return [
     'hsts_max_age' => (int) env('HSTS_MAX_AGE', 31536000),
 
     /*
-     * Darstellungen der gezeichneten Frontansicht (x-rack.face).
-     * Geraete bekommen sie aus rack_device_types, Katalogelemente waehlt der
-     * Admin je Eintrag aus dieser Liste.
+     * Appearances of the drawn front view (x-rack.face).
+     * Devices get them from rack_device_types, catalog items are chosen by
+     * the admin per entry from this list.
      */
     'rack_appearances' => [
         'server' => 'Server (Laufwerksschächte)',
