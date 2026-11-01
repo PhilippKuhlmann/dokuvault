@@ -40,11 +40,11 @@ class UserController extends Controller
         $einladen = (bool) ($daten['einladen'] ?? false);
         unset($daten['einladen']);
 
-        // Wer eingeladen wird, bekommt hier ein Kennwort, das niemand kennt -
-        // auch der Administrator nicht. Es zu setzen ist nicht ueberfluessig:
-        // die Spalte ist NOT NULL, und ein leeres Feld waere ein Konto, in das
-        // sich jeder mit einem leeren Kennwort setzen koennte, wenn irgendwo
-        // eine Pruefung schlampt.
+        // Whoever is invited gets a password here that nobody knows - not even
+        // the administrator. Setting it is not pointless: the column is NOT
+        // NULL, and an empty field would be an account anyone could sit down
+        // in with an empty password if a check somewhere were sloppy.
+        //
         $daten['password'] = Hash::make($einladen ? Str::random(64) : $request->password);
 
         $user = User::create($daten);
@@ -57,9 +57,9 @@ class UserController extends Controller
     }
 
     /**
-     * Einladung (erneut) verschicken. Der haeufige Fall ist nicht der Fehler,
-     * sondern der Alltag: Die Mail ist im Spam gelandet, der Link ist
-     * abgelaufen, der Kollege hat sie geloescht.
+     * Send the invitation (again). The common case is not an error but
+     * everyday life: the mail landed in spam, the link expired, the colleague
+     * deleted it.
      */
     public function invite(User $user)
     {
@@ -69,12 +69,12 @@ class UserController extends Controller
     }
 
     /**
-     * Erzeugt einen Einladungs-Token und schickt ihn per Mail.
+     * Creates an invitation token and sends it by mail.
      *
-     * Bewusst synchron: Ein Administrator soll sofort erfahren, ob die Mail
-     * hinausging - und nicht erst der Benutzer, der drei Tage auf nichts
-     * wartet. Deshalb faengt es den Fehler auch ab und zeigt ihn an, statt
-     * eine 500er-Seite zu liefern.
+     * Deliberately synchronous: an administrator should learn at once whether
+     * the mail went out - and not the user first, waiting three days for
+     * nothing. That is also why it catches the error and shows it instead of
+     * delivering a 500 page.
      */
     private function einladungSenden(User $user, string $ziel)
     {
@@ -89,9 +89,9 @@ class UserController extends Controller
 
             $user->notify(new Invitation($token));
 
-            // saveQuietly: Eine verschickte Einladung ist kein Aenderungs-
+            // saveQuietly: a sent invitation is not a change
             // eintrag am Benutzer wert - im Protokoll stuende sonst neben
-            // jedem Versand eine leere "Geaendert"-Zeile.
+            // an empty "changed" row on every send.
             $user->forceFill(['invited_at' => now()])->saveQuietly();
         } catch (Throwable $fehler) {
             report($fehler);
@@ -121,10 +121,10 @@ class UserController extends Controller
         $userData = $request->validated();
         $this->authorizeRole($userData['role_id']);
 
-        // Auf der Demo sind die vordefinierten Zugaenge vollstaendig gesperrt.
-        // Nicht nur Passwort und Rolle: Der Schutz erkennt sie am Benutzernamen,
-        // ein umbenannter Zugang waere also nicht mehr geschuetzt - und die
-        // dokumentierte Anmeldung funktionierte nicht mehr.
+        // On the demo the predefined accounts are locked completely. Not only
+        // password and role: the protection recognises them by their username,
+        // so a renamed account would no longer be protected - and the
+        // documented sign-in would no longer work.
         if ($user->isDemoProtected()) {
             return redirect(route('admin.user.edit', $user))
                 ->withErrors(['demo' => __('Dieser Demo-Zugang ist gesperrt und lässt sich nicht ändern.')]);
@@ -136,24 +136,24 @@ class UserController extends Controller
             unset($userData['password']);
         }
 
-        // Der Haken heisst "deactivated", in der Tabelle steht ein Zeitpunkt.
+        // The box is called "deactivated", the table holds a timestamp.
         $sperren = (bool) ($userData['deactivated'] ?? false);
         unset($userData['deactivated']);
 
-        // Sich selbst nicht: Wer den Haken bei sich setzt, fliegt beim
-        // naechsten Aufruf aus seiner eigenen Sitzung - und kann sich nicht
-        // mehr anmelden, um ihn zurueckzunehmen. Derselbe Grund, aus dem der
-        // Loeschen-Knopf an der eigenen Zeile fehlt.
+        // Not on oneself: whoever ticks the box on their own row falls out of
+        // their own session on the next call - and cannot sign in to undo it.
+        // The same reason the delete button is missing on one's own row.
+        //
         if ($sperren && $user->id === auth()->id()) {
-            // withInput(): Sonst sind alle uebrigen Aenderungen desselben
-            // Formulars weg, nur weil ein Haken nicht gesetzt werden darf.
+            // withInput(): otherwise every other change of the same form is
+            // gone just because one box may not be ticked.
             return redirect(route('admin.user.edit', $user))
                 ->withInput()
                 ->withErrors(['deactivated' => __('Den eigenen Zugang können Sie nicht sperren.')]);
         }
 
         // Ein bereits gesperrter Zugang behaelt seinen Zeitpunkt: "seit wann"
-        // soll nicht bei jedem Speichern von vorne anfangen.
+        // should not start over on every save.
         $userData['deactivated_at'] = $sperren ? ($user->deactivated_at ?? now()) : null;
 
         $user->update($userData);
@@ -162,11 +162,11 @@ class UserController extends Controller
     }
 
     /**
-     * Die zweite Stufe eines Nutzers abschalten.
+     * Switch off a user's second factor.
      *
-     * Der Fall dahinter ist banal und haeufig: verlorenes oder neues Telefon,
-     * Wiederherstellungscodes im Papierkorb. Ohne diesen Weg bliebe nur der
-     * Griff in die Datenbank. Es steht im Protokoll, wer es getan hat.
+     * The case behind it is mundane and common: a lost or new phone, recovery
+     * codes in the bin. Without this way only reaching into the database
+     * would be left. The log records who did it.
      */
     public function resetTwoFactor(User $user)
     {
@@ -183,8 +183,8 @@ class UserController extends Controller
             'two_factor_confirmed_at' => null,
         ])->save();
 
-        // Mit Ereignisnamen: Ohne einen steht in der Protokollspalte "—", und
-        // der Eintrag laesst sich auch nicht filtern.
+        // With an event name: without one the log column shows "—", and the
+        // entry cannot be filtered either.
         activity()
             ->event('zweite_stufe')
             ->performedOn($user)

@@ -16,8 +16,8 @@ use App\Http\Middleware\RecordDemoUsage;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\RedirectToInitialSetup;
 use App\Http\Middleware\RequireTwoFactor;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
-use App\Http\Middleware\SicherheitsHeader;
 use App\Http\Middleware\TrimStrings;
 use App\Http\Middleware\TrustHosts;
 use App\Http\Middleware\TrustProxies;
@@ -49,7 +49,7 @@ class Kernel extends HttpKernel
      */
     protected $middleware = [
         // Schutz-Header auf jede Antwort - auch auf Fehlerseiten und die API.
-        SicherheitsHeader::class,
+        SecurityHeaders::class,
         // Only requests for APP_URL's host (and its subdomains). The Host
         // header comes from the client; the reverse proxy passes it on
         // unchanged (Nginx Proxy Manager, "Host $host"). Laravel skips this
