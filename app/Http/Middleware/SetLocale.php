@@ -8,12 +8,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 
 /**
- * Legt die Sprache je Anfrage fest.
+ * Determines the language per request.
  *
- * Reihenfolge: Einstellung des angemeldeten Nutzers, dann die Wahl in der
- * Sitzung (greift auf Gastseiten, etwa der Anmeldung), dann die Browsersprache,
- * zuletzt die Sprache der Installation (Einstellungen > Allgemein). Unbekannte Werte werden verworfen -
- * locale kommt sonst ungeprueft aus der Datenbank in App::setLocale().
+ * Order: the setting of the signed-in user, then the choice in the session
+ * (which applies on guest pages such as the sign-in), then the browser
+ * language, lastly the language of the installation (Einstellungen >
+ * Allgemein). Unknown values are dropped - locale would otherwise reach
  */
 class SetLocale
 {
@@ -21,24 +21,24 @@ class SetLocale
     {
         $erlaubt = array_keys(config('custom.locales', []));
 
-        // Nicht getPreferredLanguage(): Das liefert bei unbekannter
-        // Browsersprache die erste aus der uebergebenen Liste statt null - die
-        // Stufe darunter kam damit nie zum Zug. Das fiel nicht auf, solange
-        // "erste erlaubte" und "Vorgabe" dieselbe Sprache waren; seit sie
-        // einstellbar ist, waere die Einstellung wirkungslos gewesen.
+        // Not getPreferredLanguage(): with an unknown browser language that
+        // returns the first from the list passed in instead of null - so the
+        // stage below it never came into play. That went unnoticed as long as
+        // "first allowed" and "default" were the same language; since it is
+        // configurable, the setting would have had no effect.
         $vomBrowser = collect($request->getLanguages())
             ->map(fn ($sprache) => strtolower(explode('_', $sprache)[0]))
             ->first(fn ($sprache) => in_array($sprache, $erlaubt, true));
 
         $sprache = collect([
             auth()->user()?->locale,
-            // Die App kommt ohne Sitzung - dort zaehlen Nutzer und Browsersprache.
+            // The app comes without a session - there user and browser language count
             $request->hasSession() ? $request->session()->get('locale') : null,
             $vomBrowser,
         ])->first(fn ($wert) => $wert && in_array($wert, $erlaubt, true));
 
-        // Die letzte Stufe ist die Einstellung der Installation, nicht mehr
-        // config/app.php - siehe Setting::sprache(), die unbekannte Werte
+        // The last stage is the setting of the installation, no longer
+        // config/app.php - see Setting::language(), which drops unknown values
         // ohnehin verwirft.
         App::setLocale($sprache ?? Setting::sprache());
 

@@ -47,7 +47,7 @@ class AdminAgentStats extends Component
             'agenten' => $agenten,
             'summe' => [
                 'gesamt' => $agenten->count(),
-                'aktiv' => $agenten->reject->isStale()->count(),
+                'active' => $agenten->reject->isStale()->count(),
                 'still' => $agenten->filter->isStale()->count(),
                 'fehler' => $agenten->filter(fn ($a) => $a->fehler)->count(),
                 'veraltet' => $agenten->where('veraltet', true)->count(),

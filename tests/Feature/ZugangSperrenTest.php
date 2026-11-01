@@ -204,7 +204,7 @@ test('der abgewiesene Versuch steht nicht als Anmeldung im Protokoll', function 
 /*
  * Der zweite Eingang. Wer zwischen Kennwort und Einmalcode gesperrt wird, kam
  * bisher durch: Auth::login() in TwoFactorChallengeController fragte nicht
- * nach. Dass ZugangAktiv ihn beim naechsten Aufruf hinauswirft, ist kein
+ * nach. Dass AccountActive ihn beim naechsten Aufruf hinauswirft, ist kein
  * Ersatz - bis dahin haette er einen gueltigen "angemeldet bleiben"-Cookie,
  * einen verbrauchten Wiederherstellungscode und einen Eintrag "Angemeldet".
  */
@@ -258,7 +258,7 @@ test('die Codemaske selbst steht einem Gesperrten nicht mehr offen', function ()
 
 /*
  * Nicht nur /api/user: Dort steht nur der eigene Datensatz. Die Daten liegen
- * in der grossen Gruppe - faellt 'aktiv' dort weg, blieben die Tests sonst
+ * in der grossen Gruppe - faellt 'active' dort weg, blieben die Tests sonst
  * gruen, waehrend das Skript eines Gesperrten weiterliest.
  */
 test('auch die Datenrouten der API weisen ein Token des Gesperrten ab', function () {
@@ -271,7 +271,7 @@ test('auch die Datenrouten der API weisen ein Token des Gesperrten ab', function
 
 /*
  * Livewire laeuft ueber /livewire/update und nicht ueber die Route der Seite.
- * Steht ZugangAktiv nicht in der web-Gruppe, bleibt dieser Weg lautlos offen,
+ * Steht AccountActive nicht in der web-Gruppe, bleibt dieser Weg lautlos offen,
  * waehrend gewoehnliche Seitenaufrufe richtig abgewiesen werden.
  */
 test('auch ein Livewire-Aufruf kommt nicht mehr durch', function () {
@@ -293,7 +293,7 @@ test('auch ein Livewire-Aufruf kommt nicht mehr durch', function () {
     $this->post('/'.$pfad, [], ['X-Livewire' => 'true']);
 
     // Der Aufruf laeuft nicht ueber die Route der Seite, sondern ueber diese
-    // eine. Stuende ZugangAktiv nicht in der web-Gruppe, bliebe der Weg
+    // eine. Stuende AccountActive nicht in der web-Gruppe, bliebe der Weg
     // lautlos offen, waehrend gewoehnliche Seitenaufrufe abgewiesen werden.
     $this->assertGuest();
 });

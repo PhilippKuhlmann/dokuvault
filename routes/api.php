@@ -41,11 +41,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// "aktiv" after "auth:sanctum", not before: the guard has to resolve the
+// "active" after "auth:sanctum", not before: the guard has to resolve the
 // user first, or the middleware sees nobody and lets everything through.
 // That way the script of a locked user does not keep working - the agent
 // tokens above hang on no user and stay untouched.
-Route::middleware(['auth:sanctum', 'aktiv', RequireTwoFactor::class])->get('/user', function (Request $request) {
+Route::middleware(['auth:sanctum', 'active', RequireTwoFactor::class])->get('/user', function (Request $request) {
     return $request->user();
 });
 
@@ -88,7 +88,7 @@ Route::prefix('mobile')->group(function () {
         Route::post('/login/two-factor', [LoginController::class, 'zweiteStufe']);
     });
 
-    Route::middleware(['auth:sanctum', 'aktiv', SetLocale::class, RequireTwoFactor::class])->group(function () {
+    Route::middleware(['auth:sanctum', 'active', SetLocale::class, RequireTwoFactor::class])->group(function () {
         Route::post('/logout', [LoginController::class, 'abmelden']);
         Route::get('/me', [LoginController::class, 'ich']);
 
@@ -254,7 +254,7 @@ Route::prefix('mobile')->group(function () {
 // The legacy REST API for integrations. Every route checks the same right
 // as the browser (->can(), before any validation), only integration tokens from
 // the admin area get in, and records resolve within the customer of the URL.
-Route::middleware(['auth:sanctum', 'aktiv', RequireTwoFactor::class, RequireIntegrationToken::class])->group(function () {
+Route::middleware(['auth:sanctum', 'active', RequireTwoFactor::class, RequireIntegrationToken::class])->group(function () {
 
     Route::get('/customers', [CustomerController::class, 'index']);
     Route::post('/customers', [CustomerController::class, 'store'])->can('admin_customer');

@@ -7,7 +7,7 @@
 
     <div class="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <x-statistik.kennzahl :titel="__('Installiert')" :wert="$summe['gesamt']" :zusatz="$jeArt->map(fn ($n, $art) => $n.' '.__(config('custom.dienste.'.$art.'.name', $art)))->implode(' · ')" />
-        <x-statistik.kennzahl :titel="__('Melden')" :wert="$summe['aktiv']" :zusatz="__('in den letzten :stunden Stunden erreichbar', ['stunden' => \App\Models\Setting::agentSilentHours()])" />
+        <x-statistik.kennzahl :titel="__('Melden')" :wert="$summe['active']" :zusatz="__('in den letzten :stunden Stunden erreichbar', ['stunden' => \App\Models\Setting::agentSilentHours()])" />
         <x-statistik.kennzahl :titel="__('Melden nicht')" :wert="$summe['still']" :zusatz="__('seit über :stunden Stunden still', ['stunden' => \App\Models\Setting::agentSilentHours()])" :warnung="$summe['still'] > 0" />
         <x-statistik.kennzahl :titel="__('Mit Fehlern')" :wert="$summe['fehler']" :zusatz="__('letzter Lauf fehlgeschlagen')" :warnung="$summe['fehler'] > 0" />
         <x-statistik.kennzahl :titel="__('Alte Version')" :wert="$summe['veraltet']" :zusatz="__('Selbst-Update noch nicht angekommen')" :warnung="$summe['veraltet'] > 0" />

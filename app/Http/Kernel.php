@@ -2,6 +2,7 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\AccountActive;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\AuthenticateAgent;
 use App\Http\Middleware\EncryptCookies;
@@ -22,7 +23,6 @@ use App\Http\Middleware\TrustHosts;
 use App\Http\Middleware\TrustProxies;
 use App\Http\Middleware\ValidateSignature;
 use App\Http\Middleware\VerifyCsrfToken;
-use App\Http\Middleware\ZugangAktiv;
 use Illuminate\Auth\Middleware\AuthenticateWithBasicAuth;
 use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
@@ -106,7 +106,7 @@ class Kernel extends HttpKernel
             // Nach SetLocale: Die Middleware gibt eine Meldung aus, und die
             // soll in der Sprache des Benutzers stehen. Davor waere sie immer
             // deutsch - auch fuer den, der die Oberflaeche auf Englisch hat.
-            ZugangAktiv::class,
+            AccountActive::class,
 
             // Zaehlt Aufrufe, aber nur bei DEMO_MODE=true - siehe Middleware.
             RecordDemoUsage::class,
@@ -147,6 +147,6 @@ class Kernel extends HttpKernel
         'IsTechnician' => IsTechnician::class,
         'isCustomer' => isCustomer::class,
         'agent' => AuthenticateAgent::class,
-        'aktiv' => ZugangAktiv::class,
+        'active' => AccountActive::class,
     ];
 }

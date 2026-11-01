@@ -132,7 +132,7 @@ test('die Liste zeigt Haken, Kreuz und Strich statt Woertern', function () {
     $this->actingAs(userWithPermissions(['aduser_viewAny', 'aduser_update']));
     $customer = Customer::factory()->create();
 
-    foreach ([true => 'aktiv', false => 'gesperrt'] as $status => $name) {
+    foreach ([true => 'active', false => 'gesperrt'] as $status => $name) {
         ADUser::create([
             'customer_id' => $customer->id, 'username' => $name, 'enabled' => $status,
         ]);
@@ -151,7 +151,7 @@ test('die Liste zeigt Haken, Kreuz und Strich statt Woertern', function () {
 test('eine gesperrte Zeile tritt zurueck, eine aktive nicht', function () {
     $this->actingAs(userWithPermissions(['aduser_viewAny', 'aduser_update']));
     $customer = Customer::factory()->create();
-    ADUser::create(['customer_id' => $customer->id, 'username' => 'aktiv', 'enabled' => true]);
+    ADUser::create(['customer_id' => $customer->id, 'username' => 'active', 'enabled' => true]);
 
     $nurAktiv = Livewire::test(ObjectList::class, ['typ' => 'aduser', 'customer' => $customer])->html();
     expect(str_contains($nurAktiv, 'opacity-60'))

@@ -49,7 +49,7 @@ class TwoFactorChallengeController extends Controller
      *
      * LoginRequest prueft die Sperre beim Kennwort. Wer zwischen Kennwort und
      * Einmalcode gesperrt wird, kaeme hier aber trotzdem durch: Auth::login()
-     * weiter unten fragt nicht nach. Dass ZugangAktiv ihn beim naechsten
+     * weiter unten fragt nicht nach. Dass AccountActive ihn beim naechsten
      * Aufruf wieder hinauswirft, ist kein Ersatz - bis dahin haette er einen
      * gueltigen "angemeldet bleiben"-Cookie, einen verbrauchten
      * Wiederherstellungscode und einen Protokolleintrag "Angemeldet".
