@@ -2,12 +2,18 @@
 
 ## 26.11.01
 
+### Changed
+
+- **Das Kunden-PDF ist überarbeitet.** Es hat jetzt ein Inhaltsverzeichnis mit Seitenzahlen, auf jeder Seite oben den laufenden Abschnitt und unten Kundenname und „Seite 7 von 59" – vorher stand ab Seite 2 nirgends mehr, wessen Dokumentation man in der Hand hält. Die Abschnitte laufen durch, statt jeder auf einer eigenen Seite zu beginnen: bei 45 Abschnitten waren zwei Drittel jeder Seite leer, aus 84 Seiten werden 62. Felder ohne Wert fallen weg – „Notiz", „Passwort" und „Port" standen bisher auf jeder Gerätekarte leer da und machten die Hälfte der Zeilen aus. Deckblatt und Inhaltsverzeichnis zählen nicht mit: Seite 1 ist die, auf der „Standorte" beginnt. Das Deckblatt trägt einen Hinweis, dass das Dokument Zugangsdaten enthält.
+
 ### Internal
 
 - **Das Reset-Protokoll der Demo wird überschrieben statt angehängt.** Der stündliche Cronjob schrieb mit `>>` in `storage/logs/demo-reset.log`; bei 24 Läufen am Tag und ohne Rotation war die Datei auf 21 MB angewachsen. Jetzt steht dort mit `>` nur noch der letzte Reset. Nur die Demo betroffen, die Produktion hat diesen Cronjob nicht.
 
 ### Fixed
 
+- **Im PDF stand Text übereinander.** Bei „Internet / WAN" lief der Wert *DeutschlandLAN Glasfaser 1000* quer über die Beschriftung *WAN-IP*, bei den Firewalls die Oberflächen-Adresse über *Läuft bis*. Die Gruppen einer Karte standen nebeneinander als Floats; ein langer Wert sprengte seinen Kasten, weil er keine Bruchstelle fand. Sie stehen jetzt in einer Tabelle, höchstens zwei nebeneinander, der Rest bricht um – bei vier Gruppen blieben jeder nur 23 % des Blattes, und so schmal passt „Vertragsnummer" nicht mehr neben seinen Wert. Geprüft ist das über alle 62 Seiten: kein Wort überdeckt mehr ein anderes.
+- **Ein Ablaufdatum stand als Zeitstempel im PDF.** Bei Firewalls hieß es „Läuft bis 2028-03-05 00:00:00" statt „05.03.2028".
 - **Ein Test schlug nur in 30-Tage-Monaten fehl.** Der Testhelfer für Agent-Token gab ihnen `addMonth()` Laufzeit. Im November sind das genau 30 Tage – damit lag der Token im 30-Tage-Ablauffenster des Dashboards und erzeugte eine Warnung mehr als der Test erwartete. Die Laufzeit steht jetzt auf festen 60 Tagen.
 
 ## 26.10.31

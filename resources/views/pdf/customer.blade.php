@@ -47,23 +47,45 @@
         * { box-sizing: border-box; }
         html { font-family: 'Space Grotesk'; color: #111827; font-size: 12px; }
         /* In DomPDF wird der body-Rand als Seitenrand auf JEDER Seite angewendet
-           -> Druckränder für Drucker ohne Randlosdruck */
-        body { margin: 10mm; }
+           -> Druckränder für Drucker ohne Randlosdruck. Oben und unten mehr:
+              dort zeichnet der Job Kopf- und Fußzeile auf die Leinwand, und was
+              dort steht, weiß vom Textfluss nichts. */
+        body { margin: 17mm 10mm 15mm; }
 
         /* Deckblatt */
-        .cover { text-align: center; padding-top: 240px; }
+        .cover { text-align: center; padding-top: 200px; page-break-after: always; }
         .cover-app { font-weight: 600; font-size: 20px; color: #3391f0; margin-bottom: 14px; }
         .cover-bar { width: 110px; height: 5px; background: #3391f0; margin: 0 auto 26px; }
         .cover-title { font-weight: 600; font-size: 54px; color: #1f3d6e; }
         .cover-customer { font-size: 26px; color: #6b7280; margin-top: 6px; }
         .cover-date { margin-top: 36px; font-size: 12px; color: #9ca3af; }
+        .cover-note {
+            margin: 150px auto 0; width: 340px; padding: 9px 12px; border: 1px solid #e5e7eb;
+            border-radius: 4px; background: #f1f6fc; color: #6b7280; font-size: 10px; line-height: 1.5;
+        }
+
+        /* Inhalt */
+        .toc { page-break-after: always; }
+        .toc-title { font-weight: 600; font-size: 23px; color: #1f3d6e; border-bottom: 2px solid #3391f0; padding-bottom: 4px; margin-bottom: 12px; }
+        .toc table { width: 100%; border-collapse: collapse; }
+        /* Feste Zeilenhoehe: der Job muss vor dem Rendern wissen, wie viele
+           Eintraege auf eine Seite gehen (TOC_PER_PAGE). Mit der Zeilenhoehe
+           der Schrift stimmte die Rechnung nicht und das Verzeichnis lief auf
+           eine dritte Seite - danach war jede Seitenzahl um eins zu niedrig. */
+        .toc td { padding: 4px 0; line-height: 14px; border-bottom: 1px solid #f3f4f6; font-size: 12px; }
+        .toc td.toc-page { text-align: right; width: 40px; color: #6b7280; }
 
         .page-break { page-break-after: always; }
 
-        /* Abschnitte: jeder Abschnitt beginnt auf einer neuen Seite
-           -> maximal eine Überschrift pro Seite */
-        .section { page-break-before: always; }
-        .heading { font-weight: 600; font-size: 23px; color: #1f3d6e; border-bottom: 2px solid #3391f0; padding-bottom: 4px; margin-bottom: 10px; }
+        /* Abschnitte laufen durch, statt jeder auf einer eigenen Seite zu
+           beginnen: bei 45 Abschnitten waren zwei Drittel jeder Seite leer.
+           Die Überschrift nimmt den Umbruch mit (page-break-after: avoid),
+           damit sie nicht allein am Seitenfuß stehen bleibt. */
+        .section { margin-bottom: 9mm; }
+        .heading {
+            font-weight: 600; font-size: 23px; color: #1f3d6e; border-bottom: 2px solid #3391f0;
+            padding-bottom: 4px; margin-bottom: 10px; page-break-after: avoid;
+        }
 
         /* 4px: derselbe Radius wie rounded-xl in der Oberflaeche. Vorher 6px -
            die Ecken des Blattes waren runder als jede Karte der Anwendung. */
@@ -71,15 +93,31 @@
         .card-title { font-weight: 600; font-size: 15px; color: #1f3d6e; background: #f1f6fc; padding: 6px 10px; border-bottom: 1px solid #e5e7eb; border-radius: 4px 4px 0 0; }
         .card-body { padding: 8px 10px; }
 
-        .card-table { float: left; margin-right: 3%; margin-bottom: 6px; }
+        .groups { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .group-cell { vertical-align: top; padding: 0 14px 6px 0; }
         .card-table-title { font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #9ca3af; margin-bottom: 3px; }
-        .card-table table { width: 100%; border-collapse: collapse; }
-        .card-table td { padding: 2px 0; font-size: 11px; vertical-align: top; }
-        .card-table td.key { color: #6b7280; width: 45%; padding-right: 8px; }
-        .card-table td.val { color: #111827; }
+        /* table-layout: fixed haelt die Tabelle in der Breite ihrer Gruppe.
+           Mit automatischer Breite nahm die Wertespalte sich so viel, wie ihr
+           laengster Eintrag brauchte, und sprengte den Kasten. */
+        .group-cell table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .group-cell td { padding: 2px 0; font-size: 11px; vertical-align: top; }
+        /* 42 statt 45 Prozent: die Beschriftungen sind kurz, die Werte nicht.
+           overflow-wrap ist nur das Netz darunter - "Verschlüsselungscode"
+           ist laenger als die Spalte und stand sonst ueber seinem Wert. Ein
+           Umbruch im Wort ist haesslich, uebereinander gedruckter Text ist
+           schlimmer. */
+        .group-cell td.key { color: #6b7280; width: 42%; padding-right: 8px; overflow-wrap: break-word; }
+        /* Nur der Wert bricht im Wort. Genau daran lag die Ueberlappung:
+           "DeutschlandLAN Glasfaser 1000" fand keine Bruchstelle, sprengte
+           die Gruppe und stand quer ueber "WAN-IP". */
+        .group-cell td.val { color: #111827; overflow-wrap: break-word; }
 
         .clear { clear: both; }
-        .empty { color: #9ca3af; font-size: 12px; font-style: italic; padding: 2px 0 6px; }
+        /* Kein font-style: italic - von 'Space Grotesk' ist nur der gerade
+           Schnitt angemeldet, und DomPDF nimmt dafuer still seine eigene
+           Serifenschrift. Das stach aus dem Blatt heraus. */
+        .empty { color: #9ca3af; font-size: 12px; padding: 2px 0 6px; }
+        .empty-card { color: #9ca3af; font-size: 11px; }
 
         /* Dosenbelegung eines Patchfelds */
         .ports-block { page-break-inside: avoid; margin: 4px 0 10px; }
@@ -113,8 +151,31 @@
         <div class="cover-bar"></div>
         <div class="cover-title">{{ __('Dokumentation') }}</div>
         <div class="cover-customer">{{ $customer->name }}</div>
-        <div class="cover-date">Stand: {{ date('d.m.Y') }}</div>
+        <div class="cover-date">{{ __('Stand') }}: {{ \App\Support\LocalTime::display(now(), 'd.m.Y') }}</div>
+
+        {{-- Das Blatt traegt Kennwoerter, BMC-Zugaenge und WLAN-Schluessel.
+             Wer es ausgedruckt liegen laesst, gibt das Netz her. --}}
+        <div class="cover-note">
+            {{ __('Dieses Dokument enthält Zugangsdaten und Kennwörter. Bitte entsprechend aufbewahren, weitergeben und vernichten.') }}
+        </div>
     </div>
+
+    {{-- Inhalt. Die Seitenzahlen stammen aus einem vorhergehenden
+         Rendervorgang (siehe GenerateCustomerPdf); beim ersten Durchlauf ist
+         $toc leer und die Seite entfaellt ganz. --}}
+    @if (! empty($toc))
+        <div class="toc">
+            <div class="toc-title">{{ __('Inhalt') }}</div>
+            <table>
+                @foreach ($toc as $eintrag)
+                    <tr>
+                        <td>{{ $eintrag['title'] }}</td>
+                        <td class="toc-page">{{ $eintrag['page'] }}</td>
+                    </tr>
+                @endforeach
+            </table>
+        </div>
+    @endif
 
     @php
         // The parts drawn outside x-pdf.section check the same right.
@@ -143,7 +204,7 @@
     <x-pdf.section :title="__('Firewalls')" :items="$customer->firewalls" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Firmware' => 'firmware', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
         'Zugang' => ['Oberfläche' => 'management_url', 'Port' => 'port'],
-        'Subscription' => ['Läuft bis' => 'subscription_until'],
+        'Subscription' => ['Läuft bis' => fn($f) => $date($f->subscription_until)],
         'Sonstiges' => ['Notizen' => 'notes'],
     ]" />
 
