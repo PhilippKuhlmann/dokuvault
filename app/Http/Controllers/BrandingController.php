@@ -8,24 +8,24 @@ use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Liefert die eigenen Logos der Installation aus.
+ * Serves the installation's own logos.
  *
  * Gepflegt werden sie in App\Livewire\AdminAllgemein - hier geht es nur
- * darum, die abgelegte Datei herauszugeben.
+ * about handing out the stored file.
  *
- * Die Dateien liegen auf der local-Disk und gehen ueber logo() heraus, nicht
- * ueber public/storage: Die App legt alle Dateien privat ab und reicht sie
- * durch einen Controller - ein Symlink waere der einzige Sonderweg und
+ * The files lie on the local disk and go out through logo(), not through
+ * public/storage: the app stores every file privately and passes it through
+ * a controller - a symlink would be the only special case and
  * muesste auf jedem Server zusaetzlich eingerichtet werden.
  */
 class BrandingController extends Controller
 {
     /**
-     * Ein Logo ausliefern - ohne Anmeldung, es steht auch auf der Anmeldeseite.
+     * Serve a logo - without signing in, it stands on the sign-in page too.
      *
-     * Die Stelle kommt aus der Whitelist, nie roh aus der Adresse: Sonst waere
-     * der Einstellungs-Schluessel von aussen bestimmbar. Der Parameter heisst
-     * englisch wie die Adresse - die Werte selbst (login, header, favicon)
+     * The place comes from the allowlist, never raw from the URL: otherwise
+     * the setting key would be determined from outside. The parameter is
+     * named in English like the URL - the values themselves (login, header, favicon)
      * waren es schon.
      *
      * nosniff and a fixed content type: the browser should treat the file as
@@ -42,7 +42,7 @@ class BrandingController extends Controller
         return response(Storage::disk('local')->get($pfad), Response::HTTP_OK, [
             'Content-Type' => ImageType::fuer($pfad),
             'X-Content-Type-Options' => 'nosniff',
-            // Das Logo aendert sich selten, steht aber auf jeder Seite.
+            // The logo rarely changes but stands on every page.
             'Cache-Control' => 'public, max-age=86400',
         ]);
     }

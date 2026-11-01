@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 
 /**
- * IP-Plan je VLAN. Die Rechnung steht in IpPlan - dieselbe fuer die
- * iOS-App; hier nur Standortfilter, Links und die Seite.
+ * IP plan per VLAN. The computation sits in IpPlan - the same one for the
+ * iOS app; here only the site filter, the links and the page.
  */
 class IpPlanController extends Controller
 {
@@ -25,7 +25,7 @@ class IpPlanController extends Controller
         $this->authorize('viewAny', Network::class);
         $this->kunde = $customer;
 
-        // Nur die VLANs des gewählten Standorts anzeigen.
+        // Show only the VLANs of the chosen site.
         $networks = $this->getFilteredQuery(Network::class, $customer)
             ->orderBy('vlanId')
             ->get();
@@ -39,9 +39,9 @@ class IpPlanController extends Controller
     }
 
     /**
-     * Ein Gerät, wie es im Plan steht: Name und - wo der Nutzer die Liste
-     * sehen darf - der Sprung dorthin, direkt auf die Karte des Geräts
-     * (?highlight=, derselbe Weg wie aus der globalen Suche).
+     * A device as it stands in the plan: the name and - where the user may
+     * see the list - the jump there, straight onto the device's card
+     * (?highlight=, the same way as from the global search).
      *
      * @return array{name: string, url: ?string}
      */
@@ -58,9 +58,9 @@ class IpPlanController extends Controller
     }
 
     /**
-     * Der Objekttyp aus config('forms'), dessen Liste dieses Modell zeigt -
-     * null, wenn es keine gibt oder der Nutzer sie nicht sehen darf. Ein
-     * Link auf eine verbotene Seite wäre nur ein Umweg zur Fehlermeldung.
+     * The object kind from config('forms') whose list shows this model -
+     * null when there is none or the user may not see it. A link to a
+     * forbidden page would only be a detour to the error message.
      */
     protected function listType(string $klasse): ?string
     {

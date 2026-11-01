@@ -12,15 +12,15 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Ein Admin-Controller, an dessen Eintraegen ein Bild haengt.
  *
- * Der Rack-Katalog und die Geraetemodelle behandeln es gleich: hochladen,
- * ersetzen, entfernen, ausliefern. Das Model bringt Ordner und Route mit
- * (siehe App\Models\Concerns\HatBild), hier steht der Weg dorthin.
+ * The rack catalog and the device models treat it the same way: upload,
+ * replace, remove, serve. The model brings folder and route with it (see
+ * App\Models\Concerns\HasImage), here stands the way there.
  */
 trait ManagesImages
 {
     /**
-     * Die geprueften Werte ohne die Upload-Felder - die gehoeren nicht in die
-     * Spalten, sondern in eine Datei.
+     * The validated values without the upload fields - those do not belong in
+     * the columns but in a file.
      */
     protected function stammdaten(FormRequest $request): array
     {
@@ -28,9 +28,9 @@ trait ManagesImages
     }
 
     /**
-     * Ein neues Bild ablegen oder das vorhandene entfernen.
+     * Store a new image or remove the existing one.
      *
-     * Erst die alte Datei weg, sonst bleibt bei jedem Wechsel eine liegen, die
+     * The old file first, or one stays behind with every change that
      * niemand mehr findet.
      */
     protected function handleImage(FormRequest $request, Model $eintrag, array $daten): array
@@ -61,7 +61,7 @@ trait ManagesImages
         return response(Storage::disk('local')->get($pfad), Response::HTTP_OK, [
             'Content-Type' => ImageType::fuer($pfad),
             'X-Content-Type-Options' => 'nosniff',
-            // Aendert sich selten, steht aber in jedem Rack.
+            // Rarely changes but stands in every rack.
             'Cache-Control' => 'private, max-age=86400',
         ]);
     }
