@@ -16,8 +16,8 @@ class IsTechnician
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Vorher "ist Rolle 10". Eine zweite Technikergruppe haette die
-        // Fernwartungs-Suche damit nie oeffnen koennen.
+        // Formerly "is role 10". A second technician group could never have
+        // opened the remote-access search that way.
         abort_unless(auth()->user() && Gate::allows('remote_search'), 403);
 
         return $next($request);

@@ -11,8 +11,8 @@ use Symfony\Component\HttpFoundation\Response;
 class AuthenticateAgent
 {
     /**
-     * Authentifiziert eine Agent-Anfrage über den Bearer-Token (oder X-Agent-Token).
-     * Bei Erfolg werden Kunde und Standort des Tokens an der Anfrage hinterlegt.
+     * Authenticates an agent request through the bearer token (or X-Agent-Token).
+     * On success the token's customer and site are attached to the request.
      */
     public function handle(Request $request, Closure $next): Response
     {

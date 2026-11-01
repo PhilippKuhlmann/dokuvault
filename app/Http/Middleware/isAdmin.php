@@ -19,8 +19,8 @@ class isAdmin
     public function handle(Request $request, Closure $next)
     {
 
-        // Nicht mehr "ist Rolle 1", sondern "darf ueberhaupt einen der
-        // Admin-Bereiche". Welchen genau, entscheidet die can-Middleware an der
+        // No longer "is role 1" but "may enter any of the admin areas at
+        // all". Which one exactly is decided by the can middleware on the
         // jeweiligen Route - hier faellt nur ab, wer gar nichts darf.
         abort_unless(auth()->user() && Gate::allows('admin_bereich'), 403);
 

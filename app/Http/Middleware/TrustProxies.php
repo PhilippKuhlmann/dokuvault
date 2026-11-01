@@ -20,9 +20,9 @@ class TrustProxies extends Middleware
         Request::HEADER_X_FORWARDED_AWS_ELB;
 
     /**
-     * Aus der Konfiguration statt fest im Code: Welcher Proxy davorsteht, ist
-     * eine Eigenschaft der Installation, nicht der Anwendung. Ueber die
-     * Konfiguration und nicht ueber env(), weil der Deploy config:cache
+     * From the configuration instead of hard-wired: which proxy stands in
+     * front is a property of the installation, not of the application.
+     * Through the configuration and not through env(), because the deploy
      * ausfuehrt - danach liefert env() nichts mehr.
      */
     public function __construct()

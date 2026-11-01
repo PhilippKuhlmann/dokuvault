@@ -23,8 +23,8 @@ class FTPServerRequest extends FormRequest
     public function rules()
     {
         return [
-            // Benutzername und Kennwort haengen nicht am Server: Ein Server hat
-            // mehrere Zugaenge, sie werden ueber App\Livewire\DeviceCredentials
+            // Username and password do not hang on the server: a server has
+            // several accounts, and they are attached through
             // mit "Logins Allgemein" verknuepft.
             'host' => 'required|max:255',
             'description' => 'max:255',
