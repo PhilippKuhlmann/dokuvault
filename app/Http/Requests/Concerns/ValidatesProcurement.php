@@ -3,11 +3,11 @@
 namespace App\Http\Requests\Concerns;
 
 /**
- * Die Beschaffungsfelder gelten fuer jedes Geraet gleich - siebzehnmal die
- * gleichen vier Regeln zu wiederholen waere eine Einladung, sie bei der
+ * The procurement fields are the same for every device - repeating the same
+ * four rules seventeen times would be an invitation to let them drift on the
  * achtzehnten Geraeteart zu vergessen.
  *
- * Eingebunden wird das per Spread in rules() bzw. attributes(), damit der
+ * It is pulled in by spread in rules() and attributes(), so that the
  * jeweilige Request seine eigenen Regeln behaelt.
  */
 trait ValidatesProcurement
@@ -16,8 +16,8 @@ trait ValidatesProcurement
     {
         return [
             'purchase_date' => 'nullable|date',
-            // Kein after:purchase_date: Bei Bestandsgeraeten wird die Garantie
-            // oft nachgetragen, ohne dass das Kaufdatum bekannt ist.
+            // No after:purchase_date: on legacy devices the warranty is often
+            // added later without the purchase date being known.
             'warranty_until' => 'nullable|date',
             'eol_date' => 'nullable|date',
             'supplier' => 'nullable|max:255',

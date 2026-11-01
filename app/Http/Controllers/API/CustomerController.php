@@ -12,15 +12,15 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
 
-        // Ohne Suchbegriff die ganze Liste: whereEnthaelt() erwartet einen
-        // String, und ein Aufruf ohne ?name= endete in einem 500er.
+        // Without a search term the whole list: whereEnthaelt() expects a
+        // string, and a call without ?name= ended in a 500.
         $name = (string) $request->query('name');
 
         $query = Customer::query()
             ->when($name !== '', fn ($abfrage) => $abfrage->whereEnthaelt('name', $name));
 
         // Ein auf einen Kunden beschraenkter Token (customer_id gesetzt) darf
-        // hierueber nicht alle Kunden auflisten koennen - nur den eigenen.
+        // cannot list every customer through this - only their own.
         if (auth()->user()->hasCustomer()) {
             $query->where('id', auth()->user()->customer_id);
         }
@@ -30,8 +30,8 @@ class CustomerController extends Controller
 
     public function store(CustomerRequest $request)
     {
-        // Kunden anzulegen ist Admin-/Techniker-Aufgabe; ein auf einen Kunden
-        // beschraenkter Token darf das nicht.
+        // Creating customers is an admin or technician task; a token limited
+        // to one customer must not do it.
         if (auth()->user()->hasCustomer()) {
             abort(403);
         }

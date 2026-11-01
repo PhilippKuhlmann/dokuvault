@@ -9,10 +9,10 @@ use App\Models\Setting;
 use App\Models\VM;
 
 /**
- * Alle Geräte, deren Betriebssystem aus dem Support läuft - nach Kunde gruppiert.
+ * Every device whose operating system runs out of support - grouped by customer.
  *
- * Das Admin-Dashboard zeigt nur, welche Systeme betroffen sind. Für die
- * Kundenansprache braucht es die Gegenrichtung: Welcher Kunde hat wie viele
+ * The admin dashboard shows only which systems are affected. For talking to
+ * customers the other direction is needed: which customer has how many
  * Maschinen auf einem abgelaufenen System.
  */
 class EolController extends Controller
@@ -26,7 +26,7 @@ class EolController extends Controller
 
     public function index()
     {
-        // Dieselbe Schwelle wie beim Abzeichen - und jetzt auch dieselbe
+        // The same threshold as on the badge - and now the same
         // Quelle. Zwei Zahlen mit demselben Kommentar laufen sonst auseinander.
         $systeme = OperatingSystem::whereNotNull('eol_date')
             ->whereDate('eol_date', '<=', now()->addDays(Setting::eolDeadline()))
@@ -49,7 +49,7 @@ class EolController extends Controller
             }
         }
 
-        // Nach Kunde gruppiert; wer die meisten abgelaufenen Systeme hat, steht oben.
+        // Grouped by customer; whoever has the most expired systems stands on top.
         $nachKunde = $geraete
             ->sortBy(fn ($g) => $g['os']->eol_date)
             ->groupBy(fn ($g) => $g['kunde']?->name ?? __('Ohne Kunde'))

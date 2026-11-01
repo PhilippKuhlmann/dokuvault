@@ -27,9 +27,9 @@ class RoleController extends Controller
     }
 
     /**
-     * Gruppiert die Berechtigungen nach Ressource zu einer Matrix
+     * Groups the permissions by resource into a matrix
      * (Zeile = Bereich, Spalten = Sehen/Erstellen/Bearbeiten/Löschen).
-     * Rechte, die nicht in dieses Schema passen, kommen nach $others; die des
+     * Permissions that do not fit this scheme go to $others; those of the
      * Admin-Bereichs stehen als eigener Block in $adminRechte.
      */
     private function groupPermissions(): array
@@ -39,9 +39,9 @@ class RoleController extends Controller
         $others = [];
         $adminRechte = [];
 
-        // Die Rechte des Admin-Bereichs stehen fuer sich. Sie greifen nicht auf
-        // die Daten eines Kunden, sondern auf die Installation - wer sie
-        // vergibt, sollte das nicht zwischen zwei Geraetezeilen tun.
+        // The permissions of the admin area stand on their own. They do not
+        // reach into a customer's data but into the installation - whoever
+        // grants them should not do it between two device rows.
         $adminNamen = array_keys(config('custom.admin_permissions'));
 
         // German names per resource (permission prefix = slug of the trash
