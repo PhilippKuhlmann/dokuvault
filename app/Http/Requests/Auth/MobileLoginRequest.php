@@ -9,27 +9,27 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Die Anmeldung aus der App - dieselben Zaehler, dieselben Meldungen.
+ * Signing in from the app - the same counters, the same messages.
  *
- * Erbt von LoginRequest, damit Bremse und Zaehler dieselben sind wie im
- * Browser: Wer dort gesperrt ist, kommt nicht ueber die App herein, und
- * umgekehrt. Anders ist nur der Schluss - die App hat keine Sitzung, in die
- * Auth::attempt() jemanden anmelden koennte. Sie bekommt ein Token, und das
- * gibt der Controller erst aus, wenn auch die zweite Stufe stimmt.
+ * Inherits from LoginRequest so that throttle and counters are the same as
+ * in the browser: whoever is locked out there does not get in through the
+ * app, and the other way round. Only the ending differs - the app has no
+ * session for Auth::attempt() to sign anyone into. It gets a token, and the
+ * controller hands that out only once the second factor is right as well.
  */
 class MobileLoginRequest extends LoginRequest
 {
     public function rules()
     {
         return parent::rules() + [
-            // Steht als Name am Token - damit in der Liste der Token zu
-            // erkennen ist, welches Telefon es hat.
+            // Stands as the name on the token - so the token list shows which
+            // phone holds it.
             'geraet' => ['nullable', 'string', 'max:100'],
         ];
     }
 
     /**
-     * Prueft Benutzername und Kennwort, ohne jemanden anzumelden.
+     * Checks username and password without signing anyone in.
      *
      * @throws ValidationException
      */
@@ -39,8 +39,8 @@ class MobileLoginRequest extends LoginRequest
 
         $zugang = $this->only('username', 'password');
 
-        // validate() statt attempt(): Es meldet niemanden an und braucht keine
-        // Sitzung. Dafuer feuert es kein Failed-Ereignis - das schreibt
+        // validate() instead of attempt(): it signs nobody in and needs no
+        // session. In exchange it fires no Failed event - that is written by
         // AnmeldungProtokollieren ins Protokoll, also hier von Hand.
         if (! Auth::validate($zugang)) {
             event(new Failed('sanctum', Auth::getLastAttempted(), $zugang));
@@ -52,7 +52,7 @@ class MobileLoginRequest extends LoginRequest
         $nutzer = Auth::getLastAttempted();
 
         // Wie im Browser erst nach dem richtigen Kennwort: Wer es kennt, weiss
-        // ohnehin, dass es den Zugang gibt.
+        // says anyway that the account exists.
         if ($nutzer->isDisabled()) {
             throw ValidationException::withMessages([
                 'username' => __('Dieser Zugang ist deaktiviert. Wenden Sie sich an Ihre Administration.'),
