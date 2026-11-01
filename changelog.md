@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.11.01
+
+### Fixed
+
+- **Ein Test schlug nur in 30-Tage-Monaten fehl.** Der Testhelfer für Agent-Token gab ihnen `addMonth()` Laufzeit. Im November sind das genau 30 Tage – damit lag der Token im 30-Tage-Ablauffenster des Dashboards und erzeugte eine Warnung mehr als der Test erwartete. Die Laufzeit steht jetzt auf festen 60 Tagen.
+
 ## 26.10.31
 
 ### Internal

@@ -16,7 +16,9 @@ function installationToken(?Customer $customer = null): array
     $customer ??= Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
 
-    return AgentToken::generateFor($customer, $site, 'Dienst', now()->addMonth());
+    // 60 days, not addMonth(): in a 30-day month a month-long token falls inside
+    // the dashboard's 30-day expiry window and adds an extra warning.
+    return AgentToken::generateFor($customer, $site, 'Dienst', now()->addDays(60));
 }
 
 function checkinAls(string $plain, string $machine, array $detected, ?string $domain = 'firma.local')
