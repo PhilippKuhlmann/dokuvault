@@ -27,7 +27,7 @@ class ServerRequest extends FormRequest
      *
      * @return array<string, mixed>
      */
-    /** Ein Standserver hat keine Einbautiefe - der Wert bleibt auf dem Standard. */
+    /** A tower server has no mounting depth - the value stays at the default. */
     protected function prepareForValidation(): void
     {
         if ($this->input('form_factor') !== 'rack') {
@@ -39,7 +39,7 @@ class ServerRequest extends FormRequest
     {
         return [
             'site_id' => ['required', new BelongsToCustomer('sites')],
-            // Nullable: Die allermeisten Server stehen allein.
+            // Nullable: the vast majority of servers stand alone.
             'cluster_id' => ['nullable', new BelongsToCustomer('clusters')],
             'name' => 'required|max:255',
             'type' => 'max:255',

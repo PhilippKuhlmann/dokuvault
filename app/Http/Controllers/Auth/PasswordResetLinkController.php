@@ -38,9 +38,9 @@ class PasswordResetLinkController extends Controller
         // We will send the password reset link to this user. Once we have attempted
         // to send the link, we will examine the response then see the message we
         // need to show to the user. Finally, we'll send out a proper response.
-        // Ohne Adresse kann der Link nirgendwohin. Das ungeprueft an den
-        // Broker zu geben hiess: eine 500er-Seite auf einer oeffentlichen
-        // Route, weil die Benachrichtigung an null geht.
+        // Without an address the link can go nowhere. Passing that to the
+        // broker unchecked meant a 500 page on a public route, because the
+        // notification goes to null.
         $nutzer = User::where('username', $request->input('username'))->first();
 
         if ($nutzer && ! $nutzer->email) {

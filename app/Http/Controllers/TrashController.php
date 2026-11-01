@@ -12,8 +12,8 @@ class TrashController extends Controller
     {
         Gate::authorize('see_hidden');
 
-        // Gerechnet wird in Papierkorb - dieselbe Klasse bedient die
-        // iOS-App, damit beide dieselben Eintraege und dieselbe Grenze
+        // Worked out in Trash - the same class serves the iOS app, so both
+        // get the same entries and the same cap
         // kennen.
         $papierkorb = new Trash($customer, auth()->user());
 

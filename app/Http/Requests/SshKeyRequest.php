@@ -18,10 +18,10 @@ class SshKeyRequest extends FormRequest
             'name' => 'required|max:255',
             'description' => 'nullable|max:255',
             'username' => 'nullable|max:255',
-            // Die Passphrase - inhaltlich das Kennwortfeld der Tabelle.
+            // The passphrase - in substance the password field of the table.
             'password' => 'nullable|max:255',
             'key_type' => ['nullable', Rule::in(array_keys(config('custom.ssh_key_types')))],
-            // Kein max: Ein RSA-4096-Schluessel hat im privaten Teil ueber
+            // No max: an RSA 4096 key has more than
             // 3000 Zeichen, ein Standardlimit von 255 wuerde ihn abschneiden.
             'public_key' => 'nullable|string',
             'private_key' => 'nullable|string',

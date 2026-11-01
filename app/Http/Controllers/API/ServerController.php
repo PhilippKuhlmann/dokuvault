@@ -11,8 +11,8 @@ use Illuminate\Validation\Rule;
 
 class ServerController extends Controller
 {
-    // Diese Routen haben - anders als die uebrigen API-Ressourcen - keinen
-    // {customer}-Praefix in der URL. Ein auf einen Kunden beschraenkter
+    // Unlike the other API resources these routes have no {customer} prefix
+    // in the URL. A token limited to one customer
     // Token (customer_id gesetzt) darf daher nur auf Server des eigenen
     // Kunden zugreifen; Admin-/Techniker-Token bleiben unbeschraenkt.
     private function denyIfForeignCustomer(Server $server): void

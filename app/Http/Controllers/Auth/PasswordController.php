@@ -15,7 +15,7 @@ class PasswordController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
-        // Siehe User::istDemoGeschuetzt(): auf der Demo wuerde eine
+        // See User::isDemoProtected(): on the demo a change would
         // Passwortaenderung alle uebrigen Besucher aussperren.
         if ($request->user()->isDemoProtected()) {
             return back()->withErrors(
@@ -31,8 +31,8 @@ class PasswordController extends Controller
 
         // Alle uebrigen Sitzungen dieses Nutzers werden hierdurch ungueltig:
         // AuthenticateSession (siehe Kernel, Gruppe "web") haelt in jeder
-        // Sitzung den Kennwort-Hash fest und wirft sie raus, sobald er nicht
-        // mehr stimmt. Die eigene Sitzung zieht die Middleware am Ende dieser
+        // session pins the password hash and throws it out as soon as it no
+        // longer matches. The own session is pulled along by the middleware at
         // Anfrage nach. Ein eigenes "Angemeldet bleiben"-Cookie verfaellt dabei
         // ebenfalls - es traegt denselben Hash.
         $request->user()->update([

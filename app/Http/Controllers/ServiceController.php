@@ -41,8 +41,8 @@ class ServiceController extends Controller
     }
 
     /**
-     * Löscht nur den Katalogeintrag. Die Dienste an den Geräten stehen als
-     * Freitext in deren `services`-Spalte und bleiben erhalten - sie werden
+     * Deletes the catalog entry only. The services on the devices sit as free
+     * text in their `services` column and stay - they are
      * danach nur wieder neutral gezeichnet.
      */
     public function destroy(Service $service)
