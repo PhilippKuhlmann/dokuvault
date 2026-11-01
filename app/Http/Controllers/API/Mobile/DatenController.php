@@ -13,11 +13,11 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * Nachschlagen aus der iOS-App: Kunden, ihre Objekte, Suche, Kennwoerter.
+ * Looking things up from the iOS app: customers, their objects, search, passwords.
  *
- * Nur lesen. Jede Antwort geht durch dieselben Rechte wie die Seite im
- * Browser, und ein Kundennutzer sieht nur seinen Kunden - die Ids kommen hier
- * vom Telefon und nicht aus einer gesperrten Livewire-Eigenschaft.
+ * Read only. Every response goes through the same permissions as the page in
+ * the browser, and a customer user sees only their customer - the ids come
+ * from the phone here and not from a locked Livewire property.
  */
 class DatenController extends Controller
 {
@@ -38,7 +38,7 @@ class DatenController extends Controller
         return response()->json($kunden->map(fn ($kunde) => $this->objekte->kunde($kunde))->values());
     }
 
-    /** Der Kunde mit den Objektarten, die bei ihm dokumentiert sind. */
+    /** The customer with the object kinds documented at them. */
     public function kunde(Request $request, Customer $customer): JsonResponse
     {
         $typen = collect($this->objekte->visibleKinds($request->user()))
@@ -67,9 +67,9 @@ class DatenController extends Controller
         $mitladen = $mitStandort ? ['customer', 'site'] : ['customer'];
 
         // The site filter of the sidebar, here as a query value. A
-        // Standort eines anderen Kunden zaehlt als kein Filter, nicht als
-        // Fehler - genau wie im Browser, wo ein fremder Standort in der
-        // Sitzung uebergangen wird.
+        // A site of another customer counts as no filter, not as an error -
+        // just as in the browser, where a foreign site in the session is
+        // skipped.
         $standort = (int) $request->query('site');
         $standort = $standort && $mitStandort && $customer->sites()->whereKey($standort)->exists()
             ? $standort
@@ -92,7 +92,7 @@ class DatenController extends Controller
             'eintraege' => $zeilen,
             'weitere' => $objekte->count() > MobileObjects::LISTE_HOECHSTENS,
             'darf_anlegen' => $this->objekte->darfAnlegen($request->user(), $typ),
-            // Die Auswahl fuer den Standortfilter. Nur wo die Art ueberhaupt
+            // The choices for the site filter. Only where the kind carries
             // an einem Standort haengt - sonst gaebe es nichts zu filtern.
             'standorte' => $mitStandort
                 ? Site::where('customer_id', $customer->id)->orderBy('name')->get(['id', 'name'])
@@ -125,7 +125,7 @@ class DatenController extends Controller
         return response()->json($this->objekte->detail($objekt, $typ, $request->user()));
     }
 
-    /** Das Kennwort hinter einer Verknuepfung - einzeln, gebremst, protokolliert. */
+    /** The password behind a link - one at a time, throttled, logged. */
     public function kennwort(Request $request, CredentialLink $link, PasswordReveal $abruf): JsonResponse
     {
         $wert = $abruf->ausVerknuepfung($link, $request->user());
