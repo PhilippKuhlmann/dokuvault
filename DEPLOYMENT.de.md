@@ -152,8 +152,11 @@ wenn es als root läuft.
 
 ```
 * * * * * cd /var/www/dokuvault && php artisan schedule:run >> /dev/null 2>&1
-0 * * * * cd /var/www/dokuvault && flock -n storage/deploy.lock php artisan demo:reset >> storage/logs/demo-reset.log 2>&1
+0 * * * * cd /var/www/dokuvault && flock -n storage/deploy.lock php artisan demo:reset > storage/logs/demo-reset.log 2>&1
 ```
+
+Das einfache `>` ist Absicht: Im Protokoll steht nur der letzte Reset. Mit `>>` wächst es
+um 24 Läufe am Tag und niemand rotiert es (es war auf 21 MB angewachsen).
 
 Das `flock -n` ist wichtig: `deploy.sh` nimmt dieselbe Sperre. Ohne sie kann der Reset
 mitten in einen laufenden Deploy fallen und `migrate` gegen eine Datenbank laufen, die

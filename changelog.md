@@ -2,6 +2,10 @@
 
 ## 26.11.01
 
+### Internal
+
+- **Das Reset-Protokoll der Demo wird überschrieben statt angehängt.** Der stündliche Cronjob schrieb mit `>>` in `storage/logs/demo-reset.log`; bei 24 Läufen am Tag und ohne Rotation war die Datei auf 21 MB angewachsen. Jetzt steht dort mit `>` nur noch der letzte Reset. Nur die Demo betroffen, die Produktion hat diesen Cronjob nicht.
+
 ### Fixed
 
 - **Ein Test schlug nur in 30-Tage-Monaten fehl.** Der Testhelfer für Agent-Token gab ihnen `addMonth()` Laufzeit. Im November sind das genau 30 Tage – damit lag der Token im 30-Tage-Ablauffenster des Dashboards und erzeugte eine Warnung mehr als der Test erwartete. Die Laufzeit steht jetzt auf festen 60 Tagen.

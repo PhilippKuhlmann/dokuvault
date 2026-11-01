@@ -166,8 +166,11 @@ back to `www-data` after every deploy when it runs as root.
 
 ```
 * * * * * cd /var/www/dokuvault && php artisan schedule:run >> /dev/null 2>&1
-0 * * * * cd /var/www/dokuvault && flock -n storage/deploy.lock php artisan demo:reset >> storage/logs/demo-reset.log 2>&1
+0 * * * * cd /var/www/dokuvault && flock -n storage/deploy.lock php artisan demo:reset > storage/logs/demo-reset.log 2>&1
 ```
+
+The single `>` is deliberate: the log holds the last reset only. With `>>` it grows by
+24 runs a day and nobody rotates it (it had reached 21 MB).
 
 The `flock -n` matters: `deploy.sh` takes the same lock. Without it the reset can fall into a running
 deploy and `migrate` runs against a database that is being emptied. If the cron job meets a deploy it
