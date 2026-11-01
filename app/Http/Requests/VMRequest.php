@@ -26,16 +26,16 @@ class VMRequest extends FormRequest
     public function rules()
     {
         return [
-            // Nur ohne Host und ohne Cluster Pflicht: Steht eines von beiden,
-            // uebernimmt das Model den Standort von dort (VM::booted) - das
-            // Formular blendet das Feld dann aus und schickt gar nichts mit.
-            // Ohne beides (vServer beim Anbieter) bleibt es die einzige
+            // Required only without host and without cluster: if either is
+            // set, the model takes the site from there (VM::booted) - the form
+            // then hides the field and sends nothing at all.
+            // Without both (a vServer at a provider) it stays the only
             // Ortsangabe.
             'site_id' => ['required_without_all:server_id,cluster_id', 'nullable', new BelongsToCustomer('sites')],
-            // Entweder oder: In einem HA-Cluster wandert die VM zwischen den
-            // Knoten, ein zusaetzlich gepinnter Host waere nach der ersten
-            // Migration falsch. prohibits haelt das auch dann ein, wenn beides
-            // aus einem alten Formular kommt.
+            // One or the other: in an HA cluster the VM moves between nodes,
+            // and an additionally pinned host would be wrong after the first
+            // migration. prohibits holds that even when both come from an old
+            // form.
             'server_id' => ['nullable', 'prohibits:cluster_id', new BelongsToCustomer('servers')],
             'cluster_id' => ['nullable', new BelongsToCustomer('clusters')],
             'name' => 'required|max:255',

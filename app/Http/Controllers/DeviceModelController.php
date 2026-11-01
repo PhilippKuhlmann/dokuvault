@@ -8,7 +8,7 @@ use App\Models\DeviceModel;
 use App\Models\Setting;
 
 /**
- * Pflege der Geraetemodelle im Adminbereich. Die Route-Gruppe laeuft bereits
+ * Maintenance of the device models in the admin area. The route group
  * behind the isAdmin middleware, hence no additional authorisation.
  *
  * The exception is image(): the picture stands in every rack view and must
@@ -53,9 +53,9 @@ class DeviceModelController extends Controller
     }
 
     /**
-     * Loeschen betrifft kein Geraet: Die Dokumentation fuehrt Hersteller und
-     * Modell selbst. Nur das Foto verschwindet, und an seine Stelle tritt
-     * wieder die gezeichnete Blende des Geraetetyps.
+     * Deleting affects no device: the documentation carries manufacturer and
+     * model itself. Only the photo disappears, and the drawn panel of the
+     * device kind takes its place again.
      */
     public function destroy(DeviceModel $devicemodel)
     {
@@ -67,10 +67,10 @@ class DeviceModelController extends Controller
     /**
      * Serve the stored image.
      *
-     * Hinter auth, aber ohne Mandantenpruefung - anders als bei Geraetedaten
-     * und mit Absicht: Ein Modellfoto gehoert keinem Kunden. Es zeigt die
-     * Frontblende eines Geraets, das man auch im Katalog des Herstellers
-     * sieht, und genau deshalb soll es kundenuebergreifend gelten.
+     * Behind auth but without a tenant check - unlike with device data, and
+     * on purpose: a model photo belongs to no customer. It shows the front
+     * panel of a device one also sees in the manufacturer's catalog, and for
+     * exactly that reason it should apply across customers.
      */
     public function image(DeviceModel $devicemodel)
     {

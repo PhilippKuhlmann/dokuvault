@@ -22,7 +22,7 @@ class RackCatalogItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Eindeutig, damit die Palette keine zwei gleich benannten Eintraege zeigt.
+            // Unique, so the palette shows no two entries of the same name.
             // Beim Bearbeiten den eigenen Datensatz ausnehmen.
             'name' => [
                 'required',
@@ -31,18 +31,18 @@ class RackCatalogItemRequest extends FormRequest
                 Rule::unique('rack_catalog_items', 'name')
                     ->ignore($this->route('rackcatalogitem')),
             ],
-            // Acht Hoeheneinheiten sind die Obergrenze: Groesser gibt es
-            // 19"-Einbauten praktisch nicht, und die Vorschau zeigt genau
+            // Eight height units are the cap: 19-inch items practically do not
+            // come larger, and the preview shows exactly
             // diesen Ausschnitt. Dieselbe Grenze zieht RackEditor::setHeight.
             'height_units' => 'required|integer|min:1|max:'.self::MAX_HE,
             'full_depth' => 'required|boolean',
             'sort_order' => 'nullable|integer|min:0|max:65535',
-            // Nur bekannte Darstellungen - der Wert steuert, welche Zeichnung
-            // die Frontansicht rendert.
+            // Known appearances only - the value steers which drawing the
+            // front view renders.
             'appearance' => ['required', Rule::in(array_keys(config('custom.rack_appearances')))],
-            // Eigenes Foto der Frontblende. Ist eines hinterlegt, tritt es an
-            // die Stelle der Zeichnung; die Darstellung bleibt als Rueckfall
-            // stehen. SVG ist nicht dabei - siehe config/custom.php.
+            // An own photo of the front panel. If one is stored it takes the
+            // place of the drawing; the appearance stays as a fallback. SVG is
+            // not among them - see config/custom.php.
             'image' => ['nullable', 'image', 'mimes:'.implode(',', config('custom.bild_formate')), 'max:2048'],
             'image_remove' => 'nullable|boolean',
         ];
