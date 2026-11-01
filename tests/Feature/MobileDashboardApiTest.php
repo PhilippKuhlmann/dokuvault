@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\AgentInstallation;
+use App\Models\AgentToken;
 use App\Models\Certificate;
 use App\Models\ContactPerson;
 use App\Models\Customer;
@@ -61,18 +63,18 @@ test('das Dashboard nennt Fristen, Standorte, Ansprechpartner und Aenderungen', 
 
     $antwort = dashboardAbruf($token, $kunde)->assertOk();
 
-    expect($antwort->json('fristen.lizenzen.0.name'))->toBe('Office 2021');
-    expect($antwort->json('fristen.lizenzen.0.tage'))->toBe(10);
+    expect($antwort->json('deadlines.licenses.0.name'))->toBe('Office 2021');
+    expect($antwort->json('deadlines.licenses.0.days'))->toBe(10);
     // Abgelaufenes kommt negativ heraus - daran faerbt die App rot.
-    expect($antwort->json('fristen.zertifikate.0.tage'))->toBeLessThan(0);
-    expect($antwort->json('fristen.support_ende.0.name'))->toBe('SW-EOL');
-    expect($antwort->json('fristen.support_ende.0.typ'))->toBe('networkswitch');
-    expect($antwort->json('fristen.support_ende.0.id'))->toBe($switch->id);
-    expect($antwort->json('standorte.0.name'))->toBe('Zentrale');
-    expect($antwort->json('ansprechpartner.0.name'))->toContain('Meier');
-    expect($antwort->json('ansprechpartner.0.telefon'))->toBe('+49 30 123456');
+    expect($antwort->json('deadlines.certificates.0.days'))->toBeLessThan(0);
+    expect($antwort->json('deadlines.end_of_support.0.name'))->toBe('SW-EOL');
+    expect($antwort->json('deadlines.end_of_support.0.type'))->toBe('networkswitch');
+    expect($antwort->json('deadlines.end_of_support.0.id'))->toBe($switch->id);
+    expect($antwort->json('sites.0.name'))->toBe('Zentrale');
+    expect($antwort->json('contacts.0.name'))->toContain('Meier');
+    expect($antwort->json('contacts.0.phone'))->toBe('+49 30 123456');
     // Das eben Angelegte steht im Protokoll.
-    expect($antwort->json('aenderungen'))->not->toBeEmpty();
+    expect($antwort->json('changes'))->not->toBeEmpty();
 });
 
 test('eine Frist ohne Recht auf die Art steht nicht im Dashboard', function () {
@@ -85,7 +87,7 @@ test('eine Frist ohne Recht auf die Art steht nicht im Dashboard', function () {
         'end_date' => now()->addDays(10)->format('Y-m-d'),
     ]);
 
-    expect(dashboardAbruf($token, $kunde)->assertOk()->json('fristen.lizenzen'))->toBe([]);
+    expect(dashboardAbruf($token, $kunde)->assertOk()->json('deadlines.licenses'))->toBe([]);
 });
 
 test('das Support-Ende nennt Geraet und Betriebssystem, aber nichts Fernes', function () {
@@ -101,7 +103,7 @@ test('das Support-Ende nennt Geraet und Betriebssystem, aber nichts Fernes', fun
     Server::factory()->create(['customer_id' => $kunde->id, 'site_id' => $standort->id,
         'operating_system_id' => $neu->id, 'name' => 'SRV-NEU']);
 
-    $namen = collect(dashboardAbruf($token, $kunde)->assertOk()->json('fristen.support_ende'))->pluck('name');
+    $namen = collect(dashboardAbruf($token, $kunde)->assertOk()->json('deadlines.end_of_support'))->pluck('name');
 
     expect($namen->all())->toBe(['SRV-ALT']);
 });
@@ -109,7 +111,7 @@ test('das Support-Ende nennt Geraet und Betriebssystem, aber nichts Fernes', fun
 test('ohne Agentenverwaltung gibt es keine Agenten-Karte', function () {
     $kunde = Customer::factory()->create();
 
-    expect(dashboardAbruf(dashboardAppToken(['server_viewAny']), $kunde)->assertOk()->json('agenten'))->toBeNull();
+    expect(dashboardAbruf(dashboardAppToken(['server_viewAny']), $kunde)->assertOk()->json('agents'))->toBeNull();
 });
 
 test('ein Kundennutzer kommt nicht an das Dashboard eines anderen Kunden', function () {
@@ -125,4 +127,19 @@ test('ohne Anmeldung kein Dashboard', function () {
     $kunde = Customer::factory()->create();
 
     $this->getJson("/api/mobile/customers/{$kunde->slug}/dashboard")->assertUnauthorized();
+});
+
+test('ein stummer Agent steht als Warnung auf der Karte', function () {
+    $kunde = Customer::factory()->create();
+    $standort = Site::factory()->create(['customer_id' => $kunde->id]);
+    [$token] = AgentToken::generateFor($kunde, $standort, 'Zentrale-Token', now()->addYear());
+    $agent = AgentInstallation::checkin($token, 'proxmox', 'maschine-1', 'pve01', null, '1.2.3', ['proxmox']);
+    $agent->forceFill(['last_seen_at' => now()->subDays(2)])->save();
+
+    $karte = dashboardAbruf(dashboardAppToken(['agent_manage']), $kunde)->assertOk()->json('agents');
+
+    expect($karte)->toHaveCount(1);
+    expect(array_keys($karte[0]))->toBe(['name', 'kind', 'text', 'severe']);
+    expect($karte[0]['name'])->toBe('pve01');
+    expect($karte[0]['severe'])->toBeTrue();
 });

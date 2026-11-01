@@ -38,11 +38,11 @@ test('der Papierkorb nennt das Gelöschte mit Art und Zeitpunkt', function () {
         ->getJson("/api/mobile/customers/{$kunde->slug}/trash")
         ->assertOk();
 
-    expect($antwort->json('eintraege.0.name'))->toBe('SRV-WEG');
-    expect($antwort->json('eintraege.0.typ'))->toBe('server');
-    expect($antwort->json('eintraege.0.id'))->toBe($server->id);
-    expect($antwort->json('eintraege.0.geloescht_am'))->not->toBeNull();
-    expect($antwort->json('eintraege.0.darf_wiederherstellen'))->toBeTrue();
+    expect($antwort->json('entries.0.name'))->toBe('SRV-WEG');
+    expect($antwort->json('entries.0.type'))->toBe('server');
+    expect($antwort->json('entries.0.id'))->toBe($server->id);
+    expect($antwort->json('entries.0.deleted_at'))->not->toBeNull();
+    expect($antwort->json('entries.0.may_restore'))->toBeTrue();
 });
 
 test('ohne see_hidden bleibt der Papierkorb zu', function () {
@@ -61,7 +61,7 @@ test('eine Art ohne Leserecht steht nicht im Papierkorb', function () {
         ->getJson("/api/mobile/customers/{$kunde->slug}/trash")
         ->assertOk();
 
-    expect($antwort->json('eintraege'))->toBe([]);
+    expect($antwort->json('entries'))->toBe([]);
 });
 
 test('Zurückholen braucht das Recht zu löschen', function () {
@@ -85,8 +85,8 @@ test('mit dem Recht kommt das Objekt zurück und die App kann es öffnen', funct
         ->postJson("/api/mobile/customers/{$kunde->slug}/trash/server/{$server->id}/restore")
         ->assertOk();
 
-    expect($antwort->json('objekt.typ'))->toBe('server');
-    expect($antwort->json('objekt.id'))->toBe($server->id);
+    expect($antwort->json('object.type'))->toBe('server');
+    expect($antwort->json('object.id'))->toBe($server->id);
     expect(Server::find($server->id))->not->toBeNull();
 });
 

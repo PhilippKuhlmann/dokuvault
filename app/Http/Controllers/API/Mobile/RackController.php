@@ -77,27 +77,27 @@ class RackController extends Controller
         Gate::authorize('rack_update');
 
         return response()->json([
-            'geraete' => $this->layout->palette($customer->id)->map(fn ($gruppe) => [
-                'typ' => $gruppe['key'],
-                'titel' => __($gruppe['label']),
-                'eintraege' => $gruppe['devices']->map(fn ($geraet) => [
+            'devices' => $this->layout->palette($customer->id)->map(fn ($gruppe) => [
+                'type' => $gruppe['key'],
+                'title' => __($gruppe['label']),
+                'entries' => $gruppe['devices']->map(fn ($geraet) => [
                     'id' => $geraet->getKey(),
                     'name' => method_exists($geraet, 'rackName') ? $geraet->rackName() : $geraet->name,
-                    'hoehe' => $this->layout->dimensions($geraet)[0],
+                    'height' => $this->layout->dimensions($geraet)[0],
                 ])->values(),
             ]),
-            'katalog' => RackCatalogItem::ordered()->get()->map(fn ($eintrag) => [
+            'catalog' => RackCatalogItem::ordered()->get()->map(fn ($eintrag) => [
                 'id' => $eintrag->id,
                 'name' => $eintrag->name,
-                'hoehe' => $eintrag->height_units,
-                'volle_tiefe' => (bool) $eintrag->full_depth,
-                'darstellung' => $eintrag->appearance,
+                'height' => $eintrag->height_units,
+                'full_depth' => (bool) $eintrag->full_depth,
+                'appearance' => $eintrag->appearance,
             ]),
         ]);
     }
 
     /**
-     * Fit a device ("typ" + "id") or a catalogue item ("katalog_id").
+     * Fit a device ("type" + "id") or a catalogue item ("catalog_id").
      * Without a position it goes to the lowest free height unit.
      */
     public function storeItem(Request $request, Customer $customer, Rack $rack): JsonResponse
@@ -105,16 +105,16 @@ class RackController extends Controller
         Gate::authorize('rack_update');
 
         $data = $request->validate([
-            'seite' => ['required', Rule::in(array_keys(Rack::SEITEN))],
+            'side' => ['required', Rule::in(array_keys(Rack::SEITEN))],
             'position' => 'nullable|integer|min:1',
-            'typ' => ['required_without:katalog_id', 'nullable', Rule::in(array_keys(config('custom.rack_device_types')))],
-            'id' => 'required_with:typ|nullable|integer',
-            'katalog_id' => 'required_without:typ|nullable|integer',
+            'type' => ['required_without:catalog_id', 'nullable', Rule::in(array_keys(config('custom.rack_device_types')))],
+            'id' => 'required_with:type|nullable|integer',
+            'catalog_id' => 'required_without:type|nullable|integer',
         ]);
 
-        $item = isset($data['typ'])
-            ? $this->layout->placeDevice($rack, $data['seite'], $data['typ'], $data['id'], $data['position'] ?? null)
-            : $this->layout->placeCatalog($rack, $data['seite'], $data['katalog_id'], $data['position'] ?? null);
+        $item = isset($data['type'])
+            ? $this->layout->placeDevice($rack, $data['side'], $data['type'], $data['id'], $data['position'] ?? null)
+            : $this->layout->placeCatalog($rack, $data['side'], $data['catalog_id'], $data['position'] ?? null);
 
         return response()->json($this->mount($item->fresh()), 201);
     }
@@ -126,11 +126,11 @@ class RackController extends Controller
 
         $data = $request->validate([
             'position' => 'sometimes|integer|min:1',
-            'hoehe' => 'sometimes|integer|between:1,8',
+            'height' => 'sometimes|integer|between:1,8',
         ]);
 
-        if (isset($data['hoehe'])) {
-            $this->layout->setHeight($rack, $item, $data['hoehe']);
+        if (isset($data['height'])) {
+            $this->layout->setHeight($rack, $item, $data['height']);
         }
 
         if (isset($data['position'])) {
@@ -156,17 +156,17 @@ class RackController extends Controller
         return [
             'id' => $rack->id,
             'name' => $rack->name,
-            'hoehe' => $rack->height_units,
-            'ort' => $rack->location,
-            'notiz' => $rack->note,
-            'standort' => $rack->site ? ['id' => $rack->site->id, 'name' => $rack->site->name] : null,
-            'kunde' => $this->objekte->kunde($rack->customer),
-            'darf_bearbeiten' => Gate::forUser($request->user())->allows('rack_update'),
-            'darf_loeschen' => Gate::forUser($request->user())->allows('rack_delete'),
-            'seiten' => collect(Rack::SEITEN)->map(fn ($titel, $seite) => ['seite' => $seite, 'titel' => __($titel)])->values(),
+            'height' => $rack->height_units,
+            'location' => $rack->location,
+            'note' => $rack->note,
+            'site' => $rack->site ? ['id' => $rack->site->id, 'name' => $rack->site->name] : null,
+            'customer' => $this->objekte->kunde($rack->customer),
+            'may_update' => Gate::forUser($request->user())->allows('rack_update'),
+            'may_delete' => Gate::forUser($request->user())->allows('rack_delete'),
+            'sides' => collect(Rack::SEITEN)->map(fn ($titel, $seite) => ['side' => $seite, 'title' => __($titel)])->values(),
             // Highest first, as in the front view. A full-depth item occupies
             // the other side as well, see RackItem::belegtSeite().
-            'einbauten' => $rack->items->map(fn ($item) => $this->mount($item))->values(),
+            'mounts' => $rack->items->map(fn ($item) => $this->mount($item))->values(),
         ];
     }
 
@@ -175,15 +175,15 @@ class RackController extends Controller
         return [
             'id' => $item->id,
             'name' => $item->label(),
-            'seite' => $item->side,
+            'side' => $item->side,
             'position' => $item->position,
-            'hoehe' => $item->height_units,
-            'oberste_he' => $item->topUnit(),
-            'volle_tiefe' => $item->full_depth,
-            'darstellung' => $item->faceAppearance(),
+            'height' => $item->height_units,
+            'top_unit' => $item->topUnit(),
+            'full_depth' => $item->full_depth,
+            'appearance' => $item->faceAppearance(),
             // The device behind it, to open with /objects/{typ}/{id}.
-            'geraet' => $item->device_type ? [
-                'typ' => collect(config('custom.rack_device_types'))->search(fn ($eintrag) => $eintrag[0] === $item->device_type) ?: null,
+            'device' => $item->device_type ? [
+                'type' => collect(config('custom.rack_device_types'))->search(fn ($eintrag) => $eintrag[0] === $item->device_type) ?: null,
                 'id' => $item->device_id,
             ] : null,
         ];

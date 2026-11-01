@@ -24,7 +24,7 @@ class MobileLoginRequest extends LoginRequest
         return parent::rules() + [
             // Stands as the name on the token - so the token list shows which
             // phone holds it.
-            'geraet' => ['nullable', 'string', 'max:100'],
+            'device' => ['nullable', 'string', 'max:100'],
         ];
     }
 

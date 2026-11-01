@@ -49,17 +49,17 @@ class ChecklistController extends Controller
         $fertig = $customer->checklists()->completed()->latest('completed_at')->limit(50)->get();
 
         return response()->json([
-            'offen' => $offen->map(fn (Checklist $liste) => [
+            'open' => $offen->map(fn (Checklist $liste) => [
                 ...$this->kurz($liste),
-                'punkte' => $liste->items_count,
-                'erledigt' => $liste->erledigt_count,
+                'items' => $liste->items_count,
+                'done' => $liste->erledigt_count,
                 // Wie viele noch auf die Leitung warten - daran haengt, ob
                 // die IT ueberhaupt weiterkommt.
-                'wartet_auf_freigabe' => $liste->freigabe_count,
+                'awaiting_approval' => $liste->freigabe_count,
             ])->values(),
-            'fertig' => $fertig->map(fn (Checklist $liste) => $this->kurz($liste))->values(),
-            'darf_abhaken' => Gate::allows('checklist_manage'),
-            'darf_freigeben' => Gate::allows('checklist_approve'),
+            'completed' => $fertig->map(fn (Checklist $liste) => $this->kurz($liste))->values(),
+            'may_check' => Gate::allows('checklist_manage'),
+            'may_approve' => Gate::allows('checklist_approve'),
         ]);
     }
 
@@ -73,31 +73,31 @@ class ChecklistController extends Controller
             ...$this->kurz($checklist),
             // Leeres als null, nicht als "": Sonst steht in der App eine
             // Zeile ohne Wert - "Notiz" und daneben nichts.
-            'notiz' => $checklist->note ?: null,
-            'benutzername' => $checklist->username ?: null,
-            'mail' => $checklist->email ?: null,
+            'note' => $checklist->note ?: null,
+            'username' => $checklist->username ?: null,
+            'email' => $checklist->email ?: null,
             // Nach Abschnitten, wie die Seite im Browser: Laufwerke,
             // Programme und Zugaenge, Gruppen, E-Mail.
-            'abschnitte' => $checklist->items
+            'sections' => $checklist->items
                 ->groupBy('section')
                 ->map(fn ($punkte, $abschnitt) => [
-                    'titel' => __($abschnitt),
-                    'punkte' => $punkte->map(fn (ChecklistItem $punkt) => [
+                    'title' => __($abschnitt),
+                    'items' => $punkte->map(fn (ChecklistItem $punkt) => [
                         'id' => $punkt->id,
-                        'titel' => $punkt->title,
-                        'hinweis' => $punkt->hint,
-                        'zustaendig' => $punkt->assignee,
-                        'erledigt' => $punkt->isDone(),
-                        'erledigt_am' => $punkt->done_at?->toIso8601String(),
-                        'erledigt_von' => $punkt->doneBy?->name,
-                        'braucht_freigabe' => (bool) $punkt->needs_approval,
-                        'freigegeben' => $punkt->needs_approval && $punkt->approved_at !== null,
-                        'freigegeben_von' => $punkt->approvedBy?->name,
+                        'title' => $punkt->title,
+                        'hint' => $punkt->hint,
+                        'assignee' => $punkt->assignee,
+                        'done' => $punkt->isDone(),
+                        'done_at' => $punkt->done_at?->toIso8601String(),
+                        'done_by' => $punkt->doneBy?->name,
+                        'needs_approval' => (bool) $punkt->needs_approval,
+                        'approved' => $punkt->needs_approval && $punkt->approved_at !== null,
+                        'approved_by' => $punkt->approvedBy?->name,
                     ])->values(),
                 ])
                 ->values(),
-            'darf_abhaken' => Gate::allows('checklist_manage'),
-            'darf_freigeben' => Gate::allows('checklist_approve'),
+            'may_check' => Gate::allows('checklist_manage'),
+            'may_approve' => Gate::allows('checklist_approve'),
         ]);
     }
 
@@ -117,35 +117,35 @@ class ChecklistController extends Controller
         $darfOffboarding = Gate::allows('checklist_manage');
 
         return response()->json([
-            'laufwerke' => ChecklistBuilder::onboardingShares($customer)->map(fn (NetworkShare $freigabe) => [
+            'drives' => ChecklistBuilder::onboardingShares($customer)->map(fn (NetworkShare $freigabe) => [
                 'id' => $freigabe->id,
                 'name' => $freigabe->name,
-                'buchstabe' => $freigabe->drive_letter,
+                'letter' => $freigabe->drive_letter,
                 // Welche Stufen es gibt, haengt an den hinterlegten Gruppen:
                 // ohne Schreibgruppe gibt es kein "lesen und schreiben".
-                'stufen' => collect(ChecklistBuilder::LEVELS)
+                'levels' => collect(ChecklistBuilder::LEVELS)
                     ->filter(fn ($titel, $stufe) => $stufe === 'r' ? $freigabe->ad_group_read_id : $freigabe->ad_group_write_id)
-                    ->map(fn ($titel, $stufe) => ['stufe' => $stufe, 'titel' => __($titel)])
+                    ->map(fn ($titel, $stufe) => ['level' => $stufe, 'title' => __($titel)])
                     ->values(),
             ])->values(),
-            'programme' => ChecklistBuilder::optionsByKind($customer)
+            'apps' => ChecklistBuilder::optionsByKind($customer)
                 ->flatMap(fn ($optionen) => $optionen)
                 ->map(fn (ChecklistOption $option) => [
                     'id' => $option->id,
                     'name' => $option->name,
-                    'braucht_freigabe' => (bool) $option->needs_approval,
+                    'needs_approval' => (bool) $option->needs_approval,
                 ])->values(),
-            'ad_benutzer' => $darfOffboarding
+            'ad_users' => $darfOffboarding
                 ? $customer->adusers()->where('enabled', true)
                     ->orderBy('lastName')->orderBy('firstName')->orderBy('username')
                     ->get()
                     ->map(fn (ADUser $benutzer) => [
                         'id' => $benutzer->id,
                         'name' => trim("{$benutzer->firstName} {$benutzer->lastName}") ?: (string) $benutzer->username,
-                        'benutzername' => $benutzer->username,
+                        'username' => $benutzer->username,
                     ])->values()
                 : collect(),
-            'darf_offboarding' => $darfOffboarding,
+            'may_offboard' => $darfOffboarding,
         ]);
     }
 
@@ -179,7 +179,7 @@ class ChecklistController extends Controller
 
         $liste = $bauer->startOnboarding($customer, $geprueft, $request->user());
 
-        return response()->json(['checkliste' => $this->kurz($liste)], 201);
+        return response()->json(['checklist' => $this->kurz($liste)], 201);
     }
 
     /** Ein Offboarding anstossen - fuer einen dokumentierten AD-Benutzer. */
@@ -206,7 +206,7 @@ class ChecklistController extends Controller
             $geprueft['note'] ?? null,
         );
 
-        return response()->json(['checkliste' => $this->kurz($liste)], 201);
+        return response()->json(['checklist' => $this->kurz($liste)], 201);
     }
 
     /**
@@ -224,8 +224,8 @@ class ChecklistController extends Controller
         }
 
         return response()->json([
-            'erledigt' => $item->fresh()->isDone(),
-            'fertig' => $checklist->fresh()->completed_at !== null,
+            'done' => $item->fresh()->isDone(),
+            'completed' => $checklist->fresh()->completed_at !== null,
         ]);
     }
 
@@ -233,7 +233,7 @@ class ChecklistController extends Controller
     {
         ChecklistActions::release($item, $request->user());
 
-        return response()->json(['freigegeben' => true]);
+        return response()->json(['approved' => true]);
     }
 
     /**
@@ -277,10 +277,10 @@ class ChecklistController extends Controller
         return [
             'id' => $liste->id,
             'name' => $liste->fullName(),
-            'art' => $liste->isOnboarding() ? 'onboarding' : 'offboarding',
+            'kind' => $liste->isOnboarding() ? 'onboarding' : 'offboarding',
             'position' => $liste->position ?: null,
-            'stichtag' => $liste->reference_date?->toIso8601String(),
-            'fertig_am' => $liste->completed_at?->toIso8601String(),
+            'reference_date' => $liste->reference_date?->toIso8601String(),
+            'completed_at' => $liste->completed_at?->toIso8601String(),
         ];
     }
 }

@@ -29,7 +29,7 @@ class AgentController extends Controller
     {
         Gate::authorize('agent_manage');
 
-        $suche = trim((string) $request->query('suche', ''));
+        $suche = trim((string) $request->query('search', ''));
 
         $installationen = AgentInstallation::where('customer_id', $customer->id)
             ->with('agentToken')
@@ -42,22 +42,22 @@ class AgentController extends Controller
         $token = AgentToken::where('customer_id', $customer->id)->with('site')->latest()->get();
 
         return response()->json([
-            'agenten' => $installationen->take(self::HOECHSTENS)
+            'agents' => $installationen->take(self::HOECHSTENS)
                 ->map(fn (AgentInstallation $agent) => $this->agent($agent))
                 ->values(),
-            'weitere' => $installationen->count() > self::HOECHSTENS,
+            'more' => $installationen->count() > self::HOECHSTENS,
             'token' => $token->map(fn (AgentToken $eines) => [
                 'id' => $eines->id,
                 'name' => $eines->name ?: 'Token #'.$eines->id,
-                'standort' => $eines->site?->name,
-                'gesperrt' => $eines->locked_at !== null,
-                'laeuft_ab' => $eines->expires_at?->toIso8601String(),
-                'abgelaufen' => $eines->isExpired(),
+                'site' => $eines->site?->name,
+                'locked' => $eines->locked_at !== null,
+                'expires_at' => $eines->expires_at?->toIso8601String(),
+                'expired' => $eines->isExpired(),
             ])->values(),
             // Die Takte, die der Server zulaesst - die App bietet nur diese
             // an, sonst kaeme eine 422 zurueck.
-            'takte' => collect(config('custom.agent_intervalle'))
-                ->map(fn ($beschriftung, $minuten) => ['minuten' => (int) $minuten, 'titel' => __($beschriftung)])
+            'intervals' => collect(config('custom.agent_intervalle'))
+                ->map(fn ($beschriftung, $minuten) => ['minutes' => (int) $minuten, 'title' => __($beschriftung)])
                 ->values(),
         ]);
     }
@@ -120,7 +120,7 @@ class AgentController extends Controller
             ->withProperties(['objekt' => $token->name ?: 'Token #'.$token->id])
             ->log($gesperrt ? 'Agent gesperrt' : 'Agent entsperrt');
 
-        return response()->json(['gesperrt' => $gesperrt]);
+        return response()->json(['locked' => $gesperrt]);
     }
 
     /** @return array<string, mixed> */
@@ -131,21 +131,21 @@ class AgentController extends Controller
         return [
             'id' => $agent->id,
             'hostname' => $agent->hostname,
-            'domaene' => $agent->domain,
-            'art' => $agent->kind,
+            'domain' => $agent->domain,
+            'kind' => $agent->kind,
             'version' => $agent->version,
-            'zuletzt_gemeldet' => $agent->last_seen_at?->toIso8601String(),
+            'last_seen_at' => $agent->last_seen_at?->toIso8601String(),
             // Meldet nicht mehr - dieselbe Frage wie auf dem Dashboard.
-            'stumm' => $agent->isStale(),
-            'takt_minuten' => $agent->intervalMinutes(),
-            'laufen_angefordert' => $agent->run_requested_at !== null,
-            'aufgaben' => collect($moegliche)->map(fn ($beschriftung, $rolle) => [
-                'rolle' => $rolle,
-                'titel' => __($beschriftung),
-                'an' => in_array($rolle, $agent->roles ?? [], true),
-                'erkannt' => in_array($rolle, $agent->detected ?? [], true),
-                'fehlgeschlagen' => in_array($rolle, $agent->failedRoles(), true),
-                'meldung' => $agent->resultFor($rolle)['message'] ?? null,
+            'silent' => $agent->isStale(),
+            'interval_minutes' => $agent->intervalMinutes(),
+            'run_requested' => $agent->run_requested_at !== null,
+            'tasks' => collect($moegliche)->map(fn ($beschriftung, $rolle) => [
+                'role' => $rolle,
+                'title' => __($beschriftung),
+                'enabled' => in_array($rolle, $agent->roles ?? [], true),
+                'detected' => in_array($rolle, $agent->detected ?? [], true),
+                'failed' => in_array($rolle, $agent->failedRoles(), true),
+                'message' => $agent->resultFor($rolle)['message'] ?? null,
             ])->values(),
             'token' => $agent->agentToken?->name,
         ];

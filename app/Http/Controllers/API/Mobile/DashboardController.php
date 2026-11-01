@@ -33,37 +33,44 @@ class DashboardController extends Controller
 
         return response()->json([
             ...$this->objekte->kunde($customer),
-            'fristen' => [
-                'lizenzen' => $this->deadlines($uebersicht->lizenzen()),
-                'zertifikate' => $this->deadlines($uebersicht->zertifikate()),
-                'garantien' => $this->deadlines($uebersicht->garantien()),
-                'support_ende' => $this->deadlines($uebersicht->supportEnde()),
+            'deadlines' => [
+                'licenses' => $this->deadlines($uebersicht->lizenzen()),
+                'certificates' => $this->deadlines($uebersicht->zertifikate()),
+                'warranties' => $this->deadlines($uebersicht->garantien()),
+                'end_of_support' => $this->deadlines($uebersicht->supportEnde()),
             ],
-            'standorte' => $uebersicht->sites()
+            'sites' => $uebersicht->sites()
                 ->map(fn ($standort) => $this->objekte->kurz($standort, 'site'))
                 ->values(),
             // Mit Telefon und Mail: im Browser steht beides auf der Karte,
             // und auf dem Telefon ist eine Nummer ein Anruf.
-            'ansprechpartner' => $uebersicht->contactPersons()
+            'contacts' => $uebersicht->contactPersons()
                 ->map(fn ($person) => [
                     ...$this->objekte->kurz($person, 'contactperson'),
-                    'rolle' => $person->role,
-                    'telefon' => $person->phone,
-                    'mail' => $person->mail,
+                    'role' => $person->role,
+                    'phone' => $person->phone,
+                    'email' => $person->mail,
                 ])
                 ->values(),
             // null, wenn der Kunde weder Agenten noch Token hat oder der
             // Angemeldete sie nicht verwaltet - dann zeigt die App keine
             // Karte, keine leere.
-            'agenten' => $uebersicht->agentenWarnungen()?->values(),
-            'aenderungen' => $uebersicht->letzteAenderungen()
+            'agents' => $uebersicht->agentenWarnungen()
+                ?->map(fn ($warnung) => [
+                    'name' => $warnung['name'],
+                    'kind' => $warnung['art'],
+                    'text' => $warnung['text'],
+                    'severe' => $warnung['schwer'],
+                ])
+                ->values(),
+            'changes' => $uebersicht->letzteAenderungen()
                 ->map(fn ($aenderung) => [
                     'name' => $aenderung['name'],
-                    'art' => $aenderung['art'],
-                    'ereignis' => $aenderung['ereignis'],
-                    'wer' => $aenderung['wer'],
-                    'wann' => $aenderung['wann']?->toIso8601String(),
-                    'typ' => $this->oeffenbar($aenderung['typ']),
+                    'kind' => $aenderung['art'],
+                    'event' => $aenderung['ereignis'],
+                    'who' => $aenderung['wer'],
+                    'when' => $aenderung['wann']?->toIso8601String(),
+                    'type' => $this->oeffenbar($aenderung['typ']),
                     'id' => $aenderung['id'],
                 ])
                 ->values(),
@@ -75,10 +82,10 @@ class DashboardController extends Controller
     {
         return $zeilen->map(fn ($zeile) => [
             'name' => $zeile['name'],
-            'art' => $zeile['art'],
-            'datum' => $zeile['datum']->toIso8601String(),
-            'tage' => $zeile['tage'],
-            'typ' => $this->oeffenbar($zeile['typ']),
+            'kind' => $zeile['art'],
+            'date' => $zeile['datum']->toIso8601String(),
+            'days' => $zeile['tage'],
+            'type' => $this->oeffenbar($zeile['typ']),
             'id' => $zeile['id'],
         ])->values();
     }

@@ -50,7 +50,7 @@ class ObjectController extends Controller
         return response()->json([
             ...$this->form($form, $form->values($objekt), $objekt),
             'id' => $objekt->getKey(),
-            'darf_loeschen' => Gate::allows($typ.'_delete'),
+            'may_delete' => Gate::allows($typ.'_delete'),
         ]);
     }
 
@@ -143,38 +143,38 @@ class ObjectController extends Controller
             ->map(fn ($feld) => array_filter([
                 'name' => $feld['name'],
                 'label' => __($feld['label']),
-                'art' => $feld['type'],
-                'gruppe' => __($feld['gruppe'] ?? 'Allgemein'),
-                'pflicht' => $this->pflicht($regeln[$feld['name']] ?? null),
-                'geheim' => in_array($feld['name'], $geheim, true),
-                'mehrfach' => ($feld['mehrfach'] ?? false) || $feld['type'] === 'verknuepfung',
-                'einheit' => $feld['einheit'] ?? null,
-                'zeilen' => $feld['zeilen'] ?? null,
-                'platzhalter' => $feld['platzhalter'] ?? null,
+                'kind' => $feld['type'],
+                'group' => __($feld['gruppe'] ?? 'Allgemein'),
+                'required' => $this->pflicht($regeln[$feld['name']] ?? null),
+                'secret' => in_array($feld['name'], $geheim, true),
+                'multiple' => ($feld['mehrfach'] ?? false) || $feld['type'] === 'verknuepfung',
+                'unit' => $feld['einheit'] ?? null,
+                'rows' => $feld['zeilen'] ?? null,
+                'placeholder' => $feld['platzhalter'] ?? null,
                 // Shown only while other fields have these values, as in the modal.
-                'sichtbar_wenn' => $feld['sichtbar_wenn'] ?? null,
-                'optionen' => isset($optionen[$feld['name']])
-                    ? collect($optionen[$feld['name']])->map(fn ($text, $wert) => ['wert' => (string) $wert, 'label' => $text])->values()->all()
+                'visible_if' => $feld['sichtbar_wenn'] ?? null,
+                'options' => isset($optionen[$feld['name']])
+                    ? collect($optionen[$feld['name']])->map(fn ($text, $wert) => ['value' => (string) $wert, 'label' => $text])->values()->all()
                     : null,
             ], fn ($wert) => $wert !== null))
             ->values();
 
         // Secrets: never the value, only whether one is stored.
         $gesetzt = [];
-        foreach ($felder->where('geheim', true) as $feld) {
+        foreach ($felder->where('secret', true) as $feld) {
             $gesetzt[$feld['name']] = $objekt !== null && filled($objekt->getRawOriginal($feld['name']));
             $werte[$feld['name']] = null;
         }
 
         return [
-            'typ' => $form->type,
-            'einzahl' => __($form->settings()['einzahl']),
-            'kunde' => $this->objekte->kunde($form->customer()),
-            'felder' => $felder,
-            'werte' => (object) array_intersect_key($werte, $felder->keyBy('name')->all()),
-            'geheim_gesetzt' => (object) $gesetzt,
-            'hat_datei' => $felder->contains('art', 'datei'),
-            'hat_erzeuger' => isset($form->settings()['erzeuger']),
+            'type' => $form->type,
+            'singular' => __($form->settings()['einzahl']),
+            'customer' => $this->objekte->kunde($form->customer()),
+            'fields' => $felder,
+            'values' => (object) array_intersect_key($werte, $felder->keyBy('name')->all()),
+            'secret_set' => (object) $gesetzt,
+            'has_file' => $felder->contains('kind', 'datei'),
+            'has_generator' => isset($form->settings()['erzeuger']),
         ];
     }
 

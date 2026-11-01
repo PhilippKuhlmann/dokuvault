@@ -90,8 +90,8 @@ test('die Anmeldung gibt ein Token, das fuer die App gilt', function () {
     $antwort = $this->postJson('/api/mobile/login', [
         'username' => $nutzer->username,
         'password' => MOBIL_KENNWORT,
-        'geraet' => 'iPhone von Test',
-    ])->assertOk()->assertJsonStructure(['token', 'laeuft_ab', 'nutzer' => ['name', 'username', 'kunde', 'rechte']]);
+        'device' => 'iPhone von Test',
+    ])->assertOk()->assertJsonStructure(['token', 'expires_at', 'user' => ['name', 'username', 'customer', 'rights']]);
 
     expect($nutzer->tokens()->first()->name)->toBe('App iPhone von Test')
         ->and($nutzer->tokens()->first()->expires_at)->not->toBeNull();
@@ -163,17 +163,17 @@ test('mit zweiter Stufe gibt es erst nach dem Code ein Token', function () {
         'username' => $nutzer->username,
         'password' => MOBIL_KENNWORT,
     ])->assertOk()
-        ->assertJsonPath('zweite_stufe', true)
+        ->assertJsonPath('two_factor', true)
         ->assertJsonMissingPath('token')
-        ->json('vorgang');
+        ->json('challenge');
 
     expect($nutzer->tokens()->count())->toBe(0);
 
-    $this->postJson('/api/mobile/login/two-factor', ['vorgang' => $vorgang, 'code' => '000000'])
+    $this->postJson('/api/mobile/login/two-factor', ['challenge' => $vorgang, 'code' => '000000'])
         ->assertStatus(422)->assertJsonValidationErrors('code');
 
     $this->postJson('/api/mobile/login/two-factor', [
-        'vorgang' => $vorgang,
+        'challenge' => $vorgang,
         'code' => (new Google2FA)->getCurrentOtp($geheimnis),
     ])->assertOk()->assertJsonStructure(['token']);
 
@@ -187,18 +187,18 @@ test('ein Vorgang gibt nur ein einziges Token', function () {
     $vorgang = $this->postJson('/api/mobile/login', [
         'username' => $nutzer->username,
         'password' => MOBIL_KENNWORT,
-    ])->json('vorgang');
+    ])->json('challenge');
 
     $code = (new Google2FA)->getCurrentOtp($geheimnis);
 
-    $this->postJson('/api/mobile/login/two-factor', ['vorgang' => $vorgang, 'code' => $code])->assertOk();
+    $this->postJson('/api/mobile/login/two-factor', ['challenge' => $vorgang, 'code' => $code])->assertOk();
 
     // The next code, since the same one is refused as a replay.
     $google2fa = new Google2FA;
     $naechster = $google2fa->oathTotp($geheimnis, $google2fa->getTimestamp() + 1);
 
-    $this->postJson('/api/mobile/login/two-factor', ['vorgang' => $vorgang, 'code' => $naechster])
-        ->assertStatus(422)->assertJsonValidationErrors('vorgang');
+    $this->postJson('/api/mobile/login/two-factor', ['challenge' => $vorgang, 'code' => $naechster])
+        ->assertStatus(422)->assertJsonValidationErrors('challenge');
 
     expect($nutzer->tokens()->count())->toBe(1);
 });
@@ -210,11 +210,11 @@ test('ein abgelaufener oder erfundener Vorgang fuehrt nirgendwohin', function ()
 
     $abgelaufen = Crypt::encryptString(json_encode(['id' => $nutzer->id, 'bis' => now()->subMinute()->timestamp]));
 
-    $this->postJson('/api/mobile/login/two-factor', ['vorgang' => $abgelaufen, 'code' => $code])
-        ->assertStatus(422)->assertJsonValidationErrors('vorgang');
+    $this->postJson('/api/mobile/login/two-factor', ['challenge' => $abgelaufen, 'code' => $code])
+        ->assertStatus(422)->assertJsonValidationErrors('challenge');
 
-    $this->postJson('/api/mobile/login/two-factor', ['vorgang' => 'irgendwas', 'code' => $code])
-        ->assertStatus(422)->assertJsonValidationErrors('vorgang');
+    $this->postJson('/api/mobile/login/two-factor', ['challenge' => 'irgendwas', 'code' => $code])
+        ->assertStatus(422)->assertJsonValidationErrors('challenge');
 
     expect($nutzer->tokens()->count())->toBe(0);
 });
@@ -268,10 +268,10 @@ test('der Kunde zeigt nur Arten, die man sehen darf und die es gibt', function (
 
     $token = mobilToken(mobilNutzer(['server_viewAny']));
 
-    $typen = collect($this->withToken($token)->getJson('/api/mobile/customers/'.$kunde->slug)->assertOk()->json('typen'));
+    $typen = collect($this->withToken($token)->getJson('/api/mobile/customers/'.$kunde->slug)->assertOk()->json('types'));
 
-    expect($typen->pluck('typ')->all())->toBe(['server'])
-        ->and($typen->first()['anzahl'])->toBe(1);
+    expect($typen->pluck('type')->all())->toBe(['server'])
+        ->and($typen->first()['count'])->toBe(1);
 });
 
 // Je Nutzer ein eigener Test: Der Sanctum-Guard haelt im selben Test den
@@ -284,7 +284,7 @@ test('die Liste einer Art zeigt die Objekte des Kunden', function () {
     $this->withToken(mobilToken(mobilNutzer(['server_viewAny'])))
         ->getJson('/api/mobile/customers/'.$kunde->slug.'/server')
         ->assertOk()
-        ->assertJsonPath('eintraege.0.name', 'SRV-A');
+        ->assertJsonPath('entries.0.name', 'SRV-A');
 });
 
 test('AD-Benutzer und AD-Gruppen lassen sich auflisten und oeffnen', function () {
@@ -294,13 +294,13 @@ test('AD-Benutzer und AD-Gruppen lassen sich auflisten und oeffnen', function ()
     $token = mobilToken(mobilNutzer(['aduser_viewAny', 'adgroup_viewAny']));
 
     $this->withToken($token)->getJson('/api/mobile/customers/'.$kunde->slug.'/aduser')
-        ->assertOk()->assertJsonPath('eintraege.0.name', 'max.muster');
+        ->assertOk()->assertJsonPath('entries.0.name', 'max.muster');
     $this->withToken($token)->getJson('/api/mobile/customers/'.$kunde->slug.'/adgroup')
-        ->assertOk()->assertJsonPath('eintraege.0.name', 'GG-Buchhaltung');
+        ->assertOk()->assertJsonPath('entries.0.name', 'GG-Buchhaltung');
     $this->withToken($token)->getJson('/api/mobile/objects/aduser/'.$benutzer->id)
-        ->assertOk()->assertJsonPath('kunde.slug', $kunde->slug);
+        ->assertOk()->assertJsonPath('customer.slug', $kunde->slug);
     $this->withToken($token)->getJson('/api/mobile/objects/adgroup/'.$gruppe->id)
-        ->assertOk()->assertJsonPath('kunde.slug', $kunde->slug);
+        ->assertOk()->assertJsonPath('customer.slug', $kunde->slug);
 });
 
 // Liste und Detail laden den Kunden mit - ohne die Beziehung brach die Liste
@@ -327,9 +327,9 @@ test('die Suche findet dasselbe wie im Browser', function () {
     $this->withToken(mobilToken(mobilNutzer(['server_viewAny'])))
         ->getJson('/api/mobile/search?q=SRV-07')
         ->assertOk()
-        ->assertJsonPath('0.typ', 'server')
-        ->assertJsonPath('0.treffer.0.name', 'HH-SRV-07')
-        ->assertJsonPath('0.treffer.0.kunde.slug', $kunde->slug);
+        ->assertJsonPath('0.type', 'server')
+        ->assertJsonPath('0.hits.0.name', 'HH-SRV-07')
+        ->assertJsonPath('0.hits.0.customer.slug', $kunde->slug);
 });
 
 test('die Suche achtet die Rechte', function () {
@@ -350,14 +350,14 @@ test('die Detailansicht nennt Geheimnisse, verraet sie aber nicht', function () 
         ->getJson('/api/mobile/objects/server/'.$server->id)
         ->assertOk()
         ->assertJsonPath('name', 'SRV-01')
-        ->assertJsonPath('zugangsdaten.0.benutzer', 'admin')
-        ->assertJsonPath('zugangsdaten.0.hat_kennwort', true);
+        ->assertJsonPath('credentials.0.user', 'admin')
+        ->assertJsonPath('credentials.0.has_password', true);
 
-    $felder = collect($antwort->json('gruppen'))->flatMap(fn ($gruppe) => $gruppe['felder'])->keyBy('name');
+    $felder = collect($antwort->json('groups'))->flatMap(fn ($gruppe) => $gruppe['fields'])->keyBy('name');
 
-    expect($felder['bmcPassword']['art'])->toBe('geheim')
-        ->and($felder['bmcPassword']['wert'])->toBeNull()
-        ->and($felder['serialNumber']['wert'])->toBe('SN-SRV-01')
+    expect($felder['bmcPassword']['kind'])->toBe('secret')
+        ->and($felder['bmcPassword']['value'])->toBeNull()
+        ->and($felder['serialNumber']['value'])->toBe('SN-SRV-01')
         ->and($antwort->getContent())->not->toContain('BMC-GEHEIM')
         ->and($antwort->getContent())->not->toContain('LOGIN-GEHEIM');
 });
@@ -369,7 +369,7 @@ test('die Detailansicht blendet aus, was zur Bauform nicht passt', function () {
     $felder = collect($this->withToken(mobilToken(mobilNutzer(['server_viewAny'])))
         ->getJson('/api/mobile/objects/server/'.$server->id)
         ->assertOk()
-        ->json('gruppen'))->flatMap(fn ($gruppe) => $gruppe['felder'])->pluck('name');
+        ->json('groups'))->flatMap(fn ($gruppe) => $gruppe['fields'])->pluck('name');
 
     // Wie im Modal: Ein Standserver hat keine Hoeheneinheiten.
     expect($felder)->toContain('form_factor')->not->toContain('height_units');
@@ -382,7 +382,7 @@ test('ohne Login-Recht stehen keine Zugaenge in der Detailansicht', function () 
     $this->withToken(mobilToken(mobilNutzer(['server_viewAny'])))
         ->getJson('/api/mobile/objects/server/'.$server->id)
         ->assertOk()
-        ->assertJsonCount(0, 'zugangsdaten');
+        ->assertJsonCount(0, 'credentials');
 });
 
 // --- Kennwoerter ----------------------------------------------------------------
@@ -395,7 +395,7 @@ test('das Kennwort kommt einzeln und steht danach im Protokoll', function () {
     $this->withToken(mobilToken($nutzer))
         ->postJson('/api/mobile/credentials/'.$link->id.'/password')
         ->assertOk()
-        ->assertJsonPath('wert', 'LOGIN-GEHEIM');
+        ->assertJsonPath('value', 'LOGIN-GEHEIM');
 
     $eintrag = Activity::where('event', 'kennwort_angesehen')->latest('id')->first();
 
@@ -443,7 +443,7 @@ test('ein Geheimnis am Geraet kommt einzeln, ein gewoehnliches Feld gar nicht', 
     $this->withToken($token)
         ->postJson('/api/mobile/objects/server/'.$server->id.'/secret/bmcPassword')
         ->assertOk()
-        ->assertJsonPath('wert', 'BMC-GEHEIM');
+        ->assertJsonPath('value', 'BMC-GEHEIM');
 
     // Nur Geheimnis-Spalten: Ueber diesen Weg kommt kein beliebiges Attribut.
     $this->withToken($token)
@@ -465,7 +465,7 @@ test('ein Kundennutzer holt kein Geheimnis eines fremden Geraets', function () {
 /** Die Felder der Detailansicht, nach Name. */
 function mobilFelder($antwort)
 {
-    return collect($antwort->json('gruppen'))->flatMap(fn ($gruppe) => $gruppe['felder'])->keyBy('name');
+    return collect($antwort->json('groups'))->flatMap(fn ($gruppe) => $gruppe['fields'])->keyBy('name');
 }
 
 test('AD-Benutzer und -Gruppen zeigen ihre Verknuepfungen', function () {
@@ -479,13 +479,13 @@ test('AD-Benutzer und -Gruppen zeigen ihre Verknuepfungen', function () {
     $felder = mobilFelder($this->withToken($token)->getJson('/api/mobile/objects/aduser/'.$benutzer->id)->assertOk());
 
     // Als Text, damit die App sie ohne Aenderung zeigt; die Liste zum Falten.
-    expect($felder['groups']['art'])->toBe('text')
-        ->and($felder['groups']['wert'])->toBe('GG-Buchhaltung, GG-Vertrieb')
-        ->and($felder['groups']['liste'])->toBe(['GG-Buchhaltung', 'GG-Vertrieb']);
+    expect($felder['groups']['kind'])->toBe('text')
+        ->and($felder['groups']['value'])->toBe('GG-Buchhaltung, GG-Vertrieb')
+        ->and($felder['groups']['list'])->toBe(['GG-Buchhaltung', 'GG-Vertrieb']);
 
     $felder = mobilFelder($this->withToken($token)->getJson('/api/mobile/objects/adgroup/'.$gruppen[0]->id)->assertOk());
 
-    expect($felder['users']['liste'])->toBe(['max.muster']);
+    expect($felder['users']['list'])->toBe(['max.muster']);
 });
 
 test('ein Host-Feld verweist auf das Geraet', function () {
@@ -498,8 +498,8 @@ test('ein Host-Feld verweist auf das Geraet', function () {
         ->getJson('/api/mobile/objects/addomain/'.$domaene->id)
         ->assertOk());
 
-    expect($felder['domain_controllers']['wert'])->toBe('SRV-DC01')
-        ->and($felder['domain_controllers']['verweise'])->toBe([['typ' => 'server', 'id' => $server->id, 'name' => 'SRV-DC01']]);
+    expect($felder['domain_controllers']['value'])->toBe('SRV-DC01')
+        ->and($felder['domain_controllers']['links'])->toBe([['type' => 'server', 'id' => $server->id, 'name' => 'SRV-DC01']]);
 });
 
 test('Dienste kommen als eine Zeile', function () {
@@ -510,7 +510,7 @@ test('Dienste kommen als eine Zeile', function () {
         ->getJson('/api/mobile/objects/server/'.$server->id)
         ->assertOk());
 
-    expect($felder['services']['wert'])->toBe('AD · DNS · DHCP');
+    expect($felder['services']['value'])->toBe('AD · DNS · DHCP');
 });
 
 test('Dienste kommen mit ihren Kachelfarben', function () {
@@ -523,11 +523,11 @@ test('Dienste kommen mit ihren Kachelfarben', function () {
         ->getJson('/api/mobile/objects/server/'.$server->id)
         ->assertOk());
 
-    expect($felder['services']['kacheln'])->toBe([
-        ['name' => 'AD', 'farbe' => null, 'schrift' => null],
-        ['name' => 'dns', 'farbe' => '#1f73d6', 'schrift' => '#ffffff'],
-        ['name' => 'DHCP', 'farbe' => '#fde68a', 'schrift' => '#111827'],
-    ])->and($felder['services']['liste'])->toBe(['AD', 'dns', 'DHCP']);
+    expect($felder['services']['tiles'])->toBe([
+        ['name' => 'AD', 'color' => null, 'text_color' => null],
+        ['name' => 'dns', 'color' => '#1f73d6', 'text_color' => '#ffffff'],
+        ['name' => 'DHCP', 'color' => '#fde68a', 'text_color' => '#111827'],
+    ])->and($felder['services']['list'])->toBe(['AD', 'dns', 'DHCP']);
 });
 
 test('der Fingerprint steht am Schluessel und unter den Zugaengen', function () {
@@ -541,12 +541,12 @@ test('der Fingerprint steht am Schluessel und unter den Zugaengen', function () 
 
     $this->withToken($token)->getJson('/api/mobile/objects/server/'.$server->id)
         ->assertOk()
-        ->assertJsonPath('zugangsdaten.0.art', 'schluessel')
-        ->assertJsonPath('zugangsdaten.0.fingerprint', $schluessel->fingerprint);
+        ->assertJsonPath('credentials.0.kind', 'ssh_key')
+        ->assertJsonPath('credentials.0.fingerprint', $schluessel->fingerprint);
 
     $felder = mobilFelder($this->withToken($token)->getJson('/api/mobile/objects/sshkey/'.$schluessel->id)->assertOk());
 
-    expect($felder['fingerprint']['wert'])->toStartWith('SHA256:');
+    expect($felder['fingerprint']['value'])->toStartWith('SHA256:');
 });
 
 test('ein eingebautes Geraet nennt seinen Schrank', function () {
@@ -558,9 +558,9 @@ test('ein eingebautes Geraet nennt seinen Schrank', function () {
     $this->withToken(mobilToken(mobilNutzer(['server_viewAny'])))
         ->getJson('/api/mobile/objects/server/'.$server->id)
         ->assertOk()
-        ->assertJsonPath('einbauort.text', 'Rack HH-01 · HE 3–4 · Vorderseite')
-        ->assertJsonPath('einbauort.rack_id', $rack->id)
-        ->assertJsonPath('einbauort.kunde.slug', $kunde->slug);
+        ->assertJsonPath('mounting.text', 'Rack HH-01 · HE 3–4 · Vorderseite')
+        ->assertJsonPath('mounting.rack_id', $rack->id)
+        ->assertJsonPath('mounting.customer.slug', $kunde->slug);
 });
 
 test('das Support-Ende kommt mit seinem Zustand', function () {
@@ -570,13 +570,13 @@ test('das Support-Ende kommt mit seinem Zustand', function () {
 
     $this->withToken($token)->getJson('/api/mobile/objects/server/'.$server->id)
         ->assertOk()
-        ->assertJsonPath('support_ende.zustand', 'abgelaufen')
-        ->assertJsonPath('support_ende.betriebssystem', 'Debian 13');
+        ->assertJsonPath('end_of_support.state', 'expired')
+        ->assertJsonPath('end_of_support.operating_system', 'Debian 13');
 
     $server->operatingSystem->update(['eol_date' => null]);
 
     $this->withToken($token)->getJson('/api/mobile/objects/server/'.$server->id)
         ->assertOk()
-        ->assertJsonPath('support_ende', null)
-        ->assertJsonPath('einbauort', null);
+        ->assertJsonPath('end_of_support', null)
+        ->assertJsonPath('mounting', null);
 });

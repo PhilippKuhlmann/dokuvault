@@ -128,11 +128,11 @@ class MobileObjects
     public function kurz(Model $objekt, string $slug): array
     {
         return [
-            'typ' => $slug,
+            'type' => $slug,
             'id' => $objekt->getKey(),
             'name' => $this->name($objekt, $slug),
-            'untertitel' => $this->subtitle($objekt),
-            'kunde' => $this->kunde($objekt->customer),
+            'subtitle' => $this->subtitle($objekt),
+            'customer' => $this->kunde($objekt->customer),
         ];
     }
 
@@ -143,26 +143,26 @@ class MobileObjects
 
         return [
             ...$this->kurz($objekt, $slug),
-            'einzahl' => $this->singular($slug),
-            'gruppen' => $felder !== null
+            'singular' => $this->singular($slug),
+            'groups' => $felder !== null
                 ? $this->groups($objekt, $felder)
                 : $this->groupsWithoutForm($objekt),
-            'ip_adressen' => method_exists($objekt, 'ipAddresses')
+            'ip_addresses' => method_exists($objekt, 'ipAddresses')
                 ? $objekt->ipAddresses()->with('network')->get()->map(fn ($ip) => [
                     // id and dhcp to remove it again (DeviceController).
                     'id' => $ip->id,
                     'dhcp' => (bool) $ip->dhcp,
-                    'adresse' => $ip->label(),
-                    'bezeichnung' => $ip->label,
-                    'netz' => $ip->network?->activityName(),
+                    'address' => $ip->label(),
+                    'label' => $ip->label,
+                    'network' => $ip->network?->activityName(),
                 ])->values()->all()
                 : [],
-            'zugangsdaten' => $this->zugangsdaten($objekt, $nutzer),
+            'credentials' => $this->zugangsdaten($objekt, $nutzer),
             // Der Schluessel bleibt deutsch: Er ist Teil der Antwort, die die
             // iOS-App liest - ein Umbau dort gehoert mit der App zusammen.
-            'einbauort' => $this->mountLocation($objekt),
-            'support_ende' => $this->supportEnde($objekt),
-            'scan_ziele' => $objekt instanceof Scanner
+            'mounting' => $this->mountLocation($objekt),
+            'end_of_support' => $this->supportEnde($objekt),
+            'scan_targets' => $objekt instanceof Scanner
                 ? $objekt->scanTargets()->with('login')->get()->map(fn ($ziel) => $this->scanZiel($ziel))->values()->all()
                 : [],
         ];
@@ -174,9 +174,9 @@ class MobileObjects
         return [
             'id' => $ziel->id,
             'name' => $ziel->name,
-            'art' => $ziel->kind,
-            'art_label' => __(ScanTarget::ARTEN[$ziel->kind] ?? ScanTarget::ARTEN['other']),
-            'ziel' => $ziel->target,
+            'kind' => $ziel->kind,
+            'kind_label' => __(ScanTarget::ARTEN[$ziel->kind] ?? ScanTarget::ARTEN['other']),
+            'target' => $ziel->target,
             'login' => $ziel->login ? ['id' => $ziel->login->id, 'name' => $ziel->login->name] : null,
         ];
     }
@@ -190,7 +190,7 @@ class MobileObjects
 
         $rack = $objekt->rackItem->rack;
 
-        return ['text' => $text, 'rack_id' => $rack->id, 'kunde' => $this->kunde($rack->customer)];
+        return ['text' => $text, 'rack_id' => $rack->id, 'customer' => $this->kunde($rack->customer)];
     }
 
     /**
@@ -207,11 +207,11 @@ class MobileObjects
         }
 
         return [
-            'betriebssystem' => $os->name,
-            'datum' => $os->eol_date->toDateString(),
-            'zustand' => match (true) {
-                $os->istEol() => 'abgelaufen',
-                $os->laeuftAus() => 'bald',
+            'operating_system' => $os->name,
+            'date' => $os->eol_date->toDateString(),
+            'state' => match (true) {
+                $os->istEol() => 'expired',
+                $os->laeuftAus() => 'soon',
                 default => 'ok',
             },
         ];
@@ -262,11 +262,11 @@ class MobileObjects
         // Derived from the public key and therefore no form field - but the
         // value one compares on the server (x-fingerprint in the browser).
         if ($objekt instanceof SshKey && filled($objekt->fingerprint)) {
-            $gruppen[__('Allgemein')][] = ['name' => 'fingerprint', 'label' => __('Fingerprint'), 'art' => 'text', 'wert' => $objekt->fingerprint];
+            $gruppen[__('Allgemein')][] = ['name' => 'fingerprint', 'label' => __('Fingerprint'), 'kind' => 'text', 'value' => $objekt->fingerprint];
         }
 
         return collect($gruppen)
-            ->map(fn ($eintraege, $titel) => ['titel' => $titel, 'felder' => $eintraege])
+            ->map(fn ($eintraege, $titel) => ['title' => $titel, 'fields' => $eintraege])
             ->values()
             ->all();
     }
@@ -289,9 +289,9 @@ class MobileObjects
             $verweise = $this->hostVerweise($objekt, $feld['rolle']);
 
             return $verweise ? [
-                'name' => $name, 'label' => $label, 'art' => 'text',
-                'wert' => collect($verweise)->pluck('name')->implode(', '),
-                'verweise' => $verweise,
+                'name' => $name, 'label' => $label, 'kind' => 'text',
+                'value' => collect($verweise)->pluck('name')->implode(', '),
+                'links' => $verweise,
             ] : null;
         }
 
@@ -303,9 +303,9 @@ class MobileObjects
                 ->values();
 
             return $namen->isNotEmpty() ? [
-                'name' => $name, 'label' => $label, 'art' => 'text',
-                'wert' => $namen->implode(', '),
-                'liste' => $namen->all(),
+                'name' => $name, 'label' => $label, 'kind' => 'text',
+                'value' => $namen->implode(', '),
+                'list' => $namen->all(),
             ] : null;
         }
 
@@ -318,12 +318,20 @@ class MobileObjects
             $katalog = Service::farbzuordnung();
 
             return $dienste ? [
-                'name' => $name, 'label' => $label, 'art' => 'text',
-                'wert' => implode(' · ', $dienste),
-                'liste' => $dienste,
-                'kacheln' => array_map(fn ($dienst) => ['name' => $dienst]
-                    + (Service::kachelFarben($katalog[mb_strtolower(trim($dienst))] ?? null) ?? ['farbe' => null, 'schrift' => null]),
-                    $dienste),
+                'name' => $name, 'label' => $label, 'kind' => 'text',
+                'value' => implode(' · ', $dienste),
+                'list' => $dienste,
+                // Service::kachelFarben() gehoert dem Browser und nennt
+                // seine Schluessel deutsch - hier uebersetzt, nicht dort.
+                'tiles' => array_map(function ($dienst) use ($katalog) {
+                    $farben = Service::kachelFarben($katalog[mb_strtolower(trim($dienst))] ?? null);
+
+                    return [
+                        'name' => $dienst,
+                        'color' => $farben['farbe'] ?? null,
+                        'text_color' => $farben['schrift'] ?? null,
+                    ];
+                }, $dienste),
             ] : null;
         }
 
@@ -331,7 +339,7 @@ class MobileObjects
             // Den Rohwert pruefen, nicht den entschluesselten: Die Frage ist
             // nur, ob etwas drinsteht.
             return filled($objekt->getRawOriginal($name))
-                ? ['name' => $name, 'label' => $label, 'art' => 'geheim', 'wert' => null]
+                ? ['name' => $name, 'label' => $label, 'kind' => 'secret', 'value' => null]
                 : null;
         }
 
@@ -342,10 +350,10 @@ class MobileObjects
         }
 
         [$art, $wert] = match ($feld['type']) {
-            'date' => ['datum', $roh instanceof Carbon ? $roh->toDateString() : (string) $roh],
+            'date' => ['date', $roh instanceof Carbon ? $roh->toDateString() : (string) $roh],
             'schalter' => ['text', $roh ? __('Ja') : __('Nein')],
             'einheit' => ['text', $roh.' '.($feld['einheit'] ?? '')],
-            'mehrzeilig' => ['mehrzeilig', (string) $roh],
+            'mehrzeilig' => ['multiline', (string) $roh],
             'optionen' => ['text', __((string) ($this->optionen($feld)[$roh] ?? $roh))],
             'standort' => ['text', $objekt->site?->name],
             'auswahl' => ['text', $feld['quelle']::find($roh)?->{$feld['anzeige'] ?? 'name'}],
@@ -356,7 +364,7 @@ class MobileObjects
             return null;
         }
 
-        return ['name' => $name, 'label' => $label, 'art' => $art, 'wert' => $wert];
+        return ['name' => $name, 'label' => $label, 'kind' => $art, 'value' => $wert];
     }
 
     /**
@@ -396,7 +404,7 @@ class MobileObjects
                 $klasse = ADDomainHost::TYPES[$typ] ?? null;
                 $geraet = $klasse ? $klasse::find($id) : null;
 
-                return $geraet ? ['typ' => $typ, 'id' => $geraet->getKey(), 'name' => $geraet->name] : null;
+                return $geraet ? ['type' => $typ, 'id' => $geraet->getKey(), 'name' => $geraet->name] : null;
             })
             ->filter()
             ->values()
@@ -414,13 +422,13 @@ class MobileObjects
             ->map(fn ($wert, $name) => [
                 'name' => $name,
                 'label' => $name,
-                'art' => $this->typeFromText($wert),
-                'wert' => is_bool($wert) ? ($wert ? __('Ja') : __('Nein')) : (string) $wert,
+                'kind' => $this->typeFromText($wert),
+                'value' => is_bool($wert) ? ($wert ? __('Ja') : __('Nein')) : (string) $wert,
             ])
             ->values()
             ->all();
 
-        return $felder ? [['titel' => __('Allgemein'), 'felder' => $felder]] : [];
+        return $felder ? [['title' => __('Allgemein'), 'fields' => $felder]] : [];
     }
 
     /** Die verknuepften Zugaenge, ohne Kennwort - das holt die App einzeln. */
@@ -440,10 +448,10 @@ class MobileObjects
             ->map(fn ($link) => [
                 'id' => $link->id,
                 'name' => $link->login->name,
-                'benutzer' => $link->login->username,
-                'art' => $link->login->istSchluessel() ? 'schluessel' : 'kennwort',
-                'notiz' => $link->note,
-                'hat_kennwort' => filled($link->login->getRawOriginal('password')),
+                'user' => $link->login->username,
+                'kind' => $link->login->istSchluessel() ? 'ssh_key' : 'password',
+                'note' => $link->note,
+                'has_password' => filled($link->login->getRawOriginal('password')),
                 // The value one compares on the server; null for a password.
                 'fingerprint' => $link->login->istSchluessel() ? $link->login->fingerprint : null,
             ])

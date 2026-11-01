@@ -43,8 +43,8 @@ test('jedes Formular laesst sich fuer die App aufbauen', function () {
         $this->withToken($token)
             ->getJson("/api/mobile/customers/{$kunde->slug}/forms/{$typ}")
             ->assertOk()
-            ->assertJsonPath('typ', $typ)
-            ->assertJsonStructure(['einzahl', 'felder' => [['name', 'label', 'art', 'gruppe']], 'werte']);
+            ->assertJsonPath('type', $typ)
+            ->assertJsonStructure(['singular', 'fields' => [['name', 'label', 'kind', 'group']], 'values']);
     }
 });
 
@@ -56,15 +56,15 @@ test('das Formular nennt Auswahl, Pflicht und Geheimnisse', function () {
     $felder = collect($this->withToken(objektAppToken(SERVER_RECHTE))
         ->getJson("/api/mobile/customers/{$kunde->slug}/forms/server")
         ->assertOk()
-        ->json('felder'))->keyBy('name');
+        ->json('fields'))->keyBy('name');
 
-    expect($felder['name']['pflicht'])->toBeTrue()
-        ->and($felder['bmcPassword']['geheim'])->toBeTrue()
+    expect($felder['name']['required'])->toBeTrue()
+        ->and($felder['bmcPassword']['secret'])->toBeTrue()
         // Explizit false statt weggelassen - robuster fuer Swift.
-        ->and($felder['name']['geheim'])->toBeFalse()
-        ->and($felder['name']['mehrfach'])->toBeFalse()
+        ->and($felder['name']['secret'])->toBeFalse()
+        ->and($felder['name']['multiple'])->toBeFalse()
         // Nur die Standorte dieses Kunden.
-        ->and($felder['site_id']['optionen'])->toBe([['wert' => (string) $standort->id, 'label' => 'Zentrale']]);
+        ->and($felder['site_id']['options'])->toBe([['value' => (string) $standort->id, 'label' => 'Zentrale']]);
 });
 
 test('ohne Anlegen-Recht gibt es kein leeres Formular', function () {
@@ -89,10 +89,10 @@ test('das Bearbeiten-Formular verraet kein Geheimnis', function () {
     $antwort = $this->withToken(objektAppToken(SERVER_RECHTE))
         ->getJson("/api/mobile/objects/server/{$server->id}/form")
         ->assertOk()
-        ->assertJsonPath('werte.name', 'SRV-01')
-        ->assertJsonPath('werte.bmcPassword', null)
-        ->assertJsonPath('geheim_gesetzt.bmcPassword', true)
-        ->assertJsonPath('darf_loeschen', true);
+        ->assertJsonPath('values.name', 'SRV-01')
+        ->assertJsonPath('values.bmcPassword', null)
+        ->assertJsonPath('secret_set.bmcPassword', true)
+        ->assertJsonPath('may_delete', true);
 
     expect($antwort->getContent())->not->toContain('BMC-GEHEIM');
 });
@@ -110,7 +110,7 @@ test('die App legt einen Server an', function () {
         ])
         ->assertCreated()
         ->assertJsonPath('name', 'SRV-NEU')
-        ->assertJsonPath('kunde.slug', $kunde->slug);
+        ->assertJsonPath('customer.slug', $kunde->slug);
 
     expect(Server::where('customer_id', $kunde->id)->where('name', 'SRV-NEU')->exists())->toBeTrue();
 });
@@ -273,7 +273,7 @@ test('die Liste sagt, ob die App anlegen darf', function () {
     $this->withToken(objektAppToken(['server_viewAny', 'server_create']))
         ->getJson("/api/mobile/customers/{$kunde->slug}/server")
         ->assertOk()
-        ->assertJsonPath('darf_anlegen', true);
+        ->assertJsonPath('may_create', true);
 });
 
 test('ohne Anlegen-Recht kein Plus', function () {
@@ -282,7 +282,7 @@ test('ohne Anlegen-Recht kein Plus', function () {
     $this->withToken(objektAppToken(['server_viewAny']))
         ->getJson("/api/mobile/customers/{$kunde->slug}/server")
         ->assertOk()
-        ->assertJsonPath('darf_anlegen', false);
+        ->assertJsonPath('may_create', false);
 });
 
 test('Schrank und Patchfeld haben einen Anlege-Weg, die Netzwerkdose nicht', function () {
@@ -290,12 +290,12 @@ test('Schrank und Patchfeld haben einen Anlege-Weg, die Netzwerkdose nicht', fun
     $token = objektAppToken(['rack_viewAny', 'rack_create', 'patchpanel_viewAny', 'patchpanel_create']);
 
     $this->withToken($token)->getJson("/api/mobile/customers/{$kunde->slug}/rack")
-        ->assertOk()->assertJsonPath('darf_anlegen', true);
+        ->assertOk()->assertJsonPath('may_create', true);
     $this->withToken($token)->getJson("/api/mobile/customers/{$kunde->slug}/patchpanel")
-        ->assertOk()->assertJsonPath('darf_anlegen', true);
+        ->assertOk()->assertJsonPath('may_create', true);
     // Eine Dose entsteht mit ihrem Patchfeld - ein Plus dort fuehrte ins Leere.
     $this->withToken($token)->getJson("/api/mobile/customers/{$kunde->slug}/patchport")
-        ->assertOk()->assertJsonPath('darf_anlegen', false);
+        ->assertOk()->assertJsonPath('may_create', false);
 });
 
 /**
@@ -321,16 +321,16 @@ test('die Liste lässt sich auf einen Standort einengen', function () {
     $pfad = "/api/mobile/customers/{$kunde->slug}/server";
 
     $alle = test()->withToken($token)->getJson($pfad)->assertOk();
-    expect(collect($alle->json('eintraege'))->pluck('name')->sort()->values()->all())
+    expect(collect($alle->json('entries'))->pluck('name')->sort()->values()->all())
         ->toBe(['SRV-FILIALE', 'SRV-ZENTRALE']);
     // Die Auswahl fuer das Filtermenue kommt mit.
-    expect(collect($alle->json('standorte'))->pluck('name')->all())->toBe(['Filiale', 'Zentrale']);
+    expect(collect($alle->json('sites'))->pluck('name')->all())->toBe(['Filiale', 'Zentrale']);
 
     $gefiltert = test()->withToken($token)->getJson("{$pfad}?site={$zwei->id}")->assertOk();
-    expect(collect($gefiltert->json('eintraege'))->pluck('name')->all())->toBe(['SRV-FILIALE']);
+    expect(collect($gefiltert->json('entries'))->pluck('name')->all())->toBe(['SRV-FILIALE']);
 
     $fremd = test()->withToken($token)->getJson("{$pfad}?site={$fremder->id}")->assertOk();
-    expect(collect($fremd->json('eintraege'))->count())->toBe(2);
+    expect(collect($fremd->json('entries'))->count())->toBe(2);
 });
 
 /** Eine Art ohne Standort hat nichts zu filtern - dann auch keine Auswahl. */
@@ -342,5 +342,5 @@ test('ohne Standortbezug gibt es keine Auswahl', function () {
     $token = $nutzer->createToken('App Test', ['mobil'], now()->addDay())->plainTextToken;
 
     expect(test()->withToken($token)->getJson("/api/mobile/customers/{$kunde->slug}/domain")
-        ->assertOk()->json('standorte'))->toBeNull();
+        ->assertOk()->json('sites'))->toBeNull();
 });

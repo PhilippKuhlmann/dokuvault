@@ -30,7 +30,7 @@ class LoginController extends Controller
     public function login(MobileLoginRequest $request): JsonResponse
     {
         $nutzer = $request->checkUser();
-        $geraet = (string) $request->input('geraet');
+        $geraet = (string) $request->input('device');
 
         // Im Browser kaeme er nur bis zum Profil, um die zweite Stufe
         // einzurichten. Die App kann das nicht - also gar nicht erst hinein.
@@ -42,14 +42,14 @@ class LoginController extends Controller
 
         if ($nutzer->hasTwoFactor()) {
             return response()->json([
-                'zweite_stufe' => true,
-                'vorgang' => Crypt::encryptString(json_encode([
+                'two_factor' => true,
+                'challenge' => Crypt::encryptString(json_encode([
                     // Purpose: the key encrypts other values too; a ciphertext
                     // from elsewhere must not pass as a login step.
                     'zweck' => 'mobil-anmeldung',
                     'id' => $nutzer->id,
                     'bis' => now()->addMinutes(config('custom.mobil.zweite_stufe_minuten'))->timestamp,
-                    'geraet' => $geraet,
+                    'device' => $geraet,
                 ])),
             ]);
         }
@@ -60,11 +60,11 @@ class LoginController extends Controller
     public function zweiteStufe(Request $request): JsonResponse
     {
         $request->validate([
-            'vorgang' => ['required', 'string'],
+            'challenge' => ['required', 'string'],
             'code' => ['required', 'string', 'max:64'],
         ]);
 
-        $vorgang = $this->vorgang($request->input('vorgang'));
+        $vorgang = $this->vorgang($request->input('challenge'));
         $nutzer = User::find($vorgang['id']);
 
         if (! $nutzer || ! $nutzer->hasTwoFactor()) {
@@ -83,13 +83,13 @@ class LoginController extends Controller
 
         // Ein Vorgang gibt genau ein Token. Ohne das liesse sich mit einem
         // mitgelesenen Vorgang und dem naechsten Code ein zweites holen.
-        $verbraucht = 'mobil-vorgang:'.hash('sha256', $request->input('vorgang'));
+        $verbraucht = 'mobil-vorgang:'.hash('sha256', $request->input('challenge'));
 
         if (! Cache::add($verbraucht, true, now()->addMinutes(config('custom.mobil.zweite_stufe_minuten') + 1))) {
             throw $this->abgelaufen();
         }
 
-        return $this->tokenAusgeben($nutzer, (string) $vorgang['geraet']);
+        return $this->tokenAusgeben($nutzer, (string) $vorgang['device']);
     }
 
     /** Nur dieses Token - die anderen Geraete bleiben angemeldet. */
@@ -117,8 +117,8 @@ class LoginController extends Controller
 
         return response()->json([
             'token' => $token->plainTextToken,
-            'laeuft_ab' => $ablauf->toIso8601String(),
-            'nutzer' => $this->nutzerDaten($nutzer),
+            'expires_at' => $ablauf->toIso8601String(),
+            'user' => $this->nutzerDaten($nutzer),
         ]);
     }
 
@@ -129,29 +129,29 @@ class LoginController extends Controller
         return [
             'name' => $nutzer->name,
             'username' => $nutzer->username,
-            'kunde' => $nutzer->customer
+            'customer' => $nutzer->customer
                 ? ['slug' => $nutzer->customer->slug, 'name' => $nutzer->customer->name]
                 : null,
-            'rechte' => [
-                'kennwoerter' => Gate::forUser($nutzer)->allows('logingeneral_viewAny'),
-                'schluessel' => Gate::forUser($nutzer)->allows('sshkey_viewAny'),
+            'rights' => [
+                'passwords' => Gate::forUser($nutzer)->allows('logingeneral_viewAny'),
+                'ssh_keys' => Gate::forUser($nutzer)->allows('sshkey_viewAny'),
                 // Damit die App den Weg in den Papierkorb gar nicht erst
                 // anbietet, wo er in eine 403 fuehrt.
-                'papierkorb' => Gate::forUser($nutzer)->allows('see_hidden'),
+                'trash' => Gate::forUser($nutzer)->allows('see_hidden'),
                 // Dasselbe fuer die Checklisten: Jedes der drei Rechte
                 // genuegt, um sie zu sehen (ChecklistController::VIEW_RIGHTS).
-                'checklisten' => Gate::forUser($nutzer)->allows('checklist_viewAny'),
-                'agenten' => Gate::forUser($nutzer)->allows('agent_manage'),
+                'checklists' => Gate::forUser($nutzer)->allows('checklist_viewAny'),
+                'agents' => Gate::forUser($nutzer)->allows('agent_manage'),
                 'pdf' => Gate::forUser($nutzer)->allows('create_pdf'),
                 // Der Assistent braucht wenigstens ein Anlege-Recht aus
                 // seinen Schritten - sonst gibt es darin nichts zu tun.
-                'erstaufnahme' => collect(config('custom.wizard_steps'))
+                'wizard' => collect(config('custom.wizard_steps'))
                     ->contains(fn (array $schritt) => Gate::forUser($nutzer)->allows($schritt['permission'])),
             ],
         ];
     }
 
-    /** @return array{id: int, bis: int, geraet: string} */
+    /** @return array{id: int, bis: int, device: string} */
     private function vorgang(string $verschluesselt): array
     {
         try {
@@ -164,13 +164,13 @@ class LoginController extends Controller
             throw $this->abgelaufen();
         }
 
-        return $vorgang + ['geraet' => ''];
+        return $vorgang + ['device' => ''];
     }
 
     private function abgelaufen(): ValidationException
     {
         return ValidationException::withMessages([
-            'vorgang' => __('Die Anmeldung ist abgelaufen. Bitte noch einmal mit Benutzername und Kennwort beginnen.'),
+            'challenge' => __('Die Anmeldung ist abgelaufen. Bitte noch einmal mit Benutzername und Kennwort beginnen.'),
         ]);
     }
 }

@@ -51,13 +51,13 @@ test('die Liste nennt Offene mit Fortschritt und wartenden Freigaben', function 
         ->getJson("/api/mobile/customers/{$kunde->slug}/checklists")
         ->assertOk();
 
-    expect($antwort->json('offen.0.name'))->toBe('Sophie Krämer');
-    expect($antwort->json('offen.0.art'))->toBe('onboarding');
-    expect($antwort->json('offen.0.punkte'))->toBe(2);
-    expect($antwort->json('offen.0.erledigt'))->toBe(0);
-    expect($antwort->json('offen.0.wartet_auf_freigabe'))->toBe(1);
-    expect($antwort->json('darf_abhaken'))->toBeTrue();
-    expect($antwort->json('darf_freigeben'))->toBeFalse();
+    expect($antwort->json('open.0.name'))->toBe('Sophie Krämer');
+    expect($antwort->json('open.0.kind'))->toBe('onboarding');
+    expect($antwort->json('open.0.items'))->toBe(2);
+    expect($antwort->json('open.0.done'))->toBe(0);
+    expect($antwort->json('open.0.awaiting_approval'))->toBe(1);
+    expect($antwort->json('may_check'))->toBeTrue();
+    expect($antwort->json('may_approve'))->toBeFalse();
 });
 
 test('eine Checkliste zeigt ihre Punkte nach Abschnitten', function () {
@@ -68,9 +68,9 @@ test('eine Checkliste zeigt ihre Punkte nach Abschnitten', function () {
         ->getJson("/api/mobile/customers/{$kunde->slug}/checklists/{$liste->id}")
         ->assertOk();
 
-    expect(collect($antwort->json('abschnitte'))->pluck('titel')->all())->toBe(['Konto', 'Laufwerke']);
-    expect($antwort->json('abschnitte.1.punkte.0.braucht_freigabe'))->toBeTrue();
-    expect($antwort->json('abschnitte.1.punkte.0.freigegeben'))->toBeFalse();
+    expect(collect($antwort->json('sections'))->pluck('title')->all())->toBe(['Konto', 'Laufwerke']);
+    expect($antwort->json('sections.1.items.0.needs_approval'))->toBeTrue();
+    expect($antwort->json('sections.1.items.0.approved'))->toBeFalse();
 });
 
 test('ohne jedes Checklisten-Recht bleibt die Liste zu', function () {
@@ -88,10 +88,10 @@ test('abhaken und den Haken wieder wegnehmen', function () {
     $token = checklistenToken(['checklist_manage']);
     $pfad = "/api/mobile/customers/{$kunde->slug}/checklists/{$liste->id}/items/{$punkt->id}/toggle";
 
-    expect(test()->withToken($token)->postJson($pfad)->assertOk()->json('erledigt'))->toBeTrue();
+    expect(test()->withToken($token)->postJson($pfad)->assertOk()->json('done'))->toBeTrue();
     expect($punkt->fresh()->done_at)->not->toBeNull();
 
-    expect(test()->withToken($token)->postJson($pfad)->assertOk()->json('erledigt'))->toBeFalse();
+    expect(test()->withToken($token)->postJson($pfad)->assertOk()->json('done'))->toBeFalse();
     expect($punkt->fresh()->done_at)->toBeNull();
 });
 
@@ -171,7 +171,7 @@ test('mit dem letzten Haken ist die Liste fertig', function () {
         ->postJson("/api/mobile/customers/{$kunde->slug}/checklists/{$liste->id}/items/{$punkt->id}/toggle")
         ->assertOk();
 
-    expect($antwort->json('fertig'))->toBeTrue();
+    expect($antwort->json('completed'))->toBeTrue();
     expect($liste->fresh()->completed_at)->not->toBeNull();
 });
 
@@ -194,12 +194,12 @@ test('das Formular nennt Laufwerke, Programme und AD-Benutzer', function () {
         ->getJson("/api/mobile/customers/{$kunde->slug}/checklists/form")
         ->assertOk();
 
-    expect($antwort->json('laufwerke.0.name'))->toBe('Gemeinsam');
+    expect($antwort->json('drives.0.name'))->toBe('Gemeinsam');
     // Beide Stufen, weil Lese- und Schreibgruppe hinterlegt sind.
-    expect(collect($antwort->json('laufwerke.0.stufen'))->pluck('stufe')->all())->toBe(['r', 'rw']);
-    expect($antwort->json('programme.0.name'))->toBe('Nextcloud');
-    expect($antwort->json('ad_benutzer.0.benutzername'))->toBe('max.muster');
-    expect($antwort->json('darf_offboarding'))->toBeTrue();
+    expect(collect($antwort->json('drives.0.levels'))->pluck('level')->all())->toBe(['r', 'rw']);
+    expect($antwort->json('apps.0.name'))->toBe('Nextcloud');
+    expect($antwort->json('ad_users.0.username'))->toBe('max.muster');
+    expect($antwort->json('may_offboard'))->toBeTrue();
 });
 
 /** Ein Offboarding anzustossen ist Sache der IT. */
@@ -211,8 +211,8 @@ test('wer nur melden darf, bekommt keine AD-Benutzer', function () {
         ->getJson("/api/mobile/customers/{$kunde->slug}/checklists/form")
         ->assertOk();
 
-    expect($antwort->json('ad_benutzer'))->toBe([]);
-    expect($antwort->json('darf_offboarding'))->toBeFalse();
+    expect($antwort->json('ad_users'))->toBe([]);
+    expect($antwort->json('may_offboard'))->toBeFalse();
 });
 
 test('ein Onboarding entsteht mit Benutzername aus dem Namen', function () {
@@ -229,8 +229,8 @@ test('ein Onboarding entsteht mit Benutzername aus dem Namen', function () {
         ])
         ->assertCreated();
 
-    expect($antwort->json('checkliste.name'))->toBe('Sophie Krämer');
-    expect($antwort->json('checkliste.art'))->toBe('onboarding');
+    expect($antwort->json('checklist.name'))->toBe('Sophie Krämer');
+    expect($antwort->json('checklist.kind'))->toBe('onboarding');
 
     $liste = Checklist::firstOrFail();
     expect($liste->username)->toBe('sophie.kraemer');
@@ -277,8 +277,8 @@ test('mit dem Recht entsteht das Offboarding zum AD-Benutzer', function () {
         ])
         ->assertCreated();
 
-    expect($antwort->json('checkliste.art'))->toBe('offboarding');
-    expect($antwort->json('checkliste.name'))->toBe('Jens Ott');
+    expect($antwort->json('checklist.kind'))->toBe('offboarding');
+    expect($antwort->json('checklist.name'))->toBe('Jens Ott');
 });
 
 /** Ein AD-Benutzer eines anderen Kunden ist nicht dieser. */

@@ -51,11 +51,11 @@ test('die App zeigt ein Rack mit seinen Einbauten', function () {
         ->getJson("/api/mobile/customers/{$kunde->slug}/racks/{$rack->id}")
         ->assertOk()
         ->assertJsonPath('name', 'Rack HH-01')
-        ->assertJsonPath('hoehe', 12)
-        ->assertJsonPath('darf_bearbeiten', false)
-        ->assertJsonPath('einbauten.0.name', 'SRV-01')
-        ->assertJsonPath('einbauten.0.oberste_he', 4)
-        ->assertJsonPath('einbauten.0.geraet', ['typ' => 'server', 'id' => $server->id]);
+        ->assertJsonPath('height', 12)
+        ->assertJsonPath('may_update', false)
+        ->assertJsonPath('mounts.0.name', 'SRV-01')
+        ->assertJsonPath('mounts.0.top_unit', 4)
+        ->assertJsonPath('mounts.0.device', ['type' => 'server', 'id' => $server->id]);
 });
 
 test('ohne Rack-Recht gibt es kein Rack', function () {
@@ -93,7 +93,7 @@ test('ein Rack laesst sich anlegen, aendern und loeschen', function () {
             'site_id' => $standort->id, 'name' => 'Rack Neu', 'height_units' => 24,
         ])
         ->assertCreated()
-        ->assertJsonPath('standort.id', $standort->id)
+        ->assertJsonPath('site.id', $standort->id)
         ->json('id');
 
     $this->withToken($token)
@@ -102,7 +102,7 @@ test('ein Rack laesst sich anlegen, aendern und loeschen', function () {
         ])
         ->assertOk()
         ->assertJsonPath('name', 'Rack Umbenannt')
-        ->assertJsonPath('notiz', 'Schluessel beim Empfang');
+        ->assertJsonPath('note', 'Schluessel beim Empfang');
 
     $this->withToken($token)
         ->deleteJson("/api/mobile/customers/{$kunde->slug}/racks/{$id}")
@@ -144,11 +144,11 @@ test('ohne Position kommt ein Geraet auf die unterste freie HE', function () {
 
     $this->withToken(rackAppToken(rackAppNutzer(RACK_RECHTE)))
         ->postJson("/api/mobile/customers/{$kunde->slug}/racks/{$rack->id}/items", [
-            'seite' => 'front', 'typ' => 'server', 'id' => $server->id,
+            'side' => 'front', 'type' => 'server', 'id' => $server->id,
         ])
         ->assertCreated()
         ->assertJsonPath('position', 2)
-        ->assertJsonPath('hoehe', 2);
+        ->assertJsonPath('height', 2);
 });
 
 test('dieselben Kollisionsregeln wie im Browser', function () {
@@ -157,7 +157,7 @@ test('dieselben Kollisionsregeln wie im Browser', function () {
 
     $this->withToken(rackAppToken(rackAppNutzer(RACK_RECHTE)))
         ->postJson("/api/mobile/customers/{$kunde->slug}/racks/{$rack->id}/items", [
-            'seite' => 'front', 'typ' => 'server', 'id' => $server->id, 'position' => 3,
+            'side' => 'front', 'type' => 'server', 'id' => $server->id, 'position' => 3,
         ])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('rack');
@@ -171,7 +171,7 @@ test('ein Geraet eines anderen Kunden laesst sich nicht einbauen', function () {
 
     $this->withToken(rackAppToken(rackAppNutzer(RACK_RECHTE)))
         ->postJson("/api/mobile/customers/{$kunde->slug}/racks/{$rack->id}/items", [
-            'seite' => 'front', 'typ' => 'server', 'id' => $fremderServer->id,
+            'side' => 'front', 'type' => 'server', 'id' => $fremderServer->id,
         ])
         ->assertForbidden();
 });
@@ -183,18 +183,18 @@ test('ein Katalogelement wird eingebaut, verschoben, vergroessert und entfernt',
     $basis = "/api/mobile/customers/{$kunde->slug}/racks/{$rack->id}/items";
 
     $id = $this->withToken($token)
-        ->postJson($basis, ['seite' => 'rear', 'katalog_id' => $katalog->id, 'position' => 5])
+        ->postJson($basis, ['side' => 'rear', 'catalog_id' => $katalog->id, 'position' => 5])
         ->assertCreated()
         ->assertJsonPath('name', 'Fachboden')
-        ->assertJsonPath('seite', 'rear')
-        ->assertJsonPath('volle_tiefe', false)
+        ->assertJsonPath('side', 'rear')
+        ->assertJsonPath('full_depth', false)
         ->json('id');
 
     $this->withToken($token)
-        ->patchJson("{$basis}/{$id}", ['position' => 8, 'hoehe' => 2])
+        ->patchJson("{$basis}/{$id}", ['position' => 8, 'height' => 2])
         ->assertOk()
         ->assertJsonPath('position', 8)
-        ->assertJsonPath('oberste_he', 9);
+        ->assertJsonPath('top_unit', 9);
 
     $this->withToken($token)->deleteJson("{$basis}/{$id}")->assertNoContent();
 
@@ -219,7 +219,7 @@ test('nur lesen heisst nicht umbauen', function () {
 
     $this->withToken($token)
         ->postJson("/api/mobile/customers/{$kunde->slug}/racks/{$rack->id}/items", [
-            'seite' => 'front', 'typ' => 'server', 'id' => $server->id,
+            'side' => 'front', 'type' => 'server', 'id' => $server->id,
         ])
         ->assertForbidden();
 
@@ -235,7 +235,7 @@ test('die Palette nennt die freien Geraete und den Katalog', function () {
     $this->withToken(rackAppToken(rackAppNutzer(RACK_RECHTE)))
         ->getJson("/api/mobile/customers/{$kunde->slug}/racks/{$rack->id}/palette")
         ->assertOk()
-        ->assertJsonPath('geraete.0.typ', 'server')
-        ->assertJsonPath('geraete.0.eintraege.0', ['id' => $server->id, 'name' => 'SRV-01', 'hoehe' => 2])
-        ->assertJsonPath('katalog.0.name', 'Bürstenleiste');
+        ->assertJsonPath('devices.0.type', 'server')
+        ->assertJsonPath('devices.0.entries.0', ['id' => $server->id, 'name' => 'SRV-01', 'height' => 2])
+        ->assertJsonPath('catalog.0.name', 'Bürstenleiste');
 });

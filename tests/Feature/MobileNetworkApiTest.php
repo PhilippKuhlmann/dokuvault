@@ -55,15 +55,15 @@ test('die App listet die VLANs mit Auslastung', function () {
     $antwort = $this->withToken(ipamAppToken(IPAM_RECHTE))
         ->getJson("/api/mobile/customers/{$netz->customer->slug}/networks")
         ->assertOk()
-        ->assertJsonCount(2, 'eintraege')
-        ->assertJsonPath('eintraege.0.name', 'Server · VLAN 10')
-        ->assertJsonPath('eintraege.0.cidr', 24)
-        ->assertJsonPath('eintraege.0.auslastung.belegt', 1)
-        ->assertJsonPath('eintraege.0.auslastung.dhcp', 100)
-        ->assertJsonPath('eintraege.0.auslastung.gesamt', 254)
-        ->assertJsonPath('darf_anlegen', true);
+        ->assertJsonCount(2, 'entries')
+        ->assertJsonPath('entries.0.name', 'Server · VLAN 10')
+        ->assertJsonPath('entries.0.cidr', 24)
+        ->assertJsonPath('entries.0.usage.used', 1)
+        ->assertJsonPath('entries.0.usage.dhcp', 100)
+        ->assertJsonPath('entries.0.usage.total', 254)
+        ->assertJsonPath('may_create', true);
 
-    expect($antwort->json('standorte'))->toHaveCount(2);
+    expect($antwort->json('sites'))->toHaveCount(2);
 });
 
 test('die App filtert die VLANs nach Standort', function () {
@@ -71,9 +71,9 @@ test('die App filtert die VLANs nach Standort', function () {
     $anderes = ipamNetz($netz->customer, ['vlanId' => 20, 'network' => '10.0.20.0']);
 
     $this->withToken(ipamAppToken(IPAM_RECHTE))
-        ->getJson("/api/mobile/customers/{$netz->customer->slug}/networks?standort={$anderes->site_id}")
-        ->assertJsonCount(1, 'eintraege')
-        ->assertJsonPath('eintraege.0.vlan', 20);
+        ->getJson("/api/mobile/customers/{$netz->customer->slug}/networks?site={$anderes->site_id}")
+        ->assertJsonCount(1, 'entries')
+        ->assertJsonPath('entries.0.vlan', 20);
 });
 
 test('die App zeigt den IP-Plan eines VLANs', function () {
@@ -85,22 +85,22 @@ test('die App zeigt den IP-Plan eines VLANs', function () {
     $antwort = $this->withToken(ipamAppToken(IPAM_RECHTE))
         ->getJson("/api/mobile/customers/{$netz->customer->slug}/networks/{$netz->id}")
         ->assertOk()
-        ->assertJsonPath('zeilen.0.art', 'geraet')
-        ->assertJsonPath('zeilen.0.gateway', true)
-        ->assertJsonPath('naechste_freie', '10.0.10.2')
-        ->assertJsonPath('bereiche.0.label', 'Proxmox')
-        ->assertJsonPath('bereiche.0.anzahl', 11)
-        ->assertJsonPath('darf_bearbeiten', true);
+        ->assertJsonPath('rows.0.kind', 'device')
+        ->assertJsonPath('rows.0.gateway', true)
+        ->assertJsonPath('next_free', '10.0.10.2')
+        ->assertJsonPath('ranges.0.label', 'Proxmox')
+        ->assertJsonPath('ranges.0.count', 11)
+        ->assertJsonPath('may_update', true);
 
-    $zeilen = collect($antwort->json('zeilen'));
-    expect($zeilen->firstWhere('von', '10.0.10.5')['geraete'][0])
-        ->toMatchArray(['name' => 'SRV-01', 'typ' => 'server', 'id' => $server->id, 'im_pool' => false]);
+    $zeilen = collect($antwort->json('rows'));
+    expect($zeilen->firstWhere('from', '10.0.10.5')['devices'][0])
+        ->toMatchArray(['name' => 'SRV-01', 'type' => 'server', 'id' => $server->id, 'in_pool' => false]);
 
-    $reserviert = $zeilen->firstWhere('art', 'reserviert');
-    expect($reserviert)->toMatchArray(['von' => '10.0.10.10', 'bis' => '10.0.10.20', 'label' => 'Proxmox'])
-        ->and($reserviert['farbe'])->toBeString();
+    $reserviert = $zeilen->firstWhere('kind', 'reserved');
+    expect($reserviert)->toMatchArray(['from' => '10.0.10.10', 'to' => '10.0.10.20', 'label' => 'Proxmox'])
+        ->and($reserviert['color'])->toBeString();
 
-    expect($zeilen->firstWhere('art', 'dhcp'))->toMatchArray(['von' => '10.0.10.100', 'bis' => '10.0.10.199']);
+    expect($zeilen->firstWhere('kind', 'dhcp'))->toMatchArray(['from' => '10.0.10.100', 'to' => '10.0.10.199']);
 });
 
 test('ohne Recht auf die Geraeteliste steht nur der Name im Plan', function () {
@@ -110,10 +110,10 @@ test('ohne Recht auf die Geraeteliste steht nur der Name im Plan', function () {
     $zeilen = collect($this->withToken(ipamAppToken(['network_viewAny']))
         ->getJson("/api/mobile/customers/{$netz->customer->slug}/networks/{$netz->id}")
         ->assertOk()
-        ->assertJsonPath('darf_bearbeiten', false)
-        ->json('zeilen'));
+        ->assertJsonPath('may_update', false)
+        ->json('rows'));
 
-    expect($zeilen->firstWhere('von', '10.0.10.5')['geraete'][0])->toMatchArray(['name' => 'SRV-01', 'typ' => null, 'id' => null]);
+    expect($zeilen->firstWhere('from', '10.0.10.5')['devices'][0])->toMatchArray(['name' => 'SRV-01', 'type' => null, 'id' => null]);
 });
 
 test('die App legt ein VLAN an und ergaenzt die Maske aus dem CIDR', function () {
@@ -125,8 +125,8 @@ test('die App legt ein VLAN an und ergaenzt die Maske aus dem CIDR', function ()
             'site_id' => $site->id, 'description' => 'Clients', 'vlanId' => 30, 'network' => '10.0.30.0', 'cidr' => 23,
         ])
         ->assertCreated()
-        ->assertJsonPath('subnetzmaske', '255.255.254.0')
-        ->assertJsonPath('auslastung.gesamt', 510);
+        ->assertJsonPath('subnet_mask', '255.255.254.0')
+        ->assertJsonPath('usage.total', 510);
 
     expect(Network::where('customer_id', $kunde->id)->first())
         ->description->toBe('Clients')
@@ -159,8 +159,8 @@ test('die App aendert nur die gesendeten Felder eines VLANs', function () {
     $this->withToken(ipamAppToken(IPAM_RECHTE))
         ->patchJson("/api/mobile/customers/{$netz->customer->slug}/networks/{$netz->id}", ['description' => 'DMZ', 'cidr' => 25])
         ->assertOk()
-        ->assertJsonPath('bezeichnung', 'DMZ')
-        ->assertJsonPath('subnetzmaske', '255.255.255.128');
+        ->assertJsonPath('description', 'DMZ')
+        ->assertJsonPath('subnet_mask', '255.255.255.128');
 
     expect($netz->fresh())
         ->gateway->toBe('10.0.10.1')
@@ -213,9 +213,9 @@ test('die App reserviert einen Bereich', function () {
             'from_ip' => '10.0.10.10', 'to_ip' => '10.0.10.20', 'label' => 'Proxmox', 'note' => 'Cluster',
         ])
         ->assertCreated()
-        ->assertJsonPath('bereiche.0.label', 'Proxmox')
-        ->assertJsonPath('bereiche.0.notiz', 'Cluster')
-        ->assertJsonPath('auslastung.reserviert', 11);
+        ->assertJsonPath('ranges.0.label', 'Proxmox')
+        ->assertJsonPath('ranges.0.note', 'Cluster')
+        ->assertJsonPath('usage.reserved', 11);
 });
 
 test('die App loescht einen Bereich', function () {

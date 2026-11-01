@@ -33,33 +33,33 @@ class NetworkMapController extends Controller
         $standort = $standort && $customer->sites()->whereKey($standort)->exists() ? $standort : null;
 
         return response()->json([
-            'standorte' => collect($plan->build($customer, $standort))
+            'sites' => collect($plan->build($customer, $standort))
                 ->map(fn ($eintrag) => [
                     'id' => $eintrag['site']->id,
                     'name' => $eintrag['site']->name,
-                    'spalten' => collect($eintrag['columns'])->map(fn ($spalte) => [
+                    'columns' => collect($eintrag['columns'])->map(fn ($spalte) => [
                         // null: Das Gateway dieses VLANs ist nicht
                         // dokumentiert. Der Browser zeichnet dann eine
                         // Spalte ohne Kopf.
                         'gateway' => $this->knoten($spalte['gateway']),
                         'uplinks' => collect($spalte['uplinks'])->map(fn ($u) => $this->knoten($u))->values(),
-                        'netze' => collect($spalte['networks'])->map(fn ($netz) => [
-                            'netz' => $this->netz($netz['network']),
-                            'gruppen' => collect($netz['groups'])->map(fn ($gruppe) => [
-                                'titel' => __($gruppe['label']),
-                                'geraete' => collect($gruppe['devices'])->map(fn ($g) => $this->knoten($g))->values(),
+                        'networks' => collect($spalte['networks'])->map(fn ($netz) => [
+                            'network' => $this->netz($netz['network']),
+                            'groups' => collect($netz['groups'])->map(fn ($gruppe) => [
+                                'title' => __($gruppe['label']),
+                                'devices' => collect($gruppe['devices'])->map(fn ($g) => $this->knoten($g))->values(),
                             ])->values(),
                         ])->values(),
                     ])->values(),
                     // Firewall oder Router ohne alles darueber und darunter:
                     // aufgezaehlt, nicht gezeichnet.
-                    'einzeln' => collect($eintrag['standalone'])->map(fn ($g) => $this->knoten($g))->values(),
+                    'standalone' => collect($eintrag['standalone'])->map(fn ($g) => $this->knoten($g))->values(),
                     // Anschluesse, die sich keinem Geraet zuordnen liessen -
                     // lieber offen gelassen als geraten.
-                    'uplinks_ohne_geraet' => collect($eintrag['unlinkedUplinks'])->map(fn ($u) => $this->knoten($u))->values(),
+                    'unlinked_uplinks' => collect($eintrag['unlinkedUplinks'])->map(fn ($u) => $this->knoten($u))->values(),
                     // Geraete mit einer Adresse ausserhalb jedes VLANs -
                     // meist ein VLAN, das noch niemand dokumentiert hat.
-                    'ohne_vlan' => collect($eintrag['unassigned'])->map(fn ($g) => $this->knoten($g))->values(),
+                    'unassigned' => collect($eintrag['unassigned'])->map(fn ($g) => $this->knoten($g))->values(),
                 ])
                 ->values(),
         ]);
@@ -74,10 +74,10 @@ class NetworkMapController extends Controller
 
         return [
             'name' => $knoten['name'],
-            'art' => isset($knoten['type']) ? __($knoten['type']) : null,
-            'beisatz' => $knoten['detail'] ?: null,
-            'adresse' => $knoten['address'] ?? null,
-            'typ' => $knoten['typ'] ?? null,
+            'kind' => isset($knoten['type']) ? __($knoten['type']) : null,
+            'detail' => $knoten['detail'] ?: null,
+            'address' => $knoten['address'] ?? null,
+            'type' => $knoten['typ'] ?? null,
             'id' => $knoten['id'] ?? null,
         ];
     }
@@ -88,7 +88,7 @@ class NetworkMapController extends Controller
         return [
             'id' => $netz->id,
             'name' => $netz->label() ?: __('VLAN'),
-            'adresse' => $netz->network && $netz->cidr ? $netz->network.'/'.$netz->cidr : $netz->network,
+            'address' => $netz->network && $netz->cidr ? $netz->network.'/'.$netz->cidr : $netz->network,
             'gateway' => $netz->gateway,
         ];
     }

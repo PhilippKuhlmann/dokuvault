@@ -41,16 +41,16 @@ class ProfilController extends Controller
         return response()->json([
             'name' => $nutzer->name,
             'username' => $nutzer->username,
-            'mail' => $nutzer->email,
+            'email' => $nutzer->email,
             // null heisst "der Sprache des Geraets folgen", nicht
             // Leerstring.
-            'sprache' => $nutzer->locale,
-            'sprachen' => collect(config('custom.locales'))
-                ->map(fn ($titel, $code) => ['code' => $code, 'titel' => $titel])
+            'locale' => $nutzer->locale,
+            'locales' => collect(config('custom.locales'))
+                ->map(fn ($titel, $code) => ['code' => $code, 'title' => $titel])
                 ->values(),
             // Der Demo-Zugang ist geteilt: Was einer aendert, traefe alle.
-            'gesperrt' => $nutzer->isDemoProtected(),
-            'zweite_stufe' => $nutzer->two_factor_confirmed_at !== null,
+            'locked' => $nutzer->isDemoProtected(),
+            'two_factor' => $nutzer->two_factor_confirmed_at !== null,
         ]);
     }
 
@@ -108,7 +108,7 @@ class ProfilController extends Controller
 
         return response()->json([
             'message' => __('Kennwort geändert. Bitte neu anmelden.'),
-            'neu_anmelden' => true,
+            'sign_in_again' => true,
         ]);
     }
 
@@ -156,15 +156,15 @@ class ProfilController extends Controller
 
         return response()->json([
             // Zum Abtippen und fuer den QR-Code, den die App daraus malt.
-            'geheimnis' => $geheimnis,
-            'adresse' => $zweiteStufe->url($nutzer, $geheimnis),
-            'braucht_mail_code' => $mailcode !== null,
-            'vorgang' => Crypt::encryptString(json_encode([
+            'secret' => $geheimnis,
+            'uri' => $zweiteStufe->url($nutzer, $geheimnis),
+            'needs_mail_code' => $mailcode !== null,
+            'challenge' => Crypt::encryptString(json_encode([
                 // Zweck: Der Schluessel verschluesselt auch anderes; ein
                 // Geheimtext von anderswo darf hier nicht durchgehen.
                 'zweck' => 'mobil-zweite-stufe',
                 'id' => $nutzer->id,
-                'geheimnis' => $geheimnis,
+                'secret' => $geheimnis,
                 'mailcode' => $mailcode,
                 'bis' => now()->addMinutes(self::EINRICHTUNG_MINUTEN)->timestamp,
             ])),
@@ -187,12 +187,12 @@ class ProfilController extends Controller
         }
 
         $request->validate([
-            'vorgang' => ['required', 'string'],
+            'challenge' => ['required', 'string'],
             'code' => ['required', 'string'],
             'mail_code' => ['nullable', 'string'],
         ]);
 
-        $vorgang = $this->vorgang($request->input('vorgang'), $nutzer->id);
+        $vorgang = $this->vorgang($request->input('challenge'), $nutzer->id);
 
         if ($vorgang['mailcode'] !== null) {
             $eingabe = preg_replace('/\s+/', '', (string) $request->input('mail_code'));
@@ -204,7 +204,7 @@ class ProfilController extends Controller
             }
         }
 
-        if (! $zweiteStufe->stimmt($vorgang['geheimnis'], $request->input('code'))) {
+        if (! $zweiteStufe->stimmt($vorgang['secret'], $request->input('code'))) {
             throw ValidationException::withMessages([
                 'code' => __('Der Code stimmt nicht. Steht in der App die richtige Uhrzeit?'),
             ]);
@@ -213,7 +213,7 @@ class ProfilController extends Controller
         $codes = $zweiteStufe->recoveryCodes();
 
         $nutzer->forceFill([
-            'two_factor_secret' => $vorgang['geheimnis'],
+            'two_factor_secret' => $vorgang['secret'],
             'two_factor_recovery_codes' => $codes,
             'two_factor_confirmed_at' => now(),
             'two_factor_last_step' => null,
@@ -279,7 +279,7 @@ class ProfilController extends Controller
             'two_factor_last_step' => null,
         ])->save();
 
-        return response()->json(['zweite_stufe' => false]);
+        return response()->json(['two_factor' => false]);
     }
 
     /**
@@ -303,7 +303,7 @@ class ProfilController extends Controller
 
         return response()->json([
             'message' => __('Konto gelöscht.'),
-            'neu_anmelden' => true,
+            'sign_in_again' => true,
         ]);
     }
 
@@ -316,7 +316,7 @@ class ProfilController extends Controller
      * Den begonnenen Vorgang auspacken - und pruefen, dass er zu diesem
      * Nutzer gehoert und noch gilt.
      *
-     * @return array{geheimnis: string, mailcode: ?string}
+     * @return array{secret: string, mailcode: ?string}
      */
     private function vorgang(string $verschluesselt, int $nutzerId): array
     {
@@ -329,19 +329,19 @@ class ProfilController extends Controller
         if (! is_array($vorgang)
             || ($vorgang['zweck'] ?? null) !== 'mobil-zweite-stufe'
             || ($vorgang['id'] ?? null) !== $nutzerId
-            || ! isset($vorgang['geheimnis'], $vorgang['bis'])
+            || ! isset($vorgang['secret'], $vorgang['bis'])
             || $vorgang['bis'] < now()->timestamp
         ) {
             throw $this->enrollmentExpired();
         }
 
-        return ['geheimnis' => $vorgang['geheimnis'], 'mailcode' => $vorgang['mailcode'] ?? null];
+        return ['secret' => $vorgang['secret'], 'mailcode' => $vorgang['mailcode'] ?? null];
     }
 
     private function enrollmentExpired(): ValidationException
     {
         return ValidationException::withMessages([
-            'vorgang' => __('Die Einrichtung wurde nicht begonnen oder ist abgelaufen.'),
+            'challenge' => __('Die Einrichtung wurde nicht begonnen oder ist abgelaufen.'),
         ]);
     }
 
@@ -383,7 +383,7 @@ class ProfilController extends Controller
         return response()->json([
             'version' => Changelog::version(),
             'text' => $text,
-            'gekuerzt' => $gekuerzt,
+            'truncated' => $gekuerzt,
         ]);
     }
 

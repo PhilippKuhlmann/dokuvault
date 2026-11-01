@@ -35,13 +35,13 @@ class NetworkController extends Controller
 
     public function __construct(private MobileObjects $objekte) {}
 
-    /** All VLANs with their usage. ?standort= limits to one site. */
+    /** All VLANs with their usage. ?site= limits to one site. */
     public function index(Request $request, Customer $customer): JsonResponse
     {
         Gate::authorize('network_viewAny');
 
         $netze = Network::where('customer_id', $customer->id)
-            ->when($request->integer('standort'), fn ($q, $site) => $q->where('site_id', $site))
+            ->when($request->integer('site'), fn ($q, $site) => $q->where('site_id', $site))
             ->with('site')
             ->orderBy('vlanId')
             ->get();
@@ -49,14 +49,14 @@ class NetworkController extends Controller
         $plaene = $this->plan($request->user())->plans($customer, $netze);
 
         return response()->json([
-            'eintraege' => $plaene->map(fn ($p) => $this->netz($p['network'], $p['plan']))->values(),
-            'summe' => [
-                'belegt' => $plaene->sum(fn ($p) => $p['plan']['usedCount'] ?? 0),
-                'adressen' => $plaene->sum(fn ($p) => $p['plan']['total'] ?? 0),
+            'entries' => $plaene->map(fn ($p) => $this->netz($p['network'], $p['plan']))->values(),
+            'totals' => [
+                'used' => $plaene->sum(fn ($p) => $p['plan']['usedCount'] ?? 0),
+                'addresses' => $plaene->sum(fn ($p) => $p['plan']['total'] ?? 0),
             ],
             // The choices for "site" when creating, and for the filter.
-            'standorte' => Site::where('customer_id', $customer->id)->orderBy('name')->get(['id', 'name']),
-            'darf_anlegen' => Gate::allows('network_create'),
+            'sites' => Site::where('customer_id', $customer->id)->orderBy('name')->get(['id', 'name']),
+            'may_create' => Gate::allows('network_create'),
         ]);
     }
 
@@ -147,35 +147,35 @@ class NetworkController extends Controller
             'dns1' => $network->dns1,
             'dns2' => $network->dns2,
             'dhcp_start' => $network->dhcpStart,
-            'dhcp_ende' => $network->dhcpEnd,
-            'naechste_freie' => $network->nextFreeAddress(),
-            'kunde' => $this->objekte->kunde($network->customer),
-            'darf_bearbeiten' => Gate::forUser($nutzer)->allows('network_update'),
-            'darf_loeschen' => Gate::forUser($nutzer)->allows('network_delete'),
-            'bereiche' => $p['bereiche']->map(fn (IpRange $b) => [
+            'dhcp_end' => $network->dhcpEnd,
+            'next_free' => $network->nextFreeAddress(),
+            'customer' => $this->objekte->kunde($network->customer),
+            'may_update' => Gate::forUser($nutzer)->allows('network_update'),
+            'may_delete' => Gate::forUser($nutzer)->allows('network_delete'),
+            'ranges' => $p['bereiche']->map(fn (IpRange $b) => [
                 'id' => $b->id,
-                'von' => $b->from_ip,
-                'bis' => $b->to_ip,
+                'from' => $b->from_ip,
+                'to' => $b->to_ip,
                 'label' => $b->label,
-                'notiz' => $b->note,
-                'anzahl' => $b->anzahl(),
-                'farbe' => $this->farbe($b->farbe ?? []),
+                'note' => $b->note,
+                'count' => $b->anzahl(),
+                'color' => $this->farbe($b->farbe ?? []),
             ])->values(),
-            'zeilen' => collect($plan['rows'])->map(fn ($z) => [
-                'art' => ['device' => 'geraet', 'free' => 'frei', 'dhcp' => 'dhcp', 'reserved' => 'reserviert'][$z['kind']],
-                'von' => $z['from'],
-                'bis' => $z['to'],
+            'rows' => collect($plan['rows'])->map(fn ($z) => [
+                'kind' => ['device' => 'device', 'free' => 'free', 'dhcp' => 'dhcp', 'reserved' => 'reserved'][$z['kind']],
+                'from' => $z['from'],
+                'to' => $z['to'],
                 'label' => $z['label'],
                 'gateway' => $z['isGateway'] ?? false,
                 // A used address inside a reserved range: what the range is for.
-                'reservierung' => $z['reservierung'] ?? null,
-                'farbe' => $this->farbe($z['farbe'] ?? []),
-                'geraete' => $this->devices($z['geraete']),
+                'reservation' => $z['reservierung'] ?? null,
+                'color' => $this->farbe($z['farbe'] ?? []),
+                'devices' => $this->devices($z['geraete']),
             ])->values(),
             // Over 8192 hosts the plan stops - the app says so.
-            'gekuerzt' => $plan['truncated'] ?? false,
+            'truncated' => $plan['truncated'] ?? false,
             // DHCP devices of a network without a DHCP range: no row to stand at.
-            'dhcp_ohne_bereich' => $this->devices($plan['dhcpOhneBereich'] ?? []),
+            'dhcp_outside_range' => $this->devices($plan['dhcpOhneBereich'] ?? []),
         ];
     }
 
@@ -185,23 +185,23 @@ class NetworkController extends Controller
         return [
             'id' => $network->id,
             'name' => $network->label() ?: $network->network,
-            'bezeichnung' => $network->description,
+            'description' => $network->description,
             // As numbers - the columns are text in some installations.
             'vlan' => is_numeric($network->vlanId) ? (int) $network->vlanId : null,
-            'netz' => $network->network,
-            'subnetzmaske' => $network->subnetmask,
+            'network' => $network->network,
+            'subnet_mask' => $network->subnetmask,
             'cidr' => is_numeric($network->cidr) ? (int) $network->cidr : Network::cidrAusMaske($network->subnetmask),
             'gateway' => $network->gateway,
-            'standort' => $network->site ? ['id' => $network->site->id, 'name' => $network->site->name] : null,
+            'site' => $network->site ? ['id' => $network->site->id, 'name' => $network->site->name] : null,
             // null with "fehler" when network/mask cannot be evaluated.
-            'auslastung' => $plan['error'] ? null : [
-                'belegt' => $plan['counts']['device'],
+            'usage' => $plan['error'] ? null : [
+                'used' => $plan['counts']['device'],
                 'dhcp' => $plan['counts']['dhcp'],
-                'reserviert' => $plan['counts']['reserved'],
-                'frei' => $plan['counts']['free'],
-                'gesamt' => $plan['total'],
+                'reserved' => $plan['counts']['reserved'],
+                'free' => $plan['counts']['free'],
+                'total' => $plan['total'],
             ],
-            'fehler' => $plan['error'],
+            'error' => $plan['error'],
         ];
     }
 
@@ -209,10 +209,10 @@ class NetworkController extends Controller
     {
         return array_map(fn ($e) => [
             'name' => $e['name'],
-            'typ' => $e['typ'],
+            'type' => $e['type'],
             'id' => $e['id'],
             // A fixed address inside the DHCP range - possibly a conflict.
-            'im_pool' => $e['imPool'] ?? false,
+            'in_pool' => $e['imPool'] ?? false,
         ], $eintraege);
     }
 
@@ -230,7 +230,7 @@ class NetworkController extends Controller
 
             return [
                 'name' => IpPlan::deviceName($geraet).$zusatz,
-                'typ' => $typ,
+                'type' => $typ,
                 'id' => $typ ? $geraet->getKey() : null,
             ];
         });

@@ -41,14 +41,14 @@ test('die App haengt einen vorhandenen Zugang an', function () {
 
     $this->withToken($token)->getJson("/api/mobile/objects/server/{$server->id}/credentials")
         ->assertOk()
-        ->assertJsonPath('verfuegbar.0.name', 'Administrator')
-        ->assertJsonPath('darf_neu', true);
+        ->assertJsonPath('available.0.name', 'Administrator')
+        ->assertJsonPath('may_create', true);
 
     $this->withToken($token)
         ->postJson("/api/mobile/objects/server/{$server->id}/credentials", ['login_id' => $login->id, 'note' => 'iLO'])
         ->assertCreated()
         ->assertJsonPath('0.name', 'Administrator')
-        ->assertJsonPath('0.notiz', 'iLO');
+        ->assertJsonPath('0.note', 'iLO');
 });
 
 test('ein Zugang eines fremden Kunden laesst sich nicht anhaengen', function () {
@@ -67,10 +67,10 @@ test('ein neuer Zugang entsteht und haengt gleich am Geraet', function () {
     $server = geraetAppServer(Customer::factory()->create());
 
     $this->withToken(geraetAppToken(GERAET_RECHTE))
-        ->postJson("/api/mobile/objects/server/{$server->id}/credentials", ['name' => 'root', 'username' => 'root', 'password' => 'geheim'])
+        ->postJson("/api/mobile/objects/server/{$server->id}/credentials", ['name' => 'root', 'username' => 'root', 'password' => 'secret'])
         ->assertCreated()
         ->assertJsonPath('0.name', 'root')
-        ->assertJsonPath('0.hat_kennwort', true);
+        ->assertJsonPath('0.has_password', true);
 
     expect(LoginGeneral::where('customer_id', $server->customer_id)->where('name', 'root')->exists())->toBeTrue();
 });
@@ -124,13 +124,13 @@ test('die App traegt eine Adresse ein und schlaegt die naechste freie vor', func
 
     $this->withToken($token)->getJson("/api/mobile/objects/server/{$server->id}/ip-addresses")
         ->assertOk()
-        ->assertJsonPath('netze.0.id', $netz->id)
-        ->assertJsonStructure(['eintraege', 'netze' => [['id', 'name', 'naechste_freie']]]);
+        ->assertJsonPath('networks.0.id', $netz->id)
+        ->assertJsonStructure(['entries', 'networks' => [['id', 'name', 'next_free']]]);
 
     $this->withToken($token)
         ->postJson("/api/mobile/objects/server/{$server->id}/ip-addresses", ['address' => '10.20.30.5', 'network_id' => $netz->id, 'label' => 'LAN'])
         ->assertCreated()
-        ->assertJsonPath('0.adresse', '10.20.30.5')
+        ->assertJsonPath('0.address', '10.20.30.5')
         ->assertJsonPath('0.dhcp', false);
 });
 
@@ -190,13 +190,13 @@ test('am Scanner entsteht ein Scan-Ziel und laesst sich wieder loesen', function
     $this->withToken($token)
         ->postJson("/api/mobile/objects/scanner/{$scanner->id}/scan-targets", ['kind' => 'smb', 'target' => '\\\\srv-fs01\\scans'])
         ->assertCreated()
-        ->assertJsonPath('0.ziel', '\\\\srv-fs01\\scans')
-        ->assertJsonPath('0.art', 'smb');
+        ->assertJsonPath('0.target', '\\\\srv-fs01\\scans')
+        ->assertJsonPath('0.kind', 'smb');
 
     $ziel = ScanTarget::firstOrFail();
 
     $this->withToken($token)->getJson("/api/mobile/objects/scanner/{$scanner->id}")
-        ->assertOk()->assertJsonPath('scan_ziele.0.id', $ziel->id);
+        ->assertOk()->assertJsonPath('scan_targets.0.id', $ziel->id);
 
     $this->withToken($token)
         ->deleteJson("/api/mobile/objects/scanner/{$scanner->id}/scan-targets/{$ziel->id}")
@@ -215,11 +215,11 @@ test('ein vorhandenes Scan-Ziel wird verknuepft, ein fremdes nicht', function ()
     $token = geraetAppToken(['scanner_viewAny', 'scanner_update', 'scantarget_viewAny']);
 
     $this->withToken($token)
-        ->postJson("/api/mobile/objects/scanner/{$scanner->id}/scan-targets", ['ziel_id' => $fremdes->id])
+        ->postJson("/api/mobile/objects/scanner/{$scanner->id}/scan-targets", ['target_id' => $fremdes->id])
         ->assertUnprocessable();
 
     $this->withToken($token)
-        ->postJson("/api/mobile/objects/scanner/{$scanner->id}/scan-targets", ['ziel_id' => $eigenes->id])
+        ->postJson("/api/mobile/objects/scanner/{$scanner->id}/scan-targets", ['target_id' => $eigenes->id])
         ->assertCreated()
         ->assertJsonPath('0.id', $eigenes->id);
 });
@@ -239,7 +239,7 @@ test('ein Patchfeld entsteht mit seinen Ports', function () {
         ->assertCreated()
         ->assertJsonPath('name', 'PF-01')
         ->assertJsonCount(24, 'ports')
-        ->assertJsonPath('ports.0.nummer', 1);
+        ->assertJsonPath('ports.0.number', 1);
 });
 
 test('Ports werden beschriftet, nur mit Switches des Kunden', function () {
@@ -260,16 +260,16 @@ test('Ports werden beschriftet, nur mit Switches des Kunden', function () {
     $this->withToken($token)
         ->putJson($basis, ['ports' => [['id' => $port->id, 'outlet' => '1.01', 'label' => 'EG Empfang', 'network_switch_id' => $switch->id, 'switch_port' => '7']]])
         ->assertOk()
-        ->assertJsonPath('ports.0.dose', '1.01')
-        ->assertJsonPath('ports.0.raum', 'EG Empfang')
+        ->assertJsonPath('ports.0.outlet', '1.01')
+        ->assertJsonPath('ports.0.room', 'EG Empfang')
         ->assertJsonPath('ports.0.switch.id', $switch->id);
 
     // Nur was geschickt wird: Die Dose bleibt, der Raum wird geleert.
     $this->withToken($token)
         ->putJson($basis, ['ports' => [['id' => $port->id, 'label' => '']]])
         ->assertOk()
-        ->assertJsonPath('ports.0.dose', '1.01')
-        ->assertJsonPath('ports.0.raum', null);
+        ->assertJsonPath('ports.0.outlet', '1.01')
+        ->assertJsonPath('ports.0.room', null);
 });
 
 test('ein Patchfeld wird nicht kleiner, solange oben etwas dokumentiert ist', function () {

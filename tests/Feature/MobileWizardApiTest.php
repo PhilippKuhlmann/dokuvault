@@ -25,13 +25,13 @@ test('der Assistent nennt nur Schritte, die der Nutzer anlegen darf', function (
         ->getJson("/api/mobile/customers/{$kunde->slug}/wizard")
         ->assertOk();
 
-    $schluessel = collect($antwort->json('schritte'))->pluck('schluessel');
+    $schluessel = collect($antwort->json('steps'))->pluck('key');
 
     expect($schluessel->all())->toBe(['site', 'server']);
-    expect($antwort->json('laeuft'))->toBeFalse();
+    expect($antwort->json('running'))->toBeFalse();
     // Der Typ sagt der App, mit welchem Formular sie den Schritt ausfuellt.
-    expect($antwort->json('schritte.0.typ'))->toBe('site');
-    expect($antwort->json('schritte.0.frage'))->not->toBeEmpty();
+    expect($antwort->json('steps.0.type'))->toBe('site');
+    expect($antwort->json('steps.0.question'))->not->toBeEmpty();
 });
 
 test('ohne ein einziges Anlege-Recht ist der Assistent gesperrt', function () {
@@ -49,8 +49,8 @@ test('start beginnt einen Durchlauf beim ersten Schritt', function () {
         ->postJson("/api/mobile/customers/{$kunde->slug}/wizard/start")
         ->assertOk();
 
-    expect($antwort->json('laeuft'))->toBeTrue();
-    expect($antwort->json('aktuell'))->toBe('site');
+    expect($antwort->json('running'))->toBeTrue();
+    expect($antwort->json('current'))->toBe('site');
     expect(DocumentationRun::count())->toBe(1);
 });
 
@@ -60,10 +60,10 @@ test('ein zweiter Start führt den offenen Durchlauf weiter', function () {
     $pfad = "/api/mobile/customers/{$kunde->slug}/wizard";
 
     test()->withToken($token)->postJson("{$pfad}/start")->assertOk();
-    test()->withToken($token)->postJson("{$pfad}/next", ['wie' => 'erledigt'])->assertOk();
+    test()->withToken($token)->postJson("{$pfad}/next", ['how' => 'done'])->assertOk();
     $antwort = test()->withToken($token)->postJson("{$pfad}/start")->assertOk();
 
-    expect($antwort->json('aktuell'))->toBe('server');
+    expect($antwort->json('current'))->toBe('server');
     expect(DocumentationRun::count())->toBe(1);
 });
 
@@ -73,16 +73,16 @@ test('erledigt und übersprungen stehen am Schritt', function () {
     $pfad = "/api/mobile/customers/{$kunde->slug}/wizard";
 
     test()->withToken($token)->postJson("{$pfad}/start")->assertOk();
-    test()->withToken($token)->postJson("{$pfad}/next", ['wie' => 'erledigt'])->assertOk();
-    $antwort = test()->withToken($token)->postJson("{$pfad}/next", ['wie' => 'uebersprungen'])->assertOk();
+    test()->withToken($token)->postJson("{$pfad}/next", ['how' => 'done'])->assertOk();
+    $antwort = test()->withToken($token)->postJson("{$pfad}/next", ['how' => 'skipped'])->assertOk();
 
-    $schritte = collect($antwort->json('schritte'))->keyBy('schluessel');
+    $schritte = collect($antwort->json('steps'))->keyBy('key');
 
-    expect($schritte['site']['erledigt'])->toBeTrue();
-    expect($schritte['server']['uebersprungen'])->toBeTrue();
+    expect($schritte['site']['done'])->toBeTrue();
+    expect($schritte['server']['skipped'])->toBeTrue();
     // Hinter dem letzten Schritt ist der Durchlauf fertig.
-    expect($antwort->json('aktuell'))->toBeNull();
-    expect($antwort->json('fertig'))->not->toBeNull();
+    expect($antwort->json('current'))->toBeNull();
+    expect($antwort->json('completed_at'))->not->toBeNull();
 });
 
 test('zurück geht einen Schritt, und springen führt direkt hin', function () {
@@ -91,13 +91,13 @@ test('zurück geht einen Schritt, und springen führt direkt hin', function () {
     $pfad = "/api/mobile/customers/{$kunde->slug}/wizard";
 
     test()->withToken($token)->postJson("{$pfad}/start")->assertOk();
-    test()->withToken($token)->postJson("{$pfad}/next", ['wie' => 'erledigt'])->assertOk();
+    test()->withToken($token)->postJson("{$pfad}/next", ['how' => 'done'])->assertOk();
 
     $zurueck = test()->withToken($token)->postJson("{$pfad}/goto")->assertOk();
-    expect($zurueck->json('aktuell'))->toBe('site');
+    expect($zurueck->json('current'))->toBe('site');
 
-    $hin = test()->withToken($token)->postJson("{$pfad}/goto", ['schritt' => 'computer'])->assertOk();
-    expect($hin->json('aktuell'))->toBe('computer');
+    $hin = test()->withToken($token)->postJson("{$pfad}/goto", ['step' => 'computer'])->assertOk();
+    expect($hin->json('current'))->toBe('computer');
 });
 
 /**
@@ -111,8 +111,8 @@ test('ein gesperrter Schritt lässt sich nicht anspringen', function () {
 
     test()->withToken($token)->postJson("{$pfad}/start")->assertOk();
 
-    test()->withToken($token)->postJson("{$pfad}/goto", ['schritt' => 'server'])->assertNotFound();
-    test()->withToken($token)->postJson("{$pfad}/goto", ['schritt' => 'quatsch'])->assertNotFound();
+    test()->withToken($token)->postJson("{$pfad}/goto", ['step' => 'server'])->assertNotFound();
+    test()->withToken($token)->postJson("{$pfad}/goto", ['step' => 'quatsch'])->assertNotFound();
 
     expect(DocumentationRun::first()->current_step)->toBe('site');
 });
@@ -123,14 +123,14 @@ test('eine ganze Gruppe lässt sich überspringen', function () {
     $pfad = "/api/mobile/customers/{$kunde->slug}/wizard";
 
     test()->withToken($token)->postJson("{$pfad}/start")->assertOk();
-    $antwort = test()->withToken($token)->postJson("{$pfad}/next", ['wie' => 'gruppe'])->assertOk();
+    $antwort = test()->withToken($token)->postJson("{$pfad}/next", ['how' => 'group'])->assertOk();
 
     // Standort und Ansprechpartner stehen beide in "Grunddaten".
-    $schritte = collect($antwort->json('schritte'))->keyBy('schluessel');
+    $schritte = collect($antwort->json('steps'))->keyBy('key');
 
-    expect($schritte['site']['uebersprungen'])->toBeTrue();
-    expect($schritte['contactperson']['uebersprungen'])->toBeTrue();
-    expect($antwort->json('aktuell'))->toBe('server');
+    expect($schritte['site']['skipped'])->toBeTrue();
+    expect($schritte['contactperson']['skipped'])->toBeTrue();
+    expect($antwort->json('current'))->toBe('server');
 });
 
 test('abschließen beendet den Durchlauf', function () {
@@ -141,7 +141,7 @@ test('abschließen beendet den Durchlauf', function () {
     test()->withToken($token)->postJson("{$pfad}/start")->assertOk();
     $antwort = test()->withToken($token)->postJson("{$pfad}/complete")->assertOk();
 
-    expect($antwort->json('laeuft'))->toBeFalse();
+    expect($antwort->json('running'))->toBeFalse();
     expect(DocumentationRun::first()->completed_at)->not->toBeNull();
 });
 
@@ -150,6 +150,6 @@ test('ein unbekanntes Weiter wird abgewiesen', function () {
     $token = assistentToken(['site_create']);
 
     test()->withToken($token)
-        ->postJson("/api/mobile/customers/{$kunde->slug}/wizard/next", ['wie' => 'irgendwie'])
+        ->postJson("/api/mobile/customers/{$kunde->slug}/wizard/next", ['how' => 'irgendwie'])
         ->assertStatus(422);
 });

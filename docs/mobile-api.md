@@ -9,7 +9,7 @@ Unbekanntes), Umbenennen oder Entfernen nur nach Absprache, weil ältere
 App-Versionen sonst „Die Antwort des Servers ist unlesbar“ zeigen.
 
 Quellen: `routes/api.php` (Block `prefix('mobile')`),
-`app/Http/Controllers/API/Mobile/*`, `app/Support/MobilObjekte.php`,
+`app/Http/Controllers/API/Mobile/*`, `app/Support/MobileObjects.php`,
 `app/Support/ObjectForm.php` ↔ `DokuVault/API.swift`, `DokuVault/Modelle.swift`.
 
 ## Allgemein
@@ -24,14 +24,19 @@ Quellen: `routes/api.php` (Block `prefix('mobile')`),
 | Daten | Datum als `YYYY-MM-DD`, Zeitpunkte als ISO 8601 |
 | Geheimnisse | Gehen **nie** in Listen/Details/Formularen hinaus – nur „ist gesetzt“. Wert einzeln per `POST` (gebremst, protokolliert) |
 
-### Benennung (bekannte Uneinheitlichkeit)
+### Benennung
 
-- **Antworten** verwenden deutsche Schlüssel (`hoehe`, `ort`, `einbauten`).
+- **Antworten** verwenden englische Schlüssel in `snake_case`
+  (`height`, `location`, `mounts`, `may_update`).
 - **Anfragen** an Rack und Formulare verwenden die **Spaltennamen** der Datenbank
   (`site_id`, `height_units`, `location`, `note`) bzw. die Feldnamen aus
-  `config/forms.php`. Ausnahme: Einbauten (`seite`, `position`, `hoehe`, `typ`,
-  `id`, `katalog_id`).
-- Wird so belassen; neue Endpunkte folgen demselben Muster.
+  `config/forms.php`. Ausnahme: Einbauten (`side`, `position`, `height`, `type`,
+  `id`, `catalog_id`).
+- Zwei Stellen bleiben deutsch, weil sie nicht der App gehören: die **Feldarten
+  aus `config/forms.php`** (`mehrzeilig`, `auswahl`, `optionen`, `schalter`,
+  `einheit`, `standort`, `verknuepfung`, `datei`) – sie steuern auch das Formular
+  im Browser – und die Schlüssel **innerhalb** der verschlüsselten `challenge`,
+  die niemand außer dem Server liest.
 
 ### Leere Werte / `null` – wichtig für Swift
 
@@ -47,7 +52,7 @@ deshalb: es **ausdrücklich** schicken – `null` beim Rack, `""` in Objektformu
 | 401 | Token fehlt/abgelaufen/widerrufen | – | `.nichtAngemeldet` → zurück zur Anmeldung |
 | 403 | Kein Recht, oder 2FA muss erst im Browser eingerichtet werden | `{message}` | `.keinZugriff(message)` |
 | 404 | Unbekannt **oder** fremder Kunde (bewusst nicht unterscheidbar) | `{message?}` | `.nichtGefunden` |
-| 422 | Validierung | `{message, errors: {feld: [..]}}` | `.pruefung(erste Feldmeldung)` |
+| 422 | Validierung | `{message, errors: {field: [..]}}` | `.pruefung(erste Feldmeldung)` |
 | 429 | Bremse (Login, Kennwortabruf) | `{message}` | `.gebremst(message)` |
 | 5xx | Serverfehler | – | `.server(status)` |
 
@@ -55,79 +60,79 @@ deshalb: es **ausdrücklich** schicken – `null` beim Rack, `""` in Objektformu
 
 | Methode | Pfad | Body | Antwort |
 |---|---|---|---|
-| POST | `login` | `{username, password, geraet}` | `Token` oder `{zweite_stufe: true, vorgang}` |
-| POST | `login/two-factor` | `{vorgang, code}` | `Token` |
+| POST | `login` | `{username, password, device}` | `Token` oder `{two_factor: true, challenge}` |
+| POST | `login/two-factor` | `{challenge, code}` | `Token` |
 | POST | `logout` | – | 204 (nur dieses Token) |
 | GET | `me` | – | `Nutzer` |
 
 ```
-Token  = { token, laeuft_ab (ISO 8601), nutzer: Nutzer }
-Nutzer = { name, username, kunde: Kunde|null,
-           rechte: { kennwoerter: bool, schluessel: bool, papierkorb: bool,
-                     checklisten: bool, agenten: bool, pdf: bool,
-                     erstaufnahme: bool } }
+Token  = { token, expires_at (ISO 8601), user: Nutzer }
+Nutzer = { name, username, customer: Kunde|null,
+           rights: { passwords: bool, ssh_keys: bool, trash: bool,
+                     checklists: bool, agents: bool, pdf: bool,
+                     wizard: bool } }
 Kunde  = { slug, name }
 ```
 
-`vorgang` ist verschlüsselt, zeitlich begrenzt und gibt genau **ein** Token.
+`challenge` ist verschlüsselt, zeitlich begrenzt und gibt genau **ein** Token.
 
 ## Lesen
 
 | Methode | Pfad | Antwort |
 |---|---|---|
-| GET | `customers?suche=` | `[Kunde]` (max. 500; Kundennutzer: nur der eigene) |
-| GET | `customers/{slug}` | `{slug, name, typen: [{typ, titel, anzahl}]}` (nur Typen mit `anzahl > 0`) |
+| GET | `customers?search=` | `[Kunde]` (max. 500; Kundennutzer: nur der eigene) |
+| GET | `customers/{slug}` | `{slug, name, types: [{type, title, count}]}` (nur Typen mit `count > 0`) |
 | GET | `customers/{slug}/dashboard` | `Dashboard` (siehe unten) |
 | GET | `customers/{slug}/trash` | `Papierkorb` (siehe unten) |
 | GET | `customers/{slug}/network-map?site=` | `Netzplan` (siehe unten) |
-| GET | `customers/{slug}/checklists` | `{offen: [...], fertig: [...], darf_abhaken, darf_freigeben}` |
-| GET | `customers/{slug}/agents?suche=` | `{agenten: [...], weitere, token: [...], takte: [...]}` |
-| GET | `customers/{slug}/pdf` | `{auftrag: PdfAuftrag\|null}` |
+| GET | `customers/{slug}/checklists` | `{open: [...], completed: [...], may_check, may_approve}` |
+| GET | `customers/{slug}/agents?search=` | `{agents: [...], more, token: [...], intervals: [...]}` |
+| GET | `customers/{slug}/pdf` | `{job: PdfAuftrag\|null}` |
 | GET | `customers/{slug}/wizard` | `Erstaufnahme` (siehe unten) |
 | GET | `profile` | `Profil` (siehe unten) |
-| GET | `changelog` | `{version, text, gekuerzt}` (roher Markdown) |
-| GET | `customers/{slug}/{typ}?site=` | `{typ, titel, eintraege: [ObjektKurz], weitere: bool, darf_anlegen: bool, standorte: [{id, name}]\|null}` |
-| GET | `search?q=` | `[{typ, titel, weitere: int, treffer: [ObjektKurz]}]` |
-| GET | `objects/{typ}/{id}` | `ObjektDetail` |
-| POST | `objects/{typ}/{id}/secret/{feld}` | `{wert}` / 404 „Kein Kennwort hinterlegt.“ |
-| POST | `credentials/{link_id}/password` | `{wert}` / 404 |
+| GET | `changelog` | `{version, text, truncated}` (roher Markdown) |
+| GET | `customers/{slug}/{type}?site=` | `{type, title, entries: [ObjektKurz], more: bool, may_create: bool, sites: [{id, name}]\|null}` |
+| GET | `search?q=` | `[{type, title, more: int, hits: [ObjektKurz]}]` |
+| GET | `objects/{type}/{id}` | `ObjektDetail` |
+| POST | `objects/{type}/{id}/secret/{field}` | `{value}` / 404 „Kein Kennwort hinterlegt.“ |
+| POST | `credentials/{link_id}/password` | `{value}` / 404 |
 
 ```
-ObjektKurz   = { typ, id, name, untertitel|null, kunde: Kunde|null }
+ObjektKurz   = { type, id, name, subtitle|null, customer: Kunde|null }
 
 ObjektDetail = ObjektKurz + {
-  einzahl,
-  gruppen:      [{ titel, felder: [Feld] }],
-  ip_adressen:  [{ id, dhcp: bool, adresse, bezeichnung|null, netz|null }],
-  zugangsdaten: [Zugang],
-  einbauort:    { text, rack_id, kunde: Kunde } | null,
-  support_ende: { betriebssystem, datum, zustand: "abgelaufen"|"bald"|"ok" } | null,
-  scan_ziele:   [ScanZiel]                                 // nur beim Scanner gefüllt, sonst []
+  singular,
+  groups:      [{ title, fields: [Feld] }],
+  ip_addresses:  [{ id, dhcp: bool, address, label|null, network|null }],
+  credentials: [Zugang],
+  mounting:    { text, rack_id, customer: Kunde } | null,
+  end_of_support: { operating_system, date, state: "expired"|"soon"|"ok" } | null,
+  scan_targets:   [ScanZiel]                                 // nur beim Scanner gefüllt, sonst []
 }
 
-ScanZiel = { id, name|null, art: "smb"|"email"|"ftp"|"cloud"|"other", art_label,
-             ziel, login: { id, name } | null }
+ScanZiel = { id, name|null, kind: "smb"|"email"|"ftp"|"cloud"|"other", kind_label,
+             target, login: { id, name } | null }
 
 Feld = {
   name, label,
-  art: "text"|"mehrzeilig"|"datum"|"link"|"ip"|"geheim",   // unbekannte Art → als "text" zeigen
-  wert: string|null,                                       // bei "geheim" immer null
-  verweise?: [{ typ, id, name }],                          // Host-Felder: Sprung zu objects/{typ}/{id}
-  liste?:    [string]                                      // Verknüpfungen, Dienste: aufklappbare Liste
-  kacheln?:  [{name, farbe: "#rrggbb"|null, schrift: "#rrggbb"|null}]  // nur Dienste: Farbe aus dem Dienste-Katalog, Schrift vom Server berechnet (Helligkeit > 0,6 → #111827, sonst #ffffff); ohne Katalogfarbe beide null = grau
+  kind: "text"|"multiline"|"date"|"link"|"ip"|"secret",   // unbekannte Art → als "text" zeigen
+  value: string|null,                                       // bei "secret" immer null
+  links?: [{ type, id, name }],                          // Host-Felder: Sprung zu objects/{type}/{id}
+  list?:    [string]                                      // Verknüpfungen, Dienste: aufklappbare Liste
+  tiles?:  [{name, color: "#rrggbb"|null, text_color: "#rrggbb"|null}]  // nur Dienste: Farbe aus dem Dienste-Katalog, Schrift vom Server berechnet (Helligkeit > 0,6 → #111827, sonst #ffffff); ohne Katalogfarbe beide null = grau
 }
 
-Zugang = { id (= link_id), name, benutzer|null, art: "kennwort"|"schluessel",
-           notiz|null, hat_kennwort: bool, fingerprint: string|null }
+Zugang = { id (= link_id), name, user|null, kind: "password"|"ssh_key",
+           note|null, has_password: bool, fingerprint: string|null }
 ```
 
 `?site=<id>` engt die Liste auf einen Standort ein – derselbe Filter, den
-die Seitenleiste im Browser in der Sitzung hält. `standorte` ist die Auswahl
+die Seitenleiste im Browser in der Sitzung hält. `sites` ist die Auswahl
 dafür und **null** bei einer Art, die an keinem Standort hängt; dann gibt es
 nichts zu filtern. Ein Standort eines anderen Kunden zählt als kein Filter,
 nicht als Fehler.
 
-Die Werte in `rechte` sagen der App, welche festen Wege sie überhaupt
+Die Werte in `rights` sagen der App, welche festen Wege sie überhaupt
 anbietet (Papierkorb, Checklisten, Auto-Dokumentation, PDF-Export,
 Erstaufnahme-Assistent) – ein Weg, der nur in
 eine 403 führt, ist keiner. Ein älterer Server schickt sie nicht; dann bleibt
@@ -135,93 +140,93 @@ der jeweilige Weg verborgen.
 
 Leere Felder werden **nicht** ausgeliefert.
 
-`darf_anlegen` ist `true`, wenn der Nutzer das Recht `{typ}_create` hat **und**
-es in der App einen Weg zum Anlegen gibt: Formular-Typen (`customers/{slug}/forms/{typ}`)
+`may_create` ist `true`, wenn der Nutzer das Recht `{type}_create` hat **und**
+es in der App einen Weg zum Anlegen gibt: Formular-Typen (`customers/{slug}/forms/{type}`)
 `rack` (`POST customers/{slug}/racks`) und `patchpanel`
 (`POST customers/{slug}/patchpanels`). Für Netzwerkdosen (`patchport`) usw.
 immer `false` – eine Dose entsteht mit ihrem Patchfeld.
 
-**Bewusste Lücke – Dateien:** Felder der Art `datei` fehlen in `gruppen`
-(`MobilObjekte::OHNE`). Solange nicht geklärt ist, wie die App eine geschützte
+**Bewusste Lücke – Dateien:** Felder der Art `datei` fehlen in `groups`
+(`MobileObjects::OHNE`). Solange nicht geklärt ist, wie die App eine geschützte
 Datei abruft (eigener Endpunkt mit Recht und Protokoll), zeigt sie keine.
 Hochladen geht dagegen schon (`datei` beim Anlegen/Bearbeiten, multipart).
 
 ## Dashboard
 
 `GET customers/{slug}/dashboard` liefert, was im Browser auf dem
-Kunden-Dashboard steht. Gerechnet wird es in `App\Support\Kundenuebersicht` –
+Kunden-Dashboard steht. Gerechnet wird es in `App\Support\CustomerDashboard` –
 dieselbe Klasse bedient die Blade-Seite. Zwei Rechnungen für dieselbe Frist
 wären zwei Wahrheiten.
 
 ```
 Dashboard = {
   slug, name,
-  fristen: {
-    lizenzen:     [Frist],   // Software-Lizenzen, Frist aus Admin -> Fristen (Verträge)
-    zertifikate:  [Frist],   // dieselbe Frist
-    garantien:    [Frist],   // Hardware aller Arten, eigene Garantiefrist
-    support_ende: [Frist]    // Geräte (eol_date) und Betriebssysteme, EOL-Frist
+  deadlines: {
+    licenses:     [Frist],   // Software-Lizenzen, Frist aus Admin -> Fristen (Verträge)
+    certificates:  [Frist],   // dieselbe Frist
+    warranties:    [Frist],   // Hardware aller Arten, eigene Garantiefrist
+    end_of_support: [Frist]    // Geräte (eol_date) und Betriebssysteme, EOL-Frist
   },
-  standorte:       [ObjektKurz],
-  ansprechpartner: [ObjektKurz + { rolle|null, telefon|null, mail|null }],
-  agenten:         [{ name, art, text, schwer: bool }] | null,
-  aenderungen:     [{ name, art, ereignis, wer|null, wann (ISO 8601),
-                      typ|null, id|null }]
+  sites:       [ObjektKurz],
+  contacts: [ObjektKurz + { role|null, phone|null, email|null }],
+  agents:         [{ name, kind, text, severe: bool }] | null,
+  changes:     [{ name, kind, event, who|null, when (ISO 8601),
+                      type|null, id|null }]
 }
 
-Frist = { name, art, datum (ISO 8601), tage: int, typ|null, id|null }
+Frist = { name, kind, date (ISO 8601), days: int, type|null, id|null }
 ```
 
-`tage` ist das Vorzeichen, an dem gefärbt wird: negativ abgelaufen, `0` heute.
+`days` ist das Vorzeichen, an dem gefärbt wird: negativ abgelaufen, `0` heute.
 Der Browser nimmt 14 Tage als Schwelle für Gelb, beim Support-Ende 90 – dort
 steht Fernes als Monat statt als Tagezahl.
 
-`typ` und `id` sind der Weg zum Objekt (`objects/{typ}/{id}`). `typ` ist
+`type` und `id` sind der Weg zum Objekt (`objects/{type}/{id}`). `type` ist
 **null**, wenn die App die Art nicht öffnen kann: Die Fristen sammeln über
-`config('custom.trashables')`, die App kennt `MobilObjekte::typen()` – eine
+`config('custom.trashables')`, die App kennt `MobileObjects::typen()` – eine
 Checkliste liegt im Papierkorb, hat in der App aber keine Ansicht. Bei
-`aenderungen` ist zusätzlich `id` null, wenn `ereignis` `deleted` ist: Das
+`changes` ist zusätzlich `id` null, wenn `event` `deleted` ist: Das
 Objekt liegt im Papierkorb, es gibt nichts zu öffnen.
 
-`agenten` ist `null`, wenn der Angemeldete keine Agenten verwaltet
+`agents` ist `null`, wenn der Angemeldete keine Agenten verwaltet
 (`agent_manage`) oder der Kunde weder Agent noch Token hat – dann zeigt die
-App keine Karte, keine leere. `schwer` trennt Rot von Gelb.
+App keine Karte, keine leere. `severe` trennt Rot von Gelb.
 
-Jede Kachel prüft die Rechte einzeln (`{typ}_viewAny`): Ohne das Recht kommt
+Jede Kachel prüft die Rechte einzeln (`{type}_viewAny`): Ohne das Recht kommt
 sie leer zurück, nicht gefüllt und versteckt.
 
 ## Papierkorb
 
 | Methode | Pfad | Antwort |
 |---|---|---|
-| GET | `customers/{slug}/trash` | `{eintraege: [PapierkorbZeile], gekuerzt: [{titel, anzahl}]}` |
-| POST | `customers/{slug}/trash/{typ}/{id}/restore` | `{objekt: ObjektKurz|null}` |
+| GET | `customers/{slug}/trash` | `{entries: [PapierkorbZeile], truncated: [{title, count}]}` |
+| POST | `customers/{slug}/trash/{type}/{id}/restore` | `{object: ObjektKurz|null}` |
 
 ```
-PapierkorbZeile = { typ, titel, name, geloescht_am (ISO 8601), id,
-                    darf_wiederherstellen: bool }
+PapierkorbZeile = { type, title, name, deleted_at (ISO 8601), id,
+                    may_restore: bool }
 ```
 
-Gerechnet wird in `App\Support\Papierkorb`, derselben Klasse, die die Seite
+Gerechnet wird in `App\Support\Trash`, derselben Klasse, die die Seite
 im Browser fuellt.
 
 Sehen braucht `see_hidden` (sonst 403) **und** das Recht auf die Art
-(`{typ}_viewAny`) – ohne das stuenden hier Namen von Objekten, von denen der
-Nutzer nichts wissen soll. Zurueckholen braucht zusaetzlich `{typ}_delete`:
+(`{type}_viewAny`) – ohne das stuenden hier Namen von Objekten, von denen der
+Nutzer nichts wissen soll. Zurueckholen braucht zusaetzlich `{type}_delete`:
 Es macht ein Loeschen rueckgaengig, und das darf nicht jeder, der in den
-Papierkorb sehen darf. `darf_wiederherstellen` sagt es je Zeile, damit die
+Papierkorb sehen darf. `may_restore` sagt es je Zeile, damit die
 App den Knopf gar nicht erst anbietet.
 
 Je Art hoechstens 100 Eintraege, das Neueste zuerst. Was abgeschnitten wurde,
-steht in `gekuerzt` – ein stilles Abschneiden liest sich wie „mehr ist nicht
-da“. `gekuerzt` ist leer, wenn nichts gekuerzt wurde.
+steht in `truncated` – ein stilles Abschneiden liest sich wie „mehr ist nicht
+da“. `truncated` ist leer, wenn nichts gekuerzt wurde.
 
-`typ` ist ein Schluessel aus `config('custom.trashables')`, nie etwas
+`type` ist ein Schluessel aus `config('custom.trashables')`, nie etwas
 Beliebiges: ein anderer Wert ist 404. Ein Objekt eines anderen Kunden hinter
 der eigenen Adresse ist ebenfalls 404.
 
-`objekt` in der Antwort auf das Zurueckholen ist `null`, wenn die App die Art
-nicht oeffnen kann (`MobilObjekte::typen()`) – zurueckgeholt ist es trotzdem.
+`object` in der Antwort auf das Zurueckholen ist `null`, wenn die App die Art
+nicht oeffnen kann (`MobileObjects::typen()`) – zurueckgeholt ist es trotzdem.
 
 ## Netzplan
 
@@ -232,34 +237,34 @@ zeichnet. Der Browser stellt die Spalten nebeneinander, auf dem Telefon ist
 dasselbe ein aufklappbarer Baum – die Daten sind dieselben.
 
 ```
-Netzplan = { standorte: [{
+Netzplan = { sites: [{
   id, name,
-  spalten: [{
+  columns: [{
     gateway: Knoten|null,        // null: das Gateway ist nicht dokumentiert
     uplinks: [Knoten],
-    netze:   [{ netz: {id, name, adresse|null, gateway|null},
-                gruppen: [{ titel, geraete: [Knoten] }] }]
+    networks:   [{ network: {id, name, address|null, gateway|null},
+                groups: [{ title, devices: [Knoten] }] }]
   }],
-  einzeln:              [Knoten],  // Firewall/Router ohne VLAN und Anschluss
-  uplinks_ohne_geraet:  [Knoten],  // Anschluss, der sich keinem Gerät zuordnen ließ
-  ohne_vlan:            [Knoten]   // Gerät mit Adresse außerhalb jedes VLANs
+  standalone:              [Knoten],  // Firewall/Router ohne VLAN und Anschluss
+  unlinked_uplinks:  [Knoten],  // Anschluss, der sich keinem Gerät zuordnen ließ
+  unassigned:            [Knoten]   // Gerät mit Adresse außerhalb jedes VLANs
 }] }
 
-Knoten = { name, art|null, beisatz|null, adresse|null, typ|null, id|null }
+Knoten = { name, kind|null, detail|null, address|null, type|null, id|null }
 ```
 
 `?site=<id>` filtert auf einen Standort – derselbe Filter, den die
 Seitenleiste im Browser in der Sitzung hält. Ein Standort eines anderen
 Kunden zählt als kein Filter, nicht als Fehler.
 
-`typ` und `id` sind der Weg zum Gerät (`objects/{typ}/{id}`); `netz.id` führt
-ins IPAM (`customers/{slug}/networks/{id}`). `typ` ist **null**, wo der
+`type` und `id` sind der Weg zum Gerät (`objects/{type}/{id}`); `network.id` führt
+ins IPAM (`customers/{slug}/networks/{id}`). `type` ist **null**, wo der
 Nutzer die Liste dieser Art nicht sehen darf – dort lässt auch der Browser
 den Verweis weg. Der Name steht trotzdem da: Der Plan soll vollständig sein.
 
 Alles stammt aus dokumentierten Daten, keine Verkabelung. Was sich nicht
-einordnen ließ, fällt nicht weg, sondern steht in `einzeln`,
-`uplinks_ohne_geraet` und `ohne_vlan` – so zeigt der Plan auch die Lücken in
+einordnen ließ, fällt nicht weg, sondern steht in `standalone`,
+`unlinked_uplinks` und `unassigned` – so zeigt der Plan auch die Lücken in
 der Dokumentation.
 
 Braucht `network_viewAny`, sonst 403.
@@ -268,43 +273,43 @@ Braucht `network_viewAny`, sonst 403.
 
 | Methode | Pfad | Antwort |
 |---|---|---|
-| GET | `customers/{slug}/checklists` | `{offen: [Offen], fertig: [Kurz], darf_abhaken: bool, darf_freigeben: bool}` |
+| GET | `customers/{slug}/checklists` | `{open: [Offen], completed: [Kurz], may_check: bool, may_approve: bool}` |
 | GET | `customers/{slug}/checklists/{id}` | `Checkliste` |
-| POST | `customers/{slug}/checklists/{id}/items/{punkt}/toggle` | `{erledigt: bool, fertig: bool}` / 409 |
-| POST | `customers/{slug}/checklists/{id}/items/{punkt}/approve` | `{freigegeben: true}` |
+| POST | `customers/{slug}/checklists/{id}/items/{item}/toggle` | `{done: bool, completed: bool}` / 409 |
+| POST | `customers/{slug}/checklists/{id}/items/{item}/approve` | `{approved: true}` |
 | GET | `customers/{slug}/checklists/form` | Auswahl für den Antrag |
 | GET | `customers/{slug}/checklists/{id}/ad-script` | das PowerShell-Skript (Datei) |
-| POST | `customers/{slug}/checklists/onboarding` | `{checkliste: Kurz}` |
-| POST | `customers/{slug}/checklists/offboarding` | `{checkliste: Kurz}` |
+| POST | `customers/{slug}/checklists/onboarding` | `{checklist: Kurz}` |
+| POST | `customers/{slug}/checklists/offboarding` | `{checklist: Kurz}` |
 
 ```
-Kurz  = { id, name, art: "onboarding"|"offboarding", position|null,
-          stichtag (ISO 8601), fertig_am (ISO 8601)|null }
-Offen = Kurz + { punkte: int, erledigt: int, wartet_auf_freigabe: int }
+Kurz  = { id, name, kind: "onboarding"|"offboarding", position|null,
+          reference_date (ISO 8601), completed_at (ISO 8601)|null }
+Offen = Kurz + { items: int, done: int, awaiting_approval: int }
 
 Checkliste = Kurz + {
-  notiz|null, benutzername|null, mail|null,
-  abschnitte: [{ titel, punkte: [Punkt] }],
-  darf_abhaken: bool, darf_freigeben: bool
+  note|null, username|null, email|null,
+  sections: [{ title, items: [Punkt] }],
+  may_check: bool, may_approve: bool
 }
 
-Punkt = { id, titel, hinweis|null, zustaendig, erledigt: bool,
-          erledigt_am (ISO 8601)|null, erledigt_von|null,
-          braucht_freigabe: bool, freigegeben: bool, freigegeben_von|null }
+Punkt = { id, title, hint|null, assignee, done: bool,
+          done_at (ISO 8601)|null, done_by|null,
+          needs_approval: bool, approved: bool, approved_by|null }
 ```
 
 Drei Rechte wie im Browser: `checklist_manage` (die IT arbeitet die Listen
 ab), `checklist_request` (der Kunde meldet einen neuen Mitarbeiter) und
 `checklist_approve` (die Leitung gibt heikle Laufwerke frei). Jedes davon
 darf die Listen **sehen**; ohne alle drei ist es 403. Abhaken braucht
-`checklist_manage`, Freigeben `checklist_approve` – `darf_abhaken` und
-`darf_freigeben` sagen es, damit die App die Knöpfe gar nicht erst anbietet.
+`checklist_manage`, Freigeben `checklist_approve` – `may_check` und
+`may_approve` sagen es, damit die App die Knöpfe gar nicht erst anbietet.
 
-Ein Punkt mit `braucht_freigabe` und ohne `freigegeben` lässt sich **nicht**
+Ein Punkt mit `needs_approval` und ohne `approved` lässt sich **nicht**
 abhaken: **409** mit dem Grund im `message`. Das ist kein Fehler der App,
 sondern eine Reihenfolge – erst die Leitung, dann die IT.
 
-Ist der letzte Punkt abgehakt, gilt die Liste als erledigt (`fertig: true`);
+Ist der letzte Punkt abgehakt, gilt die Liste als erledigt (`completed: true`);
 wird ein Haken wieder weggenommen, ist sie wieder offen.
 
 Eine Liste eines anderen Kunden – und ein Punkt einer anderen Liste – ist ein
@@ -314,15 +319,15 @@ Eine Liste eines anderen Kunden – und ein Punkt einer anderen Liste – ist ei
 
 ```
 Formular = {
-  laufwerke: [{ id, name, buchstabe|null,
-                stufen: [{ stufe: "r"|"rw", titel }] }],
-  programme: [{ id, name, braucht_freigabe: bool }],
-  ad_benutzer: [{ id, name, benutzername }],
-  darf_offboarding: bool
+  drives: [{ id, name, letter|null,
+                levels: [{ level: "r"|"rw", title }] }],
+  apps: [{ id, name, needs_approval: bool }],
+  ad_users: [{ id, name, username }],
+  may_offboard: bool
 }
 ```
 
-`GET .../form` liefert, was dieser Kunde im Antrag anbietet. Welche `stufen`
+`GET .../form` liefert, was dieser Kunde im Antrag anbietet. Welche `levels`
 ein Laufwerk hat, hängt an den hinterlegten AD-Gruppen: ohne Schreibgruppe
 gibt es kein „lesen und schreiben".
 
@@ -334,7 +339,7 @@ wie die AD-Benutzer der Dokumentation. Melden darf `checklist_request` oder
 
 `POST .../offboarding` nimmt `ad_user_id`, `reference_date` und `note` und
 braucht **`checklist_manage`**: Ein Offboarding anzustoßen ist Sache der IT,
-nicht des Melders. Deshalb ist `ad_benutzer` ohne dieses Recht leer. Ein
+nicht des Melders. Deshalb ist `ad_users` ohne dieses Recht leer. Ein
 AD-Benutzer eines anderen Kunden ist 404.
 
 ### AD-Skript
@@ -353,35 +358,35 @@ zurückmelden –, und jeder Abruf steht im Protokoll
 
 | Methode | Pfad | Antwort |
 |---|---|---|
-| GET | `customers/{slug}/agents?suche=` | `{agenten: [Agent], weitere: bool, token: [Token], takte: [{minuten, titel}]}` |
+| GET | `customers/{slug}/agents?search=` | `{agents: [Agent], more: bool, token: [Token], intervals: [{minutes, title}]}` |
 | PUT | `customers/{slug}/agents/installations/{id}` | `{agent: Agent}` |
 | POST | `customers/{slug}/agents/installations/{id}/run` | `{agent: Agent}` |
-| POST | `customers/{slug}/agents/tokens/{id}/lock` | `{gesperrt: true}` |
-| POST | `customers/{slug}/agents/tokens/{id}/unlock` | `{gesperrt: false}` |
+| POST | `customers/{slug}/agents/tokens/{id}/lock` | `{locked: true}` |
+| POST | `customers/{slug}/agents/tokens/{id}/unlock` | `{locked: false}` |
 
 ```
-Agent = { id, hostname, domaene|null, art, version|null,
-          zuletzt_gemeldet (ISO 8601)|null, stumm: bool,
-          takt_minuten: int, laufen_angefordert: bool, token|null,
-          aufgaben: [{ rolle, titel, an: bool, erkannt: bool,
-                       fehlgeschlagen: bool, meldung|null }] }
+Agent = { id, hostname, domain|null, kind, version|null,
+          last_seen_at (ISO 8601)|null, silent: bool,
+          interval_minutes: int, run_requested: bool, token|null,
+          tasks: [{ role, title, enabled: bool, detected: bool,
+                    failed: bool, message|null }] }
 
-Token = { id, name, standort|null, gesperrt: bool,
-          laeuft_ab (ISO 8601)|null, abgelaufen: bool }
+Token = { id, name, site|null, locked: bool,
+          expires_at (ISO 8601)|null, expired: bool }
 ```
 
 Alles braucht `agent_manage`, auch das Lesen – sonst 403.
 
-`PUT .../installations/{id}` nimmt `roles` (eine Teilmenge der `rolle`-Werte
-aus `aufgaben`) und `interval_minutes` (einer der `takte`). Alles andere ist
-**422**. Jede Aufgabe der Art lässt sich einschalten, `erkannt` oder nicht:
+`PUT .../installations/{id}` nimmt `roles` (eine Teilmenge der `role`-Werte
+aus `tasks`) und `interval_minutes` (einer der `intervals`). Alles andere ist
+**422**. Jede Aufgabe der Art lässt sich einschalten, `detected` oder nicht:
 Die Erkennung kann danebenliegen, und das Agentenprotokoll sagt dann, woran
 es scheiterte. Gültig wird es ab dem nächsten Lauf.
 
 `run` ist „jetzt melden“ – der Agent holt es sich beim nächsten Checkin ab,
 innerhalb von fünf Minuten.
 
-Höchstens 200 Installationen; `weitere` sagt, dass es mehr sind. `?suche=`
+Höchstens 200 Installationen; `more` sagt, dass es mehr sind. `?search=`
 greift auf Hostname und Domäne, wie der Filter im Browser.
 
 **Nicht in der App:** Token anlegen und erneuern, die Installationsdateien
@@ -392,15 +397,15 @@ nur einmal sieht, gehört nicht auf ein Telefon, das man danach weglegt.
 
 | Methode | Pfad | Antwort |
 |---|---|---|
-| GET | `customers/{slug}/pdf` | `{auftrag: PdfAuftrag\|null}` |
-| POST | `customers/{slug}/pdf` | `{auftrag: PdfAuftrag}` |
+| GET | `customers/{slug}/pdf` | `{job: PdfAuftrag\|null}` |
+| POST | `customers/{slug}/pdf` | `{job: PdfAuftrag}` |
 | GET | `customers/{slug}/pdf/{id}` | die Datei (application/pdf) |
 
 ```
-PdfAuftrag = { id, status: "offen"|"laeuft"|"fertig"|"fehler",
-               laeuft_noch: bool, haengt: bool, fertig: bool,
-               groesse|null, angelegt (ISO 8601),
-               fertig_am (ISO 8601)|null, meldung|null }
+PdfAuftrag = { id, status: "open"|"running"|"completed"|"error",
+               running: bool, stalled: bool, ready: bool,
+               size|null, created_at (ISO 8601),
+               finished_at (ISO 8601)|null, message|null }
 ```
 
 Braucht `create_pdf`, sonst 403.
@@ -411,7 +416,7 @@ und 160 Computer brauchen 370 MB und 15 Sekunden – das überlebt kein Request.
 Solange einer läuft, gibt `POST` denselben Auftrag zurück, statt einen
 zweiten anzulegen.
 
-`haengt` heißt: Niemand arbeitet die Warteschlange ab. Dann hat weiteres
+`stalled` heißt: Niemand arbeitet die Warteschlange ab. Dann hat weiteres
 Nachfragen keinen Zweck, und die App soll es sagen statt endlos zu drehen.
 
 Das PDF trägt **jedes Kennwort** des Kunden. Deshalb gehört es dem, der es
@@ -426,55 +431,55 @@ aufgeräumte Datei ist **410**, nicht 404 – sie war da.
 |---|---|---|
 | GET | `profile` | `Profil` |
 | PUT/PATCH | `profile` | `Profil` |
-| PUT | `profile/password` | `{message, neu_anmelden: true}` |
-| POST | `profile/two-factor/begin` | `{geheimnis, adresse, braucht_mail_code, vorgang}` |
+| PUT | `profile/password` | `{message, sign_in_again: true}` |
+| POST | `profile/two-factor/begin` | `{secret, uri, needs_mail_code, challenge}` |
 | POST | `profile/two-factor/confirm` | `{codes: [...]}` |
 | POST | `profile/two-factor/recovery-codes` | `{codes: [...]}` |
-| DELETE | `profile/two-factor` | `{zweite_stufe: false}` |
-| DELETE | `profile` | `{message, neu_anmelden: true}` |
-| GET | `changelog` | `{version, text, gekuerzt: bool}` |
+| DELETE | `profile/two-factor` | `{two_factor: false}` |
+| DELETE | `profile` | `{message, sign_in_again: true}` |
+| GET | `changelog` | `{version, text, truncated: bool}` |
 
 ```
-Profil = { name, username, mail|null, sprache|null,
-           sprachen: [{code, titel}],
-           gesperrt: bool, zweite_stufe: bool }
+Profil = { name, username, email|null, locale|null,
+           locales: [{code, title}],
+           locked: bool, two_factor: bool }
 ```
 
 `PUT profile` nimmt `name`, `email`, `locale` und `current_password`.
-`locale` ist einer der `sprachen`-Codes oder **leer** – leer heißt „der
+`locale` ist einer der `locales`-Codes oder **leer** – leer heißt „der
 Sprache des Geräts folgen“, nicht Leerstring. Eine andere Sprache ist 422.
 
 Eine **neue E-Mail-Adresse braucht `current_password`**: Dorthin gehen die
 Kennwort-Zurücksetzungen, und eine geliehene Sitzung wäre damit das Konto.
 Die alte Adresse erfährt von der Änderung. Name und Sprache gehen ohne.
 
-`gesperrt` ist der Demo-Zugang: Er ist geteilt, was einer ändert, träfe alle.
+`locked` ist der Demo-Zugang: Er ist geteilt, was einer ändert, träfe alle.
 Dann sind Profil und Kennwort 422 mit der Begründung.
 
 `PUT profile/password` nimmt `current_password`, `password` und
 `password_confirmation`. **Danach ist die App abgemeldet**: `User::booted()`
 entzieht bei jedem Kennwortwechsel alle App-Token – an einer Stelle für jeden
-Weg (Zurücksetzen, Profil, Admin-Bereich, Einladung). `neu_anmelden: true`
+Weg (Zurücksetzen, Profil, Admin-Bereich, Einladung). `sign_in_again: true`
 sagt es, damit die App nicht erst in den nächsten 401 läuft.
 
 `changelog` liefert rohen Markdown-Text und die Version, wie sie im Browser
 unter der Seitenleiste hängt – aber nur die **jüngsten Einträge**: Die Datei
 ist über 300 KB groß, und ein Textfeld mit dreihunderttausend Zeichen zeigt
 gar nichts mehr. Geschnitten wird an einer Überschrift, nicht mitten im Satz;
-`gekuerzt` sagt, dass es weitergeht – vollständig steht es im Browser.
+`truncated` sagt, dass es weitergeht – vollständig steht es im Browser.
 
 ### Zweite Stufe einrichten
 
 Zwei Schritte, weil die Mobil-Schnittstelle keine Sitzung hat, in der das
 begonnene Geheimnis liegen könnte:
 
-`POST profile/two-factor/begin` erzeugt es und gibt zurück: `geheimnis` (zum
-Abtippen), `adresse` (`otpauth://…`, daraus malt die App den QR-Code),
-`braucht_mail_code` und `vorgang` – das Geheimnis **verschlüsselt**, 15
+`POST profile/two-factor/begin` erzeugt es und gibt zurück: `secret` (zum
+Abtippen), `uri` (`otpauth://…`, daraus malt die App den QR-Code),
+`needs_mail_code` und `challenge` – das Geheimnis **verschlüsselt**, 15
 Minuten gültig, an diesen Nutzer gebunden. Dasselbe Verfahren wie bei der
 Anmeldung mit zweiter Stufe.
 
-`POST profile/two-factor/confirm` nimmt `vorgang`, `code` (aus der
+`POST profile/two-factor/confirm` nimmt `challenge`, `code` (aus der
 Authenticator-App) und, wo nötig, `mail_code`. Hat der Zugang eine
 E-Mail-Adresse, geht beim Beginnen ein sechsstelliger Code dorthin und wird
 hier verlangt: Das Kennwort allein ließe jeden, der es kennt, seine eigene
@@ -484,13 +489,13 @@ App einrichten und den Inhaber aussperren. Die Antwort enthält die
 `POST profile/two-factor/recovery-codes` und `DELETE profile/two-factor`
 brauchen beide `password`. Eine vom Administrator **verlangte** zweite Stufe
 lässt sich nicht abschalten (422) – sonst wäre die Pflicht ein Knopf, den man
-einmal drückt. Ein Geheimtext von anderswo geht als `vorgang` nicht durch
+einmal drückt. Ein Geheimtext von anderswo geht als `challenge` nicht durch
 (der Zweck steht mit darin).
 
 ### Konto löschen
 
 `DELETE profile` mit `password`. Nicht rückgängig zu machen; die Token dieses
-Nutzers fallen mit ihm weg, `neu_anmelden: true` sagt es der App. Ein
+Nutzers fallen mit ihm weg, `sign_in_again: true` sagt es der App. Ein
 Demo-Zugang lässt sich nicht löschen (422).
 
 ## Erstaufnahme-Assistent
@@ -505,34 +510,34 @@ Demo-Zugang lässt sich nicht löschen (422).
 
 ```
 Erstaufnahme = {
-  laeuft: bool, aktuell: <schluessel>|null, fertig (ISO 8601)|null,
-  schritte: [{ schluessel, gruppe, titel, frage, typ|null,
-               erledigt: bool, uebersprungen: bool, angelegt: int }]
+  running: bool, current: <key>|null, completed_at (ISO 8601)|null,
+  steps: [{ key, group, title, question, type|null,
+            done: bool, skipped: bool, created: int }]
 }
 ```
 
-Der Ablauf kommt aus `App\Support\Erstaufnahme`, derselben Klasse, die die
+Der Ablauf kommt aus `App\Support\WizardFlow`, derselben Klasse, die die
 Livewire-Komponente im Browser führt.
 
 **Ausgefüllt wird mit den Formularen**, die der Server ohnehin beschreibt:
-`typ` ist der Schlüssel für `customers/{slug}/forms/{typ}` und
-`POST customers/{slug}/{typ}`. Der Assistent sagt nur, welcher Typ gerade
-dran ist. `typ` ist **null**, wo die App die Art nicht über ein Formular
+`type` ist der Schlüssel für `customers/{slug}/forms/{type}` und
+`POST customers/{slug}/{type}`. Der Assistent sagt nur, welcher Typ gerade
+dran ist. `type` ist **null**, wo die App die Art nicht über ein Formular
 anlegt – VLANs etwa haben ihren eigenen Weg (`customers/{slug}/networks`).
 
-`next` nimmt `wie`: `erledigt` (Weiter nach dem Eintragen), `uebersprungen`
-(Weiter ohne) oder `gruppe` (die ganze Gruppe, „keine Telefonie"). Wurde in
+`next` nimmt `how`: `done` (Weiter nach dem Eintragen), `skipped`
+(Weiter ohne) oder `group` (die ganze Gruppe, „keine Telefonie"). Wurde in
 diesem Durchlauf trotzdem etwas angelegt, zählt der Schritt als erfasst – nur
 ein wirklich leer gelassener gilt als übersprungen. Alles andere ist 422.
 
-`goto` ohne `schritt` geht einen zurück; mit `schritt` direkt dorthin.
+`goto` ohne `step` geht einen zurück; mit `step` direkt dorthin.
 Ein Schritt, den der Nutzer nicht anlegen darf, ist für ihn kein Schritt:
 **404**, und der Durchlauf bleibt stehen. Springen ist kein Bearbeiten – der
 verlassene Schritt wird weder erledigt noch übersprungen.
 
-Es gibt nur **Schritte, für die der Nutzer das `{typ}_create`-Recht hat**.
+Es gibt nur **Schritte, für die der Nutzer das `{type}_create`-Recht hat**.
 Ohne ein einziges ist der ganze Assistent 403. Hinter dem letzten Schritt ist
-der Durchlauf fertig (`aktuell: null`, `fertig` gesetzt).
+der Durchlauf fertig (`current: null`, `completed_at` gesetzt).
 
 ## Netzwerkschränke
 
@@ -546,22 +551,22 @@ Die Liste kommt über `customers/{slug}/rack`.
 | PUT | `/{rack}` | `RackKoerper` (vollständig, `null` explizit!) | `Schrank` / 422 wenn Einbau über neue Höhe ragt |
 | DELETE | `/{rack}` | – | 204 |
 | GET | `/{rack}/palette` | – | `Palette` |
-| POST | `/{rack}/items` | `{seite, position?, typ+id \| katalog_id}` | 201 `Einbau` |
-| PATCH | `/{rack}/items/{item}` | `{position?, hoehe? (1–8)}` | `Einbau` |
+| POST | `/{rack}/items` | `{side, position?, type+id \| catalog_id}` | 201 `Einbau` |
+| PATCH | `/{rack}/items/{item}` | `{position?, height? (1–8)}` | `Einbau` |
 | DELETE | `/{rack}/items/{item}` | – | 204 |
 
 ```
 RackKoerper = { site_id, name, height_units (1–60), location|null, note|null }
 
-Schrank = { id, name, hoehe, ort|null, notiz|null, standort: {id,name}|null, kunde,
-            darf_bearbeiten, darf_loeschen, seiten: [{seite, titel}], einbauten: [Einbau] }
-Einbau  = { id, name, seite, position, hoehe, oberste_he, volle_tiefe, darstellung|null,
-            geraet: { typ|null, id } | null }
-Palette = { geraete: [{ typ, titel, eintraege: [{id, name, hoehe}] }],
-            katalog: [{ id, name, hoehe, volle_tiefe, darstellung|null }] }
+Schrank = { id, name, height, location|null, note|null, site: {id,name}|null, customer,
+            may_update, may_delete, sides: [{side, title}], mounts: [Einbau] }
+Einbau  = { id, name, side, position, height, top_unit, full_depth, appearance|null,
+            device: { type|null, id } | null }
+Palette = { devices: [{ type, title, entries: [{id, name, height}] }],
+            catalog: [{ id, name, height, full_depth, appearance|null }] }
 ```
 
-`position` ist die unterste belegte HE, `oberste_he` rechnet der Server.
+`position` ist die unterste belegte HE, `top_unit` rechnet der Server.
 Ohne `position` beim Einbauen → unterste freie HE.
 
 ## Patchfelder
@@ -581,11 +586,11 @@ Die Liste kommt über `customers/{slug}/patchpanel`, die Ports entstehen mit dem
 PatchfeldKoerper = { site_id, name, port_count (1–96), height_units (1–10),
                      manufacturer|null, model|null, note|null }
 
-Patchfeld = { id, name, ports_anzahl, hoehe, hersteller|null, modell|null, notiz|null,
-              standort: {id,name}|null, kunde, einbauort: string|null,
-              darf_bearbeiten, darf_loeschen,
-              ports: [{ id, nummer, dose|null, raum|null, switch: {id,name}|null,
-                        switch_port|null, notiz|null }],
+Patchfeld = { id, name, port_count, height, manufacturer|null, model|null, note|null,
+              site: {id,name}|null, customer, mounting: string|null,
+              may_update, may_delete,
+              ports: [{ id, number, outlet|null, room|null, switch: {id,name}|null,
+                        switch_port|null, note|null }],
               switches: [{ id, name }] }        // Auswahl für network_switch_id
 ```
 
@@ -596,31 +601,31 @@ und schickt das Ergebnis.
 
 ## Am Gerät: Zugänge, IP-Adressen, Scan-Ziele
 
-Ändert das Gerät, braucht also immer `{typ}_update` – auch die GETs, die die
+Ändert das Gerät, braucht also immer `{type}_update` – auch die GETs, die die
 Auswahl liefern. Ein Typ ohne den Block → 404 (z. B. Domain hat keine IP-Adressen,
 nur der Scanner hat Scan-Ziele). Die Antwort auf POST ist die neue Liste.
 
 | Methode | Pfad | Body | Antwort |
 |---|---|---|---|
-| GET | `objects/{typ}/{id}/credentials` | – | `{ eintraege: [Zugang], verfuegbar: [{id, name, benutzer\|null, art}], darf_neu: bool }` |
-| POST | `objects/{typ}/{id}/credentials` | `{login_id, note?}` **oder** `{name, username?, password?, note?}` | 201 `[Zugang]` |
-| DELETE | `objects/{typ}/{id}/credentials/{link_id}` | – | 204 (nur die Verknüpfung; der Zugang bleibt) |
-| GET | `objects/{typ}/{id}/ip-addresses` | – | `{ eintraege: [IP], netze: [{id, name, naechste_freie\|null}] }` |
-| POST | `objects/{typ}/{id}/ip-addresses` | `{address, network_id?, label?}` **oder** `{dhcp: true, network_id, label?}` | 201 `[IP]` |
-| DELETE | `objects/{typ}/{id}/ip-addresses/{ip_id}` | – | 204 |
-| GET | `objects/scanner/{id}/scan-targets` | – | `{ eintraege: [ScanZiel], verfuegbar: [ScanZiel], arten: [{wert, label}], logins: [{id, name}], darf_neu, darf_verknuepfen }` |
-| POST | `objects/scanner/{id}/scan-targets` | `{ziel_id}` **oder** `{kind, target, name?, login_general_id?}` | 201 `[ScanZiel]` |
-| DELETE | `objects/scanner/{id}/scan-targets/{ziel_id}` | – | 204 (nur die Verknüpfung) |
+| GET | `objects/{type}/{id}/credentials` | – | `{ entries: [Zugang], available: [{id, name, user\|null, kind}], may_create: bool }` |
+| POST | `objects/{type}/{id}/credentials` | `{login_id, note?}` **oder** `{name, username?, password?, note?}` | 201 `[Zugang]` |
+| DELETE | `objects/{type}/{id}/credentials/{link_id}` | – | 204 (nur die Verknüpfung; der Zugang bleibt) |
+| GET | `objects/{type}/{id}/ip-addresses` | – | `{ entries: [IP], networks: [{id, name, next_free\|null}] }` |
+| POST | `objects/{type}/{id}/ip-addresses` | `{address, network_id?, label?}` **oder** `{dhcp: true, network_id, label?}` | 201 `[IP]` |
+| DELETE | `objects/{type}/{id}/ip-addresses/{ip_id}` | – | 204 |
+| GET | `objects/scanner/{id}/scan-targets` | – | `{ entries: [ScanZiel], available: [ScanZiel], kinds: [{value, label}], logins: [{id, name}], may_create, may_link }` |
+| POST | `objects/scanner/{id}/scan-targets` | `{target_id}` **oder** `{kind, target, name?, login_general_id?}` | 201 `[ScanZiel]` |
+| DELETE | `objects/scanner/{id}/scan-targets/{target_id}` | – | 204 (nur die Verknüpfung) |
 
 Regeln:
 - Zugänge: nur Arten, die der Nutzer sehen darf (Kennwort: `logingeneral_viewAny`,
   Schlüssel: `sshkey_viewAny`; keins von beiden → 403). Neu anlegen braucht
   `logingeneral_create`. Fremder Zugang → 422 `login_id`.
 - IP: Eine Adresse gibt es je Kunde nur einmal → 422 `address`. Bei `dhcp: true`
-  ist `network_id` Pflicht und `address` verboten. `naechste_freie` ist der
+  ist `network_id` Pflicht und `address` verboten. `next_free` ist der
   Vorschlag, den auch der Browser bei Wahl des Netzes einträgt.
 - Scan-Ziele: neu anlegen braucht `scantarget_create`, vorhandene verknüpfen
-  `scantarget_viewAny` (sonst ist `verfuegbar` leer).
+  `scantarget_viewAny` (sonst ist `available` leer).
 
 ## IPAM: VLANs, IP-Plan, reservierte Bereiche
 
@@ -632,7 +637,7 @@ oder Bereich eines anderen Netzes → 404.
 
 | Methode | Pfad | Body | Antwort |
 |---|---|---|---|
-| GET | `customers/{slug}/networks?standort={site_id}` | – | `{ eintraege: [Netz], summe: {belegt, adressen}, standorte: [{id, name}], darf_anlegen }` |
+| GET | `customers/{slug}/networks?site={site_id}` | – | `{ entries: [Netz], totals: {used, addresses}, sites: [{id, name}], may_create }` |
 | POST | `customers/{slug}/networks` | `{site_id, description, network, subnetmask\|cidr, vlanId?, gateway?, dns1?, dns2?, dhcpStart?, dhcpEnd?}` | 201 `NetzDetail` |
 | GET | `customers/{slug}/networks/{id}` | – | `NetzDetail` |
 | PUT/PATCH | `customers/{slug}/networks/{id}` | nur die geänderten Felder | `NetzDetail` |
@@ -640,26 +645,26 @@ oder Bereich eines anderen Netzes → 404.
 | POST | `customers/{slug}/networks/{id}/ip-ranges` | `{from_ip, to_ip, label, note?}` | 201 `NetzDetail` |
 | DELETE | `customers/{slug}/networks/{id}/ip-ranges/{range_id}` | – | 204 |
 
-`Netz`: `id, name` („Server · VLAN 10“), `bezeichnung, vlan` (Int|null),
-`netz, subnetzmaske, cidr` (Int|null), `gateway, standort {id, name}|null`,
-`auslastung {belegt, dhcp, reserviert, frei, gesamt}|null`, `fehler`
-(Text, wenn Netz/Maske nicht auswertbar – dann `auslastung: null`).
+`Netz`: `id, name` („Server · VLAN 10“), `description, vlan` (Int|null),
+`network, subnet_mask, cidr` (Int|null), `gateway, site {id, name}|null`,
+`usage {used, dhcp, reserved, free, total}|null`, `error`
+(Text, wenn Netz/Maske nicht auswertbar – dann `usage: null`).
 
 `NetzDetail` = `Netz` plus:
-- `dns1, dns2, dhcp_start, dhcp_ende, naechste_freie, kunde, darf_bearbeiten, darf_loeschen`
-- `bereiche: [{id, von, bis, label, notiz, anzahl, farbe}]` – sortiert nach Anfangsadresse
-- `zeilen: [{art, von, bis, label, gateway, reservierung, farbe, geraete}]` – der Plan
-  von oben nach unten. `art`: `geraet` (eine belegte Adresse), `frei`, `dhcp`,
-  `reserviert` (zusammengefasste Läufe). `reservierung`: an einer belegten Adresse
+- `dns1, dns2, dhcp_start, dhcp_end, next_free, customer, may_update, may_delete`
+- `ranges: [{id, from, to, label, note, count, color}]` – sortiert nach Anfangsadresse
+- `rows: [{kind, from, to, label, gateway, reservation, color, devices}]` – der Plan
+  von oben nach unten. `kind`: `device` (eine belegte Adresse), `free`, `dhcp`,
+  `reserved` (zusammengefasste Läufe). `reservation`: an einer belegten Adresse
   der Name des Bereichs, in dem sie liegt.
-- `geraete: [{name, typ, id, im_pool}]` – `typ`/`id` nur, wenn der Nutzer die Liste
-  des Typs sehen darf (sonst `null`, dann nur Text). `im_pool: true` = feste Adresse
+- `devices: [{name, type, id, in_pool}]` – `type`/`id` nur, wenn der Nutzer die Liste
+  des Typs sehen darf (sonst `null`, dann nur Text). `in_pool: true` = feste Adresse
   mitten im DHCP-Bereich (möglicher Konflikt; steht an der DHCP-Zeile).
-- `gekuerzt` – über 8192 Hosts endet der Plan dort.
-- `dhcp_ohne_bereich: [Gerät]` – per DHCP versorgte Geräte eines Netzes ohne
+- `truncated` – über 8192 Hosts endet der Plan dort.
+- `dhcp_outside_range: [Gerät]` – per DHCP versorgte Geräte eines Netzes ohne
   DHCP-Bereich.
 
-`farbe` ist ein Farbname aus der Tailwind-Palette („amber“, „sky“, …) oder `null`;
+`color` ist ein Farbname aus der Tailwind-Palette („amber“, „sky“, …) oder `null`;
 gleiche Farbe = gleicher Bereich in Liste und Plan.
 
 Regeln:
@@ -677,34 +682,37 @@ Beschreibung des Servers – ein neues Feld braucht kein App-Release.
 
 | Methode | Pfad | Body | Antwort |
 |---|---|---|---|
-| GET | `customers/{slug}/forms/{typ}` | – | `Formular` (leer, mit Vorgaben) |
-| POST | `customers/{slug}/forms/{typ}/generate` | Formularwerte | erzeugte Werte (z. B. SSH-Schlüsselpaar), nichts gespeichert |
-| POST | `customers/{slug}/{typ}` | Formularwerte (+ `datei` multipart) | 201 `ObjektDetail` |
-| GET | `objects/{typ}/{id}/form` | – | `Formular` + `{id, darf_loeschen}` |
-| PUT/PATCH/POST | `objects/{typ}/{id}` | **nur geänderte** Felder (+ `datei` → POST multipart) | `ObjektDetail` |
-| DELETE | `objects/{typ}/{id}` | – | 204 |
+| GET | `customers/{slug}/forms/{type}` | – | `Formular` (leer, mit Vorgaben) |
+| POST | `customers/{slug}/forms/{type}/generate` | Formularwerte | erzeugte Werte (z. B. SSH-Schlüsselpaar), nichts gespeichert |
+| POST | `customers/{slug}/{type}` | Formularwerte (+ `datei` multipart) | 201 `ObjektDetail` |
+| GET | `objects/{type}/{id}/form` | – | `Formular` + `{id, may_delete}` |
+| PUT/PATCH/POST | `objects/{type}/{id}` | **nur geänderte** Felder (+ `datei` → POST multipart) | `ObjektDetail` |
+| DELETE | `objects/{type}/{id}` | – | 204 |
 
 ```
 Formular = {
-  typ, einzahl, kunde: Kunde,
-  felder: [FormFeld],
-  werte: { feldname: string | bool | [string] },   // gemischt! eigener JSON-Werttyp in Swift
-  geheim_gesetzt: { feldname: bool },
-  hat_datei: bool, hat_erzeuger: bool
+  type, singular, customer: Kunde,
+  fields: [FormFeld],
+  values: { feldname: string | bool | [string] },   // gemischt! eigener JSON-Werttyp in Swift
+  secret_set: { feldname: bool },
+  has_file: bool, has_generator: bool
 }
 
 FormFeld = {
-  name, label, gruppe,
-  art: "text"|"mehrzeilig"|"date"|"number"|"email"|"schalter"|"einheit"|"optionen"
+  name, label, group,
+  kind: "text"|"date"|"number"|"email"|"mehrzeilig"|"schalter"|"einheit"|"optionen"
       |"auswahl"|"standort"|"host"|"verknuepfung"|"dienste"|"datei",   // unbekannt → Textfeld
-  pflicht: bool, geheim: bool, mehrfach: bool,       // immer da (Swift trotzdem tolerant: fehlt → false)
-  einheit?, zeilen?, platzhalter?,
-  sichtbar_wenn?: { anderes_feld: "wert" | {enthaelt: "…"} | {leer: true} },   // alle Bedingungen zusammen
-  optionen?: [{ wert: string, label }]
+  required: bool, secret: bool, multiple: bool,       // immer da (Swift trotzdem tolerant: fehlt → false)
+  unit?, rows?, placeholder?,
+  visible_if?: { anderes_feld: "value" | {enthaelt: "…"} | {leer: true} },   // alle Bedingungen zusammen
+  options?: [{ value: string, label }]
 }
 ```
 
 Regeln:
+- **Feldarten und Bedingungen bleiben deutsch**: `kind` ist der Typ aus
+  `config/forms.php`, `visible_if` sind dessen Bedingungen (`enthaelt`, `leer`).
+  Dieselbe Beschreibung baut auch das Formular im Browser.
 - **Werte:** `schalter` → `bool`; `verknuepfung` und mehrfache `host` → `[string]`
   (Ids bzw. `"server:5"`); alles andere → `string`, leer = `""`.
 - **Update:** Nur gesendete Felder werden geschrieben, der Rest mit gespeichertem
@@ -720,9 +728,9 @@ Regeln:
   verletzt, seinen Fehler auch dann, wenn die App das Feld nicht angefasst hat.
   Die App sollte die Meldung dem Feld zuordnen, nicht nur der Eingabe.
 - **Multipart** (nur mit `datei`): Schalter als `"1"`/`"0"`, Listen als
-  `feld[]=…`; `Accept: application/json` mitschicken, sonst kommt bei 422 eine
+  `field[]=…`; `Accept: application/json` mitschicken, sonst kommt bei 422 eine
   Weiterleitung statt JSON.
-- **Geheimnisse:** kommen in `werte` als `null`; nur senden, wenn der Nutzer
+- **Geheimnisse:** kommen in `values` als `null`; nur senden, wenn der Nutzer
   einen neuen Wert eingibt – sonst bleibt das gespeicherte unverändert.
 - **422** beim `generate` (z. B. fehlender Algorithmus) kommt auf `key_type`.
 
@@ -731,14 +739,16 @@ Regeln:
 | Datum | Änderung | Seite |
 |---|---|---|
 | 2026-10-20 | Vertrag angelegt; Stand: Login, Lesen, Racks, Formular-API (uncommitted) | beide |
-| 2026-10-20 | Erledigt (iOS 9ec0ff6): `einbauort`, `support_ende`, `verweise`, `liste`, `fingerprint` übernommen | iOS |
+| 2026-10-20 | Erledigt (iOS 9ec0ff6): `mounting`, `end_of_support`, `links`, `list`, `fingerprint` übernommen | iOS |
 | 2026-10-20 | Erledigt (iOS 9ec0ff6): Rack-PUT schickt `location`/`note` explizit als `null` | iOS |
-| 2026-10-20 | Formular-API gegengelesen: `pflicht`/`geheim`/`mehrfach` kommen immer (auch `false`); Ausnahmen beim Leeren, 422 auf ungesendeten Feldern, Multipart ergänzt | Backend |
+| 2026-10-20 | Formular-API gegengelesen: `required`/`secret`/`multiple` kommen immer (auch `false`); Ausnahmen beim Leeren, 422 auf ungesendeten Feldern, Multipart ergänzt | Backend |
 | 2026-10-20 | Dateien (`datei`) beim Lesen als bewusste Lücke vermerkt | beide |
-| 2026-10-20 | Formular-API (`forms/{typ}`, `POST customers/{slug}/{typ}`, `objects/{typ}/{id}` PUT/PATCH/POST/DELETE, `…/form`, `…/generate`) committed und auf Produktion | Backend |
-| 2026-10-20 | Liste `customers/{slug}/{typ}`: neues Feld `darf_anlegen` (additiv) | Backend |
+| 2026-10-20 | Formular-API (`forms/{type}`, `POST customers/{slug}/{type}`, `objects/{type}/{id}` PUT/PATCH/POST/DELETE, `…/form`, `…/generate`) committed und auf Produktion | Backend |
+| 2026-10-20 | Liste `customers/{slug}/{type}`: neues Feld `may_create` (additiv) | Backend |
 | 2026-10-20 | Neu: Patchfelder (`customers/{slug}/patchpanels`, inkl. Ports), Zugänge/IP-Adressen am Gerät, Scan-Ziele am Scanner | Backend |
-| 2026-10-20 | `ObjektDetail`: `ip_adressen[]` + `id`, `dhcp`; neues `scan_ziele` (additiv). `darf_anlegen` jetzt auch für `patchpanel` | Backend |
-| 2026-10-20 | `POST customers/{slug}/{typ}` nimmt nur noch Formular-Typen an (unbekannter Typ weiterhin 404) | Backend |
+| 2026-10-20 | `ObjektDetail`: `ip_addresses[]` + `id`, `dhcp`; neues `scan_targets` (additiv). `may_create` jetzt auch für `patchpanel` | Backend |
+| 2026-10-20 | `POST customers/{slug}/{type}` nimmt nur noch Formular-Typen an (unbekannter Typ weiterhin 404) | Backend |
 | 2026-10-22 | Neu: IPAM – VLANs (`customers/{slug}/networks`, anlegen/ändern/löschen), IP-Plan je VLAN, reservierte Bereiche (`…/ip-ranges`) | Backend |
-| 2026-10-22 | Feld `dienste`: neues `kacheln` mit `farbe`/`schrift` je Dienst (additiv, neben `liste`) | Backend |
+| 2026-10-22 | Feld `dienste`: neues `tiles` mit `color`/`text_color` je Dienst (additiv, neben `list`) | Backend |
+| 2026-10-31 | Neu: Dashboard, Papierkorb, Netzplan, Checklisten, Auto-Dokumentation, PDF-Export, Profil/Sprache/Changelog, Erstaufnahme-Assistent | Backend |
+| 2026-11-01 | **Alle Schlüssel englisch**: Antworten, Anfragen und Enum-Werte von `/api/mobile` tragen jetzt englische `snake_case`-Namen (`typ→type`, `titel→title`, `darf_*→may_*`, `art→kind`, `wert→value`, …). Deutsch bleiben nur die Feldarten aus `config/forms.php` und die Schlüssel in der verschlüsselten `challenge`. **Bricht alte App-Versionen** | beide |

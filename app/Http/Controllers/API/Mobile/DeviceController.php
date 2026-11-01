@@ -39,14 +39,14 @@ class DeviceController extends Controller
         abort_if($verknuepfung->visibleKinds($request->user()) === [], 403);
 
         return response()->json([
-            'eintraege' => $this->objekte->detail($geraet, $typ, $request->user())['zugangsdaten'],
-            'verfuegbar' => $verknuepfung->available($geraet, $request->user())->map(fn (LoginGeneral $login) => [
+            'entries' => $this->objekte->detail($geraet, $typ, $request->user())['credentials'],
+            'available' => $verknuepfung->available($geraet, $request->user())->map(fn (LoginGeneral $login) => [
                 'id' => $login->id,
                 'name' => $login->name,
-                'benutzer' => $login->username,
-                'art' => $login->istSchluessel() ? 'schluessel' : 'kennwort',
+                'user' => $login->username,
+                'kind' => $login->istSchluessel() ? 'ssh_key' : 'password',
             ])->values(),
-            'darf_neu' => Gate::allows('logingeneral_create'),
+            'may_create' => Gate::allows('logingeneral_create'),
         ]);
     }
 
@@ -65,7 +65,7 @@ class DeviceController extends Controller
             $verknuepfung->create($geraet, $daten);
         }
 
-        return response()->json($this->objekte->detail($geraet->fresh(), $typ, $request->user())['zugangsdaten'], 201);
+        return response()->json($this->objekte->detail($geraet->fresh(), $typ, $request->user())['credentials'], 201);
     }
 
     /** Only the link goes - the login itself stays. */
@@ -86,14 +86,14 @@ class DeviceController extends Controller
         $geraet = $this->geraet($request, $typ, $id, 'ipAddresses');
 
         return response()->json([
-            'eintraege' => $this->objekte->detail($geraet, $typ, $request->user())['ip_adressen'],
+            'entries' => $this->objekte->detail($geraet, $typ, $request->user())['ip_addresses'],
             // With the next free address, as the browser proposes it when a
             // network is chosen.
-            'netze' => Network::where('customer_id', $geraet->customer_id)->orderBy('vlanId')->get()
+            'networks' => Network::where('customer_id', $geraet->customer_id)->orderBy('vlanId')->get()
                 ->map(fn (Network $netz) => [
                     'id' => $netz->id,
                     'name' => $netz->activityName(),
-                    'naechste_freie' => $netz->nextFreeAddress(),
+                    'next_free' => $netz->nextFreeAddress(),
                 ])->values(),
         ]);
     }
@@ -107,7 +107,7 @@ class DeviceController extends Controller
         $daten = Validator::make($request->all(), $ips->rules($geraet->customer_id, $dhcp), $ips->messages(), $ips->attributeNames())->validate();
         $ips->add($geraet, $daten, $dhcp);
 
-        return response()->json($this->objekte->detail($geraet->fresh(), $typ, $request->user())['ip_adressen'], 201);
+        return response()->json($this->objekte->detail($geraet->fresh(), $typ, $request->user())['ip_addresses'], 201);
     }
 
     public function removeIpAddress(Request $request, string $typ, int $id, int $ip, IpAssignment $ips): JsonResponse
@@ -124,42 +124,43 @@ class DeviceController extends Controller
         $scanner = $this->geraet($request, 'scanner', $id, 'scanTargets');
 
         return response()->json([
-            'eintraege' => $this->objekte->detail($scanner, 'scanner', $request->user())['scan_ziele'],
+            'entries' => $this->objekte->detail($scanner, 'scanner', $request->user())['scan_targets'],
             // Zur Auswahl nur, was noch nicht verknuepft ist - und nur fuer
             // den, der die Liste der Ziele sehen darf.
-            'verfuegbar' => Gate::allows('scantarget_viewAny')
+            'available' => Gate::allows('scantarget_viewAny')
                 ? ScanTarget::where('customer_id', $scanner->customer_id)
                     ->whereNotIn('id', $scanner->scanTargets()->pluck('scan_targets.id'))
                     ->orderBy('name')->get()
                     ->map(fn (ScanTarget $ziel) => $this->objekte->scanZiel($ziel))->values()
                 : [],
-            'arten' => collect(ScanTarget::ARTEN)->map(fn ($label, $wert) => ['wert' => $wert, 'label' => __($label)])->values(),
+            'kinds' => collect(ScanTarget::ARTEN)->map(fn ($label, $wert) => ['value' => $wert, 'label' => __($label)])->values(),
             'logins' => Gate::allows('logingeneral_viewAny')
                 ? LoginGeneral::where('customer_id', $scanner->customer_id)->orderBy('name')->get()
                     ->map(fn (LoginGeneral $login) => ['id' => $login->id, 'name' => $login->name])->values()
                 : [],
-            'darf_neu' => Gate::allows('scantarget_create'),
-            'darf_verknuepfen' => Gate::allows('scantarget_viewAny'),
+            'may_create' => Gate::allows('scantarget_create'),
+            'may_link' => Gate::allows('scantarget_viewAny'),
         ]);
     }
 
-    /** Link an existing target ("ziel_id") or create one ("kind", "target", ...) and link it. */
+    /** Link an existing target ("target_id") or create one ("kind", "target", ...) and link it. */
     public function addScanTarget(Request $request, int $id, ScanTargetLinking $ziele): JsonResponse
     {
         $scanner = $this->geraet($request, 'scanner', $id, 'scanTargets');
-        $neu = ! $request->filled('ziel_id');
+        $neu = ! $request->filled('target_id');
 
         if ($neu) {
             Gate::authorize('scantarget_create');
         }
 
-        // The block names it zielId; the app sends ziel_id like the other ids.
-        $eingabe = [...$request->all(), 'zielId' => $request->input('ziel_id')];
+        // The block names it zielId; the app sends target_id like the other ids,
+        // so a rejection comes back under "zielId".
+        $eingabe = [...$request->all(), 'zielId' => $request->input('target_id')];
         $daten = Validator::make($eingabe, $ziele->rules($scanner->customer_id, $neu), [], $ziele->attributeNames())->validate();
 
         $ziele->add($scanner, $daten, $neu);
 
-        return response()->json($this->objekte->detail($scanner->fresh(), 'scanner', $request->user())['scan_ziele'], 201);
+        return response()->json($this->objekte->detail($scanner->fresh(), 'scanner', $request->user())['scan_targets'], 201);
     }
 
     public function removeScanTarget(Request $request, int $id, int $ziel, ScanTargetLinking $ziele): JsonResponse

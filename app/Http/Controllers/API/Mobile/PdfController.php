@@ -32,7 +32,7 @@ class PdfController extends Controller
 
         $auftrag = $this->auftrag($request, $customer);
 
-        return response()->json(['auftrag' => $this->form($auftrag)]);
+        return response()->json(['job' => $this->form($auftrag)]);
     }
 
     /**
@@ -57,7 +57,7 @@ class PdfController extends Controller
             GenerateCustomerPdf::dispatch($auftrag->id);
         }
 
-        return response()->json(['auftrag' => $this->form($auftrag)]);
+        return response()->json(['job' => $this->form($auftrag)]);
     }
 
     /**
@@ -120,17 +120,23 @@ class PdfController extends Controller
 
         return [
             'id' => $auftrag->id,
-            // "offen", "laeuft", "fertig", "fehler"
-            'status' => $auftrag->status,
-            'laeuft_noch' => $auftrag->laeuftNoch(),
+            // Die Spalte traegt die deutschen Werte aus PdfExport; hinaus
+            // geht derselbe Stand in der Sprache der Schnittstelle.
+            'status' => [
+                PdfExport::OFFEN => 'open',
+                PdfExport::LAEUFT => 'running',
+                PdfExport::FERTIG => 'completed',
+                PdfExport::FEHLER => 'error',
+            ][$auftrag->status] ?? $auftrag->status,
+            'running' => $auftrag->laeuftNoch(),
             // Niemand arbeitet die Warteschlange ab - dann hat Nachfragen
             // keinen Zweck mehr.
-            'haengt' => $auftrag->haengt(),
-            'fertig' => $auftrag->istFertig() && $auftrag->path !== null,
-            'groesse' => $auftrag->groesseLesbar(),
-            'angelegt' => $auftrag->created_at?->toIso8601String(),
-            'fertig_am' => $auftrag->finished_at?->toIso8601String(),
-            'meldung' => $auftrag->error,
+            'stalled' => $auftrag->haengt(),
+            'ready' => $auftrag->istFertig() && $auftrag->path !== null,
+            'size' => $auftrag->groesseLesbar(),
+            'created_at' => $auftrag->created_at?->toIso8601String(),
+            'finished_at' => $auftrag->finished_at?->toIso8601String(),
+            'message' => $auftrag->error,
         ];
     }
 }

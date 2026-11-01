@@ -26,9 +26,9 @@ test('bestellen legt einen Auftrag an und stellt ihn in die Warteschlange', func
         ->postJson("/api/mobile/customers/{$kunde->slug}/pdf")
         ->assertOk();
 
-    expect($antwort->json('auftrag.status'))->toBe(PdfExport::OFFEN);
-    expect($antwort->json('auftrag.laeuft_noch'))->toBeTrue();
-    expect($antwort->json('auftrag.fertig'))->toBeFalse();
+    expect($antwort->json('job.status'))->toBe('open');
+    expect($antwort->json('job.running'))->toBeTrue();
+    expect($antwort->json('job.ready'))->toBeFalse();
     Queue::assertPushed(GenerateCustomerPdf::class);
 });
 
@@ -41,7 +41,7 @@ test('ein zweiter Auftrag entsteht nicht, solange einer läuft', function () {
     $erster = test()->withToken($token)->postJson("/api/mobile/customers/{$kunde->slug}/pdf")->assertOk();
     $zweiter = test()->withToken($token)->postJson("/api/mobile/customers/{$kunde->slug}/pdf")->assertOk();
 
-    expect($zweiter->json('auftrag.id'))->toBe($erster->json('auftrag.id'));
+    expect($zweiter->json('job.id'))->toBe($erster->json('job.id'));
     expect(PdfExport::count())->toBe(1);
     Queue::assertPushed(GenerateCustomerPdf::class, 1);
 });
@@ -59,7 +59,7 @@ test('der Stand ist null, solange nichts bestellt wurde', function () {
 
     expect(test()->withToken(pdfToken(['create_pdf']))
         ->getJson("/api/mobile/customers/{$kunde->slug}/pdf")
-        ->assertOk()->json('auftrag'))->toBeNull();
+        ->assertOk()->json('job'))->toBeNull();
 });
 
 test('die fertige Datei kommt heraus und steht im Protokoll', function () {

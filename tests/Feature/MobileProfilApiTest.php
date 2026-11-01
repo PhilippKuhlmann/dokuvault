@@ -37,10 +37,10 @@ test('das Profil nennt Name, Adresse, Sprache und die Auswahl', function () {
     $antwort = test()->withToken(profilToken($nutzer))->getJson('/api/mobile/profile')->assertOk();
 
     expect($antwort->json('name'))->toBe('Alt Name');
-    expect($antwort->json('mail'))->toBe('alt@example.de');
-    expect($antwort->json('gesperrt'))->toBeFalse();
-    expect($antwort->json('sprachen'))->not->toBeEmpty();
-    expect(collect($antwort->json('sprachen'))->pluck('code'))->toContain('de');
+    expect($antwort->json('email'))->toBe('alt@example.de');
+    expect($antwort->json('locked'))->toBeFalse();
+    expect($antwort->json('locales'))->not->toBeEmpty();
+    expect(collect($antwort->json('locales'))->pluck('code'))->toContain('de');
 });
 
 test('Name und Sprache lassen sich ohne Kennwort ändern', function () {
@@ -153,7 +153,7 @@ test('ein neues Kennwort entzieht alle Token und sagt es', function () {
         ])
         ->assertOk();
 
-    expect($antwort->json('neu_anmelden'))->toBeTrue();
+    expect($antwort->json('sign_in_again'))->toBeTrue();
     expect($nutzer->fresh()->tokens()->count())->toBe(0);
 });
 
@@ -184,7 +184,7 @@ test('ein langes Changelog kommt gekürzt und an einer Überschrift geschnitten'
 
     expect(mb_strlen($antwort->json('text')))->toBeLessThanOrEqual($grenze);
 
-    if ($antwort->json('gekuerzt')) {
+    if ($antwort->json('truncated')) {
         // Kein halber Eintrag am Ende.
         expect(rtrim($antwort->json('text')))->not->toEndWith('##');
     }
@@ -204,11 +204,11 @@ test('die Einrichtung liefert Geheimnis, Adresse und einen Vorgang', function ()
         ->postJson('/api/mobile/profile/two-factor/begin')
         ->assertOk();
 
-    expect($antwort->json('geheimnis'))->not->toBeEmpty();
-    expect($antwort->json('adresse'))->toStartWith('otpauth://');
+    expect($antwort->json('secret'))->not->toBeEmpty();
+    expect($antwort->json('uri'))->toStartWith('otpauth://');
     // Mit Adresse braucht es den Code aus der Mail.
-    expect($antwort->json('braucht_mail_code'))->toBeTrue();
-    expect($antwort->json('vorgang'))->not->toBeEmpty();
+    expect($antwort->json('needs_mail_code'))->toBeTrue();
+    expect($antwort->json('challenge'))->not->toBeEmpty();
     Notification::assertSentTo($nutzer, TwoFactorCode::class);
 });
 
@@ -220,10 +220,10 @@ test('ein falscher Code aus der App wird abgewiesen', function () {
 
     $vorgang = test()->withToken($token)
         ->postJson('/api/mobile/profile/two-factor/begin')
-        ->assertOk()->json('vorgang');
+        ->assertOk()->json('challenge');
 
     test()->withToken($token)
-        ->postJson('/api/mobile/profile/two-factor/confirm', ['vorgang' => $vorgang, 'code' => '000000'])
+        ->postJson('/api/mobile/profile/two-factor/confirm', ['challenge' => $vorgang, 'code' => '000000'])
         ->assertStatus(422)
         ->assertJsonValidationErrors('code');
 
@@ -238,11 +238,11 @@ test('mit dem richtigen Code steht die zweite Stufe und die Codes kommen einmal'
     $token = profilToken($nutzer->fresh());
 
     $begonnen = test()->withToken($token)->postJson('/api/mobile/profile/two-factor/begin')->assertOk();
-    $code = (new Google2FA)->getCurrentOtp($begonnen->json('geheimnis'));
+    $code = (new Google2FA)->getCurrentOtp($begonnen->json('secret'));
 
     $antwort = test()->withToken($token)
         ->postJson('/api/mobile/profile/two-factor/confirm', [
-            'vorgang' => $begonnen->json('vorgang'),
+            'challenge' => $begonnen->json('challenge'),
             'code' => $code,
         ])
         ->assertOk();
@@ -258,13 +258,13 @@ test('ein fremder Vorgang wird abgewiesen', function () {
 
     test()->withToken(profilToken($nutzer))
         ->postJson('/api/mobile/profile/two-factor/confirm', [
-            'vorgang' => Crypt::encryptString(json_encode([
+            'challenge' => Crypt::encryptString(json_encode([
                 'zweck' => 'mobil-anmeldung', 'id' => $nutzer->id, 'bis' => now()->addHour()->timestamp,
             ])),
             'code' => '123456',
         ])
         ->assertStatus(422)
-        ->assertJsonValidationErrors('vorgang');
+        ->assertJsonValidationErrors('challenge');
 });
 
 test('neue Wiederherstellungscodes brauchen das Kennwort', function () {
@@ -336,6 +336,6 @@ test('mit dem Kennwort ist das Konto weg und die App abgemeldet', function () {
         ->deleteJson('/api/mobile/profile', ['password' => PROFIL_KENNWORT])
         ->assertOk();
 
-    expect($antwort->json('neu_anmelden'))->toBeTrue();
+    expect($antwort->json('sign_in_again'))->toBeTrue();
     expect(User::find($id))->toBeNull();
 });

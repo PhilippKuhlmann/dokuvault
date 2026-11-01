@@ -50,7 +50,7 @@ class WizardController extends Controller
     public function weiter(Request $request, Customer $customer): JsonResponse
     {
         $geprueft = $request->validate([
-            'wie' => ['required', 'in:erledigt,uebersprungen,gruppe'],
+            'how' => ['required', 'in:done,skipped,group'],
         ]);
 
         $ablauf = $this->ablauf($request, $customer);
@@ -61,13 +61,13 @@ class WizardController extends Controller
             return $this->stand($ablauf, $durchlauf);
         }
 
-        if ($geprueft['wie'] === 'gruppe') {
+        if ($geprueft['how'] === 'group') {
             $ablauf->skipGroup($durchlauf);
 
             return $this->stand($ablauf, $durchlauf->fresh());
         }
 
-        if ($geprueft['wie'] === 'erledigt') {
+        if ($geprueft['how'] === 'done') {
             $durchlauf->markStepCompleted($schritt['key']);
         } else {
             $ablauf->verlassen($durchlauf, $schritt['key']);
@@ -82,15 +82,15 @@ class WizardController extends Controller
     public function springen(Request $request, Customer $customer): JsonResponse
     {
         $geprueft = $request->validate([
-            'schritt' => ['nullable', 'string'],
+            'step' => ['nullable', 'string'],
         ]);
 
         $ablauf = $this->ablauf($request, $customer);
         $durchlauf = $ablauf->beginnen();
 
-        if (($geprueft['schritt'] ?? null) === null) {
+        if (($geprueft['step'] ?? null) === null) {
             $ablauf->zurueck($durchlauf);
-        } elseif (! $ablauf->springen($durchlauf, $geprueft['schritt'])) {
+        } elseif (! $ablauf->springen($durchlauf, $geprueft['step'])) {
             // Ein unbekannter oder gesperrter Schluessel bringt den
             // Durchlauf nicht in einen Zustand, den der Nutzer nicht sehen
             // darf - er ist schlicht kein Schritt.
@@ -130,21 +130,21 @@ class WizardController extends Controller
         $typen = $this->objekte->typen();
 
         return response()->json([
-            'laeuft' => $durchlauf !== null,
-            'aktuell' => $durchlauf?->current_step,
-            'fertig' => $durchlauf === null ? null : $durchlauf->completed_at?->toIso8601String(),
-            'schritte' => collect($ablauf->steps())->map(fn ($schritt) => [
-                'schluessel' => $schritt['key'],
-                'gruppe' => __($schritt['group']),
-                'titel' => __($schritt['label']),
-                'frage' => __($schritt['question']),
+            'running' => $durchlauf !== null,
+            'current' => $durchlauf?->current_step,
+            'completed_at' => $durchlauf === null ? null : $durchlauf->completed_at?->toIso8601String(),
+            'steps' => collect($ablauf->steps())->map(fn ($schritt) => [
+                'key' => $schritt['key'],
+                'group' => __($schritt['group']),
+                'title' => __($schritt['label']),
+                'question' => __($schritt['question']),
                 // Womit die App das Formular holt. null, wo sie den Typ
                 // nicht kennt - VLANs etwa haben ihren eigenen Weg.
-                'typ' => array_key_exists($schritt['key'], $typen) ? $schritt['key'] : null,
-                'erledigt' => in_array($schritt['key'], $erledigt, true),
-                'uebersprungen' => in_array($schritt['key'], $uebersprungen, true),
+                'type' => array_key_exists($schritt['key'], $typen) ? $schritt['key'] : null,
+                'done' => in_array($schritt['key'], $erledigt, true),
+                'skipped' => in_array($schritt['key'], $uebersprungen, true),
                 // Was in diesem Durchlauf hier schon angelegt wurde.
-                'angelegt' => count($angelegt[$schritt['key']] ?? []),
+                'created' => count($angelegt[$schritt['key']] ?? []),
             ])->values(),
         ]);
     }

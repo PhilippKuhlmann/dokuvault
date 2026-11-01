@@ -34,15 +34,15 @@ test('die Liste nennt Agenten mit Aufgaben, Takt und Token', function () {
         ->getJson("/api/mobile/customers/{$kunde->slug}/agents")
         ->assertOk();
 
-    expect($antwort->json('agenten.0.hostname'))->toBe('pve01');
-    expect($antwort->json('agenten.0.version'))->toBe('1.2.3');
-    expect($antwort->json('agenten.0.takt_minuten'))->toBeInt();
-    expect($antwort->json('agenten.0.laufen_angefordert'))->toBeFalse();
-    expect(collect($antwort->json('agenten.0.aufgaben'))->firstWhere('rolle', 'proxmox')['an'])->toBeTrue();
+    expect($antwort->json('agents.0.hostname'))->toBe('pve01');
+    expect($antwort->json('agents.0.version'))->toBe('1.2.3');
+    expect($antwort->json('agents.0.interval_minutes'))->toBeInt();
+    expect($antwort->json('agents.0.run_requested'))->toBeFalse();
+    expect(collect($antwort->json('agents.0.tasks'))->firstWhere('role', 'proxmox')['enabled'])->toBeTrue();
     expect($antwort->json('token.0.name'))->toBe('Zentrale-Token');
-    expect($antwort->json('token.0.gesperrt'))->toBeFalse();
+    expect($antwort->json('token.0.locked'))->toBeFalse();
     // Die Takte, die der Server zulaesst - die App bietet nur diese an.
-    expect($antwort->json('takte'))->not->toBeEmpty();
+    expect($antwort->json('intervals'))->not->toBeEmpty();
 });
 
 test('ohne agent_manage ist nichts davon erreichbar', function () {
@@ -60,7 +60,7 @@ test('jetzt melden setzt die Anforderung', function () {
         ->postJson("/api/mobile/customers/{$kunde->slug}/agents/installations/{$agent->id}/run")
         ->assertOk();
 
-    expect($antwort->json('agent.laufen_angefordert'))->toBeTrue();
+    expect($antwort->json('agent.run_requested'))->toBeTrue();
     expect($agent->fresh()->run_requested_at)->not->toBeNull();
 });
 
@@ -77,7 +77,7 @@ test('Aufgaben und Takt lassen sich umstellen', function () {
 
     expect($agent->fresh()->roles)->toBe([]);
     expect($agent->fresh()->interval_minutes)->toBe($takt);
-    expect(collect($antwort->json('agent.aufgaben'))->firstWhere('rolle', 'proxmox')['an'])->toBeFalse();
+    expect(collect($antwort->json('agent.tasks'))->firstWhere('role', 'proxmox')['enabled'])->toBeFalse();
 });
 
 /** Eine Aufgabe, die es für diese Art nicht gibt, weist der Server ab. */

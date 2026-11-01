@@ -28,14 +28,21 @@ class TrashController extends Controller
         $papierkorb = new Trash($customer, $request->user());
 
         return response()->json([
-            'eintraege' => $papierkorb->eintraege()->map(fn ($eintrag) => [
-                ...$eintrag,
-                'geloescht_am' => $eintrag['geloescht_am']?->toIso8601String(),
+            // Ausdruecklich uebersetzt statt durchgereicht: Die Zeilen der
+            // Klasse Trash traegt auch die Seite im Browser, ihre Schluessel
+            // bleiben deutsch.
+            'entries' => $papierkorb->eintraege()->map(fn ($eintrag) => [
+                'type' => $eintrag['typ'],
+                'title' => $eintrag['titel'],
+                'name' => $eintrag['name'],
+                'deleted_at' => $eintrag['geloescht_am']?->toIso8601String(),
+                'id' => $eintrag['id'],
+                'may_restore' => $eintrag['darf_wiederherstellen'],
             ])->values(),
             // Welche Arten mehr haben, als die Liste zeigt - ein stilles
             // Abschneiden liest sich wie "mehr ist nicht da".
-            'gekuerzt' => collect($papierkorb->gekuerzt())
-                ->map(fn ($anzahl, $bezeichnung) => ['titel' => __($bezeichnung), 'anzahl' => $anzahl])
+            'truncated' => collect($papierkorb->gekuerzt())
+                ->map(fn ($anzahl, $bezeichnung) => ['title' => __($bezeichnung), 'count' => $anzahl])
                 ->values(),
         ]);
     }
@@ -54,7 +61,7 @@ class TrashController extends Controller
         $objekt = (new Trash($customer, $request->user()))->restore($typ, $id);
 
         return response()->json([
-            'objekt' => array_key_exists($typ, $this->objekte->typen())
+            'object' => array_key_exists($typ, $this->objekte->typen())
                 ? $this->objekte->kurz($objekt, $typ)
                 : null,
         ]);
