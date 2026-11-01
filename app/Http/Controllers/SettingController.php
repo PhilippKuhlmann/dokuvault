@@ -7,8 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 /**
- * Einstellungen der Fernwartung. Die Kennwort-Historie hat eine eigene Seite -
- * dort steht die Frist neben dem, was sie betrifft.
+ * Remote-access settings. The password history has a page of its own -
+ * there the deadline stands beside what it concerns.
  */
 class SettingController extends Controller
 {
@@ -42,10 +42,10 @@ class SettingController extends Controller
     }
 
     /**
-     * Aus dem Muster wird ein anklickbarer Link. Ein Muster wie
-     * "javascript:..." waere damit ausfuehrbarer Code in jeder Geraeteliste -
-     * deshalb muss es mit einem Programm-Schema beginnen und darf keines der
-     * Schemata sein, die der Browser selbst auswertet.
+     * The pattern becomes a clickable link. A pattern like
+     * "javascript:..." would thereby be executable code in every device list -
+     * hence it has to begin with a program scheme and must not be one of the
+     * schemes the browser evaluates itself.
      */
     private function checkPattern(Request $request): void
     {

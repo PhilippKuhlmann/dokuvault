@@ -20,7 +20,7 @@ class DeviceModelRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Nur bekannte Geraetetypen: Der Wert entscheidet, welche Geraete
+            // Known device kinds only: the value decides which devices
             // diesen Eintrag ueberhaupt finden.
             'device_type' => ['required', Rule::in(array_keys(config('custom.rack_device_types')))],
             'manufacturer' => 'required|string|max:255',
@@ -28,9 +28,9 @@ class DeviceModelRequest extends FormRequest
             // Dieselbe Grenze wie im Rack-Katalog.
             'height_units' => 'required|integer|min:1|max:'.RackCatalogItemRequest::MAX_HE,
             'full_depth' => 'required|boolean',
-            // Eine eigene Zeichnung, falls es fuer das Modell eine gibt. Nur
-            // bekannte Schluessel: Der Wert entscheidet, welche Ansicht
-            // gerendert wird.
+            // A drawing of its own, if there is one for the model. Known keys
+            // only: the value decides which view is rendered.
+            //
             'drawing' => ['nullable', Rule::in(array_keys(config('custom.rack_model_drawings')))],
             'image' => ['nullable', 'image', 'mimes:'.implode(',', config('custom.bild_formate')), 'max:2048'],
             'image_remove' => 'nullable|boolean',
@@ -38,9 +38,9 @@ class DeviceModelRequest extends FormRequest
     }
 
     /**
-     * Ein Modell darf es nur einmal geben - verglichen wird ueber dieselben
+     * A model may exist only once - compared through the same
      * normalisierten Schluessel wie beim Nachschlagen, sonst legte man neben
-     * "APC" ein zweites "apc " an, das nie gefunden wuerde.
+     * "APC" would take a second "apc " that would never be found.
      */
     public function withValidator($validator): void
     {

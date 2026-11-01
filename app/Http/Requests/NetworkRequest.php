@@ -19,13 +19,13 @@ class NetworkRequest extends FormRequest
     }
 
     /**
-     * Fehlt eine der beiden Schreibweisen, wird sie aus der anderen ergaenzt.
+     * If one of the two notations is missing, it is derived from the other.
      *
-     * Im VLAN-Modal und im Assistenten passiert das schon bei der Eingabe.
-     * Das alte Formular unter /network/create ist kein Livewire - dort faellt
-     * die Ergaenzung hier an, damit nicht die halbe Angabe gespeichert wird.
-     * Sind beide gefuellt, bleiben beide stehen: Ein Widerspruch ist eine
-     * Eingabe und keine Luecke, die zu ueberschreiben waere anmassend.
+     * In the VLAN modal and in the wizard that already happens while typing.
+     * The old form under /network/create is not Livewire - there the
+     * derivation happens here, so half an entry does not get stored.
+     * If both are filled, both stay: a contradiction is an entry and not a
+     * gap, and overwriting it would be presumptuous.
      */
     protected function prepareForValidation(): void
     {

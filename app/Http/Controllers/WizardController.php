@@ -16,9 +16,9 @@ class WizardController extends Controller
     }
 
     /**
-     * "Als erledigt markieren" vom Dashboard aus: schließt einen offenen Durchlauf
-     * dieses Nutzers ab. Gibt es keinen (Einstieg "Starten"), wird ein bereits
-     * abgeschlossener angelegt - das Dashboard fragt nur, ob es für den Kunden
+     * "Mark as done" from the dashboard: closes an open run of this user. If
+     * there is none (entry through "start"), one that is already closed is
+     * created - the dashboard only asks whether there is one for the customer
      * einen abgeschlossenen Durchlauf gibt.
      */
     public function complete(Customer $customer)
@@ -32,9 +32,9 @@ class WizardController extends Controller
 
     protected function authorizeWizard(): void
     {
-        // Feingranulare Prüfung (welche Schritte sichtbar sind) übernimmt
-        // App\Livewire\DocumentationWizard beim mount() - hier nur der grobe Zugang:
-        // ohne ein einziges _create-Recht aus den Assistenten-Schritten gibt es nichts zu tun.
+        // The fine-grained check (which steps are visible) is done by
+        // App\Livewire\DocumentationWizard in mount() - here only the coarse
+        // access: without a single _create permission from the wizard steps there is nothing to
         $hasAnyStepPermission = collect(config('custom.wizard_steps'))
             ->contains(fn (array $step) => Gate::allows($step['permission']));
 
