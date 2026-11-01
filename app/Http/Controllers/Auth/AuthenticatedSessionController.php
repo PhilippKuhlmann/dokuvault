@@ -34,16 +34,16 @@ class AuthenticatedSessionController extends Controller
 
         $request->authenticate();
 
-        // regenerate() vergibt eine neue Kennung, behaelt aber die Daten. Ein
-        // Kennwort-Hash aus einer frueheren Anmeldung in derselben Sitzung
-        // wuerde AuthenticateSession (siehe Kernel) beim naechsten Aufruf zum
-        // Abmelden bringen - und der fuehrt wieder hierher: eine Anmeldeschleife.
+        // regenerate() hands out a new id but keeps the data. A password hash
+        // from an earlier sign-in in the same session would make
+        // AuthenticateSession (see Kernel) sign the user out on the next call -
+        // and that leads back here: a sign-in loop.
         $request->session()->regenerate();
         $request->session()->forget('password_hash_web');
 
-        // Zweite Stufe eingeschaltet? Dann ist die Anmeldung noch nicht fertig.
-        // Der Nutzer wird wieder abgemeldet - in der Sitzung steht nur, wer
-        // hereinmoechte. Bis der Einmalcode stimmt, ist er niemand.
+        // Second factor switched on? Then the sign-in is not finished yet. The
+        // user is signed out again - the session holds only who wants to get
+        // in. Until the one-time code is right, they are nobody.
         if (auth()->user()->hasTwoFactor()) {
             $id = auth()->id();
 

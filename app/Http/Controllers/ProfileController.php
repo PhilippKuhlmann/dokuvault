@@ -26,7 +26,7 @@ class ProfileController extends Controller
      */
     public function edit(Request $request, TwoFactor $zweiteStufe): View
     {
-        // Ein begonnenes, aber noch nicht bestaetigtes Geheimnis liegt in der
+        // A secret begun but not yet confirmed lies in the
         // Sitzung - siehe TwoFactorController. Nur dann gibt es einen QR-Code
         // zu zeigen.
         $geheimnis = $request->session()->get(TwoFactorController::IN_ARBEIT);
@@ -45,9 +45,9 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        // Siehe User::istDemoGeschuetzt(): Der Zugang ist auf der Demo
+        // See User::isDemoProtected(): on the demo the account is
         // vollstaendig gesperrt, also auch hier - sonst haette ein Besucher
-        // Namen, E-Mail und Sprache des geteilten Zugangs in der Hand.
+        // name, email and language of the shared account in their hands.
         if ($request->user()->isDemoProtected()) {
             return Redirect::route('profile.edit')
                 ->withErrors(['demo' => __('Dieser Demo-Zugang ist gesperrt und lässt sich nicht ändern.')]);
@@ -59,8 +59,8 @@ class ProfileController extends Controller
         $user->fill(Arr::except($request->validated(), 'current_password'));
 
         // Kein E-Mail-Bestaetigungsverfahren in diesem Projekt: User
-        // implementiert MustVerifyEmail nicht, und users hat keine Spalte
-        // email_verified_at. Der Breeze-Rest davon liess jede Aenderung der
+        // does not implement MustVerifyEmail, and users has no column
+        // email_verified_at. The rest of that from Breeze made every change of
         // E-Mail-Adresse in einen 500er laufen.
 
         $user->save();
@@ -91,7 +91,7 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        // Siehe User::istDemoGeschuetzt(): der Zugang muss der Demo erhalten bleiben.
+        // See User::isDemoProtected(): the account has to stay with the demo.
         if ($request->user()->isDemoProtected()) {
             return back()->withErrors(
                 ['password' => 'Ein Demo-Zugang lässt sich nicht löschen.'],
