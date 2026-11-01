@@ -42,6 +42,7 @@
               #9ca3af  gray-400            Nebensaechliches
               #e5e7eb  gray-200            Raender
               #f3f4f6  gray-100            feine Trennlinien
+              #374151  gray-700            Inhaltsverzeichnis
         --}}
 
         * { box-sizing: border-box; }
@@ -50,63 +51,82 @@
            -> Druckränder für Drucker ohne Randlosdruck. Oben und unten mehr:
               dort zeichnet der Job Kopf- und Fußzeile auf die Leinwand, und was
               dort steht, weiß vom Textfluss nichts. */
-        body { margin: 17mm 10mm 15mm; }
+        body { margin: 17mm 12mm 15mm; }
 
-        /* Deckblatt */
-        .cover { text-align: center; padding-top: 200px; page-break-after: always; }
-        .cover-app { font-weight: 600; font-size: 20px; color: #3391f0; margin-bottom: 14px; }
-        .cover-bar { width: 110px; height: 5px; background: #3391f0; margin: 0 auto 26px; }
-        .cover-title { font-weight: 600; font-size: 54px; color: #1f3d6e; }
-        .cover-customer { font-size: 26px; color: #6b7280; margin-top: 6px; }
-        .cover-date { margin-top: 36px; font-size: 12px; color: #9ca3af; }
+        /* Maschinenwerte - IP, MAC, Seriennummer, Schlüssel. DejaVu Sans Mono
+           liegt DomPDF bei, es muss nichts angemeldet werden. Dafür ist die
+           Schrift breiter als Space Grotesk und braucht einen Punkt weniger.
+           Wer eine IP abtippt, verwechselt in einer Festbreitenschrift keine
+           0 mit einem O. */
+        .mono { font-family: 'DejaVu Sans Mono'; font-size: 9.5px; }
+
+        /* Deckblatt. Der Kundenname steht groß, nicht das Wort
+           "Dokumentation": auf dem Stapel sucht man den Kunden. */
+        .cover { page-break-after: always; }
+        .cover-app { font-size: 10px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase; color: #3391f0; }
+        .cover-rule { height: 2px; background: #1f3d6e; margin: 7px 0 0; }
+        .cover-eyebrow { margin-top: 360px; font-size: 11px; letter-spacing: 2.6px; text-transform: uppercase; color: #9ca3af; }
+        .cover-customer { margin-top: 10px; font-size: 44px; font-weight: 600; color: #1f3d6e; line-height: 1.12; }
+        .cover-date { margin-top: 16px; font-size: 11px; color: #6b7280; }
         .cover-note {
-            margin: 150px auto 0; width: 340px; padding: 9px 12px; border: 1px solid #e5e7eb;
-            border-radius: 4px; background: #f1f6fc; color: #6b7280; font-size: 10px; line-height: 1.5;
+            margin-top: 330px; width: 420px; padding: 1px 0 1px 12px;
+            border-left: 3px solid #3391f0; color: #6b7280; font-size: 10px; line-height: 1.55;
         }
 
-        /* Inhalt */
+        /* Inhalt: Kapitel fett, Abschnitte darunter eingerückt */
         .toc { page-break-after: always; }
-        .toc-title { font-weight: 600; font-size: 23px; color: #1f3d6e; border-bottom: 2px solid #3391f0; padding-bottom: 4px; margin-bottom: 12px; }
+        .toc-title { font-weight: 600; font-size: 24px; color: #1f3d6e; margin-bottom: 10px; page-break-after: avoid; }
         .toc table { width: 100%; border-collapse: collapse; }
-        /* Feste Zeilenhoehe: der Job muss vor dem Rendern wissen, wie viele
-           Eintraege auf eine Seite gehen (TOC_PER_PAGE). Mit der Zeilenhoehe
-           der Schrift stimmte die Rechnung nicht und das Verzeichnis lief auf
-           eine dritte Seite - danach war jede Seitenzahl um eins zu niedrig. */
-        .toc td { padding: 4px 0; line-height: 14px; border-bottom: 1px solid #f3f4f6; font-size: 12px; }
-        .toc td.toc-page { text-align: right; width: 40px; color: #6b7280; }
+        .toc-columns { table-layout: fixed; }
+        .toc-column { vertical-align: top; }
+        .toc-gap { width: 7%; }
+        .toc td { padding: 2.5px 0; line-height: 13px; font-size: 10.5px; }
+        .toc td.toc-page { text-align: right; width: 36px; color: #9ca3af; }
+        .toc-chapter td { padding-top: 9px; font-weight: 600; font-size: 12px; color: #1f3d6e; border-bottom: 1px solid #e5e7eb; }
+        .toc-section td { color: #374151; border-bottom: 1px solid #f3f4f6; }
+        .toc-section td.toc-name { padding-left: 14px; }
 
         .page-break { page-break-after: always; }
+
+        /* Kapitel: die zwölf Gruppen, nach denen das Blatt ohnehin geordnet
+           war - bisher nur als Kommentar in der Vorlage. Sichtbar geben sie
+           60 Seiten eine Gliederung, in die man springen kann. */
+        .chapter { margin: 13mm 0 7mm; page-break-after: avoid; page-break-inside: avoid; }
+        .chapter-first { margin-top: 0; }
+        .chapter-rule { height: 2px; background: #1f3d6e; margin-bottom: 7px; }
+        .chapter-title { font-size: 26px; font-weight: 600; color: #1f3d6e; }
 
         /* Abschnitte laufen durch, statt jeder auf einer eigenen Seite zu
            beginnen: bei 45 Abschnitten waren zwei Drittel jeder Seite leer.
            Die Überschrift nimmt den Umbruch mit (page-break-after: avoid),
            damit sie nicht allein am Seitenfuß stehen bleibt. */
-        .section { margin-bottom: 9mm; }
+        .section { margin-bottom: 7mm; }
         .heading {
-            font-weight: 600; font-size: 23px; color: #1f3d6e; border-bottom: 2px solid #3391f0;
-            padding-bottom: 4px; margin-bottom: 10px; page-break-after: avoid;
+            font-weight: 600; font-size: 17px; color: #1f3d6e; border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 4px; margin-bottom: 8px; page-break-after: avoid;
         }
 
-        /* 4px: derselbe Radius wie rounded-xl in der Oberflaeche. Vorher 6px -
-           die Ecken des Blattes waren runder als jede Karte der Anwendung. */
-        .card { border: 1px solid #e5e7eb; border-radius: 4px; margin-bottom: 10px; page-break-inside: avoid; }
-        .card-title { font-weight: 600; font-size: 15px; color: #1f3d6e; background: #f1f6fc; padding: 6px 10px; border-bottom: 1px solid #e5e7eb; border-radius: 4px 4px 0 0; }
-        .card-body { padding: 8px 10px; }
+        /* Keine Kästen mehr. Rahmen, getönter Kopf und innere Tabelle waren
+           drei Lagen Rahmenwerk für zwei Ebenen Information; über 60 Seiten
+           las sich das Blatt als Stapel gleicher Behälter. Jetzt trägt ein
+           blauer Strich am Titel die Gliederung. */
+        .card { margin-bottom: 6mm; page-break-inside: avoid; }
+        .card-title { font-weight: 600; font-size: 12.5px; color: #1f3d6e; border-left: 2px solid #3391f0; padding-left: 8px; margin-bottom: 7px; }
 
         .groups { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .group-cell { vertical-align: top; padding: 0 14px 6px 0; }
-        .card-table-title { font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #9ca3af; margin-bottom: 3px; }
+        .group-cell { vertical-align: top; padding: 0 16px 7px 10px; }
+        .card-table-title { font-weight: 600; font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.9px; color: #9ca3af; margin-bottom: 4px; }
         /* table-layout: fixed haelt die Tabelle in der Breite ihrer Gruppe.
            Mit automatischer Breite nahm die Wertespalte sich so viel, wie ihr
            laengster Eintrag brauchte, und sprengte den Kasten. */
         .group-cell table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .group-cell td { padding: 2px 0; font-size: 11px; vertical-align: top; }
+        .group-cell td { padding: 1.5px 0; font-size: 10.5px; vertical-align: top; line-height: 1.35; }
         /* 42 statt 45 Prozent: die Beschriftungen sind kurz, die Werte nicht.
            overflow-wrap ist nur das Netz darunter - "Verschlüsselungscode"
            ist laenger als die Spalte und stand sonst ueber seinem Wert. Ein
            Umbruch im Wort ist haesslich, uebereinander gedruckter Text ist
            schlimmer. */
-        .group-cell td.key { color: #6b7280; width: 42%; padding-right: 8px; overflow-wrap: break-word; }
+        .group-cell td.key { color: #6b7280; width: 42%; padding-right: 10px; overflow-wrap: break-word; }
         /* Nur der Wert bricht im Wort. Genau daran lag die Ueberlappung:
            "DeutschlandLAN Glasfaser 1000" fand keine Bruchstelle, sprengte
            die Gruppe und stand quer ueber "WAN-IP". */
@@ -116,19 +136,19 @@
         /* Kein font-style: italic - von 'Space Grotesk' ist nur der gerade
            Schnitt angemeldet, und DomPDF nimmt dafuer still seine eigene
            Serifenschrift. Das stach aus dem Blatt heraus. */
-        .empty { color: #9ca3af; font-size: 12px; padding: 2px 0 6px; }
-        .empty-card { color: #9ca3af; font-size: 11px; }
+        .empty { color: #9ca3af; font-size: 11px; padding: 0 0 4px 10px; }
+        .empty-card { color: #9ca3af; font-size: 10.5px; padding-left: 10px; }
 
         /* Dosenbelegung eines Patchfelds */
-        .ports-block { page-break-inside: avoid; margin: 4px 0 10px; }
-        .ports-caption { font-size: 11px; color: #6b7280; margin-bottom: 3px; }
+        .ports-block { page-break-inside: avoid; margin: 0 0 6mm 10px; }
+        .ports-caption { font-weight: 600; font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.9px; color: #9ca3af; margin-bottom: 4px; }
         .ports { width: 100%; border-collapse: collapse; font-size: 10px; }
-        .ports th { text-align: left; color: #6b7280; border-bottom: 1px solid #e5e7eb; padding: 3px 6px 3px 0; font-weight: normal; }
-        .ports td { padding: 3px 6px 3px 0; border-bottom: 1px solid #f3f4f6; color: #111827; }
+        .ports th { text-align: left; color: #9ca3af; border-bottom: 1px solid #e5e7eb; padding: 3px 8px 3px 0; font-weight: 600; font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.9px; }
+        .ports td { padding: 3px 8px 3px 0; border-bottom: 1px solid #f3f4f6; color: #111827; }
 
         /* Rack-Frontansicht: Tabelle, weil DomPDF kein Grid kann */
-        .rack-block { page-break-inside: avoid; margin: 4px 0 10px; }
-        .rack-caption { font-size: 11px; color: #6b7280; margin-bottom: 3px; }
+        .rack-block { page-break-inside: avoid; margin: 0 0 6mm 10px; }
+        .rack-caption { font-weight: 600; font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.9px; color: #9ca3af; margin-bottom: 4px; }
         .rackview { border-collapse: collapse; border: 1px solid #9ca3af; background: #e5e7eb; }
         /* vertical-align/display: sonst sitzt das Bild auf der Textbasislinie
            und die Zeile wird ein paar Pixel höher als die Zeichnung */
@@ -148,8 +168,8 @@
     {{-- Deckblatt --}}
     <div class="cover">
         <div class="cover-app">{{ \App\Models\Setting::appName() }}</div>
-        <div class="cover-bar"></div>
-        <div class="cover-title">{{ __('Dokumentation') }}</div>
+        <div class="cover-rule"></div>
+        <div class="cover-eyebrow">{{ __('Dokumentation') }}</div>
         <div class="cover-customer">{{ $customer->name }}</div>
         <div class="cover-date">{{ __('Stand') }}: {{ \App\Support\LocalTime::display(now(), 'd.m.Y') }}</div>
 
@@ -166,13 +186,41 @@
     @if (! empty($toc))
         <div class="toc">
             <div class="toc-title">{{ __('Inhalt') }}</div>
-            <table>
-                @foreach ($toc as $eintrag)
-                    <tr>
-                        <td>{{ $eintrag['title'] }}</td>
-                        <td class="toc-page">{{ $eintrag['page'] }}</td>
-                    </tr>
-                @endforeach
+            {{-- Zwei Spalten: 57 Zeilen liefen sonst auf eine dritte Seite,
+                 auf der zwei Eintraege standen. Geteilt wird vor einem
+                 Kapitel, damit keine Abschnitte von ihrer Ueberschrift
+                 getrennt werden. --}}
+            @php
+                $mitte = (int) ceil(count($toc) / 2);
+                $trenn = count($toc);
+
+                foreach ($toc as $i => $eintrag) {
+                    if ($i >= $mitte && $eintrag['kind'] === 'chapter') {
+                        $trenn = $i;
+                        break;
+                    }
+                }
+
+                $spalten = [array_slice($toc, 0, $trenn), array_slice($toc, $trenn)];
+            @endphp
+            <table class="toc-columns">
+                <tr>
+                    @foreach ($spalten as $spalte)
+                        @if (! $loop->first)
+                            <td class="toc-gap"></td>
+                        @endif
+                        <td class="toc-column">
+                            <table>
+                                @foreach ($spalte as $eintrag)
+                                    <tr class="toc-{{ $eintrag['kind'] }}">
+                                        <td class="toc-name">{{ $eintrag['title'] }}</td>
+                                        <td class="toc-page">{{ $eintrag['page'] }}</td>
+                                    </tr>
+                                @endforeach
+                            </table>
+                        </td>
+                    @endforeach
+                </tr>
             </table>
         </div>
     @endif
@@ -184,7 +232,8 @@
         $date = fn ($d) => $d ? \Carbon\Carbon::parse($d)->format('d.m.Y') : '';
     @endphp
 
-    {{-- Stammdaten --}}
+    <x-pdf.chapter :title="__('Stammdaten')" first />
+
     <x-pdf.section :title="__('Standorte')" :items="$customer->sites" :groups="[
         'Adresse' => ['Straße' => fn($s) => trim(($s->street ?? '').' '.($s->house_number ?? '')), 'PLZ / Ort' => fn($s) => trim(($s->zip ?? '').' '.($s->city ?? ''))],
     ]" />
@@ -193,7 +242,8 @@
         'Kontakt' => ['Funktion' => 'role', 'Telefon' => 'phone', 'E-Mail' => 'mail'],
     ]" />
 
-    {{-- Netzwerk --}}
+    <x-pdf.chapter :title="__('Netzwerk')" />
+
     <x-pdf.section :title="__('Internet / WAN')" :items="$customer->internetconnections" :titleField="fn($i) => trim(($i->provider ?? '').' '.($i->product ? '– '.$i->product : ''))" :groups="[
         'Vertrag' => ['Anbieter' => 'provider', 'Produkt' => 'product', 'Vertragsnummer' => 'contract_number', 'Anschlussart' => 'connection_type'],
         'Technik' => ['Download' => fn($i) => $i->bandwidth($i->bandwidth_down), 'Upload' => fn($i) => $i->bandwidth($i->bandwidth_up), 'WAN-IP' => 'wan_ip', 'Hotline' => 'hotline'],
@@ -288,7 +338,8 @@
         @endif
     @endforeach
 
-    {{-- Server & Storage --}}
+    <x-pdf.chapter :title="__('Server & Storage')" />
+
     <x-pdf.section :title="__('Cluster')" :items="$customer->clusters()->with('servers')->get()" :groups="[
         'Cluster' => ['Art' => fn($c) => $c->typeLabel(), 'Knoten' => fn($c) => $c->servers->pluck('name')->implode(', '), 'Notiz' => 'note'],
     ]" />
@@ -308,7 +359,8 @@
         'Netzwerk' => ['Port' => 'port'],
     ]" />
 
-    {{-- Clients --}}
+    <x-pdf.chapter :title="__('Clients')" />
+
     <x-pdf.section :title="__('Computer')" :items="$customer->computers" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
         'Betriebssystem' => ['OS' => fn($c) => $c->operatingSystem?->name],
@@ -344,7 +396,8 @@
         'Netzwerk' => ['Port' => 'port'],
     ]" />
 
-    {{-- Active Directory --}}
+    <x-pdf.chapter :title="__('Active Directory')" />
+
     <x-pdf.section :title="__('AD-Domänen')" :items="$customer->addomains" titleField="domain" :groups="[
         'Domäne' => ['Domäne' => 'domain', 'NetBIOS' => 'netbios', 'UPN-Suffixe' => 'upn_suffixes', 'Funktionsebene' => fn($d) => $d->functionalLevelLabel()],
         'Domänencontroller' => ['Domänencontroller' => fn($d) => $d->hostNames('dc'), 'FSMO-Rollen' => 'fsmo_holder', 'DSRM-Passwort' => 'dsrmpassword', 'DNS-Weiterleitungen' => 'dns_forwarders'],
@@ -361,7 +414,8 @@
         'Gruppe' => ['Name' => 'name', 'Beschreibung' => 'description'],
     ]" />
 
-    {{-- Telefonie --}}
+    <x-pdf.chapter :title="__('Telefonie')" />
+
     <x-pdf.section :title="__('Telefonanlagen')" :items="$customer->phonesystems" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
         'Netzwerk' => ['Port' => 'port'],
@@ -383,7 +437,8 @@
         'Netzwerk' => ['MAC' => 'mac'],
     ]" />
 
-    {{-- E-Mail --}}
+    <x-pdf.chapter :title="__('E-Mail')" />
+
     <x-pdf.section :title="__('E-Mail-Archivierung')" :items="$customer->securepointumas" :titleField="fn($u) => $u->name ?: ($u->manufacturer ?: 'E-Mail-Archivierung #'.$u->id)" :groups="[
         'Allgemein' => ['Hersteller / Produkt' => 'manufacturer', 'Art' => 'type'],
         'Verschlüsselung' => ['Verschlüsselungscode' => 'encryptionkey'],
@@ -395,7 +450,8 @@
         'Server' => ['POP3' => fn($m) => $m->mailboxProvider?->pop3server, 'IMAP' => fn($m) => $m->mailboxProvider?->imapserver, 'SMTP' => fn($m) => $m->mailboxProvider?->smtpserver],
     ]" />
 
-    {{-- Kamera / Funk --}}
+    <x-pdf.chapter :title="__('Kamera / Funk')" />
+
     <x-pdf.section :title="__('Recorder')" :items="$customer->recorders" :titleField="$deviceTitle" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
         'Netzwerk' => ['Port' => 'port'],
@@ -407,7 +463,8 @@
     ]" />
 
 
-    {{-- Logins --}}
+    <x-pdf.chapter :title="__('Logins')" />
+
     <x-pdf.section :title="__('Logins – Allgemein')" :items="$customer->logingenerals" :groups="[
         'Login' => ['Beschreibung' => 'description', 'Benutzer' => 'username', 'Passwort' => 'password'],
         'Verwendung' => ['Verwendet bei' => fn ($l) => $l->verwendetBei() ?: '—'],
@@ -424,7 +481,8 @@
         'Login' => ['URL' => 'url', 'Benutzer' => 'username', 'Passwort' => 'password'],
     ]" />
 
-    {{-- Lizenzen --}}
+    <x-pdf.chapter :title="__('Lizenzen')" />
+
     <x-pdf.section :title="__('Lizenzen – Windows')" :items="$customer->licensewindows" :titleField="fn($l) => $l->operatingSystem?->name ?: 'Windows-Lizenz #'.$l->id" :groups="[
         'Lizenz' => ['Lizenzschlüssel' => 'key'],
     ]" />
@@ -439,7 +497,8 @@
         'Lizenz' => ['Lizenzschlüssel' => 'key'],
     ]" />
 
-    {{-- Dienste --}}
+    <x-pdf.chapter :title="__('Dienste')" />
+
     {{-- Die Zugaenge stehen im Abschnitt "Logins - Allgemein" mit dem Server
          unter "Verwendet bei" - wie bei jedem anderen Geraet auch. --}}
     <x-pdf.section :title="__('FTP-Server')" :items="$customer->ftpservers" :titleField="$deviceTitle" :groups="[
@@ -460,7 +519,8 @@
         'Gültigkeit' => ['Ausgestellt am' => fn($c) => $date($c->issued_date), 'Ablaufdatum' => fn($c) => $date($c->expiry_date)],
     ]" />
 
-    {{-- Sonstiges --}}
+    <x-pdf.chapter :title="__('Sonstiges')" />
+
     <x-pdf.section :title="__('USV')" :items="$customer->ups" :groups="[
         'Allgemein' => ['Hersteller' => 'manufacturer', 'Modell' => 'model', 'Seriennummer' => 'serialNumber', 'Kaufdatum' => fn($g) => $g->purchase_date?->format('d.m.Y'), 'Garantie bis' => fn($g) => $g->warranty_until?->format('d.m.Y'), 'Support-Ende' => fn($g) => $g->eol_date?->format('d.m.Y'), 'Lieferant' => 'supplier'],
         'Technik' => ['Kapazität' => 'capacity', 'Laufzeit' => 'runtime'],

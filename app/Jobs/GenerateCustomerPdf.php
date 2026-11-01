@@ -84,12 +84,13 @@ class GenerateCustomerPdf implements ShouldQueue
             $pdf = '';
 
             for ($lauf = 0; $lauf < 3; $lauf++) {
-                [$pdf, $seiten] = $this->render($export->customer, $svgDir, $toc);
+                [$pdf, $marken] = $this->render($export->customer, $svgDir, $toc);
 
+                $vorspann = $this->vorspann($marken);
                 $neu = [];
 
-                foreach ($seiten as $titel => $seite) {
-                    $neu[] = ['title' => $titel, 'page' => $seite - $this->vorspann($seiten)];
+                foreach ($marken as $marke) {
+                    $neu[] = ['kind' => $marke['kind'], 'title' => $marke['title'], 'page' => $marke['page'] - $vorspann];
                 }
 
                 // $pdf was rendered from $toc, and $neu says where the
@@ -131,19 +132,19 @@ class GenerateCustomerPdf implements ShouldQueue
     }
 
     /**
-     * Renders the sheet once and says where its sections ended up.
+     * Renders the sheet once and says where its chapters and sections ended up.
      *
      * While rendering, DomPDF reports every frame it puts on the page. The
-     * section headings carry data-toc, so their page number can be read off
-     * the canvas - there is no other way round it, a heading's page is only
-     * decided once everything before it has been laid out.
+     * headings carry data-toc-chapter and data-toc, so their page number can
+     * be read off the canvas - there is no other way round it, a heading's
+     * page is only decided once everything before it has been laid out.
      *
-     * @param  list<array{title: string, page: int}>  $toc
-     * @return array{0: string, 1: array<string, int>}
+     * @param  list<array{kind: string, title: string, page: int}>  $toc
+     * @return array{0: string, 1: array<string, array{kind: string, title: string, page: int}>}
      */
     private function render(Customer $customer, string $svgDir, array $toc): array
     {
-        $seiten = [];
+        $marken = [];
 
         $pdf = Pdf::loadView('pdf.customer', [
             'customer' => $customer,
@@ -154,39 +155,53 @@ class GenerateCustomerPdf implements ShouldQueue
         $pdf->getDomPDF()->setCallbacks([
             [
                 'event' => 'begin_frame',
-                'f' => function (Frame $frame, Canvas $canvas) use (&$seiten) {
+                'f' => function (Frame $frame, Canvas $canvas) use (&$marken) {
                     $node = $frame->get_node();
 
-                    if ($node instanceof DOMElement && $node->hasAttribute('data-toc')) {
-                        // The first appearance counts: a heading that is split
-                        // across a page break would otherwise report the
-                        // second page.
-                        $seiten[$node->getAttribute('data-toc')] ??= $canvas->get_page_number();
+                    if (! $node instanceof DOMElement) {
+                        return;
+                    }
+
+                    foreach (['chapter' => 'data-toc-chapter', 'section' => 'data-toc'] as $art => $merkmal) {
+                        if ($node->hasAttribute($merkmal)) {
+                            $titel = $node->getAttribute($merkmal);
+
+                            // The first appearance counts: a heading split
+                            // across a page break would otherwise report the
+                            // second page. The key keeps the order of the
+                            // sheet, which the contents and the running head
+                            // both rely on.
+                            $marken[$art.'|'.$titel] ??= [
+                                'kind' => $art,
+                                'title' => $titel,
+                                'page' => $canvas->get_page_number(),
+                            ];
+                        }
                     }
                 },
             ],
             [
                 'event' => 'end_document',
-                'f' => function (int $nr, int $gesamt, Canvas $canvas, FontMetrics $fontMetrics) use (&$seiten, $customer) {
-                    $this->kopfUndFuss($nr, $gesamt, $canvas, $fontMetrics, $seiten, $customer->name, $this->vorspann($seiten));
+                'f' => function (int $nr, int $gesamt, Canvas $canvas, FontMetrics $fontMetrics) use (&$marken, $customer) {
+                    $this->kopfUndFuss($nr, $gesamt, $canvas, $fontMetrics, $marken, $customer->name, $this->vorspann($marken));
                 },
             ],
         ]);
 
-        return [$pdf->output(), $seiten];
+        return [$pdf->output(), $marken];
     }
 
     /**
      * Pages before the first section: cover and table of contents.
      *
      * They carry neither head nor foot and do not count towards the page
-     * number - page 1 is the one the first section begins on.
+     * number - page 1 is the one the first chapter begins on.
      *
-     * @param  array<string, int>  $seiten
+     * @param  array<string, array{kind: string, title: string, page: int}>  $marken
      */
-    private function vorspann(array $seiten): int
+    private function vorspann(array $marken): int
     {
-        return $seiten === [] ? 1 : min($seiten) - 1;
+        return $marken === [] ? 1 : min(array_column($marken, 'page')) - 1;
     }
 
     /**
@@ -194,12 +209,12 @@ class GenerateCustomerPdf implements ShouldQueue
      *
      * Both sit outside the text flow, on the canvas - which is why the body
      * keeps a wider margin at the top and bottom than at the sides. The head
-     * names the section the page belongs to: with nine servers over three
-     * pages, the heading alone is on the first of them.
+     * names chapter and section: with nine servers over three pages, the
+     * heading itself is only on the first of them.
      *
-     * @param  array<string, int>  $seiten  Abschnitt => Seite, in Reihenfolge des Blattes
+     * @param  array<string, array{kind: string, title: string, page: int}>  $marken  in Reihenfolge des Blattes
      */
-    private function kopfUndFuss(int $nr, int $gesamt, Canvas $canvas, FontMetrics $fontMetrics, array $seiten, string $kunde, int $vorspann): void
+    private function kopfUndFuss(int $nr, int $gesamt, Canvas $canvas, FontMetrics $fontMetrics, array $marken, string $kunde, int $vorspann): void
     {
         if ($nr <= $vorspann) {
             return;
@@ -214,24 +229,35 @@ class GenerateCustomerPdf implements ShouldQueue
         $groesse = 8.5;
 
         // What the head names is what stands at the TOP of the page, where
-        // the eye lands: the last section that began before it. A section
-        // beginning halfway down this page does not count - the reader is
-        // still looking at the one above. Only a page whose first section
-        // starts on it takes that one.
-        $abschnitt = '';
+        // the eye lands: the last heading that began before it. A heading
+        // halfway down this page does not count - the reader is still looking
+        // at what is above it. Only a page whose first heading starts on it
+        // takes that one.
+        $laufend = [];
 
-        foreach ($seiten as $titel => $seite) {
-            if ($seite < $nr) {
-                $abschnitt = $titel;
+        foreach ($marken as $marke) {
+            if ($marke['page'] < $nr) {
+                $laufend[$marke['kind']] = $marke['title'];
             }
         }
 
-        if ($abschnitt === '') {
-            $abschnitt = (string) array_search($nr, $seiten, true);
+        // Die erste Inhaltsseite hat nichts ueber sich: dort nimmt jede Ebene
+        // das, was auf ihr beginnt.
+        foreach (['chapter', 'section'] as $art) {
+            if (! isset($laufend[$art])) {
+                foreach ($marken as $marke) {
+                    if ($marke['kind'] === $art && $marke['page'] === $nr) {
+                        $laufend[$art] = $marke['title'];
+                        break;
+                    }
+                }
+            }
         }
 
-        if ($abschnitt !== '') {
-            $canvas->text($rand, $rand + 2, $abschnitt, $schrift, $groesse, $grau);
+        $kopf = implode(' · ', array_filter([$laufend['chapter'] ?? '', $laufend['section'] ?? '']));
+
+        if ($kopf !== '') {
+            $canvas->text($rand, $rand + 2, $kopf, $schrift, $groesse, $grau);
         }
 
         $canvas->line($rand, $rand + 16, $breite - $rand, $rand + 16, $linie, 0.5);

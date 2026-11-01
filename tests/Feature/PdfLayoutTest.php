@@ -91,3 +91,27 @@ test('without a table of contents the sheet has no contents page', function () {
 test('the cover says the document holds credentials', function () {
     expect(layoutHtml(layoutCustomer()))->toContain('Zugangsdaten und Kennwörter');
 });
+
+test('the twelve chapters mark themselves for the contents', function () {
+    // The chapters were comments in the template before, and nothing but
+    // comments: the sheet ran 45 sections deep with no structure above them.
+    $html = layoutHtml(layoutCustomer());
+
+    expect(substr_count($html, 'data-toc-chapter='))->toBe(12)
+        ->and($html)->toContain('Active Directory');
+});
+
+test('what someone types off stands in a fixed-width font', function () {
+    $customer = layoutCustomer();
+    $customer->internetconnections()->first()->update([
+        'wan_ip' => '203.0.113.2',
+        'contract_number' => 'VTR-2368442',
+    ]);
+
+    $html = layoutHtml($customer->fresh());
+
+    // IP und Vertragsnummer ja, der Produktname nicht - der ist Fliesstext.
+    expect($html)->toContain('<td class="val mono">203.0.113.2</td>')
+        ->and($html)->toContain('<td class="val mono">VTR-2368442</td>')
+        ->and($html)->toContain('<td class="val">Deutsche Telekom</td>');
+});

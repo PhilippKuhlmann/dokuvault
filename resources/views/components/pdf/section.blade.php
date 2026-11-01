@@ -15,6 +15,41 @@
 
     $value = fn ($field, $item) => $field instanceof \Closure ? $field($item) : data_get($item, $field);
 
+    // Werte, die jemand abtippt oder vergleicht, stehen in einer
+    // Festbreitenschrift: IP, Netzmaske, MAC, Seriennummer, Lizenzschluessel,
+    // Kennwort, URL. Dort verwechselt niemand 0 mit O oder 1 mit l. Erkannt
+    // wird das am Wert, nicht an der Beschriftung - die steht an 45 Stellen
+    // der Vorlage frei als Text.
+    $maschinenwert = function ($v): bool {
+        if (! is_scalar($v)) {
+            return false;
+        }
+
+        $v = trim((string) $v);
+
+        // Alles mit Leerzeichen ist Fliesstext: Produktnamen, Rufnummern,
+        // Adressbereiche mit Gedankenstrich.
+        if ($v === '' || str_contains($v, ' ')) {
+            return false;
+        }
+
+        // IPv4, mit oder ohne Praefixlaenge
+        if (preg_match('/^\d{1,3}(\.\d{1,3}){3}(\/\d{1,2})?$/', $v)) {
+            return true;
+        }
+
+        // MAC
+        if (preg_match('/^([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}$/', $v)) {
+            return true;
+        }
+
+        // Acht Zeichen oder mehr, ohne Leerzeichen, Buchstaben und Ziffern
+        // gemischt: so sehen Seriennummern, Schluessel und Adressen aus. Ein
+        // Datum (nur Ziffern) und eine E-Mail-Adresse (keine Ziffern) fallen
+        // damit heraus, Modellnamen wie "U6-Lite" oder "EAP670" sind kuerzer.
+        return mb_strlen($v) >= 8 && preg_match('/\d/', $v) && preg_match('/\p{L}/u', $v);
+    };
+
     // A field without a value is left out instead of printed as a bare label.
     // In the device sections that was half the rows - "Notiz", "Passwort" and
     // "Port" stood there empty on every single card. 0 is a value and stays
@@ -71,7 +106,7 @@
                                         @foreach ($felder as $label => $v)
                                             <tr>
                                                 <td class="key">{{ __($label) }}</td>
-                                                <td class="val">{{ $v }}</td>
+                                                <td class="val{{ $maschinenwert($v) ? ' mono' : '' }}">{{ $v }}</td>
                                             </tr>
                                         @endforeach
                                     </table>
@@ -80,8 +115,12 @@
 
                             {{-- Ungerade Zahl Gruppen: die letzte Zeile braucht
                                  eine zweite Zelle, sonst zieht sich die erste
-                                 ueber die ganze Breite. --}}
-                            @if ($paar->count() === 1 && $gruppen->count() > 1)
+                                 ueber die ganze Breite. Das gilt auch fuer
+                                 eine Karte mit nur einer Gruppe: sonst stuende
+                                 zwischen "Hersteller" und "Ubiquiti" das halbe
+                                 Blatt, und die Werte der Karten laegen nicht
+                                 mehr auf derselben Linie. --}}
+                            @if ($paar->count() === 1)
                                 <td class="group-cell"></td>
                             @endif
                         </tr>
