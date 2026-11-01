@@ -1,5 +1,5 @@
 <x-app-layout :$customer>
-    {{-- Liste und Formular sind Livewire: Ein im Modal angelegter Eintrag
-         erscheint sofort, ohne die Seite neu zu laden. --}}
+    {{-- List and form are Livewire: an entry created in the modal appears
+         at once, without reloading the page. --}}
     <livewire:object-list typ="certificate" :customer="$customer" />
 </x-app-layout>

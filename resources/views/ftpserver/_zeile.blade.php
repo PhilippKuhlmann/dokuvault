@@ -1,5 +1,5 @@
-{{-- Eine Zeile der Tabelle. Der Rahmen steht in der generischen Liste,
-     die Spalten bleiben beim Typ. --}}
+{{-- One row of the table. The frame sits in the generic list, the
+     columns stay with the kind. --}}
 <tr class="bg-white border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700/50">
     <td class="py-2.5 px-4 wrap-break-word font-medium text-gray-900 dark:text-gray-100">{{ $eintrag->host }}</td>
     <td class="py-2.5 px-4 wrap-break-word text-gray-600 dark:text-gray-300">{{ $eintrag->description ?: '—' }}</td>

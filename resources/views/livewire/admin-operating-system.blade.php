@@ -6,8 +6,8 @@
         </x-adminkachel>
     </div>
 
-    {{-- Titel ausdruecklich: aus dem Routennamen abgeleitet waere er beim
-         Livewire-Rerender leer (die laufende Route heisst dann "livewire.update"). --}}
+    {{-- The title stated explicitly: derived from the route name it would be
+         empty on a Livewire re-render (the current route is then "livewire.update"). --}}
     <x-sitetopmenu :neu="false" :titel="__(config('custom.admin_list_titles')['admin.operatingsystem'])">
         {{-- Sucht waehrend des Tippens; .debounce haelt die Anfragen im Zaum. --}}
         <label class="relative">

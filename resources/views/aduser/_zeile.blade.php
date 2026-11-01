@@ -1,4 +1,4 @@
-{{-- Eine Zeile der Tabelle. Der Rahmen steht in der generischen Liste. --}}
+{{-- One row of the table. The frame sits in the generic list. --}}
                     <x-table.datarow
                         :values="[
                             $eintrag->firstName,

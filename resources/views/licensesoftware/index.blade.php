@@ -1,5 +1,5 @@
 <x-app-layout :$customer>
-    {{-- Liste und Formular sind Livewire: Eine im Modal angelegte Lizenz
-         erscheint sofort, ohne die Seite neu zu laden. --}}
+    {{-- List and form are Livewire: a licence created in the modal appears
+         at once, without reloading the page. --}}
     <livewire:object-list typ="licensesoftware" :customer="$customer" />
 </x-app-layout>

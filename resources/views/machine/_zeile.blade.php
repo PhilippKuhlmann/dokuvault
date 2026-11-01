@@ -1,5 +1,5 @@
-{{-- Eine Zeile der Tabelle. Der Rahmen steht in der generischen Liste,
-     die Spalten bleiben beim Typ. --}}
+{{-- One row of the table. The frame sits in the generic list, the
+     columns stay with the kind. --}}
                     @php
                         // $adressen wurde hier nie gesetzt - die Zeile stammt aus
                         // den Listen mit Kartenansicht, wo sie oberhalb der

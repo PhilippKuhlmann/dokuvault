@@ -38,8 +38,8 @@
 
             <div class="flex items-center">
                 <div class="flex items-center ml-3">
-                    {{-- Beide Schalter nebeneinander; das feste w-14 fasste nur
-                         einen und brach den zweiten in die naechste Zeile um. --}}
+                    {{-- Both switches side by side; the fixed w-14 held only one
+                         and wrapped the second onto the next line. --}}
                     <div class="flex items-center gap-1 mr-3">
                         <x-locale-switch class="dark:text-gray-400 hover:bg-cerulean-500 dark:hover:bg-gray-700" />
                         <x-theme-toggle class="dark:text-gray-400 hover:bg-cerulean-500 dark:hover:bg-gray-700" />

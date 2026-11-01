@@ -1,4 +1,4 @@
-{{-- Ein Eintrag in der Liste. Die Karte bleibt beim Typ. --}}
+{{-- One entry in the list. The card stays with the kind. --}}
         @php
             $adressen = $eintrag->relationLoaded('ipAddresses') ? $eintrag->ipAddresses : $eintrag->ipAddresses()->get();
             $primaer = $adressen->first()?->label();
