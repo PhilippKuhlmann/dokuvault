@@ -25,10 +25,10 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                // Admins direkt ins Admin-Dashboard. Früher übernahm das die
-                // Kundensuche (sie warf Admins auf /admin) - seit die auch für
-                // Admins offen ist, muss die Weiche hier stehen, sonst landete
-                // ein Admin nach dem Login auf der Kundensuche.
+                // Admins straight to the admin dashboard. The customer search
+                // used to do that (it threw admins onto /admin) - since that is
+                // open to admins too, the switch has to stand here, or an admin
+                // landed on the customer search after signing in.
                 if (Auth::guard($guard)->user()->role_id === Role::IS_ADMIN) {
                     return redirect()->route('admin.dashboard');
                 }

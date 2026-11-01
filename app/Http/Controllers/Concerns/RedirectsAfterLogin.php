@@ -9,8 +9,8 @@ use Illuminate\Http\RedirectResponse;
 /**
  * Wohin es nach einer geglueckten Anmeldung geht.
  *
- * Steht an einer Stelle, weil es zwei Eingaenge gibt: die Anmeldung mit
- * Kennwort und - bei eingeschalteter zweiter Stufe - die mit dem Einmalcode.
+ * It sits in one place because there are two entrances: signing in with a
+ * password and - with the second factor switched on - with the one-time code.
  * Beide muessen dasselbe Ziel treffen.
  */
 trait RedirectsAfterLogin
@@ -19,9 +19,9 @@ trait RedirectsAfterLogin
     {
         $nutzer = auth()->user();
 
-        // Nutzer mit fest zugeordnetem Kunden -> direkt zum eigenen
+        // Users with a customer assigned to them -> straight to their own
         // Kunden-Dashboard. Alle anderen (Admin, Techniker, ...) haben keinen
-        // festen Kunden und landen auf der Kundensuche/Uebersicht.
+        // assigned customer and land on the customer search or overview.
         if ($nutzer->hasCustomer()) {
             return redirect()->intended('/'.$nutzer->customer->slug);
         }

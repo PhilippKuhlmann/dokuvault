@@ -19,13 +19,13 @@ class ServiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Der Name ist der Schlüssel zur Farbe - zweimal derselbe Dienst
+            // The name is the key to the colour - the same service twice
             // ergäbe zwei Farben für dieselbe Kachel.
             'name' => ['required', 'max:255', Rule::unique('services', 'name')->ignore($this->route('service'))],
-            // Erklaert den Namen dort, wo er ausgewaehlt wird - "UMA" sagt
-            // sonst nur dem etwas, der es schon kennt.
+            // Explains the name where it is chosen - "UMA" otherwise means
+            // something only to those who already know it.
             'description' => ['nullable', 'max:255'],
-            // Freie Farbe als Hex - der Farbwaehler liefert genau dieses Format.
+            // A free colour as hex - the colour picker returns exactly this format.
             'color' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ];
     }

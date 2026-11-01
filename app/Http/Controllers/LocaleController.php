@@ -6,11 +6,11 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 /**
- * Sprache fuer die laufende Sitzung umschalten.
+ * Switch the language for the running session.
  *
- * Bewusst ohne Anmeldung erreichbar: Auf der Anmeldeseite gibt es keinen
- * Nutzer, dessen Einstellung greifen koennte, und auf der Demo ist der
- * geteilte Zugang gesperrt. Die dauerhafte Wahl steht im Profil.
+ * Deliberately reachable without signing in: on the sign-in page there is no
+ * user whose setting could apply, and on the demo the shared account is
+ * locked. The permanent choice sits in the profile.
  */
 class LocaleController extends Controller
 {
