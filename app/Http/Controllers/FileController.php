@@ -11,16 +11,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Hochladen, Herunterladen und Loeschen von Dateien.
+ * Uploading, downloading and deleting files.
  *
- * Die Liste selbst ist Livewire (App\Livewire\DateiListe) - sie hat Suche,
- * Filter und Sortierung, und das laesst sich ohne Rerender nicht bauen.
+ * The list itself is Livewire (App\Livewire\FileList) - it has search,
+ * filters and sorting, and that cannot be built without a re-render.
  */
 class FileController extends Controller
 {
     /**
-     * Die Seite - die Liste darin ist Livewire (App\Livewire\DateiListe).
-     * Der Controller liefert nur das Layout, das den Kunden braucht.
+     * The page - the list in it is Livewire (App\Livewire\FileList). The
+     * controller supplies only the layout, which needs the customer.
      */
     public function index(Customer $customer)
     {
@@ -33,9 +33,9 @@ class FileController extends Controller
     {
         $this->authorize('create', File::class);
 
-        // Der Anzeigename wird begrenzt; fuer den Ablagepfad wird er in
-        // FileName::fuer() auf unbedenkliche Zeichen reduziert - dort
-        // zusammen mit der Endung, die genauso aus dem Browser kommt.
+        // The display name is capped; for the storage path it is reduced to
+        // harmless characters in FileName::fuer() - there together with the
+        // extension, which comes from the browser just the same.
         $validated = $request->validate([
             'file' => [
                 'required',
@@ -54,8 +54,8 @@ class FileController extends Controller
             'file_path' => $filePath,
             'name' => $validated['name'],
             'extension' => FileName::extension($file),
-            // Beim Hochladen mitschreiben: Sie spaeter von der Platte zu lesen
-            // waere ein Dateizugriff je Zeile der Liste.
+            // Written along on upload: reading it from disk later would be a
+            // file access per row of the list.
             'size' => $file->getSize(),
         ]);
 
@@ -70,9 +70,9 @@ class FileController extends Controller
 
         $name = $file->name.'.'.$file->extension;
 
-        // nosniff: Der Browser soll den Inhalt nicht selbst deuten. Mit
-        // "attachment" landet die Datei ohnehin im Download, aber die Angabe
-        // kostet nichts und steht an den anderen Ausgabestellen auch.
+        // nosniff: the browser should not interpret the content itself. With
+        // "attachment" the file ends up in the download anyway, but the header
+        // costs nothing and stands at the other output places too.
         return Storage::download($file->file_path, $name, [
             'X-Content-Type-Options' => 'nosniff',
         ]);

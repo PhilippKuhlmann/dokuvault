@@ -26,7 +26,7 @@ class DatenController extends Controller
     public function kunden(Request $request): JsonResponse
     {
         $nutzer = $request->user();
-        $suche = (string) $request->query('suche');
+        $suche = (string) $request->query('search');
 
         $kunden = Customer::query()
             ->when($nutzer->hasCustomer(), fn ($abfrage) => $abfrage->whereKey($nutzer->customer_id))
@@ -43,17 +43,17 @@ class DatenController extends Controller
     {
         $typen = collect($this->objekte->visibleKinds($request->user()))
             ->map(fn ($typ, $slug) => [
-                'typ' => $slug,
-                'titel' => $this->objekte->titel($slug),
-                'anzahl' => $typ[0]::where('customer_id', $customer->id)->count(),
+                'type' => $slug,
+                'title' => $this->objekte->titel($slug),
+                'count' => $typ[0]::where('customer_id', $customer->id)->count(),
             ])
             ->filter(fn ($typ) => $typ['anzahl'] > 0)
-            ->sortBy('titel', SORT_NATURAL | SORT_FLAG_CASE)
+            ->sortBy('title', SORT_NATURAL | SORT_FLAG_CASE)
             ->values();
 
         return response()->json([
             ...$this->objekte->kunde($customer),
-            'typen' => $typen,
+            'types' => $typen,
         ]);
     }
 
@@ -87,14 +87,14 @@ class DatenController extends Controller
             ->values();
 
         return response()->json([
-            'typ' => $typ,
-            'titel' => $this->objekte->titel($typ),
-            'eintraege' => $zeilen,
-            'weitere' => $objekte->count() > MobileObjects::LISTE_HOECHSTENS,
-            'darf_anlegen' => $this->objekte->darfAnlegen($request->user(), $typ),
+            'type' => $typ,
+            'title' => $this->objekte->titel($typ),
+            'entries' => $zeilen,
+            'more' => $objekte->count() > MobileObjects::LISTE_HOECHSTENS,
+            'may_create' => $this->objekte->darfAnlegen($request->user(), $typ),
             // The choices for the site filter. Only where the kind carries
             // an einem Standort haengt - sonst gaebe es nichts zu filtern.
-            'standorte' => $mitStandort
+            'sites' => $mitStandort
                 ? Site::where('customer_id', $customer->id)->orderBy('name')->get(['id', 'name'])
                 : null,
         ]);
@@ -106,10 +106,10 @@ class DatenController extends Controller
         $gruppen = $suche->groups($request->user(), (string) $request->query('q'))
             ->reject(fn ($gruppe) => $gruppe['detailseite'])
             ->map(fn ($gruppe) => [
-                'typ' => $gruppe['typ'],
-                'titel' => __($gruppe['label']),
-                'weitere' => $gruppe['weitere'],
-                'treffer' => $gruppe['results']
+                'type' => $gruppe['typ'],
+                'title' => __($gruppe['label']),
+                'more' => $gruppe['weitere'],
+                'hits' => $gruppe['results']
                     ->map(fn ($objekt) => $this->objekte->kurz($objekt, $gruppe['typ']))
                     ->values(),
             ])
@@ -132,7 +132,7 @@ class DatenController extends Controller
 
         return $wert === null
             ? response()->json(['message' => __('Kein Kennwort hinterlegt.')], 404)
-            : response()->json(['wert' => $wert]);
+            : response()->json(['value' => $wert]);
     }
 
     /** Ein Geheimnis direkt am Objekt (BMC-Passwort, PIN ...). */
@@ -144,6 +144,6 @@ class DatenController extends Controller
 
         return $wert === null
             ? response()->json(['message' => __('Kein Kennwort hinterlegt.')], 404)
-            : response()->json(['wert' => $wert]);
+            : response()->json(['value' => $wert]);
     }
 }
