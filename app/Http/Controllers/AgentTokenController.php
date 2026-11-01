@@ -131,8 +131,8 @@ class AgentTokenController extends Controller
         $validated = $request->validate([
             'name' => ['nullable', 'string', 'max:255'],
             'site_id' => ['required', Rule::exists('sites', 'id')->where('customer_id', $customer->id)],
-            // Pflicht und in der Zukunft: Ein Token ohne Ablauf ist ein
-            // Dauerzugang, der auf jedem dokumentierten Rechner liegt.
+            // Required and in the future: a token without an expiry is
+            // permanent access lying on every documented machine.
             // Not beyond the maximum from Einstellungen -> Agenten.
             'expires_at' => ['required', 'date', 'after:today', 'before_or_equal:'.now()->addDays(Setting::agentTokenMaxDays())->toDateString()],
         ]);
@@ -191,9 +191,9 @@ class AgentTokenController extends Controller
     }
 
     /**
-     * Erneuert einen Token: neuer Klartext, neue Frist, der alte Wert ist ab
-     * sofort ungültig. Der Weg für einen verbrannten oder ablaufenden Token,
-     * ohne die Zuordnung zu Kunde und Standort neu einrichten zu müssen.
+     * Renews a token: new plain text, new deadline, the old value invalid
+     * from now on. The way for a burnt or expiring token, without having to
+     * set up the assignment to customer and site again.
      */
     public function renew(Customer $customer, AgentToken $agentToken)
     {
@@ -208,10 +208,10 @@ class AgentTokenController extends Controller
 
     /**
      * Weiterleitung nach dem Anlegen oder Erneuern: zeigt den Klartext-Token
-     * einmalig und baut die fertigen Skripte dazu.
+     * once and builds the finished scripts for it.
      *
-     * Ein Sessionschluessel fuer alle Agenten statt einer je Agent: sonst
-     * muesste jeder neue Agent hier, in der Weiterleitung und in der Ansicht
+     * One session key for all agents instead of one per agent: otherwise
+     * every new agent would have to be named here, in the redirect and in the view
      * einzeln nachgetragen werden.
      */
     protected function withNewToken(Customer $customer, AgentToken $token, string $plain)

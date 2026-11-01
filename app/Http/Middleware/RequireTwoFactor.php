@@ -7,15 +7,15 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Wer die zweite Stufe einrichten muss, kommt bis dahin nur ins eigene Profil.
+ * Whoever has to set up the second factor gets no further than their own profile.
  *
- * Bewusst als Umleitung und nicht als 403: Der Nutzer hat nichts falsch
- * gemacht, ihm fehlt ein Schritt - und der steht genau dort, wohin er
- * geschickt wird.
+ * Deliberately a redirect and not a 403: the user has done nothing wrong,
+ * they are missing a step - and that step is exactly where they are sent.
  *
- * In der Gruppe "web", damit es auch fuer Livewire gilt: Sonst waere jede
- * Liste und jedes Formular dieser Anwendung ueber /livewire/update weiterhin
- * erreichbar, und die Pflicht waere eine Anzeige.
+ *
+ * In the "web" group so that it applies to Livewire too: otherwise every
+ * list and every form of this application would still be reachable through
+ * /livewire/update, and the requirement would be a mere display.
  *
  * Also on the auth:sanctum groups of the API: a token issued before the
  * second factor was required would otherwise keep working. There the answer
@@ -24,8 +24,8 @@ use Symfony\Component\HttpFoundation\Response;
 class RequireTwoFactor
 {
     /**
-     * Wege, die offen bleiben muessen - sonst kaeme der Nutzer nicht einmal
-     * dorthin, wo er die zweite Stufe einrichtet.
+     * Paths that have to stay open - otherwise the user would not even get
+     * to where they set up the second factor.
      */
     private const OFFEN = [
         'profile.edit',

@@ -8,7 +8,7 @@ use App\Models\RackCatalogItem;
 use App\Models\Setting;
 
 /**
- * Pflege des Rack-Katalogs im Adminbereich. Die Route-Gruppe laeuft bereits
+ * Maintenance of the rack catalog in the admin area. The route group
  * behind the isAdmin middleware, hence no additional authorisation.
  *
  * The exception is image(): the picture stands in every rack view and must
@@ -53,9 +53,9 @@ class RackCatalogItemController extends Controller
     }
 
     /**
-     * Loeschen ist gefahrlos: bereits verbaute Elemente haben die Bezeichnung
-     * kopiert und bleiben unveraendert stehen. Nur das Foto verschwindet mit -
-     * an seine Stelle tritt dort wieder die gezeichnete Blende.
+     * Deleting is harmless: items already mounted copied the label and stay
+     * unchanged. Only the photo goes with it - there the drawn panel takes
+     * its place again.
      */
     public function destroy(RackCatalogItem $rackcatalogitem)
     {
@@ -67,10 +67,10 @@ class RackCatalogItemController extends Controller
     /**
      * Serve the stored image.
      *
-     * Hinter auth, aber nicht hinter isAdmin: Es steht in jeder Rack-Ansicht,
-     * die ein Kunde sehen darf. Vertraulich ist es nicht - es zeigt eine
-     * Frontblende -, die Datei liegt aber wie alle Dateien dieser App privat
-     * und geht durch den Controller heraus.
+     * Behind auth but not behind isAdmin: it stands in every rack view a
+     * customer may see. It is not confidential - it shows a front panel - but
+     * the file lies privately like every file of this app and goes out
+     * through the controller.
      *
      * nosniff and a fixed content type: the browser should treat the file as
      * an image and not guess for itself what it might be.
