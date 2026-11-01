@@ -125,8 +125,8 @@ class DeviceController extends Controller
 
         return response()->json([
             'eintraege' => $this->objekte->detail($scanner, 'scanner', $request->user())['scan_ziele'],
-            // On offer only what is not linked yet - and only for whoever may
-            // see the list of targets.
+            // Zur Auswahl nur, was noch nicht verknuepft ist - und nur fuer
+            // den, der die Liste der Ziele sehen darf.
             'verfuegbar' => Gate::allows('scantarget_viewAny')
                 ? ScanTarget::where('customer_id', $scanner->customer_id)
                     ->whereNotIn('id', $scanner->scanTargets()->pluck('scan_targets.id'))

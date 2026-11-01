@@ -13,11 +13,11 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * Looking things up from the iOS app: customers, their objects, search, passwords.
+ * Nachschlagen aus der iOS-App: Kunden, ihre Objekte, Suche, Kennwoerter.
  *
- * Read only. Every response goes through the same permissions as the page in
- * the browser, and a customer user sees only their customer - the ids come
- * from the phone here and not from a locked Livewire property.
+ * Nur lesen. Jede Antwort geht durch dieselben Rechte wie die Seite im
+ * Browser, und ein Kundennutzer sieht nur seinen Kunden - die Ids kommen hier
+ * vom Telefon und nicht aus einer gesperrten Livewire-Eigenschaft.
  */
 class DatenController extends Controller
 {
@@ -26,7 +26,7 @@ class DatenController extends Controller
     public function kunden(Request $request): JsonResponse
     {
         $nutzer = $request->user();
-        $suche = (string) $request->query('search');
+        $suche = (string) $request->query('suche');
 
         $kunden = Customer::query()
             ->when($nutzer->hasCustomer(), fn ($abfrage) => $abfrage->whereKey($nutzer->customer_id))
@@ -38,22 +38,22 @@ class DatenController extends Controller
         return response()->json($kunden->map(fn ($kunde) => $this->objekte->kunde($kunde))->values());
     }
 
-    /** The customer with the object kinds documented at them. */
+    /** Der Kunde mit den Objektarten, die bei ihm dokumentiert sind. */
     public function kunde(Request $request, Customer $customer): JsonResponse
     {
         $typen = collect($this->objekte->visibleKinds($request->user()))
             ->map(fn ($typ, $slug) => [
-                'type' => $slug,
-                'title' => $this->objekte->titel($slug),
-                'count' => $typ[0]::where('customer_id', $customer->id)->count(),
+                'typ' => $slug,
+                'titel' => $this->objekte->titel($slug),
+                'anzahl' => $typ[0]::where('customer_id', $customer->id)->count(),
             ])
             ->filter(fn ($typ) => $typ['anzahl'] > 0)
-            ->sortBy('title', SORT_NATURAL | SORT_FLAG_CASE)
+            ->sortBy('titel', SORT_NATURAL | SORT_FLAG_CASE)
             ->values();
 
         return response()->json([
             ...$this->objekte->kunde($customer),
-            'types' => $typen,
+            'typen' => $typen,
         ]);
     }
 
@@ -66,10 +66,10 @@ class DatenController extends Controller
         $mitStandort = method_exists($klasse, 'site');
         $mitladen = $mitStandort ? ['customer', 'site'] : ['customer'];
 
-        // The site filter of the sidebar, here as a query value. A
-        // A site of another customer counts as no filter, not as an error -
-        // just as in the browser, where a foreign site in the session is
-        // skipped.
+        // Der Standortfilter der Seitenleiste, hier als Abfragewert. Ein
+        // Standort eines anderen Kunden zaehlt als kein Filter, nicht als
+        // Fehler - genau wie im Browser, wo ein fremder Standort in der
+        // Sitzung uebergangen wird.
         $standort = (int) $request->query('site');
         $standort = $standort && $mitStandort && $customer->sites()->whereKey($standort)->exists()
             ? $standort
@@ -87,14 +87,14 @@ class DatenController extends Controller
             ->values();
 
         return response()->json([
-            'type' => $typ,
-            'title' => $this->objekte->titel($typ),
-            'entries' => $zeilen,
-            'more' => $objekte->count() > MobileObjects::LISTE_HOECHSTENS,
-            'may_create' => $this->objekte->darfAnlegen($request->user(), $typ),
-            // The choices for the site filter. Only where the kind carries
+            'typ' => $typ,
+            'titel' => $this->objekte->titel($typ),
+            'eintraege' => $zeilen,
+            'weitere' => $objekte->count() > MobileObjects::LISTE_HOECHSTENS,
+            'darf_anlegen' => $this->objekte->darfAnlegen($request->user(), $typ),
+            // Die Auswahl fuer den Standortfilter. Nur wo die Art ueberhaupt
             // an einem Standort haengt - sonst gaebe es nichts zu filtern.
-            'sites' => $mitStandort
+            'standorte' => $mitStandort
                 ? Site::where('customer_id', $customer->id)->orderBy('name')->get(['id', 'name'])
                 : null,
         ]);
@@ -106,10 +106,10 @@ class DatenController extends Controller
         $gruppen = $suche->groups($request->user(), (string) $request->query('q'))
             ->reject(fn ($gruppe) => $gruppe['detailseite'])
             ->map(fn ($gruppe) => [
-                'type' => $gruppe['typ'],
-                'title' => __($gruppe['label']),
-                'more' => $gruppe['weitere'],
-                'hits' => $gruppe['results']
+                'typ' => $gruppe['typ'],
+                'titel' => __($gruppe['label']),
+                'weitere' => $gruppe['weitere'],
+                'treffer' => $gruppe['results']
                     ->map(fn ($objekt) => $this->objekte->kurz($objekt, $gruppe['typ']))
                     ->values(),
             ])
@@ -125,14 +125,14 @@ class DatenController extends Controller
         return response()->json($this->objekte->detail($objekt, $typ, $request->user()));
     }
 
-    /** The password behind a link - one at a time, throttled, logged. */
+    /** Das Kennwort hinter einer Verknuepfung - einzeln, gebremst, protokolliert. */
     public function kennwort(Request $request, CredentialLink $link, PasswordReveal $abruf): JsonResponse
     {
         $wert = $abruf->ausVerknuepfung($link, $request->user());
 
         return $wert === null
             ? response()->json(['message' => __('Kein Kennwort hinterlegt.')], 404)
-            : response()->json(['value' => $wert]);
+            : response()->json(['wert' => $wert]);
     }
 
     /** Ein Geheimnis direkt am Objekt (BMC-Passwort, PIN ...). */
@@ -144,6 +144,6 @@ class DatenController extends Controller
 
         return $wert === null
             ? response()->json(['message' => __('Kein Kennwort hinterlegt.')], 404)
-            : response()->json(['value' => $wert]);
+            : response()->json(['wert' => $wert]);
     }
 }

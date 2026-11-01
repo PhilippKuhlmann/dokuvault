@@ -8,16 +8,16 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 /**
- * Zaehlt Aufrufe auf der Demo-Instanz.
+ * Counts visits on the demo instance.
  *
- * Geschrieben wird in eine Datei unter storage/, nicht in die Datenbank: die
+ * Written into a file under storage/, not into the database: the
  * loescht `demo:reset` stuendlich komplett. Dateien unter storage/ ueberstehen
- * sowohl den Reset als auch das `git reset --hard` beim Deploy.
+ * both the reset and the `git reset --hard` during a deploy.
  *
- * Kein User-Agent, keine aufgerufenen Seiten. Besuche werden ueber einen
- * Zufallswert in der Sitzung unterschieden, der mit der Sitzung verschwindet.
+ * No user agent, no pages visited. Visits are told apart through a random
+ * value in the session that disappears with it.
  *
- * Die Herkunft wird nach custom.demo_ip_logging aufgezeichnet, standardmaessig
+ * The origin is recorded according to custom.demo_ip_logging, by default
  * gekuerzt (siehe adresse()).
  */
 class RecordDemoUsage
@@ -30,8 +30,8 @@ class RecordDemoUsage
             return $response;
         }
 
-        // Nur echte Seitenaufrufe: POSTs, Livewire-Aktualisierungen und
-        // Hintergrundabfragen wuerden die Zahlen sonst aufblaehen.
+        // Real page views only: POSTs, Livewire updates and background
+        // requests would otherwise bloat the numbers.
         if (! $request->isMethod('GET') || $request->ajax() || $request->is('livewire/*')) {
             return $response;
         }
@@ -39,7 +39,7 @@ class RecordDemoUsage
         try {
             $this->record($request);
         } catch (\Throwable $e) {
-            // Statistik darf die Demo nie ausbremsen oder kaputtmachen.
+            // Statistics must never slow the demo down or break it.
         }
 
         return $response;
@@ -68,12 +68,12 @@ class RecordDemoUsage
     }
 
     /**
-     * Herkunft je nach Einstellung: gar nicht, gekuerzt oder vollstaendig.
+     * The origin depending on the setting: not at all, shortened or in full.
      *
-     * Gekuerzt wird auf den Netzanteil - /24 bei IPv4, /48 bei IPv6. Das
-     * genuegt fuer die Frage, aus welcher Ecke die Besucher kommen, und laesst
-     * sich keinem Anschluss mehr zuordnen. Gerechnet wird ueber inet_pton:
-     * IPv6 laesst sich als Text nicht zuverlaessig abschneiden, weil "::"
+     * Shortening keeps the network part - /24 on IPv4, /48 on IPv6. That is
+     * enough for the question which corner the visitors come from and can no
+     * longer be tied to one connection. Computed through inet_pton: IPv6
+     * cannot be cut reliably as text, because "::"
      * beliebig viele Nullgruppen vertritt.
      */
     private function url(Request $request): ?string
@@ -98,7 +98,7 @@ class RecordDemoUsage
         return inet_ntop(substr($roh, 0, $behalten).str_repeat("\0", strlen($roh) - $behalten));
     }
 
-    /** Eine Datei je Monat - haelt die Dateien klein und das Aufraeumen einfach. */
+    /** One file per month - keeps the files small and the cleanup simple. */
     public static function pfad(string $monat): string
     {
         return storage_path("app/demo-usage/{$monat}.jsonl");

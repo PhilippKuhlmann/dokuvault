@@ -27,7 +27,7 @@ class NetworkMapController extends Controller
     {
         $this->authorize('viewAny', Network::class);
 
-        // The site filter of the sidebar, here as a query value. A
+        // Der Standortfilter der Seitenleiste, hier als Abfragewert. Ein
         // Standort eines anderen Kunden zaehlt als kein Filter.
         $standort = (int) $request->query('site');
         $standort = $standort && $customer->sites()->whereKey($standort)->exists() ? $standort : null;

@@ -14,33 +14,33 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * How the app gets to see a documented object.
+ * Wie die App ein dokumentiertes Objekt zu sehen bekommt.
  *
- * The fields come from config/forms.php - the same description the modal in
- * the browser builds its form from. A list of its own for the app would be
- * out of date after the next new field, with nobody noticing.
+ * Die Felder kommen aus config/forms.php - derselben Beschreibung, aus der das
+ * Modal im Browser sein Formular baut. Eine eigene Liste fuer die App waere
+ * nach dem naechsten neuen Feld veraltet, ohne dass es jemand merkt.
  *
- * Secrets never leave through here, only the fact that one is set. The value
- * is available one at a time through App\Support\PasswordReveal - with a
- * throttle and a log entry, as in the browser.
+ * Geheimnisse gehen hier nie hinaus, nur die Tatsache, dass eines gesetzt
+ * ist. Den Wert gibt es einzeln ueber App\Support\Kennwortabruf - mit Bremse
+ * und Protokolleintrag, wie im Browser.
  */
 class MobileObjects
 {
     /**
-     * Field kinds the app does not show: files cannot be opened there, and
-     * hidden fields are not visible in the browser either.
+     * Feldarten, die die App nicht zeigt: Dateien sind dort nicht zu oeffnen,
+     * versteckte Felder sind auch im Browser nicht zu sehen.
      */
     private const OHNE = ['versteckt', 'datei'];
 
-    /** How many entries a list in the app gets at most. */
+    /** Wie viele Eintraege eine Liste in der App hoechstens bekommt. */
     public const LISTE_HOECHSTENS = 500;
 
     /**
-     * Every kind the app knows: slug => [model, permission, fields|null].
+     * Alle Typen, die die App kennt: Slug => [Model, Recht, Felder|null].
      *
-     * The form kinds plus whatever the global search finds but has no modal
-     * for (rack, patch panel, network outlet) - a hit you cannot open is
-     * no hit.
+     * Die Formulartypen plus das, was die globale Suche findet, aber kein
+     * Modal hat (Serverschrank, Patchfeld, Netzwerkdose) - ein Treffer, den
+     * man nicht oeffnen kann, ist keiner.
      *
      * @return array<string, array{0: class-string<Model>, 1: string, 2: array|null}>
      */
@@ -61,7 +61,7 @@ class MobileObjects
         return $typen;
     }
 
-    /** The kinds whose list this user may see. */
+    /** Die Typen, deren Liste dieser Benutzer sehen darf. */
     public function visibleKinds(User $nutzer): array
     {
         return array_filter(
@@ -87,7 +87,7 @@ class MobileObjects
         return Gate::forUser($nutzer)->allows($typ[1].'_create');
     }
 
-    /** Plural for headings, as in the sidebar. */
+    /** Mehrzahl fuer Ueberschriften, wie in der Seitenleiste. */
     public function titel(string $slug): string
     {
         return __(config('custom.list_titles')[$slug]
@@ -106,10 +106,10 @@ class MobileObjects
     }
 
     /**
-     * Fetch an object - with permission and customer check.
+     * Ein Objekt holen - mit Recht und Kundenzugehoerigkeit.
      *
-     * 404 for an unknown kind and for a foreign object of a customer user:
-     * they should not even learn that the number exists.
+     * 404 fuer einen unbekannten Typ und fuer ein fremdes Objekt eines
+     * Kundennutzers: Er soll nicht einmal erfahren, dass es die Nummer gibt.
      */
     public function finden(string $slug, int $id, User $nutzer): Model
     {
@@ -124,45 +124,45 @@ class MobileObjects
         return $objekt ?? abort(404);
     }
 
-    /** One row in list and search. */
+    /** Eine Zeile in Liste und Suche. */
     public function kurz(Model $objekt, string $slug): array
     {
         return [
             'typ' => $slug,
             'id' => $objekt->getKey(),
             'name' => $this->name($objekt, $slug),
-            'subtitle' => $this->subtitle($objekt),
-            'customer' => $this->kunde($objekt->customer),
+            'untertitel' => $this->subtitle($objekt),
+            'kunde' => $this->kunde($objekt->customer),
         ];
     }
 
-    /** Everything the detail view shows. */
+    /** Alles, was die Detailansicht zeigt. */
     public function detail(Model $objekt, string $slug, User $nutzer): array
     {
         $felder = $this->typen()[$slug][2];
 
         return [
             ...$this->kurz($objekt, $slug),
-            'singular' => $this->singular($slug),
-            'groups' => $felder !== null
+            'einzahl' => $this->singular($slug),
+            'gruppen' => $felder !== null
                 ? $this->groups($objekt, $felder)
                 : $this->groupsWithoutForm($objekt),
-            'ip_addresses' => method_exists($objekt, 'ipAddresses')
+            'ip_adressen' => method_exists($objekt, 'ipAddresses')
                 ? $objekt->ipAddresses()->with('network')->get()->map(fn ($ip) => [
                     // id and dhcp to remove it again (DeviceController).
                     'id' => $ip->id,
                     'dhcp' => (bool) $ip->dhcp,
-                    'address' => $ip->label(),
-                    'label' => $ip->label,
-                    'network' => $ip->network?->activityName(),
+                    'adresse' => $ip->label(),
+                    'bezeichnung' => $ip->label,
+                    'netz' => $ip->network?->activityName(),
                 ])->values()->all()
                 : [],
-            'credentials' => $this->zugangsdaten($objekt, $nutzer),
-            // The key stays German: it is part of the response the iOS app
-            // reads - changing it belongs together with the app.
-            'mounting' => $this->mountLocation($objekt),
-            'end_of_support' => $this->supportEnde($objekt),
-            'scan_targets' => $objekt instanceof Scanner
+            'zugangsdaten' => $this->zugangsdaten($objekt, $nutzer),
+            // Der Schluessel bleibt deutsch: Er ist Teil der Antwort, die die
+            // iOS-App liest - ein Umbau dort gehoert mit der App zusammen.
+            'einbauort' => $this->mountLocation($objekt),
+            'support_ende' => $this->supportEnde($objekt),
+            'scan_ziele' => $objekt instanceof Scanner
                 ? $objekt->scanTargets()->with('login')->get()->map(fn ($ziel) => $this->scanZiel($ziel))->values()->all()
                 : [],
         ];
@@ -174,9 +174,9 @@ class MobileObjects
         return [
             'id' => $ziel->id,
             'name' => $ziel->name,
-            'kind' => $ziel->kind,
-            'kind_label' => __(ScanTarget::ARTEN[$ziel->kind] ?? ScanTarget::ARTEN['other']),
-            'target' => $ziel->target,
+            'art' => $ziel->kind,
+            'art_label' => __(ScanTarget::ARTEN[$ziel->kind] ?? ScanTarget::ARTEN['other']),
+            'ziel' => $ziel->target,
             'login' => $ziel->login ? ['id' => $ziel->login->id, 'name' => $ziel->login->name] : null,
         ];
     }
@@ -190,7 +190,7 @@ class MobileObjects
 
         $rack = $objekt->rackItem->rack;
 
-        return ['text' => $text, 'rack_id' => $rack->id, 'customer' => $this->kunde($rack->customer)];
+        return ['text' => $text, 'rack_id' => $rack->id, 'kunde' => $this->kunde($rack->customer)];
     }
 
     /**
@@ -207,9 +207,9 @@ class MobileObjects
         }
 
         return [
-            'operating_system' => $os->name,
-            'date' => $os->eol_date->toDateString(),
-            'state' => match (true) {
+            'betriebssystem' => $os->name,
+            'datum' => $os->eol_date->toDateString(),
+            'zustand' => match (true) {
                 $os->istEol() => 'abgelaufen',
                 $os->laeuftAus() => 'bald',
                 default => 'ok',
@@ -229,7 +229,7 @@ class MobileObjects
         return $name ?: $this->singular($slug).' #'.$objekt->getKey();
     }
 
-    /** What makes the object recognisable in a list, without opening it. */
+    /** Woran man das Objekt in einer Liste wiedererkennt, ohne es zu oeffnen. */
     private function subtitle(Model $objekt): ?string
     {
         $teile = [
@@ -240,7 +240,7 @@ class MobileObjects
         return collect($teile)->filter()->implode(' · ') ?: null;
     }
 
-    /** The fields from the form, grouped by its sections. */
+    /** Die Felder aus dem Formular, nach dessen Abschnitten gruppiert. */
     private function groups(Model $objekt, array $felder): array
     {
         $gruppen = [];
@@ -262,20 +262,20 @@ class MobileObjects
         // Derived from the public key and therefore no form field - but the
         // value one compares on the server (x-fingerprint in the browser).
         if ($objekt instanceof SshKey && filled($objekt->fingerprint)) {
-            $gruppen[__('Allgemein')][] = ['name' => 'fingerprint', 'label' => __('Fingerprint'), 'kind' => 'text', 'value' => $objekt->fingerprint];
+            $gruppen[__('Allgemein')][] = ['name' => 'fingerprint', 'label' => __('Fingerprint'), 'art' => 'text', 'wert' => $objekt->fingerprint];
         }
 
         return collect($gruppen)
-            ->map(fn ($eintraege, $titel) => ['title' => $titel, 'fields' => $eintraege])
+            ->map(fn ($eintraege, $titel) => ['titel' => $titel, 'felder' => $eintraege])
             ->values()
             ->all();
     }
 
     /**
-     * One field - or null when it is empty.
+     * Ein Feld - oder null, wenn es leer ist.
      *
-     * Empty fields are left out: on a phone a page full of dashes is just
-     * scrolling distance.
+     * Leere Felder bleiben weg: Auf dem Telefon ist eine Seite voller
+     * Striche nur Scrollweg.
      */
     private function feld(Model $objekt, array $feld): ?array
     {
@@ -289,9 +289,9 @@ class MobileObjects
             $verweise = $this->hostVerweise($objekt, $feld['rolle']);
 
             return $verweise ? [
-                'name' => $name, 'label' => $label, 'kind' => 'text',
-                'value' => collect($verweise)->pluck('name')->implode(', '),
-                'links' => $verweise,
+                'name' => $name, 'label' => $label, 'art' => 'text',
+                'wert' => collect($verweise)->pluck('name')->implode(', '),
+                'verweise' => $verweise,
             ] : null;
         }
 
@@ -303,9 +303,9 @@ class MobileObjects
                 ->values();
 
             return $namen->isNotEmpty() ? [
-                'name' => $name, 'label' => $label, 'kind' => 'text',
-                'value' => $namen->implode(', '),
-                'list' => $namen->all(),
+                'name' => $name, 'label' => $label, 'art' => 'text',
+                'wert' => $namen->implode(', '),
+                'liste' => $namen->all(),
             ] : null;
         }
 
@@ -318,20 +318,20 @@ class MobileObjects
             $katalog = Service::farbzuordnung();
 
             return $dienste ? [
-                'name' => $name, 'label' => $label, 'kind' => 'text',
-                'value' => implode(' · ', $dienste),
-                'list' => $dienste,
-                'tiles' => array_map(fn ($dienst) => ['name' => $dienst]
-                    + (Service::kachelFarben($katalog[mb_strtolower(trim($dienst))] ?? null) ?? ['color' => null, 'text_color' => null]),
+                'name' => $name, 'label' => $label, 'art' => 'text',
+                'wert' => implode(' · ', $dienste),
+                'liste' => $dienste,
+                'kacheln' => array_map(fn ($dienst) => ['name' => $dienst]
+                    + (Service::kachelFarben($katalog[mb_strtolower(trim($dienst))] ?? null) ?? ['farbe' => null, 'schrift' => null]),
                     $dienste),
             ] : null;
         }
 
         if ($this->istGeheim($name)) {
-            // Check the raw value, not the decrypted one: the question is
-            // only whether something is in there.
+            // Den Rohwert pruefen, nicht den entschluesselten: Die Frage ist
+            // nur, ob etwas drinsteht.
             return filled($objekt->getRawOriginal($name))
-                ? ['name' => $name, 'label' => $label, 'kind' => 'secret', 'value' => null]
+                ? ['name' => $name, 'label' => $label, 'art' => 'geheim', 'wert' => null]
                 : null;
         }
 
@@ -342,10 +342,10 @@ class MobileObjects
         }
 
         [$art, $wert] = match ($feld['type']) {
-            'date' => ['date', $roh instanceof Carbon ? $roh->toDateString() : (string) $roh],
+            'date' => ['datum', $roh instanceof Carbon ? $roh->toDateString() : (string) $roh],
             'schalter' => ['text', $roh ? __('Ja') : __('Nein')],
             'einheit' => ['text', $roh.' '.($feld['einheit'] ?? '')],
-            'mehrzeilig' => ['multiline', (string) $roh],
+            'mehrzeilig' => ['mehrzeilig', (string) $roh],
             'optionen' => ['text', __((string) ($this->optionen($feld)[$roh] ?? $roh))],
             'standort' => ['text', $objekt->site?->name],
             'auswahl' => ['text', $feld['quelle']::find($roh)?->{$feld['anzeige'] ?? 'name'}],
@@ -356,12 +356,12 @@ class MobileObjects
             return null;
         }
 
-        return ['name' => $name, 'label' => $label, 'kind' => $art, 'value' => $wert];
+        return ['name' => $name, 'label' => $label, 'art' => $art, 'wert' => $wert];
     }
 
     /**
-     * The same rule as in the modal (object-modal.blade.php): a tower server
-     * has no mounting depth, even if the column still holds one.
+     * Dieselbe Regel wie im Modal (object-modal.blade.php): Ein Standserver
+     * hat keine Einbautiefe, auch wenn in der Spalte noch eine steht.
      * Mehrere Bedingungen gelten zusammen.
      */
     private function sichtbar(Model $objekt, array $feld): bool
@@ -403,7 +403,7 @@ class MobileObjects
             ->all();
     }
 
-    /** For objects without a form (rack, patch panel, outlet): the columns themselves. */
+    /** Fuer Objekte ohne Formular (Schrank, Patchfeld, Dose): die Spalten selbst. */
     private function groupsWithoutForm(Model $objekt): array
     {
         $versteckt = ['id', 'customer_id', 'site_id', 'created_at', 'updated_at', 'deleted_at'];
@@ -414,16 +414,16 @@ class MobileObjects
             ->map(fn ($wert, $name) => [
                 'name' => $name,
                 'label' => $name,
-                'kind' => $this->typeFromText($wert),
-                'value' => is_bool($wert) ? ($wert ? __('Ja') : __('Nein')) : (string) $wert,
+                'art' => $this->typeFromText($wert),
+                'wert' => is_bool($wert) ? ($wert ? __('Ja') : __('Nein')) : (string) $wert,
             ])
             ->values()
             ->all();
 
-        return $felder ? [['title' => __('Allgemein'), 'fields' => $felder]] : [];
+        return $felder ? [['titel' => __('Allgemein'), 'felder' => $felder]] : [];
     }
 
-    /** The linked credentials, without the password - the app fetches that one at a time. */
+    /** Die verknuepften Zugaenge, ohne Kennwort - das holt die App einzeln. */
     private function zugangsdaten(Model $objekt, User $nutzer): array
     {
         if (! method_exists($objekt, 'zugangsdaten')) {
@@ -441,7 +441,7 @@ class MobileObjects
                 'id' => $link->id,
                 'name' => $link->login->name,
                 'benutzer' => $link->login->username,
-                'kind' => $link->login->istSchluessel() ? 'ssh_key' : 'password',
+                'art' => $link->login->istSchluessel() ? 'schluessel' : 'kennwort',
                 'notiz' => $link->note,
                 'hat_kennwort' => filled($link->login->getRawOriginal('password')),
                 // The value one compares on the server; null for a password.
@@ -461,7 +461,7 @@ class MobileObjects
         return $feld['werte'] ?? (isset($feld['quelle']) ? config($feld['quelle'], []) : []);
     }
 
-    /** So the app can make an address tappable. */
+    /** Damit die App eine Adresse antippbar machen kann. */
     private function typeFromText($wert): string
     {
         $wert = (string) $wert;

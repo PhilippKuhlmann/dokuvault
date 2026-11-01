@@ -11,11 +11,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * The trash in the app: see what was deleted, and bring it back.
+ * Der Papierkorb in der App: sehen, was geloescht wurde, und es zurueckholen.
  *
- * Worked out in App\Support\Trash, the same class that fills the page in the
- * browser - including the cap of a hundred entries per kind and the question
- * of who may see what.
+ * Gerechnet wird in App\Support\Papierkorb, derselben Klasse, die die Seite
+ * im Browser fuellt - einschliesslich der Grenze von hundert Eintraegen je
+ * Art und der Frage, wer was sehen darf.
  */
 class TrashController extends Controller
 {
@@ -32,8 +32,8 @@ class TrashController extends Controller
                 ...$eintrag,
                 'geloescht_am' => $eintrag['geloescht_am']?->toIso8601String(),
             ])->values(),
-            // Which kinds hold more than the list shows - cutting silently
-            // reads like "there is no more".
+            // Welche Arten mehr haben, als die Liste zeigt - ein stilles
+            // Abschneiden liest sich wie "mehr ist nicht da".
             'gekuerzt' => collect($papierkorb->gekuerzt())
                 ->map(fn ($anzahl, $bezeichnung) => ['titel' => __($bezeichnung), 'anzahl' => $anzahl])
                 ->values(),
@@ -43,9 +43,9 @@ class TrashController extends Controller
     /**
      * Ein Objekt zurueckholen.
      *
-     * The response names the object the way the app opens it - right after
-     * bringing something back one usually wants to look. For a kind without a
-     * view in the app only the name stands there.
+     * Die Antwort nennt das Objekt so, wie die App es oeffnet - direkt nach
+     * dem Zurueckholen will man meist nachsehen. Bei einer Art ohne Ansicht
+     * in der App steht dort nur der Name.
      */
     public function restore(Request $request, Customer $customer, string $typ, int $id): JsonResponse
     {

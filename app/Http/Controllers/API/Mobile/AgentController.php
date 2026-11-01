@@ -12,17 +12,17 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 /**
- * Auto-documentation in the app: which agents run, what they report, and
- * the handles that count on site - "report now", switching tasks,
+ * Die Auto-Dokumentation in der App: Welche Agenten laufen, was sie melden,
+ * und die Griffe, die vor Ort zaehlen - "jetzt melden", Aufgaben umstellen,
  * einen Token sperren.
  *
- * Not included: creating tokens and the installation files (.exe, .sh). That
- * is desk work and stands in the browser only - a secret one sees once does
- * not belong on a phone one puts down afterwards.
+ * Nicht dabei: Token anlegen und die Installationsdateien (.exe, .sh). Das
+ * ist Schreibtischarbeit und steht nur im Browser - ein Geheimnis, das man
+ * einmal sieht, gehoert nicht auf ein Telefon, das man danach weglegt.
  */
 class AgentController extends Controller
 {
-    /** How many installations at most - the browser pages through them. */
+    /** Wie viele Installationen hoechstens - der Browser blaettert dafuer. */
     public const HOECHSTENS = 200;
 
     public function index(Request $request, Customer $customer): JsonResponse
@@ -54,8 +54,8 @@ class AgentController extends Controller
                 'laeuft_ab' => $eines->expires_at?->toIso8601String(),
                 'abgelaufen' => $eines->isExpired(),
             ])->values(),
-            // The intervals the server allows - the app offers only these,
-            // or a 422 would come back.
+            // Die Takte, die der Server zulaesst - die App bietet nur diese
+            // an, sonst kaeme eine 422 zurueck.
             'takte' => collect(config('custom.agent_intervalle'))
                 ->map(fn ($beschriftung, $minuten) => ['minuten' => (int) $minuten, 'titel' => __($beschriftung)])
                 ->values(),
@@ -63,10 +63,10 @@ class AgentController extends Controller
     }
 
     /**
-     * What this agent should do - applies from its next run.
+     * Was dieser Agent tun soll - gilt ab seinem naechsten Lauf.
      *
-     * Every task of its kind can be switched on, detected or not: detection
-     * can be wrong, and the agent log then says so.
+     * Jede Aufgabe seiner Art laesst sich einschalten, erkannt oder nicht:
+     * Die Erkennung kann danebenliegen, und das Agentenprotokoll sagt dann,
      * woran es scheiterte.
      */
     public function update(Request $request, Customer $customer, AgentInstallation $agentInstallation): JsonResponse
@@ -87,7 +87,7 @@ class AgentController extends Controller
         return response()->json(['agent' => $this->agent($agentInstallation->fresh('agentToken'))]);
     }
 
-    /** "Report now": the agent picks it up on its next check-in. */
+    /** "Jetzt melden": Der Agent holt es sich beim naechsten Checkin ab. */
     public function run(Request $request, Customer $customer, AgentInstallation $agentInstallation): JsonResponse
     {
         Gate::authorize('agent_manage');
@@ -135,7 +135,7 @@ class AgentController extends Controller
             'art' => $agent->kind,
             'version' => $agent->version,
             'zuletzt_gemeldet' => $agent->last_seen_at?->toIso8601String(),
-            // No longer reporting - the same question as on the dashboard.
+            // Meldet nicht mehr - dieselbe Frage wie auf dem Dashboard.
             'stumm' => $agent->isStale(),
             'takt_minuten' => $agent->intervalMinutes(),
             'laufen_angefordert' => $agent->run_requested_at !== null,
