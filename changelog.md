@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.11.02
+
+### Changed
+
+- **Die Schnittstelle der iOS-App antwortet mit englischen Feldnamen.** Rund 200 Schlüssel in den Antworten unter `/api/mobile` heißen jetzt englisch: `typ` → `type`, `kunde` → `customer`, `untertitel` → `subtitle`, `zugangsdaten` → `credentials`, `einbauort` → `mounting`, `gruppen` → `groups`, `eintraege` → `entries`, `anzahl` → `count`, `darf_anlegen` → `may_create` und so weiter. Die App ist gleichzeitig nachgezogen – eine ältere App-Version versteht die Antworten nicht mehr und braucht ein Update. Programmcode und Adressen waren schon englisch; die Schnittstelle war das letzte deutsche Stück nach außen.
+
 ## 26.11.01
 
 ### Changed
