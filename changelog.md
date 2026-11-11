@@ -2,6 +2,10 @@
 
 ## 26.11.11
 
+### Security
+
+- **Ein Sicherheitsnetz unter der Mandantentrennung.** Ein Kundenzugang liest und ändert nur noch Datensätze seines eigenen Kunden – auch dort, wo eine Abfrage den Kunden-Filter vergessen sollte. Bisher hing das allein an rund 150 von Hand geschriebenen Filtern; ein vergessener hieß fremde Kennwörter, jetzt heißt er eine leere Liste. Techniker und Admins sind nicht betroffen. Ruft ein Kundenzugang gezielt einen fremden Datensatz auf, kommt jetzt „nicht gefunden" (404) statt „kein Zugriff" (403).
+
 ### Fixed
 
 - **Kunden-Dashboard am Telefon: Name und PDF-Knopf stoßen nicht mehr zusammen.** „PDF laden" brach in zwei Zeilen um und „neu erstellen" lief aus dem Bild. Der PDF-Block rutscht jetzt unter den Kundennamen, wenn die Zeile zu schmal ist.

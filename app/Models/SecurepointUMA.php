@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCustomer;
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Concerns\IsMountable;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Crypt;
 
 class SecurepointUMA extends Model
 {
+    use BelongsToCustomer;
     use HasCredentials;
     use HasFactory, SoftDeletes;
     use HasIpAddresses;

@@ -37,9 +37,9 @@ class Controller extends BaseController
         // einem vorherigen Kunden) alle Datensätze des Kunden zurückgeben.
         if ($site && $site !== 'all' && $customer->sites()->whereKey($site)->exists()
             && $this->tableHasSiteColumn($model)) {
-            $query = $model::where('customer_id', $customer->id)->where('site_id', $site);
+            $query = $model::forCustomer($customer)->where('site_id', $site);
         } else {
-            $query = $model::where('customer_id', $customer->id);
+            $query = $model::forCustomer($customer);
         }
 
         return $this->preloadCredentials($model, $query);
@@ -104,11 +104,11 @@ class Controller extends BaseController
 
     protected function getSitesForCustomer($customer)
     {
-        return Site::where('customer_id', $customer->id)->get();
+        return Site::forCustomer($customer)->get();
     }
 
     protected function getNetworksForCustomer($customer)
     {
-        return Network::where('customer_id', $customer->id)->get();
+        return Network::forCustomer($customer)->get();
     }
 }

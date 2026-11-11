@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCustomer;
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Concerns\TracksChanges;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Crypt;
 
 class VM extends Model
 {
+    use BelongsToCustomer;
     use HasCredentials;
     use HasFactory, SoftDeletes;
     use HasIpAddresses;
@@ -72,7 +74,7 @@ class VM extends Model
     protected function services(): Attribute
     {
         return new Attribute(
-            get: fn ($value) => explode(',', $value),
+            get: fn ($value) => explode(',', (string) $value),
         );
     }
 

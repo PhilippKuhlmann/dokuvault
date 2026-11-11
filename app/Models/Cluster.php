@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCustomer;
 use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Cluster extends Model
 {
+    use BelongsToCustomer;
     use HasFactory, SoftDeletes;
     use TracksChanges;
 

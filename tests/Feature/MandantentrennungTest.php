@@ -160,11 +160,14 @@ test('der Serverschrank eines fremden Kunden bleibt zu', function () {
         'name' => 'Rack GEHEIM', 'height_units' => 42,
     ]);
 
+    // 404, not 403: the editor reloads the rack on every action, and
+    // OwnCustomerScope does not find a foreign one - the component's own
+    // check behind it (abort_if ... 403) no longer gets a rack to refuse.
     Livewire::test(RackEditor::class, ['rack' => $fremdesRack, 'customer' => $fremd])
-        ->assertForbidden();
+        ->assertNotFound();
 
     Livewire::test(RackEditor::class, ['rack' => $fremdesRack, 'customer' => $meins])
-        ->assertForbidden();
+        ->assertNotFound();
 });
 
 test('die Dosen eines fremden Patchfelds bleiben zu', function () {
@@ -176,8 +179,9 @@ test('die Dosen eines fremden Patchfelds bleiben zu', function () {
         'name' => 'PF-GEHEIM', 'port_count' => 24,
     ]);
 
+    // 404 for the same reason as the rack above.
     Livewire::test(PatchPanelPorts::class, ['panel' => $fremdesFeld, 'customer' => $fremd])
-        ->assertForbidden();
+        ->assertNotFound();
 });
 
 test('Dateien, Netze, Assistent und PDF-Status eines fremden Kunden bleiben zu', function () {
@@ -252,7 +256,7 @@ test('ein fremdes Objekt lässt sich nicht aus dem Papierkorb zurückholen', fun
     expect($this->post("/{$meins->slug}/trash/camera/{$fremdeKamera->id}/restore")->status())
         ->toBeIn([403, 404]);
 
-    expect(Camera::withTrashed()->find($fremdeKamera->id)->trashed())->toBeTrue();
+    expect(acrossCustomers(Camera::class)->withTrashed()->find($fremdeKamera->id)->trashed())->toBeTrue();
 });
 
 test('keine Komponente gibt einem fremden Kundennutzer Inhalte heraus', function () {

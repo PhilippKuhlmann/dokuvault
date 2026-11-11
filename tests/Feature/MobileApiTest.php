@@ -418,7 +418,8 @@ test('ein Kundennutzer holt kein Kennwort eines fremden Kunden', function () {
 
     $this->withToken(mobilToken(mobilNutzer(['server_viewAny', 'logingeneral_viewAny'], $eigener)))
         ->postJson('/api/mobile/credentials/'.$link->id.'/password')
-        ->assertForbidden();
+        // 404, not 403: OwnCustomerScope hides the foreign link before any check gets to refuse it.
+        ->assertNotFound();
 
     expect(Activity::where('event', 'kennwort_angesehen')->exists())->toBeFalse();
 });

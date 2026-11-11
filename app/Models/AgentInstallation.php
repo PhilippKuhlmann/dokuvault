@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCustomer;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -14,6 +15,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class AgentInstallation extends Model
 {
+    use BelongsToCustomer;
+
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
     protected $casts = [

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCustomer;
 use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Crypt;
 
 class LoginGeneral extends Model
 {
+    use BelongsToCustomer;
     use HasFactory, SoftDeletes;
     use TracksChanges;
 

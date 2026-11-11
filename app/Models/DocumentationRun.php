@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCustomer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class DocumentationRun extends Model
 {
+    use BelongsToCustomer;
     use HasFactory;
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];

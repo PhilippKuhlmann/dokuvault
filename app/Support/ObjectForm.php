@@ -68,7 +68,7 @@ class ObjectForm
      */
     public function find(int $id): Model
     {
-        return $this->settings()['model']::where('customer_id', $this->customerId)->findOrFail($id);
+        return $this->settings()['model']::forCustomer($this->customerId)->findOrFail($id);
     }
 
     /** The values of an empty form - what the modal shows after "Neu". */
@@ -272,7 +272,7 @@ class ObjectForm
 
         foreach ($this->fields() as $feld) {
             $liste = match ($feld['type']) {
-                'standort' => Site::where('customer_id', $this->customerId)->orderBy('name')->pluck('name', 'id')->all(),
+                'standort' => Site::forCustomer($this->customerId)->orderBy('name')->pluck('name', 'id')->all(),
                 'optionen' => array_map(fn ($text) => __((string) $text), $feld['werte'] ?? config($feld['quelle'], [])),
                 'auswahl' => $this->selectOptions($feld),
                 'host' => ADDomainHost::options($this->customerId, $this->hostTypes()),

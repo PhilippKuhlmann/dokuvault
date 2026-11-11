@@ -71,17 +71,18 @@ test('ein Kundennutzer kommt nicht an fremde Racks', function () {
     $eigener = Customer::factory()->create();
     $token = rackAppToken(rackAppNutzer(RACK_RECHTE, $eigener));
 
-    // Fremder Kunde in der Adresse: isCustomer.
+    // Fremder Kunde in der Adresse: The rack is bound before isCustomer runs,
+    // and OwnCustomerScope does not find it - 404 instead of 403.
     $this->withToken($token)
         ->getJson("/api/mobile/customers/{$kunde->slug}/racks/{$rack->id}")
-        ->assertForbidden();
+        ->assertNotFound();
 
     // Eigener Kunde, fremdes Rack: scoped binding.
     $this->withToken($token)
         ->deleteJson("/api/mobile/customers/{$eigener->slug}/racks/{$rack->id}")
         ->assertNotFound();
 
-    expect($rack->fresh())->not->toBeNull();
+    expect(acrossCustomers(Rack::class)->find($rack->id))->not->toBeNull();
 });
 
 test('ein Rack laesst sich anlegen, aendern und loeschen', function () {

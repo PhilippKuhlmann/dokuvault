@@ -5,9 +5,11 @@ use App\Models\Customer;
 use App\Models\OperatingSystem;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\Scopes\OwnCustomerScope;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Features\SupportTesting\Testable;
 use PragmaRX\Google2FA\Google2FA;
@@ -187,4 +189,16 @@ function nutzerWechseln(User $nutzer): void
 {
     test()->flushSession();
     test()->actingAs($nutzer);
+}
+
+/**
+ * A query that looks past the tenant safety net (OwnCustomerScope).
+ *
+ * For the checks at the end of a test: once a test has signed in a customer
+ * login, that login sees its own customer only - also when the test itself
+ * asks whether the other customer's row is still there.
+ */
+function acrossCustomers(string $model): Builder
+{
+    return $model::withoutGlobalScope(OwnCustomerScope::class);
 }

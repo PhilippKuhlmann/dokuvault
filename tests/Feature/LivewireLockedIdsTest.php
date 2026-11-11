@@ -49,7 +49,7 @@ test('IpBereiche cannot be pointed at another customer after mounting', function
 
     // A foreign range id on the own network deletes nothing.
     $component->call('delete', $otherRange->id);
-    expect(IpRange::find($otherRange->id))->not->toBeNull();
+    expect(acrossCustomers(IpRange::class)->find($otherRange->id))->not->toBeNull();
 });
 
 test('the onboarding form cannot be pointed at another customer', function () {

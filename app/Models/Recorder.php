@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCustomer;
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Concerns\HasProcurement;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Recorder extends Model
 {
+    use BelongsToCustomer;
     use HasCredentials;
     use HasFactory, SoftDeletes;
     use HasIpAddresses;

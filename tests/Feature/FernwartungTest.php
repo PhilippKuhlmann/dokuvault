@@ -92,7 +92,8 @@ test('a customer account does not connect to another customer\'s device', functi
     $kunde = userWithPermissions(['server_viewAny']);
     $kunde->forceFill(['customer_id' => Customer::factory()->create()->id])->save();
 
-    $this->actingAs($kunde)->get(route('remote.connect', ['server', $server->id]))->assertForbidden();
+    // 404, not 403: OwnCustomerScope hides the foreign row before any check gets to refuse it.
+    $this->actingAs($kunde)->get(route('remote.connect', ['server', $server->id]))->assertNotFound();
 });
 
 test('connecting needs the right of the list', function () {

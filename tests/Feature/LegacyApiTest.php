@@ -51,7 +51,7 @@ test('a foreign accesspoint behind the own customer URL is a 404 for every verb'
     legacyRequest($token, 'PUT', $uri, ['site_id' => $ownSite->id, 'name' => 'GEKAPERT'])->assertNotFound();
     legacyRequest($token, 'DELETE', $uri)->assertNotFound();
 
-    $fresh = Accesspoint::withTrashed()->find($otherAp->id);
+    $fresh = acrossCustomers(Accesspoint::class)->withTrashed()->find($otherAp->id);
     expect($fresh->name)->toBe('FREMDER-AP')
         ->and($fresh->trashed())->toBeFalse()
         ->and($fresh->site_id)->not->toBe($ownSite->id);

@@ -64,7 +64,8 @@ test('ein Kundentoken sieht nur die eigenen Server', function () {
         ->assertJsonFragment(['name' => 'Eigener'])
         ->assertJsonMissing(['name' => 'Fremder']);
 
-    $this->withToken($token)->getJson('/api/servers/'.$fremder->id)->assertStatus(403);
+    // 404, not 403: OwnCustomerScope hides the foreign row before any check gets to refuse it.
+    $this->withToken($token)->getJson('/api/servers/'.$fremder->id)->assertStatus(404);
 });
 
 test('ein Kundentoken legt keinen Server bei einem fremden Kunden an', function () {

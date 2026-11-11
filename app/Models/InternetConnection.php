@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCustomer;
 use App\Models\Concerns\TracksChanges;
 use App\Rules\IsNetwork;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Crypt;
 
 class InternetConnection extends Model
 {
+    use BelongsToCustomer;
     use HasFactory, SoftDeletes;
     use TracksChanges;
 

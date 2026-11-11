@@ -91,7 +91,7 @@ class ObjectList extends Component
     {
         $klasse = config('forms.'.$this->typ.'.model');
 
-        $abfrage = $klasse::where('customer_id', $this->customerId);
+        $abfrage = $klasse::forCustomer($this->customerId);
         $this->sortierungAnwenden($abfrage);
 
         $position = $abfrage->pluck('id')->search($id);
@@ -142,7 +142,7 @@ class ObjectList extends Component
                     return $def;
                 }
 
-                $ids = $klasse::where('customer_id', $this->customerId)
+                $ids = $klasse::forCustomer($this->customerId)
                     ->whereNotNull($def['feld'])->distinct()->pluck($def['feld']);
 
                 $def['optionen'] = $def['quelle']::whereIn('id', $ids)
@@ -205,7 +205,7 @@ class ObjectList extends Component
         $this->onlyOwnCustomer($this->customerId);
 
         $klasse = config('forms.'.$this->typ.'.model');
-        $eintrag = $klasse::where('customer_id', $this->customerId)->findOrFail($id);
+        $eintrag = $klasse::forCustomer($this->customerId)->findOrFail($id);
 
         // DNS, RDAP and TLS together can take longer than PHP's default 30
         // seconds; the check has its own budget below this. Only ever
@@ -232,7 +232,7 @@ class ObjectList extends Component
         $einstellung = config('forms.'.$this->typ);
         $klasse = $einstellung['model'];
 
-        $abfrage = $klasse::where('customer_id', $this->customerId);
+        $abfrage = $klasse::forCustomer($this->customerId);
 
         // Site filter - the same rule as Controller::getFilteredQuery, except
         // that it was missing here: since the lists run through this Livewire
@@ -246,7 +246,7 @@ class ObjectList extends Component
 
         if (! $this->highlight && $site && $site !== 'all'
             && $this->tableHasSite($klasse)
-            && Site::where('customer_id', $this->customerId)->whereKey($site)->exists()) {
+            && Site::forCustomer($this->customerId)->whereKey($site)->exists()) {
             $abfrage->where('site_id', $site);
         }
 

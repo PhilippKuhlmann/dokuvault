@@ -272,7 +272,7 @@ test('Kunden-Nutzer sieht fremde Dosen nicht in der Suche', function () {
         ->set('search', '9.99')
         ->assertDontSee('GEHEIM 9.99');
 
-    expect(PatchPort::where('outlet', 'GEHEIM 9.99')->exists())->toBeTrue();
+    expect(acrossCustomers(PatchPort::class)->where('outlet', 'GEHEIM 9.99')->exists())->toBeTrue();
 });
 
 // --- Dosen durchnummerieren ---
