@@ -8,7 +8,7 @@ namespace App\Support;
  *
  * Shared by the download after creating a token (AgentTokenController) and
  * the Windows service, which fetches the current script before every run
- * (AgentController::script). One place, so both always hand out the same.
+ * (Agent\InstallationController::script). One place, so both always hand out the same.
  */
 class AgentScript
 {

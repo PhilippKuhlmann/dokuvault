@@ -25,7 +25,7 @@ class AdminAgentStats extends Component
         Gate::authorize('admin_stats');
 
         // Current version per kind: the Windows exe, for Linux/Proxmox the
-        // shared installer (see AgentController::update).
+        // shared installer (see Agent\InstallationController::update).
         $aktuell = [
             'windows' => AgentScript::exeVersion(),
             'proxmox' => AgentScript::installerVersion('linux-agent.sh'),

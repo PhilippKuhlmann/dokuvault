@@ -145,7 +145,7 @@ test('every legacy API route refuses a token without rights', function () {
         return str_starts_with($route->uri(), 'api/')
             && str_starts_with($action, 'App\\Http\\Controllers\\API\\')
             && ! str_contains($action, '\\Mobile\\')
-            && ! str_contains($action, 'AgentController')
+            && ! str_contains($action, '\\Agent\\')
             && ! str_contains($action, 'ChecklistReportController');
     });
     expect($routes)->not->toBeEmpty();

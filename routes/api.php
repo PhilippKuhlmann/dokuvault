@@ -1,7 +1,14 @@
 <?php
 
 use App\Http\Controllers\API\AccesspointController;
-use App\Http\Controllers\API\AgentController;
+use App\Http\Controllers\API\Agent\ActiveDirectoryController as AgentActiveDirectoryController;
+use App\Http\Controllers\API\Agent\BackupController as AgentBackupController;
+use App\Http\Controllers\API\Agent\ClientController as AgentClientController;
+use App\Http\Controllers\API\Agent\HypervisorController as AgentHypervisorController;
+use App\Http\Controllers\API\Agent\InstallationController as AgentInstallationController;
+use App\Http\Controllers\API\Agent\Microsoft365Controller as AgentMicrosoft365Controller;
+use App\Http\Controllers\API\Agent\NetworkController as AgentNetworkController;
+use App\Http\Controllers\API\Agent\ServerController as AgentServerController;
 use App\Http\Controllers\API\ChecklistReportController;
 use App\Http\Controllers\API\CustomerController;
 use App\Http\Controllers\API\Mobile\AgentController as MobileAgentController;
@@ -53,24 +60,24 @@ Route::middleware(['auth:sanctum', 'active', RequireTwoFactor::class])->get('/us
 // Own limit per token instead of the API limit per IP - see
 // RouteServiceProvider: a whole site reports from one NAT address.
 Route::middleware(['throttle:agent', 'agent'])->withoutMiddleware('throttle:api')->prefix('agent')->group(function () {
-    Route::post('/proxmox', [AgentController::class, 'proxmox']);
-    Route::post('/hyperv', [AgentController::class, 'hyperv']);
-    Route::post('/vmware', [AgentController::class, 'vmware']);
-    Route::post('/windows-server', [AgentController::class, 'windowsServer']);
-    Route::post('/linux-server', [AgentController::class, 'linuxServer']);
-    Route::post('/windows-ad', [AgentController::class, 'windowsAd']);
-    Route::post('/windows-client', [AgentController::class, 'windowsClient']);
-    Route::post('/unifi', [AgentController::class, 'unifi']);
-    Route::post('/firewall', [AgentController::class, 'firewall']);
-    Route::post('/microsoft365', [AgentController::class, 'microsoft365']);
-    Route::post('/backup', [AgentController::class, 'backup']);
+    Route::post('/proxmox', [AgentHypervisorController::class, 'proxmox']);
+    Route::post('/hyperv', [AgentHypervisorController::class, 'hyperv']);
+    Route::post('/vmware', [AgentHypervisorController::class, 'vmware']);
+    Route::post('/windows-server', [AgentServerController::class, 'windowsServer']);
+    Route::post('/linux-server', [AgentServerController::class, 'linuxServer']);
+    Route::post('/windows-ad', [AgentActiveDirectoryController::class, 'windowsAd']);
+    Route::post('/windows-client', [AgentClientController::class, 'windowsClient']);
+    Route::post('/unifi', [AgentNetworkController::class, 'unifi']);
+    Route::post('/firewall', [AgentNetworkController::class, 'firewall']);
+    Route::post('/microsoft365', [AgentMicrosoft365Controller::class, 'microsoft365']);
+    Route::post('/backup', [AgentBackupController::class, 'backup']);
     // Installed agents report in and get the roles chosen on the agent page.
-    Route::post('/checkin', [AgentController::class, 'checkin']);
-    Route::post('/report', [AgentController::class, 'report']);
+    Route::post('/checkin', [AgentInstallationController::class, 'checkin']);
+    Route::post('/report', [AgentInstallationController::class, 'report']);
     // The Windows service fetches the current script before every run.
-    Route::get('/script/{agent}', [AgentController::class, 'script'])->where('agent', '[a-z0-9-]+');
+    Route::get('/script/{agent}', [AgentInstallationController::class, 'script'])->where('agent', '[a-z0-9-]+');
     // Installed agents update themselves (the agent program, not only the script).
-    Route::get('/update/{service}', [AgentController::class, 'update'])->where('service', 'windows|proxmox|linux');
+    Route::get('/update/{service}', [AgentInstallationController::class, 'update'])->where('service', 'windows|proxmox|linux');
 });
 
 // The AD script of a checklist reports back. Its own key (one checklist,

@@ -18,6 +18,7 @@
 
 ### Internal
 
+- **Die Agent-Schnittstelle ist nach Agententyp aufgeteilt.** Was die Agenten melden, nahm bisher eine einzige Klasse mit 1869 Zeilen entgegen. Jetzt gibt es einen Controller je Art – Hypervisor, Server, Client, Active Directory, Netzwerk, Microsoft 365, Backup und den installierten Agenten selbst – und drei gemeinsame Bausteine. Adressen und Verhalten sind unverändert, die Agenten merken davon nichts.
 - **Ein Controller, eine Seite und eine Policy für alle Gerätetypen.** Server, Drucker, Domains und die übrigen 35 Typen hatten je einen eigenen Controller, eine eigene Listenseite und eine eigene Policy – 123 Dateien, die sich nur im Namen unterschieden. Jetzt gibt es je eine. Adressen, Rechte und Verhalten sind unverändert.
 - **Ein versehentlich eingechecktes Programm ist aus dem Repository.** `agent/windows-service/agent` war ein 9,6 MB großes macOS-Binary aus einem lokalen `go build`; es steht jetzt in der `.gitignore`. Die ausgelieferte `.exe` ist nicht betroffen.
 - **Die Test-Zahl in der README stimmt wieder:** 1923 statt 1394.
