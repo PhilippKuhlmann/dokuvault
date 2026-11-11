@@ -12,10 +12,10 @@ PDF export, global search across every customer, and devices that
 **document themselves** through an agent.
 
 [![Tests](https://github.com/PhilippKuhlmann/dokuvault/actions/workflows/tests.yml/badge.svg)](https://github.com/PhilippKuhlmann/dokuvault/actions/workflows/tests.yml)
-![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP-8.3+-777BB4?logo=php&logoColor=white)
 ![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)
 ![Livewire](https://img.shields.io/badge/Livewire-4-FB70A9)
-![Tests](https://img.shields.io/badge/Tests-1923%20passing-3fb950)
+![Tests](https://img.shields.io/badge/Tests-1900%2B%20passing-3fb950)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
 **[▶ Try the live demo](https://doku.dokuvault.de)**
@@ -386,17 +386,17 @@ text reaches neither the database nor the audit log.
 
 | Area | Used |
 | --- | --- |
-| **Backend** | PHP 8.2 · Laravel 12 · Livewire 4 · Laravel Sanctum 4 *(agent/API tokens)* |
+| **Backend** | PHP 8.3+ · Laravel 12 · Livewire 4 · Laravel Sanctum 4 *(agent/API tokens)* |
 | **Packages** | spatie/laravel-activitylog 4.12 *(audit log)* · barryvdh/laravel-dompdf 3.0 *(PDF export)* · spatie/laravel-backup 9.3 · league/flysystem-sftp-v3, -ftp *(backup targets)* |
 | **Frontend** | Tailwind CSS 4 · Alpine.js 3 · Flowbite 4 · Vite 6 |
 | **Database** | MySQL / MariaDB |
-| **Quality** | Pest 3 *(1394 tests)* · Laravel Pint · GitHub Actions CI |
+| **Quality** | Pest 3 *(1900+ tests)* · Laravel Pint · GitHub Actions CI |
 
 ---
 
 ## 📦 Installation
 
-Requirements: either Docker — or PHP 8.2+, Composer, Node.js and MySQL/MariaDB.
+Requirements: either Docker — or PHP 8.3+, Composer, Node.js and MySQL/MariaDB.
 
 ### With Docker (quickest)
 
@@ -513,9 +513,9 @@ built-in **Admin** role is special: it passes every permission check uncondition
 
 ## 🧪 Tests
 
-1394 feature tests (Pest 3) run against an in-memory SQLite — no setup needed, no traces in your
-development database. GitHub Actions runs the same suite on every push, against PHP 8.2 and 8.3 with
-SQLite and MariaDB, plus PHP 8.4 alongside but not blocking.
+More than 1900 feature tests (Pest 3) run against an in-memory SQLite — no setup needed, no traces in your
+development database. GitHub Actions runs the same suite on every push, against PHP 8.3, 8.4 and 8.5,
+each with SQLite and MariaDB.
 
 ```bash
 php artisan test

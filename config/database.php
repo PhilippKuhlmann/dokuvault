@@ -63,7 +63,7 @@ return [
             // own and marked the old ones as deprecated. A deprecation notice
             // from the configuration runs into every test run and every log -
             // hence the new constant as soon as it exists. The old one stays
-            // for PHP 8.2 to 8.4.
+            // for PHP 8.3 and 8.4.
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 (defined('Pdo\Mysql::ATTR_SSL_CA') ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],

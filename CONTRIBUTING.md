@@ -37,7 +37,7 @@ The tests run against in-memory SQLite (see `phpunit.xml`), so no separate test 
 Please make sure **all tests pass** before opening a pull request, and add tests for new features
 (pattern: `tests/Feature/ComputerCrudTest.php`).
 
-CI runs the same suite against PHP 8.2 and 8.3, each with SQLite and MariaDB.
+CI runs the same suite against PHP 8.3, 8.4 and 8.5, each with SQLite and MariaDB.
 
 ## Code style
 

@@ -30,7 +30,7 @@ php artisan test
 ```
 
 Die Tests laufen gegen SQLite in-memory (siehe `phpunit.xml`) — es ist keine eigene
-Test-Datenbank nötig. Die CI führt dieselbe Suite gegen PHP 8.2 und 8.3 aus, jeweils mit SQLite
+Test-Datenbank nötig. Die CI führt dieselbe Suite gegen PHP 8.3, 8.4 und 8.5 aus, jeweils mit SQLite
 und MariaDB. Bitte stelle sicher, dass vor einem Pull Request **alle Tests grün** sind,
 und ergänze für neue Features passende Tests (Muster: `tests/Feature/ComputerCrudTest.php`).
 

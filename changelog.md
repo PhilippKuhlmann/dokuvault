@@ -6,6 +6,10 @@
 
 - **Ein Sicherheitsnetz unter der Mandantentrennung.** Ein Kundenzugang liest und ändert nur noch Datensätze seines eigenen Kunden – auch dort, wo eine Abfrage den Kunden-Filter vergessen sollte. Bisher hing das allein an rund 150 von Hand geschriebenen Filtern; ein vergessener hieß fremde Kennwörter, jetzt heißt er eine leere Liste. Techniker und Admins sind nicht betroffen. Ruft ein Kundenzugang gezielt einen fremden Datensatz auf, kommt jetzt „nicht gefunden" (404) statt „kein Zugriff" (403).
 
+### Changed
+
+- **PHP 8.3 ist jetzt die Mindestversion.** PHP 8.2 bekommt ab Ende 2026 keine Sicherheitsupdates mehr. Wer DokuVault ohne Docker auf PHP 8.2 betreibt, hebt vor dem Update PHP an – `composer install` bricht sonst ab. Das Docker-Image lief schon auf 8.3. Getestet wird jetzt gegen 8.3, 8.4 und 8.5, jeweils mit SQLite und MariaDB.
+
 ### Fixed
 
 - **Kunden-Dashboard am Telefon: Name und PDF-Knopf stoßen nicht mehr zusammen.** „PDF laden" brach in zwei Zeilen um und „neu erstellen" lief aus dem Bild. Der PDF-Block rutscht jetzt unter den Kundennamen, wenn die Zeile zu schmal ist.
