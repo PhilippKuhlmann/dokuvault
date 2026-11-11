@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ObjectListController;
 use App\Livewire\DeviceIpAddresses;
 use App\Livewire\ObjectList;
 use App\Livewire\ObjectModal;
@@ -141,7 +142,11 @@ test('jede Liste aus config/forms ist auf das Modal umgestellt', function () {
     $offen = [];
 
     foreach (array_keys(config('forms')) as $typ) {
-        $index = resource_path("views/$typ/index.blade.php");
+        // Its own page for the few kinds that have one, else the one page
+        // all the others share (ObjectListController).
+        $index = in_array($typ, ObjectListController::OWN_PAGE, true)
+            ? resource_path("views/$typ/index.blade.php")
+            : resource_path('views/object/index.blade.php');
 
         if (! str_contains(file_get_contents($index), 'livewire:object-list')) {
             $offen[] = $typ;

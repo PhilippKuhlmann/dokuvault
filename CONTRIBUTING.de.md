@@ -83,6 +83,9 @@ folgen.
 
 - Ein Thema pro PR, mit kurzer Beschreibung (Was & Warum).
 - Neue Objekttypen folgen dem bestehenden Muster (Migration, Model mit `TracksChanges`,
-  Factory, Policy, Controller, FormRequest mit `BelongsToCustomer`-Rule, Views, Route,
-  Eintrag in `config/custom.php` unter `permissions` und ggf. `trashables`).
+  Factory, FormRequest mit `BelongsToCustomer`-Rule, Karte oder Tabellenzeile der Liste
+  (`_karte.blade.php` bzw. `_zeile.blade.php`), Eintrag in `config/forms.php` und in
+  `config/custom.php` unter `permissions` und ggf. `trashables`). Policy, Controller,
+  Listenseite und Route ergeben sich aus diesen Einträgen (`ResourcePolicy`,
+  `ObjectListController`).
 - Sicherheitslücken bitte **nicht** als Issue melden — siehe [SECURITY.de.md](SECURITY.de.md).

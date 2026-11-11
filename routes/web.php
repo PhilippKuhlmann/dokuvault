@@ -1,75 +1,38 @@
 <?php
 
-use App\Http\Controllers\AccesspointController;
-use App\Http\Controllers\ADDomainController;
-use App\Http\Controllers\ADGroupController;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\ADUserController;
 use App\Http\Controllers\AgentTokenController;
-use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BackupDownloadController;
 use App\Http\Controllers\BrandingController;
-use App\Http\Controllers\CameraController;
-use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\ChangelogController;
 use App\Http\Controllers\ChecklistController;
-use App\Http\Controllers\ClusterController;
-use App\Http\Controllers\ComputerController;
-use App\Http\Controllers\ContactPersonController;
 use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\DECTController;
 use App\Http\Controllers\DeviceModelController;
-use App\Http\Controllers\DomainController;
-use App\Http\Controllers\DynDNSController;
 use App\Http\Controllers\EolController;
 use App\Http\Controllers\FileController;
-use App\Http\Controllers\FirewallController;
-use App\Http\Controllers\FTPServerController;
-use App\Http\Controllers\InternetConnectionController;
-use App\Http\Controllers\IoTDeviceController;
 use App\Http\Controllers\IpPlanController;
 use App\Http\Controllers\LicenseAccessController;
 use App\Http\Controllers\LicenseSoftwareController;
 use App\Http\Controllers\LicenseWindowsController;
 use App\Http\Controllers\LocaleController;
-use App\Http\Controllers\LoginGeneralController;
-use App\Http\Controllers\LoginWebsiteController;
-use App\Http\Controllers\MachineController;
-use App\Http\Controllers\MailboxController;
 use App\Http\Controllers\MailboxProviderController;
 use App\Http\Controllers\MailSettingController;
-use App\Http\Controllers\NASController;
 use App\Http\Controllers\NetworkController;
 use App\Http\Controllers\NetworkMapController;
-use App\Http\Controllers\NetworkShareController;
-use App\Http\Controllers\NetworkSwitchController;
+use App\Http\Controllers\ObjectListController;
 use App\Http\Controllers\OperatingSystemController;
-use App\Http\Controllers\OtherClientController;
 use App\Http\Controllers\PatchPanelController;
-use App\Http\Controllers\PhoneController;
-use App\Http\Controllers\PhoneSystemController;
-use App\Http\Controllers\PrinterController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RackCatalogItemController;
 use App\Http\Controllers\RackController;
-use App\Http\Controllers\RecorderController;
 use App\Http\Controllers\RemoteConnectController;
 use App\Http\Controllers\RoleController;
-use App\Http\Controllers\RouterController;
-use App\Http\Controllers\ScannerController;
-use App\Http\Controllers\ScanTargetController;
-use App\Http\Controllers\SecurepointUMAController;
-use App\Http\Controllers\ServerController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SettingController;
-use App\Http\Controllers\SipAccountController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\SshKeyController;
 use App\Http\Controllers\TrashController;
-use App\Http\Controllers\UpsController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\VMController;
-use App\Http\Controllers\WifiController;
 use App\Http\Controllers\WizardController;
 use App\Livewire\AdminActivityLog;
 use App\Livewire\AdminAgentSettings;
@@ -377,50 +340,18 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::post('wizard/complete', [WizardController::class, 'complete'])->name('wizard.complete');
 
             Route::resource('site', SiteController::class)->only(['index']);
-            Route::resource('contactperson', ContactPersonController::class)->only(['index']);
+            // The list page of every kind from config/forms.php that has no
+            // page of its own - one controller for all of them, named
+            // "{kind}.index" as before. See ObjectListController.
+            foreach (ObjectListController::types() as $type) {
+                Route::get($type, ObjectListController::class)->name($type.'.index')->defaults('type', $type);
+            }
 
-            Route::resource('router', RouterController::class)->only(['index']);
-            Route::resource('firewall', FirewallController::class)->only(['index']);
-            Route::resource('securepointuma', SecurepointUMAController::class)->only(['index']);
             Route::resource('network', NetworkController::class)->only(['index']);
-            Route::resource('accesspoint', AccesspointController::class)->only(['index']);
-            Route::resource('server', ServerController::class)->only(['index']);
-            Route::resource('cluster', ClusterController::class)->only(['index']);
-            Route::resource('vm', VMController::class)->only(['index']);
-            Route::resource('networkswitch', NetworkSwitchController::class, ['parameters' => ['networkswitch' => 'networkswitch']])->only(['index']);
             Route::resource('rack', RackController::class)->except(['show']);
             Route::resource('patchpanel', PatchPanelController::class, ['parameters' => ['patchpanel' => 'patchpanel']])->except(['show']);
-            Route::resource('nas', NASController::class, ['parameters' => ['nas' => 'nas']])->only(['index']);
-            Route::get('networkshare', [NetworkShareController::class, 'index'])->name('networkshare.index');
-            Route::resource('addomain', ADDomainController::class)->only(['index']);
-            Route::resource('aduser', ADUserController::class)->only(['index']);
-            Route::resource('adgroup', ADGroupController::class)->only(['index']);
-            Route::resource('loginwebsite', LoginWebsiteController::class)->only(['index']);
-            Route::resource('logingeneral', LoginGeneralController::class)->only(['index']);
             // The list only: create, edit and delete run through the modal.
             Route::get('sshkey', [SshKeyController::class, 'index'])->name('sshkey.index');
-            Route::resource('phonesystem', PhoneSystemController::class)->only(['index']);
-            Route::resource('phone', PhoneController::class)->only(['index']);
-            Route::resource('dect', DECTController::class)->only(['index']);
-            Route::resource('mailbox', MailboxController::class)->only(['index']);
-            Route::resource('wifi', WifiController::class)->only(['index']);
-            Route::resource('computer', ComputerController::class)->only(['index']);
-            Route::resource('iotdevice', IoTDeviceController::class)->only(['index']);
-            Route::resource('machine', MachineController::class)->only(['index']);
-            Route::resource('otherclient', OtherClientController::class)->only(['index']);
-            Route::resource('printer', PrinterController::class)->only(['index']);
-            Route::resource('scanner', ScannerController::class)->only(['index']);
-            Route::resource('sipaccount', SipAccountController::class)->only(['index']);
-            Route::resource('scantarget', ScanTargetController::class)->only(['index']);
-            Route::resource('ftpserver', FTPServerController::class)->only(['index']);
-            Route::resource('recorder', RecorderController::class)->only(['index']);
-            Route::resource('camera', CameraController::class)->only(['index']);
-            Route::resource('ups', UpsController::class, ['parameters' => ['ups' => 'ups']])->only(['index']);
-            Route::resource('internetconnection', InternetConnectionController::class)->only(['index']);
-            Route::resource('domain', DomainController::class)->only(['index']);
-            Route::resource('certificate', CertificateController::class)->only(['index']);
-            Route::resource('backup', BackupController::class)->only(['index']);
-            Route::resource('dyndns', DynDNSController::class, ['parameters' => ['dyndns' => 'dyndns']])->only(['index']);
 
             Route::get('/licensesoftware/{licensesoftware}/download', [LicenseSoftwareController::class, 'download'])->name('licensesoftware.download');
             Route::resource('licensesoftware', LicenseSoftwareController::class, ['parameters' => ['licensesoftware' => 'licensesoftware']])->only(['index']);

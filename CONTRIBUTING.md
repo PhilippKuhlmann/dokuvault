@@ -86,6 +86,8 @@ running DokuVault themselves can then pin a state instead of following `main`.
 
 - One topic per PR, with a short description (what and why).
 - New object types follow the existing pattern (migration, model with `TracksChanges`, factory,
-  policy, controller, FormRequest with the `BelongsToCustomer` rule, views, route, an entry in
-  `config/custom.php` under `permissions` and, where applicable, `trashables`).
+  FormRequest with the `BelongsToCustomer` rule, the card or table row of the list
+  (`_karte.blade.php` or `_zeile.blade.php`), an entry in `config/forms.php` and in
+  `config/custom.php` under `permissions` and, where applicable, `trashables`). Policy, controller,
+  list page and route follow from those entries (`ResourcePolicy`, `ObjectListController`).
 - Please do **not** report security issues as an issue — see [SECURITY.md](SECURITY.md).

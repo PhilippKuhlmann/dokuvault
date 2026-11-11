@@ -6,6 +6,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Policies\CustomerPolicy;
 use App\Policies\GeneralPolicy;
+use App\Policies\ResourcePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -16,9 +17,7 @@ class AuthServiceProvider extends ServiceProvider
      *
      * @var array<class-string, class-string>
      */
-    protected $policies = [
-        // 'App\Models\NAS' => 'App\Policies\NASPolicy',
-    ];
+    protected $policies = [];
 
     /**
      * Register any authentication / authorization services.
@@ -84,16 +83,23 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('checklist_viewAny', fn (User $user) => collect(['checklist_manage', 'checklist_request', 'checklist_approve'])
             ->contains(fn ($recht) => Gate::forUser($user)->allows($recht)));
 
-        $resources = config('custom.permissions');
+        // One ResourcePolicy per kind, told its name. Bound under a key of
+        // its own, because the class alone does not say which kind it speaks
+        // for. Registered twice over: as the policy of the model, for
+        // authorize('viewAny', Server::class), and as the four gates
+        // "server_viewAny" to "server_delete", for @can and the Livewire
+        // components.
+        foreach (config('custom.permissions') as $resource) {
+            $name = strtolower($resource);
+            $policy = 'policy.'.$name;
 
-        foreach ($resources as $resource) {
-            $policyClass = "App\Policies\\{$resource}Policy";
-            $gateName = strtolower($resource);
+            $this->app->bind($policy, fn () => new ResourcePolicy($name));
 
-            Gate::define("{$gateName}_viewAny", [$policyClass, 'viewAny']);
-            Gate::define("{$gateName}_create", [$policyClass, 'create']);
-            Gate::define("{$gateName}_update", [$policyClass, 'update']);
-            Gate::define("{$gateName}_delete", [$policyClass, 'delete']);
+            Gate::policy('App\\Models\\'.$resource, $policy);
+
+            foreach (['viewAny', 'create', 'update', 'delete'] as $ability) {
+                Gate::define("{$name}_{$ability}", [$policy, $ability]);
+            }
         }
 
     }
