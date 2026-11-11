@@ -4,6 +4,7 @@
 
 ### Security
 
+- **Abhängigkeiten aktualisiert, neun Sicherheitshinweise geschlossen.** Betroffen waren Livewire (jetzt 4.4.8) und mehrere Symfony-Pakete (jetzt 7.4.23); dazu Laravel 12.72 und 60 weitere Pakete auf dem aktuellen Stand ihrer Version. `composer audit` meldet nichts mehr.
 - **Ein Sicherheitsnetz unter der Mandantentrennung.** Ein Kundenzugang liest und ändert nur noch Datensätze seines eigenen Kunden – auch dort, wo eine Abfrage den Kunden-Filter vergessen sollte. Bisher hing das allein an rund 150 von Hand geschriebenen Filtern; ein vergessener hieß fremde Kennwörter, jetzt heißt er eine leere Liste. Techniker und Admins sind nicht betroffen. Ruft ein Kundenzugang gezielt einen fremden Datensatz auf, kommt jetzt „nicht gefunden" (404) statt „kein Zugriff" (403).
 
 ### Changed
