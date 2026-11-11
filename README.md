@@ -15,7 +15,7 @@ PDF export, global search across every customer, and devices that
 ![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php&logoColor=white)
 ![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)
 ![Livewire](https://img.shields.io/badge/Livewire-4-FB70A9)
-![Tests](https://img.shields.io/badge/Tests-1394%20passing-3fb950)
+![Tests](https://img.shields.io/badge/Tests-1923%20passing-3fb950)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
 **[▶ Try the live demo](https://doku.dokuvault.de)**

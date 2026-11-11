@@ -45,3 +45,8 @@ Homestead.json
 
 # Written by go-winres on every build (scripts/build-windows-agent.sh)
 /agent/windows-service/rsrc_windows_amd64.syso
+
+# What a plain "go build" in agent/windows-service leaves behind on the
+# developer's machine (named after the Go module). The exe that is shipped is
+# built by scripts/build-windows-agent.sh into public/downloads.
+/agent/windows-service/agent

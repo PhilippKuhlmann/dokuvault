@@ -1,8 +1,12 @@
 <x-app-layout :$customer>
     <div class="p-3 sm:p-5">
 
-        <div class="flex items-center justify-between mb-5">
-            <div class="text-3xl font-CoconPro text-gray-900 dark:text-gray-100">
+        {{-- flex-wrap: on a phone the name, the PDF button and "neu erstellen"
+             do not fit in one row - the button broke into two lines and the
+             link ran out of the screen. Now the PDF block moves below the
+             name when the row is too narrow. --}}
+        <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 mb-5">
+            <div class="min-w-0 text-3xl font-CoconPro text-gray-900 break-words dark:text-gray-100">
                 {{ $customer->name }}
             </div>
             @can('create_pdf')

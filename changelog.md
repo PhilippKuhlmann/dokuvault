@@ -1,5 +1,18 @@
 # Changelog
 
+## 26.11.11
+
+### Fixed
+
+- **Kunden-Dashboard am Telefon: Name und PDF-Knopf stoßen nicht mehr zusammen.** „PDF laden" brach in zwei Zeilen um und „neu erstellen" lief aus dem Bild. Der PDF-Block rutscht jetzt unter den Kundennamen, wenn die Zeile zu schmal ist.
+- **Kacheln mit eigenem Symbol.** „Switches" trug das Personen-Symbol der Rollen, NAS und Backups teilten sich eines. Switches und Backups haben jetzt ein eigenes.
+- **Kein Konsolenfehler mehr auf Seiten ohne Seitenleiste.** Kundensuche, globale Suche, Profil und Changelog hatten einen Menüknopf für eine Seitenleiste, die es dort nicht gibt – am Telefon tat er nichts, und Flowbite meldete bei jedem Aufruf „Drawer with id logo-sidebar not found".
+
+### Internal
+
+- **Ein versehentlich eingechecktes Programm ist aus dem Repository.** `agent/windows-service/agent` war ein 9,6 MB großes macOS-Binary aus einem lokalen `go build`; es steht jetzt in der `.gitignore`. Die ausgelieferte `.exe` ist nicht betroffen.
+- **Die Test-Zahl in der README stimmt wieder:** 1923 statt 1394.
+
 ## 26.11.02
 
 ### Changed

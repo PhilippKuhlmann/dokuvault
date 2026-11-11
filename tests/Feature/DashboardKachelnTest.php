@@ -103,3 +103,38 @@ test('expiry tiles only appear when something is due', function () {
         ->assertDontSee('Ablaufende Zertifikate')
         ->assertDontSee('Support-Ende');
 });
+
+/**
+ * The twelve count tiles are told apart by their icon. "Switches" carried the
+ * people icon of the roles, and NAS and backups shared the database cylinder.
+ */
+test('every count tile has an icon of its own', function () {
+    [$customer] = dashboardKunde();
+    $this->actingAs(userWithPermissions(['server_viewAny']));
+
+    $this->get(route('customer.dashboard', $customer))
+        ->assertOk()
+        ->assertViewHas('tiles', function (array $tiles) {
+            $icons = array_column($tiles, 'icon', 'label');
+
+            return count(array_unique($icons)) === count($icons)
+                && $icons['Switches'] === 'svg.switch'
+                && $icons['Backups'] !== $icons['NAS'];
+        });
+});
+
+/**
+ * On a phone the customer name, the PDF button and "neu erstellen" do not fit
+ * in one row: the button broke into two lines and the link ran out of the
+ * screen. The header wraps now, and the button itself stays on one line.
+ */
+test('the dashboard header wraps instead of squeezing the PDF button', function () {
+    [$customer] = dashboardKunde();
+    $this->actingAs(userWithPermissions(['server_viewAny', 'create_pdf']));
+
+    $content = $this->get(route('customer.dashboard', $customer))->assertOk()->getContent();
+
+    expect($content)
+        ->toContain('flex flex-wrap items-center justify-between')
+        ->toContain('inline-flex items-center gap-1.5 whitespace-nowrap');
+});
