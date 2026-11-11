@@ -16,9 +16,9 @@ use Illuminate\Database\Eloquent\Builder;
  * TenantModelsTest fails for a model that has the column and not the trait -
  * a new table cannot slip past it.
  */
-trait BelongsToCustomer
+trait OwnedByCustomer
 {
-    public static function bootBelongsToCustomer(): void
+    public static function bootOwnedByCustomer(): void
     {
         static::addGlobalScope(new OwnCustomerScope);
     }

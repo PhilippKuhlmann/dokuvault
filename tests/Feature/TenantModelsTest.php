@@ -2,7 +2,7 @@
 
 use App\Models\ChecklistTemplate;
 use App\Models\ChecklistTemplateItem;
-use App\Models\Concerns\BelongsToCustomer;
+use App\Models\Concerns\OwnedByCustomer;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
 use App\Models\Scopes\OwnCustomerScope;
@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Schema;
  *
  * Every list filters by customer itself - 150 times `where('customer_id')`,
  * each written by hand. These tests hold the net below that: a model with a
- * customer_id carries BelongsToCustomer, and with it a customer login reads
+ * customer_id carries OwnedByCustomer, and with it a customer login reads
  * rows of its own customer only, whatever the query says.
  */
 
@@ -59,24 +59,24 @@ function tenantServer(Customer $customer, string $name): Server
     ]);
 }
 
-test('every model with a customer_id carries BelongsToCustomer', function () {
+test('every model with a customer_id carries OwnedByCustomer', function () {
     $missing = array_filter(
         tenantModels(),
-        fn (string $class) => ! in_array(BelongsToCustomer::class, class_uses_recursive($class), true),
+        fn (string $class) => ! in_array(OwnedByCustomer::class, class_uses_recursive($class), true),
     );
 
     // More than a handful, or the filter above found nothing and the test
     // would pass for the wrong reason.
     expect(count(tenantModels()))->toBeGreaterThan(50)
-        ->and(array_values($missing))->toBe([], 'Without BelongsToCustomer: '.implode(', ', $missing));
+        ->and(array_values($missing))->toBe([], 'Without OwnedByCustomer: '.implode(', ', $missing));
 });
 
-test('no model without a customer_id carries BelongsToCustomer', function () {
+test('no model without a customer_id carries OwnedByCustomer', function () {
     // The other direction: on a table without the column the scope would
     // break every query of a customer login with "unknown column".
     $wrong = array_filter(
         allModels(),
-        fn (string $class) => in_array(BelongsToCustomer::class, class_uses_recursive($class), true)
+        fn (string $class) => in_array(OwnedByCustomer::class, class_uses_recursive($class), true)
             && ! Schema::hasColumn((new $class)->getTable(), 'customer_id'),
     );
 
@@ -87,7 +87,7 @@ test('User is not scoped - the scope reads the signed-in user through it', funct
     // users.customer_id says which customer a login is bound to, not whom a
     // row belongs to. And a scope on User would run while the guard is still
     // loading the user it asks for.
-    expect(in_array(BelongsToCustomer::class, class_uses_recursive(User::class), true))->toBeFalse();
+    expect(in_array(OwnedByCustomer::class, class_uses_recursive(User::class), true))->toBeFalse();
 });
 
 test('a customer login reads no row of another customer from any model', function () {

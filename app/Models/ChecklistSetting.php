@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToCustomer;
+use App\Models\Concerns\OwnedByCustomer;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Crypt;
  */
 class ChecklistSetting extends Model
 {
-    use BelongsToCustomer;
+    use OwnedByCustomer;
 
     /** Readable sets: no l/I/O/0/1 that look alike on a note. */
     public const UPPER = 'ABCDEFGHJKLMNPQRSTUVWXYZ';

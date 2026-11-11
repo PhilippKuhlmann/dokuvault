@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToCustomer;
 use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Concerns\HasProcurement;
+use App\Models\Concerns\OwnedByCustomer;
 use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,11 +15,11 @@ use Illuminate\Support\Facades\Crypt;
 
 class Computer extends Model
 {
-    use BelongsToCustomer;
     use HasCredentials;
     use HasFactory, SoftDeletes;
     use HasIpAddresses;
     use HasProcurement;
+    use OwnedByCustomer;
     use TracksChanges;
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];

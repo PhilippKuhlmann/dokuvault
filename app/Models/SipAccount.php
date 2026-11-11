@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToCustomer;
 use App\Models\Concerns\HasCredentials;
+use App\Models\Concerns\OwnedByCustomer;
 use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,9 +15,9 @@ use Illuminate\Support\Collection;
  */
 class SipAccount extends Model
 {
-    use BelongsToCustomer;
     use HasCredentials;
     use HasFactory, SoftDeletes;
+    use OwnedByCustomer;
     use TracksChanges;
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];

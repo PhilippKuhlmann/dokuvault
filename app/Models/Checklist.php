@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToCustomer;
+use App\Models\Concerns\OwnedByCustomer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
  */
 class Checklist extends Model
 {
-    use BelongsToCustomer;
+    use OwnedByCustomer;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
 

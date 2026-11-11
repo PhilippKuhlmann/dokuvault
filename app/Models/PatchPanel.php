@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToCustomer;
 use App\Models\Concerns\IsMountable;
+use App\Models\Concerns\OwnedByCustomer;
 use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,9 +16,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class PatchPanel extends Model
 {
-    use BelongsToCustomer;
     use HasFactory, SoftDeletes;
     use IsMountable;
+    use OwnedByCustomer;
     use TracksChanges;
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];

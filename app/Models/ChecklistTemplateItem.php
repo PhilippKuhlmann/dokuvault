@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToCustomer;
+use App\Models\Concerns\OwnedByCustomer;
 use Illuminate\Database\Eloquent\Model;
 
 /** A step of a template - standard (customer_id null) or a customer's own. */
 class ChecklistTemplateItem extends Model
 {
-    use BelongsToCustomer;
+    use OwnedByCustomer;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
 

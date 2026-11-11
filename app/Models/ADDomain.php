@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToCustomer;
 use App\Models\Concerns\HasCredentials;
+use App\Models\Concerns\OwnedByCustomer;
 use App\Models\Concerns\TracksChanges;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,9 +13,9 @@ use Illuminate\Support\Facades\Crypt;
 
 class ADDomain extends Model
 {
-    use BelongsToCustomer;
     use HasCredentials;
     use HasFactory, SoftDeletes;
+    use OwnedByCustomer;
     use TracksChanges;
 
     protected $table = 'ad_domains';

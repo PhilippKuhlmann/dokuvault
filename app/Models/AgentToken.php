@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToCustomer;
+use App\Models\Concerns\OwnedByCustomer;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,8 +10,8 @@ use Illuminate\Support\Str;
 
 class AgentToken extends Model
 {
-    use BelongsToCustomer;
     use HasFactory;
+    use OwnedByCustomer;
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
