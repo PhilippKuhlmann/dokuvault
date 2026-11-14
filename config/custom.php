@@ -1138,7 +1138,7 @@ return [
                 'veeam' => 'Veeam Backup',
                 'windows-backup' => 'Windows-Sicherung',
                 // Never switched on by detection - see AgentInstallation.
-                'network-scan' => 'Netzwerk-Scan (Drucker, USV)',
+                'network-scan' => 'Netzwerk-Scan (SNMP)',
             ],
             // Shown always, not only after creating a token - one looks this
             // up months later.
@@ -1152,7 +1152,7 @@ return [
                 'Intervall: auf dieser Seite unter „Installierte Agenten“; -interval 15 ist nur der Vorschlag für den ersten Kontakt.',
                 'Testen: run-once · Status: status · Token erneuern: set-token -token doc_…',
                 'Protokoll: Ereignisanzeige (Quelle „DokuVault Agent“) und C:\ProgramData\DokuVault\agent.log. Unter einer Gruppenrichtlinie „AllSigned“ laufen die Scripte nicht.',
-                'Netzwerk-Scan (Drucker, USV): schaltet sich nie von selbst ein. Der Agent fragt die gewählten Netze einmal am Tag per SNMP (UDP 161) ab – Firewalls zwischen den Netzen müssen das durchlassen, und manche EDR- oder IDS-Produkte melden einen Scan als Angriff.',
+                'Netzwerk-Scan (SNMP): schaltet sich nie von selbst ein. Der Agent fragt die gewählten Netze einmal am Tag per SNMP (UDP 161) ab – Firewalls zwischen den Netzen müssen das durchlassen, und manche EDR- oder IDS-Produkte melden einen Scan als Angriff.',
             ],
         ],
         // systemd timer on the host instead of a program: Proxmox is Debian,

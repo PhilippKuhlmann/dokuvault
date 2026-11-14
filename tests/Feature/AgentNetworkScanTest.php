@@ -1,16 +1,21 @@
 <?php
 
+use App\Models\Accesspoint;
 use App\Models\AgentInstallation;
 use App\Models\AgentToken;
+use App\Models\Camera;
 use App\Models\Customer;
+use App\Models\NAS;
 use App\Models\Network;
 use App\Models\NetworkScanFinding;
+use App\Models\NetworkSwitch;
 use App\Models\Printer;
 use App\Models\Site;
 use App\Models\Ups;
 
 /*
- * The network scan of the Windows service: printers and UPS found by SNMP.
+ * The network scan of the Windows service: printers, UPS, switches, access
+ * points, NAS and cameras found by SNMP.
  * Switched on by hand only; scans at most once a day; nothing is created
  * without a technician - findings are taken over, linked or ignored.
  */
@@ -391,3 +396,130 @@ test('a finding opens to everything the scan knows, and what it may match', func
         ->assertSee('Passt vermutlich zu')
         ->assertSee('Empfang (gleiche Seriennummer)');
 });
+
+test('switches, access points, NAS and cameras become findings too', function () {
+    ['plain' => $plain] = scanSetup();
+
+    scanReport($plain, [
+        ['type' => 'switch', 'ip' => '192.0.2.2', 'serial' => 'FOC1234X0AB', 'name' => 'sw-core', 'manufacturer' => 'Cisco', 'model' => 'WS-C2960X-48FPD-L', 'firmware' => '15.2(7)E4'],
+        ['type' => 'accesspoint', 'ip' => '192.0.2.3', 'mac' => '78:8A:20:01:02:03', 'name' => 'ap-og2', 'manufacturer' => 'Ubiquiti', 'model' => 'UAP-AC-Pro'],
+        ['type' => 'nas', 'ip' => '192.0.2.4', 'serial' => '2150PDN123456', 'manufacturer' => 'Synology', 'model' => 'DS920+', 'firmware' => 'DSM 7.2.2-72806'],
+        ['type' => 'camera', 'ip' => '192.0.2.5', 'mac' => '44:19:b6:aa:bb:cc', 'manufacturer' => 'Hikvision'],
+    ])->assertOk()->assertJson(['findings_new' => 4]);
+
+    expect(NetworkScanFinding::orderBy('ip')->pluck('identifier', 'type')->all())->toBe([
+        'switch' => 'FOC1234X0AB',
+        'accesspoint' => 'mac:78:8a:20:01:02:03',
+        'nas' => '2150PDN123456',
+        'camera' => 'mac:44:19:b6:aa:bb:cc',
+    ]);
+});
+
+test('an unknown kind is refused', function () {
+    ['plain' => $plain] = scanSetup();
+
+    scanReport($plain, [hpPrinter(['type' => 'router'])])->assertUnprocessable();
+});
+
+test('a taken-over switch, NAS and camera carry identifier and firmware', function () {
+    ['plain' => $plain, 'customer' => $customer, 'site' => $site] = scanSetup();
+    $this->actingAs(userWithPermissions(['agent_manage']));
+
+    scanReport($plain, [
+        ['type' => 'switch', 'ip' => '192.0.2.2', 'serial' => 'FOC1234X0AB', 'manufacturer' => 'Cisco', 'model' => 'WS-C2960X-48FPD-L', 'firmware' => '15.2(7)E4'],
+        ['type' => 'nas', 'ip' => '192.0.2.4', 'serial' => '2150PDN123456', 'manufacturer' => 'Synology', 'model' => 'DS920+', 'firmware' => 'DSM 7.2.2-72806'],
+        ['type' => 'camera', 'ip' => '192.0.2.5', 'mac' => '44:19:b6:aa:bb:cc', 'manufacturer' => 'Hikvision', 'firmware' => 'V5.7.3'],
+    ]);
+
+    foreach (NetworkScanFinding::all() as $fund) {
+        $this->post(route('agent.finding.accept', [$customer, $fund]), ['name' => 'Neu '.$fund->type, 'site_id' => $site->id])
+            ->assertRedirect(route('agent.findings', $customer));
+    }
+
+    $switch = NetworkSwitch::forCustomer($customer)->sole();
+    expect($switch->agent_identifier)->toBe('FOC1234X0AB')
+        ->and($switch->serialNumber)->toBe('FOC1234X0AB')
+        ->and($switch->firmware)->toBe('15.2(7)E4')
+        ->and($switch->ipAddresses()->first()->address)->toBe('192.0.2.2');
+
+    $nas = NAS::forCustomer($customer)->sole();
+    expect($nas->agent_identifier)->toBe('2150PDN123456')->and($nas->firmware)->toBe('DSM 7.2.2-72806');
+
+    $kamera = Camera::forCustomer($customer)->sole();
+    expect($kamera->agent_identifier)->toBe('mac:44:19:b6:aa:bb:cc')->and($kamera->name)->toBe('Neu camera');
+
+    // The next scan updates them instead of finding them again.
+    scanReport($plain, [
+        ['type' => 'switch', 'ip' => '192.0.2.2', 'serial' => 'FOC1234X0AB', 'firmware' => '15.2(7)E11'],
+    ])->assertJson(['devices_updated' => 1, 'findings_new' => 0]);
+    expect($switch->fresh()->firmware)->toBe('15.2(7)E11');
+});
+
+test('a switch the UniFi agent documents is not offered again', function () {
+    ['plain' => $plain, 'customer' => $customer, 'site' => $site] = scanSetup();
+
+    $unifi = NetworkSwitch::forceCreate([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'name' => 'USW-24', 'agent_identifier' => '78:8a:20:aa:bb:cc',
+    ]);
+    Accesspoint::forceCreate([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'name' => 'AP-Flur', 'agent_identifier' => '78:8a:20:dd:ee:ff', 'serialNumber' => 'UAP123',
+    ]);
+    $unifi->ipAddresses()->create(['address' => '192.0.2.40', 'customer_id' => $customer->id]);
+
+    scanReport($plain, [
+        // Same address, a different MAC (a port, not the base address).
+        ['type' => 'switch', 'ip' => '192.0.2.40', 'mac' => '78:8a:20:aa:bb:cd', 'model' => 'USW-24'],
+        // Same serial.
+        ['type' => 'accesspoint', 'ip' => '192.0.2.41', 'serial' => 'UAP123'],
+        // Same MAC as the UniFi identifier.
+        ['type' => 'switch', 'ip' => '192.0.2.42', 'mac' => '78:8A:20:AA:BB:CC'],
+    ])->assertJson(['findings_new' => 0, 'skipped_other_agent' => 3]);
+
+    expect(NetworkScanFinding::count())->toBe(0)
+        ->and($unifi->fresh()->name)->toBe('USW-24');
+});
+
+test('a device the scan replaced at the same address is still offered', function () {
+    ['plain' => $plain, 'customer' => $customer, 'site' => $site] = scanSetup();
+
+    $alt = NetworkSwitch::forceCreate([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'name' => 'Alter Switch', 'agent_identifier' => 'OLD123',
+    ]);
+    $alt->ipAddresses()->create(['address' => '192.0.2.2', 'customer_id' => $customer->id]);
+
+    scanReport($plain, [['type' => 'switch', 'ip' => '192.0.2.2', 'serial' => 'NEW456']])
+        ->assertJson(['findings_new' => 1, 'skipped_other_agent' => 0]);
+});
+
+test('the findings page lists the kinds in their order', function () {
+    ['plain' => $plain, 'customer' => $customer] = scanSetup();
+    $this->actingAs(userWithPermissions(['agent_manage']));
+
+    scanReport($plain, [
+        ['type' => 'camera', 'ip' => '192.0.2.5', 'mac' => '44:19:b6:aa:bb:cc', 'name' => 'cam-hof'],
+        ['type' => 'switch', 'ip' => '192.0.2.9', 'serial' => 'S1', 'name' => 'sw-9'],
+        ['type' => 'switch', 'ip' => '192.0.2.10', 'serial' => 'S2', 'name' => 'sw-10'],
+        hpPrinter(['ip' => '192.0.2.50']),
+    ]);
+
+    $this->get(route('agent.findings', $customer))->assertOk()
+        ->assertSeeInOrder(['HP-OG2', 'sw-9', 'sw-10', 'cam-hof']);
+});
+
+test('switch, access point, NAS and camera forms keep the firmware', function (string $typ, string $klasse) {
+    ['customer' => $customer, 'site' => $site] = scanSetup();
+    $this->actingAs(userWithPermissions([$typ.'_viewAny', $typ.'_create']));
+
+    imModal($typ, $customer, ['site_id' => $site->id, 'name' => 'Mit Firmware', 'port' => '80', 'firmware' => '1.2.3'])
+        ->assertHasNoErrors();
+
+    expect($klasse::where('name', 'Mit Firmware')->sole()->firmware)->toBe('1.2.3');
+})->with([
+    ['networkswitch', NetworkSwitch::class],
+    ['accesspoint', Accesspoint::class],
+    ['nas', NAS::class],
+    ['camera', Camera::class],
+]);

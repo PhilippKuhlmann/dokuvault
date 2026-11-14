@@ -1,17 +1,16 @@
 package main
 
-// The network scan: printers and UPS in the networks chosen on the agent
-// page, found by SNMP. Unlike the other roles this is no PowerShell script -
+// The network scan: printers, UPS, switches, access points, NAS and cameras
+// in the networks chosen on the agent page, found by SNMP. Unlike the other roles this is no PowerShell script -
 // asking 1024 addresses one after another would take minutes there, and
 // Windows has no usable SNMP client of its own.
 //
-// Only SNMP, no ping and no ARP: what is recognised here (Printer-MIB,
-// UPS-MIB, APC) answers SNMP anyway, and an address that does not answer
-// is of no interest. Behind a router that is all there is in any case - a
+// Only SNMP, no ping and no ARP: what is recognised here answers SNMP
+// anyway, and an address that does not answer is of no interest. Behind a router that is all there is in any case - a
 // MAC address never crosses one.
 //
 // Documentation, not monitoring: identity and firmware, never toner,
-// counters or battery state.
+// counters, battery state, port status or traffic.
 
 import (
 	"bytes"
@@ -19,6 +18,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/netip"
+	"regexp"
 	"sort"
 	"strings"
 	"sync"
@@ -31,7 +31,7 @@ type scanJob struct {
 	Communities []string `json:"communities"`
 }
 
-// scannedDevice is one printer or UPS as DokuVault takes it.
+// scannedDevice is one recognised device as DokuVault takes it.
 type scannedDevice struct {
 	Type         string `json:"type"`
 	IP           string `json:"ip"`
@@ -89,6 +89,10 @@ const (
 	oidHrDeviceDescr   = "1.3.6.1.2.1.25.3.2.1.3"
 	oidEntSerial       = "1.3.6.1.2.1.47.1.1.1.1.11"
 	oidEntFirmware     = "1.3.6.1.2.1.47.1.1.1.1.9"
+	oidEntDescr        = "1.3.6.1.2.1.47.1.1.1.1.2"
+	oidEntSoftware     = "1.3.6.1.2.1.47.1.1.1.1.10"
+	oidEntMfgName      = "1.3.6.1.2.1.47.1.1.1.1.12"
+	oidEntModelName    = "1.3.6.1.2.1.47.1.1.1.1.13"
 	oidIfPhysAddress   = "1.3.6.1.2.1.2.2.1.6"
 	oidEnterprisesRoot = "1.3.6.1.4.1."
 
@@ -102,29 +106,56 @@ const (
 	oidApcModel    = "1.3.6.1.4.1.318.1.1.1.1.1.1.0"
 	oidApcFirmware = "1.3.6.1.4.1.318.1.1.1.1.2.1.0"
 	oidApcSerial   = "1.3.6.1.4.1.318.1.1.1.1.2.3.0"
+
+	// Synology - DSM reports the generic Linux sysObjectID, so its own MIB
+	// is the only reliable sign.
+	oidSynoModel   = "1.3.6.1.4.1.6574.1.5.1.0"
+	oidSynoSerial  = "1.3.6.1.4.1.6574.1.5.2.0"
+	oidSynoVersion = "1.3.6.1.4.1.6574.1.5.3.0"
 )
 
 // vendors by the enterprise number in sysObjectID - SNMP has no standard
 // "manufacturer" for printers.
 var vendors = map[string]string{
-	"11":    "HP",
-	"236":   "Samsung",
-	"253":   "Xerox",
-	"318":   "APC",
-	"367":   "Ricoh",
-	"534":   "Eaton",
-	"641":   "Lexmark",
-	"705":   "Eaton",
-	"935":   "PowerWalker",
-	"1129":  "Toshiba",
-	"1248":  "Epson",
-	"1347":  "Kyocera",
-	"1602":  "Canon",
-	"2001":  "OKI",
-	"2385":  "Sharp",
-	"2435":  "Brother",
-	"18334": "Konica Minolta",
-	"26696": "Riello",
+	"9":       "Cisco",
+	"11":      "HP",
+	"171":     "D-Link",
+	"207":     "Allied Telesis",
+	"368":     "Axis",
+	"674":     "Dell",
+	"890":     "Zyxel",
+	"1916":    "Extreme Networks",
+	"1991":    "Brocade",
+	"2356":    "LANCOM",
+	"2636":    "Juniper",
+	"4526":    "Netgear",
+	"6574":    "Synology",
+	"11863":   "TP-Link",
+	"14823":   "Aruba",
+	"24681":   "QNAP",
+	"25053":   "Ruckus",
+	"39165":   "Hikvision",
+	"41112":   "Ubiquiti",
+	"47196":   "Aruba",
+	"55062":   "QNAP",
+	"1004849": "Dahua",
+	"236":     "Samsung",
+	"253":     "Xerox",
+	"318":     "APC",
+	"367":     "Ricoh",
+	"534":     "Eaton",
+	"641":     "Lexmark",
+	"705":     "Eaton",
+	"935":     "PowerWalker",
+	"1129":    "Toshiba",
+	"1248":    "Epson",
+	"1347":    "Kyocera",
+	"1602":    "Canon",
+	"2001":    "OKI",
+	"2385":    "Sharp",
+	"2435":    "Brother",
+	"18334":   "Konica Minolta",
+	"26696":   "Riello",
 }
 
 // expandNetworks turns the job's networks into addresses: without network
@@ -211,7 +242,7 @@ func scanAddresses(addrs []netip.Addr, communities []string) []scannedDevice {
 }
 
 // probe tries the communities in turn until one answers, then recognises
-// the device. nil: no answer, or neither printer nor UPS.
+// the device. nil: no answer, or nothing the scan documents.
 func probe(addr netip.Addr, communities []string) *scannedDevice {
 	for _, community := range communities {
 		c, err := dialSNMP(addr, community)
@@ -234,7 +265,8 @@ func probe(addr netip.Addr, communities []string) *scannedDevice {
 }
 
 // recognise decides what the device is and reads what the documentation
-// needs. A printer has the Printer-MIB; a UPS the UPS-MIB or APC's own.
+// needs. A printer has the Printer-MIB; a UPS the UPS-MIB or APC's own;
+// everything else goes to recogniseNetworkDevice.
 func recognise(c snmpClient, system map[string]snmpValue) *scannedDevice {
 	vendor := vendorOf(system[oidSysObjectID].Text)
 	name := clean(system[oidSysName].Text)
@@ -266,7 +298,7 @@ func recognise(c snmpClient, system map[string]snmpValue) *scannedDevice {
 	}
 	model := firstText(ups, oidApcModel, oidUpsModel)
 	if model == "" {
-		return nil
+		return recogniseNetworkDevice(c, system)
 	}
 	d := &scannedDevice{
 		Type:         "ups",
@@ -289,14 +321,145 @@ func recognise(c snmpClient, system map[string]snmpValue) *scannedDevice {
 	return d
 }
 
+// Switches, access points, NAS and cameras have no MIB of their own that
+// says what they are - unlike printers and UPS. They are told apart by what
+// they say about themselves: sysDescr and the model in the ENTITY-MIB.
+// Only a clear word counts. A device that says nothing clear is left out,
+// as before: a finding of the wrong kind would be taken over as the wrong
+// kind, and silence costs only the manual entry it always cost.
+
+// notOurs: devices other agents document (firewalls, routers, servers) or
+// that have no place among these kinds (video recorders). Checked first, so
+// "Wireless Router" or "RouterOS" never becomes an access point or switch.
+var notOurs = regexp.MustCompile(`\b(firewall|fortigate|fortios|fortiwifi|pfsense|opnsense|sonicwall|securepoint|sophos|watchguard|router|routeros|isr|windows|esxi|proxmox|nvr|dvr|ds-[79]\d\w*)\b`)
+
+// kindRules in order: the first that matches decides. Switch before access
+// point - a Ruckus ICX or an "ArubaOS-Switch" is a switch, not wireless.
+var kindRules = []struct {
+	kind string
+	re   *regexp.Regexp
+}{
+	{"camera", regexp.MustCompile(`\b(camera|network video|ip ?cam\w*|ipc-\w+|ds-2c\w*|ds-2d\w*)\b`)},
+	{"nas", regexp.MustCompile(`\b(synology|diskstation|rackstation|qnap|truenas|freenas|readynas|asustor|terramaster)\b`)},
+	{"switch", regexp.MustCompile(`\b(switch|catalyst|cat9k|procurve|officeconnect|comware|powerconnect|aos-cx|arubaos-cx|arubaos-switch|usw[\w-]*|us-\d[\w-]*|icx\d\w*|ws-c\w+|c(?:2960|3560|3650|3750|3850|9200|9300|9500|1000|1200|1300)\w*|cbs\d{3}\w*|sg\d{3}\w*|gs\d{3,4}\w*|xgs\d{3,4}\w*|xs\d{3}\w*|dgs-\w+|tl-sg\w*|ex\d{4}\w*)\b`)},
+	{"accesspoint", regexp.MustCompile(`\b(access ?point|uap[\w-]*|u6-\w+|u7-\w+|aironet|ap software|air-c?ap\w*|iap-\w+|arubaos|instant|eap\d{3}\w*|wap\d{3}\w*|wac\d{3}\w*|nwa\d{2,4}\w*|wax\d{3}\w*|lancom (?:lx|lw|ow|l)-\w+|ruckus|unleashed|wireless)\b`)},
+}
+
+// vendorKinds: makers of only one of these kinds, for devices whose
+// sysDescr says nothing (some cameras answer with a bare firmware string).
+var vendorKinds = map[string]string{
+	"368":     "camera", // Axis
+	"39165":   "camera", // Hikvision
+	"1004849": "camera", // Dahua
+	"6574":    "nas",    // Synology
+	"24681":   "nas",    // QNAP
+	"55062":   "nas",    // QNAP
+}
+
+// recogniseNetworkDevice: a switch, access point, NAS or camera - or nil.
+func recogniseNetworkDevice(c snmpClient, system map[string]snmpValue) *scannedDevice {
+	objectID := system[oidSysObjectID].Text
+	descr := clean(system[oidSysDescr].Text)
+	d := &scannedDevice{Name: clean(system[oidSysName].Text), Manufacturer: vendorOf(objectID)}
+
+	// Synology first: its own MIB names model, serial and DSM version.
+	if syno, err := c.get(oidSynoModel, oidSynoSerial, oidSynoVersion); err == nil && firstText(syno, oidSynoModel) != "" {
+		d.Type, d.Manufacturer = "nas", "Synology"
+		d.Model = firstText(syno, oidSynoModel)
+		d.Serial = firstText(syno, oidSynoSerial)
+		d.Firmware = firstText(syno, oidSynoVersion)
+		if d.Serial == "" {
+			d.MAC = firstMAC(c)
+		}
+		return d
+	}
+
+	entModel := firstUnder(c, oidEntModelName)
+	text := strings.ToLower(strings.Join([]string{descr, entModel, firstUnder(c, oidEntDescr)}, " | "))
+	if notOurs.MatchString(text) {
+		return nil
+	}
+	d.Type = kindOf(text, objectID)
+	if d.Type == "" {
+		return nil
+	}
+
+	if d.Manufacturer == "" {
+		d.Manufacturer = firstUnder(c, oidEntMfgName)
+	}
+	d.Model = entModel
+	if d.Model == "" {
+		d.Model = modelFromDescr(descr)
+	}
+	d.Model = withoutVendor(d.Model, d.Manufacturer)
+	d.Serial = firstUnder(c, oidEntSerial)
+	d.Firmware = firstUnder(c, oidEntSoftware)
+	if d.Firmware == "" {
+		d.Firmware = firstUnder(c, oidEntFirmware)
+	}
+	if d.Firmware == "" {
+		d.Firmware = firmwareFromDescr(descr)
+	}
+	if d.Serial == "" {
+		d.MAC = firstMAC(c)
+	}
+	return d
+}
+
+// kindOf: the first rule that matches the text, else what the vendor makes.
+func kindOf(text, objectID string) string {
+	for _, r := range kindRules {
+		if r.re.MatchString(text) {
+			return r.kind
+		}
+	}
+	return vendorKinds[enterpriseOf(objectID)]
+}
+
+// modelFromDescr: the first part of sysDescr when it is a name and not a
+// sentence - "USW-24-PoE, 6.6.61" -> "USW-24-PoE", but nothing from
+// "Cisco IOS Software, C2960X Software (...)".
+func modelFromDescr(descr string) string {
+	first, _, _ := strings.Cut(descr, ",")
+	first = strings.TrimSpace(first)
+	lower := strings.ToLower(first)
+	if first == "" || len(first) > 40 || strings.Contains(lower, "software") || strings.Contains(lower, "linux") || strings.Contains(lower, "version") {
+		return ""
+	}
+	return first
+}
+
+var versionInDescr = regexp.MustCompile(`(?i)\b(?:version|revision|firmware|fw)[:\s]+v?(\d[\w.()\-]*)`)
+
+// firmwareFromDescr: "..., Version 15.2(7)E4, ..." -> "15.2(7)E4"; else a
+// bare version as the second part ("USW-24-PoE, 6.6.61.15220").
+func firmwareFromDescr(descr string) string {
+	if m := versionInDescr.FindStringSubmatch(descr); m != nil {
+		return strings.TrimRight(m[1], ".,")
+	}
+	parts := strings.Split(descr, ",")
+	if len(parts) > 1 {
+		second := strings.TrimSpace(parts[1])
+		if second != "" && second[0] >= '0' && second[0] <= '9' && len(second) <= 40 {
+			return second
+		}
+	}
+	return ""
+}
+
 // vendorOf: "1.3.6.1.4.1.11.2.3.9.1" -> "HP".
 func vendorOf(objectID string) string {
+	return vendors[enterpriseOf(objectID)]
+}
+
+// enterpriseOf: "1.3.6.1.4.1.11.2.3.9.1" -> "11".
+func enterpriseOf(objectID string) string {
 	id := strings.TrimPrefix(objectID, ".")
 	if !strings.HasPrefix(id, oidEnterprisesRoot) {
 		return ""
 	}
 	number, _, _ := strings.Cut(strings.TrimPrefix(id, oidEnterprisesRoot), ".")
-	return vendors[number]
+	return number
 }
 
 // within: whether oid lies below root (not merely starts with its digits:
@@ -396,17 +559,35 @@ func runScan(cfg Config, job scanJob, log func(level, msg string)) {
 	}
 }
 
+// scanKinds: the order and the words of the summary on the agent page.
+var scanKinds = []struct{ kind, one, many string }{
+	{"printer", "Drucker", "Drucker"},
+	{"ups", "USV", "USV"},
+	{"switch", "Switch", "Switches"},
+	{"accesspoint", "Accesspoint", "Accesspoints"},
+	{"nas", "NAS", "NAS"},
+	{"camera", "Kamera", "Kameras"},
+}
+
 func scanSummary(found []scannedDevice, addresses, networks int, took time.Duration) string {
-	printers, ups := 0, 0
+	count := map[string]int{}
 	for _, d := range found {
-		if d.Type == "printer" {
-			printers++
-		} else {
-			ups++
+		count[d.Type]++
+	}
+	var parts []string
+	for _, k := range scanKinds {
+		switch n := count[k.kind]; {
+		case n == 1:
+			parts = append(parts, "1 "+k.one)
+		case n > 1:
+			parts = append(parts, fmt.Sprintf("%d %s", n, k.many))
 		}
 	}
-	return fmt.Sprintf("%d Drucker, %d USV - %d Adressen in %d Netzen, %s",
-		printers, ups, addresses, networks, took.Round(time.Second))
+	what := strings.Join(parts, ", ")
+	if what == "" {
+		what = "keine Geräte"
+	}
+	return fmt.Sprintf("%s - %d Adressen in %d Netzen, %s", what, addresses, networks, took.Round(time.Second))
 }
 
 // sendScan hands the result to DokuVault, which updates known devices and

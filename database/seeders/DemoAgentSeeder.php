@@ -110,9 +110,10 @@ class DemoAgentSeeder extends Seeder
     }
 
     /**
-     * The network scan of SRV-DC01: two printers and a UPS waiting under
-     * "Neu gefunden", one printer ignored, and one printer and the UPS of
-     * the rack already tied to the scan, with their firmware.
+     * The network scan of SRV-DC01: two printers, a UPS, a switch, a NAS
+     * and a camera waiting under "Neu gefunden", one printer ignored, and
+     * one printer and the UPS of the rack already tied to the scan, with
+     * their firmware.
      */
     private function netzwerkScan(Customer $kunde): void
     {
@@ -128,7 +129,7 @@ class DemoAgentSeeder extends Seeder
             'last_scan_at' => now()->subHours(3),
             'last_results' => [...$installation->last_results, AgentInstallation::SCAN_ROLE => [
                 'ok' => true,
-                'message' => '4 Drucker, 2 USV - 254 Adressen in 1 Netzen, 11s',
+                'message' => '4 Drucker, 2 USV, 1 Switch, 1 NAS, 1 Kamera - 254 Adressen in 1 Netzen, 11s',
                 'at' => now()->subHours(3)->toIso8601String(),
             ]],
         ])->save();
@@ -142,6 +143,9 @@ class DemoAgentSeeder extends Seeder
             ['printer', 'new', 'E78123K4N567890', 'BRN3C2AF4A1B2C3', 'Brother', 'MFC-L8900CDW', 'ZA2510151510', 42],
             ['ups', 'new', 'AS2219123456', 'USV-Empfang', 'APC', 'Back-UPS Pro 900', '957.e4.I', 43],
             ['printer', 'ignored', 'VNB8K54321', 'LEIH-DRUCKER', 'HP', 'LaserJet M110we', '2405131_000317', 44],
+            ['switch', 'new', 'SG2A1B2C3D4', 'SW-LAGER', 'HP', 'JL261A 2930F-24G-PoE+-4SFP', 'WC.16.11.0021', 45],
+            ['nas', 'new', '2150PDN123456', 'NAS-ARCHIV', 'Synology', 'DS920+', 'DSM 7.2.2-72806', 46],
+            ['camera', 'new', 'DS2CD2143G2I20250101', 'CAM-HOF', 'Hikvision', 'DS-2CD2143G2-I', 'V5.7.3 build 220112', 47],
         ] as [$art, $status, $serie, $name, $hersteller, $modell, $firmware, $host]) {
             NetworkScanFinding::forceCreate([
                 'customer_id' => $kunde->id,

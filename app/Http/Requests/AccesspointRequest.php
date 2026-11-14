@@ -33,6 +33,7 @@ class AccesspointRequest extends FormRequest
             'manufacturer' => 'nullable',
             'model' => 'nullable|max:255',
             'serialNumber' => 'nullable|max:255',
+            'firmware' => 'nullable|max:255',
             'port' => 'nullable|numeric',
             ...$this->procurementRules(),
         ];
@@ -47,6 +48,7 @@ class AccesspointRequest extends FormRequest
             'manufacturer' => 'Hersteller',
             'model' => 'Modell',
             'serialNumber' => 'Seriennummer',
+            'firmware' => 'Firmware',
             'port' => 'Port',
             ...$this->procurementLabels(),
         ];

@@ -33,6 +33,7 @@ class CameraRequest extends FormRequest
             'manufacturer' => '',
             'model' => '',
             'serialNumber' => '',
+            'firmware' => 'nullable|max:255',
             'port' => 'required',
             ...$this->procurementRules(),
         ];
@@ -47,6 +48,7 @@ class CameraRequest extends FormRequest
             'manufacturer' => 'Hersteller',
             'model' => 'Modell',
             'serialNumber' => 'Seriennummer',
+            'firmware' => 'Firmware',
             'port' => 'Port',
             ...$this->procurementLabels(),
         ];

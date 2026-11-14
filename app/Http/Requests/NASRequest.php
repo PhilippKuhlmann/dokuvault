@@ -32,6 +32,7 @@ class NASRequest extends FormRequest
             'manufacturer' => 'max:255',
             'model' => 'max:255',
             'serialNumber' => 'max:255',
+            'firmware' => 'nullable|max:255',
             'port' => 'numeric',
             ...$this->procurementRules(),
         ];
@@ -45,6 +46,7 @@ class NASRequest extends FormRequest
             'manufacturer' => 'Hersteller',
             'model' => 'Modell',
             'serialNumber' => 'Seriennummer',
+            'firmware' => 'Firmware',
             'port' => 'Port',
             ...$this->procurementLabels(),
         ];

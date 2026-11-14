@@ -1,5 +1,18 @@
 # Changelog
 
+## 26.11.14d
+
+### Added
+
+- **Der Netzwerk-Scan findet jetzt auch Switches, Accesspoints, NAS und Kameras.** Bisher nur Drucker und USVs. Neue Geräte landen wie gewohnt unter „Neu gefunden“ und werden übernommen, verknüpft oder verworfen; übernommen hält der Scan Hersteller, Modell, Seriennummer, Firmware und Adresse aktuell. Anders als Drucker und USVs haben diese Geräte keine eigene SNMP-MIB, die sagt, was sie sind – der Scan richtet sich nach der Systembeschreibung, dem Modell in der Entity-MIB und bei Synology nach dessen eigener MIB. Er nimmt nur eindeutige Fälle: Was nichts Eindeutiges über sich sagt, bleibt draußen, statt als falsche Geräteart vorgeschlagen zu werden.
+- **Firmware für Switches, Accesspoints, NAS und Kameras.** Neues Feld im Formular, wie bei Druckern, USVs und Firewalls.
+
+### Changed
+
+- **Die Rolle heißt jetzt „Netzwerk-Scan (SNMP)“** statt „Netzwerk-Scan (Drucker, USV)“.
+- **Nicht doppelt:** Einen Switch oder Accesspoint, den schon der UniFi-Agent dokumentiert (gleiche MAC, Seriennummer oder Adresse), schlägt der Scan nicht noch einmal vor. Firewalls, Router und Videorekorder lässt er aus – Firewalls haben ihren eigenen Agenten.
+- **Neuer Windows-Agent nötig.** Erst die neue Fassung des Dienstes erkennt die zusätzlichen Geräte; sie aktualisiert sich wie gewohnt von selbst.
+
 ## 26.11.14c
 
 ### Changed

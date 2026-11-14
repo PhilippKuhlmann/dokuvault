@@ -253,22 +253,29 @@ customer — so the site is never guessed. With a single site it is used; with s
 lists them and stops until one is chosen. `--site` takes the internal name or the display name;
 `--sites` just lists them.
 
-### Network scan: printers and UPS
+### Network scan: printers, UPS, switches, access points, NAS, cameras
 
-Printers and UPS units have no agent of their own – the installed Windows agent finds them. Under
+Printers, UPS units, switches, access points, NAS and cameras rarely have an agent of their own –
+the installed Windows agent finds them. Under
 **Auto-docs → Agents** you switch on the **network scan** for one machine (it never switches itself on), pick
 the documented networks (IPv4, at most /22, behind a router too) and add your own SNMP communities
 if needed; without one it asks with `public`.
 
 Once a day – or right away with “Scan now” – the agent queries every address by SNMP v2c and
-recognises printers by the Printer MIB and UPS units by the UPS MIB or the APC MIB. Nothing is
+recognises printers by the Printer MIB and UPS units by the UPS MIB or the APC MIB. Switches,
+access points, NAS and cameras have no MIB of their own; the scan goes by what the device says
+about itself (system description, model in the Entity MIB, Synology's own MIB) and takes only
+clear cases – a device that says nothing clear stays out rather than land as the wrong kind.
+Firewalls, routers and video recorders are left to their own agents, and a switch or access point
+the UniFi agent already documents is not offered twice. Nothing is
 created on its own: new devices land under **“Newly found”**, where you take them over, link them
 to a device you documented by hand, or discard them. A discarded device stays away until you bring
 it back. From the takeover on, the scan keeps manufacturer, model, serial number, firmware and
 address up to date; name, site and notes are yours. A device is recognised by its serial number,
 or by its MAC address when it has none.
 
-Documentation, not monitoring: the scan reads no toner levels, page counters or battery state. And
+Documentation, not monitoring: the scan reads no toner levels, page counters, battery state, port
+status or traffic. And
 a word to the customer beforehand is worth it – some EDR and IDS products report an SNMP scan as
 an attack.
 

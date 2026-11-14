@@ -32,7 +32,8 @@ Befehle (als Administrator):
   uninstall Dienst und C:\ProgramData\DokuVault entfernen.
 
 Agenten: windows-server, windows-ad, hyperv, windows-client, veeam, windows-backup
-Netzwerk-Scan (Drucker, USV): nur in DokuVault unter Agenten einschaltbar.
+Netzwerk-Scan (Drucker, USV, Switches, Accesspoints, NAS, Kameras): nur in DokuVault
+unter Agenten einschaltbar.
 `
 
 // installEmbeddedArg: the elevated relaunch after a double click.

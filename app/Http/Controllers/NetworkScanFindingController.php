@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 /**
- * What a technician does with a printer or UPS the network scan found:
+ * What a technician does with a device the network scan found:
  * take it over as a new device, link it to one documented by hand, ignore
  * it - or bring an ignored one back.
  *
@@ -30,11 +30,15 @@ class NetworkScanFindingController extends Controller
     {
         Gate::authorize('agent_manage');
 
+        // Grouped by kind in the order of TYPES, then by address.
+        $reihenfolge = array_flip(array_keys(NetworkScanFinding::TYPES));
         $funde = NetworkScanFinding::forCustomer($customer)
             ->with(['network.site', 'agentInstallation.agentToken'])
-            ->orderBy('type')
-            ->orderBy('ip')
-            ->get();
+            ->get()
+            ->sortBy([
+                fn ($a, $b) => ($reihenfolge[$a->type] ?? 99) <=> ($reihenfolge[$b->type] ?? 99),
+                fn ($a, $b) => strnatcmp((string) $a->ip, (string) $b->ip),
+            ]);
         $neuGefunden = $funde->where('status', 'new')->values();
         $ignoriert = $funde->where('status', 'ignored')->values();
         $sites = Site::where('customer_id', $customer->id)->orderBy('name')->get();

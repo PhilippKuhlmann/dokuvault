@@ -140,10 +140,98 @@ func TestRecognisesAUPSByTheStandardMIB(t *testing.T) {
 	}
 }
 
-func TestIgnoresEverythingElse(t *testing.T) {
-	// A switch: answers SNMP, but neither Printer- nor UPS-MIB.
+func TestIgnoresWhatSaysNothingClear(t *testing.T) {
+	// Answers SNMP, but neither a MIB nor its description says what it is.
 	if got := recogniseFake(withSystem("1.3.6.1.4.1.9.1.1208", "sw-core", text("1.3.6.1.2.1.2.2.1.2.1", "Gi1/0/1"))); got != nil {
 		t.Fatalf("got %+v", got)
+	}
+	// A Linux server: net-snmp, nothing that makes it a NAS.
+	if got := recogniseFake(withSystem("1.3.6.1.4.1.8072.3.2.10", "srv-app", text(oidSysDescr, "Linux srv-app 6.1.0-18-amd64 #1 SMP x86_64"))); got != nil {
+		t.Fatalf("got %+v", got)
+	}
+}
+
+func TestRecognisesACiscoSwitchByItsEntityMIB(t *testing.T) {
+	got := recogniseFake(withSystem("1.3.6.1.4.1.9.1.1208", "sw-core",
+		text(oidSysDescr, "Cisco IOS Software, C2960X Software (C2960X-UNIVERSALK9-M), Version 15.2(7)E4, RELEASE SOFTWARE (fc2)"),
+		text("1.3.6.1.2.1.47.1.1.1.1.2.1", "WS-C2960X-48FPD-L"),
+		text("1.3.6.1.2.1.47.1.1.1.1.10.1", ""),
+		text("1.3.6.1.2.1.47.1.1.1.1.10.1001", "15.2(7)E4"),
+		text("1.3.6.1.2.1.47.1.1.1.1.11.1001", "FOC1234X0AB"),
+		text("1.3.6.1.2.1.47.1.1.1.1.13.1001", "WS-C2960X-48FPD-L"),
+	))
+
+	want := scannedDevice{Type: "switch", Name: "sw-core", Manufacturer: "Cisco", Model: "WS-C2960X-48FPD-L", Serial: "FOC1234X0AB", Firmware: "15.2(7)E4"}
+	if got == nil || *got != want {
+		t.Fatalf("got %+v, want %+v", got, want)
+	}
+}
+
+func TestRecognisesAUniFiAccessPointFromItsDescription(t *testing.T) {
+	got := recogniseFake(withSystem("1.3.6.1.4.1.41112", "ap-og2",
+		text(oidSysDescr, "UAP-AC-Pro, 6.5.28.14491"),
+		snmpValue{OID: "1.3.6.1.2.1.2.2.1.6.2", Raw: []byte{0x78, 0x8a, 0x20, 0x01, 0x02, 0x03}},
+	))
+
+	want := scannedDevice{Type: "accesspoint", Name: "ap-og2", Manufacturer: "Ubiquiti", Model: "UAP-AC-Pro", Firmware: "6.5.28.14491", MAC: "78:8a:20:01:02:03"}
+	if got == nil || *got != want {
+		t.Fatalf("got %+v, want %+v", got, want)
+	}
+}
+
+func TestRecognisesASynologyByItsOwnMIB(t *testing.T) {
+	got := recogniseFake(withSystem("1.3.6.1.4.1.8072.3.2.10", "nas01",
+		text(oidSysDescr, "Linux nas01 4.4.302+ #72806 SMP x86_64"),
+		text(oidSynoModel, "DS920+"),
+		text(oidSynoSerial, "2150PDN123456"),
+		text(oidSynoVersion, "DSM 7.2.2-72806"),
+	))
+
+	want := scannedDevice{Type: "nas", Name: "nas01", Manufacturer: "Synology", Model: "DS920+", Serial: "2150PDN123456", Firmware: "DSM 7.2.2-72806"}
+	if got == nil || *got != want {
+		t.Fatalf("got %+v, want %+v", got, want)
+	}
+}
+
+func TestRecognisesACameraByItsVendorAlone(t *testing.T) {
+	// Some cameras say nothing in sysDescr; Hikvision makes nothing else here.
+	got := recogniseFake(withSystem("1.3.6.1.4.1.39165.1.1", "cam-hof",
+		text(oidSysDescr, "V5.7.3 build 220112"),
+		snmpValue{OID: "1.3.6.1.2.1.2.2.1.6.1", Raw: []byte{0x44, 0x19, 0xb6, 0xaa, 0xbb, 0xcc}},
+	))
+
+	if got == nil || got.Type != "camera" || got.Manufacturer != "Hikvision" || got.MAC != "44:19:b6:aa:bb:cc" {
+		t.Fatalf("got %+v", got)
+	}
+}
+
+func TestLeavesFirewallsRoutersAndRecordersToOthers(t *testing.T) {
+	for _, d := range []fakeDevice{
+		withSystem("1.3.6.1.4.1.12356.101.1.1", "fw", text(oidSysDescr, "FortiGate-60F v7.2.8,build1639")),
+		withSystem("1.3.6.1.4.1.14988.1", "gw", text(oidSysDescr, "RouterOS CRS326-24G-2S+")),
+		withSystem("1.3.6.1.4.1.4526.100", "gw", text(oidSysDescr, "NETGEAR Wireless Router R7000")),
+		withSystem("1.3.6.1.4.1.39165.1.1", "nvr", text(oidSysDescr, "DS-7608NI-K2 Network Video Recorder")),
+	} {
+		if got := recogniseFake(d); got != nil {
+			t.Fatalf("got %+v for %q", got, d[oidSysDescr].Text)
+		}
+	}
+}
+
+func TestSwitchWinsOverWireless(t *testing.T) {
+	got := recogniseFake(withSystem("1.3.6.1.4.1.25053.3.1", "sw-ruckus", text(oidSysDescr, "Ruckus Wireless, Inc. ICX7150-24P, IronWare Version 08.0.95 compiled")))
+	if got == nil || got.Type != "switch" || got.Firmware != "08.0.95" {
+		t.Fatalf("got %+v", got)
+	}
+}
+
+func TestScanSummaryNamesOnlyWhatWasFound(t *testing.T) {
+	found := []scannedDevice{{Type: "printer"}, {Type: "switch"}, {Type: "switch"}, {Type: "camera"}}
+	if got := scanSummary(found, 254, 1, 0); got != "1 Drucker, 2 Switches, 1 Kamera - 254 Adressen in 1 Netzen, 0s" {
+		t.Fatalf("got %q", got)
+	}
+	if got := scanSummary(nil, 254, 1, 0); !strings.HasPrefix(got, "keine Geräte - ") {
+		t.Fatalf("got %q", got)
 	}
 }
 
@@ -250,7 +338,7 @@ func TestADueScanIsSentAndReported(t *testing.T) {
 	if len(scanned) != 1 || scanned[0].Serial != "CNB1234567" || scanned[0].IP != "192.0.2.2" {
 		t.Fatalf("scanned %+v", scanned)
 	}
-	if len(reported) != 1 || reported[0].Role != "network-scan" || !reported[0].OK || !strings.HasPrefix(reported[0].Message, "1 Drucker, 0 USV") {
+	if len(reported) != 1 || reported[0].Role != "network-scan" || !reported[0].OK || !strings.HasPrefix(reported[0].Message, "1 Drucker - ") {
 		t.Fatalf("reported %+v", reported)
 	}
 }

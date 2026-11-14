@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 /**
- * A printer or UPS the network scan found and nobody decided on yet - or
- * one that was ignored (see the migration for the why).
+ * A device the network scan found and nobody decided on yet - or one that
+ * was ignored (see the migration for the why).
  *
  * Taken over or linked, the row is deleted: the device then carries the
  * identifier and later scans update it directly. Ignored, it stays, so the
@@ -24,10 +24,17 @@ class NetworkScanFinding extends Model
         'last_seen_at' => 'datetime',
     ];
 
-    /** Key => [model, label] of what the scan recognises. */
+    /**
+     * Key => [model, label] of what the scan recognises, in the order the
+     * list shows them. The keys are what the agent sends as "type".
+     */
     public const TYPES = [
         'printer' => [Printer::class, 'Drucker'],
         'ups' => [Ups::class, 'USV'],
+        'switch' => [NetworkSwitch::class, 'Switch'],
+        'accesspoint' => [Accesspoint::class, 'Accesspoint'],
+        'nas' => [NAS::class, 'NAS'],
+        'camera' => [Camera::class, 'Kamera'],
     ];
 
     public function customer()
@@ -45,7 +52,7 @@ class NetworkScanFinding extends Model
         return $this->belongsTo(Network::class);
     }
 
-    /** @return class-string<Printer|Ups> */
+    /** @return class-string<Printer|Ups|NetworkSwitch|Accesspoint|NAS|Camera> */
     public function modelClass(): string
     {
         return self::TYPES[$this->type][0];
@@ -80,7 +87,7 @@ class NetworkScanFinding extends Model
      * serial number or same address, not yet tied to a scan. Offered first
      * for "Mit vorhandenem verknüpfen" instead of a duplicate.
      *
-     * @return Collection<int, Printer|Ups>
+     * @return Collection<int, Model>
      */
     public function linkCandidates()
     {
@@ -103,7 +110,7 @@ class NetworkScanFinding extends Model
      * All documented devices of this kind not yet tied to a scan - the
      * choice when linking, with the likely ones first.
      *
-     * @return Collection<int, Printer|Ups>
+     * @return Collection<int, Model>
      */
     public function linkChoices()
     {

@@ -168,7 +168,7 @@
                                  choice of all of them only after "ändern". --}}
                             @if ($kannScannen)
                                 <div class="space-y-2">
-                                    <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">{{ __('Netzwerk-Scan (Drucker, USV)') }}</div>
+                                    <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">{{ __('Netzwerk-Scan (SNMP)') }}</div>
                                     <div class="text-sm text-gray-700 dark:text-gray-200">
                                         @if ($gewaehlteNetze->isNotEmpty())
                                             {{ $gewaehlteNetze->map(fn ($n) => AgentInstallation::cidrOf($n))->join(' · ') }}
@@ -183,7 +183,7 @@
                                         <summary class="cursor-pointer select-none text-cerulean-600 hover:underline dark:text-cerulean-400">{{ __('Netze und Communities ändern') }}</summary>
                                         <div class="mt-2 space-y-3">
                                             <p class="max-w-3xl text-xs text-gray-500 dark:text-gray-400">
-                                                {{ __('Einmal am Tag fragt der Agent jede Adresse der gewählten Netze per SNMP (UDP 161) ab und meldet Drucker und USVs. Netze hinter einem Router gehen auch, wenn die Firewall dazwischen SNMP durchlässt. Manche EDR- oder IDS-Produkte melden einen solchen Scan als Angriff – vorher Bescheid geben.') }}
+                                                {{ __('Einmal am Tag fragt der Agent jede Adresse der gewählten Netze per SNMP (UDP 161) ab und meldet Drucker, USVs, Switches, Accesspoints, NAS und Kameras. Netze hinter einem Router gehen auch, wenn die Firewall dazwischen SNMP durchlässt. Manche EDR- oder IDS-Produkte melden einen solchen Scan als Angriff – vorher Bescheid geben.') }}
                                             </p>
                                             <div>
                                                 <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ __('Netze (höchstens /:praefix)', ['praefix' => AgentInstallation::SCAN_MIN_PREFIX]) }}</div>

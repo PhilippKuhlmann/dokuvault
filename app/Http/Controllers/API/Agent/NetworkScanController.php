@@ -9,8 +9,9 @@ use App\Models\NetworkScanFinding;
 use Illuminate\Http\Request;
 
 /**
- * What the network scan of the Windows agent found: printers and UPS that
- * answered SNMP in the networks chosen on the agent page.
+ * What the network scan of the Windows agent found: printers, UPS,
+ * switches, access points, NAS and cameras that answered SNMP in the
+ * networks chosen on the agent page.
  *
  * Unlike the other agents nothing is created here. A device already tied
  * to the scan (agent_identifier) is updated - its technical facts only,
@@ -52,6 +53,7 @@ class NetworkScanController extends AgentEndpoint
         $aktualisiert = 0;
         $neu = 0;
         $ohneKennung = 0;
+        $vonAnderen = 0;
 
         foreach ($data['devices'] as $geraet) {
             $kennung = static::identifier($geraet);
@@ -68,6 +70,12 @@ class NetworkScanController extends AgentEndpoint
                 static::updateDevice($vorhanden, $geraet);
                 $this->reportUrl($vorhanden, $customer->id, $vorhanden->site_id, $geraet['ip']);
                 $aktualisiert++;
+
+                continue;
+            }
+
+            if (static::ownedByUnifi($klasse, $customer->id, $geraet)) {
+                $vonAnderen++;
 
                 continue;
             }
@@ -102,6 +110,7 @@ class NetworkScanController extends AgentEndpoint
             'devices_updated' => $aktualisiert,
             'findings_new' => $neu,
             'skipped_without_identifier' => $ohneKennung,
+            'skipped_other_agent' => $vonAnderen,
         ]);
     }
 
@@ -124,6 +133,39 @@ class NetworkScanController extends AgentEndpoint
         }
 
         return null;
+    }
+
+    /**
+     * A switch or access point the UniFi agent already documents - same
+     * MAC, serial or address. The scan would only offer a duplicate; the
+     * UniFi agent keeps it current anyway. Its identifier is the bare MAC
+     * address ("aa:bb:..."), the scan's never is - so a device the scan
+     * itself took over and that was since replaced at the same address is
+     * still offered.
+     */
+    protected static function ownedByUnifi(string $klasse, int $customerId, array $geraet): bool
+    {
+        if (! in_array($geraet['type'], ['switch', 'accesspoint'], true)) {
+            return false;
+        }
+
+        $mac = static::identifier(['mac' => $geraet['mac'] ?? null]);
+        $mac = $mac !== null ? substr($mac, 4) : null;
+        $serie = static::clean($geraet['serial'] ?? null);
+
+        return $klasse::forCustomer($customerId)
+            ->whereNotNull('agent_identifier')
+            ->where(function ($q) use ($mac, $serie, $geraet) {
+                $q->whereHas('ipAddresses', fn ($a) => $a->where('address', $geraet['ip']));
+                if ($mac !== null) {
+                    $q->orWhere('agent_identifier', $mac);
+                }
+                if ($serie !== null) {
+                    $q->orWhere('serialNumber', $serie);
+                }
+            })
+            ->pluck('agent_identifier')
+            ->contains(fn ($kennung) => preg_match('/^[0-9a-f]{2}(:[0-9a-f]{2}){5}$/i', (string) $kennung) === 1);
     }
 
     /**

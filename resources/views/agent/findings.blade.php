@@ -16,7 +16,7 @@
                 @endif
             </div>
             <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">
-                {{ __('Drucker und USVs, die der Netzwerk-Scan gefunden hat. Ein Klick zeigt alles, was der Scan über das Gerät weiß. Übernommen oder verknüpft hält der Scan Hersteller, Modell, Seriennummer, Firmware und Adresse aktuell – Name, Standort und Notizen bleiben deine.') }}
+                {{ __('Drucker, USVs, Switches, Accesspoints, NAS und Kameras, die der Netzwerk-Scan gefunden hat. Ein Klick zeigt alles, was der Scan über das Gerät weiß. Übernommen oder verknüpft hält der Scan Hersteller, Modell, Seriennummer, Firmware und Adresse aktuell – Name, Standort und Notizen bleiben deine.') }}
             </p>
 
             <div class="divide-y divide-gray-100 dark:divide-gray-700">
@@ -27,7 +27,7 @@
                 @endphp
                 <details class="group/fund py-1" @if ($neuGefunden->count() === 1) open @endif>
                     <summary class="flex cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-1 rounded-lg px-2 py-2 hover:bg-gray-50 dark:hover:bg-gray-700/40 [&::-webkit-details-marker]:hidden">
-                        <span class="w-16 shrink-0">
+                        <span class="w-24 shrink-0">
                             <span class="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:bg-gray-700 dark:text-gray-300">{{ $fund->typeLabel() }}</span>
                         </span>
                         <span class="w-48 min-w-0 shrink-0 truncate text-sm font-medium text-gray-900 dark:text-gray-100">{{ $fund->suggestedName() }}</span>
@@ -90,7 +90,7 @@
                 @if ($scanAktiv)
                     <div class="text-sm text-gray-400 dark:text-gray-500">{{ __('Nichts Neues – alles Gefundene ist dokumentiert.') }}</div>
                 @else
-                    <div class="text-sm text-gray-400 dark:text-gray-500">{!! __('Noch kein Netzwerk-Scan eingeschaltet. Das geht unter :agenten bei einem Windows-Agenten: Rolle „Netzwerk-Scan (Drucker, USV)“ anhaken und unter „Netzwerk-Scan einstellen“ die Netze wählen.', ['agenten' => '<a href="'.e(route('agent.index', $customer)).'" class="text-cerulean-600 hover:underline dark:text-cerulean-400">'.e(__('Agenten')).'</a>']) !!}</div>
+                    <div class="text-sm text-gray-400 dark:text-gray-500">{!! __('Noch kein Netzwerk-Scan eingeschaltet. Das geht unter :agenten bei einem Windows-Agenten: Rolle „Netzwerk-Scan (SNMP)“ anhaken und unter „Netzwerk-Scan einstellen“ die Netze wählen.', ['agenten' => '<a href="'.e(route('agent.index', $customer)).'" class="text-cerulean-600 hover:underline dark:text-cerulean-400">'.e(__('Agenten')).'</a>']) !!}</div>
                 @endif
             @endforelse
             </div>
