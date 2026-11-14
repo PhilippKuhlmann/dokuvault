@@ -10,7 +10,7 @@
 
 ### Changed
 
-- **Auto-Doku ist ein eigener Menüpunkt mit drei Seiten.** Token, installierte Agenten und die Funde des Netzwerk-Scans standen untereinander auf einer Seite – fünf Abschnitte für drei verschiedene Aufgaben. Jetzt gibt es in der Seitenleiste „Auto-Doku“ mit „Agenten“, „Neu gefunden“ (mit der Zahl der wartenden Geräte) und „Token & Installation“; dieselben drei Reiter stehen oben auf jeder der Seiten. Unter „Sonstiges“ ist der Eintrag weg. Die alte Adresse …/agent leitet auf „Agenten“ weiter.
+- **Auto-Doku ist ein eigener Menüpunkt mit drei Seiten.** Token, installierte Agenten und die Funde des Netzwerk-Scans standen untereinander auf einer Seite – fünf Abschnitte für drei verschiedene Aufgaben. Jetzt gibt es in der Seitenleiste „Auto-Doku“ mit „Agenten“, „Neu gefunden“ (mit der Zahl der wartenden Geräte) und „Token & Installation“. Unter „Sonstiges“ ist der Eintrag weg. Die alte Adresse …/agent leitet auf „Agenten“ weiter.
 
 ### Internal
 
