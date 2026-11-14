@@ -84,7 +84,9 @@
             ['backup_viewAny', __('Backup'), 'backup.index'],
             ['ups_viewAny', __('USV'), 'ups.index'],
             ['file_viewAny', __('Dateien'), 'file.index'],
-            ['agent_manage', __('Auto-Dokumentation'), 'agent.index'],
+            ['agent_manage', __('Auto-Doku: Agenten'), 'agent.index'],
+            ['agent_manage', __('Auto-Doku: Neu gefunden'), 'agent.findings'],
+            ['agent_manage', __('Auto-Doku: Token & Installation'), 'agent.tokens'],
             [null, __('Papierkorb'), 'trash.index'],
         ], $customer);
     }

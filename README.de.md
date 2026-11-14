@@ -258,8 +258,8 @@ angezeigten Namen, `--sites` listet nur auf.
 
 ### Netzwerk-Scan: Drucker und USV
 
-Drucker und USVs haben keinen eigenen Agenten – der installierte Windows-Agent findet sie. Auf der
-Agent-Seite schaltest du den **Netzwerk-Scan** für einen Rechner ein (er schaltet sich nie von
+Drucker und USVs haben keinen eigenen Agenten – der installierte Windows-Agent findet sie. Unter
+**Auto-Doku → Agenten** schaltest du den **Netzwerk-Scan** für einen Rechner ein (er schaltet sich nie von
 selbst ein), wählst die dokumentierten Netze aus (IPv4, höchstens /22, auch hinter einem Router)
 und trägst bei Bedarf eigene SNMP-Communities ein; ohne Eintrag fragt er mit `public`.
 

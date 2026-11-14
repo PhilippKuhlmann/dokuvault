@@ -255,8 +255,8 @@ lists them and stops until one is chosen. `--site` takes the internal name or th
 
 ### Network scan: printers and UPS
 
-Printers and UPS units have no agent of their own – the installed Windows agent finds them. On the
-agent page you switch on the **network scan** for one machine (it never switches itself on), pick
+Printers and UPS units have no agent of their own – the installed Windows agent finds them. Under
+**Auto-docs → Agents** you switch on the **network scan** for one machine (it never switches itself on), pick
 the documented networks (IPv4, at most /22, behind a router too) and add your own SNMP communities
 if needed; without one it asks with `public`.
 

@@ -324,7 +324,7 @@
     "Erstaufnahme-Assistent": "Initial survey wizard",
     "Erstellt": "Created",
     "Erstellung fehlgeschlagen.": "Creation failed.",
-    "Erzeuge einen Agent-Token und installiere einen Agenten – für Windows, Proxmox oder Linux; er meldet danach von selbst, was und wie oft du unten unter „Installierte Agenten“ festlegst. Für Hyper-V, VMware, UniFi und Microsoft 365 gibt es Scripte zum Ausführen von Hand. Der Token ist an den gewählten Standort gebunden und darf ausschließlich Dokumentationsdaten melden – kein weiterer Zugriff.": "Create an agent token and install an agent – for Windows, Proxmox or Linux; it then reports by itself, what and how often you set below under “Installed agents”. For Hyper-V, VMware, UniFi and Microsoft 365 there are scripts to run by hand. The token is bound to the chosen site and may only report documentation data – no further access.",
+    "Erzeuge einen Agent-Token und installiere einen Agenten – für Windows, Proxmox oder Linux; er meldet danach von selbst, was und wie oft du unter „Agenten“ festlegst. Für Hyper-V, VMware, UniFi und Microsoft 365 gibt es Scripte zum Ausführen von Hand. Der Token ist an den gewählten Standort gebunden und darf ausschließlich Dokumentationsdaten melden – kein weiterer Zugriff.": "Create an agent token and install an agent – for Windows, Proxmox or Linux; it then reports by itself, what and how often you set under “Agents”. For Hyper-V, VMware, UniFi and Microsoft 365 there are scripts to run by hand. The token is bound to the chosen site and may only report documentation data – no further access.",
     "Es ist noch kein Betriebssystem hinterlegt. Bitte zuerst unter": "No operating system has been set up yet. Please start under",
     "Es lag nicht am DNS. Diesmal wirklich nicht.": "It was not DNS. Not this time.",
     "Es landet im Papierkorb und lässt sich von dort wiederherstellen.": "It goes to the trash and can be restored from there.",
@@ -1654,5 +1654,11 @@
     "Jetzt scannen": "Scan now",
     ":anzahl neues Gerät gefunden|:anzahl neue Geräte gefunden": ":anzahl new device found|:anzahl new devices found",
     "Netzwerk-Scan": "Network scan",
-    "übernehmen": "take over"
+    "übernehmen": "take over",
+    "Token & Installation": "Tokens & installation",
+    "Auto-Doku": "Auto-docs",
+    "Noch kein Netzwerk-Scan eingeschaltet. Das geht unter :agenten bei einem Windows-Agenten: Rolle „Netzwerk-Scan (Drucker, USV)“ anhaken und unter „Netzwerk-Scan einstellen“ die Netze wählen.": "No network scan switched on yet. Do that under :agenten on a Windows agent: tick the role “Network scan (printers, UPS)” and pick the networks under “Configure network scan”.",
+    "Auto-Doku: Agenten": "Auto-docs: agents",
+    "Auto-Doku: Neu gefunden": "Auto-docs: newly found",
+    "Auto-Doku: Token & Installation": "Auto-docs: tokens & installation"
 }

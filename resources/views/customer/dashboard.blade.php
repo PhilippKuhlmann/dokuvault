@@ -169,7 +169,7 @@
                 <x-dashboard-tile :title="__('Agenten')">
                     <div class="divide-y divide-gray-100 dark:divide-gray-700">
                         @forelse ($agentWarnings as $warnung)
-                            <a href="{{ route('agent.index', $customer).(isset($warnung['anker']) ? '#'.$warnung['anker'] : '') }}"
+                            <a href="{{ $warnung['url'] ?? route('agent.index', $customer) }}"
                                 class="flex items-center justify-between gap-3 py-2.5 -mx-2 px-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                 <span class="min-w-0">
                                     <span class="block truncate text-gray-800 dark:text-gray-100">{{ $warnung['name'] }}</span>

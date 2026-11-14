@@ -254,7 +254,7 @@ class CustomerDashboard
      * null when the customer has neither agents nor tokens - then there is
      * no tile at all.
      *
-     * @return Collection<int, array{name: string, art: string, text: string, schwer: bool, anker?: string}>|null
+     * @return Collection<int, array{name: string, art: string, text: string, schwer: bool, url?: string}>|null
      */
     public function agentenWarnungen(): ?Collection
     {
@@ -317,7 +317,7 @@ class CustomerDashboard
                 'art' => __('Netzwerk-Scan'),
                 'text' => __('übernehmen'),
                 'schwer' => false,
-                'anker' => 'neu-gefunden',
+                'url' => route('agent.findings', $this->kunde),
             ]);
         }
 
@@ -329,6 +329,7 @@ class CustomerDashboard
             $warnungen->push([
                 'name' => $eines->name ?: 'Token #'.$eines->id,
                 'art' => __('Agent-Token'),
+                'url' => route('agent.tokens', $this->kunde),
                 'text' => $eines->isExpired()
                     ? __('abgelaufen')
                     : __('läuft ab in :tage Tagen', ['tage' => (int) now()->startOfDay()->diffInDays($eines->expires_at->copy()->startOfDay())]),

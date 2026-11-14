@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\API\Agent\Concerns\ReportsAddresses;
 use App\Http\Controllers\API\Agent\NetworkScanController;
+use App\Models\AgentInstallation;
 use App\Models\Customer;
 use App\Models\NetworkScanFinding;
+use App\Models\Site;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -22,6 +24,24 @@ use Illuminate\Validation\Rule;
 class NetworkScanFindingController extends Controller
 {
     use ReportsAddresses;
+
+    /** What the network scan found and nobody decided on yet, and what was ignored. */
+    public function index(Customer $customer)
+    {
+        Gate::authorize('agent_manage');
+
+        $funde = NetworkScanFinding::forCustomer($customer)
+            ->with(['network', 'agentInstallation.agentToken'])
+            ->orderBy('type')
+            ->orderBy('ip')
+            ->get();
+        $neuGefunden = $funde->where('status', 'new')->values();
+        $ignoriert = $funde->where('status', 'ignored')->values();
+        $sites = Site::where('customer_id', $customer->id)->orderBy('name')->get();
+        $scanAktiv = AgentInstallation::where('customer_id', $customer->id)->get()->contains(fn ($a) => $a->runsScan());
+
+        return view('agent.findings', compact('customer', 'neuGefunden', 'ignoriert', 'sites', 'scanAktiv'));
+    }
 
     public function accept(Customer $customer, NetworkScanFinding $networkScanFinding, Request $request)
     {
@@ -110,6 +130,6 @@ class NetworkScanFindingController extends Controller
 
     private function back(Customer $customer)
     {
-        return redirect(route('agent.index', $customer).'#neu-gefunden');
+        return redirect(route('agent.findings', $customer));
     }
 }

@@ -253,8 +253,22 @@
                 </x-aside.dropdown>
             @endcanany
 
+            {{-- Auto-Doku: its own group since the network scan - agents,
+                 findings and tokens are three pages, and new findings show
+                 their count here. --}}
+            @can('agent_manage')
+                @php $neueFunde = \App\Models\NetworkScanFinding::forCustomer($customer)->where('status', 'new')->count(); @endphp
+                <x-aside.dropdown :label="__('Auto-Doku')" svg="svg.signal">
+                    <x-slot:links>
+                        <x-aside.dropdownlink :label="__('Agenten')" href="{{ route('agent.index', $customer) }}" />
+                        <x-aside.dropdownlink :label="__('Neu gefunden')" href="{{ route('agent.findings', $customer) }}" :badge="$neueFunde ?: null" />
+                        <x-aside.dropdownlink :label="__('Token & Installation')" href="{{ route('agent.tokens', $customer) }}" />
+                    </x-slot:links>
+                </x-aside.dropdown>
+            @endcan
+
             @php $wizardPermissions = collect(config('custom.wizard_steps'))->pluck('permission')->all(); @endphp
-            @canany(['file_viewAny', 'ups_viewAny', 'see_hidden', 'agent_manage', ...$wizardPermissions])
+            @canany(['file_viewAny', 'ups_viewAny', 'see_hidden', ...$wizardPermissions])
                 <x-aside.dropdown :label="__('Sonstiges')" svg="svg.settings">
                     <x-slot:links>
                         @can('ups_viewAny')
@@ -266,9 +280,6 @@
                         @canany($wizardPermissions)
                             <x-aside.dropdownlink :label="__('Erstaufnahme-Assistent')" href="{{ route('wizard.index', $customer) }}" />
                         @endcanany
-                        @can('agent_manage')
-                            <x-aside.dropdownlink :label="__('Auto-Dokumentation')" href="{{ route('agent.index', $customer) }}" />
-                        @endcan
                         @can('see_hidden')
                             <x-aside.dropdownlink :label="__('Papierkorb')" href="{{ route('trash.index', $customer) }}" />
                         @endcan

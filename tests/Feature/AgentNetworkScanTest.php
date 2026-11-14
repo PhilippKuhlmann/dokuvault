@@ -180,7 +180,7 @@ test('a taken-over printer is updated by later scans, its own fields stay', func
     $fund = NetworkScanFinding::sole();
 
     $this->post(route('agent.finding.accept', [$customer, $fund]), ['name' => 'Drucker Empfang', 'site_id' => $site->id])
-        ->assertRedirect(route('agent.index', $customer).'#neu-gefunden');
+        ->assertRedirect(route('agent.findings', $customer));
 
     $drucker = Printer::forCustomer($customer)->sole();
     expect($drucker->name)->toBe('Drucker Empfang')
@@ -236,7 +236,7 @@ test('an ignored finding is not offered again until brought back', function () {
     $fund->refresh();
     expect($fund->status)->toBe('ignored')->and($fund->ip)->toBe('192.0.2.21');
 
-    $this->get(route('agent.index', $customer))->assertOk()->assertSee('Ignorierte Geräte');
+    $this->get(route('agent.findings', $customer))->assertOk()->assertSee('Ignorierte Geräte');
 
     $this->post(route('agent.finding.restore', [$customer, $fund]))->assertRedirect();
     expect($fund->refresh()->status)->toBe('new');
@@ -278,7 +278,7 @@ test('a ups is taken over at the site of its network', function () {
         ->and($fund->suggestedName())->toBe('Smart-UPS 1500 (198.51.100.5)');
 
     $this->actingAs(userWithPermissions(['agent_manage']));
-    $this->get(route('agent.index', $customer))->assertOk()
+    $this->get(route('agent.findings', $customer))->assertOk()
         ->assertSee('Neu gefunden')
         ->assertSee('Smart-UPS 1500 (198.51.100.5)');
 
@@ -341,5 +341,33 @@ test('the dashboard points to new findings', function () {
 
     $this->get(route('customer.dashboard', $customer))->assertOk()
         ->assertSee('2 neue Geräte gefunden')
-        ->assertSee('#neu-gefunden', false);
+        ->assertSee(route('agent.findings', $customer), false);
+});
+
+test('Auto-Doku has its own menu with three pages, the old address redirects', function () {
+    ['plain' => $plain, 'customer' => $customer] = scanSetup();
+    $this->actingAs(userWithPermissions(['agent_manage']));
+    scanReport($plain, [hpPrinter()]);
+
+    $this->get('/'.$customer->slug.'/agent')->assertRedirect(route('agent.index', $customer));
+
+    foreach (['agent.index', 'agent.findings', 'agent.tokens'] as $seite) {
+        $this->get(route($seite, $customer))->assertOk()
+            ->assertSee('Auto-Doku')
+            ->assertSee(route('agent.index', $customer), false)
+            ->assertSee(route('agent.findings', $customer), false)
+            ->assertSee(route('agent.tokens', $customer), false);
+    }
+
+    // The scan settings are on the agents page, the findings on their own.
+    $this->get(route('agent.index', $customer))->assertSee('Netzwerk-Scan einstellen')->assertDontSee('Ignorierte Geräte');
+    $this->get(route('agent.tokens', $customer))->assertSee('Neuen Token erzeugen')->assertDontSee('Installierte Agenten');
+});
+
+test('without findings and without a scan the findings page says how to switch it on', function () {
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['agent_manage']));
+
+    $this->get(route('agent.findings', $customer))->assertOk()
+        ->assertSee('Noch kein Netzwerk-Scan eingeschaltet');
 });

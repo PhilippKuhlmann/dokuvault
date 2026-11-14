@@ -323,7 +323,12 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::get('trash', [TrashController::class, 'index'])->name('trash.index');
             Route::post('trash/{type}/{id}/restore', [TrashController::class, 'restore'])->name('trash.restore');
 
-            Route::get('agent', [AgentTokenController::class, 'index'])->name('agent.index');
+            // Auto-Doku: three pages - installed agents, what the network scan
+            // found, tokens and downloads. "agent" was the one page before.
+            Route::get('agent', [AgentTokenController::class, 'root'])->name('agent.root');
+            Route::get('agent/installed', [AgentTokenController::class, 'index'])->name('agent.index');
+            Route::get('agent/found', [NetworkScanFindingController::class, 'index'])->name('agent.findings');
+            Route::get('agent/tokens', [AgentTokenController::class, 'tokens'])->name('agent.tokens');
             Route::post('agent', [AgentTokenController::class, 'store'])->name('agent.store');
             Route::delete('agent/{agentToken}', [AgentTokenController::class, 'destroy'])->name('agent.destroy');
             Route::post('agent/{agentToken}/renew', [AgentTokenController::class, 'renew'])->name('agent.renew');

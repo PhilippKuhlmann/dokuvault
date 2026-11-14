@@ -150,7 +150,7 @@ test('the agent page always says how to uninstall each agent', function () {
     $customer = Customer::factory()->create();
 
     // No fresh token - this is what one sees months later.
-    $seite = $this->get(route('agent.index', $customer))->assertOk();
+    $seite = $this->get(route('agent.tokens', $customer))->assertOk();
 
     foreach (config('custom.dienste') as $dienst) {
         expect($dienst['deinstallieren'])->not->toBeEmpty();

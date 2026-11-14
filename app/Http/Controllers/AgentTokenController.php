@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\AgentInstallation;
 use App\Models\AgentToken;
 use App\Models\Customer;
-use App\Models\NetworkScanFinding;
 use App\Models\Setting;
 use App\Models\Site;
 use App\Support\AgentScript;
@@ -17,16 +16,19 @@ use Illuminate\Validation\Rule;
 
 class AgentTokenController extends Controller
 {
+    /** The old address of the one agent page - bookmarks keep working. */
+    public function root(Customer $customer)
+    {
+        return redirect()->route('agent.index', $customer);
+    }
+
+    /**
+     * Installed agents: what each reports and how often, and the network
+     * scan settings of the Windows agents.
+     */
     public function index(Customer $customer, Request $request)
     {
         Gate::authorize('agent_manage');
-
-        $tokens = $this->getFilteredQuery(AgentToken::class, $customer)
-            ->with('site')
-            ->latest()
-            ->get();
-
-        $sites = Site::where('customer_id', $customer->id)->orderBy('name')->get();
 
         // Paged and searchable: every row carries its own form, interval
         // select and delete dialog - about 17 KB of HTML. With 2000 agents the
@@ -42,24 +44,29 @@ class AgentTokenController extends Controller
             ->fragment('installierte-agenten');
 
         $agentenGesamt = AgentInstallation::where('customer_id', $customer->id)->count();
+        $scanNetze = AgentInstallation::scannableNetworks($customer->id);
+
+        return view('agent.index', compact('customer', 'installations', 'suche', 'agentenGesamt', 'scanNetze'));
+    }
+
+    /** Tokens: create one, download agents and scripts, lock, renew, revoke. */
+    public function tokens(Customer $customer)
+    {
+        Gate::authorize('agent_manage');
+
+        $tokens = $this->getFilteredQuery(AgentToken::class, $customer)
+            ->with('site')
+            ->latest()
+            ->get();
+
+        $sites = Site::where('customer_id', $customer->id)->orderBy('name')->get();
 
         // Which agent each token belongs to (one token per agent).
         $boundHosts = AgentInstallation::where('customer_id', $customer->id)
             ->whereIn('machine_id', $tokens->pluck('machine_id')->filter())
             ->pluck('hostname', 'machine_id');
 
-        // What the network scan found, and what was ignored.
-        $funde = NetworkScanFinding::forCustomer($customer)
-            ->with(['network', 'agentInstallation.agentToken'])
-            ->orderBy('type')
-            ->orderBy('ip')
-            ->get();
-        $neuGefunden = $funde->where('status', 'new')->values();
-        $ignoriert = $funde->where('status', 'ignored')->values();
-        $scanNetze = AgentInstallation::scannableNetworks($customer->id);
-        $scanAktiv = AgentInstallation::where('customer_id', $customer->id)->get()->contains(fn ($a) => $a->runsScan());
-
-        return view('agent.index', compact('customer', 'tokens', 'sites', 'installations', 'suche', 'agentenGesamt', 'boundHosts', 'neuGefunden', 'ignoriert', 'scanNetze', 'scanAktiv'));
+        return view('agent.tokens', compact('customer', 'tokens', 'sites', 'boundHosts'));
     }
 
     /**
@@ -234,7 +241,10 @@ class AgentTokenController extends Controller
             ->withProperties(['objekt' => $agentToken->name ?: 'Token #'.$agentToken->id])
             ->log($locked ? 'Agent gesperrt' : 'Agent entsperrt');
 
-        return $this->toList($customer);
+        // Locked from the token list or from an agent's row: back to that page.
+        return str_starts_with(url()->previous(), route('agent.tokens', $customer))
+            ? redirect(route('agent.tokens', $customer))
+            : $this->toList($customer);
     }
 
     public function destroy(Customer $customer, AgentToken $agentToken)
@@ -244,7 +254,7 @@ class AgentTokenController extends Controller
 
         $agentToken->delete();
 
-        return redirect(route('agent.index', $customer));
+        return redirect(route('agent.tokens', $customer));
     }
 
     /**
@@ -290,7 +300,7 @@ class AgentTokenController extends Controller
             'bis' => now()->addMinutes(30)->timestamp,
         ]);
 
-        return redirect(route('agent.index', $customer))
+        return redirect(route('agent.tokens', $customer))
             ->with('newToken', $plain)
             ->with('newTokenName', $token->name ?: ('Token #'.$token->id))
             ->with('agentSkripte', $skripte);

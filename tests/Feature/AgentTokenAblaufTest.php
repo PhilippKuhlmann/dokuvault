@@ -83,7 +83,7 @@ test('das Ablaufdatum gilt bis Mitternacht in der eingestellten Zeitzone', funct
     expect($hier->toDateString())->toBe($tag);
     expect($hier->format('H:i:s'))->toBe('23:59:59');
 
-    $this->get(route('agent.index', $customer))
+    $this->get(route('agent.tokens', $customer))
         ->assertSee(Carbon::parse($tag)->format('d.m.Y'));
 });
 
@@ -116,7 +116,7 @@ test('die Token-Liste zeigt Ablauf und Erneuern-Knopf', function () {
     [$customer, $site] = agentKundeStandort();
     AgentToken::generateFor($customer, $site, 'Mit Frist', now()->addYear());
 
-    $this->get(route('agent.index', $customer))
+    $this->get(route('agent.tokens', $customer))
         ->assertOk()
         ->assertSee(__('Läuft ab'))
         ->assertSee(__('Erneuern'));
@@ -127,7 +127,7 @@ test('ein Altbestands-Token ist in der Liste als unbegrenzt gekennzeichnet', fun
     [$customer, $site] = agentKundeStandort();
     AgentToken::generateFor($customer, $site, 'Altbestand');
 
-    $this->get(route('agent.index', $customer))
+    $this->get(route('agent.tokens', $customer))
         ->assertOk()
         ->assertSee(__('unbegrenzt (Altbestand)'));
 });
@@ -153,7 +153,7 @@ test('jeder Token steht in der Liste, nicht darunter', function () {
 
     // Each row closed one div too many: the first token sat in the card, the
     // second below it, the third outside the page frame.
-    $html = $this->get(route('agent.index', $customer))->assertOk()->getContent();
+    $html = $this->get(route('agent.tokens', $customer))->assertOk()->getContent();
     expect(substr_count($html, '</div>'))->toBe(preg_match_all('/<div\b/', $html));
 });
 

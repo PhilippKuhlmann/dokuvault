@@ -91,7 +91,7 @@ test('Auto-Dokumentation zeigt bei gewaehltem Standort nur dessen Tokens', funct
     AgentToken::generateFor($customer, $muenchen, 'Token Muenchen');
 
     $this->withSession(['site' => $hamburg->id])
-        ->get("/{$customer->slug}/agent")
+        ->get("/{$customer->slug}/agent/tokens")
         ->assertStatus(200)
         ->assertSee('Token Hamburg')
         ->assertDontSee('Token Muenchen');
@@ -105,7 +105,7 @@ test('Auto-Dokumentation zeigt ohne Standortfilter alle Tokens', function () {
     AgentToken::generateFor($customer, $muenchen, 'Token Muenchen');
 
     $this->withSession(['site' => 'all'])
-        ->get("/{$customer->slug}/agent")
+        ->get("/{$customer->slug}/agent/tokens")
         ->assertStatus(200)
         ->assertSee('Token Hamburg')
         ->assertSee('Token Muenchen');

@@ -105,7 +105,7 @@ test('das erzeugte Token liefert zu jedem Agenten ein fertiges Script', function
     $site = Site::factory()->create(['customer_id' => $customer->id]);
 
     $this->post(route('agent.store', $customer), ['name' => 'Prüflauf', 'site_id' => $site->id, 'expires_at' => now()->addMonth()->format('Y-m-d')])
-        ->assertRedirect(route('agent.index', $customer));
+        ->assertRedirect(route('agent.tokens', $customer));
 
     $token = session('newToken');
     $skripte = session('agentSkripte');
@@ -149,7 +149,7 @@ test('ein Token laesst sich widerrufen', function () {
     $token = AgentToken::where('customer_id', $customer->id)->firstOrFail();
 
     $this->delete(route('agent.destroy', [$customer, $token]))
-        ->assertRedirect(route('agent.index', $customer));
+        ->assertRedirect(route('agent.tokens', $customer));
 
     expect(AgentToken::find($token->id))->toBeNull();
 });
