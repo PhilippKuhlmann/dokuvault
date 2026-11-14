@@ -4,6 +4,7 @@ use App\Models\AgentInstallation;
 use App\Models\AgentToken;
 use App\Models\Customer;
 use App\Models\Site;
+use App\Support\AgentScript;
 
 /*
  * Installed agents report in before every run and get the roles ticked on
@@ -346,4 +347,33 @@ test('saving an agent returns to the page it was on', function () {
     $this->from('https://example.com/elsewhere')
         ->put(route('agent.installation.update', [$customer, $installation]), ['roles' => []])
         ->assertRedirect(route('agent.index', $customer).'#installierte-agenten');
+});
+
+test('the agent list puts problems first and says what is off', function () {
+    $this->actingAs(userWithPermissions(['agent_manage']));
+    [$token] = installationToken();
+    $basis = ['customer_id' => $token->customer_id, 'agent_token_id' => $token->id, 'kind' => 'windows'];
+
+    AgentInstallation::create($basis + [
+        'machine_id' => 'a', 'hostname' => 'AAA-OK', 'roles' => ['windows-server'], 'detected' => ['windows-server', 'windows-ad'],
+        'version' => 'alt-1', 'last_seen_at' => now(), 'last_run_at' => now()->subMinutes(7),
+    ]);
+    AgentInstallation::create($basis + [
+        'machine_id' => 'z', 'hostname' => 'ZZZ-STILL', 'roles' => ['windows-server'], 'detected' => ['windows-server'],
+        'last_seen_at' => now()->subDay(),
+    ]);
+
+    $html = $this->get(route('agent.index', $token->customer))->assertOk()
+        // Detected but switched off - the one case worth a word.
+        ->assertSee('erkannt, aber aus')
+        ->assertSee('meldet nicht seit')
+        ->getContent();
+
+    // Silent before alphabetical.
+    expect(strpos($html, 'ZZZ-STILL'))->toBeLessThan(strpos($html, 'AAA-OK'));
+
+    // An outdated version only shows when there is a current one to compare with.
+    if (AgentScript::exeVersion()) {
+        expect($html)->toContain('Update ausstehend');
+    }
 });

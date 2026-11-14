@@ -20,6 +20,22 @@ window.copyText = function (text) {
     return Promise.resolve();
 };
 
+// Menus built from <details data-menu> (the "⋯" of an agent, say): a
+// <details> stays open until its own summary is clicked again. A click
+// anywhere else or Escape closes it, as one expects of a menu.
+document.addEventListener('click', (event) => {
+    document.querySelectorAll('details[data-menu][open]').forEach((menu) => {
+        if (!menu.contains(event.target)) {
+            menu.removeAttribute('open');
+        }
+    });
+});
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+        document.querySelectorAll('details[data-menu][open]').forEach((menu) => menu.removeAttribute('open'));
+    }
+});
+
 // Livewire 3 brings its own Alpine instance and starts it itself as part of
 // Livewire.start(). An additional `import Alpine from 'alpinejs'; Alpine.start()`
 // in front of that created two competing Alpine/Livewire instances on every page

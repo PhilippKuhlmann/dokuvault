@@ -40,12 +40,12 @@
     "src": "public/fonts/SpaceGrotesk-Semibold.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DxWf2wL7.css",
+    "file": "assets/app-Cl0gRKbL.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-DYSZSvdU.js",
+    "file": "assets/app-DLCiq37j.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true

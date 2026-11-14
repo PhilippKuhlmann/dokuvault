@@ -37,16 +37,31 @@ class AgentTokenController extends Controller
         $installations = AgentInstallation::where('customer_id', $customer->id)
             ->with('agentToken')
             ->when($suche !== '', fn ($q) => $q->whereEnthaelt(['hostname', 'domain'], $suche))
-            ->orderBy('kind')
+            // Problems first: what stopped reporting heads the list, across
+            // all pages. A failed role is only known inside the JSON of the
+            // last results - that one is sorted up within the page below.
+            ->orderByRaw('CASE WHEN last_seen_at IS NULL OR last_seen_at < ? THEN 0 ELSE 1 END', [now()->subHours(Setting::agentSilentHours())])
             ->orderBy('hostname')
             ->paginate(Setting::seiteListe(), ['*'], 'agenten')
             ->withQueryString()
             ->fragment('installierte-agenten');
 
+        $installations->setCollection(
+            $installations->getCollection()->sortBy(fn (AgentInstallation $a) => $a->hasProblem() ? 0 : 1)->values()
+        );
+
         $agentenGesamt = AgentInstallation::where('customer_id', $customer->id)->count();
         $scanNetze = AgentInstallation::scannableNetworks($customer->id);
 
-        return view('agent.index', compact('customer', 'installations', 'suche', 'agentenGesamt', 'scanNetze'));
+        // The version each kind of agent should run - an agent showing
+        // another one has not updated yet. Shown only then.
+        $aktuelleVersion = [
+            'windows' => AgentScript::exeVersion(),
+            'proxmox' => AgentScript::installerVersion('linux-agent.sh'),
+            'linux' => AgentScript::installerVersion('linux-agent.sh'),
+        ];
+
+        return view('agent.index', compact('customer', 'installations', 'suche', 'agentenGesamt', 'scanNetze', 'aktuelleVersion'));
     }
 
     /** Tokens: create one, download agents and scripts, lock, renew, revoke. */
@@ -98,7 +113,7 @@ class AgentTokenController extends Controller
 
         if ($communities->count() > AgentInstallation::SCAN_MAX_COMMUNITIES
             || $communities->contains(fn ($c) => mb_strlen($c) > 64)) {
-            return back()->withInput()->withErrors([
+            return back()->withInput()->with('agentOffen', $agentInstallation->id)->withErrors([
                 'scan_communities' => __('Höchstens :anzahl Communities mit je bis zu 64 Zeichen.', ['anzahl' => AgentInstallation::SCAN_MAX_COMMUNITIES]),
             ]);
         }

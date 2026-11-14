@@ -218,6 +218,12 @@ class AgentInstallation extends Model
         return $this->last_seen_at === null || $this->last_seen_at->lt(now()->subHours(Setting::agentSilentHours()));
     }
 
+    /** Silent, or a role whose last run failed - what the list shows first. */
+    public function hasProblem(): bool
+    {
+        return $this->isStale() || $this->failedRoles() !== [];
+    }
+
     public function runsScan(): bool
     {
         return in_array(self::SCAN_ROLE, $this->roles ?? [], true);

@@ -26,7 +26,10 @@ use Illuminate\Support\Str;
  * says "no backup yet". A demo that shows empty pages explains nothing.
  *
  * Plausible, not perfect: one agent is silent, one Veeam job failed, one
- * agent runs an old version - so the warnings have something to show.
+ * agent runs an old version - so the warnings have something to show. A
+ * failed backup is a result the agent delivered, so its role stays green;
+ * red on the agent page means the agent itself got no data (silent, or a
+ * script that broke off).
  *
  *   php artisan db:seed --class=DemoAgentSeeder
  */
@@ -67,7 +70,9 @@ class DemoAgentSeeder extends Seeder
             ['windows', 'SRV-HV01', $exe, ['windows-server', 'hyperv', 'veeam'], 7, null, [
                 'windows-server' => $ok('Server gemeldet: SRV-HV01', 7),
                 'hyperv' => $ok('Host mit 6 VMs gemeldet', 7),
-                'veeam' => $fehler("Job 'Veeam – VMs täglich': Failed – Processing SRV-SQL01 Error: Insufficient free disk space on repository NAS-Backup", 7),
+                // The job failed, the agent did not: it reported the failure.
+                // That is a result for the backup page, not a red agent.
+                'veeam' => $ok("1 Job gemeldet: 'Veeam – VMs täglich' (Failed)", 7),
             ]],
             // Silent for five hours - shows up as "meldet nicht".
             ['windows', 'SRV-FS01', '26.10.03-0912-a1b2c3d', ['windows-server', 'windows-backup'], 300, null, [

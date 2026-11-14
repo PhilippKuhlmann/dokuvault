@@ -360,7 +360,7 @@ test('Auto-Doku has its own menu with three pages, the old address redirects', f
     }
 
     // The scan settings are on the agents page, the findings on their own.
-    $this->get(route('agent.index', $customer))->assertSee('Netzwerk-Scan einstellen')->assertDontSee('Ignorierte Geräte');
+    $this->get(route('agent.index', $customer))->assertSee('Netze und Communities ändern')->assertDontSee('Ignorierte Geräte');
     $this->get(route('agent.tokens', $customer))->assertSee('Neuen Token erzeugen')->assertDontSee('Installierte Agenten');
 });
 
