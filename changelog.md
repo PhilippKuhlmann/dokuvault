@@ -1,5 +1,23 @@
 # Changelog
 
+## 26.11.14b
+
+### Changed
+
+- **Laravel 13.** DokuVault läuft jetzt auf Laravel 13 (vorher 12) – Laravel 12 bekommt keine Fehlerbehebungen mehr. Mit dabei: laravel-backup 10, Guzzle 8, Pest 4 und PHPUnit 12, im Frontend Vite 8 (der Build braucht ein Viertel der Zeit). Für den Betrieb ändert sich nichts: keine neue Migration, keine neue Einstellung in der `.env`, Sitzungen bleiben gültig.
+- **Der Cache baut keine Objekte mehr zurück.** Was aus dem Cache gelesen wird, darf nur noch aus Arrays und Werten bestehen – DokuVault legt ohnehin nichts anderes ab. Sollte der `APP_KEY` je in fremde Hände geraten, lässt sich darüber kein Code einschleusen. Das ist der neue Standard von Laravel 13.
+- **Die DNS-Abfrage der Domain-Prüfung** nutzt `mikepultz/netdns2` statt des aufgegebenen `pear/net_dns2` – derselbe Autor, derselbe Code unter neuem Namen.
+
+### Fixed
+
+- **Nach einer Kennwortänderung an anderer Stelle** landete eine noch offene Sitzung unter Laravel 13 auf einer leeren Seite statt bei der Anmeldung. Sie leitet jetzt wieder zur Anmeldung.
+
+### Internal
+
+- **Doppelte SVG-Bibliothek entfernt.** `phenx/php-svg-lib` war für die Serverschrank-Zeichnung im PDF nötig, weil DomPDF damals kein SVG konnte. Inzwischen bringt DomPDF dasselbe Paket unter seinem neuen Namen `dompdf/php-svg-lib` selbst mit; beide zusammen lieferten jede Klasse doppelt. Geprüft mit einem echten PDF: Die Zeichnung erscheint weiter.
+- **Dependabot überwacht jetzt auch den Windows-Dienst** (Go-Module, monatlich). Dazu `golang.org/x/sys` 0.50.
+- `npm audit` meldet vier Funde niedriger Stufe in `deepmerge`, das über flowbite → flowbite-datepicker nur beim Bauen mitläuft und nicht im ausgelieferten JavaScript steckt. Eine korrigierte Fassung gibt es noch nicht.
+
 ## 26.11.14
 
 ### Added

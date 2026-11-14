@@ -53,7 +53,7 @@ test('an empty BACKUP_ARCHIVE_PASSWORD is no password', function () {
     BackupSettings::anwenden();
 
     expect(config('backup.backup.password'))->toBeNull()
-        ->and(EncryptBackupArchive::shouldEncrypt())->toBeFalse();
+        ->and(app(EncryptBackupArchive::class)->shouldEncrypt())->toBeFalse();
 });
 
 test('without an archive password the .env stays out of the backup', function () {

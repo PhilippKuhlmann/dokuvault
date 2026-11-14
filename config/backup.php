@@ -139,6 +139,12 @@ return [
          */
         'database_dump_file_extension' => '',
 
+        /*
+         * The base of the dump filename: 'database' (its name) or
+         * 'connection' (the connection name). New in laravel-backup 10.
+         */
+        'database_dump_filename_base' => 'database',
+
         'destination' => [
             /*
              * The compression algorithm to be used for creating the zip archive.
@@ -177,6 +183,13 @@ return [
             'disks' => [
                 'local',
             ],
+
+            /*
+             * Whether a backup continues when one of several targets fails.
+             * DokuVault writes to "local" and at most one external target;
+             * a failed copy is shown on the backup page either way.
+             */
+            'continue_on_failure' => false,
         ],
 
         /*
@@ -198,6 +211,11 @@ return [
          * available on your system.
          */
         'encryption' => 'default',
+
+        /*
+         * After creating the zip, check that it opens and contains files.
+         */
+        'verify_backup' => false,
 
         /**
          * The number of attempts, in case the backup command encounters an exception
@@ -271,7 +289,20 @@ return [
              */
             'avatar_url' => '',
         ],
+
+        /*
+         * A generic webhook channel that POSTs JSON to a URL.
+         */
+        'webhook' => [
+            'url' => '',
+        ],
     ],
+
+    /*
+     * The log channel for backup messages: null is the default channel,
+     * false switches backup logging off.
+     */
+    'log_channel' => null,
 
     /*
      * Here you can specify which backups should be monitored.

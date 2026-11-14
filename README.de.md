@@ -13,7 +13,7 @@ PDF-Export, globaler Suche über alle Kunden und Geräten, die sich per Agent
 
 [![Tests](https://github.com/PhilippKuhlmann/dokuvault/actions/workflows/tests.yml/badge.svg)](https://github.com/PhilippKuhlmann/dokuvault/actions/workflows/tests.yml)
 ![PHP](https://img.shields.io/badge/PHP-8.3+-777BB4?logo=php&logoColor=white)
-![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)
+![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white)
 ![Livewire](https://img.shields.io/badge/Livewire-4-FB70A9)
 ![Tests](https://img.shields.io/badge/Tests-1900%2B%20grün-3fb950)
 ![License](https://img.shields.io/badge/License-MIT-blue)
@@ -413,11 +413,11 @@ Klartext weder in der Datenbank noch im Audit-Log landet.
 
 | Bereich | Eingesetzt |
 | --- | --- |
-| **Backend** | PHP 8.3+ · Laravel 12 · Livewire 4 · Laravel Sanctum 4 *(Agent-/API-Token)* |
-| **Pakete** | spatie/laravel-activitylog 4.12 *(Audit-Log)* · barryvdh/laravel-dompdf 3.0 *(PDF-Export)* · spatie/laravel-backup 9.3 · league/flysystem-sftp-v3, -ftp *(Backup-Ziele)* |
-| **Frontend** | Tailwind CSS 4 · Alpine.js 3 · Flowbite 4 · Vite 6 |
+| **Backend** | PHP 8.3+ · Laravel 13 · Livewire 4 · Laravel Sanctum 4 *(Agent-/API-Token)* |
+| **Pakete** | spatie/laravel-activitylog 4.12 *(Audit-Log)* · barryvdh/laravel-dompdf 3.1 *(PDF-Export)* · spatie/laravel-backup 10 · league/flysystem-sftp-v3, -ftp *(Backup-Ziele)* |
+| **Frontend** | Tailwind CSS 4 · Alpine.js 3 · Flowbite 4 · Vite 8 |
 | **Datenbank** | MySQL / MariaDB |
-| **Qualität** | Pest 3 *(1900+ Tests)* · Laravel Pint · GitHub Actions CI |
+| **Qualität** | Pest 4 *(1900+ Tests)* · Laravel Pint · GitHub Actions CI |
 
 ---
 
@@ -548,7 +548,7 @@ deshalb sehen sie dort gleich aus.
 
 ## 🧪 Tests
 
-Über 1900 Feature-Tests (Pest 3) laufen gegen eine In-Memory-SQLite – keine Einrichtung nötig, keine
+Über 1900 Feature-Tests (Pest 4) laufen gegen eine In-Memory-SQLite – keine Einrichtung nötig, keine
 Spuren in der Entwicklungsdatenbank. Bei jedem Push führt GitHub Actions dieselbe Suite aus –
 gegen PHP 8.3, 8.4 und 8.5, jeweils mit SQLite und MariaDB.
 

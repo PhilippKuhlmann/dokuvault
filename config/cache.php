@@ -107,4 +107,18 @@ return [
 
     'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Serializable Classes
+    |--------------------------------------------------------------------------
+    |
+    | Which classes may come back out of the cache as objects. false: none -
+    | DokuVault only caches arrays and numbers (settings, the RDAP list, the
+    | admin figures). Should APP_KEY ever leak, a forged cache entry cannot
+    | build objects on unserialize. The default since Laravel 13.
+    |
+    */
+
+    'serializable_classes' => false,
+
 ];

@@ -11,6 +11,7 @@ use App\Support\BackupHealth;
 use App\Support\BackupSettings;
 use App\Support\Changelog;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
@@ -46,6 +47,11 @@ class AppServiceProvider extends ServiceProvider
         // @alpineJson($wert): an Alpine argument the CSP build can read, see
         // AlpineJson. For strings and numbers @js stays fine.
         Blade::directive('alpineJson', fn (string $ausdruck) => '<?php echo '.AlpineJson::class."::attribut({$ausdruck}); ?>");
+
+        // A session ended by a password change elsewhere goes to the login
+        // again. Since Laravel 13 AuthenticateSession has no target of its
+        // own and answers a bare 401 - a blank page in the browser.
+        AuthenticateSession::redirectUsing(fn ($request) => $request->expectsJson() ? null : route('login'));
 
         // The DokuVault backup is configured in the admin area; its settings
         // replace config/backup.php at runtime. Never at the price of booting.

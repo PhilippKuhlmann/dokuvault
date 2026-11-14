@@ -25,12 +25,12 @@ class BackupHealth
 
     public static function erfolg(BackupWasSuccessful $ereignis): void
     {
-        self::merken($ereignis->backupDestination->diskName(), null);
+        self::merken($ereignis->diskName, null);
     }
 
     public static function fehler(BackupHasFailed $ereignis): void
     {
-        self::merken($ereignis->backupDestination?->diskName(), $ereignis->exception->getMessage());
+        self::merken($ereignis->diskName, $ereignis->exception->getMessage());
     }
 
     /**
