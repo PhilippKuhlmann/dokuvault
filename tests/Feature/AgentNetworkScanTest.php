@@ -371,3 +371,23 @@ test('without findings and without a scan the findings page says how to switch i
     $this->get(route('agent.findings', $customer))->assertOk()
         ->assertSee('Noch kein Netzwerk-Scan eingeschaltet');
 });
+
+test('a finding opens to everything the scan knows, and what it may match', function () {
+    ['plain' => $plain, 'customer' => $customer, 'site' => $site] = scanSetup();
+    $this->actingAs(userWithPermissions(['agent_manage']));
+    Printer::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'Empfang', 'serialNumber' => 'CNB1234567']);
+
+    scanReport($plain, [
+        hpPrinter(),
+        ['type' => 'ups', 'ip' => '192.0.2.30', 'mac' => '00-C0-B7-11-22-33', 'model' => 'Smart-UPS 1500'],
+    ]);
+
+    $this->get(route('agent.findings', $customer))->assertOk()
+        ->assertSee('CNB1234567')
+        ->assertSee('2507252_052345')
+        ->assertSee('00:c0:b7:11:22:33')
+        ->assertSee('192.0.2.0/24')
+        ->assertSee('SCAN-PC')
+        ->assertSee('Passt vermutlich zu')
+        ->assertSee('Empfang (gleiche Seriennummer)');
+});

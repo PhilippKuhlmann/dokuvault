@@ -1629,7 +1629,6 @@
     ":art :name übernommen – der Scan hält ihn ab jetzt aktuell.": ":art :name taken over – the scan keeps it up to date from now on.",
     ":art :name verknüpft – der Scan hält ihn ab jetzt aktuell.": ":art :name linked – the scan keeps it up to date from now on.",
     "Neu gefunden": "Newly found",
-    "Drucker und USVs, die der Netzwerk-Scan gefunden hat. Übernommen oder verknüpft hält der Scan Hersteller, Modell, Seriennummer, Firmware und Adresse aktuell – Name, Standort und Notizen bleiben deine.": "Printers and UPS units found by the network scan. Once taken over or linked, the scan keeps manufacturer, model, serial number, firmware and address up to date – name, site and notes stay yours.",
     "schon dokumentiert?": "already documented?",
     "Modell unbekannt": "Model unknown",
     "Zuletzt gesehen": "Last seen",
@@ -1671,5 +1670,13 @@
     "Noch kein Netz gewählt.": "No network chosen yet.",
     "Netze und Communities ändern": "Change networks and communities",
     "Aktionen für :name": "Actions for :name",
-    "Entfernen …": "Remove …"
+    "Entfernen …": "Remove …",
+    "Drucker und USVs, die der Netzwerk-Scan gefunden hat. Ein Klick zeigt alles, was der Scan über das Gerät weiß. Übernommen oder verknüpft hält der Scan Hersteller, Modell, Seriennummer, Firmware und Adresse aktuell – Name, Standort und Notizen bleiben deine.": "Printers and UPS units found by the network scan. A click shows everything the scan knows about the device. Once taken over or linked, the scan keeps manufacturer, model, serial number, firmware and address up to date – name, site and notes stay yours.",
+    "Details zu :name": "Details of :name",
+    "Passt vermutlich zu": "Probably matches",
+    "gleiche Seriennummer": "same serial number",
+    "gleiche IP-Adresse": "same IP address",
+    "Name im Gerät": "Name in the device",
+    "Gefunden von": "Found by",
+    "Zuerst gesehen": "First seen"
 }

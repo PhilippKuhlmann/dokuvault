@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.11.14c
+
+### Changed
+
+- **„Neu gefunden“ zeigt alles, was der Scan über ein Gerät weiß.** Jedes Gerät steht zugeklappt in einer Zeile – Typ, Name, Hersteller und Modell, Adresse. Ein Klick öffnet Name im Gerät, Seriennummer oder MAC-Adresse, Firmware, Netz mit Standort, den Agenten, der es gefunden hat, und wann es zuerst und zuletzt gesehen wurde – dazu, zu welchem schon dokumentierten Gerät es vermutlich passt und warum (gleiche Seriennummer oder Adresse). Auch verworfene Geräte lassen sich so aufklappen.
+
 ## 26.11.14b
 
 ### Changed

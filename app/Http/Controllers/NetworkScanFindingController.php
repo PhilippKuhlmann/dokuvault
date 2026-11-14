@@ -31,7 +31,7 @@ class NetworkScanFindingController extends Controller
         Gate::authorize('agent_manage');
 
         $funde = NetworkScanFinding::forCustomer($customer)
-            ->with(['network', 'agentInstallation.agentToken'])
+            ->with(['network.site', 'agentInstallation.agentToken'])
             ->orderBy('type')
             ->orderBy('ip')
             ->get();
