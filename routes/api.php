@@ -8,6 +8,7 @@ use App\Http\Controllers\API\Agent\HypervisorController as AgentHypervisorContro
 use App\Http\Controllers\API\Agent\InstallationController as AgentInstallationController;
 use App\Http\Controllers\API\Agent\Microsoft365Controller as AgentMicrosoft365Controller;
 use App\Http\Controllers\API\Agent\NetworkController as AgentNetworkController;
+use App\Http\Controllers\API\Agent\NetworkScanController as AgentNetworkScanController;
 use App\Http\Controllers\API\Agent\ServerController as AgentServerController;
 use App\Http\Controllers\API\ChecklistReportController;
 use App\Http\Controllers\API\CustomerController;
@@ -69,6 +70,8 @@ Route::middleware(['throttle:agent', 'agent'])->withoutMiddleware('throttle:api'
     Route::post('/windows-client', [AgentClientController::class, 'windowsClient']);
     Route::post('/unifi', [AgentNetworkController::class, 'unifi']);
     Route::post('/firewall', [AgentNetworkController::class, 'firewall']);
+    // Printers and UPS found by the network scan of the Windows service.
+    Route::post('/network-scan', [AgentNetworkScanController::class, 'store']);
     Route::post('/microsoft365', [AgentMicrosoft365Controller::class, 'microsoft365']);
     Route::post('/backup', [AgentBackupController::class, 'backup']);
     // Installed agents report in and get the roles chosen on the agent page.

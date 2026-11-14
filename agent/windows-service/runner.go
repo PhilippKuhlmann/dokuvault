@@ -94,10 +94,15 @@ func runOnce(cfg Config, log func(level, msg string)) error {
 // runIfDue is the service's poll: ask DokuVault, run only when due (or
 // force). Returns whether it ran.
 func runIfDue(cfg Config, log func(level, msg string), force bool) (bool, error) {
-	agents, due, err := assignedAgents(cfg, log, force)
+	agents, due, scan, err := assignedAgents(cfg, log, force)
 	if err != nil {
 		log("error", err.Error())
 		return false, err
+	}
+	// The network scan has its own timing, decided by DokuVault: it comes
+	// with the answer only when due, whether the scripts are or not.
+	if scan != nil {
+		runScan(cfg, *scan, log)
 	}
 	if !due {
 		return false, nil

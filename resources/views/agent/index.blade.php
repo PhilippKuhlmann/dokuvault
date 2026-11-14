@@ -415,6 +415,96 @@
              roles ticked here. Defaults follow the detection, except AD -
              only one DC per domain gets it, the domain is the same from
              every DC. --}}
+        {{-- What the network scan found. Only once a scan is switched on or
+             has found something - otherwise the panel explains nothing. --}}
+        @if ($scanAktiv || $neuGefunden->isNotEmpty() || $ignoriert->isNotEmpty())
+            <x-panel id="neu-gefunden">
+                <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">
+                    {{ __('Neu gefunden') }}
+                    @if ($neuGefunden->isNotEmpty())
+                        <span class="ml-1 text-sm font-DINPro text-gray-400 dark:text-gray-500">{{ $neuGefunden->count() }}</span>
+                    @endif
+                </div>
+                <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">
+                    {{ __('Drucker und USVs, die der Netzwerk-Scan gefunden hat. Übernommen oder verknüpft hält der Scan Hersteller, Modell, Seriennummer, Firmware und Adresse aktuell – Name, Standort und Notizen bleiben deine.') }}
+                </p>
+
+                @forelse ($neuGefunden as $fund)
+                    @php($auswahl = $fund->linkChoices())
+                    @php($kandidaten = $fund->linkCandidates()->pluck('id'))
+                    <div class="py-3 border-b border-gray-100 last:border-0 dark:border-gray-700">
+                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {{ $fund->suggestedName() }}
+                            <span class="ml-1 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:bg-gray-700 dark:text-gray-300">{{ $fund->typeLabel() }}</span>
+                            @if ($kandidaten->isNotEmpty())
+                                <span class="ml-1 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">{{ __('schon dokumentiert?') }}</span>
+                            @endif
+                        </div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ collect([$fund->manufacturer, $fund->model])->filter()->join(' ') ?: __('Modell unbekannt') }} ·
+                            {{ __('Seriennummer') }}: {{ $fund->serial ?? '—' }} ·
+                            {{ __('Firmware') }}: {{ $fund->firmware ?? '—' }} ·
+                            {{ $fund->ip }}@if ($fund->network) ({{ $fund->network->label() }})@endif ·
+                            {{ __('Zuletzt gesehen') }}: {{ LocalTime::display($fund->last_seen_at, 'd.m.Y H:i', '—') }}
+                        </div>
+
+                        <div class="mt-2 flex flex-wrap items-center gap-3">
+                            <form method="POST" action="{{ route('agent.finding.accept', [$customer, $fund]) }}" class="flex flex-wrap items-center gap-2">
+                                @csrf
+                                <x-input.field name="name" :value="$fund->suggestedName()" class="w-56 h-9 text-sm" :aria-label="__('Name')" required />
+                                <x-input.select name="site_id" class="w-48 h-9 px-3 py-1 text-sm" :aria-label="__('Standort')">
+                                    @foreach ($sites as $site)
+                                        <option value="{{ $site->id }}" @selected($site->id === $fund->suggestedSiteId())>{{ $site->name }}</option>
+                                    @endforeach
+                                </x-input.select>
+                                <x-input.button type="submit" class="h-9" :label="__('Übernehmen')" />
+                            </form>
+
+                            @if ($auswahl->isNotEmpty())
+                                <form method="POST" action="{{ route('agent.finding.link', [$customer, $fund]) }}" class="flex flex-wrap items-center gap-2">
+                                    @csrf
+                                    <x-input.select name="device_id" class="w-56 h-9 px-3 py-1 text-sm" :aria-label="__('Vorhandenes Gerät')">
+                                        @foreach ($auswahl as $geraet)
+                                            <option value="{{ $geraet->id }}">{{ $geraet->name ?: '#'.$geraet->id }}{{ $kandidaten->contains($geraet->id) ? ' ★' : '' }}</option>
+                                        @endforeach
+                                    </x-input.select>
+                                    <x-input.button type="submit" color="gray" class="h-9" :label="__('Mit vorhandenem verknüpfen')" />
+                                </form>
+                            @endif
+
+                            <form method="POST" action="{{ route('agent.finding.ignore', [$customer, $fund]) }}">
+                                @csrf
+                                <x-input.button type="submit" color="gray" class="h-9" :label="__('Verwerfen')" />
+                            </form>
+                        </div>
+                    </div>
+                @empty
+                    <div class="text-sm text-gray-400 dark:text-gray-500">{{ __('Nichts Neues – alles Gefundene ist dokumentiert.') }}</div>
+                @endforelse
+
+                {{-- Ignored devices: never offered again, unless brought back here. --}}
+                @if ($ignoriert->isNotEmpty())
+                    <details class="mt-4 text-sm">
+                        <summary class="cursor-pointer select-none text-gray-500 dark:text-gray-400">{{ __('Ignorierte Geräte') }} ({{ $ignoriert->count() }})</summary>
+                        <div class="mt-2 divide-y divide-gray-100 dark:divide-gray-700">
+                            @foreach ($ignoriert as $fund)
+                                <div class="flex flex-wrap items-center justify-between gap-3 py-2">
+                                    <span class="text-gray-700 dark:text-gray-200">
+                                        {{ $fund->suggestedName() }}
+                                        <span class="text-xs text-gray-400 dark:text-gray-500">· {{ $fund->typeLabel() }} · {{ $fund->serial ?? $fund->identifier }} · {{ $fund->ip }}</span>
+                                    </span>
+                                    <form method="POST" action="{{ route('agent.finding.restore', [$customer, $fund]) }}">
+                                        @csrf
+                                        <x-input.button type="submit" color="gray" size="sm" :label="__('Zurückholen')" />
+                                    </form>
+                                </div>
+                            @endforeach
+                        </div>
+                    </details>
+                @endif
+            </x-panel>
+        @endif
+
         <x-panel id="installierte-agenten">
             <div class="text-lg font-CoconPro text-chathams-blue-800 dark:text-gray-100 mb-1">
                 {{ __('Installierte Agenten') }}
@@ -503,7 +593,49 @@
                                     @endif
                                 </label>
                             @endforeach
+                            @if (array_key_exists(\App\Models\AgentInstallation::SCAN_ROLE, $rollen))
+                                <input type="hidden" name="scan_settings" value="1">
+                            @endif
                         </form>
+                        {{-- Network scan: which documented networks, which SNMP
+                             communities. Folded - most agents never scan. --}}
+                        @if (array_key_exists(\App\Models\AgentInstallation::SCAN_ROLE, $rollen))
+                            <details class="text-sm" @if ($installation->runsScan() || $errors->has('scan_communities')) open @endif>
+                                <summary class="cursor-pointer select-none text-gray-500 dark:text-gray-400">
+                                    {{ __('Netzwerk-Scan einstellen') }}
+                                    @if ($installation->runsScan())
+                                        · {{ __('Letzter Scan') }}: {{ LocalTime::display($installation->last_scan_at, 'd.m.Y H:i', __('noch nie')) }}
+                                    @endif
+                                </summary>
+                                <div class="mt-2 space-y-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-900/40">
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                        {{ __('Einmal am Tag fragt der Agent jede Adresse der gewählten Netze per SNMP (UDP 161) ab und meldet Drucker und USVs. Netze hinter einem Router gehen auch, wenn die Firewall dazwischen SNMP durchlässt. Manche EDR- oder IDS-Produkte melden einen solchen Scan als Angriff – vorher Bescheid geben.') }}
+                                    </p>
+                                    <div>
+                                        <div class="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">{{ __('Netze (höchstens /:praefix)', ['praefix' => \App\Models\AgentInstallation::SCAN_MIN_PREFIX]) }}</div>
+                                        @forelse ($scanNetze as $netz)
+                                            <label class="mr-4 inline-flex cursor-pointer select-none items-center gap-1.5 text-sm text-gray-700 dark:text-gray-200">
+                                                <input type="checkbox" name="scan_network_ids[]" value="{{ $netz->id }}" form="agent-{{ $installation->id }}"
+                                                    @checked(in_array($netz->id, array_map('intval', $installation->scan_network_ids ?? []), true))
+                                                    class="h-4 w-4 rounded border-gray-300 text-cerulean-600 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700">
+                                                {{ \App\Models\AgentInstallation::cidrOf($netz) }}
+                                                <span class="text-xs text-gray-400 dark:text-gray-500">{{ collect([$netz->label(true), $netz->site?->name])->filter()->join(' · ') }}</span>
+                                            </label>
+                                        @empty
+                                            <div class="text-xs text-gray-400 dark:text-gray-500">{{ __('Keine passenden Netze dokumentiert – der Scan braucht ein IPv4-Netz mit Präfix (z. B. /24).') }}</div>
+                                        @endforelse
+                                    </div>
+                                    <div>
+                                        <x-input.label for="scan-communities-{{ $installation->id }}" :value="__('SNMP-Communities')" />
+                                        <x-input.field id="scan-communities-{{ $installation->id }}" name="scan_communities" form="agent-{{ $installation->id }}"
+                                            :value="implode(', ', $installation->scan_communities ?? [])" class="mt-1 w-full max-w-md h-9 text-sm"
+                                            :placeholder="\App\Models\AgentInstallation::SCAN_DEFAULT_COMMUNITY" autocomplete="off" />
+                                        <div class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ __('Mit Komma getrennt, höchstens :anzahl. Leer: public.', ['anzahl' => \App\Models\AgentInstallation::SCAN_MAX_COMMUNITIES]) }}</div>
+                                        <x-input.fehler feld="scan_communities" />
+                                    </div>
+                                </div>
+                            </details>
+                        @endif
                         <div class="flex flex-wrap items-center gap-3">
                             {{-- One height for all controls of the row (h-9): the select came in
                                  its form size, the buttons in their small one. --}}
@@ -517,6 +649,16 @@
                             <form method="POST" action="{{ route($installation->agentToken->isLocked() ? 'agent.unlock' : 'agent.lock', [$customer, $installation->agentToken]) }}">
                                 @csrf
                                 <x-input.button type="submit" :color="$installation->agentToken->isLocked() ? 'gray' : 'red'" class="h-9" :label="$installation->agentToken->isLocked() ? __('Entsperren') : __('Sperren')" />
+                            </form>
+                        @endif
+                        @if ($installation->runsScan())
+                            <form method="POST" action="{{ route('agent.installation.scan', [$customer, $installation]) }}">
+                                @csrf
+                                @if ($installation->scan_requested_at)
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('Scan angefordert') }}</span>
+                                @else
+                                    <x-input.button type="submit" color="gray" class="h-9" :label="__('Jetzt scannen')" />
+                                @endif
                             </form>
                         @endif
                         {{-- Picked up on the next checkin, within five minutes. --}}

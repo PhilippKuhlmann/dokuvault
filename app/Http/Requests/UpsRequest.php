@@ -23,6 +23,7 @@ class UpsRequest extends FormRequest
             'manufacturer' => 'max:255',
             'model' => 'max:255',
             'serialNumber' => 'max:255',
+            'firmware' => 'max:255',
             'capacity' => 'max:255',
             'runtime' => 'max:255',
             'notes' => 'nullable',
@@ -32,7 +33,7 @@ class UpsRequest extends FormRequest
 
     public function attributes(): array
     {
-        return ['site_id' => 'Standort', 'name' => 'Name', 'manufacturer' => 'Hersteller', 'model' => 'Modell', 'serialNumber' => 'Seriennummer', 'ip' => 'IP', 'capacity' => 'Kapazität', 'runtime' => 'Laufzeit', 'notes' => 'Notizen',
+        return ['site_id' => 'Standort', 'name' => 'Name', 'manufacturer' => 'Hersteller', 'model' => 'Modell', 'serialNumber' => 'Seriennummer', 'firmware' => 'Firmware', 'ip' => 'IP', 'capacity' => 'Kapazität', 'runtime' => 'Laufzeit', 'notes' => 'Notizen',
             ...$this->procurementLabels()];
     }
 }

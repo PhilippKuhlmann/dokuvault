@@ -11,6 +11,7 @@ use App\Models\Concerns\HasProcurement;
 use App\Models\ContactPerson;
 use App\Models\Customer;
 use App\Models\LicenseSoftware;
+use App\Models\NetworkScanFinding;
 use App\Models\Server;
 use App\Models\Setting;
 use App\Models\Site;
@@ -253,7 +254,7 @@ class CustomerDashboard
      * null when the customer has neither agents nor tokens - then there is
      * no tile at all.
      *
-     * @return Collection<int, array{name: string, art: string, text: string, schwer: bool}>|null
+     * @return Collection<int, array{name: string, art: string, text: string, schwer: bool, anker?: string}>|null
      */
     public function agentenWarnungen(): ?Collection
     {
@@ -304,6 +305,19 @@ class CustomerDashboard
                 'art' => __('Backup').($backup->software ? ' · '.$backup->software : ''),
                 'text' => __(Backup::STATUS[$backup->last_status]),
                 'schwer' => $backup->last_status === 'failed',
+            ]);
+        }
+
+        // What the network scan found and nobody took over yet. Amber, not
+        // red: nothing is broken, the documentation is only incomplete.
+        $funde = NetworkScanFinding::forCustomer($this->kunde)->where('status', 'new')->count();
+        if ($funde > 0) {
+            $warnungen->push([
+                'name' => trans_choice(':anzahl neues Gerät gefunden|:anzahl neue Geräte gefunden', $funde, ['anzahl' => $funde]),
+                'art' => __('Netzwerk-Scan'),
+                'text' => __('übernehmen'),
+                'schwer' => false,
+                'anker' => 'neu-gefunden',
             ]);
         }
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AgentInstallation;
 use App\Models\AgentToken;
 use App\Models\Customer;
+use App\Models\NetworkScanFinding;
 use App\Models\Setting;
 use App\Models\Site;
 use App\Support\AgentScript;
@@ -47,7 +48,18 @@ class AgentTokenController extends Controller
             ->whereIn('machine_id', $tokens->pluck('machine_id')->filter())
             ->pluck('hostname', 'machine_id');
 
-        return view('agent.index', compact('customer', 'tokens', 'sites', 'installations', 'suche', 'agentenGesamt', 'boundHosts'));
+        // What the network scan found, and what was ignored.
+        $funde = NetworkScanFinding::forCustomer($customer)
+            ->with(['network', 'agentInstallation.agentToken'])
+            ->orderBy('type')
+            ->orderBy('ip')
+            ->get();
+        $neuGefunden = $funde->where('status', 'new')->values();
+        $ignoriert = $funde->where('status', 'ignored')->values();
+        $scanNetze = AgentInstallation::scannableNetworks($customer->id);
+        $scanAktiv = AgentInstallation::where('customer_id', $customer->id)->get()->contains(fn ($a) => $a->runsScan());
+
+        return view('agent.index', compact('customer', 'tokens', 'sites', 'installations', 'suche', 'agentenGesamt', 'boundHosts', 'neuGefunden', 'ignoriert', 'scanNetze', 'scanAktiv'));
     }
 
     /**
@@ -64,12 +76,41 @@ class AgentTokenController extends Controller
             'roles' => ['array'],
             'roles.*' => [Rule::in(array_keys(AgentInstallation::availableRoles($agentInstallation->kind)))],
             'interval_minutes' => ['nullable', Rule::in(array_keys(config('custom.agent_intervalle')))],
+            // Network scan: only networks of this customer the scan can take.
+            'scan_network_ids' => ['array'],
+            'scan_network_ids.*' => ['integer', Rule::in(AgentInstallation::scannableNetworks($customer->id)->pluck('id')->all())],
+            'scan_communities' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $agentInstallation->update([
+        // Before anything is saved: a refused list must not leave the roles
+        // changed and the scan settings not.
+        $communities = collect(preg_split('/[\s,;]+/', (string) ($validated['scan_communities'] ?? '')))
+            ->filter(fn ($c) => $c !== '')
+            ->unique()
+            ->values();
+
+        if ($communities->count() > AgentInstallation::SCAN_MAX_COMMUNITIES
+            || $communities->contains(fn ($c) => mb_strlen($c) > 64)) {
+            return back()->withInput()->withErrors([
+                'scan_communities' => __('Höchstens :anzahl Communities mit je bis zu 64 Zeichen.', ['anzahl' => AgentInstallation::SCAN_MAX_COMMUNITIES]),
+            ]);
+        }
+
+        $agentInstallation->fill([
             'roles' => array_values($validated['roles'] ?? []),
             'interval_minutes' => $validated['interval_minutes'] ?? $agentInstallation->interval_minutes,
         ]);
+
+        // Only the Windows form carries the scan settings: saving another
+        // agent, or from the app, must not wipe them.
+        if ($request->boolean('scan_settings')) {
+            $agentInstallation->fill([
+                'scan_network_ids' => array_values(array_map('intval', $validated['scan_network_ids'] ?? [])),
+                'scan_communities' => $communities->all() ?: null,
+            ]);
+        }
+
+        $agentInstallation->save();
 
         return $this->toList($customer)
             ->with('success', __('Aufgaben für :name gespeichert – gilt ab dem nächsten Lauf.', ['name' => $agentInstallation->hostname]));
@@ -88,6 +129,22 @@ class AgentTokenController extends Controller
 
         return $this->toList($customer)
             ->with('success', __(':name meldet innerhalb der nächsten fünf Minuten.', ['name' => $agentInstallation->hostname]));
+    }
+
+    /**
+     * "Jetzt scannen": handed out with the next checkin, within five
+     * minutes - without waiting for the daily scan.
+     */
+    public function scanInstallation(Customer $customer, AgentInstallation $agentInstallation)
+    {
+        Gate::authorize('agent_manage');
+        abort_if($agentInstallation->customer_id !== $customer->id, 403);
+        abort_unless($agentInstallation->runsScan(), 422);
+
+        $agentInstallation->forceFill(['scan_requested_at' => now()])->save();
+
+        return $this->toList($customer)
+            ->with('success', __(':name scannt innerhalb der nächsten fünf Minuten.', ['name' => $agentInstallation->hostname]));
     }
 
     /**

@@ -1,9 +1,10 @@
 // dokuvault-agent: runs the DokuVault PowerShell agents as a Windows service.
 //
-// It does not collect anything itself. Every interval it fetches the current
-// script of each configured agent from DokuVault (GET /api/agent/script/...)
-// and runs it - the scripts in resources/agents/ stay the single source, and
-// updates arrive without reinstalling.
+// Every interval it fetches the current script of each configured agent
+// from DokuVault (GET /api/agent/script/...) and runs it - the scripts in
+// resources/agents/ stay the single source, and updates arrive without
+// reinstalling. The one exception is the network scan (scan.go): printers
+// and UPS by SNMP, which the service does itself.
 package main
 
 import (
@@ -31,6 +32,7 @@ Befehle (als Administrator):
   uninstall Dienst und C:\ProgramData\DokuVault entfernen.
 
 Agenten: windows-server, windows-ad, hyperv, windows-client, veeam, windows-backup
+Netzwerk-Scan (Drucker, USV): nur in DokuVault unter Agenten einschaltbar.
 `
 
 // installEmbeddedArg: the elevated relaunch after a double click.

@@ -1,5 +1,17 @@
 # Changelog
 
+## 26.11.14
+
+### Added
+
+- **Der Windows-Agent findet Drucker und USVs im Netz.** Auf der Agent-Seite lässt sich für einen Rechner der Netzwerk-Scan einschalten – nur von Hand, nie durch die Erkennung. Er fragt einmal am Tag (oder sofort mit „Jetzt scannen“) die ausgewählten Netze per SNMP ab, auch Netze hinter einem Router, und erkennt Drucker an der Printer-MIB, USVs an der UPS- oder APC-MIB. Zur Auswahl stehen die dokumentierten IPv4-Netze bis /22; SNMP-Communities lassen sich mitgeben und werden verschlüsselt gespeichert, ohne Eintrag fragt der Agent mit `public`.
+- **„Neu gefunden“ auf der Agent-Seite.** Was der Scan findet, wird nicht angelegt, sondern vorgeschlagen: übernehmen (Name und Standort vorbelegt, der Standort kommt aus dem Netz), mit einem von Hand dokumentierten Gerät verknüpfen – gleiche Seriennummer oder Adresse wird zuerst angeboten – oder verwerfen. Verworfene Geräte stehen unter „Ignorierte Geräte“ und kommen erst wieder, wenn man sie zurückholt. Das Kunden-Dashboard zeigt in der Agenten-Kachel, wie viele neue Geräte warten.
+- **Drucker und USVs haben ein Feld „Firmware“.** Übernommene oder verknüpfte Geräte hält der Scan aktuell – Hersteller, Modell, Seriennummer, Firmware und Adresse. Name, Standort, Notizen und Zugangsdaten fasst er nicht an. Tonerstand, Seitenzähler oder Akkuzustand liest er bewusst nicht: DokuVault dokumentiert, es überwacht nicht.
+
+### Internal
+
+- **Der Windows-Dienst scannt selbst.** Bisher führte er nur die PowerShell-Scripte aus; der Netzwerk-Scan ist in Go gebaut (`gosnmp`, 64 Adressen parallel, eine Sekunde Timeout), weil PowerShell für 1024 Adressen Minuten bräuchte. Ältere Agenten kennen die neue Rolle nicht und übergehen sie. Das Ergebnis geht an den neuen Endpunkt `POST /api/agent/network-scan`.
+
 ## 26.11.11
 
 ### Security

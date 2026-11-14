@@ -33,6 +33,7 @@ class PrinterRequest extends FormRequest
             'manufacturer' => 'max:255',
             'model' => 'max:255',
             'serialNumber' => 'max:255',
+            'firmware' => 'max:255',
             'port' => 'max:255',
             ...$this->procurementRules(),
         ];
@@ -46,6 +47,7 @@ class PrinterRequest extends FormRequest
             'manufacturer' => 'Hersteller',
             'model' => 'Modell',
             'serialNumber' => 'Seriennummer',
+            'firmware' => 'Firmware',
             'port' => 'Port',
             ...$this->procurementLabels(),
         ];

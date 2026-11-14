@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\OwnedByCustomer;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 /**
  * An installed agent on one machine (see the migration for the why).
@@ -26,6 +27,10 @@ class AgentInstallation extends Model
         'last_run_at' => 'datetime',
         'run_requested_at' => 'datetime',
         'last_results' => 'array',
+        'scan_network_ids' => 'array',
+        'scan_communities' => 'encrypted:array',
+        'last_scan_at' => 'datetime',
+        'scan_requested_at' => 'datetime',
     ];
 
     /** Longest message kept per role - the tail of the output says most. */
@@ -33,6 +38,25 @@ class AgentInstallation extends Model
 
     /** Roles that exist once per domain, not once per machine. */
     public const ONCE_PER_DOMAIN = ['windows-ad'];
+
+    /**
+     * The network scan: printers and UPS by SNMP, run by the service itself
+     * rather than a script. Never switched on by detection - sweeping a
+     * network can alarm an EDR or IDS, so someone decides it on the page.
+     */
+    public const SCAN_ROLE = 'network-scan';
+
+    /** Roles only ever switched on by hand. */
+    public const NEVER_AUTOMATIC = [self::SCAN_ROLE];
+
+    /** Largest network the scan takes: a /22, 1024 addresses. */
+    public const SCAN_MIN_PREFIX = 22;
+
+    /** At most this many SNMP communities are tried per address. */
+    public const SCAN_MAX_COMMUNITIES = 5;
+
+    /** Without a community of its own, the scan asks with the usual default. */
+    public const SCAN_DEFAULT_COMMUNITY = 'public';
 
     public function customer()
     {
@@ -78,6 +102,9 @@ class AgentInstallation extends Model
         $new = array_diff($detected, $installation->detected ?? []);
         $roles = $installation->roles ?? [];
         foreach ($new as $role) {
+            if (in_array($role, self::NEVER_AUTOMATIC, true)) {
+                continue;
+            }
             if (in_array($role, self::ONCE_PER_DOMAIN, true)
                 && static::someoneElseRuns($installation, $token->customer_id, $role, $domain)) {
                 continue;
@@ -189,5 +216,101 @@ class AgentInstallation extends Model
     public function isStale(): bool
     {
         return $this->last_seen_at === null || $this->last_seen_at->lt(now()->subHours(Setting::agentSilentHours()));
+    }
+
+    public function runsScan(): bool
+    {
+        return in_array(self::SCAN_ROLE, $this->roles ?? [], true);
+    }
+
+    /**
+     * The networks of a customer the scan can take: IPv4 with a prefix of
+     * at least /22. Picked from the documented networks, never typed in -
+     * so nobody sweeps a foreign /16 by a typo.
+     *
+     * @return Collection<int, Network>
+     */
+    public static function scannableNetworks(int $customerId)
+    {
+        return Network::forCustomer($customerId)
+            ->with('site')
+            ->whereNotNull('network')
+            ->whereNotNull('cidr')
+            ->get()
+            ->filter(fn (Network $netz) => static::cidrOf($netz) !== null)
+            ->sortBy(fn (Network $netz) => [$netz->site?->name, ip2long((string) $netz->network)])
+            ->values();
+    }
+
+    /**
+     * "192.168.10.0/24" for a scannable network, else null. The address is
+     * cut to the network: a network documented as 192.168.10.1/24 still
+     * scans the whole /24.
+     */
+    public static function cidrOf(Network $netz): ?string
+    {
+        $adresse = trim((string) $netz->network);
+        $praefix = filter_var($netz->cidr, FILTER_VALIDATE_INT);
+
+        if (! filter_var($adresse, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)
+            || $praefix === false || $praefix < self::SCAN_MIN_PREFIX || $praefix > 32) {
+            return null;
+        }
+
+        $maske = $praefix === 0 ? 0 : (-1 << (32 - $praefix)) & 0xFFFFFFFF;
+
+        return long2ip(ip2long($adresse) & $maske).'/'.$praefix;
+    }
+
+    /**
+     * The networks this agent scans - still documented, still scannable.
+     *
+     * @return Collection<int, Network>
+     */
+    public function scanNetworks()
+    {
+        $ids = array_map('intval', $this->scan_network_ids ?? []);
+
+        return static::scannableNetworks($this->customer_id)
+            ->filter(fn (Network $netz) => in_array($netz->id, $ids, true))
+            ->values();
+    }
+
+    /** @return array<int, string> */
+    public function scanCommunities(): array
+    {
+        return array_values(array_filter($this->scan_communities ?? [], 'filled')) ?: [self::SCAN_DEFAULT_COMMUNITY];
+    }
+
+    /**
+     * The scan job for this checkin, or null: at most once a day, or when
+     * "Jetzt scannen" was pressed - and only with the role on and at least
+     * one network. Handing it out counts as the scan, like takeDueRun: a
+     * scan that dies on the machine is not repeated every five minutes.
+     *
+     * @return array{networks: array<int, string>, communities: array<int, string>}|null
+     */
+    public function takeDueScan(): ?array
+    {
+        if (! $this->runsScan()) {
+            return null;
+        }
+
+        $netze = $this->scanNetworks()->map(fn (Network $netz) => static::cidrOf($netz))->unique()->values()->all();
+        if ($netze === []) {
+            return null;
+        }
+
+        $faellig = $this->scan_requested_at !== null
+            || $this->last_scan_at === null
+            || $this->last_scan_at->lte(now()->subDay()->addMinutes(10));
+
+        if (! $faellig) {
+            return null;
+        }
+
+        $this->forceFill(['last_scan_at' => now(), 'scan_requested_at' => null])->save();
+
+        return ['networks' => $netze, 'communities' => $this->scanCommunities()];
     }
 }

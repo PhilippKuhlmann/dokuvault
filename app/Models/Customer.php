@@ -237,6 +237,11 @@ class Customer extends Model
         return $this->hasMany(AgentInstallation::class);
     }
 
+    public function networkScanFindings()
+    {
+        return $this->hasMany(NetworkScanFinding::class);
+    }
+
     /**
      * Resolve the child binding for contact persons by hand.
      *

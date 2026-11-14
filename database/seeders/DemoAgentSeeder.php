@@ -7,7 +7,10 @@ use App\Models\AgentToken;
 use App\Models\Backup;
 use App\Models\BackupRun;
 use App\Models\Customer;
+use App\Models\NetworkScanFinding;
+use App\Models\Printer;
 use App\Models\Site;
+use App\Models\Ups;
 use App\Support\AgentScript;
 use App\Support\BackupHealth;
 use App\Support\BackupSettings;
@@ -41,6 +44,7 @@ class DemoAgentSeeder extends Seeder
         $token->forceFill(['last_used_at' => now()->subMinutes(4)])->save();
 
         $this->agenten($kunde, $token);
+        $this->netzwerkScan($kunde);
         $this->backupLaeufe($kunde);
         $this->apiStatistik();
         $this->eigeneSicherung();
@@ -97,6 +101,70 @@ class DemoAgentSeeder extends Seeder
                 'last_run_at' => now()->subMinutes($minuten),
                 'last_results' => $ergebnisse,
             ]);
+        }
+    }
+
+    /**
+     * The network scan of SRV-DC01: two printers and a UPS waiting under
+     * "Neu gefunden", one printer ignored, and one printer and the UPS of
+     * the rack already tied to the scan, with their firmware.
+     */
+    private function netzwerkScan(Customer $kunde): void
+    {
+        $installation = AgentInstallation::where('customer_id', $kunde->id)->where('hostname', 'SRV-DC01')->first();
+        $netz = AgentInstallation::scannableNetworks($kunde->id)->first(fn ($n) => (int) $n->cidr === 24);
+        if (! $installation || ! $netz) {
+            return;
+        }
+
+        $installation->forceFill([
+            'roles' => [...$installation->roles, AgentInstallation::SCAN_ROLE],
+            'scan_network_ids' => [$netz->id],
+            'last_scan_at' => now()->subHours(3),
+            'last_results' => [...$installation->last_results, AgentInstallation::SCAN_ROLE => [
+                'ok' => true,
+                'message' => '4 Drucker, 2 USV - 254 Adressen in 1 Netzen, 11s',
+                'at' => now()->subHours(3)->toIso8601String(),
+            ]],
+        ])->save();
+
+        $basis = substr((string) AgentInstallation::cidrOf($netz), 0, strrpos((string) AgentInstallation::cidrOf($netz), '.') + 1);
+        $gesehen = now()->subHours(3);
+
+        // [type, status, serial, name, manufacturer, model, firmware, host]
+        foreach ([
+            ['printer', 'new', 'CNB3K12345', 'HP-OG1-FLUR', 'HP', 'Color LaserJet Pro MFP M479fdw', '2507252_052345', 41],
+            ['printer', 'new', 'E78123K4N567890', 'BRN3C2AF4A1B2C3', 'Brother', 'MFC-L8900CDW', 'ZA2510151510', 42],
+            ['ups', 'new', 'AS2219123456', 'USV-Empfang', 'APC', 'Back-UPS Pro 900', '957.e4.I', 43],
+            ['printer', 'ignored', 'VNB8K54321', 'LEIH-DRUCKER', 'HP', 'LaserJet M110we', '2405131_000317', 44],
+        ] as [$art, $status, $serie, $name, $hersteller, $modell, $firmware, $host]) {
+            NetworkScanFinding::forceCreate([
+                'customer_id' => $kunde->id,
+                'agent_installation_id' => $installation->id,
+                'network_id' => $netz->id,
+                'type' => $art,
+                'identifier' => $serie,
+                'status' => $status,
+                'name' => $name,
+                'manufacturer' => $hersteller,
+                'model' => $modell,
+                'serial' => $serie,
+                'firmware' => $firmware,
+                'ip' => $basis.$host,
+                'last_seen_at' => $gesehen,
+            ]);
+        }
+
+        // Already tied to the scan: kept current by it.
+        if ($drucker = Printer::forCustomer($kunde)->whereNotNull('serialNumber')->orderBy('id')->first()) {
+            $drucker->forceFill(['agent_identifier' => mb_strtoupper($drucker->serialNumber), 'firmware' => '2511041_000132'])->save();
+        }
+        if ($usv = Ups::forCustomer($kunde)->orderBy('id')->first()) {
+            $usv->forceFill([
+                'agent_identifier' => $usv->serialNumber ? mb_strtoupper($usv->serialNumber) : 'AS1904112233',
+                'serialNumber' => $usv->serialNumber ?: 'AS1904112233',
+                'firmware' => 'UPS 15.5 (ID1015)',
+            ])->save();
         }
     }
 

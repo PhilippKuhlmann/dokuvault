@@ -17,9 +17,10 @@ function agentEndpunkte(): array
         ->filter(fn ($route) => in_array('agent', $route->gatherMiddleware(), true))
         // Only the reporting endpoints. GET script/{agent} hands out scripts
         // to the Windows service, POST checkin hands out roles, POST report
-        // takes the outcome of a run - none is an agent of its own.
+        // takes the outcome of a run, POST network-scan the result of the
+        // service's own scan - none is an agent with a script of its own.
         ->filter(fn ($route) => in_array('POST', $route->methods(), true))
-        ->reject(fn ($route) => in_array($route->uri(), ['api/agent/checkin', 'api/agent/report'], true))
+        ->reject(fn ($route) => in_array($route->uri(), ['api/agent/checkin', 'api/agent/report', 'api/agent/network-scan'], true))
         ->map(fn ($route) => str($route->uri())->afterLast('/')->toString())
         ->values()
         ->all();

@@ -19,6 +19,7 @@ use App\Http\Controllers\MailboxProviderController;
 use App\Http\Controllers\MailSettingController;
 use App\Http\Controllers\NetworkController;
 use App\Http\Controllers\NetworkMapController;
+use App\Http\Controllers\NetworkScanFindingController;
 use App\Http\Controllers\ObjectListController;
 use App\Http\Controllers\OperatingSystemController;
 use App\Http\Controllers\PatchPanelController;
@@ -332,6 +333,12 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
             Route::put('agent/installation/{agentInstallation}', [AgentTokenController::class, 'updateInstallation'])->name('agent.installation.update');
             Route::post('agent/installation/{agentInstallation}/run', [AgentTokenController::class, 'runInstallation'])->name('agent.installation.run');
             Route::delete('agent/installation/{agentInstallation}', [AgentTokenController::class, 'destroyInstallation'])->name('agent.installation.destroy');
+            Route::post('agent/installation/{agentInstallation}/scan', [AgentTokenController::class, 'scanInstallation'])->name('agent.installation.scan');
+            // What the network scan found: take over, link, ignore, bring back.
+            Route::post('agent/finding/{networkScanFinding}/accept', [NetworkScanFindingController::class, 'accept'])->name('agent.finding.accept');
+            Route::post('agent/finding/{networkScanFinding}/link', [NetworkScanFindingController::class, 'link'])->name('agent.finding.link');
+            Route::post('agent/finding/{networkScanFinding}/ignore', [NetworkScanFindingController::class, 'ignore'])->name('agent.finding.ignore');
+            Route::post('agent/finding/{networkScanFinding}/restore', [NetworkScanFindingController::class, 'restore'])->name('agent.finding.restore');
             Route::get('agent/service-proxmox.sh', [AgentTokenController::class, 'serviceProxmox'])->name('agent.service.proxmox');
             Route::get('agent/service-linux.sh', [AgentTokenController::class, 'serviceLinux'])->name('agent.service.linux');
 

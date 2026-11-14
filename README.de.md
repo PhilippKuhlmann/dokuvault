@@ -256,6 +256,25 @@ Kunden – deshalb wird die Site nie geraten. Gibt es nur eine, wird sie genomme
 listet das Script sie auf und hält an, bis eine gewählt ist. `--site` nimmt den internen oder den
 angezeigten Namen, `--sites` listet nur auf.
 
+### Netzwerk-Scan: Drucker und USV
+
+Drucker und USVs haben keinen eigenen Agenten – der installierte Windows-Agent findet sie. Auf der
+Agent-Seite schaltest du den **Netzwerk-Scan** für einen Rechner ein (er schaltet sich nie von
+selbst ein), wählst die dokumentierten Netze aus (IPv4, höchstens /22, auch hinter einem Router)
+und trägst bei Bedarf eigene SNMP-Communities ein; ohne Eintrag fragt er mit `public`.
+
+Einmal am Tag – oder sofort mit „Jetzt scannen“ – fragt der Agent jede Adresse per SNMP v2c ab und
+erkennt Drucker an der Printer-MIB, USVs an der UPS-MIB oder der APC-MIB. Angelegt wird dabei
+nichts: Neues landet unter **„Neu gefunden“**, und du übernimmst es, verknüpfst es mit einem schon
+von Hand dokumentierten Gerät oder verwirfst es. Ein verworfenes Gerät kommt nicht wieder, bis du
+es zurückholst. Ab der Übernahme hält der Scan Hersteller, Modell, Seriennummer, Firmware und
+Adresse aktuell; Name, Standort und Notizen gehören dir. Erkannt wird ein Gerät an seiner
+Seriennummer, ohne Seriennummer an der MAC-Adresse.
+
+Dokumentation, kein Monitoring: Tonerstand, Seitenzähler und Akkuzustand liest der Scan nicht. Und
+ein Hinweis vorab an den Kunden lohnt sich – manche EDR- und IDS-Produkte melden einen
+SNMP-Scan als Angriff.
+
 ### Was ein Agent nicht tut
 
 - **Fremde Zugangsdaten landen nicht in DokuVault.** vCenter, UniFi und Graph bekommen ihre

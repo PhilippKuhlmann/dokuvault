@@ -28,10 +28,12 @@ func jitter() time.Duration {
 }
 
 // checkinAnswer is what DokuVault answers. Run is nil from a DokuVault
-// before 26.10.03, which decided nothing about timing.
+// before 26.10.03, which decided nothing about timing. Scan is nil unless
+// a network scan is due (switched on, at most once a day or on request).
 type checkinAnswer struct {
 	Agents []string
 	Run    *bool
+	Scan   *scanJob
 }
 
 // checkin tells DokuVault which machine this is and what it detected, and
@@ -79,6 +81,7 @@ func checkin(cfg Config) (checkinAnswer, error) {
 	var answer struct {
 		Roles []string `json:"roles"`
 		Run   *bool    `json:"run"`
+		Scan  *scanJob `json:"scan"`
 	}
 	body, err := io.ReadAll(io.LimitReader(resp.Body, 64<<10))
 	if err != nil {
@@ -88,7 +91,7 @@ func checkin(cfg Config) (checkinAnswer, error) {
 		return checkinAnswer{}, fmt.Errorf("Anmeldung: Antwort nicht lesbar: %w", err)
 	}
 
-	out := checkinAnswer{Run: answer.Run}
+	out := checkinAnswer{Run: answer.Run, Scan: answer.Scan}
 	for _, a := range answer.Roles {
 		if knownAgents[a] {
 			out.Agents = append(out.Agents, a)
@@ -108,18 +111,19 @@ func dueLocally(cfg Config) bool {
 // assignedAgents: what DokuVault says to run, and whether now. If it cannot
 // be asked (network hiccup), the detected agents run on the local interval -
 // better a report than none. An expired token stops everything. force: run
-// regardless of timing (run-once).
-func assignedAgents(cfg Config, log func(level, msg string), force bool) ([]string, bool, error) {
+// regardless of timing (run-once). The scan job comes only from DokuVault:
+// without an answer there is no scan.
+func assignedAgents(cfg Config, log func(level, msg string), force bool) ([]string, bool, *scanJob, error) {
 	answer, err := checkin(cfg)
 	if errors.Is(err, errUnauthorized) {
-		return nil, false, err
+		return nil, false, nil, err
 	}
 	if err != nil {
 		log("warn", err.Error()+" - nutze die erkannten Agenten")
-		return effectiveAgents(cfg), force || dueLocally(cfg), nil
+		return effectiveAgents(cfg), force || dueLocally(cfg), nil, nil
 	}
 	if answer.Run == nil {
-		return answer.Agents, force || dueLocally(cfg), nil
+		return answer.Agents, force || dueLocally(cfg), answer.Scan, nil
 	}
-	return answer.Agents, force || *answer.Run, nil
+	return answer.Agents, force || *answer.Run, answer.Scan, nil
 }

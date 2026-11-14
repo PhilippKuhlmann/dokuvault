@@ -62,10 +62,14 @@ class InstallationController extends AgentEndpoint
 
         // run: whether to run now (interval due or "Jetzt melden"). Agents
         // from before 26.10.03 do not know it and run on their own timer.
+        // scan: networks and SNMP communities when a network scan is due,
+        // else null. Older agents ignore it - and the role, which they do
+        // not know.
         return response()->json([
             'roles' => $installation->roles,
             'run' => $installation->takeDueRun(),
             'interval' => $installation->intervalMinutes(),
+            'scan' => $installation->takeDueScan(),
         ]);
     }
 
