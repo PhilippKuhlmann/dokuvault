@@ -50,6 +50,16 @@ updates:
       - dependency-name: flowbite
         update-types: ["version-update:semver-major"]
 
+  # The Windows service (agent/windows-service). Monthly like the actions:
+  # it changes rarely, and every update means a new exe for every agent.
+  - package-ecosystem: gomod
+    directory: "/agent/windows-service"
+    schedule:
+      interval: monthly
+    groups:
+      go:
+        patterns: ["*"]
+
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
