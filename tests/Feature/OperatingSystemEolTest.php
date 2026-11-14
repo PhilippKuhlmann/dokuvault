@@ -66,7 +66,14 @@ test('ohne gepflegtes Datum steht kein Abzeichen in der Liste', function () {
     [$customer, $site, $os, $server] = eolUmgebung(null);
 
     // Ein graues "unbekannt" an jedem Geraet waere nur Rauschen.
-    $this->actingAs($nutzer)->get("/{$customer->slug}/server")->assertDontSee('EOL');
+    //
+    // Gesucht wird der Tooltip des Abzeichens, nicht "EOL" irgendwo auf der
+    // Seite: Zufallswerte - eine Faker-Seriennummer, das CSRF-Token - trugen
+    // gelegentlich die Buchstabenfolge "EOL", und der Test schlug ohne
+    // Fehler im Code fehl (CI am 14.11., PHP 8.4 / MariaDB).
+    $this->actingAs($nutzer)->get("/{$customer->slug}/server")
+        ->assertDontSee('Support endete am')
+        ->assertDontSee('Support endet am');
 });
 
 test('das Datum lässt sich in der Administration pflegen', function () {
