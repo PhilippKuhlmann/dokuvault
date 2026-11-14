@@ -10,6 +10,7 @@
 
 ### Fixed
 
+- **Die Versionsnummer behält den Buchstaben.** Ein zweiter Stand am selben Tag (wie dieser, 26.11.14b) erschien in der Oberfläche, in der App und als Docker-Tag als 26.11.14 – das Docker-Image des ersten Stands wurde dabei überschrieben.
 - **Nach einer Kennwortänderung an anderer Stelle** landete eine noch offene Sitzung unter Laravel 13 auf einer leeren Seite statt bei der Anmeldung. Sie leitet jetzt wieder zur Anmeldung.
 
 ### Internal

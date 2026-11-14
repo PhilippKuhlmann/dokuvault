@@ -237,7 +237,9 @@ jobs:
         if: steps.zugang.outputs.vorhanden == 'ja'
         id: version
         run: |
-          version=$(grep -m1 -oE '^## [0-9]{2}\.[0-9]{2}\.[0-9]{2}' changelog.md | cut -d' ' -f2)
+          # With the letter of a second release on the same day (26.11.14b) -
+          # without it that build overwrote the image tag of the first one.
+          version=$(grep -m1 -oE '^## [0-9]{2}\.[0-9]{2}\.[0-9]{2}[a-z]?' changelog.md | cut -d' ' -f2)
           [ -n "$version" ] || { echo 'Keine Version im Changelog gefunden.'; exit 1; }
           echo "wert=$version" >> "$GITHUB_OUTPUT"
           echo "Version: $version"

@@ -33,7 +33,7 @@ class Changelog
     }
 
     /**
-     * The topmost heading, for example "26.09.19".
+     * The topmost heading, for example "26.09.19" or "26.11.14b".
      *
      * If none is found it stays "Unbekannt" - a guessed number would be
      * worse than none.
@@ -44,7 +44,9 @@ class Changelog
             return static::$version;
         }
 
-        preg_match('/## (\d{2}\.\d{2}\.\d{2})/', static::roh(), $treffer);
+        // With the letter of a second release on the same day (26.11.14b):
+        // without it the page and the Docker tag still said 26.11.14.
+        preg_match('/## (\d{2}\.\d{2}\.\d{2}[a-z]?)/', static::roh(), $treffer);
 
         return static::$version = $treffer[1] ?? 'Unbekannt';
     }
