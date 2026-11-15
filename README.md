@@ -42,7 +42,7 @@ MSPs lose time to scattered spreadsheets, stale wikis and “where did we write 
 | 🧭 **Initial survey wizard** | 16 steps through a new customer — ask, save the answer, next |
 | 🔌 **Patch panels** | Outlet number, room and target switch per port — “where does outlet A.12 go?” |
 | 🔎 **Global search** | Find a server, IP, serial number or MAC across **all** customers in seconds |
-| 🤖 **Auto-documentation** | **Installed agents** for Windows, Proxmox and Linux report on their own — roles, interval and “report now” are set in DokuVault. Plus scripts for Hyper-V, VMware, UniFi and Microsoft 365 |
+| 🤖 **Auto-documentation** | **Installed agents** for Windows, Proxmox and Linux report on their own — roles, interval and “report now” are set in DokuVault. The Windows agent’s **network scan** finds printers, UPS units, switches, access points, NAS and cameras. Plus scripts for Hyper-V, VMware, UniFi and Microsoft 365 |
 | 💾 **Backup monitoring** | Veeam, Windows Server Backup and Proxmox jobs report every run — the last runs at a glance, failures on the dashboard |
 | 📊 **Statistics** | API load, data growth, agent health, usage and system resources — to see when the server needs more power |
 | 🌐 **IPAM** | Used, free and reserved IP addresses per VLAN at a glance, DHCP and gateway detection |
@@ -150,6 +150,10 @@ No more typing things over. Create an **agent token bound to a customer and site
 interface, install an agent or run a script — the inventory lands in the documentation by itself.
 **Every agent has its own token** and can be locked on its own; repeated runs update instead of duplicating.
 
+It all lives in the menu under **Auto-docs**: **Agents** (the installed agents, one expandable row
+per machine), **Newly found** (what the network scan suggests) and **Tokens & installation**
+(create tokens, download agents and scripts).
+
 <img src="docs/screenshots/en/agenten.png" alt="The agents on offer" width="900">
 
 ### Installed agents — set up once, controlled from DokuVault
@@ -158,7 +162,7 @@ The recommended way: an agent that stays on the machine and reports by itself.
 
 | Agent | Install | Reports |
 | --- | --- | --- |
-| **Windows** | download the `.exe` (address and token are already inside) and double-click — a Windows service | server, Active Directory (users, groups, memberships), Hyper-V, workstation, Veeam and Windows Server Backup jobs |
+| **Windows** | download the `.exe` (address and token are already inside) and double-click — a Windows service | server, Active Directory (users, groups, memberships), Hyper-V, workstation, Veeam and Windows Server Backup jobs; optionally a network scan for printers, UPS units, switches, access points, NAS and cameras |
 | **Proxmox** | `bash dokuvault-agent-proxmox.sh` as root — a systemd timer | host, VMs, containers, vzdump backup jobs; Proxmox **tags become services** if the catalogue knows them |
 | **Linux** | `bash dokuvault-agent-linux.sh` as root on Debian/Ubuntu — a systemd timer | hardware, operating system, IP address and running services |
 
@@ -168,8 +172,9 @@ The recommended way: an agent that stays on the machine and reports by itself.
   report. With two domain controllers both are documented as servers, but only one does the AD.
 - **Interval and “report now”** per machine, a default for all of them under *Settings → Agents*.
   A random delay keeps a fleet from reporting in lockstep after a shared reboot.
-- **Results of every run** per role — a failed Veeam job or a silent agent shows up on the
-  dashboard and under *Statistics → Agents*.
+- **Results of every run** per role — green as soon as the role delivers data, red only when it
+  delivers none. A failed Veeam job is a result, not an agent fault: it shows up with the backups.
+  A silent agent shows up on the dashboard and under *Statistics → Agents*.
 - **Self-update** — installed agents fetch a new version by themselves.
 - **Backups** — Veeam, Windows Server Backup and Proxmox report every run; the last runs per job
   appear on the customer's backup card and across all customers under *Backups*.
@@ -319,7 +324,8 @@ it is exactly what people look up. `--ohne-kennwoerter` turns that off.
   for a configurable retention period — for when someone changed it by mistake
 - **Data capture** — initial survey wizard (16 guided steps), **installed agents** for Windows,
   Proxmox and Linux (roles, interval and “report now” per machine, results of every run,
-  self-update) plus scripts for Proxmox, Hyper-V, VMware, Windows Server, Windows AD, Windows client,
+  self-update), a **network scan** by SNMP with a “Newly found” list of suggestions, plus scripts
+  for Proxmox, Hyper-V, VMware, Windows Server, Windows AD, Windows client,
   UniFi and Microsoft 365; agent tokens managed on their own page (create, one-time reveal, renew,
   revoke)
 - **Active Directory** — users and groups with their memberships, both ways: whom a group contains,

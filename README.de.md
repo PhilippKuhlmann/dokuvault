@@ -43,7 +43,7 @@ immer aktuell.
 | 🧭 **Erstaufnahme-Assistent** | 16 Schritte führen durch den Neukunden – Frage stellen, Antwort speichern, weiter |
 | 🔌 **Patchfelder** | Je Port die Dosennummer, den Raum und den Ziel-Switch – „wo hängt Dose A.12?" |
 | 🔎 **Globale Suche** | Server, IP, Seriennummer oder MAC über **alle** Kunden in Sekunden finden |
-| 🤖 **Auto-Dokumentation** | **Installierte Agenten** für Windows, Proxmox und Linux melden von selbst – Rollen, Intervall und „Jetzt melden“ stellst du in DokuVault ein. Dazu Scripte für Hyper-V, VMware, UniFi und Microsoft 365 |
+| 🤖 **Auto-Dokumentation** | **Installierte Agenten** für Windows, Proxmox und Linux melden von selbst – Rollen, Intervall und „Jetzt melden“ stellst du in DokuVault ein. Der Windows-Agent findet per **Netzwerk-Scan** Drucker, USVs, Switches, Accesspoints, NAS und Kameras. Dazu Scripte für Hyper-V, VMware, UniFi und Microsoft 365 |
 | 💾 **Backup-Überwachung** | Veeam, Windows Server-Sicherung und Proxmox melden jeden Lauf – die letzten Läufe auf einen Blick, Fehler auf dem Dashboard |
 | 📊 **Statistik** | API-Auslastung, Datenwachstum, Zustand der Agenten, Nutzung und Systemressourcen – um zu sehen, wann der Server mehr Leistung braucht |
 | 🌐 **IPAM** | Belegte, freie & reservierte IP-Adressen je VLAN auf einen Blick, DHCP- und Gateway-Erkennung |
@@ -153,6 +153,10 @@ Agent-Token**, installiere einen Agenten oder führe ein Script aus – der Best
 in der Doku. **Jeder Agent hat seinen eigenen Token** und lässt sich einzeln sperren; wiederholte
 Läufe aktualisieren, statt zu verdoppeln.
 
+Alles dazu steht im Menü unter **Auto-Doku**: **Agenten** (die installierten Agenten, je Rechner
+eine aufklappbare Zeile), **Neu gefunden** (was der Netzwerk-Scan vorschlägt) und **Token &
+Installation** (Token anlegen, Agenten und Scripte herunterladen).
+
 <img src="docs/screenshots/agenten.png" alt="Übersicht der Agenten" width="900">
 
 ### Installierte Agenten – einmal einrichten, aus DokuVault steuern
@@ -161,7 +165,7 @@ Der empfohlene Weg: ein Agent, der auf dem Rechner bleibt und von selbst meldet.
 
 | Agent | Einrichten | Meldet |
 | --- | --- | --- |
-| **Windows** | `.exe` herunterladen (Adresse und Token stecken schon drin) und doppelklicken – ein Windows-Dienst | Server, Active Directory (Benutzer, Gruppen, Mitgliedschaften), Hyper-V, Arbeitsplatz, Veeam- und Windows-Server-Sicherungen |
+| **Windows** | `.exe` herunterladen (Adresse und Token stecken schon drin) und doppelklicken – ein Windows-Dienst | Server, Active Directory (Benutzer, Gruppen, Mitgliedschaften), Hyper-V, Arbeitsplatz, Veeam- und Windows-Server-Sicherungen; auf Wunsch per Netzwerk-Scan Drucker, USVs, Switches, Accesspoints, NAS und Kameras |
 | **Proxmox** | `bash dokuvault-agent-proxmox.sh` als root – ein systemd-Timer | Host, VMs, Container, vzdump-Backup-Jobs; Proxmox-**Tags werden zu Diensten**, wenn der Katalog sie kennt |
 | **Linux** | `bash dokuvault-agent-linux.sh` als root auf Debian/Ubuntu – ein systemd-Timer | Hardware, Betriebssystem, IP-Adresse und laufende Dienste |
 
@@ -171,8 +175,9 @@ Der empfohlene Weg: ein Agent, der auf dem Rechner bleibt und von selbst meldet.
   soll. Bei zwei Domänencontrollern stehen beide als Server in der Doku, aber nur einer macht das AD.
 - **Intervall und „Jetzt melden“** je Rechner, eine Vorgabe für alle unter *Einstellungen → Agenten*.
   Ein Zufallsabstand verhindert, dass alle nach einem gemeinsamen Neustart im Gleichtakt melden.
-- **Ergebnis jedes Laufs** je Rolle – ein fehlgeschlagener Veeam-Job oder ein stiller Agent steht
-  auf dem Dashboard und unter *Statistik → Agenten*.
+- **Ergebnis jedes Laufs** je Rolle – grün, sobald die Rolle Daten liefert, rot nur, wenn sie keine
+  liefert. Ein fehlgeschlagener Veeam-Job ist ein Ergebnis, kein Agentenfehler: Er steht bei den
+  Backups. Ein stiller Agent steht auf dem Dashboard und unter *Statistik → Agenten*.
 - **Selbst-Update** – installierte Agenten holen sich eine neue Version selbst.
 - **Backups** – Veeam, Windows Server-Sicherung und Proxmox melden jeden Lauf; die letzten Läufe je
   Job stehen auf der Backup-Karte des Kunden und über alle Kunden unter *Backups*.
@@ -323,7 +328,8 @@ Dokumentation ist es genau das, was man nachschlägt. `--ohne-kennwoerter` schal
   bleibt für eine einstellbare Frist nachschlagbar – für den Fall, dass jemand falsch geändert hat
 - **Erfassung** – Erstaufnahme-Assistent (16 geführte Schritte), **installierte Agenten** für
   Windows, Proxmox und Linux (Rollen, Intervall und „Jetzt melden“ je Rechner, Ergebnis jedes
-  Laufs, Selbst-Update) sowie Scripte für Proxmox, Hyper-V, VMware, Windows-Server, Windows-AD,
+  Laufs, Selbst-Update), **Netzwerk-Scan** per SNMP mit Vorschlagsliste „Neu gefunden“ sowie
+  Scripte für Proxmox, Hyper-V, VMware, Windows-Server, Windows-AD,
   Windows-Client, UniFi und Microsoft 365; Agent-Token auf eigener Seite verwaltet (anlegen,
   einmalig anzeigen, erneuern, widerrufen)
 - **Active Directory** – Benutzer und Gruppen samt Mitgliedschaften, in beide Richtungen: wen eine

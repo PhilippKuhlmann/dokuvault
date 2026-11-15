@@ -6,6 +6,10 @@
 
 - **Der UniFi-Agent trug eine UniFi-USV als Switch ein.** Der Controller führt die USV unter seinen Switches, nur der Modellcode verrät sie. Sie landet jetzt als USV in der Doku. Eine schon von Hand angelegte USV mit derselben Seriennummer oder Adresse wird übernommen statt verdoppelt – Name, Schrankplatz und Notizen bleiben. Den Switch, den frühere Läufe daraus gemacht haben, legt der nächste Lauf in den Papierkorb (dort wiederherstellbar) und gibt seine Adresse an die USV weiter; hängen Patchports oder ein Schrankplatz daran, bleibt er stehen. Die Korrektur sitzt im Server, die UniFi-Scripte beim Kunden müssen nicht getauscht werden.
 
+### Internal
+
+- **README auf Stand:** Netzwerk-Scan in der Übersicht und beim Windows-Agenten, das Menü „Auto-Doku“ mit seinen drei Seiten, und „grün heißt: liefert Daten“ statt eines fehlgeschlagenen Veeam-Jobs als Agentenfehler. Die Screenshots der Agent-Seiten sind noch die alten.
+
 ## 26.11.14d
 
 ### Added
