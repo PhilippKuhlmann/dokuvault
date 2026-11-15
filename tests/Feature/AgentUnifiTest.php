@@ -5,7 +5,10 @@ use App\Models\AgentToken;
 use App\Models\Customer;
 use App\Models\Network;
 use App\Models\NetworkSwitch;
+use App\Models\PatchPanel;
+use App\Models\PatchPort;
 use App\Models\Site;
+use App\Models\Ups;
 use App\Models\Wifi;
 
 function unifiPayload(): array
@@ -328,4 +331,97 @@ test('eine von Hand gesetzte Bezeichnung ueberlebt', function () {
 
     // Wer "Uplink Dachboden" hingeschrieben hat, weiss mehr als der Controller.
     expect($adresse->fresh()->label)->toBe('Uplink Dachboden');
+});
+
+function unifiUps(array $overrides = []): array
+{
+    return $overrides + [
+        'identifier' => '84:78:48:54:4b:2c',
+        'name' => 'UPS01',
+        'manufacturer' => 'Ubiquiti',
+        'model' => 'USWDA26',
+        'serial' => '847848544B2C',
+        'ip' => '10.0.0.113',
+    ];
+}
+
+test('eine UniFi-USV wird als USV dokumentiert, nicht als Switch', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [, $plain] = AgentToken::generateFor($customer, $site, 'UniFi');
+
+    // The controller lists the UPS among the switches (type "usw").
+    $this->withToken($plain)->postJson('/api/agent/unifi', ['switches' => [unifiUps(), unifiPayload()['switches'][0]]])
+        ->assertOk()
+        ->assertJson(['switches_documented' => 1, 'ups_documented' => 1]);
+
+    $usv = Ups::where('customer_id', $customer->id)->sole();
+    expect($usv->name)->toBe('UPS01')
+        ->and($usv->agent_identifier)->toBe('84:78:48:54:4b:2c')
+        ->and($usv->model)->toBe('USWDA26')
+        ->and($usv->serialNumber)->toBe('847848544B2C')
+        ->and($usv->ipAddresses()->first()->address)->toBe('10.0.0.113')
+        ->and(NetworkSwitch::where('customer_id', $customer->id)->pluck('name')->all())->toBe(['SW-EG-01']);
+
+    // A second run updates instead of adding.
+    $this->withToken($plain)->postJson('/api/agent/unifi', ['switches' => [unifiUps()]])->assertOk();
+    expect(Ups::where('customer_id', $customer->id)->count())->toBe(1);
+});
+
+test('eine von Hand angelegte USV an derselben Adresse wird uebernommen, ihr Name bleibt', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [, $plain] = AgentToken::generateFor($customer, $site, 'UniFi');
+
+    $vonHand = Ups::forceCreate(['customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'USV Schrank', 'manufacturer' => 'Ubiquiti']);
+    $vonHand->ipAddresses()->create(['address' => '10.0.0.113', 'customer_id' => $customer->id]);
+
+    $this->withToken($plain)->postJson('/api/agent/unifi', ['switches' => [unifiUps()]])->assertOk();
+
+    $usv = Ups::where('customer_id', $customer->id)->sole();
+    expect($usv->id)->toBe($vonHand->id)
+        ->and($usv->name)->toBe('USV Schrank')
+        ->and($usv->agent_identifier)->toBe('84:78:48:54:4b:2c')
+        ->and($usv->model)->toBe('USWDA26')
+        ->and($usv->ipAddresses()->count())->toBe(1);
+});
+
+test('der Switch, den ein frueherer Lauf aus der USV gemacht hat, geht in den Papierkorb', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [, $plain] = AgentToken::generateFor($customer, $site, 'UniFi');
+
+    $alsSwitch = NetworkSwitch::forceCreate([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'name' => 'UPS01', 'model' => 'USWDA26', 'agent_identifier' => '84:78:48:54:4b:2c',
+    ]);
+    $alsSwitch->ipAddresses()->create(['address' => '10.0.0.113', 'customer_id' => $customer->id]);
+
+    $this->withToken($plain)->postJson('/api/agent/unifi', ['switches' => [unifiUps()]])->assertOk();
+
+    expect(NetworkSwitch::where('customer_id', $customer->id)->count())->toBe(0)
+        ->and(NetworkSwitch::withTrashed()->find($alsSwitch->id)->trashed())->toBeTrue();
+
+    // The address moved over instead of standing twice.
+    $usv = Ups::where('customer_id', $customer->id)->sole();
+    expect($usv->ipAddresses()->pluck('address')->all())->toBe(['10.0.0.113'])
+        ->and($alsSwitch->ipAddresses()->count())->toBe(0);
+});
+
+test('haengen Patchports am falschen Switch, bleibt er stehen', function () {
+    $customer = Customer::factory()->create();
+    $site = Site::factory()->create(['customer_id' => $customer->id]);
+    [, $plain] = AgentToken::generateFor($customer, $site, 'UniFi');
+
+    $alsSwitch = NetworkSwitch::forceCreate([
+        'customer_id' => $customer->id, 'site_id' => $site->id,
+        'name' => 'UPS01', 'agent_identifier' => '84:78:48:54:4b:2c',
+    ]);
+    $panel = PatchPanel::factory()->create(['customer_id' => $customer->id, 'site_id' => $site->id]);
+    PatchPort::forceCreate(['customer_id' => $customer->id, 'patch_panel_id' => $panel->id, 'number' => 1, 'network_switch_id' => $alsSwitch->id]);
+
+    $this->withToken($plain)->postJson('/api/agent/unifi', ['switches' => [unifiUps()]])->assertOk();
+
+    expect($alsSwitch->fresh()->trashed())->toBeFalse()
+        ->and(Ups::where('customer_id', $customer->id)->count())->toBe(1);
 });

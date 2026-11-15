@@ -231,7 +231,7 @@ Diese drei laufen nicht auf dem Gerät, sondern fragen ein System über dessen S
 .\microsoft365-doku.ps1 -TenantId "…" -ClientId "…" -ClientSecret "…"
 ```
 
-**UniFi** holt Switches, Accesspoints und WLANs – erkannt an der MAC-Adresse bzw. der
+**UniFi** holt Switches, Accesspoints, UniFi-USVs und WLANs – erkannt an der MAC-Adresse bzw. der
 Controller-Id, ein umbenanntes Gerät bleibt derselbe Eintrag. Das Script spricht sowohl UniFi OS
 (UDM, Cloud Key Gen2+) als auch den klassischen Controller an, ohne dass man die Bauart kennen
 muss. **VMware** macht dasselbe wie Hyper-V, aber je ESXi-Host unter einem vCenter, über die

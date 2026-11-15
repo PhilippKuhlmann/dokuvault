@@ -228,7 +228,7 @@ These three do not run on the device but query a system through its API.
 .\microsoft365-doku.ps1 -TenantId "…" -ClientId "…" -ClientSecret "…"
 ```
 
-**UniFi** picks up switches, access points and Wi-Fi networks — recognised by MAC address or
+**UniFi** picks up switches, access points, UniFi UPS units and Wi-Fi networks — recognised by MAC address or
 controller id, so a renamed device stays the same entry. The script talks to both UniFi OS (UDM,
 Cloud Key Gen2+) and the classic controller without you having to know which one it is.
 **VMware** does what Hyper-V does, but per ESXi host under a vCenter, through the vSphere REST API

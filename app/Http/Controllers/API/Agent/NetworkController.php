@@ -7,7 +7,9 @@ use App\Models\Accesspoint;
 use App\Models\Firewall;
 use App\Models\Network;
 use App\Models\NetworkSwitch;
+use App\Models\PatchPort;
 use App\Models\Server;
+use App\Models\Ups;
 use App\Models\Wifi;
 use Illuminate\Http\Request;
 
@@ -20,8 +22,19 @@ class NetworkController extends AgentEndpoint
     use ReportsAddresses;
 
     /**
-     * Nimmt die von einem UniFi-Controller gemeldeten Switches, Accesspoints
-     * und WLANs entgegen (Upsert über agent_identifier = MAC bzw. UniFi-Id).
+     * UniFi UPS models. The controller lists a UniFi UPS as a switch
+     * (type "usw") - only the model code tells it apart. Decided here and
+     * not in the scripts, so scripts already running at customers report
+     * their UPS correctly too.
+     *
+     * USWDA26: the UniFi UPS of the production installation (NUT on 3493,
+     * no SNMP). Further codes go here as they turn up.
+     */
+    public const UNIFI_UPS_MODELS = ['USWDA26'];
+
+    /**
+     * Nimmt die von einem UniFi-Controller gemeldeten Switches, Accesspoints,
+     * USVs und WLANs entgegen (Upsert über agent_identifier = MAC bzw. UniFi-Id).
      *
      * Das WLAN-Kennwort meldet das Script bewusst nicht - wie beim AD-Agenten
      * bleiben Kennwörter allein manuell gepflegt. Auch das VLAN bleibt leer:
@@ -59,7 +72,15 @@ class NetworkController extends AgentEndpoint
         ]);
 
         $switches = 0;
+        $usvs = 0;
         foreach ($data['switches'] ?? [] as $g) {
+            if (in_array(mb_strtoupper((string) ($g['model'] ?? '')), self::UNIFI_UPS_MODELS, true)) {
+                $this->reportUnifiUps($g, $customer, $site);
+                $usvs++;
+
+                continue;
+            }
+
             $this->reportNetworkDevice(NetworkSwitch::class, $g, $customer, $site);
             $switches++;
         }
@@ -110,6 +131,7 @@ class NetworkController extends AgentEndpoint
             'customer' => $customer->name,
             'site' => $site->name,
             'switches_documented' => $switches,
+            'ups_documented' => $usvs,
             'accesspoints_documented' => $accesspoints,
             'wifis_documented' => $wlans,
         ]);
@@ -334,6 +356,60 @@ class NetworkController extends AgentEndpoint
         // Ob die Adresse fest steht oder vom DHCP kommt, gehoert an die
         // Adresse und nicht an das Geraet: Ein Switch kann mehrere haben.
         $this->reportUrl($geraet, $customer->id, $site->id, $g['ip'] ?? null, $this->bezugsweg($g));
+    }
+
+    /**
+     * A UniFi UPS, documented as a UPS.
+     *
+     * Found by its MAC (agent_identifier); else a UPS documented by hand at
+     * this site with the same serial number or address is taken over
+     * instead of a second one beside it - its name, rack slot and notes
+     * stay. Manufacturer, model and serial number come from the controller.
+     *
+     * Older runs filed the UPS as a switch. That switch goes to the trash
+     * (restorable there) and hands its addresses over - unless something
+     * hangs on it, a rack slot or patch ports: then it stays for a human.
+     */
+    protected function reportUnifiUps(array $g, $customer, $site): void
+    {
+        $vonHand = fn () => Ups::where('customer_id', $customer->id)->where('site_id', $site->id)->whereNull('agent_identifier');
+
+        $usv = Ups::where('customer_id', $customer->id)->where('site_id', $site->id)
+            ->where('agent_identifier', $g['identifier'])->first();
+        if (! $usv && filled($g['serial'] ?? null)) {
+            $usv = $vonHand()->where('serialNumber', $g['serial'])->first();
+        }
+        if (! $usv && filled($g['ip'] ?? null)) {
+            $usv = $vonHand()->whereHas('ipAddresses', fn ($q) => $q->where('address', $g['ip']))->first();
+        }
+
+        $usv ??= new Ups([
+            'customer_id' => $customer->id,
+            'site_id' => $site->id,
+            'name' => $g['name'],
+        ]);
+        $usv->agent_identifier = $g['identifier'];
+        foreach (['manufacturer' => 'manufacturer', 'model' => 'model', 'serial' => 'serialNumber'] as $feld => $spalte) {
+            if (filled($g[$feld] ?? null)) {
+                $usv->$spalte = $g[$feld];
+            }
+        }
+        $usv->save();
+
+        $alsSwitch = NetworkSwitch::where('customer_id', $customer->id)->where('agent_identifier', $g['identifier'])->first();
+        if ($alsSwitch && ! $alsSwitch->rackItem && ! PatchPort::where('network_switch_id', $alsSwitch->id)->exists()) {
+            $vorhanden = $usv->ipAddresses()->pluck('address')->filter()->all();
+            foreach ($alsSwitch->ipAddresses as $adresse) {
+                if ($adresse->address !== null && in_array($adresse->address, $vorhanden, true)) {
+                    $adresse->delete();
+                } else {
+                    $adresse->ipable()->associate($usv)->save();
+                }
+            }
+            $alsSwitch->delete();
+        }
+
+        $this->reportUrl($usv, $customer->id, $site->id, $g['ip'] ?? null, $this->bezugsweg($g));
     }
 
     /**
