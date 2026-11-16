@@ -55,8 +55,8 @@ test('the server map shows cluster, host and guests with what they are made of',
         ->assertSeeInOrder(['PVE-Cluster', '1 Host · 32 Kerne · 256 GB RAM', 'PVE-01', 'Dell PowerEdge R750', 'Intel Xeon Silver 4314', '32 Kerne · 256 GB RAM'])
         ->assertSee('10.0.30.13')
         ->assertSee('8,5 GB von 256 GB an Gäste vergeben')
-        ->assertSeeInOrder(['VMs · 1', 'VM-DC01', '10.0.30.20', '4 Kerne · 8 GB RAM · Windows Server 2022 Standard'])
-        ->assertSeeInOrder(['Container · 1', 'CT-Alt', 'aus', '1 Kern · 0,5 GB RAM · 8 GB Disk']);
+        ->assertSeeInOrder(['VMs · 1', 'VM-DC01', '10.0.30.20', 'Windows Server 2022 Standard', '4 Kerne', '8 GB RAM'])
+        ->assertSeeInOrder(['Container · 1', 'CT-Alt', 'aus', '1 Kern', '0,5 GB RAM', '8 GB Disk']);
 });
 
 test('load values the agents report stay off the map', function () {

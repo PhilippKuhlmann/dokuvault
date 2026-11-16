@@ -209,12 +209,14 @@ class ServerMap
             // Stopped guests stand muted - a template or a spare is part of
             // the setup, but nothing runs there.
             'stopped' => isset($d['status']) && $d['status'] !== 'running',
-            'facts' => array_values(array_filter([
+            // What it was given, as short chips; the operating system on a
+            // line of its own - in one line with the rest it was cut off.
+            'specs' => array_values(array_filter([
                 isset($d['cores']) ? trans_choice(':count Kern|:count Kerne', (int) $d['cores']) : null,
                 isset($d['memory_gb']) ? __(':menge RAM', ['menge' => AgentReportCards::gb((float) $d['memory_gb'])]) : null,
                 empty($d['disk_gb']) ? null : __(':menge Disk', ['menge' => AgentReportCards::gb((float) $d['disk_gb'])]),
-                $vm->operatingSystem?->name,
             ])),
+            'os' => $vm->operatingSystem?->name,
             'address' => $this->address($vm),
         ];
     }
