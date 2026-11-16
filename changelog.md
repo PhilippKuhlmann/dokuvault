@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.11.16c
+
+### Changed
+
+- **Serverplan: VMs und Container auf eigenen Ästen.** Unter jedem Host verzweigt sich der Baum in eine Karte „VMs“ und eine Karte „Container“, jeweils mit ihrer Anzahl im Kopf. Läuft auf einem Host nur eine Art, bleibt es bei einer Karte.
+
 ## 26.11.16b
 
 ### Changed

@@ -32,8 +32,7 @@
                                                     <div class="network-map-branch">
                                                         @include('servermap._host')
                                                         @if ($host['guests'])
-                                                            <div class="network-map-stem"></div>
-                                                            @include('servermap._guests', ['list' => $host['guests']])
+                                                            @include('servermap._host-guests', ['list' => $host['guests']])
                                                         @endif
                                                     </div>
                                                 @endforeach
@@ -48,8 +47,7 @@
                                     @else
                                         @foreach ($column['hosts'] as $host)
                                             @include('servermap._host')
-                                            <div class="network-map-stem"></div>
-                                            @include('servermap._guests', ['list' => $host['guests']])
+                                            @include('servermap._host-guests', ['list' => $host['guests']])
                                         @endforeach
                                     @endif
                                 </div>
