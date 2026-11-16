@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\ObjectModal;
 use App\Models\AgentToken;
 use App\Models\Customer;
 use App\Models\OperatingSystem;
@@ -8,6 +9,7 @@ use App\Models\RackItem;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\VM;
+use Livewire\Livewire;
 
 /*
  * "In VM umwandeln": a server that is in truth a VM becomes one - new, or
@@ -29,20 +31,37 @@ function umwandelnFixture(): array
 }
 
 // One user per test: switching mid-test ends the session (AuthenticateSession).
-test('the server card offers the conversion with the right to delete servers', function () {
+test('editing a server offers the conversion, the card itself does not', function () {
     [$customer, , $server] = umwandelnFixture();
-    $this->actingAs(userWithPermissions(['server_viewAny', 'server_delete']));
+    $this->actingAs(userWithPermissions(['server_viewAny', 'server_update', 'server_delete']));
 
+    // Rarely needed: under "Bearbeiten", not as a button on every card.
     $this->get(route('server.index', $customer))->assertOk()
-        ->assertSee(route('server.to-vm', [$customer, $server]), false);
+        ->assertDontSee(route('server.to-vm', [$customer, $server]), false);
+
+    Livewire::test(ObjectModal::class, ['typ' => 'server', 'customer' => $customer])
+        ->call('bearbeiten', 'server', $server->id)
+        ->assertSee('In VM umwandeln…')
+        ->assertSeeHtml(route('server.to-vm', [$customer, $server]));
 });
 
-test('without the right to delete servers the card offers no conversion', function () {
+test('without the right to delete servers the edit dialog offers no conversion', function () {
     [$customer, , $server] = umwandelnFixture();
     $this->actingAs(userWithPermissions(['server_viewAny', 'server_update']));
 
-    $this->get(route('server.index', $customer))->assertOk()
-        ->assertDontSee(route('server.to-vm', [$customer, $server]), false);
+    Livewire::test(ObjectModal::class, ['typ' => 'server', 'customer' => $customer])
+        ->call('bearbeiten', 'server', $server->id)
+        ->assertDontSee('In VM umwandeln…');
+});
+
+test('other kinds offer no conversion when edited', function () {
+    [$customer, $site] = umwandelnFixture();
+    $vm = VM::forceCreate(['customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'VM-X']);
+    $this->actingAs(userWithPermissions(['vm_viewAny', 'vm_update', 'vm_delete', 'server_delete']));
+
+    Livewire::test(ObjectModal::class, ['typ' => 'vm', 'customer' => $customer])
+        ->call('bearbeiten', 'vm', $vm->id)
+        ->assertDontSee('In VM umwandeln…');
 });
 
 test('a server becomes a new VM with what hangs on it', function () {

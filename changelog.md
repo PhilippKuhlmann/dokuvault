@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.11.16g
+
+### Changed
+
+- **„In VM umwandeln“ steht jetzt unter „Bearbeiten“** statt als eigener Knopf auf jeder Server-Karte – man braucht es selten. Im Bearbeiten-Dialog eines Servers unten links neben „Löschen“.
+
 ## 26.11.16f
 
 ### Added

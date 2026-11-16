@@ -1698,6 +1698,7 @@
     "Eingebaut :eingebaut · an laufende Gäste :laufend · an alle Gäste zusammen :gesamt": "Built in :eingebaut · to running guests :laufend · to all guests together :gesamt",
     "Hostname": "Host name",
     "In VM umwandeln": "Turn into VM",
+    "In VM umwandeln…": "Turn into VM…",
     ":server ist in Wahrheit eine virtuelle Maschine? Dann wird daraus eine VM – neu angelegt oder mit einer schon dokumentierten VM zusammengeführt.": "Is :server in truth a virtual machine? Then it becomes a VM – created anew or merged into a VM already documented.",
     "Mit wandern: IP-Adressen, verknüpfte Zugangsdaten, AD-Rollen, Netzlaufwerke, Fernwartung und Dienste. Was die VM schon hat, bleibt. Der Server kommt danach in den Papierkorb und lässt sich dort wiederherstellen.": "Moving along: IP addresses, linked logins, AD roles, network shares, remote access and services. What the VM already has stays. The server then goes to the trash and can be restored there.",
     "Der Server ist in einem Serverschrank eingebaut. Nimm ihn dort zuerst heraus.": "The server is mounted in a rack. Take it out there first.",

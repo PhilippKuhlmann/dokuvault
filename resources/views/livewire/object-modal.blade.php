@@ -424,10 +424,20 @@
                          durchscheinen. --}}
                     <div class="sticky bottom-0 -mx-5 mt-5 flex flex-wrap items-center justify-end gap-2 rounded-b-xl border-t border-gray-100 bg-white px-5 py-4 dark:border-gray-700 dark:bg-gray-800">
                         @if ($bearbeiteId)
-                            @can($typ.'_delete')
-                                <x-input.button type="button" color="red" class="mr-auto"
-                                    wire:click="$set('loeschenGefragt', true)" :label="__('Löschen')" />
-                            @endcan
+                            <div class="mr-auto flex flex-wrap items-center gap-2">
+                                @can($typ.'_delete')
+                                    <x-input.button type="button" color="red"
+                                        wire:click="$set('loeschenGefragt', true)" :label="__('Löschen')" />
+                                @endcan
+
+                                {{-- Rarely needed, so here and not on the card: a server
+                                     that is in truth a VM. The page says what moves. --}}
+                                @if ($typ === 'server')
+                                    @can('server_delete')
+                                        <x-input.linkbutton color="gray" :link="route('server.to-vm', [\App\Models\Customer::find($customerId), $bearbeiteId])" :label="__('In VM umwandeln…')" />
+                                    @endcan
+                                @endif
+                            </div>
                         @endif
 
                         {{-- abbrechen() statt offen=false: sonst bleibt bearbeiteId stehen
