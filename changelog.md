@@ -1,5 +1,15 @@
 # Changelog
 
+## 26.11.16f
+
+### Added
+
+- **Server in VM umwandeln.** Ein neuer Knopf in der Kopfzeile jeder Server-Karte führt zu „In VM umwandeln“ – für einen Server, der in Wahrheit eine virtuelle Maschine ist. Zwei Wege: als **neue VM** anlegen (Name, Standort und Betriebssystem werden übernommen, Host oder Cluster gleich mit wählbar) oder mit einer **vorhandenen VM zusammenführen**, etwa der, die der Proxmox-Agent unter ihrem Namen dort dokumentiert. Es wandern IP-Adressen, verknüpfte Zugangsdaten, AD-Rollen, Netzlaufwerke, Fernwartung und Dienste mit; was die VM schon hat, bleibt. Der Server kommt in den Papierkorb und lässt sich dort wiederherstellen. Ein Server im Serverschrank oder mit eigenen Gästen lässt sich nicht umwandeln – die Seite sagt, warum. Nötig sind die Rechte „Server löschen“ und „VM anlegen“ bzw. „VM bearbeiten“.
+
+### Fixed
+
+- **Eine umgewandelte Maschine kommt nicht als Server zurück.** Die VM merkt sich die Kennung des Agenten in der Maschine (bei Windows die MachineGuid); beim nächsten Lauf landet der Windows-Agent auf der VM, statt den Server neu anzulegen. Das gilt auch für die automatische Überführung über die BIOS-Kennung.
+
 ## 26.11.16e
 
 ### Fixed

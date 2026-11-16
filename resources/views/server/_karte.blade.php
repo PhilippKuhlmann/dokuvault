@@ -35,6 +35,16 @@
                             <x-kernwert :label="__('Rack')">{{ $eintrag->mountLocation() }}</x-kernwert>
                         @endif
                     </x-slot>
+
+                    {{-- A server that is in truth a VM. Not for a host with guests
+                         or one in a rack - the page says why. --}}
+                    @can('server_delete')
+                        <x-slot:aktionen>
+                            <x-input.symbolknopf :href="route('server.to-vm', [$customer, $eintrag])" :titel="__('In VM umwandeln')">
+                                <x-svg.umwandeln class="h-5 w-5" />
+                            </x-input.symbolknopf>
+                        </x-slot>
+                    @endcan
                 </x-show.header>
             </x-slot>
 

@@ -28,6 +28,7 @@ use App\Http\Controllers\RackCatalogItemController;
 use App\Http\Controllers\RackController;
 use App\Http\Controllers\RemoteConnectController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\ServerConversionController;
 use App\Http\Controllers\ServerMapController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SettingController;
@@ -312,6 +313,10 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
 
             // Server map per site: cluster, hosts, guests
             Route::get('server-map', [ServerMapController::class, 'index'])->name('servermap.index');
+
+            // Turn a server that is in truth a VM into one
+            Route::get('server/{server}/to-vm', [ServerConversionController::class, 'create'])->whereNumber('server')->name('server.to-vm');
+            Route::post('server/{server}/to-vm', [ServerConversionController::class, 'store'])->whereNumber('server')->name('server.to-vm.store');
 
             // On- and offboarding checklists
             Route::get('checklists', [ChecklistController::class, 'index'])->name('checklist.index');

@@ -26,6 +26,12 @@
         @endisset
     </div>
 
+    {{-- "aktionen": further buttons before the pencil (the server card's
+         "In VM umwandeln"). Each brings its own permission check. --}}
+    @isset($aktionen)
+        <div class="flex shrink-0 items-center gap-2">{{ $aktionen }}</div>
+    @endisset
+
     @can($can)
         <div class="flex shrink-0 items-center gap-3">
             <div class="flex flex-row space-x-2">

@@ -3,15 +3,12 @@
 namespace App\Http\Controllers\API\Agent;
 
 use App\Http\Controllers\API\Agent\Concerns\ReportsMachines;
-use App\Models\ADDomainHost;
 use App\Models\Computer;
-use App\Models\CredentialLink;
-use App\Models\NetworkShare;
 use App\Models\Server;
 use App\Models\Service;
 use App\Models\VM;
+use App\Support\ServerToVm;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 /**
  * A server reports itself: Windows Server and Linux, with the roles and
@@ -101,9 +98,12 @@ class ServerController extends AgentEndpoint
             'server.smbios_uuid' => ['nullable', 'string', 'max:64'],
         ]);
 
-        // Running in a VM a hypervisor agent already documents: the report
-        // belongs on that VM, not on a server of its own.
-        if ($vm = $this->vmWithBiosUuid($customer->id, $data['server']['smbios_uuid'] ?? null)) {
+        // Running in a VM: one a hypervisor agent documents (BIOS UUID), or
+        // one this machine was turned into before (its MachineGuid). The
+        // report belongs on that VM, not on a server of its own.
+        $vm = VM::where('customer_id', $customer->id)->where('guest_identifier', $data['server']['identifier'])->orderBy('id')->first()
+            ?? $this->vmWithBiosUuid($customer->id, $data['server']['smbios_uuid'] ?? null);
+        if ($vm) {
             return $this->windowsGuest($vm, $data['server'], $customer);
         }
 
@@ -251,6 +251,7 @@ class ServerController extends AgentEndpoint
     protected function windowsGuest(VM $vm, array $meldung, $customer)
     {
         $vm->hostname = $meldung['hostname'];
+        $vm->guest_identifier ??= $meldung['identifier'];
 
         if ($osId = $this->catalogOsId($this->osCatalogName($meldung['os'] ?? null, 'Windows'))) {
             $vm->operating_system_id = $osId;
@@ -292,47 +293,11 @@ class ServerController extends AgentEndpoint
      */
     protected function foldIntoVm(Server $server, VM $vm): bool
     {
-        if ($server->rackItem || $server->gaeste()->exists()) {
+        if (ServerToVm::blocker($server) !== null) {
             return false;
         }
 
-        DB::transaction(function () use ($server, $vm) {
-            $vorhanden = $vm->ipAddresses()->pluck('address')->filter()->all();
-            foreach ($server->ipAddresses as $adresse) {
-                if ($adresse->address !== null && in_array($adresse->address, $vorhanden, true)) {
-                    $adresse->delete();
-                } else {
-                    $adresse->ipable()->associate($vm)->save();
-                }
-            }
-
-            foreach (CredentialLink::where('credentialable_type', $server->getMorphClass())->where('credentialable_id', $server->id)->get() as $link) {
-                $doppelt = CredentialLink::where('credentialable_type', $vm->getMorphClass())->where('credentialable_id', $vm->id)
-                    ->where('login_general_id', $link->login_general_id)->exists();
-                $doppelt ? $link->delete() : $link->update(['credentialable_type' => $vm->getMorphClass(), 'credentialable_id' => $vm->id]);
-            }
-
-            foreach (ADDomainHost::where('host_type', $server->getMorphClass())->where('host_id', $server->id)->get() as $rolle) {
-                $doppelt = ADDomainHost::where('host_type', $vm->getMorphClass())->where('host_id', $vm->id)
-                    ->where('ad_domain_id', $rolle->ad_domain_id)->where('role', $rolle->role)->exists();
-                $doppelt ? $rolle->delete() : $rolle->update(['host_type' => $vm->getMorphClass(), 'host_id' => $vm->id]);
-            }
-
-            NetworkShare::withTrashed()->where('host_type', $server->getMorphClass())->where('host_id', $server->id)
-                ->update(['host_type' => $vm->getMorphClass(), 'host_id' => $vm->id]);
-
-            // Raw values: the remote password is stored encrypted on both.
-            $vonServer = array_filter([
-                'services' => blank($vm->getRawOriginal('services')) ? $server->getRawOriginal('services') : null,
-                'remoteID' => blank($vm->getRawOriginal('remoteID')) ? $server->getRawOriginal('remoteID') : null,
-                'remotePassword' => blank($vm->getRawOriginal('remotePassword')) ? $server->getRawOriginal('remotePassword') : null,
-            ], fn ($wert) => filled($wert));
-            if ($vonServer) {
-                DB::table('vms')->where('id', $vm->id)->update($vonServer);
-            }
-
-            $server->delete();
-        });
+        ServerToVm::into($server, $vm);
 
         return true;
     }
