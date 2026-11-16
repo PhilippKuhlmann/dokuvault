@@ -19,9 +19,14 @@
         <div class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-200">{{ implode(' · ', $host['facts']) }}</div>
     @endif
     @if ($host['assigned'])
-        <div class="mt-1.5" title="{{ $host['assigned']['text'] }}">
+        {{-- Solid: memory of the running guests. Pale: that of the stopped
+             ones on top, as far as the bar reaches. --}}
+        <div class="mt-1.5" title="{{ $host['assigned']['title'] }}">
             <div class="flex h-1 overflow-hidden rounded-sm bg-gray-200 dark:bg-gray-600">
                 <div style="width: {{ (int) round($host['assigned']['pct']) }}%" @class(['bg-cerulean-500' => ! $host['assigned']['over'], 'bg-amber-500' => $host['assigned']['over']])></div>
+                @if ($host['assigned']['dazu'] >= 1)
+                    <div style="width: {{ (int) round($host['assigned']['dazu']) }}%" class="bg-cerulean-500/35"></div>
+                @endif
             </div>
             <div @class(['mt-0.5 truncate text-[11px]', 'text-gray-500 dark:text-gray-400' => ! $host['assigned']['over'], 'text-amber-600 dark:text-amber-400' => $host['assigned']['over']])>{{ $host['assigned']['text'] }}</div>
         </div>

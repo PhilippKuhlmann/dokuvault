@@ -1693,5 +1693,7 @@
     "Cluster, Hosts und ihre Gäste – mit CPU, Kernen, Arbeitsspeicher, Betriebssystem und Adresse. Was die Agenten melden, steht von selbst da.": "Clusters, hosts and their guests – with CPU, cores, memory, operating system and address. What the agents report shows up by itself.",
     "aus": "off",
     "weniger": "less",
-    ":count Kern|:count Kerne": ":count core|:count cores"
+    ":count Kern|:count Kerne": ":count core|:count cores",
+    ":laufend laufend · :gesamt vergeben": ":laufend running · :gesamt assigned",
+    "Eingebaut :eingebaut · an laufende Gäste :laufend · an alle Gäste zusammen :gesamt": "Built in :eingebaut · to running guests :laufend · to all guests together :gesamt"
 }

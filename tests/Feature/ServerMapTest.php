@@ -6,6 +6,7 @@ use App\Models\OperatingSystem;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\VM;
+use App\Support\ServerMap;
 
 /**
  * The server map: cluster -> hosts -> guests, each with what it is made of.
@@ -54,7 +55,7 @@ test('the server map shows cluster, host and guests with what they are made of',
     $this->get(route('servermap.index', $customer))->assertOk()
         ->assertSeeInOrder(['PVE-Cluster', '1 Host · 32 Kerne · 256 GB RAM', 'PVE-01', 'Dell PowerEdge R750', 'Intel Xeon Silver 4314', '32 Kerne · 256 GB RAM'])
         ->assertSee('10.0.30.13')
-        ->assertSee('8,5 GB von 256 GB an Gäste vergeben')
+        ->assertSee('8 GB laufend · 8,5 GB vergeben')
         ->assertSeeInOrder(['VMs · 1', 'VM-DC01', '10.0.30.20', 'Windows Server 2022 Standard', '4 Kerne', '8 GB RAM'])
         ->assertSeeInOrder(['Container · 1', 'CT-Alt', 'aus', '1 Kern', '0,5 GB RAM', '8 GB Disk']);
 });
@@ -134,6 +135,30 @@ test('the site filter of the sidebar applies', function () {
     $this->withSession(['site' => $filiale->id])->get(route('servermap.index', $customer))->assertOk()
         ->assertSee('SRV-FILIALE')
         ->assertDontSee('PVE-01');
+});
+
+test('stopped guests do not make a host look overbooked', function () {
+    [$customer, $site, , $host] = serverMapFixture();
+    $host->update(['agent_details' => ['cores' => 8, 'memory_gb' => 16]]);
+    // 8 GB running (VM-DC01), 0.5 GB stopped (CT-Alt), plus 40 GB more stopped.
+    $archiv = VM::forceCreate([
+        'customer_id' => $customer->id, 'site_id' => $site->id, 'server_id' => $host->id,
+        'name' => 'VM-Archiv', 'agent_details' => ['type' => 'qemu', 'status' => 'stopped', 'memory_gb' => 40],
+    ]);
+    $this->actingAs(userWithPermissions(['server_viewAny', 'vm_viewAny']));
+
+    $assigned = app(ServerMap::class)->build($customer)[0]['columns'][0]['hosts'][0]['assigned'];
+
+    expect($assigned['over'])->toBeFalse()
+        ->and($assigned['pct'])->toBe(50.0)
+        ->and($assigned['dazu'])->toBe(50.0)
+        ->and($assigned['text'])->toBe('8 GB laufend · 48,5 GB vergeben');
+
+    // Running guests alone beyond what is built in: amber.
+    $archiv->update(['agent_details' => ['type' => 'qemu', 'status' => 'running', 'memory_gb' => 40]]);
+    $assigned = app(ServerMap::class)->build($customer)[0]['columns'][0]['hosts'][0]['assigned'];
+
+    expect($assigned['over'])->toBeTrue();
 });
 
 test('the sidebar links to the server map', function () {

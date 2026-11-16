@@ -142,15 +142,21 @@ class ServerMap
     }
 
     /**
-     * A server with its hardware and, below it, its guests. Memory given to
-     * guests against memory built in: overcommitment is a fact of the setup,
-     * not a load value.
+     * A server with its hardware and, below it, its guests.
+     *
+     * Memory given to guests against memory built in - overcommitment is a
+     * fact of the setup, not a load value. Running and stopped guests apart:
+     * a host with 27 switched-off guests looked three times overbooked
+     * while what runs fitted easily. Amber only when the running guests
+     * alone were given more than is built in.
      */
     protected function host(Server $server, Collection $guests): array
     {
         $d = $server->agent_details ?? [];
         $memory = (float) ($d['memory_gb'] ?? 0);
         $assigned = (float) $guests->sum(fn (VM $vm) => $vm->agent_details['memory_gb'] ?? 0);
+        $running = (float) $guests->filter(fn (VM $vm) => ! $this->stopped($vm))->sum(fn (VM $vm) => $vm->agent_details['memory_gb'] ?? 0);
+        $runningPct = $memory ? min(100, $running / $memory * 100) : 0;
 
         return [
             'name' => $server->name,
@@ -165,12 +171,25 @@ class ServerMap
             ])),
             'address' => $this->address($server),
             'assigned' => $memory && $assigned ? [
-                'text' => __(':zugewiesen von :eingebaut an Gäste vergeben', [
-                    'zugewiesen' => AgentReportCards::gb($assigned),
+                'text' => $running < $assigned
+                    ? __(':laufend laufend · :gesamt vergeben', [
+                        'laufend' => AgentReportCards::gb($running),
+                        'gesamt' => AgentReportCards::gb($assigned),
+                    ])
+                    : __(':zugewiesen von :eingebaut an Gäste vergeben', [
+                        'zugewiesen' => AgentReportCards::gb($assigned),
+                        'eingebaut' => AgentReportCards::gb($memory),
+                    ]),
+                'title' => __('Eingebaut :eingebaut · an laufende Gäste :laufend · an alle Gäste zusammen :gesamt', [
                     'eingebaut' => AgentReportCards::gb($memory),
+                    'laufend' => AgentReportCards::gb($running),
+                    'gesamt' => AgentReportCards::gb($assigned),
                 ]),
-                'pct' => min(100, $assigned / $memory * 100),
-                'over' => $assigned > $memory,
+                // Solid: running guests. Pale behind it: the stopped ones,
+                // as far as the bar reaches.
+                'pct' => $runningPct,
+                'dazu' => max(0, min(100 - $runningPct, ($assigned - $running) / $memory * 100)),
+                'over' => $running > $memory,
             ] : null,
             'guests' => $guests->isEmpty() ? null : $this->guestList($guests),
         ];
@@ -208,7 +227,7 @@ class ServerMap
             'url' => $this->url($vm),
             // Stopped guests stand muted - a template or a spare is part of
             // the setup, but nothing runs there.
-            'stopped' => isset($d['status']) && $d['status'] !== 'running',
+            'stopped' => $this->stopped($vm),
             // What it was given, as short chips; the operating system on a
             // line of its own - in one line with the rest it was cut off.
             'specs' => array_values(array_filter([
@@ -219,6 +238,14 @@ class ServerMap
             'os' => $vm->operatingSystem?->name,
             'address' => $this->address($vm),
         ];
+    }
+
+    /** Reported as not running. Without a report it counts as running: nothing says otherwise. */
+    protected function stopped(VM $vm): bool
+    {
+        $status = $vm->agent_details['status'] ?? null;
+
+        return $status !== null && $status !== 'running';
     }
 
     /** The first fixed address, else "DHCP" - what the card would show first. */
