@@ -307,6 +307,9 @@ it is exactly what people look up. `--ohne-kennwoerter` turns that off.
 
 - **Customers & sites** — a multi-tenant structure per customer
 - **Infrastructure** — servers, VMs (with host assignment), NAS, computers, UPS, machines, IoT
+- **Server map** — per site cluster → hosts → guests as a tree, with CPU, cores, memory, operating
+  system and address; how much of a host's memory is given to guests at a glance. What the Proxmox
+  and Windows agents report shows up by itself
 - **Racks** — drag-and-drop mounting, **front and rear**: place documented devices and passive items
   per rack unit. Full-depth devices occupy both sides, half-depth ones leave room behind them. Next
   to the labelled schematic there is a drawn view that follows the height; the catalogue of passive

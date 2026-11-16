@@ -96,6 +96,7 @@
                     <x-slot:links>
                         @can('server_viewAny')
                             <x-aside.dropdownlink :label="__('Server')" href="{{ route('server.index', $customer) }}" />
+                            <x-aside.dropdownlink :label="__('Serverplan')" href="{{ route('servermap.index', $customer) }}" />
                         @endcan
                         @can('cluster_viewAny')
                             <x-aside.dropdownlink :label="__('Cluster')" href="{{ route('cluster.index', $customer) }}" />

@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.11.16
+
+### Added
+
+- **Serverplan.** Neuer Menüpunkt unter *Server*: je Standort ein Baum wie beim Netzplan – oben der Cluster mit der Summe seiner Kerne und seines Arbeitsspeichers, darunter die Hosts mit Hersteller und Modell, Betriebssystem, CPU, Kernen, RAM und Adresse, darunter ihre Gäste, getrennt nach VMs und Containern, mit Kernen, RAM, Disk, Betriebssystem und Adresse. Ein Balken am Host zeigt, wie viel seines Arbeitsspeichers an Gäste vergeben ist (gelb, wenn mehr vergeben als eingebaut ist). Ausgeschaltete Gäste stehen blass mit „aus“. Ab acht Gästen je Gruppe klappt der Rest weg. Server ohne Gäste, Gäste ohne Host und Gäste eines Clusters ohne bekannten Host bleiben sichtbar statt zu verschwinden. Werte kommen aus der Doku und von den Agenten; Auslastung zeigt der Plan bewusst nicht. Ohne das Recht, VMs zu sehen, stehen nur die Anzahlen da.
+
 ## 26.11.15
 
 ### Fixed

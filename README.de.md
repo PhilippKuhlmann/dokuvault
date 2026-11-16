@@ -310,6 +310,9 @@ Dokumentation ist es genau das, was man nachschlägt. `--ohne-kennwoerter` schal
 
 - **Kunden & Standorte** – mehrmandantenfähige Struktur je Kunde
 - **Infrastruktur** – Server, VMs (mit Host-Zuordnung), NAS, Computer, USV, Maschinen, IoT
+- **Serverplan** – je Standort Cluster → Hosts → Gäste als Baum, mit CPU, Kernen, Arbeitsspeicher,
+  Betriebssystem und Adresse; wie viel RAM eines Hosts an Gäste vergeben ist, auf einen Blick. Was
+  Proxmox- und Windows-Agent melden, steht von selbst da
 - **Serverschränke** – Racks mit Drag-&-Drop-Bestückung, **Vorder- und Rückseite**:
   dokumentierte Geräte und passive Elemente je Höheneinheit platzieren. Geräte in voller
   Tiefe belegen beide Seiten, halbtiefe lassen dahinter Platz. Neben dem beschrifteten

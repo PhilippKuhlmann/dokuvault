@@ -49,6 +49,7 @@
             ['rack_viewAny', __('Serverschränke'), 'rack.index'],
             ['patchpanel_viewAny', __('Patchfelder'), 'patchpanel.index'],
             ['server_viewAny', __('Server'), 'server.index'],
+            ['server_viewAny', __('Serverplan'), 'servermap.index'],
             ['cluster_viewAny', __('Cluster'), 'cluster.index'],
             ['vm_viewAny', __('VMs'), 'vm.index'],
             ['nas_viewAny', __('NAS'), 'nas.index'],

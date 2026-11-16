@@ -1678,5 +1678,20 @@
     "gleiche IP-Adresse": "same IP address",
     "Name im Gerät": "Name in the device",
     "Gefunden von": "Found by",
-    "Zuerst gesehen": "First seen"
+    "Zuerst gesehen": "First seen",
+    "Serverplan": "Server map",
+    ":count Host|:count Hosts": ":count host|:count hosts",
+    ":menge RAM": ":menge RAM",
+    ":menge Disk": ":menge disk",
+    ":zugewiesen von :eingebaut an Gäste vergeben": ":zugewiesen of :eingebaut given to guests",
+    "Container": "Containers",
+    "Host unbekannt": "Host unknown",
+    "Server ohne Gäste": "Servers without guests",
+    "VMs ohne Host": "VMs without a host",
+    "Weder Host noch Cluster eingetragen.": "Neither host nor cluster entered.",
+    "Für diesen Standort sind weder Server noch VMs dokumentiert.": "No servers or VMs are documented for this site.",
+    "Cluster, Hosts und ihre Gäste – mit CPU, Kernen, Arbeitsspeicher, Betriebssystem und Adresse. Was die Agenten melden, steht von selbst da.": "Clusters, hosts and their guests – with CPU, cores, memory, operating system and address. What the agents report shows up by itself.",
+    "aus": "off",
+    "weniger": "less",
+    ":count Kern|:count Kerne": ":count core|:count cores"
 }

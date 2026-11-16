@@ -28,6 +28,7 @@ use App\Http\Controllers\RackCatalogItemController;
 use App\Http\Controllers\RackController;
 use App\Http\Controllers\RemoteConnectController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\ServerMapController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SiteController;
@@ -308,6 +309,9 @@ Route::middleware(['auth', 'isCustomer'])->group(function () {
 
             // Logical network map per site
             Route::get('network-map', [NetworkMapController::class, 'index'])->name('networkmap.index');
+
+            // Server map per site: cluster, hosts, guests
+            Route::get('server-map', [ServerMapController::class, 'index'])->name('servermap.index');
 
             // On- and offboarding checklists
             Route::get('checklists', [ChecklistController::class, 'index'])->name('checklist.index');
