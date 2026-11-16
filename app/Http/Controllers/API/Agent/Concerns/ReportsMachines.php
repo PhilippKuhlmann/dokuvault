@@ -111,6 +111,12 @@ trait ReportsMachines
                 $vmAttribute['agent_reported_at'] = now();
             }
 
+            // The BIOS UUID the hypervisor gave the guest - the Windows agent
+            // inside reads the same and lands on this VM (windowsServer()).
+            if ($uuid = $this->smbiosUuid($gast['smbios_uuid'] ?? null)) {
+                $vmAttribute['smbios_uuid'] = $uuid;
+            }
+
             $vm = VM::updateOrCreate(
                 ['customer_id' => $customer->id, 'site_id' => $site->id, 'agent_identifier' => $gast['identifier']],
                 $vmAttribute
@@ -134,6 +140,24 @@ trait ReportsMachines
         }
 
         return [$server, $anzahl];
+    }
+
+    /**
+     * A BIOS UUID in one spelling: lower case, without braces. null for
+     * anything else and for the placeholders some firmware leaves (all
+     * zeros, all F) - those would tie unrelated machines together.
+     */
+    protected function smbiosUuid(?string $uuid): ?string
+    {
+        $uuid = strtolower(trim((string) $uuid, " \t\n\r\0\x0B{}"));
+
+        if (! preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/', $uuid)) {
+            return null;
+        }
+
+        $ziffern = str_replace('-', '', $uuid);
+
+        return in_array($ziffern, [str_repeat('0', 32), str_repeat('f', 32)], true) ? null : $uuid;
     }
 
     /**

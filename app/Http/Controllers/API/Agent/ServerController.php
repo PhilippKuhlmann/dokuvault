@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\API\Agent;
 
 use App\Http\Controllers\API\Agent\Concerns\ReportsMachines;
+use App\Models\ADDomainHost;
 use App\Models\Computer;
+use App\Models\CredentialLink;
+use App\Models\NetworkShare;
 use App\Models\Server;
 use App\Models\Service;
 use App\Models\VM;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 /**
  * A server reports itself: Windows Server and Linux, with the roles and
@@ -94,7 +98,14 @@ class ServerController extends AgentEndpoint
             'server.memory_gb' => ['nullable', 'numeric'],
             'server.roles' => ['nullable', 'array', 'max:500'],
             'server.roles.*' => ['string', 'max:255'],
+            'server.smbios_uuid' => ['nullable', 'string', 'max:64'],
         ]);
+
+        // Running in a VM a hypervisor agent already documents: the report
+        // belongs on that VM, not on a server of its own.
+        if ($vm = $this->vmWithBiosUuid($customer->id, $data['server']['smbios_uuid'] ?? null)) {
+            return $this->windowsGuest($vm, $data['server'], $customer);
+        }
 
         [$server] = $this->hostUndGaeste(
             $data['server'], [], $customer, $site,
@@ -195,6 +206,135 @@ class ServerController extends AgentEndpoint
             'name' => $geraet->name,
             'services_documented' => count($dienste),
         ]);
+    }
+
+    /**
+     * The VM a hypervisor agent reported with this BIOS UUID.
+     *
+     * Customer-wide: the VM's site comes from its host, not from the token
+     * of the agent inside. Both spellings of the UUID are tried - SMBIOS
+     * stores the first three fields little-endian, and not every reader
+     * turns them round the same way.
+     */
+    protected function vmWithBiosUuid(int $customerId, ?string $uuid): ?VM
+    {
+        if (! $uuid = $this->smbiosUuid($uuid)) {
+            return null;
+        }
+
+        return VM::where('customer_id', $customerId)
+            ->whereIn('smbios_uuid', [$uuid, $this->swappedUuid($uuid)])
+            ->orderBy('id')
+            ->first();
+    }
+
+    /** "aabbccdd-eeff-gghh-..." -> "ddccbbaa-ffee-hhgg-...". */
+    protected function swappedUuid(string $uuid): string
+    {
+        $teile = explode('-', $uuid);
+        foreach ([0, 1, 2] as $i) {
+            $teile[$i] = implode('', array_reverse(str_split($teile[$i], 2)));
+        }
+
+        return implode('-', $teile);
+    }
+
+    /**
+     * What Windows says about itself, put on the VM it runs in.
+     *
+     * The VM keeps its name and its figures from the hypervisor; Windows
+     * adds its own host name (the AD agent finds domain controllers by it),
+     * the operating system, its address and - into an empty field - the
+     * services from its roles. A server an earlier run created for the same
+     * machine is folded into the VM.
+     */
+    protected function windowsGuest(VM $vm, array $meldung, $customer)
+    {
+        $vm->hostname = $meldung['hostname'];
+
+        if ($osId = $this->catalogOsId($this->osCatalogName($meldung['os'] ?? null, 'Windows'))) {
+            $vm->operating_system_id = $osId;
+        }
+        $vm->save();
+
+        $uebernommen = Server::where('customer_id', $customer->id)
+            ->where('agent_identifier', $meldung['identifier'])
+            ->get()
+            ->filter(fn (Server $server) => $this->foldIntoVm($server, $vm))
+            ->count();
+
+        $this->reportUrl($vm, $customer->id, $vm->site_id, $meldung['ip'] ?? null);
+
+        $dienste = $this->servicesFromRoles($meldung['roles'] ?? []);
+        if ($dienste !== [] && blank($vm->fresh()->getRawOriginal('services'))) {
+            $vm->update(['services' => implode(',', $dienste)]);
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'customer' => $customer->name,
+            'type' => 'vm',
+            'vm' => $vm->name,
+            'vm_id' => $vm->id,
+            'servers_folded' => $uebernommen,
+            'services_documented' => count($dienste),
+        ]);
+    }
+
+    /**
+     * A server the Windows agent created before the VM was known moves into
+     * the VM: addresses, linked logins, AD roles, network shares, remote
+     * access and services go over, the server goes to the trash
+     * (restorable there).
+     *
+     * Not when it carries what a VM cannot: a rack slot or guests of its
+     * own - then it stays for a human to sort out.
+     */
+    protected function foldIntoVm(Server $server, VM $vm): bool
+    {
+        if ($server->rackItem || $server->gaeste()->exists()) {
+            return false;
+        }
+
+        DB::transaction(function () use ($server, $vm) {
+            $vorhanden = $vm->ipAddresses()->pluck('address')->filter()->all();
+            foreach ($server->ipAddresses as $adresse) {
+                if ($adresse->address !== null && in_array($adresse->address, $vorhanden, true)) {
+                    $adresse->delete();
+                } else {
+                    $adresse->ipable()->associate($vm)->save();
+                }
+            }
+
+            foreach (CredentialLink::where('credentialable_type', $server->getMorphClass())->where('credentialable_id', $server->id)->get() as $link) {
+                $doppelt = CredentialLink::where('credentialable_type', $vm->getMorphClass())->where('credentialable_id', $vm->id)
+                    ->where('login_general_id', $link->login_general_id)->exists();
+                $doppelt ? $link->delete() : $link->update(['credentialable_type' => $vm->getMorphClass(), 'credentialable_id' => $vm->id]);
+            }
+
+            foreach (ADDomainHost::where('host_type', $server->getMorphClass())->where('host_id', $server->id)->get() as $rolle) {
+                $doppelt = ADDomainHost::where('host_type', $vm->getMorphClass())->where('host_id', $vm->id)
+                    ->where('ad_domain_id', $rolle->ad_domain_id)->where('role', $rolle->role)->exists();
+                $doppelt ? $rolle->delete() : $rolle->update(['host_type' => $vm->getMorphClass(), 'host_id' => $vm->id]);
+            }
+
+            NetworkShare::withTrashed()->where('host_type', $server->getMorphClass())->where('host_id', $server->id)
+                ->update(['host_type' => $vm->getMorphClass(), 'host_id' => $vm->id]);
+
+            // Raw values: the remote password is stored encrypted on both.
+            $vonServer = array_filter([
+                'services' => blank($vm->getRawOriginal('services')) ? $server->getRawOriginal('services') : null,
+                'remoteID' => blank($vm->getRawOriginal('remoteID')) ? $server->getRawOriginal('remoteID') : null,
+                'remotePassword' => blank($vm->getRawOriginal('remotePassword')) ? $server->getRawOriginal('remotePassword') : null,
+            ], fn ($wert) => filled($wert));
+            if ($vonServer) {
+                DB::table('vms')->where('id', $vm->id)->update($vonServer);
+            }
+
+            $server->delete();
+        });
+
+        return true;
     }
 
     /**

@@ -1,5 +1,13 @@
 # Changelog
 
+## 26.11.16e
+
+### Fixed
+
+- **Windows in einer VM steht nicht mehr zusätzlich als Server da.** Der Windows-Agent meldete die Maschine, auf der er läuft, immer als Server – auch wenn sie eine VM ist, die der Proxmox-Agent schon unter ihrem Proxmox-Namen dokumentiert. Jetzt meldet der Proxmox-Agent je VM die BIOS-Kennung (`smbios1`), der Windows-Agent liest dieselbe in der VM aus, und DokuVault legt seine Angaben auf die VM: Betriebssystem, Adresse, Dienste aus den Rollen und den Windows-Hostnamen. Name, Kerne und RAM bleiben die aus Proxmox. Einen Server, den frühere Läufe für dieselbe Maschine angelegt haben, überführt der nächste Lauf in die VM – samt Adressen, verknüpften Zugangsdaten, AD-Rollen, Netzlaufwerken, Fernwartung und Diensten – und legt ihn in den Papierkorb. Steckt er in einem Serverschrank oder hat eigene Gäste, bleibt er stehen.
+- **Der AD-Agent findet Domänencontroller in einer VM auch über ihren Windows-Hostnamen**, wenn die VM in Proxmox anders heißt. Die VM-Karte zeigt diesen Hostnamen, wenn er abweicht.
+- Eine leere Dienste-Liste eines Servers löste eine PHP-Warnung aus.
+
 ## 26.11.16d
 
 ### Added

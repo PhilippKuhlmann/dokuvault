@@ -189,6 +189,9 @@ class HypervisorController extends AgentEndpoint
             // Proxmox tags; only those matching a service of the catalog count.
             'guests.*.tags' => ['nullable', 'array', 'max:50'],
             'guests.*.tags.*' => ['string', 'max:100'],
+            // BIOS UUID of the guest (Proxmox: smbios1); ties the Windows
+            // agent inside to this VM.
+            'guests.*.smbios_uuid' => ['nullable', 'string', 'max:64'],
         ];
     }
 

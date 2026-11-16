@@ -173,6 +173,9 @@ Der empfohlene Weg: ein Agent, der auf dem Rechner bleibt und von selbst meldet.
 
 - **Rollen je Rechner** – jeder Agent erkennt, was sein Rechner kann; du hakst an, was er melden
   soll. Bei zwei Domänencontrollern stehen beide als Server in der Doku, aber nur einer macht das AD.
+- **Windows in einer VM bleibt eine VM** – der Proxmox-Agent meldet je VM die BIOS-Kennung, der
+  Windows-Agent liest dieselbe in der VM; seine Angaben (Betriebssystem, Adresse, Dienste,
+  Hostname) landen auf der VM statt auf einem zweiten Eintrag als Server.
 - **Intervall und „Jetzt melden“** je Rechner, eine Vorgabe für alle unter *Einstellungen → Agenten*.
   Ein Zufallsabstand verhindert, dass alle nach einem gemeinsamen Neustart im Gleichtakt melden.
 - **Ergebnis jedes Laufs** je Rolle – grün, sobald die Rolle Daten liefert, rot nur, wenn sie keine

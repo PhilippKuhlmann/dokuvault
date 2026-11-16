@@ -26,6 +26,16 @@ $cpu = Get-CimInstance -ClassName Win32_Processor | Select-Object -First 1
 # soll es ein Server-Eintrag bleiben und nicht zwei werden.
 $identifier = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Cryptography' -Name MachineGuid).MachineGuid
 
+# BIOS UUID. In a VM the hypervisor sets it (Proxmox: smbios1) and reports
+# the same value - DokuVault then puts this report on that VM instead of
+# documenting the machine a second time as a server.
+$smbiosUuid = $null
+try {
+    $smbiosUuid = (Get-CimInstance -ClassName Win32_ComputerSystemProduct -ErrorAction Stop).UUID
+} catch {
+    Write-Host "Hinweis: BIOS-UUID nicht lesbar ($($_.Exception.Message))."
+}
+
 $ip = (Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
     Where-Object { $_.IPAddress -notlike '169.254.*' -and $_.InterfaceAlias -notmatch 'Loopback' } |
     Select-Object -First 1).IPAddress
@@ -61,6 +71,7 @@ try {
 $payload = [PSCustomObject]@{
     server = [PSCustomObject]@{
         identifier   = $identifier
+        smbios_uuid  = $smbiosUuid
         hostname     = $env:COMPUTERNAME
         manufacturer = $system.Manufacturer
         model        = $system.Model

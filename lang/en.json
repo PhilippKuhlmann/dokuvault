@@ -1695,5 +1695,6 @@
     "weniger": "less",
     ":count Kern|:count Kerne": ":count core|:count cores",
     ":laufend laufend · :gesamt vergeben": ":laufend running · :gesamt assigned",
-    "Eingebaut :eingebaut · an laufende Gäste :laufend · an alle Gäste zusammen :gesamt": "Built in :eingebaut · to running guests :laufend · to all guests together :gesamt"
+    "Eingebaut :eingebaut · an laufende Gäste :laufend · an alle Gäste zusammen :gesamt": "Built in :eingebaut · to running guests :laufend · to all guests together :gesamt",
+    "Hostname": "Host name"
 }

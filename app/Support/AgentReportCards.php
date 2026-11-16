@@ -98,6 +98,9 @@ class AgentReportCards
         return [
             __('System') => [
                 [__('VMID'), isset($d['vmid']) ? (string) $d['vmid'] : null],
+                // What the system inside calls itself, when it differs from
+                // the name in the hypervisor (reported by the Windows agent).
+                [__('Hostname'), filled($vm->hostname) && mb_strtolower($vm->hostname) !== mb_strtolower((string) $vm->name) ? $vm->hostname : null],
                 [__('CPU'), $kernText, $cpuLast !== null ? ['pct' => $cpuLast, 'warnen' => true] : null],
                 // A VM without balloon driver reports all the memory it took
                 // from the host, not what the guest uses - most VMs would show

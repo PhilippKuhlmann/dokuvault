@@ -170,6 +170,9 @@ The recommended way: an agent that stays on the machine and reports by itself.
 
 - **Roles per machine** — each agent detects what its machine can do; you tick what it should
   report. With two domain controllers both are documented as servers, but only one does the AD.
+- **Windows in a VM stays a VM** — the Proxmox agent reports each VM's BIOS UUID, the Windows
+  agent reads the same inside; its facts (operating system, address, services, host name) land on
+  the VM instead of on a second entry as a server.
 - **Interval and “report now”** per machine, a default for all of them under *Settings → Agents*.
   A random delay keeps a fleet from reporting in lockstep after a shared reboot.
 - **Results of every run** per role — green as soon as the role delivers data, red only when it

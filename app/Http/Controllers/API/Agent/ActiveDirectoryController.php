@@ -272,8 +272,12 @@ class ActiveDirectoryController extends AgentEndpoint
         $kurz = strtolower(strtok(trim($hostname), '.'));
 
         foreach ([Server::class, VM::class] as $klasse) {
+            // A VM also by the name Windows gives itself inside: in the
+            // hypervisor it is often called something else ("test" vs.
+            // "WIN-H4KK383P230").
             $treffer = $klasse::where('customer_id', $customerId)
-                ->whereRaw('LOWER(name) = ?', [$kurz])
+                ->where(fn ($q) => $q->whereRaw('LOWER(name) = ?', [$kurz])
+                    ->when($klasse === VM::class, fn ($q) => $q->orWhereRaw('LOWER(hostname) = ?', [$kurz])))
                 ->first();
 
             if ($treffer) {

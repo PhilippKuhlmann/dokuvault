@@ -178,7 +178,11 @@ if command -v qm >/dev/null 2>&1; then
       OS_VERSION="$(json_feld version-id "$osinfo")"
     fi
     tags="$(qm config "$vmid" 2>/dev/null | sed -n 's/^tags:[[:space:]]*//p' | head -n1)"
-    add_guest "{\"identifier\":$(json_str "${HOSTNAME}/qemu/${vmid}"),\"tags\":$(tags_json "$tags"),\"vmid\":$(num "$vmid"),\"name\":$(json_str "$name"),\"type\":\"qemu\",\"os_id\":$(json_str "$OS_ID"),\"os_version\":$(json_str "$OS_VERSION"),\"ip\":$(json_str "$ip"),\"status\":$(json_str "$status"),\"cores\":$(num "$cores"),\"memory_gb\":$memgb$(last "" "$vmid" "$status" qemu)}"
+    # BIOS UUID of the VM ("smbios1: uuid=..."). Windows inside reads the
+    # same value - DokuVault puts the Windows agent's report on this VM
+    # instead of creating a server next to it.
+    smbios="$(qm config "$vmid" 2>/dev/null | sed -n 's/^smbios1:.*uuid=\([0-9A-Fa-f-]*\).*/\1/p' | head -n1)"
+    add_guest "{\"identifier\":$(json_str "${HOSTNAME}/qemu/${vmid}"),\"tags\":$(tags_json "$tags"),\"vmid\":$(num "$vmid"),\"name\":$(json_str "$name"),\"type\":\"qemu\",\"smbios_uuid\":$(json_str "$smbios"),\"os_id\":$(json_str "$OS_ID"),\"os_version\":$(json_str "$OS_VERSION"),\"ip\":$(json_str "$ip"),\"status\":$(json_str "$status"),\"cores\":$(num "$cores"),\"memory_gb\":$memgb$(last "" "$vmid" "$status" qemu)}"
   done < <(qm list 2>/dev/null | awk 'NR>1{print $1" "$2" "$3}')
 fi
 

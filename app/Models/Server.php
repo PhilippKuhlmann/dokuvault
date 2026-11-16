@@ -77,7 +77,8 @@ class Server extends Model
     protected function services(): Attribute
     {
         return new Attribute(
-            get: fn ($value) => explode(',', $value),
+            // (string) as on VM: an empty field is null, and explode(null) is deprecated.
+            get: fn ($value) => explode(',', (string) $value),
         );
     }
 
