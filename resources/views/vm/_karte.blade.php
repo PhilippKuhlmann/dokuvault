@@ -24,8 +24,8 @@
                          Container. Das Wort bleibt daneben stehen - Farbe
                          allein traegt die Aussage nicht. --}}
                     @php
-                        $gastTyp = match ($eintrag->agent_details['type'] ?? null) {
-                            'qemu' => ['VM', __('Virtuelle Maschine'), 'bg-cerulean-50 text-cerulean-700 ring-cerulean-200 dark:bg-cerulean-400/10 dark:text-cerulean-300 dark:ring-cerulean-400/30'],
+                        $gastTyp = match ($eintrag->kind) {
+                            'vm' => ['VM', __('Virtuelle Maschine'), 'bg-cerulean-50 text-cerulean-700 ring-cerulean-200 dark:bg-cerulean-400/10 dark:text-cerulean-300 dark:ring-cerulean-400/30'],
                             'lxc' => ['LXC', __('Container (LXC)'), 'bg-violet-50 text-violet-700 ring-violet-200 dark:bg-violet-400/10 dark:text-violet-300 dark:ring-violet-400/30'],
                             default => null,
                         };

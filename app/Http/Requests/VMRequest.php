@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\Setting;
 use App\Rules\BelongsToCustomer;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class VMRequest extends FormRequest
 {
@@ -39,6 +40,9 @@ class VMRequest extends FormRequest
             'server_id' => ['nullable', 'prohibits:cluster_id', new BelongsToCustomer('servers')],
             'cluster_id' => ['nullable', new BelongsToCustomer('clusters')],
             'name' => 'required|max:255',
+            // sometimes: the documentation wizard has no such field and the
+            // column's default (vm) applies; the modal always sends it.
+            'kind' => ['sometimes', 'required', Rule::in(array_keys(config('custom.vm_kinds')))],
             'services' => 'max:255',
             // The column is NOT NULL - without a rule an empty choice ended
             // in a database error instead of a message.
@@ -55,6 +59,7 @@ class VMRequest extends FormRequest
             'server_id' => 'Host',
             'cluster_id' => 'Cluster',
             'name' => 'Name',
+            'kind' => 'Art',
             'services' => 'Dienste',
             'cidr' => 'CIDR',
             'operating_system_id' => 'Betriebssystem',

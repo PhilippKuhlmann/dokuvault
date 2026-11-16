@@ -199,16 +199,17 @@ class ServerMap
     }
 
     /**
-     * Guests grouped by kind - VMs, containers, the rest - with a count, or
-     * only the count for a user who may not see the VM list.
+     * Guests grouped by kind - VMs, then containers - with a count, or only
+     * the count for a user who may not see the VM list. The kind is a field
+     * of the VM (by hand or from the agent), so every guest has one.
      */
     protected function guestList(Collection $guests): array
     {
-        $order = ['qemu', 'lxc', 'other'];
-        $labels = ['qemu' => __('VMs'), 'lxc' => __('Container'), 'other' => __('Gäste')];
+        $order = ['vm', 'lxc'];
+        $labels = ['vm' => __('VMs'), 'lxc' => __('Container')];
 
         $groups = $guests
-            ->groupBy(fn (VM $vm) => in_array($vm->agent_details['type'] ?? null, ['qemu', 'lxc'], true) ? $vm->agent_details['type'] : 'other')
+            ->groupBy(fn (VM $vm) => $vm->istContainer() ? 'lxc' : 'vm')
             ->sortBy(fn ($group, string $kind) => array_search($kind, $order, true))
             ->map(fn (Collection $group, string $kind) => [
                 'label' => $labels[$kind],

@@ -2,6 +2,10 @@
 
 ## 26.11.16g
 
+### Added
+
+- **VM oder Container: als eigenes Feld.** Im VM-Formular und im Erfassungs-Assistenten gibt es jetzt „Art“ mit „VM“ oder „Container (LXC)“. Bisher wusste das nur der Bericht des Proxmox-Agenten; ein von Hand angelegter Gast stand im Serverplan deshalb nur als „Gast“. Der Serverplan teilt jetzt jeden Gast in VMs oder Container ein, die VM-Karte zeigt das Abzeichen danach. Der Proxmox-Agent setzt die Art bei jedem Lauf selbst; bestehende Gäste, die er als Container gemeldet hat, sind schon richtig eingeordnet, alle anderen gelten als VM.
+
 ### Changed
 
 - **„In VM umwandeln“ steht jetzt unter „Bearbeiten“** statt als eigener Knopf auf jeder Server-Karte – man braucht es selten. Im Bearbeiten-Dialog eines Servers unten links neben „Löschen“.

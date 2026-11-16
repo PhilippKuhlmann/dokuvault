@@ -80,6 +80,13 @@ $serverBauformen = [
     'tower' => 'Standserver (Tower)',
 ];
 
+// Kind of a guest: a whole virtual machine or a container on the host's
+// kernel. Used by the VM form and the documentation wizard alike.
+$vmArten = [
+    'vm' => 'VM',
+    'lxc' => 'Container (LXC)',
+];
+
 $serverTiefen = [
     1 => 'Volle Tiefe',
     0 => 'Halbe Tiefe',
@@ -479,6 +486,7 @@ return [
             // (checked in the migration) - see DocumentationWizard::RULE_OVERRIDES.
             'fields' => [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+                ['name' => 'kind', 'label' => 'Art', 'type' => 'select', 'options' => $vmArten, 'default' => 'vm'],
                 ['name' => 'server_id', 'label' => 'Host-Server', 'type' => 'select', 'options' => 'servers'],
                 ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'select', 'options' => 'operatingSystems'],
                 ['name' => 'ip_address', 'label' => 'IP-Adresse', 'type' => 'text'],
@@ -751,6 +759,9 @@ return [
         'appliance' => 'Appliance',
         'vm' => 'Virtuelle Maschine',
     ],
+
+    // The server map and the VM card group and mark by it.
+    'vm_kinds' => $vmArten,
 
     /*
     |--------------------------------------------------------------------------

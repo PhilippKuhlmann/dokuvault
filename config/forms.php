@@ -598,6 +598,10 @@ return [
             ['name' => 'site_id', 'label' => 'Standort', 'type' => 'standort',
                 'sichtbar_wenn' => ['server_id' => ['leer' => true], 'cluster_id' => ['leer' => true]]],
             ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
+            // VM or container: without it a guest entered by hand stood on
+            // the server map as a mere "Gast".
+            ['name' => 'kind', 'label' => 'Art', 'type' => 'optionen',
+                'quelle' => 'custom.vm_kinds', 'default' => 'vm'],
             ['name' => 'services', 'label' => 'Dienste', 'type' => 'dienste'],
             ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'auswahl',
                 'quelle' => OperatingSystem::class, 'anzeige' => 'name'],

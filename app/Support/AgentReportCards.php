@@ -57,8 +57,8 @@ class AgentReportCards
             __('Gäste') => $gaeste->isEmpty() ? [] : [
                 [__('Gesamt'), __(':gesamt (:vm VM, :lxc LXC)', [
                     'gesamt' => $gaeste->count(),
-                    'vm' => $gaeste->filter(fn (VM $vm) => ($vm->agent_details['type'] ?? null) === 'qemu')->count(),
-                    'lxc' => $gaeste->filter(fn (VM $vm) => ($vm->agent_details['type'] ?? null) === 'lxc')->count(),
+                    'vm' => $gaeste->reject(fn (VM $vm) => $vm->istContainer())->count(),
+                    'lxc' => $gaeste->filter(fn (VM $vm) => $vm->istContainer())->count(),
                 ])],
                 [__('Laufen'), (string) $laufend->count()],
             ],

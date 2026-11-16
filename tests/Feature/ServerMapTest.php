@@ -40,7 +40,7 @@ function serverMapFixture(): array
 
     VM::forceCreate([
         'customer_id' => $customer->id, 'site_id' => $site->id, 'cluster_id' => $cluster->id, 'server_id' => $host->id,
-        'name' => 'CT-Alt',
+        'name' => 'CT-Alt', 'kind' => 'lxc',
         'agent_details' => ['type' => 'lxc', 'status' => 'stopped', 'cores' => 1, 'memory_gb' => 0.5, 'disk_gb' => 8],
         'agent_reported_at' => now(),
     ]);
@@ -194,6 +194,17 @@ test('the services of hosts and guests stand on the map', function () {
     $this->get(route('servermap.index', $customer))->assertOk()
         ->assertSeeInOrder(['PVE-01', '>Proxmox<', '>Ceph<'], false)
         ->assertSeeInOrder(['VM-DC01', '>DC<', '>DNS<'], false);
+});
+
+test('a guest entered by hand stands under its kind, not under a mere "Gäste"', function () {
+    [$customer, $site, , $host] = serverMapFixture();
+    VM::forceCreate(['customer_id' => $customer->id, 'site_id' => $site->id, 'server_id' => $host->id, 'name' => 'CT-Hand', 'kind' => 'lxc']);
+    $this->actingAs(userWithPermissions(['server_viewAny', 'vm_viewAny']));
+
+    $gruppen = collect(app(ServerMap::class)->build($customer)[0]['columns'][0]['hosts'][0]['guests']['groups']);
+
+    expect($gruppen->pluck('label')->all())->toBe(['VMs', 'Container'])
+        ->and(collect($gruppen[1]['guests'])->pluck('name')->all())->toBe(['CT-Alt', 'CT-Hand']);
 });
 
 test('the sidebar links to the server map', function () {

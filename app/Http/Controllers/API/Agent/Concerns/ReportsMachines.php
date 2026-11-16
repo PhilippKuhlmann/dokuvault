@@ -111,6 +111,13 @@ trait ReportsMachines
                 $vmAttribute['agent_reported_at'] = now();
             }
 
+            // VM or container, as the hypervisor knows it. Only when reported:
+            // Hyper-V and VMware send no type, and a kind set by hand stays.
+            $typ = $gast['type'] ?? null;
+            if ($typ === 'lxc' || $typ === 'qemu') {
+                $vmAttribute['kind'] = $typ === 'lxc' ? 'lxc' : 'vm';
+            }
+
             // The BIOS UUID the hypervisor gave the guest - the Windows agent
             // inside reads the same and lands on this VM (windowsServer()).
             if ($uuid = $this->smbiosUuid($gast['smbios_uuid'] ?? null)) {

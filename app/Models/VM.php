@@ -96,6 +96,12 @@ class VM extends Model
         return $this->belongsTo(Server::class, 'server_id');
     }
 
+    /** A container (LXC) rather than a whole virtual machine. */
+    public function istContainer(): bool
+    {
+        return $this->kind === 'lxc';
+    }
+
     public function customer()
     {
         return $this->belongsTo(Customer::class);
