@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.11.16b
+
+### Changed
+
+- **Serverplan: ausgeschaltete Gäste lassen einen Host nicht mehr überbucht aussehen.** Der Balken am Host zeigt den Arbeitsspeicher der laufenden Gäste kräftig, den der ausgeschalteten blass dahinter, darunter etwa „48 GB laufend · 209,5 GB vergeben“. Gelb wird er nur noch, wenn schon die laufenden Gäste mehr bekommen haben, als eingebaut ist – vorher reichten dafür ein paar abgeschaltete Vorlagen. Die genauen Zahlen stehen im Tooltip.
+
 ## 26.11.16
 
 ### Added
