@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.11.16d
+
+### Added
+
+- **Serverplan: EOL-Abzeichen und Dienste.** Am Betriebssystem von Hosts und Gästen steht dasselbe Abzeichen wie in den Listen – rot „EOL“, wenn der Support vorbei ist, gelb „EOL bald“ im letzten halben Jahr. Darunter die gepflegten Dienste (von Hand, aus Proxmox-Tags oder Windows-Rollen) als kleine Kästchen in den Farben des Dienste-Katalogs. Der Plan beantwortet damit auch: Was läuft wo, und was ist veraltet?
+
 ## 26.11.16c
 
 ### Changed

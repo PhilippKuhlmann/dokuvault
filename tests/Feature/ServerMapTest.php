@@ -162,6 +162,40 @@ test('stopped guests do not make a host look overbooked', function () {
     expect($assigned['over'])->toBeTrue();
 });
 
+test('an operating system out of support carries the EOL badge of the lists', function () {
+    [$customer, $site, , $host] = serverMapFixture();
+    $alt = OperatingSystem::factory()->create(['name' => 'Windows Server 2012 R2', 'eol_date' => '2023-10-10']);
+    VM::forceCreate([
+        'customer_id' => $customer->id, 'site_id' => $site->id, 'server_id' => $host->id,
+        'name' => 'VM-Altlast', 'operating_system_id' => $alt->id,
+    ]);
+    $host->update(['operating_system_id' => OperatingSystem::factory()->create(['name' => 'Proxmox VE 7', 'eol_date' => '2024-07-31'])->id]);
+    $this->actingAs(userWithPermissions(['server_viewAny', 'vm_viewAny']));
+
+    // Host first, then the guest - each with its badge; VM-DC01 has none.
+    $this->get(route('servermap.index', $customer))->assertOk()
+        ->assertSeeInOrder(['PVE-01', 'Proxmox VE 7', 'Support endete am 31.07.2024'])
+        ->assertSeeInOrder(['VM-Altlast', 'Windows Server 2012 R2', 'Support endete am 10.10.2023']);
+});
+
+test('the services of hosts and guests stand on the map', function () {
+    [$customer, , , $host] = serverMapFixture();
+    $host->update(['services' => 'Proxmox,Ceph']);
+    VM::where('name', 'VM-DC01')->first()->update(['services' => 'DC, DNS,']);
+    $this->actingAs(userWithPermissions(['server_viewAny', 'vm_viewAny']));
+
+    $map = app(ServerMap::class)->build($customer);
+    $pve = $map[0]['columns'][0]['hosts'][0];
+
+    // Trimmed, empty entries gone.
+    expect($pve['services'])->toBe(['Proxmox', 'Ceph'])
+        ->and($pve['guests']['groups'][0]['guests'][0]['services'])->toBe(['DC', 'DNS']);
+
+    $this->get(route('servermap.index', $customer))->assertOk()
+        ->assertSeeInOrder(['PVE-01', '>Proxmox<', '>Ceph<'], false)
+        ->assertSeeInOrder(['VM-DC01', '>DC<', '>DNS<'], false);
+});
+
 test('the sidebar links to the server map', function () {
     [$customer] = serverMapFixture();
     $this->actingAs(userWithPermissions(['server_viewAny']));

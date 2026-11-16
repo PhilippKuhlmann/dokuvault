@@ -164,6 +164,9 @@ class ServerMap
             'url' => $this->url($server),
             'model' => trim($server->manufacturer.' '.$server->model) ?: null,
             'os' => $server->operatingSystem?->name ?? (isset($d['pve_version']) ? 'Proxmox VE '.$d['pve_version'] : null),
+            // For the EOL badge - the same one as in the lists.
+            'osModel' => $server->operatingSystem,
+            'services' => $this->services($server),
             'cpu' => $d['cpu'] ?? null,
             'facts' => array_values(array_filter([
                 isset($d['cores']) ? trans_choice(':count Kern|:count Kerne', (int) $d['cores']) : null,
@@ -236,8 +239,21 @@ class ServerMap
                 empty($d['disk_gb']) ? null : __(':menge Disk', ['menge' => AgentReportCards::gb((float) $d['disk_gb'])]),
             ])),
             'os' => $vm->operatingSystem?->name,
+            'osModel' => $vm->operatingSystem,
+            'services' => $this->services($vm),
             'address' => $this->address($vm),
         ];
+    }
+
+    /**
+     * The services documented on the device (by hand, or from Proxmox tags
+     * and Windows roles) - so the map tells what runs where.
+     *
+     * @return list<string>
+     */
+    protected function services(Server|VM $device): array
+    {
+        return array_values(array_filter(array_map('trim', (array) $device->services), 'filled'));
     }
 
     /** Reported as not running. Without a report it counts as running: nothing says otherwise. */

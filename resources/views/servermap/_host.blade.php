@@ -12,12 +12,24 @@
         @endif
     </div>
     <div class="truncate font-DINPro-bold text-gray-900 dark:text-gray-100" title="{{ $host['name'] }}">{{ $host['name'] }}</div>
-    @foreach (array_filter([$host['model'], $host['os'], $host['cpu']]) as $zeile)
-        <div class="truncate text-xs text-gray-500 dark:text-gray-400" title="{{ $zeile }}">{{ $zeile }}</div>
-    @endforeach
+    @if ($host['model'])
+        <div class="truncate text-xs text-gray-500 dark:text-gray-400" title="{{ $host['model'] }}">{{ $host['model'] }}</div>
+    @endif
+    @if ($host['os'])
+        {{-- The badge moves to the next line when it does not fit - squeezed
+             it broke into two lines and cut the system's name. --}}
+        <div class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-gray-500 dark:text-gray-400">
+            <span>{{ $host['os'] }}</span>
+            <span class="shrink-0 whitespace-nowrap"><x-eol :os="$host['osModel']" /></span>
+        </div>
+    @endif
+    @if ($host['cpu'])
+        <div class="truncate text-xs text-gray-500 dark:text-gray-400" title="{{ $host['cpu'] }}">{{ $host['cpu'] }}</div>
+    @endif
     @if ($host['facts'])
         <div class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-200">{{ implode(' · ', $host['facts']) }}</div>
     @endif
+    @include('servermap._services', ['services' => $host['services']])
     @if ($host['assigned'])
         {{-- Solid: memory of the running guests. Pale: that of the stopped
              ones on top, as far as the bar reaches. --}}

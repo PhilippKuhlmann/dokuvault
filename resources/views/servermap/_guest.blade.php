@@ -1,6 +1,7 @@
-{{-- One guest: name and address, the operating system on its own line,
-     then what it was given as chips - one long grey line was cut off and
-     hard to read. --}}
+{{-- One guest: name and address, the operating system on its own line
+     (with the EOL badge of the lists), then what it was given as grey
+     chips and the services it carries in their catalogue colours - one
+     long grey line was cut off and hard to read. --}}
 <div @class(['py-1.5', 'opacity-60' => $guest['stopped']])>
     <div class="flex items-baseline justify-between gap-2">
         @if ($guest['url'])
@@ -13,7 +14,10 @@
         </span>
     </div>
     @if ($guest['os'])
-        <div class="text-xs text-gray-600 dark:text-gray-300">{{ $guest['os'] }}</div>
+        <div class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-gray-600 dark:text-gray-300">
+            <span>{{ $guest['os'] }}</span>
+            <span class="shrink-0 whitespace-nowrap"><x-eol :os="$guest['osModel']" /></span>
+        </div>
     @endif
     @if ($guest['specs'])
         <div class="mt-1 flex flex-wrap gap-1">
@@ -22,4 +26,5 @@
             @endforeach
         </div>
     @endif
+    @include('servermap._services', ['services' => $guest['services']])
 </div>
