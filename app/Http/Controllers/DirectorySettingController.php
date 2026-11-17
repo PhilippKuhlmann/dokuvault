@@ -19,9 +19,25 @@ use Illuminate\Validation\Rule;
  */
 class DirectorySettingController extends Controller
 {
-    public function index()
+    public function index(DirectoryClient $verzeichnis)
     {
+        // The groups to pick from, once the connection is entered. Out of
+        // reach: the text field stays, and the page says why.
+        $gruppen = null;
+        $gruppenFehler = null;
+        if (LdapConfig::configured()) {
+            try {
+                $gruppen = $verzeichnis->groups();
+            } catch (DirectoryUnavailable $fehler) {
+                $gruppenFehler = $fehler->getMessage();
+            }
+        }
+
         return view('admin.directory.index', [
+            'gruppen' => $gruppen,
+            'gruppenFehler' => $gruppenFehler,
+            // DN -> name, to show a stored DN by its name in the list.
+            'gruppenNamen' => collect($gruppen ?? [])->mapWithKeys(fn ($g) => [mb_strtolower($g['dn']) => $g['name']])->all(),
             'enabled' => (bool) Setting::wert(LdapConfig::ENABLED),
             'host' => LdapConfig::host(),
             'port' => Setting::wert(LdapConfig::PORT),
@@ -135,14 +151,17 @@ class DirectorySettingController extends Controller
 
     public function storeGroup(Request $request)
     {
+        // Picked from the list (its DN) or typed by hand - the typed one
+        // wins, it is the deliberate exception.
         $daten = $request->validate([
-            'group' => ['required', 'string', 'max:500'],
+            'group' => ['nullable', 'string', 'max:500', 'required_without:group_manual'],
+            'group_manual' => ['nullable', 'string', 'max:500'],
             'role_id' => ['required', 'integer', Rule::exists('roles', 'id')->whereNull('deleted_at')],
-        ], [], ['group' => __('Gruppe'), 'role_id' => __('Rolle')]);
+        ], [], ['group' => __('Gruppe'), 'group_manual' => __('Gruppe'), 'role_id' => __('Rolle')]);
 
         DirectoryGroupRole::create([
             'source' => DirectoryLogin::SOURCE,
-            'group' => trim($daten['group']),
+            'group' => trim(($daten['group_manual'] ?? null) ?: $daten['group']),
             'role_id' => $daten['role_id'],
             'position' => (int) DirectoryGroupRole::where('source', DirectoryLogin::SOURCE)->max('position') + 1,
         ]);

@@ -55,6 +55,15 @@ class LdapConfig
             && filled(self::baseDn());
     }
 
+    /**
+     * Entered far enough to ask the directory - switched on or not. The
+     * groups can be picked before the sign-in is switched on.
+     */
+    public static function configured(): bool
+    {
+        return filled(self::host()) && filled(self::baseDn()) && filled(self::bindDn()) && self::bindPassword() !== null;
+    }
+
     public static function host(): ?string
     {
         return Setting::wert(self::HOST);

@@ -69,6 +69,47 @@ class PhpLdapClient implements DirectoryClient
         }
     }
 
+    /** Paged: AD hands out at most 1000 entries per search (MaxPageSize). */
+    public function groups(): array
+    {
+        $c = $this->connect();
+
+        try {
+            $this->bindService($c);
+
+            $gruppen = [];
+            $cookie = '';
+
+            do {
+                $suche = @ldap_search($c, (string) LdapConfig::baseDn(), '(objectClass=group)', ['samaccountname', 'cn'],
+                    0, 0, 0, LDAP_DEREF_NEVER,
+                    [['oid' => LDAP_CONTROL_PAGEDRESULTS, 'value' => ['size' => 500, 'cookie' => $cookie]]]);
+
+                if ($suche === false) {
+                    throw new DirectoryUnavailable(__('Die Gruppen konnten nicht gelesen werden: :grund', ['grund' => $this->reason($c)]));
+                }
+
+                $eintraege = ldap_get_entries($c, $suche);
+                for ($i = 0; $i < ($eintraege['count'] ?? 0); $i++) {
+                    $gruppen[] = [
+                        'dn' => $eintraege[$i]['dn'],
+                        'name' => $eintraege[$i]['samaccountname'][0] ?? $eintraege[$i]['cn'][0] ?? $eintraege[$i]['dn'],
+                    ];
+                }
+
+                $steuerung = [];
+                ldap_parse_result($c, $suche, $code, $dn, $text, $verweise, $steuerung);
+                $cookie = $steuerung[LDAP_CONTROL_PAGEDRESULTS]['value']['cookie'] ?? '';
+            } while ($cookie !== '' && count($gruppen) < 10000);
+
+            usort($gruppen, fn ($a, $b) => strnatcasecmp($a['name'], $b['name']));
+
+            return $gruppen;
+        } finally {
+            @ldap_unbind($c);
+        }
+    }
+
     public function test(): string
     {
         $c = $this->connect();

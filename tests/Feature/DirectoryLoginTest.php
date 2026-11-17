@@ -70,6 +70,18 @@ function adAttrappe(?DirectoryUser $konto = null, bool $weg = false): object
 
             return 'Verbindung steht.';
         }
+
+        public function groups(): array
+        {
+            if ($this->weg) {
+                throw new DirectoryUnavailable("Can't contact LDAP server");
+            }
+
+            return [
+                ['dn' => 'CN=DokuVault-Admins,OU=Gruppen,DC=firma,DC=local', 'name' => 'DokuVault-Admins'],
+                ['dn' => 'CN=DokuVault-Techniker,OU=Gruppen,DC=firma,DC=local', 'name' => 'DokuVault-Techniker'],
+            ];
+        }
     };
 
     $attrappe->konto = $konto;
@@ -373,6 +385,57 @@ test('a directory account gets no invitation', function () {
 
     Notification::assertNothingSentTo($ad);
     expect($ad->fresh()->invited_at)->toBeNull();
+});
+
+function adVerbindungEintragen(): void
+{
+    adEinschalten();
+    Setting::setzen(LdapConfig::BIND_DN, 'CN=svc,DC=firma,DC=local');
+    LdapConfig::setBindPassword('Dienst!2026');
+}
+
+test('once connected the groups are picked from a list, stored by DN and shown by name', function () {
+    adVerbindungEintragen();
+    adAttrappe(adKonto());
+    $techniker = Role::factory()->create(['name' => 'Technik']);
+    $this->actingAs(adminUser());
+
+    $this->get(route('admin.directory.index'))->assertOk()
+        ->assertSee('<option value="CN=DokuVault-Techniker,OU=Gruppen,DC=firma,DC=local"', false)
+        ->assertSee('Gruppe nicht in der Liste? Von Hand eingeben');
+
+    $this->post(route('admin.directory.groups.store'), [
+        'group' => 'CN=DokuVault-Techniker,OU=Gruppen,DC=firma,DC=local', 'role_id' => $techniker->id,
+    ])->assertSessionHasNoErrors();
+
+    expect(DirectoryGroupRole::sole()->group)->toBe('CN=DokuVault-Techniker,OU=Gruppen,DC=firma,DC=local');
+
+    // The list shows the name; a technician in that group gets the role.
+    $this->get(route('admin.directory.index'))->assertSeeInOrder(['1.', 'DokuVault-Techniker', 'Technik']);
+    expect(DirectoryGroupRole::roleFor('ldap', adKonto()->groups)->id)->toBe($techniker->id);
+});
+
+test('a name typed by hand wins over the picked group', function () {
+    adVerbindungEintragen();
+    adAttrappe(adKonto());
+    $rolle = Role::factory()->create();
+    $this->actingAs(adminUser());
+
+    $this->post(route('admin.directory.groups.store'), [
+        'group' => 'CN=DokuVault-Admins,OU=Gruppen,DC=firma,DC=local', 'group_manual' => 'Sonder-Gruppe', 'role_id' => $rolle->id,
+    ])->assertSessionHasNoErrors();
+
+    expect(DirectoryGroupRole::sole()->group)->toBe('Sonder-Gruppe');
+});
+
+test('with the directory out of reach the text field stays and says why', function () {
+    adVerbindungEintragen();
+    adAttrappe(adKonto(), weg: true);
+    $this->actingAs(adminUser());
+
+    $this->get(route('admin.directory.index'))->assertOk()
+        ->assertSee('Die Gruppen ließen sich nicht laden')
+        ->assertDontSee('<option value="CN=', false);
 });
 
 test('without the right to change settings the page stays closed', function () {

@@ -128,7 +128,12 @@
                     @foreach ($zuordnungen as $zuordnung)
                         <div class="flex flex-wrap items-center gap-3 px-3 py-2 text-sm">
                             <span class="w-6 shrink-0 text-right font-mono text-xs text-gray-400">{{ $loop->iteration }}.</span>
-                            <span class="min-w-0 flex-1 break-all text-gray-900 dark:text-gray-100">{{ $zuordnung->group }}</span>
+                            {{-- A stored DN reads by its name; the DN stays in the tooltip. --}}
+                            @php
+                                $anzeige = $gruppenNamen[mb_strtolower($zuordnung->group)]
+                                    ?? (preg_match('/^CN=([^,]+)/i', $zuordnung->group, $treffer) ? $treffer[1] : $zuordnung->group);
+                            @endphp
+                            <span class="min-w-0 flex-1 break-all text-gray-900 dark:text-gray-100" title="{{ $zuordnung->group }}">{{ $anzeige }}</span>
                             <span class="shrink-0 rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700 dark:bg-gray-700 dark:text-gray-200">{{ $zuordnung->role?->name }}</span>
                             <div class="flex shrink-0 items-center gap-1">
                                 @unless ($loop->first)
@@ -154,11 +159,26 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('admin.directory.groups.store') }}" class="flex flex-wrap items-end gap-2">
+            @if ($gruppenFehler)
+                <p class="mb-3 text-xs text-amber-700 dark:text-amber-400">{{ __('Die Gruppen ließen sich nicht laden (:grund). Den Namen bitte von Hand eintragen.', ['grund' => $gruppenFehler]) }}</p>
+            @endif
+
+            <form method="POST" action="{{ route('admin.directory.groups.store') }}" class="space-y-2">
                 @csrf
+                <div class="flex flex-wrap items-end gap-2">
                 <div class="min-w-0 flex-1">
                     <x-input.label for="group" :value="__('AD-Gruppe')" />
-                    <x-input.field id="group" name="group" class="mt-1 w-full" value="{{ old('group') }}" placeholder="DokuVault-Techniker" />
+                    @if ($gruppen)
+                        {{-- Picked, not typed: the DN is stored, it is unique where a
+                             name may not be. The list gets a search field by itself. --}}
+                        <x-input.select id="group" name="group" class="mt-1 w-full">
+                            @foreach ($gruppen as $gruppe)
+                                <option value="{{ $gruppe['dn'] }}" @selected(old('group') === $gruppe['dn'])>{{ $gruppe['name'] }}</option>
+                            @endforeach
+                        </x-input.select>
+                    @else
+                        <x-input.field id="group" name="group" class="mt-1 w-full" value="{{ old('group') }}" placeholder="DokuVault-Techniker" />
+                    @endif
                 </div>
                 <div>
                     <x-input.label for="role_id" :value="__('Rolle')" />
@@ -169,8 +189,18 @@
                     </x-input.select>
                 </div>
                 <x-input.button type="submit" :label="__('Zuordnen')" />
+                </div>
+
+                @if ($gruppen)
+                    {{-- The rare case: a group outside the base DN, say. --}}
+                    <details class="text-xs text-gray-500 dark:text-gray-400">
+                        <summary class="cursor-pointer select-none">{{ __('Gruppe nicht in der Liste? Von Hand eingeben') }}</summary>
+                        <x-input.field name="group_manual" class="mt-2 w-full" value="{{ old('group_manual') }}" placeholder="CN=…,OU=…,DC=…" />
+                    </details>
+                @else
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('Gruppenname (sAMAccountName), allgemeiner Name oder vollständiger DN.') }}</p>
+                @endif
             </form>
-            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ __('Gruppenname (sAMAccountName), allgemeiner Name oder vollständiger DN.') }}</p>
         </x-panel>
 
         {{-- Test sign-in: creates nothing --}}

@@ -1762,5 +1762,7 @@
     "Beim ersten Mal entsteht der Benutzer von selbst. AD-Benutzer richten danach die zweite Stufe ein – das AD prüft nur das Kennwort.": "The user is created on the first sign-in. AD users then set up the second factor – AD checks only the password.",
     "Wird jemand im AD gesperrt oder aus der Gruppe genommen, kommt er bei der nächsten Anmeldung nicht mehr hinein. Kennwörter werden nie in DokuVault gespeichert.": "Whoever is disabled in AD or removed from the group no longer gets in on the next sign-in. Passwords are never stored in DokuVault.",
     "Dieses Konto kommt aus dem Active Directory. Name, Benutzername, Kennwort und Rolle verwaltet das AD – die Rolle über „Gruppe → Rolle“ unter Administration › Anmeldung (AD). Sperren lässt es sich hier trotzdem.": "This account comes from Active Directory. Name, username, password and role are managed by AD – the role through “Group → role” under Administration › Sign-in (AD). It can still be locked here.",
-    "Anmeldung (AD)": "Sign-in (AD)"
+    "Anmeldung (AD)": "Sign-in (AD)",
+    "Gruppe nicht in der Liste? Von Hand eingeben": "Group not in the list? Enter it by hand",
+    "Die Gruppen ließen sich nicht laden (:grund). Den Namen bitte von Hand eintragen.": "The groups could not be loaded (:grund). Please enter the name by hand."
 }

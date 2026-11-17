@@ -20,6 +20,16 @@ interface DirectoryClient
     public function authenticate(string $login, string $password): ?DirectoryUser;
 
     /**
+     * Every group below the base DN, sorted by name - for picking one in
+     * "Gruppe -> Rolle" instead of typing its name.
+     *
+     * @return array<int, array{dn: string, name: string}>
+     *
+     * @throws DirectoryUnavailable
+     */
+    public function groups(): array;
+
+    /**
      * Connects with the service account and reads the base DN. Returns a
      * short confirmation.
      *

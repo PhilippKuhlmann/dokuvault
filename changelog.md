@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.11.17b
+
+### Changed
+
+- **AD-Gruppen auswählen statt eintippen.** Ist die Verbindung unter *Administration › Anmeldung (AD)* eingetragen, lädt „Gruppe → Rolle“ alle Gruppen aus dem AD in eine Auswahl mit Suchfeld – auch schon, bevor die Anmeldung eingeschaltet ist. Gespeichert wird der eindeutige DN der Gruppe, angezeigt ihr Name. Auch große Domänen erscheinen vollständig (das AD gibt Gruppen seitenweise heraus). Für Sonderfälle bleibt „Von Hand eingeben“; ist das AD gerade nicht erreichbar, steht wieder das Textfeld da und die Seite sagt, warum.
+
 ## 26.11.17
 
 ### Added
