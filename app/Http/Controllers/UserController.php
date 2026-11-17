@@ -65,6 +65,13 @@ class UserController extends Controller
     {
         abort_unless(auth()->user()->mayManage($user), 403);
 
+        // An invitation sets a DokuVault password - a directory account
+        // signs in with the directory's.
+        if ($user->auth_source !== 'local') {
+            return redirect(route('admin.user.edit', $user))
+                ->withErrors(['invitation' => __('AD-Konten bekommen keine Einladung – sie melden sich mit ihrem AD-Konto an.')]);
+        }
+
         return $this->einladungSenden($user, route('admin.user.edit', $user));
     }
 
@@ -155,6 +162,13 @@ class UserController extends Controller
         // Ein bereits gesperrter Zugang behaelt seinen Zeitpunkt: "seit wann"
         // should not start over on every save.
         $userData['deactivated_at'] = $sperren ? ($user->deactivated_at ?? now()) : null;
+
+        // A directory account: name, username, password, role, customer and
+        // the second factor belong to the directory and are set anew on
+        // every sign-in. Locking is DokuVault's own - and stays possible.
+        if ($user->auth_source !== 'local') {
+            $userData = array_intersect_key($userData, ['deactivated_at' => true]);
+        }
 
         $user->update($userData);
 

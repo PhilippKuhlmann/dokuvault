@@ -355,6 +355,10 @@ Dokumentation ist es genau das, was man nachschlägt. `--ohne-kennwoerter` schal
   PDF-Export, Dateiablage
 - **Benutzer einladen** – per E-Mail statt mit einem Kennwort, das man ihnen durchsagt: Der
   Eingeladene vergibt es sich selbst über einen Link
+- **Anmeldung über Active Directory** (optional) – Techniker melden sich mit ihrem AD-Konto an
+  (LDAPS), die Rolle kommt aus der AD-Gruppe; eingeladene Kunden und der lokale Admin bleiben
+  lokal. Einrichten, Verbindung und eine Probe-Anmeldung unter *Administration › Anmeldung (AD)*;
+  braucht die PHP-Erweiterung `ldap`
 - **Adminbereich** – rechtebasiert statt an eine Rolle verdrahtet: Kunden, Benutzer & Rollen,
   Auswahlmenüs, Einstellungen, Papierkorb, Aktivitätsprotokoll und API-Token sind eigene Rechte,
   frei kombinierbar je Rolle

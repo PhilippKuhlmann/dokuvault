@@ -37,7 +37,13 @@ class MobileLoginRequest extends LoginRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $zugang = $this->only('username', 'password');
+        // A directory account signs in from the app as well - same check as
+        // in the browser (LoginRequest::directoryUser), no session needed.
+        if ($this->directory()->handles((string) $this->input('username'))) {
+            return $this->directoryUser();
+        }
+
+        $zugang = $this->localCredentials();
 
         // validate() instead of attempt(): it signs nobody in and needs no
         // session. In exchange it fires no Failed event - that is written by

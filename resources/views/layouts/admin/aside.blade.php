@@ -57,6 +57,7 @@
                             <x-aside.dropdownlink :label="__('Fernwartung')" href="{{ route('admin.setting.index') }}" />
                             <x-aside.dropdownlink :label="__('Mail')" href="{{ route('admin.mail.index') }}" />
                             <x-aside.dropdownlink :label="__('Sicherheit')" href="{{ route('admin.security.index') }}" />
+                            <x-aside.dropdownlink :label="__('Anmeldung (AD)')" href="{{ route('admin.directory.index') }}" />
                             <x-aside.dropdownlink :label="__('Fristen')" href="{{ route('admin.retention.index') }}" />
                             <x-aside.dropdownlink :label="__('Benachrichtigungen')" href="{{ route('admin.notifications') }}" />
                             <x-aside.dropdownlink :label="__('Agenten')" href="{{ route('admin.agents.settings') }}" />

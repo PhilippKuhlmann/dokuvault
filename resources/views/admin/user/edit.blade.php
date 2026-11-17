@@ -30,20 +30,40 @@
         <x-create.main :header="__('Benutzer bearbeiten')" :labelsubmit="__('Speichern')" action="{{ route('admin.user.update', $user) }}">
             @method('PATCH')
 
-            <x-create.singlerow :label="__('Name')" name="name" :default="$user->name" />
+            @if ($user->auth_source !== 'local')
+                {{-- A directory account: what the directory owns is shown, not
+                     edited - it is set anew on every sign-in. The fields go
+                     along hidden so the form's validation passes; the
+                     controller takes only the lock from it. --}}
+                <div class="mb-4 rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm text-sky-800 dark:border-sky-800 dark:bg-sky-900/20 dark:text-sky-200">
+                    {{ __('Dieses Konto kommt aus dem Active Directory. Name, Benutzername, Kennwort und Rolle verwaltet das AD – die Rolle über „Gruppe → Rolle“ unter Administration › Anmeldung (AD). Sperren lässt es sich hier trotzdem.') }}
+                </div>
+                <input type="hidden" name="name" value="{{ $user->name }}">
+                <input type="hidden" name="username" value="{{ $user->username }}">
+                <input type="hidden" name="email" value="{{ $user->email }}">
+                <input type="hidden" name="role_id" value="{{ $user->role_id }}">
+                <dl class="mb-4 grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+                    <div><dt class="text-xs text-gray-500 dark:text-gray-400">{{ __('Name') }}</dt><dd class="text-gray-900 dark:text-gray-100">{{ $user->name }}</dd></div>
+                    <div><dt class="text-xs text-gray-500 dark:text-gray-400">{{ __('Benutzername') }}</dt><dd class="font-mono text-gray-900 dark:text-gray-100">{{ $user->username }}</dd></div>
+                    <div><dt class="text-xs text-gray-500 dark:text-gray-400">{{ __('E-Mail') }}</dt><dd class="text-gray-900 dark:text-gray-100">{{ $user->email ?: '—' }}</dd></div>
+                    <div><dt class="text-xs text-gray-500 dark:text-gray-400">{{ __('Rolle') }}</dt><dd class="text-gray-900 dark:text-gray-100">{{ $user->role?->name }}</dd></div>
+                </dl>
+            @else
+                <x-create.singlerow :label="__('Name')" name="name" :default="$user->name" />
 
-            <x-create.doublerow :label1="__('Benutzername')" name1="username" :default1="$user->username" :label2="__('Passwort')" name2="password" />
-            {{-- Leer lassen heisst hier "unveraendert" - die Regel gilt nur,
-                 wenn tatsaechlich eines eingetragen wird. --}}
-            <x-kennwortregel />
+                <x-create.doublerow :label1="__('Benutzername')" name1="username" :default1="$user->username" :label2="__('Passwort')" name2="password" />
+                {{-- Leer lassen heisst hier "unveraendert" - die Regel gilt nur,
+                     wenn tatsaechlich eines eingetragen wird. --}}
+                <x-kennwortregel />
 
-            <x-create.singlerow :label="__('E-Mail')" name="email" :default="$user->email" />
+                <x-create.singlerow :label="__('E-Mail')" name="email" :default="$user->email" />
 
-            <x-edit.select.role selector="{{ $user->role_id }}" :$roles/>
+                <x-edit.select.role selector="{{ $user->role_id }}" :$roles/>
 
-            <x-edit.select.customer selector="{{ $user->customer_id }}" :$customers/>
+                <x-edit.select.customer selector="{{ $user->customer_id }}" :$customers/>
 
-            <x-create.zweite-stufe :checked="$user->two_factor_required" />
+                <x-create.zweite-stufe :checked="$user->two_factor_required" />
+            @endif
 
             {{-- Nur beim Bearbeiten: Ein Zugang, der gesperrt angelegt wird,
                  ergaebe keinen Sinn. --}}
@@ -69,7 +89,10 @@
         @endif
 
         {{-- Im Spam gelandet, Link abgelaufen, versehentlich geloescht: das ist
-             der Alltag, nicht der Fehler. --}}
+             der Alltag, nicht der Fehler. Not for a directory account: it
+             signs in with the directory's password, an invitation would set
+             a DokuVault one. --}}
+        @if ($user->auth_source === 'local')
         <div class="mx-auto mt-4 max-w-3xl px-3">
             <div class="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 text-sm dark:border-gray-700 dark:bg-gray-800 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -104,6 +127,7 @@
                 @endif
             </div>
         </div>
+        @endif
 
         {{-- Verlorenes Telefon: sonst bliebe nur der Griff in die Datenbank. --}}
         @if ($user->hasTwoFactor())

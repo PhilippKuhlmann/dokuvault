@@ -4,6 +4,8 @@ namespace App\Http\Requests\Auth;
 
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\Directory\DirectoryLogin;
+use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -62,6 +64,14 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
+        // Through the directory, when the name is not a local account's -
+        // same counters, same lockout, same messages as locally.
+        if ($this->directory()->handles((string) $this->input('username'))) {
+            Auth::login($this->directoryUser(), $this->boolean('remember'));
+
+            return;
+        }
+
         // Die Sperre wird VOR der Anmeldung geprueft, nicht danach.
         //
         // Vorher stand sie hinter Auth::attempt(), und das war falsch:
@@ -85,7 +95,7 @@ class LoginRequest extends FormRequest
             // weiss ohnehin, dass es den Zugang gibt - "Zugangsdaten falsch"
             // schickte ihn nur los, ein Kennwort zu suchen, das er gar nicht
             // verloren hat. Wer es nicht kennt, erfaehrt hier nichts.
-            if (Auth::validate($this->only('username', 'password'))) {
+            if (Auth::validate($this->localCredentials())) {
                 throw ValidationException::withMessages([
                     'username' => __('Dieser Zugang ist deaktiviert. Wenden Sie sich an Ihre Administration.'),
                 ]);
@@ -95,7 +105,7 @@ class LoginRequest extends FormRequest
             $this->failedAttempt();
         }
 
-        if (! Auth::attempt($this->only('username', 'password'), $this->boolean('remember'))) {
+        if (! Auth::attempt($this->localCredentials(), $this->boolean('remember'))) {
             $this->failedAttempt();
         }
 
@@ -105,6 +115,54 @@ class LoginRequest extends FormRequest
         // hierher gehoert.
         RateLimiter::clear($this->throttleKey());
         RateLimiter::clear($this->herkunftKey());
+    }
+
+    protected function directory(): DirectoryLogin
+    {
+        return app(DirectoryLogin::class);
+    }
+
+    /**
+     * Username and password for a local account only. A directory account
+     * has a random password here - but should anyone ever set one (an old
+     * reset link, a hand edit), it still must not let them in past the
+     * directory, where they may long be locked.
+     *
+     * @return array<string, string>
+     */
+    protected function localCredentials(): array
+    {
+        return $this->only('username', 'password') + ['auth_source' => 'local'];
+    }
+
+    /**
+     * The DokuVault account of a directory sign-in - checked like a local
+     * one: wrong password counts against the limits, a locked account says
+     * so only once the password was right.
+     *
+     * @throws ValidationException
+     */
+    protected function directoryUser(): User
+    {
+        $nutzer = $this->directory()->login((string) $this->input('username'), (string) $this->input('password'));
+
+        if ($nutzer === null) {
+            // Only the username - the log never needs the password.
+            event(new Failed('web', null, ['username' => (string) $this->input('username')]));
+
+            $this->failedAttempt();
+        }
+
+        if ($nutzer->isDisabled()) {
+            throw ValidationException::withMessages([
+                'username' => __('Dieser Zugang ist deaktiviert. Wenden Sie sich an Ihre Administration.'),
+            ]);
+        }
+
+        RateLimiter::clear($this->throttleKey());
+        RateLimiter::clear($this->herkunftKey());
+
+        return $nutzer;
     }
 
     /**

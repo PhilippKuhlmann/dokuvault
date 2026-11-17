@@ -350,6 +350,10 @@ it is exactly what people look up. `--ohne-kennwoerter` turns that off.
   file storage
 - **Invite users** — by email rather than by reading a password out to them: the invitee sets
   their own via a link
+- **Sign-in through Active Directory** (optional) — technicians sign in with their AD account
+  (LDAPS), the role comes from their AD group; invited customers and the local admin stay local.
+  Set-up, a connection test and a trial sign-in under *Administration › Sign-in (AD)*; needs the
+  PHP extension `ldap`
 - **Admin area** — permission-based, not role-hardcoded: customers, users & roles, dropdowns,
   settings, recycle bin, activity log and API tokens are separate permissions, freely combinable
   per role

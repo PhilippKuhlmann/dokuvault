@@ -1,5 +1,21 @@
 # Changelog
 
+## 26.11.17
+
+### Added
+
+- **Anmeldung über ein lokales Active Directory, neben lokalen Benutzern.** Unter *Administration › Anmeldung (AD)* trägst du Domänencontroller (LDAPS oder STARTTLS), Basis-DN und ein Dienstkonto nur zum Lesen ein und ordnest AD-Gruppen Rollen zu. Techniker melden sich dann mit ihrem AD-Konto an – als „name“, „DOMÄNE\name“ oder „name@domain“ –, eingeladene Kunden und der lokale Admin weiter mit ihrem DokuVault-Kennwort. Gibt es einen lokalen Benutzer mit genau dem eingegebenen Namen, gilt immer er; ein AD-Benutzer gleichen Namens nimmt eine der anderen Schreibweisen und bleibt ein eigenes Konto.
+  - Beim ersten Login entsteht der Benutzer von selbst. Die Rolle kommt bei jeder Anmeldung neu aus der ersten zugeordneten Gruppe, in der jemand ist – höhere Rollen stehen oben, verschachtelte Gruppen zählen mit. Ohne passende Gruppe gibt es keinen Zugang; wer im AD gesperrt ist, kommt nicht herein.
+  - Das AD prüft nur das Kennwort: AD-Benutzer richten zusätzlich die zweite Stufe von DokuVault ein. Kennwörter werden nie in DokuVault gespeichert; das des Dienstkontos liegt verschlüsselt.
+  - Die Seite testet die Verbindung und eine Anmeldung, ohne jemanden anzumelden oder anzulegen: Sie zeigt die Gruppen eines Kontos und die Rolle, die es bekäme.
+  - Ist das AD nicht erreichbar, sagt die Anmeldung das; der lokale Admin kommt immer herein. Auch die App meldet AD-Benutzer an.
+  - In der Benutzerverwaltung sind Name, Benutzername, Kennwort und Rolle eines AD-Kontos nur zu sehen, nicht zu ändern; sperren lässt es sich weiterhin. Einladungen gibt es für AD-Konten nicht.
+  - Braucht die PHP-Erweiterung `ldap` (Debian/Ubuntu: `apt install php-ldap`). Ohne sie bleibt alles wie bisher, und die Seite sagt, was fehlt. Im Docker-Image ist sie dabei.
+
+### Security
+
+- **Lokale Kennwörter gelten nur für lokale Konten.** Anmeldung, „Kennwort vergessen“ und das Setzen eines neuen Kennworts übergehen AD-Konten. So kann sich niemand über ein lokal gesetztes Kennwort am AD vorbei anmelden – auch nicht, wenn die AD-Anmeldung abgeschaltet ist.
+
 ## 26.11.16g
 
 ### Added

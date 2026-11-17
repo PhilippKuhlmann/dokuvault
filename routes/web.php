@@ -8,6 +8,7 @@ use App\Http\Controllers\ChangelogController;
 use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DeviceModelController;
+use App\Http\Controllers\DirectorySettingController;
 use App\Http\Controllers\EolController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\IpPlanController;
@@ -152,6 +153,18 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             Route::post('/mail/test', [MailSettingController::class, 'test'])->name('admin.mail.test');
             Route::delete('/mail/password', [MailSettingController::class, 'deletePassword'])
                 ->name('admin.mail.password');
+
+            // Signing in through an on-premises Active Directory, next to
+            // local users; see App\Support\Directory.
+            Route::get('/directory', [DirectorySettingController::class, 'index'])->name('admin.directory.index');
+            Route::patch('/directory', [DirectorySettingController::class, 'update'])->name('admin.directory.update');
+            Route::delete('/directory/password', [DirectorySettingController::class, 'deletePassword'])->name('admin.directory.password');
+            Route::post('/directory/test', [DirectorySettingController::class, 'test'])->name('admin.directory.test');
+            Route::post('/directory/test-user', [DirectorySettingController::class, 'testUser'])->name('admin.directory.test-user');
+            Route::post('/directory/groups', [DirectorySettingController::class, 'storeGroup'])->name('admin.directory.groups.store');
+            Route::delete('/directory/groups/{directoryGroupRole}', [DirectorySettingController::class, 'destroyGroup'])->name('admin.directory.groups.destroy');
+            Route::post('/directory/groups/{directoryGroupRole}/{richtung}', [DirectorySettingController::class, 'moveGroup'])
+                ->whereIn('richtung', ['up', 'down'])->name('admin.directory.groups.move');
         });
 
         // Activity log - with search and filters, hence Livewire.

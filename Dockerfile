@@ -54,14 +54,16 @@ RUN npm run build
 # und mit PHP fuer jede noch so kleine CSS-Datei.
 FROM php:8.3-fpm-alpine
 
+# ldap: for signing in through an on-premises Active Directory (optional,
+# Administration > Anmeldung). libldap stays, openldap-dev only builds.
 RUN apk add --no-cache \
-        freetype libjpeg-turbo libpng libzip \
+        freetype libjpeg-turbo libpng libzip libldap \
         nginx supervisor \
     && apk add --no-cache --virtual .bau \
-        freetype-dev libjpeg-turbo-dev libpng-dev libzip-dev openssl-dev \
+        freetype-dev libjpeg-turbo-dev libpng-dev libzip-dev openssl-dev openldap-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-configure ftp --with-openssl-dir=/usr \
-    && docker-php-ext-install -j"$(nproc)" pdo_mysql gd zip opcache ftp \
+    && docker-php-ext-install -j"$(nproc)" pdo_mysql gd zip opcache ftp ldap \
     && apk del .bau
 
 WORKDIR /app

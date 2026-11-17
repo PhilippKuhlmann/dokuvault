@@ -49,8 +49,10 @@ class PasswordResetLinkController extends Controller
             ]);
         }
 
+        // Local accounts only: a directory account's password lives in the
+        // directory. A reset here would give it a second, local one.
         $status = Password::sendResetLink(
-            $request->only('username')
+            $request->only('username') + ['auth_source' => 'local']
         );
 
         return $status == Password::RESET_LINK_SENT

@@ -10,6 +10,8 @@ use App\Support\AlpineJson;
 use App\Support\BackupHealth;
 use App\Support\BackupSettings;
 use App\Support\Changelog;
+use App\Support\Directory\DirectoryClient;
+use App\Support\Directory\PhpLdapClient;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Auth;
@@ -34,7 +36,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        // The real directory; tests bind a fake (no domain controller in CI).
+        $this->app->bind(DirectoryClient::class, PhpLdapClient::class);
     }
 
     /**
