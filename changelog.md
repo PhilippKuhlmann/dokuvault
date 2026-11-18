@@ -1,5 +1,12 @@
 # Changelog
 
+## 26.11.18b
+
+### Added
+
+- **Stündlicher AD-Abgleich.** Jede Stunde prüft DokuVault alle AD-Konten gegen das Verzeichnis. Wer noch freigegeben ist, behält Zugang; Rolle, Name und E-Mail folgen dem AD. Wer im AD gesperrt oder gelöscht ist oder in keiner zugeordneten Gruppe mehr steckt, verliert sofort laufende Sitzungen, „Angemeldet bleiben“ und App-Zugänge – nicht erst bei der nächsten Anmeldung. Das Konto selbst bleibt mit seinem Verlauf bestehen und kommt wieder herein, sobald das AD es freigibt. Jeder beendete Zugang steht einmal im Aktivitätsprotokoll. Ist das AD nicht erreichbar, ändert der Abgleich nichts. Läuft nur bei eingeschalteter AD-Anmeldung, von Hand mit `php artisan directory:sync`.
+- **Hyper-V und VMware melden die BIOS-Kennung ihrer VMs** – wie seit 26.11.16e Proxmox. Läuft der Windows-Agent in einer solchen VM, landen seine Angaben auf der VM statt auf einem zusätzlichen Server-Eintrag. VMware braucht dafür vSphere 7.0 U1 oder neuer.
+
 ## 26.11.18
 
 ### Added

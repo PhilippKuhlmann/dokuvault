@@ -66,6 +66,11 @@ Schedule::command('queue:work --stop-when-empty --max-time=55 --tries=1 --memory
 // from 04:00 with 24 hours retention stayed until the run after next.
 Schedule::command('pdf:purge')->hourlyAt($demo ? 20 : 0);
 
+// Directory accounts against AD: whoever was disabled there or left every
+// mapped group loses running sessions and app tokens within the hour, not
+// only at the next sign-in. Does nothing while the AD sign-in is off.
+Schedule::command('directory:sync')->hourlyAt(10)->withoutOverlapping(30);
+
 // Trim the activity log after the configured deadline, together with the
 // passwords hanging on it. Daily, not hourly: the deadline is given in days,
 // and an hour's precision would be feigned accuracy.

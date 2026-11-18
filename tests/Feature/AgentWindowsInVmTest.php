@@ -97,6 +97,23 @@ test('Windows in a known VM lands on that VM, not on a server', function () {
         ->and($vm->ipAddresses()->count())->toBe(1);
 });
 
+test('Hyper-V and VMware report the BIOS UUID too, and Windows inside lands on that VM', function (string $pfad, string $uuid) {
+    [$customer, , $plain] = windowsVmKunde();
+
+    $this->withToken($plain)->postJson($pfad, [
+        'host' => ['identifier' => 'hv-host', 'hostname' => 'HV01'],
+        'guests' => [['identifier' => 'gast-1', 'name' => 'DC-VM', 'smbios_uuid' => $uuid]],
+    ])->assertOk();
+
+    expect(VM::where('customer_id', $customer->id)->sole()->smbios_uuid)->toBe(VM_UUID);
+
+    windowsInDerVm($plain)->assertOk()->assertJson(['type' => 'vm', 'vm' => 'DC-VM']);
+})->with([
+    // Hyper-V's BIOSGUID comes in braces and capitals.
+    'Hyper-V' => ['/api/agent/hyperv', '{1ECCDB20-8AC0-4A86-B80D-3F7C188FEB66}'],
+    'VMware' => ['/api/agent/vmware', VM_UUID],
+]);
+
 test('the byte-swapped spelling of the UUID matches as well', function () {
     [, , $plain] = windowsVmKunde();
     proxmoxMitWindowsGast($plain)->assertOk();

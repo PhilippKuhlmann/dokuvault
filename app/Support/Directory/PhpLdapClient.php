@@ -69,6 +69,47 @@ class PhpLdapClient implements DirectoryClient
         }
     }
 
+    public function find(string $guid): ?DirectoryUser
+    {
+        if (! preg_match('/^[0-9a-f]{32}$/i', $guid)) {
+            return null;
+        }
+
+        $c = $this->connect();
+
+        try {
+            $this->bindService($c);
+
+            // objectGUID is binary: every byte escaped as \xx in the filter.
+            $wert = implode('', array_map(fn ($byte) => '\\'.$byte, str_split(strtolower($guid), 2)));
+            $filter = '(&(objectCategory=person)(objectClass=user)(objectGUID='.$wert.')'.self::NOT_DISABLED.')';
+            $suche = @ldap_search($c, (string) LdapConfig::baseDn(), $filter,
+                ['objectguid', 'samaccountname', 'userprincipalname', 'displayname', 'mail'], 0, 2);
+
+            if ($suche === false) {
+                throw new DirectoryUnavailable(__('Die Benutzersuche ist fehlgeschlagen: :grund', ['grund' => $this->reason($c)]));
+            }
+
+            $eintraege = ldap_get_entries($c, $suche);
+            if (($eintraege['count'] ?? 0) !== 1) {
+                return null;
+            }
+
+            $e = $eintraege[0];
+
+            return new DirectoryUser(
+                guid: strtolower($guid),
+                username: $e['samaccountname'][0] ?? '',
+                upn: $e['userprincipalname'][0] ?? null,
+                name: $e['displayname'][0] ?? null,
+                email: $e['mail'][0] ?? null,
+                groups: $this->groupsOf($c, $e['dn']),
+            );
+        } finally {
+            @ldap_unbind($c);
+        }
+    }
+
     /** Paged: AD hands out at most 1000 entries per search (MaxPageSize). */
     public function groups(): array
     {

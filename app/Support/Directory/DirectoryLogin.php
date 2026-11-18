@@ -101,6 +101,8 @@ class DirectoryLogin
             // The directory checks only the password - DokuVault's second
             // factor on top (decided 17.11.2026; Entra brings its own MFA).
             'two_factor_required' => true,
+            // Back in the group, back in: the hourly sync looks at it again.
+            'directory_revoked_at' => null,
         ])->save();
 
         return $nutzer;

@@ -55,6 +55,22 @@ function Get-GastBetriebssystem($vm) {
     return $null
 }
 
+<#
+  BIOS-UUID der VM (BIOSGUID). Windows in der VM liest denselben Wert
+  (Win32_ComputerSystemProduct) - DokuVault legt dessen Meldung dann auf
+  diese VM, statt die Maschine ein zweites Mal als Server zu fuehren.
+#>
+function Get-BiosGuid($vm) {
+    try {
+        $einstellung = Get-CimInstance -Namespace root\virtualization\v2 -ClassName Msvm_VirtualSystemSettingData `
+            -Filter "VirtualSystemIdentifier='$($vm.Id.Guid)' AND VirtualSystemType='Microsoft:Hyper-V:System:Realized'" -ErrorAction Stop |
+            Select-Object -First 1
+        return $einstellung.BIOSGUID
+    } catch {
+        return $null
+    }
+}
+
 $guests = @()
 foreach ($vm in Get-VM) {
     # Erste echte IPv4-Adresse ueber alle Netzwerkkarten der VM. 169.254.*
@@ -64,9 +80,10 @@ foreach ($vm in Get-VM) {
         Select-Object -First 1
 
     $guests += [PSCustomObject]@{
-        identifier = $vm.Id.Guid
-        name       = $vm.Name
-        type       = 'hyperv'
+        identifier  = $vm.Id.Guid
+        smbios_uuid = Get-BiosGuid $vm
+        name        = $vm.Name
+        type        = 'hyperv'
         os         = Get-GastBetriebssystem $vm
         ip         = $vmIp
         status     = $vm.State.ToString()

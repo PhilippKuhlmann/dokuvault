@@ -20,6 +20,15 @@ interface DirectoryClient
     public function authenticate(string $login, string $password): ?DirectoryUser;
 
     /**
+     * The enabled account with this objectGUID (hex) and its groups - or
+     * null when it was deleted or disabled. No password: the hourly sync
+     * asks this with the service account.
+     *
+     * @throws DirectoryUnavailable
+     */
+    public function find(string $guid): ?DirectoryUser;
+
+    /**
      * Every group below the base DN, sorted by name - for picking one in
      * "Gruppe -> Rolle" instead of typing its name.
      *

@@ -94,18 +94,24 @@ foreach ($h in $hosts) {
     $guests = @()
     foreach ($vm in $vms) {
         $gastOs = $null
+        $biosUuid = $null
         try {
             $detail = Get-VSphere "/api/vcenter/vm/$($vm.vm)"
             $gastOs = Get-Betriebssystem $detail.guest_OS
+            # BIOS-UUID (ab vSphere 7.0 U1 unter identity). Windows in der
+            # VM liest denselben Wert - DokuVault legt dessen Meldung dann
+            # auf diese VM statt auf einen zweiten Eintrag als Server.
+            if ($detail.identity) { $biosUuid = $detail.identity.bios_uuid }
         } catch {
             # Eine VM, die gerade migriert oder gesperrt ist, liefert keine
             # Details. Das ist kein Grund, den ganzen Lauf abzubrechen.
         }
 
         $guests += [PSCustomObject]@{
-            identifier = $vm.vm
-            name       = $vm.name
-            type       = 'vmware'
+            identifier  = $vm.vm
+            smbios_uuid = $biosUuid
+            name        = $vm.name
+            type        = 'vmware'
             os         = $gastOs
             status     = $vm.power_state
             cores      = [int]$vm.cpu_count

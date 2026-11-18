@@ -72,6 +72,15 @@ function adAttrappe(?DirectoryUser $konto = null, bool $weg = false): object
             return 'Verbindung steht.';
         }
 
+        public function find(string $guid): ?DirectoryUser
+        {
+            if ($this->weg) {
+                throw new DirectoryUnavailable("Can't contact LDAP server");
+            }
+
+            return $this->konto?->guid === $guid ? $this->konto : null;
+        }
+
         public function groups(): array
         {
             if ($this->weg) {
@@ -460,6 +469,101 @@ test('with the directory out of reach the text field stays and says why', functi
     $this->get(route('admin.directory.index'))->assertOk()
         ->assertSee('Die Gruppen ließen sich nicht laden')
         ->assertDontSee('<option value="CN=', false);
+});
+
+function adNutzer(Role $rolle, array $mehr = []): User
+{
+    return User::factory()->create($mehr + [
+        'username' => 'FIRMA\pkuhlmann', 'auth_source' => 'ldap', 'external_id' => AD_GUID, 'role_id' => $rolle->id,
+    ]);
+}
+
+test('the hourly sync lets the role follow the groups', function () {
+    adEinschalten();
+    [$admin, $techniker] = adRollen();
+    $nutzer = adNutzer($techniker);
+    adAttrappe(adKonto(['DokuVault-Admins']));
+
+    $this->artisan('directory:sync')->expectsOutputToContain('1 geprüft, 1 aktualisiert, 0 Zugang beendet.')->assertSuccessful();
+
+    expect($nutzer->fresh()->role_id)->toBe($admin->id)
+        ->and($nutzer->fresh()->directory_revoked_at)->toBeNull();
+});
+
+test('disabled in AD, the sync ends sessions and app tokens at once, and only once', function () {
+    adEinschalten();
+    [, $techniker] = adRollen();
+    $nutzer = adNutzer($techniker, ['remember_token' => 'alt']);
+    // As the app sign-in creates it (LoginController): ability "mobil".
+    $nutzer->createToken('App iPhone', ['mobil']);
+    $hash = $nutzer->password;
+    // Not found: deleted or disabled in the directory.
+    adAttrappe(null);
+
+    $this->artisan('directory:sync')->expectsOutputToContain('1 Zugang beendet')->assertSuccessful();
+
+    $nutzer->refresh();
+    expect($nutzer->password)->not->toBe($hash)
+        ->and($nutzer->remember_token)->not->toBe('alt')
+        ->and($nutzer->directory_revoked_at)->not->toBeNull()
+        ->and($nutzer->tokens()->count())->toBe(0)
+        // The account stays, with its history.
+        ->and($nutzer->isDisabled())->toBeFalse();
+
+    expect(Activity::where('event', 'ad_abgleich')->pluck('description')->all())
+        ->toBe(['Zugang beendet: im AD gesperrt oder gelöscht']);
+
+    // The next hour does not do it again.
+    $this->artisan('directory:sync')->expectsOutputToContain('0 geprüft')->assertSuccessful();
+    expect(Activity::where('event', 'ad_abgleich')->count())->toBe(1);
+});
+
+test('out of every mapped group, access ends as well', function () {
+    adEinschalten();
+    [, $techniker] = adRollen();
+    $nutzer = adNutzer($techniker);
+    adAttrappe(adKonto(['Domain Users']));
+
+    $this->artisan('directory:sync')->assertSuccessful();
+
+    expect($nutzer->fresh()->directory_revoked_at)->not->toBeNull()
+        ->and(Activity::where('event', 'ad_abgleich')->value('description'))
+        ->toBe('Zugang beendet: in keiner freigegebenen Gruppe mehr');
+});
+
+test('with AD out of reach the sync changes nothing', function () {
+    adEinschalten();
+    [, $techniker] = adRollen();
+    $nutzer = adNutzer($techniker);
+    $hash = $nutzer->password;
+    adAttrappe(adKonto(), weg: true);
+
+    $this->artisan('directory:sync')->assertFailed();
+
+    expect($nutzer->fresh()->password)->toBe($hash)
+        ->and($nutzer->fresh()->directory_revoked_at)->toBeNull();
+});
+
+test('back in the group, a sign-in lifts the mark', function () {
+    adEinschalten();
+    [, $techniker] = adRollen();
+    $nutzer = adNutzer($techniker, ['directory_revoked_at' => now()]);
+    adAttrappe(adKonto());
+
+    $this->post('/login', ['username' => 'pkuhlmann', 'password' => 'richtig'])->assertSessionHasNoErrors();
+
+    expect($nutzer->fresh()->directory_revoked_at)->toBeNull();
+    $this->assertAuthenticatedAs($nutzer->fresh());
+});
+
+test('with the AD sign-in off the sync does nothing', function () {
+    [, $techniker] = adRollen();
+    $nutzer = adNutzer($techniker);
+    adAttrappe(null);
+
+    $this->artisan('directory:sync')->expectsOutputToContain('nichts zu tun')->assertSuccessful();
+
+    expect($nutzer->fresh()->directory_revoked_at)->toBeNull();
 });
 
 test('without the right to change settings the page stays closed', function () {
