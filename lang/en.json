@@ -1764,5 +1764,8 @@
     "Dieses Konto kommt aus dem Active Directory. Name, Benutzername, Kennwort und Rolle verwaltet das AD – die Rolle über „Gruppe → Rolle“ unter Administration › Anmeldung (AD). Sperren lässt es sich hier trotzdem.": "This account comes from Active Directory. Name, username, password and role are managed by AD – the role through “Group → role” under Administration › Sign-in (AD). It can still be locked here.",
     "Anmeldung (AD)": "Sign-in (AD)",
     "Gruppe nicht in der Liste? Von Hand eingeben": "Group not in the list? Enter it by hand",
-    "Die Gruppen ließen sich nicht laden (:grund). Den Namen bitte von Hand eintragen.": "The groups could not be loaded (:grund). Please enter the name by hand."
+    "Die Gruppen ließen sich nicht laden (:grund). Den Namen bitte von Hand eintragen.": "The groups could not be loaded (:grund). Please enter the name by hand.",
+    "Ohne Verschlüsselung (389) – nicht empfohlen": "Without encryption (389) – not recommended",
+    "Die AD-Anmeldung läuft ohne Verschlüsselung.": "AD sign-in runs without encryption.",
+    "Bei jeder Anmeldung gehen das Kennwort des Technikers und das des Dienstkontos lesbar durchs Netz – wer mitschneidet, hat echte Domänenkonten. Viele Domänencontroller lehnen das ohnehin ab (LDAP-Signierung). Nur in einem abgeschotteten Netz nutzen; besser STARTTLS oder LDAPS.": "On every sign-in the technician's password and the service account's cross the network readable – whoever listens in has real domain accounts. Many domain controllers refuse it anyway (LDAP signing). Use it only in a closed network; STARTTLS or LDAPS are better."
 }

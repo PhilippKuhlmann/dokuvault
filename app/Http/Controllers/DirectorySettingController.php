@@ -42,6 +42,7 @@ class DirectorySettingController extends Controller
             'host' => LdapConfig::host(),
             'port' => Setting::wert(LdapConfig::PORT),
             'encryption' => LdapConfig::encryption(),
+            'unverschluesselt' => LdapConfig::unencrypted(),
             'verifyCert' => LdapConfig::verifyCert(),
             'baseDn' => LdapConfig::baseDn(),
             'bindDn' => LdapConfig::bindDn(),
@@ -60,7 +61,7 @@ class DirectorySettingController extends Controller
             'enabled' => ['nullable', 'boolean'],
             'host' => ['nullable', 'string', 'max:255', 'required_if_accepted:enabled'],
             'port' => ['nullable', 'integer', 'between:1,65535'],
-            'encryption' => ['required', Rule::in(['ldaps', 'starttls'])],
+            'encryption' => ['required', Rule::in(['ldaps', 'starttls', 'none'])],
             'verify_cert' => ['nullable', 'boolean'],
             'base_dn' => ['nullable', 'string', 'max:500', 'required_if_accepted:enabled'],
             'bind_dn' => ['nullable', 'string', 'max:500', 'required_if_accepted:enabled'],
@@ -74,6 +75,19 @@ class DirectorySettingController extends Controller
             'bind_password' => __('Kennwort'),
             'domain' => __('Domäne (NetBIOS)'),
         ]);
+
+        // Who switched the encryption off - and back on - belongs in the
+        // log: from then on passwords cross the network readable.
+        $vorher = LdapConfig::unencrypted();
+        $nachher = $daten['encryption'] === 'none';
+        if ($vorher !== $nachher) {
+            activity()
+                ->event('einstellung')
+                ->causedBy(auth()->user())
+                ->log($nachher
+                    ? 'AD-Anmeldung ohne Verschlüsselung eingestellt'
+                    : 'AD-Anmeldung wieder verschlüsselt');
+        }
 
         // ?? null: a field left out of the request (an older form, a
         // script) is "empty", not an error.

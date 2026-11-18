@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.11.18
+
+### Added
+
+- **AD-Anmeldung auch ohne Verschlüsselung (LDAP auf Port 389).** Unter *Administration › Anmeldung (AD)* gibt es als dritte Wahl „Ohne Verschlüsselung (389) – nicht empfohlen“, für ein abgeschottetes Netz oder einen Domänencontroller ohne Zertifikat. Solange sie gespeichert ist, steht oben auf der Seite eine rote Warnung: Das Kennwort des Technikers und das des Dienstkontos gehen dann lesbar durchs Netz, und viele Domänencontroller lehnen das wegen LDAP-Signierung ohnehin ab. Wer die Verschlüsselung ab- oder wieder anschaltet, steht im Aktivitätsprotokoll.
+
 ## 26.11.17b
 
 ### Changed

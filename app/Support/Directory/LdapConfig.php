@@ -22,7 +22,12 @@ class LdapConfig
 
     public const PORT = 'ldap_port';
 
-    /** "ldaps" (port 636) or "starttls" (port 389, then TLS). Never plain. */
+    /**
+     * "ldaps" (port 636), "starttls" (port 389, then TLS) or "none" (port
+     * 389, plain). "none" sends every password readable across the network
+     * and many domain controllers refuse it (LDAP signing) - offered for a
+     * closed lab network, with a warning on the page and in the log.
+     */
     public const ENCRYPTION = 'ldap_encryption';
 
     /** Off only for a self-signed certificate the server does not trust. */
@@ -76,7 +81,15 @@ class LdapConfig
 
     public static function encryption(): string
     {
-        return Setting::wert(self::ENCRYPTION) === 'starttls' ? 'starttls' : 'ldaps';
+        $wert = Setting::wert(self::ENCRYPTION);
+
+        return in_array($wert, ['starttls', 'none'], true) ? $wert : 'ldaps';
+    }
+
+    /** Passwords cross the network readable. */
+    public static function unencrypted(): bool
+    {
+        return self::encryption() === 'none';
     }
 
     public static function verifyCert(): bool

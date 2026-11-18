@@ -10,6 +10,7 @@ use App\Support\Directory\DirectoryUser;
 use App\Support\Directory\LdapConfig;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use Spatie\Activitylog\Models\Activity;
 
 /*
  * Signing in through an on-premises Active Directory next to local users.
@@ -296,6 +297,29 @@ test('the settings page saves the connection, the password encrypted and kept wh
     $this->get(route('admin.directory.index'))->assertOk()
         ->assertSee('dc02.firma.local')
         ->assertDontSee('Dienst!2026');
+});
+
+test('without encryption is possible, warned about on the page and logged', function () {
+    $this->actingAs(adminUser());
+    $felder = ['enabled' => '1', 'host' => 'dc01.firma.local', 'base_dn' => 'DC=firma,DC=local', 'bind_dn' => 'CN=svc,DC=firma,DC=local'];
+
+    $this->patch(route('admin.directory.update'), $felder + ['encryption' => 'none'])->assertSessionHasNoErrors();
+
+    expect(LdapConfig::encryption())->toBe('none')
+        ->and(LdapConfig::unencrypted())->toBeTrue()
+        // Plain LDAP listens on 389.
+        ->and(LdapConfig::port())->toBe(389);
+
+    $this->get(route('admin.directory.index'))->assertOk()
+        ->assertSee('Die AD-Anmeldung läuft ohne Verschlüsselung.')
+        ->assertSee('<option value="none" selected', false);
+
+    // Back to encrypted: the warning goes, both steps stand in the log.
+    $this->patch(route('admin.directory.update'), $felder + ['encryption' => 'ldaps'])->assertSessionHasNoErrors();
+    $this->get(route('admin.directory.index'))->assertDontSee('Die AD-Anmeldung läuft ohne Verschlüsselung.');
+
+    expect(Activity::where('event', 'einstellung')->pluck('description')->all())
+        ->toBe(['AD-Anmeldung ohne Verschlüsselung eingestellt', 'AD-Anmeldung wieder verschlüsselt']);
 });
 
 test('switched on, server and base DN are required', function () {

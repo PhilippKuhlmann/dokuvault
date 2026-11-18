@@ -30,6 +30,14 @@
             </div>
         @endunless
 
+        @if ($unverschluesselt)
+            {{-- Stays as long as the setting does - not a one-time notice. --}}
+            <div class="max-w-3xl rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/25 dark:text-red-300" role="alert">
+                <div class="font-semibold">{{ __('Die AD-Anmeldung läuft ohne Verschlüsselung.') }}</div>
+                <p class="mt-1">{{ __('Bei jeder Anmeldung gehen das Kennwort des Technikers und das des Dienstkontos lesbar durchs Netz – wer mitschneidet, hat echte Domänenkonten. Viele Domänencontroller lehnen das ohnehin ab (LDAP-Signierung). Nur in einem abgeschotteten Netz nutzen; besser STARTTLS oder LDAPS.') }}</p>
+            </div>
+        @endif
+
         {{-- Connection --}}
         <form method="POST" action="{{ route('admin.directory.update') }}" class="max-w-3xl space-y-4">
             @csrf
@@ -57,8 +65,9 @@
                 <div>
                     <x-input.label for="encryption" :value="__('Verschlüsselung')" />
                     <x-input.select id="encryption" name="encryption" class="mt-1 w-full">
-                        {{-- No plain LDAP: the password of every technician would cross the network readable. --}}
-                        @foreach (['ldaps' => 'LDAPS (636)', 'starttls' => 'STARTTLS (389)'] as $wert => $beschriftung)
+                        {{-- "Ohne" last and named for what it is: the password of
+                             every technician crosses the network readable. --}}
+                        @foreach (['ldaps' => 'LDAPS (636)', 'starttls' => 'STARTTLS (389)', 'none' => __('Ohne Verschlüsselung (389) – nicht empfohlen')] as $wert => $beschriftung)
                             <option value="{{ $wert }}" @selected(old('encryption', $encryption) === $wert)>{{ $beschriftung }}</option>
                         @endforeach
                     </x-input.select>
