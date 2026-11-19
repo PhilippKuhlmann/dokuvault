@@ -310,7 +310,8 @@ test('the settings page saves the connection, the password encrypted and kept wh
 
 test('without encryption is possible, warned about on the page and logged', function () {
     $this->actingAs(adminUser());
-    $felder = ['enabled' => '1', 'host' => 'dc01.firma.local', 'base_dn' => 'DC=firma,DC=local', 'bind_dn' => 'CN=svc,DC=firma,DC=local'];
+    // require_2fa as the form always sends it - left out it counts as "off".
+    $felder = ['enabled' => '1', 'host' => 'dc01.firma.local', 'base_dn' => 'DC=firma,DC=local', 'bind_dn' => 'CN=svc,DC=firma,DC=local', 'require_2fa' => '1'];
 
     $this->patch(route('admin.directory.update'), $felder + ['encryption' => 'none'])->assertSessionHasNoErrors();
 
@@ -407,6 +408,65 @@ test('in the user admin a directory account can be locked, but not given another
         ->and($ad->role_id)->toBe($techniker->id)
         ->and($ad->username)->toBe('FIRMA\pkuhlmann')
         ->and($ad->password)->toBe($hash);
+});
+
+test('with the switch off a new directory account needs no second factor', function () {
+    adEinschalten();
+    Setting::setzen(LdapConfig::REQUIRE_2FA, '0');
+    adRollen();
+    adAttrappe(adKonto());
+
+    $this->post('/login', ['username' => 'pkuhlmann', 'password' => 'richtig'])->assertSessionHasNoErrors();
+
+    expect(User::where('auth_source', 'ldap')->sole()->two_factor_required)->toBeFalse();
+});
+
+test('the second factor is set per user and a sign-in leaves it alone', function () {
+    adEinschalten();
+    [, $techniker] = adRollen();
+    // Required by default when the account was created - switched off for this one.
+    $nutzer = adNutzer($techniker, ['two_factor_required' => true]);
+    $this->actingAs(adminUser());
+
+    $this->patch(route('admin.user.update', $nutzer), [
+        'name' => $nutzer->name, 'username' => $nutzer->username, 'email' => $nutzer->email, 'role_id' => $nutzer->role_id,
+        // Checkbox unticked: not sent.
+    ])->assertSessionHasNoErrors();
+    expect($nutzer->fresh()->two_factor_required)->toBeFalse();
+
+    // The next AD sign-in does not put it back.
+    auth()->logout();
+    adAttrappe(adKonto());
+    $this->post('/login', ['username' => 'pkuhlmann', 'password' => 'richtig'])->assertSessionHasNoErrors();
+    expect($nutzer->fresh()->two_factor_required)->toBeFalse();
+});
+
+test('the user admin can demand the second factor of a directory account', function () {
+    [, $techniker] = adRollen();
+    $nutzer = adNutzer($techniker, ['two_factor_required' => false]);
+    $this->actingAs(adminUser());
+
+    $this->get(route('admin.user.edit', $nutzer))->assertOk()->assertSee('name="two_factor_required"', false);
+
+    $this->patch(route('admin.user.update', $nutzer), [
+        'name' => $nutzer->name, 'username' => $nutzer->username, 'email' => $nutzer->email, 'role_id' => $nutzer->role_id,
+        'two_factor_required' => '1',
+    ])->assertSessionHasNoErrors();
+
+    expect($nutzer->fresh()->two_factor_required)->toBeTrue();
+});
+
+test('changing the start value for new directory accounts is logged', function () {
+    $this->actingAs(adminUser());
+    $felder = ['host' => 'dc01.firma.local', 'encryption' => 'ldaps', 'base_dn' => 'DC=firma,DC=local'];
+
+    $this->patch(route('admin.directory.update'), $felder + ['require_2fa' => '0'])->assertSessionHasNoErrors();
+    expect(LdapConfig::requireTwoFactor())->toBeFalse();
+
+    $this->get(route('admin.directory.index'))->assertSee('Neue AD-Benutzer müssen die zweite Stufe einrichten');
+
+    expect(Activity::where('event', 'einstellung')->pluck('description')->all())
+        ->toBe(['Neue AD-Benutzer müssen die zweite Stufe nicht mehr einrichten']);
 });
 
 test('a directory account gets no invitation', function () {

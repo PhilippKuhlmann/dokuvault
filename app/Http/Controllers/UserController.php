@@ -163,11 +163,12 @@ class UserController extends Controller
         // should not start over on every save.
         $userData['deactivated_at'] = $sperren ? ($user->deactivated_at ?? now()) : null;
 
-        // A directory account: name, username, password, role, customer and
-        // the second factor belong to the directory and are set anew on
-        // every sign-in. Locking is DokuVault's own - and stays possible.
+        // A directory account: name, username, password, role and customer
+        // belong to the directory and are set anew on every sign-in. Locking
+        // and the second factor are DokuVault's own - per user, so admins
+        // can be made to use it and others not.
         if ($user->auth_source !== 'local') {
-            $userData = array_intersect_key($userData, ['deactivated_at' => true]);
+            $userData = array_intersect_key($userData, ['deactivated_at' => true, 'two_factor_required' => true]);
         }
 
         $user->update($userData);

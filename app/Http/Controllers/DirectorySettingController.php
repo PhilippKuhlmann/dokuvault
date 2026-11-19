@@ -44,6 +44,7 @@ class DirectorySettingController extends Controller
             'encryption' => LdapConfig::encryption(),
             'unverschluesselt' => LdapConfig::unencrypted(),
             'verifyCert' => LdapConfig::verifyCert(),
+            'requireTwoFactor' => LdapConfig::requireTwoFactor(),
             'baseDn' => LdapConfig::baseDn(),
             'bindDn' => LdapConfig::bindDn(),
             // The password never goes out again - only whether one is set.
@@ -63,6 +64,7 @@ class DirectorySettingController extends Controller
             'port' => ['nullable', 'integer', 'between:1,65535'],
             'encryption' => ['required', Rule::in(['ldaps', 'starttls', 'none'])],
             'verify_cert' => ['nullable', 'boolean'],
+            'require_2fa' => ['nullable', 'boolean'],
             'base_dn' => ['nullable', 'string', 'max:500', 'required_if_accepted:enabled'],
             'bind_dn' => ['nullable', 'string', 'max:500', 'required_if_accepted:enabled'],
             'bind_password' => ['nullable', 'string', 'max:255'],
@@ -96,6 +98,19 @@ class DirectorySettingController extends Controller
         Setting::setzen(LdapConfig::PORT, ($daten['port'] ?? null) ?: null);
         Setting::setzen(LdapConfig::ENCRYPTION, $daten['encryption']);
         Setting::setzen(LdapConfig::VERIFY_CERT, $request->boolean('verify_cert') ? '1' : '0');
+
+        // The second factor for new directory accounts: a security decision,
+        // so it is logged like the encryption.
+        $zweiteStufe = $request->boolean('require_2fa');
+        if ($zweiteStufe !== LdapConfig::requireTwoFactor()) {
+            activity()
+                ->event('einstellung')
+                ->causedBy(auth()->user())
+                ->log($zweiteStufe
+                    ? 'Neue AD-Benutzer müssen die zweite Stufe einrichten'
+                    : 'Neue AD-Benutzer müssen die zweite Stufe nicht mehr einrichten');
+        }
+        Setting::setzen(LdapConfig::REQUIRE_2FA, $zweiteStufe ? '1' : '0');
         Setting::setzen(LdapConfig::BASE_DN, ($daten['base_dn'] ?? null) ?: null);
         Setting::setzen(LdapConfig::BIND_DN, ($daten['bind_dn'] ?? null) ?: null);
         Setting::setzen(LdapConfig::DOMAIN, ($daten['domain'] ?? null) ?: null);

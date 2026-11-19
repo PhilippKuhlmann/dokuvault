@@ -98,12 +98,18 @@ class DirectoryLogin
             'customer_id' => null,
             'auth_source' => self::SOURCE,
             'external_id' => $konto->guid,
-            // The directory checks only the password - DokuVault's second
-            // factor on top (decided 17.11.2026; Entra brings its own MFA).
-            'two_factor_required' => true,
             // Back in the group, back in: the hourly sync looks at it again.
             'directory_revoked_at' => null,
-        ])->save();
+        ]);
+
+        // The second factor: the start value from Administration > Anmeldung
+        // (AD) for a new account only. Afterwards it is set per user in the
+        // user admin - admins yes, others no - and a sign-in leaves it alone.
+        if (! $nutzer->exists) {
+            $nutzer->two_factor_required = LdapConfig::requireTwoFactor();
+        }
+
+        $nutzer->save();
 
         return $nutzer;
     }

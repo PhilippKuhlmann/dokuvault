@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.11.19
+
+### Changed
+
+- **Die zweite Stufe für AD-Benutzer ist keine Pflicht mehr, sondern einstellbar.** Unter *Administration › Anmeldung (AD)* legt „Neue AD-Benutzer müssen die zweite Stufe einrichten“ fest, was beim ersten Anmelden gilt (an wie bisher). Danach stellst du es je Benutzer unter *Benutzer › Bearbeiten* ein – etwa Pflicht für Admins aus dem AD, nicht für andere. Die AD-Anmeldung überschreibt diese Wahl nicht mehr. Eine Änderung des Schalters steht im Aktivitätsprotokoll.
+
 ## 26.11.18b
 
 ### Added

@@ -43,6 +43,18 @@ class LdapConfig
     /** NetBIOS name ("KUHLMANN") - prefix of the usernames of directory accounts. */
     public const DOMAIN = 'ldap_domain';
 
+    /**
+     * Whether a directory account created on its first sign-in must set up
+     * DokuVault's second factor. Only the start value: afterwards it is set
+     * per user in the user admin, and a sign-in leaves it alone.
+     */
+    public const REQUIRE_2FA = 'ldap_require_2fa';
+
+    public static function requireTwoFactor(): bool
+    {
+        return Setting::wert(self::REQUIRE_2FA, '1') !== '0';
+    }
+
     public static function extensionLoaded(): bool
     {
         return extension_loaded('ldap');

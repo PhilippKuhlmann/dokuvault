@@ -36,7 +36,7 @@
                      along hidden so the form's validation passes; the
                      controller takes only the lock from it. --}}
                 <div class="mb-4 rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm text-sky-800 dark:border-sky-800 dark:bg-sky-900/20 dark:text-sky-200">
-                    {{ __('Dieses Konto kommt aus dem Active Directory. Name, Benutzername, Kennwort und Rolle verwaltet das AD – die Rolle über „Gruppe → Rolle“ unter Administration › Anmeldung (AD). Sperren lässt es sich hier trotzdem.') }}
+                    {{ __('Dieses Konto kommt aus dem Active Directory. Name, Benutzername, Kennwort und Rolle verwaltet das AD – die Rolle über „Gruppe → Rolle“ unter Administration › Anmeldung (AD). Die zweite Stufe und das Sperren stellst du hier ein.') }}
                 </div>
                 <input type="hidden" name="name" value="{{ $user->name }}">
                 <input type="hidden" name="username" value="{{ $user->username }}">
@@ -48,6 +48,9 @@
                     <div><dt class="text-xs text-gray-500 dark:text-gray-400">{{ __('E-Mail') }}</dt><dd class="text-gray-900 dark:text-gray-100">{{ $user->email ?: '—' }}</dd></div>
                     <div><dt class="text-xs text-gray-500 dark:text-gray-400">{{ __('Rolle') }}</dt><dd class="text-gray-900 dark:text-gray-100">{{ $user->role?->name }}</dd></div>
                 </dl>
+
+                {{-- DokuVault's own: per user, the directory leaves it alone. --}}
+                <x-create.zweite-stufe :checked="$user->two_factor_required" />
             @else
                 <x-create.singlerow :label="__('Name')" name="name" :default="$user->name" />
 

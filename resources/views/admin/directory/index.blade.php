@@ -106,6 +106,18 @@
                 </div>
             </div>
 
+            {{-- Only the start value for new directory accounts; afterwards
+                 it is set per user in the user admin. --}}
+            <label class="flex items-start gap-2 text-sm text-gray-800 dark:text-gray-200">
+                <input type="hidden" name="require_2fa" value="0">
+                <input type="checkbox" name="require_2fa" value="1" @checked(old('require_2fa', $requireTwoFactor))
+                    class="mt-0.5 h-4 w-4 rounded border-gray-300 text-cerulean-600 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700">
+                <span>
+                    {{ __('Neue AD-Benutzer müssen die zweite Stufe einrichten') }}
+                    <span class="block text-xs text-gray-500 dark:text-gray-400">{{ __('Gilt beim ersten Anmelden. Danach legst du es je Benutzer unter Benutzer › Bearbeiten fest – etwa Pflicht für Admins, nicht für andere. Das AD prüft nur das Kennwort.') }}</span>
+                </span>
+            </label>
+
             <div class="flex flex-wrap items-center gap-2">
                 <x-input.button type="submit" :label="__('Speichern')" />
             </div>
