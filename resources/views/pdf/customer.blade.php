@@ -146,6 +146,21 @@
         .ports th { text-align: left; color: #9ca3af; border-bottom: 1px solid #e5e7eb; padding: 3px 8px 3px 0; font-weight: 600; font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.9px; }
         .ports td { padding: 3px 8px 3px 0; border-bottom: 1px solid #f3f4f6; color: #111827; }
 
+        /* Serverplan: der Baum als eingerueckte Bloecke - DomPDF kann
+           weder Flex noch Grid. */
+        .smap-site { font-weight: 600; font-size: 12.5px; color: #1f3d6e; border-left: 2px solid #3391f0; padding-left: 8px; margin: 2mm 0 3mm; page-break-after: avoid; }
+        .smap-cluster { margin: 0 0 2mm 10px; padding: 4px 8px; background: #f0f9ff; border: 1px solid #bae6fd; font-weight: 600; font-size: 11px; color: #111827; page-break-after: avoid; }
+        .smap-hosts { margin-left: 16px; border-left: 1px solid #bae6fd; padding-left: 8px; }
+        .smap-host { margin: 0 0 4mm 10px; page-break-inside: avoid; }
+        .smap-host-title { font-weight: 600; font-size: 11px; color: #111827; }
+        .smap-kind { font-weight: 600; font-size: 8px; text-transform: uppercase; letter-spacing: 0.9px; color: #9ca3af; margin-right: 4px; }
+        .smap-facts { font-weight: normal; font-size: 10px; color: #6b7280; margin-left: 6px; }
+        .smap-line { font-weight: normal; font-size: 9.5px; color: #4b5563; line-height: 1.4; }
+        .smap-caption { font-weight: 600; font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.9px; color: #9ca3af; margin: 3mm 0 2mm 10px; }
+        .smap-guests { margin-top: 3px; table-layout: fixed; }
+        .smap-guests td { font-size: 9.5px; overflow-wrap: break-word; }
+        .smap-stopped td { color: #9ca3af; }
+
         /* Rack-Frontansicht: Tabelle, weil DomPDF kein Grid kann */
         .rack-block { page-break-inside: avoid; margin: 0 0 6mm 10px; }
         .rack-caption { font-weight: 600; font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.9px; color: #9ca3af; margin-bottom: 4px; }
@@ -339,6 +354,18 @@
     @endforeach
 
     <x-pdf.chapter :title="__('Server & Storage')" />
+
+    {{-- The server map first: the overview before the cards. Built with the
+         rights of whoever ordered the export, like every section. --}}
+    @if ($mayView(\App\Models\Server::class))
+        @php $serverMap = app(\App\Support\ServerMap::class)->build($customer, null, $pdfOwner); @endphp
+        @if (collect($serverMap)->contains(fn ($e) => $e['columns'] || $e['standalone'] || $e['unhosted']))
+            <div class="section">
+                <div class="heading" data-toc="{{ __('Serverplan') }}">{{ __('Serverplan') }}</div>
+                @include('pdf._servermap', ['sites' => $serverMap])
+            </div>
+        @endif
+    @endif
 
     <x-pdf.section :title="__('Cluster')" :items="$customer->clusters()->with('servers')->get()" :groups="[
         'Cluster' => ['Art' => fn($c) => $c->typeLabel(), 'Knoten' => fn($c) => $c->servers->pluck('name')->implode(', '), 'Notiz' => 'note'],

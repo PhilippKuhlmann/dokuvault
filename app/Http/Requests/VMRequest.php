@@ -47,6 +47,9 @@ class VMRequest extends FormRequest
             // The column is NOT NULL - without a rule an empty choice ended
             // in a database error instead of a message.
             'operating_system_id' => 'required',
+            'cores' => 'nullable|integer|min:1|max:65535',
+            'memory_gb' => 'nullable|numeric|min:0|max:9999999',
+            'disk_gb' => 'nullable|numeric|min:0|max:999999999',
             'remoteID' => '',
             'remotePassword' => '',
         ];
@@ -63,6 +66,9 @@ class VMRequest extends FormRequest
             'services' => 'Dienste',
             'cidr' => 'CIDR',
             'operating_system_id' => 'Betriebssystem',
+            'cores' => 'Kerne',
+            'memory_gb' => 'Arbeitsspeicher',
+            'disk_gb' => 'Festplatte',
             'remoteID' => Setting::remoteAccess()['id_label'],
             'remotePassword' => Setting::remoteAccess()['password_label'],
         ];

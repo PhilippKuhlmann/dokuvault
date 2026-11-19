@@ -10,7 +10,7 @@
             <span class="truncate font-medium text-gray-900 dark:text-gray-100" title="{{ $guest['name'] }}">{{ $guest['name'] }}</span>
         @endif
         <span class="shrink-0 font-mono text-xs text-gray-500 dark:text-gray-400 tabular-nums">
-            @if ($guest['stopped'])<span class="mr-1 rounded bg-gray-100 px-1 font-sans text-[10px] text-gray-500 dark:bg-gray-700 dark:text-gray-400">{{ __('aus') }}</span>@endif{{ $guest['address'] }}
+            @if ($guest['backup'] === false)<span class="mr-1 rounded bg-amber-100 px-1 font-sans text-[10px] text-amber-800 dark:bg-amber-900/40 dark:text-amber-300" title="{{ __('In keinem Backup-Job von Cluster oder Host enthalten') }}">{{ __('kein Backup') }}</span>@endif@if ($guest['stopped'])<span class="mr-1 rounded bg-gray-100 px-1 font-sans text-[10px] text-gray-500 dark:bg-gray-700 dark:text-gray-400">{{ __('aus') }}</span>@endif{{ $guest['address'] }}
         </span>
     </div>
     @if ($guest['os'])

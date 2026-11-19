@@ -108,6 +108,13 @@
                     'Passwort' => [$eintrag, 'remotePassword'],
                 ]" />
 
+                {{-- By hand, for a guest no agent reports. --}}
+                <x-minitablecard :title="__('Ressourcen')" :array="[
+                    'Kerne' => $eintrag->cores,
+                    'Arbeitsspeicher' => $eintrag->memory_gb !== null ? \App\Support\AgentReportCards::gb((float) $eintrag->memory_gb) : null,
+                    'Festplatte' => $eintrag->disk_gb !== null ? \App\Support\AgentReportCards::gb((float) $eintrag->disk_gb) : null,
+                ]" />
+
                 <x-agentcard :device="$eintrag" :bloecke="\App\Support\AgentReportCards::vm($eintrag)" />
 
                 <x-minitagcard :title="__('Dienste')" :array="$eintrag->services" />

@@ -66,6 +66,10 @@
                         ? __(config('custom.server_depths')[(int) $eintrag->full_depth] ?? '')
                         : null,
                     'Höheneinheiten' => $eintrag->form_factor === 'rack' ? $eintrag->height_units.' HE' : null,
+                    // By hand - what an agent reports stands in its own card.
+                    'CPU' => $eintrag->cpu,
+                    'Kerne' => $eintrag->cores,
+                    'Arbeitsspeicher' => $eintrag->memory_gb !== null ? \App\Support\AgentReportCards::gb((float) $eintrag->memory_gb) : null,
                 ]" />
 
                 <x-agentcard :device="$eintrag" :bloecke="\App\Support\AgentReportCards::server($eintrag)" />

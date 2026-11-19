@@ -1,5 +1,15 @@
 # Changelog
 
+## 26.11.19b
+
+### Added
+
+- **Serverplan: Speicher an Host und Cluster.** Was der Proxmox-Agent an Storages meldet, steht jetzt mit Name, Art und Größe auf dem Plan. Lokaler Speicher (local, LVM, ZFS) steht am Host. Gemeinsamer Speicher (Ceph, NFS, Proxmox Backup Server) steht einmal am Cluster statt an jedem Knoten. Gezeigt wird die Größe, nicht die Belegung; ein Storage, den der Host gerade nicht erreicht, fehlt.
+- **Serverplan: „Ausgeschaltete ausblenden“.** Ein Schalter oben rechts blendet ausgeschaltete Gäste wie Vorlagen und Reserve-VMs aus. Der Host sagt dann, wie viele ausgeblendet sind; seine RAM-Anzeige zählt weiterhin alle mit. Der Zustand steht in der Adresse und bleibt beim Neuladen erhalten.
+- **Serverplan: Hinweis „kein Backup“.** Ein Proxmox-Gast, den kein gemeldeter vzdump-Job seines Clusters oder Hosts mitnimmt, trägt ein gelbes „kein Backup“. Die Gästekarte zählt solche Gäste oben. Gibt es für Cluster oder Host keinen gemeldeten Job oder nur einen Pool-Job, steht kein Hinweis da – lieber keiner als ein falscher.
+- **CPU, Kerne und Arbeitsspeicher von Hand** für Server und VMs, die kein Agent meldet, etwa einen Host ohne Agent oder einen vServer beim Anbieter. Server haben dafür die Felder CPU, Kerne und Arbeitsspeicher (GB), VMs Kerne, Arbeitsspeicher (GB) und Festplatte (GB). Der Serverplan nutzt sie, wo kein Agent etwas meldet; was ein Agent meldet, hat Vorrang. Die Karten zeigen die Werte unter „Hardware“ bzw. „Ressourcen“.
+- **Serverplan im PDF-Export.** Das Kapitel „Server & Storage“ beginnt mit dem Serverplan: je Standort Cluster, Hosts mit Hardware, Diensten und Speicher und darunter alle Gäste als Tabelle mit Art, Betriebssystem, Ressourcen, Adresse und Hinweis („aus“, „kein Backup“). Wie überall im PDF gilt, was der Besteller sehen darf: ohne VM-Recht nur die Anzahl der Gäste, ohne Server-Recht kein Plan.
+
 ## 26.11.19
 
 ### Changed

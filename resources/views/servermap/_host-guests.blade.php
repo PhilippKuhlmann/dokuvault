@@ -3,7 +3,7 @@
      A host with one kind only gets a single card, without a fork. --}}
 @php
     $cards = array_map(fn ($group) => [
-        'list' => ['count' => $group['count'], 'visible' => $list['visible'], 'groups' => [$group]],
+        'list' => ['count' => $group['count'], 'unprotected' => $group['unprotected'], 'visible' => $list['visible'], 'groups' => [$group]],
         'title' => $group['label'],
     ], $list['groups']);
 @endphp

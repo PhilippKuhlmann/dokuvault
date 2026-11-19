@@ -10,5 +10,8 @@
     "If you did not request a password reset, no further action is required.": "Wenn Sie kein neues Kennwort angefordert haben, müssen Sie nichts tun – Ihr bisheriges Kennwort bleibt gültig.",
     ":anzahl neues Gerät gefunden|:anzahl neue Geräte gefunden": ":anzahl neues Gerät gefunden|:anzahl neue Geräte gefunden",
     ":count Host|:count Hosts": ":count Host|:count Hosts",
-    ":count Kern|:count Kerne": ":count Kern|:count Kerne"
+    ":count Kern|:count Kerne": ":count Kern|:count Kerne",
+    ":count ausgeschalteter Gast ausgeblendet|:count ausgeschaltete Gäste ausgeblendet": ":count ausgeschalteter Gast ausgeblendet|:count ausgeschaltete Gäste ausgeblendet",
+    ":count ohne Backup|:count ohne Backup": ":count ohne Backup|:count ohne Backup",
+    ":count Gast|:count Gäste": ":count Gast|:count Gäste"
 }

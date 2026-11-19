@@ -1,8 +1,20 @@
 <x-app-layout :$customer>
     <div class="p-3 sm:p-5">
         <div class="text-3xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Serverplan') }}</div>
-        <div class="text-sm text-gray-500 dark:text-gray-400 mb-5">
-            {{ __('Cluster, Hosts und ihre Gäste – mit CPU, Kernen, Arbeitsspeicher, Betriebssystem und Adresse. Was die Agenten melden, steht von selbst da.') }}
+        <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+                {{ __('Cluster, Hosts und ihre Gäste – mit CPU, Kernen, Arbeitsspeicher, Betriebssystem und Adresse. Was die Agenten melden, steht von selbst da.') }}
+            </div>
+            {{-- A link, not a script: the state sits in the address and
+                 survives a reload. --}}
+            <a href="{{ route('servermap.index', $runningOnly ? [$customer] : [$customer, 'running' => 1]) }}"
+                class="inline-flex shrink-0 items-center gap-2 self-start rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 hover:border-cerulean-400 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-cerulean-500"
+                role="switch" aria-checked="{{ $runningOnly ? 'true' : 'false' }}">
+                <span @class(['relative inline-block h-4 w-7 rounded-full transition-colors', 'bg-cerulean-500' => $runningOnly, 'bg-gray-300 dark:bg-gray-600' => ! $runningOnly])>
+                    <span @class(['absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all', 'left-3.5' => $runningOnly, 'left-0.5' => ! $runningOnly])></span>
+                </span>
+                {{ __('Ausgeschaltete ausblenden') }}
+            </a>
         </div>
 
         @forelse ($sites as $entry)
@@ -21,10 +33,7 @@
                             @foreach ($entry['columns'] as $column)
                                 <div class="flex flex-col items-center">
                                     @if ($column['cluster'])
-                                        @include('networkmap._node', [
-                                            'node' => ['name' => $column['cluster']['name'], 'type' => $column['cluster']['type'], 'url' => $column['cluster']['url'], 'detail' => implode(' · ', $column['cluster']['facts'])],
-                                            'class' => 'border-sky-200 bg-sky-50 dark:border-sky-800 dark:bg-sky-900/20',
-                                        ])
+                                        @include('servermap._cluster', ['cluster' => $column['cluster']])
                                         @if ($column['hosts'] || $column['loose'])
                                             <div class="network-map-stem"></div>
                                             <div class="network-map-branches">
@@ -47,7 +56,9 @@
                                     @else
                                         @foreach ($column['hosts'] as $host)
                                             @include('servermap._host')
-                                            @include('servermap._host-guests', ['list' => $host['guests']])
+                                            @if ($host['guests'])
+                                                @include('servermap._host-guests', ['list' => $host['guests']])
+                                            @endif
                                         @endforeach
                                     @endif
                                 </div>

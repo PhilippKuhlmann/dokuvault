@@ -30,6 +30,7 @@
         <div class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-200">{{ implode(' · ', $host['facts']) }}</div>
     @endif
     @include('servermap._services', ['services' => $host['services']])
+    @include('servermap._storages', ['storages' => $host['storages']])
     @if ($host['assigned'])
         {{-- Solid: memory of the running guests. Pale: that of the stopped
              ones on top, as far as the bar reaches. --}}
@@ -42,5 +43,8 @@
             </div>
             <div @class(['mt-0.5 truncate text-[11px]', 'text-gray-500 dark:text-gray-400' => ! $host['assigned']['over'], 'text-amber-600 dark:text-amber-400' => $host['assigned']['over']])>{{ $host['assigned']['text'] }}</div>
         </div>
+    @endif
+    @if ($host['hidden'])
+        <div class="mt-1 text-[11px] text-gray-400 dark:text-gray-500">{{ trans_choice(':count ausgeschalteter Gast ausgeblendet|:count ausgeschaltete Gäste ausgeblendet', $host['hidden']) }}</div>
     @endif
 </{{ $tag }}>

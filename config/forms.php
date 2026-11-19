@@ -553,6 +553,12 @@ return [
                 'default' => 1, 'sichtbar_wenn' => ['form_factor' => 'rack'], 'gruppe' => 'Grunddaten'],
             ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'auswahl',
                 'quelle' => OperatingSystem::class, 'anzeige' => 'name', 'gruppe' => 'System'],
+            // By hand, for a server no agent reports - what an agent reports
+            // stands first on the server map. Text with a hint instead of
+            // type=number: the browser would refuse 0.5.
+            ['name' => 'cpu', 'label' => 'CPU', 'type' => 'text', 'gruppe' => 'System'],
+            ['name' => 'cores', 'label' => 'Kerne', 'type' => 'text', 'platzhalter' => '16', 'gruppe' => 'System'],
+            ['name' => 'memory_gb', 'label' => 'Arbeitsspeicher (GB)', 'type' => 'text', 'platzhalter' => '64', 'gruppe' => 'System'],
             // 'auswahl' filters by customer_id itself - a foreign cluster is
             // therefore not even on offer.
             ['name' => 'cluster_id', 'label' => 'Cluster', 'type' => 'auswahl',
@@ -605,6 +611,10 @@ return [
             ['name' => 'services', 'label' => 'Dienste', 'type' => 'dienste'],
             ['name' => 'operating_system_id', 'label' => 'Betriebssystem', 'type' => 'auswahl',
                 'quelle' => OperatingSystem::class, 'anzeige' => 'name'],
+            // What it was given, by hand - for a guest no agent reports.
+            ['name' => 'cores', 'label' => 'Kerne', 'type' => 'text', 'platzhalter' => '4'],
+            ['name' => 'memory_gb', 'label' => 'Arbeitsspeicher (GB)', 'type' => 'text', 'platzhalter' => '8'],
+            ['name' => 'disk_gb', 'label' => 'Festplatte (GB)', 'type' => 'text', 'platzhalter' => '100'],
             ['name' => 'remoteID', 'label' => 'Fernwartungs-ID', 'type' => 'text'],
             ['name' => 'remotePassword', 'label' => 'Fernwartungs-Kennwort', 'type' => 'text'],
         ],

@@ -13,6 +13,12 @@
     <div class="border-b border-gray-100 bg-gray-50 px-3 py-1.5 dark:border-gray-700 dark:bg-gray-700/40">
         <span class="font-DINPro-bold text-gray-900 dark:text-gray-100">{{ $title ?? __('Gäste') }}</span>
         <span class="text-xs text-gray-400">· {{ $list['count'] }}</span>
+        {{-- Left out of every vzdump job of the cluster or host - said up
+             here as well, the card may be folded. --}}
+        @if ($list['unprotected'])
+            <span class="ml-1 rounded bg-amber-100 px-1 text-[10px] text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+                title="{{ __('In keinem Backup-Job von Cluster oder Host enthalten') }}">{{ trans_choice(':count ohne Backup|:count ohne Backup', $list['unprotected']) }}</span>
+        @endif
     </div>
     <div @class(['space-y-2 px-3 py-2 text-sm', 'hidden' => $single && ! $list['visible']])>
         @foreach ($list['groups'] as $group)
