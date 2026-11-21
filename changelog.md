@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.11.21
+
+### Changed
+
+- **Node.js 26 statt 22** für den Bau von CSS und JavaScript – im Docker-Image, in der CI und auf dem Server. Node 26 ist seit Oktober 2026 die aktuelle LTS-Version, Node 22 bekommt nur noch Sicherheitsupdates bis April 2027. Zur Laufzeit braucht DokuVault kein Node; wer selbst betreibt, stellt die NodeSource-Quelle auf `node_26.x` um. Das mitgelieferte npm 11 führt Installationsskripte nur noch nach Freigabe aus. Der Chrome-Download von Puppeteer, das nur das Screenshot-Werkzeug der Doku braucht, entfällt damit beim Deploy.
+
 ## 26.11.19b
 
 ### Added
