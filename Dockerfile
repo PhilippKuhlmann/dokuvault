@@ -23,7 +23,7 @@ RUN composer install --no-interaction --prefer-dist --no-scripts --no-autoloader
 
 # ------------------------------------------------------------------ Frontend
 # Ebenso: Vite erzeugt CSS und JavaScript, beides ohne Architekturbezug.
-FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
+FROM --platform=$BUILDPLATFORM node:26-alpine AS frontend
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci

@@ -102,7 +102,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: '22'
+          node-version: '26'
           cache: npm
 
       - name: Build frontend assets (Vite manifest wird von Feature-Tests benötigt)
