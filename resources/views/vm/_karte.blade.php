@@ -75,7 +75,7 @@
                          Statt des Einbauorts steht hier der Host - eine VM
                          steckt in keinem Rack. --}}
                     <x-slot:kernwerte>
-                        <x-kernwert :label="__('IP')" :zaehler="max(0, $anzahlIps - 1)" breite="w-40">
+                        <x-kernwert :label="__('IP')" :zaehler="max(0, $anzahlIps - 1)" breite="w-36">
                             @if ($primaer)
                                 <x-ip-anzeige :adresse="$adressen->first()" />
                             @endif

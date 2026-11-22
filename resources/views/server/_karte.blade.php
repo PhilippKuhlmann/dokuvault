@@ -16,14 +16,13 @@
                     @endphp
                     <span class="shrink-0 font-semibold">{{ $eintrag->name }}</span>
 
-                    {{-- Das Geraet klein hinter dem Namen - der Teil, der zur
-                         Not gekuerzt wird (voll im Tooltip). Betriebssystem und
-                         EOL-Abzeichen stehen zusammen in der zweiten Zeile: Das
-                         Abzeichen gehoert zum System, nicht zum Server, und
-                         neben dem Namen fehlte dem System der Platz fuer die
-                         Version ("Windows Server 201…"). --}}
-                    @if ($geraet !== '')
-                        <span class="min-w-0 truncate text-sm font-normal text-gray-500 dark:text-gray-400" title="{{ $geraet }}">{{ $geraet }}</span>
+                    {{-- Betriebssystem klein hinter dem Namen, das EOL-Abzeichen
+                         direkt daneben - es gehoert zum System. Zur Not wird
+                         das System gekuerzt (voll im Tooltip), das Abzeichen
+                         nie. Der Servertyp steht in der zweiten Zeile. --}}
+                    @if ($eintrag->operatingSystem)
+                        <span class="min-w-0 truncate text-sm font-normal text-gray-500 dark:text-gray-400" title="{{ $eintrag->operatingSystem->name }}">{{ $eintrag->operatingSystem->name }}</span>
+                        <span class="shrink-0"><x-eol :os="$eintrag->operatingSystem" /></span>
                     @endif
 
                     {{-- Was man fast immer sucht, in festen Spalten (design 1A):
@@ -32,13 +31,13 @@
                          Rack kurz, sonst der Standort - auch ein Tower steht
                          irgendwo. Der Zaehler verraet, dass mehr da ist. --}}
                     <x-slot:kernwerte>
-                        <x-kernwert :label="__('IP')" :zaehler="max(0, $anzahlIps - 1)" breite="w-40">
+                        <x-kernwert :label="__('IP')" :zaehler="max(0, $anzahlIps - 1)" breite="w-36">
                             @if ($primaer)
                                 <x-ip-anzeige :adresse="$adressen->first()" />
                             @endif
                         </x-kernwert>
 
-                        <x-kernwert :label="__('Ort')" breite="w-44" :titel="$eintrag->mountLocation() ?? $eintrag->site?->name">{{ $eintrag->mountLocationShort() ?? $eintrag->site?->name }}</x-kernwert>
+                        <x-kernwert :label="__('Ort')" breite="w-36" :titel="$eintrag->mountLocation() ?? $eintrag->site?->name">{{ $eintrag->mountLocationShort() ?? $eintrag->site?->name }}</x-kernwert>
 
                         {{-- What runs there, in the head line: in a folded card
                              it is what tells one server from the next. --}}
@@ -54,10 +53,9 @@
                         <livewire:copy-password-button :device="$eintrag" :key="'kopf-kennwort-server-'.$eintrag->id" />
                     </x-slot>
 
-                    {{-- Second line: the operating system with its EOL badge,
-                         as on the VM. --}}
-                    @if ($eintrag->operatingSystem)
-                        <x-slot:untertitel><span class="min-w-0 truncate" title="{{ $eintrag->operatingSystem->name }}">{{ $eintrag->operatingSystem->name }}</span><span class="shrink-0"><x-eol :os="$eintrag->operatingSystem" /></span></x-slot>
+                    {{-- Second line: the server type - model and form factor. --}}
+                    @if ($geraet !== '')
+                        <x-slot:untertitel><span class="min-w-0 truncate" title="{{ $geraet }}">{{ $geraet }}</span></x-slot>
                     @endif
                 </x-show.header>
             </x-slot>
