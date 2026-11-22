@@ -1800,5 +1800,6 @@
     "Verdecktes Kennwort": "Hidden password",
     "Agent: :zeit": "Agent: :zeit",
     "Vom Agent gemeldet am :datum": "Reported by the agent on :datum",
-    ":count Kennwort|:count Kennwörter": ":count password|:count passwords"
+    ":count Kennwort|:count Kennwörter": ":count password|:count passwords",
+    "Verwaltung": "Management"
 }
