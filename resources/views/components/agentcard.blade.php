@@ -67,7 +67,6 @@
         @endif
     @endforeach
 
-    <p class="w-full mb-5 text-xs text-gray-500 dark:text-gray-400">
-        {{ __('Vom Agent gemeldet am :datum', ['datum' => \App\Support\LocalTime::display($device->agent_reported_at)]) }}
-    </p>
+    {{-- When the agent last reported stands in the foot of the card
+         (x-kartenfuss) - here it said the same a second time. --}}
 @endif

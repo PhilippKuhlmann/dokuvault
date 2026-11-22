@@ -373,7 +373,8 @@ test('the server and VM cards show the report and say it came from the agent', f
         ->assertSee('40 %')
         ->assertSee('nicht verfügbar')
         ->assertDontSee('0 GB / 0 GB')
-        ->assertSee('Vom Agent gemeldet am');
+        // When it reported: in the foot of the card (x-kartenfuss).
+        ->assertSee('Agent: vor');
     $this->get("/{$customer->slug}/vm")
         ->assertOk()
         ->assertSee('title="Container (LXC)"', false)
@@ -391,7 +392,7 @@ test('the server and VM cards show the report and say it came from the agent', f
         ->assertDontSee('von 256 GB')
         ->assertSee('2,4 GB von 8 GB')
         ->assertSeeInOrder(['title="Container (LXC)"', 'läuft'], false)
-        ->assertSee('Vom Agent gemeldet am');
+        ->assertSee('Agent: vor');
 });
 
 test('a server entered by hand shows no agent note', function () {
@@ -403,7 +404,7 @@ test('a server entered by hand shows no agent note', function () {
     $this->get("/{$customer->slug}/server")
         ->assertOk()
         ->assertSee('Handarbeit')
-        ->assertDontSee('Vom Agent gemeldet am');
+        ->assertDontSee('Agent: vor');
 });
 
 test('a node creates its cluster and puts itself and its guests in it', function () {

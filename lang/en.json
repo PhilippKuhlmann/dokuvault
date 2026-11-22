@@ -1506,7 +1506,6 @@
     "VPNs": "VPNs",
     "Portweiterleitungen": "Port forwards",
     "Gateways": "Gateways",
-    "Vom Agent gemeldet am :datum": "Reported by the agent on :datum",
     "Fragt die REST-API der OPNsense nach Version, Schnittstellen, VPNs (IPsec, OpenVPN, WireGuard), Portweiterleitungen und Gateways – rein lesend, verändert nichts an der Firewall.": "Asks the OPNsense REST API for version, interfaces, VPNs (IPsec, OpenVPN, WireGuard), port forwards and gateways – read only, changes nothing on the firewall.",
     "Legt die Firewall an oder aktualisiert sie. Eine schon von Hand dokumentierte Firewall wird über die Seriennummer gefunden und übernommen. Name, Zugangsdaten, Notizen und Einbauort bleiben, wie sie sind.": "Creates or updates the firewall. A firewall already documented by hand is found by its serial number and taken over. Name, credentials, notes and mounting location stay as they are.",
     "Reverse DNS (PTR)": "Reverse DNS (PTR)",
@@ -1799,5 +1798,7 @@
     "Im Serverplan zeigen": "Show in server map",
     "In :rack zeigen": "Show in :rack",
     "Fernwartung starten": "Start remote session",
-    "Verdecktes Kennwort": "Hidden password"
+    "Verdecktes Kennwort": "Hidden password",
+    "Agent: :zeit": "Agent: :zeit",
+    "Vom Agent gemeldet am :datum": "Reported by the agent on :datum"
 }

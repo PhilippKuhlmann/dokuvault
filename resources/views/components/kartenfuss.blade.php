@@ -1,6 +1,6 @@
 {{--
-    The foot of an opened card (design 1A): when the entry was last touched
-    and by whom, and where else it stands -
+    The foot of an opened card (design 1A): when its agent last reported,
+    when the entry was last touched and by whom, and where else it stands -
     the activity log, the server map, the rack. Each part only where it
     exists and the user may follow the link.
 --}}
@@ -21,8 +21,11 @@
 @endphp
 
 <div class="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-dashed border-gray-200 px-5 py-2.5 text-xs text-gray-500 lg:pl-14 dark:border-gray-700 dark:text-gray-400">
-    {{-- No "Agent: x ago" here: the agent block of the card says it already,
-         with the exact time ("Vom Agent gemeldet am ..."). --}}
+    {{-- The agent block of the card no longer says it - only here, the
+         exact time in the tooltip. --}}
+    @if ($eintrag->agent_reported_at ?? null)
+        <span title="{{ \App\Support\LocalTime::display($eintrag->agent_reported_at) }}">{{ __('Agent: :zeit', ['zeit' => $eintrag->agent_reported_at->diffForHumans()]) }}</span>
+    @endif
     @if ($letzte)
         <span>
             {{ __('Geändert am :datum', ['datum' => \App\Support\LocalTime::display($letzte->created_at, 'd.m.Y H:i')]) }}@if ($letzte->causer)

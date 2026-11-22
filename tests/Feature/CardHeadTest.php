@@ -101,7 +101,7 @@ test('the place is the rack in short, else the site; a missing IP shows a dash',
         ->assertSee('—');
 });
 
-test('the foot of an opened card: last change and the links one may follow', function () {
+test('the foot of an opened card: agent, last change, and the links one may follow', function () {
     $this->actingAs(userWithPermissions(['server_viewAny', 'rack_viewAny', 'admin_activity']));
     $server = headServer(['agent_reported_at' => now()->subMinutes(4)]);
     $rack = Rack::create(['customer_id' => $server->customer_id, 'site_id' => $server->site_id, 'name' => 'Rack HH-01', 'height_units' => 42]);
@@ -110,8 +110,8 @@ test('the foot of an opened card: last change and the links one may follow', fun
 
     $html = Blade::render('<x-kartenfuss :eintrag="$e" />', ['e' => $server->fresh()]);
 
-    // The agent time stands in the agent block of the card - not twice.
-    expect($html)->not->toContain('Agent:')
+    // The agent time stands here, and only here - not in the agent block.
+    expect($html)->toContain('Agent: vor 4 Minuten')
         ->and($html)->toContain('Geändert am')
         ->and($html)->toContain('Verlauf')
         ->and($html)->toContain('Im Serverplan zeigen')
