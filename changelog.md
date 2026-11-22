@@ -13,6 +13,8 @@
   - Bei einem verknüpften Kennwort kopiert ein Klick, bei mehreren öffnet sich eine kleine Auswahl.
   - Wie das Feld in der Karte: mit Rechteprüfung, Bremse und Eintrag im Protokoll; der Wert steht nie in der Seite.
   - Für Server und VMs.
+- **Betriebssystem ganz lesbar.** Das EOL-Abzeichen steht jetzt in der zweiten Zeile (beim Server neben dem Modell, bei der VM neben dem Betriebssystem). Neben dem Namen kostete es den Platz, den die Version brauchte – „Windows Server 201…“ verschwieg genau, worum es beim Abzeichen geht.
+- **Einheitliche Knöpfe, lesbarere Beschriftungen, kompaktere Zeilen.** Die Fernwartung ist ein umrandeter Knopf wie „Kennwort kopieren“ und der Stift. „IP“, „Ort“ und „Host“ sind dunkler gesetzt und erreichen jetzt den Mindestkontrast für kleine Schrift (vorher etwa 2,5:1 hell, 3:1 dunkel). Eine zugeklappte Zeile ist etwa 68 statt 75 px hoch.
 - **Aufgeklappte Karten** haben einen blauen Rahmen und sind bündig unter dem Namen eingerückt. Unten steht eine Fußzeile:
   - wann der Agent zuletzt gemeldet hat und wann von wem zuletzt geändert wurde
   - Links „Verlauf“ (Protokoll), „Im Serverplan zeigen“ und „In Rack … zeigen“ – jeweils nur, wo man sie sehen darf

@@ -33,11 +33,11 @@
      still sees where one card ends and the next begins. --}}
 <x-panel polster="keins" data-karte-flaeche class="flex flex-col m-3 transition-shadow dark:text-gray-100" :attributes="$flaeche">
     @if (trim($head))
-        <div @class(['flex items-start', 'cursor-pointer' => $klappbar]) @if ($klappbar) x-on:click="kopfKlick($event)" @endif>
+        <div @class(['flex', 'cursor-pointer items-center' => $klappbar, 'items-start' => ! $klappbar]) @if ($klappbar) x-on:click="kopfKlick($event)" @endif>
             @if ($klappbar)
                 <button type="button" x-on:click="umschalten()" x-bind:aria-expanded="offen ? 'true' : 'false'"
                     aria-label="{{ __('Details ein- oder ausklappen') }}"
-                    class="ml-3 mt-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition-colors hover:bg-gray-50 hover:text-chathams-blue-800 focus:outline-hidden focus:ring-2 focus:ring-cerulean-500 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-100">
+                    class="ml-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition-colors hover:bg-gray-50 hover:text-chathams-blue-800 focus:outline-hidden focus:ring-2 focus:ring-cerulean-500 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-100">
                     <svg x-bind:class="offen ? 'rotate-90' : ''" class="h-3.5 w-3.5 transition-transform" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M9 6l6 6-6 6" />

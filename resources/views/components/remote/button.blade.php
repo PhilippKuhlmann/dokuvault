@@ -29,6 +29,13 @@
 @if ($link)
     @if ($stil === 'label')
         <x-input.linkbutton :label="__('Verbinden')" link="{{ $link }}" color="knopf" />
+    @elseif ($stil === 'symbol')
+        {{-- In the head line of a card next to "copy password" and the
+             pencil: the same framed square, the tool's logo inside. --}}
+        <x-input.symbolknopf :href="$link" :titel="__('Fernwartung starten')">
+            <x-dynamic-component :component="$werkzeug['icon']"
+                class="h-5 w-5 fill-cerulean-500! text-cerulean-500" />
+        </x-input.symbolknopf>
     @elseif ($stil === 'text')
         <a href="{{ $link }}"
             class="bg-cerulean-600 text-white rounded-lg px-4 py-2 text-sm mr-5 hover:bg-cerulean-700">{{ __('Verbinden') }}</a>

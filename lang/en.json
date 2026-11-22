@@ -1798,5 +1798,6 @@
     "Geändert am :datum": "Changed on :datum",
     "von :name": "by :name",
     "Im Serverplan zeigen": "Show in server map",
-    "In :rack zeigen": "Show in :rack"
+    "In :rack zeigen": "Show in :rack",
+    "Fernwartung starten": "Start remote session"
 }

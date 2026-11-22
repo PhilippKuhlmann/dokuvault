@@ -18,7 +18,7 @@
     Below lg everything wraps: kernwerte under the name, the actions stay
     top right.
 --}}
-<div class="flex w-full flex-wrap items-center gap-x-6 gap-y-2 p-3 lg:flex-nowrap">
+<div class="flex w-full flex-wrap items-center gap-x-6 gap-y-2 px-3 py-2 lg:flex-nowrap">
     <div class="min-w-0 flex-1 basis-64">
         {{-- Auf schmalen Bildschirmen kleiner: In text-2xl brach ein Name wie
              srv-hyperv-01.mustermann.local mitten durch. 20px statt 24px auch
@@ -32,7 +32,9 @@
              folded card the head line is all there is to tell entries
              apart. --}}
         @isset($untertitel)
-            <div class="mt-1 truncate text-sm text-gray-500 dark:text-gray-400">{{ $untertitel }}</div>
+            {{-- Flex, not truncate on the line: a badge in it (EOL) must stay
+                 visible - the text before it is cut instead (its own span). --}}
+            <div class="mt-1 flex min-w-0 items-center gap-2 text-sm text-gray-500 dark:text-gray-400">{{ $untertitel }}</div>
         @endisset
     </div>
     @isset($kernwerte)

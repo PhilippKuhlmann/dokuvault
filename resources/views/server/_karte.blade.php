@@ -15,8 +15,6 @@
                          Cut on wide screens instead of breaking the line. --}}
                     @if ($eintrag->operatingSystem)
                         <span class="min-w-0 truncate text-sm font-normal text-gray-500 dark:text-gray-400" title="{{ $eintrag->operatingSystem->name }}">{{ $eintrag->operatingSystem->name }}</span>
-
-                        <span class="shrink-0"><x-eol :os="$eintrag->operatingSystem" /></span>
                     @endif
 
                     {{-- Was man fast immer sucht, in festen Spalten (design 1A):
@@ -43,14 +41,20 @@
                          Welches Werkzeug dahinter steckt, steht in den
                          Einstellungen. --}}
                     <x-slot:aktionen>
-                        <x-remote.button :device="$eintrag" />
+                        <x-remote.button :device="$eintrag" stil="symbol" />
                         <livewire:copy-password-button :device="$eintrag" :key="'kopf-kennwort-server-'.$eintrag->id" />
                     </x-slot>
 
-                    <x-slot:untertitel>{{ implode(' · ', array_filter([
-                        trim($eintrag->manufacturer.' '.$eintrag->model),
-                        __(config('custom.server_form_factors')[$eintrag->form_factor] ?? ''),
-                    ])) }}</x-slot>
+                    {{-- The EOL badge in the second line: next to the operating
+                         system it took the room the version needed - "Windows
+                         Server 201…" hid exactly what the badge is about. --}}
+                    @php
+                        $geraet = implode(' · ', array_filter([
+                            trim($eintrag->manufacturer.' '.$eintrag->model),
+                            __(config('custom.server_form_factors')[$eintrag->form_factor] ?? ''),
+                        ]));
+                    @endphp
+                    <x-slot:untertitel><span class="min-w-0 truncate" title="{{ $geraet }}">{{ $geraet }}</span>@if ($eintrag->operatingSystem)<span class="shrink-0"><x-eol :os="$eintrag->operatingSystem" /></span>@endif</x-slot>
                 </x-show.header>
             </x-slot>
 

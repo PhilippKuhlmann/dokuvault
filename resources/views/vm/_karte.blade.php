@@ -64,10 +64,11 @@
                         </span>
                     @endif
 
+                    {{-- Operating system and EOL badge in the second line: next
+                         to kind and state they were cut ("Windows Server 201…")
+                         - and with them the version the badge is about. --}}
                     @if ($eintrag->operatingSystem)
-                        <span class="min-w-0 truncate text-sm font-normal text-gray-500 dark:text-gray-400" title="{{ $eintrag->operatingSystem->name }}">{{ $eintrag->operatingSystem->name }}</span>
-
-                        <span class="shrink-0"><x-eol :os="$eintrag->operatingSystem" /></span>
+                        <x-slot:untertitel><span class="min-w-0 truncate" title="{{ $eintrag->operatingSystem->name }}">{{ $eintrag->operatingSystem->name }}</span><span class="shrink-0"><x-eol :os="$eintrag->operatingSystem" /></span></x-slot>
                     @endif
 
                     {{-- Wie beim Server: das Nachgeschlagene in festen Spalten.
@@ -90,7 +91,7 @@
                     </x-slot>
 
                     <x-slot:aktionen>
-                        <x-remote.button :device="$eintrag" />
+                        <x-remote.button :device="$eintrag" stil="symbol" />
                         <livewire:copy-password-button :device="$eintrag" :key="'kopf-kennwort-vm-'.$eintrag->id" />
                     </x-slot>
                 </x-show.header>
