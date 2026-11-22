@@ -1,4 +1,4 @@
-@props(['plain' => false])
+@props(['plain' => false, 'raster' => null])
 
 {{--
     Der Inhalt läuft in Spalten (CSS multi-column) statt in einer Flex-Reihe:
@@ -64,7 +64,11 @@
              Seitenleiste. Vorher erschien die Leiste schon ab 640px, dort
              blieben je gut 200px, und darin passte "Seriennummer CZ29470H8K-..."
              nicht: Die Tabelle lief in die Nachbarspalte und aus der Karte. --}}
-        'p-5 columns-1 md:columns-2 xl:columns-3 gap-x-10' => ! $plain,
+        'p-5 columns-1 md:columns-2 xl:columns-3 gap-x-10' => ! $plain && ! $raster,
+        // raster: fixed columns by theme (x-kartenspalte) instead of blocks
+        // flowing by height - every block in the same place on every card.
+        'p-5 grid grid-cols-1 gap-x-8 gap-y-6 lg:grid-cols-2' => $raster === 2,
+        'p-5 grid grid-cols-1 gap-x-8 gap-y-6 lg:grid-cols-3' => $raster === 3,
         'lg:pl-14' => $klappbar,
     ])>
         {{ $body }}

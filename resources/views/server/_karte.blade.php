@@ -1,5 +1,5 @@
 {{-- Ein Server in der Liste. Die Karte bleibt beim Typ. --}}
-        <x-card>
+        <x-card :raster="$eintrag->agent_reported_at ? 3 : 2">
             @php
                 $adressen = $eintrag->relationLoaded('ipAddresses') ? $eintrag->ipAddresses : $eintrag->ipAddresses()->get();
                 $anzahlIps = $adressen->count();
@@ -61,25 +61,28 @@
             </x-slot>
 
             <x-slot:body>
+                {{-- Drei feste Spalten nach Thema (design 1A, 26.11.22): Zugang
+                     - was man zum Arbeiten braucht; Geraet - was man anfassen
+                     kann; System - was der Agent meldet. Ohne Agent zwei. --}}
+                <x-kartenspalte :titel="__('Zugang')" symbol="svg.login">
+                    <x-ipcard :device="$eintrag" />
 
-                <x-ipcard :device="$eintrag" />
+                    <x-credentialscard :device="$eintrag" />
 
-                <x-credentialscard :device="$eintrag" />
-
-                <x-minitablecard :title="__('BMC')" :modell="$eintrag" :array="[
-                    'BMC IP-Adresse' => $eintrag->bmcIp,
-                    'BMC Benutzer' => $eintrag->bmcUser,
-                    'BMC Passwort' => $eintrag->bmcPassword,
-                ]" />
-
-                {{-- Die Fernwartungs-Kennung auch als Text: Wenn der Knopf nicht greift
-                     (anderer Rechner, kein Client), braucht man die ID zum Abtippen. --}}
-                <x-minitablecard :title="__('Fernwartung')" :array="[
+                    <x-minitablecard :title="__('Fernwartung')" :array="[
                     \App\Models\Setting::remoteAccess()['id_label'] => $eintrag->remoteID,
                     'Passwort' => [$eintrag, 'remotePassword'],
                 ]" />
 
-                <x-minitablecard :title="__('Hardware')" :array="[
+                    <x-minitablecard :title="__('BMC')" :modell="$eintrag" :array="[
+                    'BMC IP-Adresse' => $eintrag->bmcIp,
+                    'BMC Benutzer' => $eintrag->bmcUser,
+                    'BMC Passwort' => $eintrag->bmcPassword,
+                ]" />
+                </x-kartenspalte>
+
+                <x-kartenspalte :titel="__('Gerät')" symbol="svg.server">
+                    <x-minitablecard :title="__('Hardware')" :array="[
                     'Hersteller' => $eintrag->manufacturer,
                     'Modell' => $eintrag->model,
                     'Seriennummer' => $eintrag->serialNumber,
@@ -94,12 +97,14 @@
                     'Arbeitsspeicher' => $eintrag->memory_gb !== null ? \App\Support\AgentReportCards::gb((float) $eintrag->memory_gb) : null,
                 ]" />
 
-                <x-agentcard :device="$eintrag" :bloecke="\App\Support\AgentReportCards::server($eintrag)" />
+                    <x-beschaffungcard :device="$eintrag" />
+                </x-kartenspalte>
 
-                {{-- Betriebssystem steht jetzt in der Kopfzeile - hier waere es doppelt. --}}
-                {{-- Dienste stehen seit 26.11.22 im Kopf (x-dienstchips). --}}
-
-                <x-beschaffungcard :device="$eintrag" />
+                @if ($eintrag->agent_reported_at)
+                    <x-kartenspalte :titel="__('System')" symbol="svg.settings">
+                        <x-agentcard :device="$eintrag" :bloecke="\App\Support\AgentReportCards::server($eintrag)" />
+                    </x-kartenspalte>
+                @endif
 
             </x-slot>
 

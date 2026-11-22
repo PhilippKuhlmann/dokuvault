@@ -1,5 +1,17 @@
 # Changelog
 
+## 26.11.22d
+
+### Changed
+
+- **Aufgeklappte Server und VMs nach Thema sortiert.** Statt dass die Blöcke je nach Höhe in die nächste Spalte rutschen, stehen sie in festen Spalten – bei jeder Karte an derselben Stelle:
+  - **Zugang:** IP-Adressen, Zugangsdaten, Fernwartung, BMC
+  - **Gerät:** Hardware, Beschaffung (nur Server)
+  - **System:** was der Agent meldet; bei VMs auch die von Hand gepflegten Ressourcen
+  - Ohne Agent hat ein Server zwei Spalten. Eine Spalte ohne Inhalt fällt ganz weg.
+  - Die Beschriftungen sind in allen Blöcken gleich breit, die Werte stehen bündig untereinander. Lange Werte brechen zwischen Wörtern um, nicht mehr mitten im Wort („zugewi|esen“).
+  - Auf schmalen Bildschirmen stehen die Spalten untereinander.
+
 ## 26.11.22c
 
 ### Changed

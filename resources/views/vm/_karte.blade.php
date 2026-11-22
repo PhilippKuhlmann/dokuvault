@@ -5,7 +5,7 @@
             $primaer = $adressen->first()?->label();
         @endphp
 
-        <x-card>
+        <x-card :raster="2">
             <x-slot:head>
                 <x-show.header can="vm_update" editAction="$dispatch('object-edit', { typ: 'vm', id: {{ $eintrag->id }} })">
                     <span class="shrink-0 font-bold">{{ $eintrag->name }}</span>
@@ -98,29 +98,34 @@
             </x-slot>
 
             <x-slot:body>
+                {{-- Zwei feste Spalten (design 1A): Zugang - was man zum Arbeiten
+                     braucht; System - Ressourcen von Hand und was der Agent meldet.
+                     Dienste stehen seit 26.11.22 im Kopf (x-dienstchips). --}}
+                <x-kartenspalte :titel="__('Zugang')" symbol="svg.login">
+                    <x-ipcard :device="$eintrag" />
 
-                <x-ipcard :device="$eintrag" />
+                    <x-credentialscard :device="$eintrag" />
 
-                <x-credentialscard :device="$eintrag" />
+                    {{-- Die Fernwartungs-Kennung auch als Text: Wenn der Knopf nicht greift
+                         (anderer Rechner, kein Client), braucht man die ID zum Abtippen. --}}
+                    <x-minitablecard :title="__('Fernwartung')" :array="[
+                        \App\Models\Setting::remoteAccess()['id_label'] => $eintrag->remoteID,
+                        'Passwort' => [$eintrag, 'remotePassword'],
+                    ]" />
+                </x-kartenspalte>
 
-                {{-- Die Fernwartungs-Kennung auch als Text: Wenn der Knopf nicht greift
-                     (anderer Rechner, kein Client), braucht man die ID zum Abtippen. --}}
-                <x-minitablecard :title="__('Fernwartung')" :array="[
-                    \App\Models\Setting::remoteAccess()['id_label'] => $eintrag->remoteID,
-                    'Passwort' => [$eintrag, 'remotePassword'],
-                ]" />
+                @if ($eintrag->agent_reported_at || filled($eintrag->cores) || filled($eintrag->memory_gb) || filled($eintrag->disk_gb))
+                    <x-kartenspalte :titel="__('System')" symbol="svg.settings">
+                        {{-- By hand, for a guest no agent reports. --}}
+                        <x-minitablecard :title="__('Ressourcen')" :array="[
+                            'Kerne' => $eintrag->cores,
+                            'Arbeitsspeicher' => $eintrag->memory_gb !== null ? \App\Support\AgentReportCards::gb((float) $eintrag->memory_gb) : null,
+                            'Festplatte' => $eintrag->disk_gb !== null ? \App\Support\AgentReportCards::gb((float) $eintrag->disk_gb) : null,
+                        ]" />
 
-                {{-- By hand, for a guest no agent reports. --}}
-                <x-minitablecard :title="__('Ressourcen')" :array="[
-                    'Kerne' => $eintrag->cores,
-                    'Arbeitsspeicher' => $eintrag->memory_gb !== null ? \App\Support\AgentReportCards::gb((float) $eintrag->memory_gb) : null,
-                    'Festplatte' => $eintrag->disk_gb !== null ? \App\Support\AgentReportCards::gb((float) $eintrag->disk_gb) : null,
-                ]" />
-
-                <x-agentcard :device="$eintrag" :bloecke="\App\Support\AgentReportCards::vm($eintrag)" />
-
-                {{-- Dienste stehen seit 26.11.22 im Kopf (x-dienstchips). --}}
-
+                        <x-agentcard :device="$eintrag" :bloecke="\App\Support\AgentReportCards::vm($eintrag)" />
+                    </x-kartenspalte>
+                @endif
             </x-slot>
 
             {{-- Last change, agent, and the links to log, server map, rack. --}}
