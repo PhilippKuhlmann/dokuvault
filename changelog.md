@@ -15,6 +15,7 @@
   - **Zugang:** IP-Adressen, Zugangsdaten, Verwaltung (Oberfläche, Port), Securepoint
   - **Gerät:** Hardware (vorher „Allgemein“), Subscription, Beschaffung, Notizen
   - **System:** was der Agent meldet (Schnittstellen, VPNs, Portweiterleitungen, Gateways)
+  - Die Kopfzeile ist wie beim Server: IP, Firmware und Ort in festen Spalten, die Beschriftung über dem Wert, ein Strich, wo nichts gepflegt ist. In der zweiten Zeile steht das Gerät (Hersteller, Modell, Bauform). Neben dem Stift gibt es „Kennwort kopieren“.
 - **„Kennwort kopieren“ mit mehreren Kennwörtern** sieht aus wie seine Nachbarn: ein umrandeter Knopf, in der Ecke die Anzahl. Das Menü dahinter zeigt je Eintrag Bezeichnung und Benutzername (so unterscheidet man zweimal „Administrator“). Nach dem Klick steht „Kopiert“ in der Zeile und ein Haken am Knopf, dann schließt sich das Menü von selbst. Es schließt auch per Esc oder per Klick daneben.
 
 ## 26.11.22c

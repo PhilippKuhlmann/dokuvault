@@ -7,25 +7,38 @@
         <x-card :raster="$eintrag->agent_reported_at ? 3 : 2">
             <x-slot:head>
                 <x-show.header can="firewall_update" editAction="$dispatch('object-edit', { typ: 'firewall', id: {{ $eintrag->id }} })">
-                    {{ $eintrag->name }}
+                    @php
+                        $geraet = implode(' · ', array_filter([
+                            trim($eintrag->manufacturer.' '.$eintrag->model),
+                            __(config('custom.firewall_form_factors')[$eintrag->form_factor] ?? ''),
+                        ]));
+                    @endphp
+                    <span class="shrink-0 font-bold">{{ $eintrag->name }}</span>
 
-                    {{-- Was man an einer Firewall fast immer sucht: die Adresse,
-                         der Einbauort und ob die Subscription noch laeuft. --}}
+                    {{-- Wie beim Server (design 1A): feste Spalten, die Beschriftung
+                         ueber dem Wert, ein fehlender Wert zeigt einen Strich. Was
+                         man an einer Firewall fast immer sucht: die Adresse, den
+                         Firmware-Stand und wo sie steht. --}}
                     <x-slot:kernwerte>
-                        @if ($primaer)
-                            <x-kernwert :label="__('IP')" :zaehler="$anzahlIps - 1">
+                        <x-kernwert :label="__('IP')" :zaehler="max(0, $anzahlIps - 1)" breite="w-36">
+                            @if ($primaer)
                                 <x-ip-anzeige :adresse="$adressen->first()" />
-                            </x-kernwert>
-                        @endif
+                            @endif
+                        </x-kernwert>
 
-                        @if ($eintrag->firmware)
-                            <x-kernwert :label="__('Firmware')">{{ $eintrag->firmware }}</x-kernwert>
-                        @endif
+                        <x-kernwert :label="__('Firmware')" breite="w-36" :titel="$eintrag->firmware">{{ $eintrag->firmware }}</x-kernwert>
 
-                        @if ($eintrag->mountLocation())
-                            <x-kernwert :label="__('Rack')">{{ $eintrag->mountLocation() }}</x-kernwert>
-                        @endif
+                        <x-kernwert :label="__('Ort')" breite="w-36" :titel="$eintrag->mountLocation() ?? $eintrag->site?->name">{{ $eintrag->mountLocationShort() ?? $eintrag->site?->name }}</x-kernwert>
                     </x-slot>
+
+                    <x-slot:aktionen>
+                        <livewire:copy-password-button :device="$eintrag" :key="'kopf-kennwort-firewall-'.$eintrag->id" />
+                    </x-slot>
+
+                    {{-- Second line: the device - model and form factor. --}}
+                    @if ($geraet !== '')
+                        <x-slot:untertitel><span class="min-w-0 truncate" title="{{ $geraet }}">{{ $geraet }}</span></x-slot>
+                    @endif
                 </x-show.header>
             </x-slot>
 
