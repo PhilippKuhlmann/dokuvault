@@ -7,15 +7,21 @@
          Der Wert steht erst im DOM, wenn er angezeigt wurde. Kopieren geht auch
          zugeklappt: Dann holt der Server den Wert einmalig in die Zwischenablage
          (protokolliert und gebremst wie das Anzeigen), ohne ihn aufzudecken. --}}
-    {{-- Covered: the dots in a field of fixed width. Revealed: the value as
+    {{-- Covered: the dots, always w-24 - with w-full (the device fields)
+         eye and copy stood at the far edge of the cell and jumped left on
+        revealing; now they stand in the same place in both states. Revealed: the value as
          text that wraps - in a field of fixed width (w-24 in the credentials)
          a longer password was cut ("Hyp3r!Demo2(") and could not be read in
          full. select-all: one click selects it for typing off or copying. --}}
     @if ($offen)
-        <span x-ref="pw" class="min-w-0 flex-1 select-all break-all font-mono text-sm leading-6 text-gray-900 dark:text-gray-100">{{ $wert }}</span>
+        {{-- No flex-1: it took the whole cell and pushed eye and copy to the
+             right edge. As wide as the value, at least as wide as the dots
+             (min-w-24), so the buttons stay where they were; wraps only when
+             the value does not fit. --}}
+        <span x-ref="pw" class="min-w-24 select-all break-all font-mono text-sm leading-5 text-gray-900 dark:text-gray-100">{{ $wert }}</span>
     @else
         <input type="text" disabled value="••••••••••" aria-label="{{ __('Verdecktes Kennwort') }}"
-            class="{{ $width }} min-w-0 p-0 text-sm font-mono bg-transparent border-0 text-gray-400 dark:text-gray-500 select-none">
+            class="w-24 min-w-0 p-0 text-sm font-mono bg-transparent border-0 text-gray-400 dark:text-gray-500 select-none">
     @endif
 
     {{-- Auge: aufdecken bzw. verbergen. --}}
