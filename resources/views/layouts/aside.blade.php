@@ -15,7 +15,7 @@
                         @endcannot
                         <x-aside.toplink :label="__('Globale Suche')" svg="svg.db" :href="route('search.global')" />
                         @can('remote_search')
-                            <x-aside.toplink :label="__('Rustdesk Suche')" svg="svg.software.rustdesk" :href="route('search.remote')" />
+                            <x-aside.toplink :label="__('Fernwartung')" svg="svg.remote" :href="route('search.remote')" />
                         @endcan
                     </ul>
                 </li>

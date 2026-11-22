@@ -31,19 +31,20 @@
         <x-input.linkbutton :label="__('Verbinden')" link="{{ $link }}" color="knopf" />
     @elseif ($stil === 'symbol')
         {{-- In the head line of a card next to "copy password" and the
-             pencil: the same framed square, the tool's logo inside. --}}
-        <x-input.symbolknopf :href="$link" :titel="__('Fernwartung starten')">
-            <x-dynamic-component :component="$werkzeug['icon']"
-                class="h-5 w-5 fill-cerulean-500! text-cerulean-500" />
+             pencil: the same framed square. One symbol for every tool
+             (x-svg.remote) - the button looks the same whether RustDesk or
+             TeamViewer is behind it; the tool is named in the tooltip. --}}
+        <x-input.symbolknopf :href="$link" :titel="__('Fernwartung starten').' ('.$werkzeug['label'].')'">
+            <x-svg.remote class="h-5 w-5 text-cerulean-600 dark:text-cerulean-400" />
         </x-input.symbolknopf>
     @elseif ($stil === 'text')
         <a href="{{ $link }}"
             class="bg-cerulean-600 text-white rounded-lg px-4 py-2 text-sm mr-5 hover:bg-cerulean-700">{{ __('Verbinden') }}</a>
     @else
-        <x-input.linkbutton link="{{ $link }}">
+        {{-- The same neutral symbol as above, whatever the tool. --}}
+        <x-input.linkbutton link="{{ $link }}" title="{{ __('Fernwartung starten') }} ({{ $werkzeug['label'] }})">
             <x-slot:label>
-                <x-dynamic-component :component="$werkzeug['icon']"
-                    class="h-6 w-6 fill-cerulean-500! hover:fill-cerulean-400! text-cerulean-500 hover:text-cerulean-400" />
+                <x-svg.remote class="h-6 w-6 text-cerulean-500 hover:text-cerulean-400" />
             </x-slot:label>
         </x-input.linkbutton>
     @endif

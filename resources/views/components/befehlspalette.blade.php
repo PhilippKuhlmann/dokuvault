@@ -98,7 +98,7 @@
     // Customer accounts too: both searches stay within their customer.
     $sammeln([
         [null, __('Globale Suche'), 'search.global'],
-        ['remote_search', __('Rustdesk Suche'), 'search.remote'],
+        ['remote_search', __('Fernwartung'), 'search.remote'],
     ]);
 
     if (Gate::allows('admin_bereich')) {

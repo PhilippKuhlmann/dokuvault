@@ -1,5 +1,7 @@
-{{-- Neutrales Fernwartungs-Symbol: Bildschirm mit Mauszeiger. Wird benutzt,
-     wo kein Herstellerlogo vorliegt (TeamViewer, AnyDesk, eigene Lösung). --}}
+{{-- Neutrales Fernwartungs-Symbol: Bildschirm mit Wiedergabe-Pfeil. Seit 26.11.22
+     an allen Fernwartungs-Knoepfen, gleich welches Werkzeug (RustDesk,
+     TeamViewer, AnyDesk, eigene Loesung) - die Logos nur noch in der Auswahl
+     der Einstellungen. --}}
 <svg {{ $attributes->merge(['class' => 'h-6 w-6']) }} xmlns="http://www.w3.org/2000/svg" fill="none"
     viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor">
     <path stroke-linecap="round" stroke-linejoin="round"
