@@ -964,6 +964,8 @@ return [
     ],
     'recorder' => [
         'model' => Recorder::class, 'request' => RecorderRequest::class,
+        // Always open: one or two per customer (x-card, object-list).
+        'klappbar' => false,
         'relation' => 'recorders', 'einzahl' => 'Recorder', 'suchfelder' => ['name', 'model', 'serialNumber'],
         'bloecke' => true,
         'felder' => [

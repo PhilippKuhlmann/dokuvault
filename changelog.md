@@ -46,7 +46,7 @@
 ### Changed
 
 - **Listen-Karten sind zuklappbar.** In allen Kartenlisten (Server, VMs, Clients, Drucker, VLANs …) zeigt jeder Eintrag zunächst nur seine Kopfzeile: Name, Kernwerte wie IP und Ort, Fernwartung und Bearbeiten. Ein Klick auf den Pfeil oder die freie Fläche des Kopfs klappt die Karte auf. Neun Server passen jetzt auf einen Bildschirm statt auf sechs. „Alle aufklappen“ oben in der Liste öffnet alle; die Wahl merkt sich der Browser je Liste. Ein Sprung aus der Suche klappt den Treffer auf. Serverschränke, Patchfelder und die EOL-Übersicht bleiben, wie sie sind.
-- **Je Liste einstellbar: zuklappbar oder immer offen.** Listen mit wenigen Einträgen bleiben immer aufgeklappt – ohne Pfeil und ohne „Alle aufklappen“. Immer offen sind jetzt: Cluster, Internet-Anschlüsse, Firewalls, Router, AD-Domänen, TK-Anlagen, SIP-Anschlüsse, NAS, USV und E-Mail-Archivierung. Welche Liste wie arbeitet, steht je Objektart in `config/forms.php` (`'klappbar' => false`).
+- **Je Liste einstellbar: zuklappbar oder immer offen.** Listen mit wenigen Einträgen bleiben immer aufgeklappt – ohne Pfeil und ohne „Alle aufklappen“. Immer offen sind jetzt: Cluster, Internet-Anschlüsse, Firewalls, Router, AD-Domänen, TK-Anlagen, SIP-Anschlüsse, NAS, USV, E-Mail-Archivierung und Rekorder. Welche Liste wie arbeitet, steht je Objektart in `config/forms.php` (`'klappbar' => false`).
 - **Server und VMs: mehr im Kopf.** Unter dem Namen eines Servers steht jetzt Modell und Bauform. Die Dienste stehen bei Server und VM als farbige Chips in der Kopfzeile statt als eigener Block – so unterscheidet die zugeklappte Zeile einen Server vom nächsten.
 
 ### Changed
