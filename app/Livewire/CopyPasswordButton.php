@@ -24,7 +24,7 @@ use Livewire\Component;
  */
 class CopyPasswordButton extends Component
 {
-    /** @var list<array{id: int, label: string}> */
+    /** @var list<array{id: int, label: string, user: ?string}> */
     #[Locked]
     public array $links = [];
 
@@ -36,7 +36,13 @@ class CopyPasswordButton extends Component
 
         $this->links = $device->zugangsdaten()
             ->filter(fn ($link) => ! $link->login->istSchluessel() && filled($link->login->password))
-            ->map(fn ($link) => ['id' => (int) $link->id, 'label' => (string) ($link->note ?: $link->login->name)])
+            // The user name tells two entries apart in the menu ("Administrator"
+            // twice, once local, once domain) - shown in the card anyway.
+            ->map(fn ($link) => [
+                'id' => (int) $link->id,
+                'label' => (string) ($link->note ?: $link->login->name),
+                'user' => $link->login->username,
+            ])
             ->values()
             ->all();
     }

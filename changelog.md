@@ -11,6 +11,7 @@
   - Ohne Agent hat ein Server zwei Spalten. Eine Spalte ohne Inhalt fällt ganz weg.
   - Die Beschriftungen sind in allen Blöcken gleich breit, die Werte stehen bündig untereinander. Lange Werte brechen zwischen Wörtern um, nicht mehr mitten im Wort („zugewi|esen“).
   - Auf schmalen Bildschirmen stehen die Spalten untereinander.
+- **„Kennwort kopieren“ mit mehreren Kennwörtern** sieht aus wie seine Nachbarn: ein umrandeter Knopf, in der Ecke die Anzahl. Das Menü dahinter zeigt je Eintrag Bezeichnung und Benutzername (so unterscheidet man zweimal „Administrator“). Nach dem Klick steht „Kopiert“ in der Zeile und ein Haken am Knopf, dann schließt sich das Menü von selbst. Es schließt auch per Esc oder per Klick daneben.
 
 ## 26.11.22c
 

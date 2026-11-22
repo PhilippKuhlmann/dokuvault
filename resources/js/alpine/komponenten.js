@@ -78,6 +78,36 @@ export function komponentenRegistrieren(Alpine) {
 
     // The list around such cards: "open all / fold all", kept per list in
     // this browser - a convenience of the viewer, not a setting.
+    // "Copy password" in the head line of a card: with several linked
+    // passwords a small menu. The value comes from the server as an event
+    // (password-ready) - then copy, tick on the button and the chosen row,
+    // and the menu closes by itself a moment later.
+    Alpine.data('kennwortmenue', () => ({
+        offen: false,
+        copied: false,
+        gewaehlt: null,
+        umschalten() {
+            this.offen = ! this.offen;
+        },
+        schliessen() {
+            this.offen = false;
+        },
+        waehlen(id) {
+            this.gewaehlt = id;
+        },
+        istKopiert(id) {
+            return this.copied && this.gewaehlt === id;
+        },
+        kopiert(wert) {
+            window.copyText(String(wert ?? ''));
+            this.copied = true;
+            setTimeout(() => {
+                this.copied = false;
+                this.offen = false;
+            }, 1200);
+        },
+    }));
+
     Alpine.data('kartenliste', (schluessel) => ({
         alleOffen: (() => {
             try { return localStorage.getItem(schluessel) === '1'; } catch (e) { return false; }

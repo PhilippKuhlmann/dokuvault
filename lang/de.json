@@ -18,5 +18,6 @@
     ":count mit Warnung|:count mit Warnung": ":count mit Warnung|:count mit Warnung",
     ":count erfolgreich|:count erfolgreich": ":count erfolgreich|:count erfolgreich",
     ":count Tag|:count Tage": ":count Tag|:count Tage",
-    ":count Lauf|:count Läufe": ":count Lauf|:count Läufe"
+    ":count Lauf|:count Läufe": ":count Lauf|:count Läufe",
+    ":count Kennwort|:count Kennwörter": ":count Kennwort|:count Kennwörter"
 }

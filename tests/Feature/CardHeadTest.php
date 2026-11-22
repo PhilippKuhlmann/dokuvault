@@ -54,16 +54,18 @@ test('one linked password: one button copies it, logged like the field in the ca
     expect(Activity::where('event', 'kennwort_angesehen')->count())->toBe(1);
 });
 
-test('several passwords: a menu names them', function () {
+test('several passwords: a framed button with the number, a menu with label and user name', function () {
     $this->actingAs(userWithPermissions(['server_viewAny', 'logingeneral_viewAny']));
     $server = headServer();
     headLink($server, 'Domänen-Admin', 'a');
     headLink($server, 'iDRAC', 'b', 'BMC root');
 
     Livewire::test(CopyPasswordButton::class, ['device' => $server])
-        ->assertSee('<details', false)
-        ->assertSee('Domänen-Admin')
-        ->assertSee('BMC root');
+        ->assertSee('aria-haspopup="menu"', false)
+        ->assertSee('Kennwort kopieren (2 Kennwörter)')
+        // Label and user name tell the entries apart; no value in the page.
+        ->assertSeeInOrder(['Domänen-Admin', 'admin', 'BMC root', 'admin'])
+        ->assertDontSee('<details', false);
 });
 
 test('a link of another device is refused, and without the right there is no button', function () {
