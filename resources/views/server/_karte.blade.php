@@ -1,5 +1,5 @@
 {{-- Ein Server in der Liste. Die Karte bleibt beim Typ. --}}
-        <x-card :raster="$eintrag->agent_reported_at ? 3 : 2">
+        <x-card :columns="$eintrag->agent_reported_at ? 3 : 2">
             @php
                 $adressen = $eintrag->relationLoaded('ipAddresses') ? $eintrag->ipAddresses : $eintrag->ipAddresses()->get();
                 $anzahlIps = $adressen->count();
@@ -31,31 +31,31 @@
                          Rack kurz, sonst der Standort - auch ein Tower steht
                          irgendwo. Der Zaehler verraet, dass mehr da ist. --}}
                     <x-slot:kernwerte>
-                        <x-kernwert :label="__('IP')" :zaehler="max(0, $anzahlIps - 1)" breite="w-36">
+                        <x-kernwert :label="__('IP')" :zaehler="max(0, $anzahlIps - 1)" width="w-36">
                             @if ($primaer)
                                 <x-ip-anzeige :adresse="$adressen->first()" />
                             @endif
                         </x-kernwert>
 
-                        <x-kernwert :label="__('Ort')" breite="w-36" :titel="$eintrag->mountLocation() ?? $eintrag->site?->name">{{ $eintrag->mountLocationShort() ?? $eintrag->site?->name }}</x-kernwert>
+                        <x-kernwert :label="__('Ort')" width="w-36" :title="$eintrag->mountLocation() ?? $eintrag->site?->name">{{ $eintrag->mountLocationShort() ?? $eintrag->site?->name }}</x-kernwert>
 
                         {{-- What runs there, in the head line: in a folded card
                              it is what tells one server from the next. --}}
-                        <x-dienstchips :dienste="$eintrag->services" class="w-36" />
+                        <x-service-chips :services="$eintrag->services" class="w-36" />
                     </x-slot>
 
                     {{-- Fernwartung und Kennwort: die taeglichen Handgriffe,
                          rechts neben dem Stift - ohne die Karte aufzuklappen.
                          Welches Werkzeug dahinter steckt, steht in den
                          Einstellungen. --}}
-                    <x-slot:aktionen>
+                    <x-slot:actions>
                         <x-remote.button :device="$eintrag" stil="symbol" />
                         <livewire:copy-password-button :device="$eintrag" :key="'kopf-kennwort-server-'.$eintrag->id" />
                     </x-slot>
 
                     {{-- Second line: the server type - model and form factor. --}}
                     @if ($geraet !== '')
-                        <x-slot:untertitel><span class="min-w-0 truncate" title="{{ $geraet }}">{{ $geraet }}</span></x-slot>
+                        <x-slot:subtitle><span class="min-w-0 truncate" title="{{ $geraet }}">{{ $geraet }}</span></x-slot>
                     @endif
                 </x-show.header>
             </x-slot>
@@ -64,7 +64,7 @@
                 {{-- Drei feste Spalten nach Thema (design 1A, 26.11.22): Zugang
                      - was man zum Arbeiten braucht; Geraet - was man anfassen
                      kann; System - was der Agent meldet. Ohne Agent zwei. --}}
-                <x-kartenspalte :titel="__('Zugang')" symbol="svg.login">
+                <x-card-column :title="__('Zugang')" icon="svg.login">
                     <x-ipcard :device="$eintrag" />
 
                     <x-credentialscard :device="$eintrag" />
@@ -79,9 +79,9 @@
                     'BMC Benutzer' => $eintrag->bmcUser,
                     'BMC Passwort' => $eintrag->bmcPassword,
                 ]" />
-                </x-kartenspalte>
+                </x-card-column>
 
-                <x-kartenspalte :titel="__('Gerät')" symbol="svg.server">
+                <x-card-column :title="__('Gerät')" icon="svg.server">
                     <x-minitablecard :title="__('Hardware')" :array="[
                     'Hersteller' => $eintrag->manufacturer,
                     'Modell' => $eintrag->model,
@@ -98,19 +98,19 @@
                 ]" />
 
                     <x-beschaffungcard :device="$eintrag" />
-                </x-kartenspalte>
+                </x-card-column>
 
                 @if ($eintrag->agent_reported_at)
-                    <x-kartenspalte :titel="__('System')" symbol="svg.settings">
+                    <x-card-column :title="__('System')" icon="svg.settings">
                         <x-agentcard :device="$eintrag" :bloecke="\App\Support\AgentReportCards::server($eintrag)" />
-                    </x-kartenspalte>
+                    </x-card-column>
                 @endif
 
             </x-slot>
 
             {{-- Last change, agent, and the links to log, server map, rack. --}}
-            <x-slot:fuss>
-                <x-kartenfuss :eintrag="$eintrag" />
+            <x-slot:footer>
+                <x-card-footer :entry="$eintrag" />
             </x-slot>
         </x-card>
     

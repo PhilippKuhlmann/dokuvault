@@ -49,7 +49,7 @@ test('one linked password: one button copies it, logged like the field in the ca
         ->assertDontSee('Kopf-Kennwort-2026')
         ->call('copy', $link->id)
         // ... and goes to the browser once, as an event.
-        ->assertDispatched('password-ready', wert: 'Kopf-Kennwort-2026');
+        ->assertDispatched('password-ready', value: 'Kopf-Kennwort-2026');
 
     expect(Activity::where('event', 'kennwort_angesehen')->count())->toBe(1);
 });
@@ -110,7 +110,7 @@ test('the foot of an opened card: agent, last change, and the links one may foll
     $rack->items()->create(['device_type' => Server::class, 'device_id' => $server->id, 'position' => 4, 'height_units' => 1, 'side' => 'front']);
     $server->update(['model' => 'PowerEdge R650']);
 
-    $html = Blade::render('<x-kartenfuss :eintrag="$e" />', ['e' => $server->fresh()]);
+    $html = Blade::render('<x-card-footer :entry="$e" />', ['e' => $server->fresh()]);
 
     // The agent time stands here, and only here - not in the agent block.
     expect($html)->toContain('Agent: vor 4 Minuten')
@@ -121,6 +121,6 @@ test('the foot of an opened card: agent, last change, and the links one may foll
 
     // Without the rights the links stay away.
     $this->actingAs(userWithPermissions(['server_viewAny']));
-    $html = Blade::render('<x-kartenfuss :eintrag="$e" />', ['e' => $server->fresh()]);
+    $html = Blade::render('<x-card-footer :entry="$e" />', ['e' => $server->fresh()]);
     expect($html)->not->toContain('Verlauf')->and($html)->not->toContain('In Rack HH-01 zeigen');
 });

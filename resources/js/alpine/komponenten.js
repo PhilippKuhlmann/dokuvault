@@ -49,73 +49,73 @@ export function komponentenRegistrieren(Alpine) {
     // A card of the object lists that folds: only its head line shows until
     // it is opened - every card fully open made a list of nine servers six
     // screens long. Starts open when the list says "all open" (data attribute
-    // of kartenliste) or when the global search jumped to it.
-    Alpine.data('karte', () => ({
-        offen: false,
+    // of cardList) or when the global search jumped to it.
+    Alpine.data('card', () => ({
+        open: false,
         init() {
-            const liste = this.$el.closest('[data-karten-offen]');
-            this.offen = (liste && liste.dataset.kartenOffen === '1') || !! this.$el.closest('[data-highlight]');
+            const list = this.$el.closest('[data-cards-open]');
+            this.open = (list && list.dataset.cardsOpen === '1') || !! this.$el.closest('[data-highlight]');
         },
-        umschalten() {
-            this.offen = ! this.offen;
+        toggle() {
+            this.open = ! this.open;
         },
-        setzen(wert) {
-            this.offen = !! wert;
+        set(value) {
+            this.open = !! value;
         },
         // A click on the free space of the head line folds as well; one on a
         // link, button or field in it (edit, remote access, copy) does what
         // that element does. Selecting text to copy it folds nothing.
-        kopfKlick(event) {
+        headClick(event) {
             if (event.target.closest('a, button, input, select, textarea, label, summary, [role="button"]')) {
                 return;
             }
             if (window.getSelection && String(window.getSelection()).length > 0) {
                 return;
             }
-            this.umschalten();
+            this.toggle();
+        },
+    }));
+
+    // "Copy password" in the head line of a card: with several linked
+    // passwords a small menu. The value comes from the server as an event
+    // (password-ready) - then copy, tick on the button and the chosen row,
+    // and the menu closes by itself a moment later.
+    Alpine.data('passwordMenu', () => ({
+        open: false,
+        copied: false,
+        chosen: null,
+        toggle() {
+            this.open = ! this.open;
+        },
+        close() {
+            this.open = false;
+        },
+        choose(id) {
+            this.chosen = id;
+        },
+        isCopied(id) {
+            return this.copied && this.chosen === id;
+        },
+        copyValue(value) {
+            window.copyText(String(value ?? ''));
+            this.copied = true;
+            setTimeout(() => {
+                this.copied = false;
+                this.open = false;
+            }, 1200);
         },
     }));
 
     // The list around such cards: "open all / fold all", kept per list in
     // this browser - a convenience of the viewer, not a setting.
-    // "Copy password" in the head line of a card: with several linked
-    // passwords a small menu. The value comes from the server as an event
-    // (password-ready) - then copy, tick on the button and the chosen row,
-    // and the menu closes by itself a moment later.
-    Alpine.data('kennwortmenue', () => ({
-        offen: false,
-        copied: false,
-        gewaehlt: null,
-        umschalten() {
-            this.offen = ! this.offen;
-        },
-        schliessen() {
-            this.offen = false;
-        },
-        waehlen(id) {
-            this.gewaehlt = id;
-        },
-        istKopiert(id) {
-            return this.copied && this.gewaehlt === id;
-        },
-        kopiert(wert) {
-            window.copyText(String(wert ?? ''));
-            this.copied = true;
-            setTimeout(() => {
-                this.copied = false;
-                this.offen = false;
-            }, 1200);
-        },
-    }));
-
-    Alpine.data('kartenliste', (schluessel) => ({
-        alleOffen: (() => {
-            try { return localStorage.getItem(schluessel) === '1'; } catch (e) { return false; }
+    Alpine.data('cardList', (storageKey) => ({
+        allOpen: (() => {
+            try { return localStorage.getItem(storageKey) === '1'; } catch (e) { return false; }
         })(),
-        alleUmschalten() {
-            this.alleOffen = ! this.alleOffen;
-            try { localStorage.setItem(schluessel, this.alleOffen ? '1' : '0'); } catch (e) { /* ignore */ }
-            this.$dispatch('karten-alle', { offen: this.alleOffen });
+        toggleAll() {
+            this.allOpen = ! this.allOpen;
+            try { localStorage.setItem(storageKey, this.allOpen ? '1' : '0'); } catch (e) { /* ignore */ }
+            this.$dispatch('cards-all', { open: this.allOpen });
         },
     }));
 

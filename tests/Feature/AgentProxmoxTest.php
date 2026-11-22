@@ -373,7 +373,7 @@ test('the server and VM cards show the report and say it came from the agent', f
         ->assertSee('40 %')
         ->assertSee('nicht verfügbar')
         ->assertDontSee('0 GB / 0 GB')
-        // When it reported: in the foot of the card (x-kartenfuss).
+        // When it reported: in the foot of the card (x-card-footer).
         ->assertSee('Agent: vor');
     $this->get("/{$customer->slug}/vm")
         ->assertOk()

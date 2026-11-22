@@ -33,16 +33,16 @@ test('a server card folds and carries model and services in its head line', func
     $this->actingAs(userWithPermissions(['server_viewAny']));
 
     $html = $this->get(route('server.index', $customer))->assertOk()
-        ->assertSee('x-data="karte"', false)
+        ->assertSee('x-data="card"', false)
         ->assertSee('Details ein- oder ausklappen')
         ->assertSee('Alle aufklappen')
-        ->assertSee('kartenliste(', false)
-        ->assertSee('karten-offen:server')
+        ->assertSee('cardList(', false)
+        ->assertSee('cards-open:server')
         ->getContent();
 
     // Model under the name, services before the body begins - the folded
     // line has to tell one server from the next.
-    $kopf = substr($html, strpos($html, 'PVE-01'), strpos($html, 'data-karte-inhalt') - strpos($html, 'PVE-01'));
+    $kopf = substr($html, strpos($html, 'PVE-01'), strpos($html, 'data-card-body') - strpos($html, 'PVE-01'));
     expect($kopf)->toContain('Dell PowerEdge R750')
         ->and($kopf)->toContain('>Proxmox<')
         ->and($kopf)->toContain('>Ceph<');
@@ -57,10 +57,10 @@ test('a VM card folds and shows its services in the head line', function () {
     $this->actingAs(userWithPermissions(['vm_viewAny']));
 
     $html = $this->get(route('vm.index', $customer))->assertOk()
-        ->assertSee('x-data="karte"', false)
+        ->assertSee('x-data="card"', false)
         ->getContent();
 
-    expect(strpos($html, '>AD<'))->toBeLessThan(strpos($html, 'data-karte-inhalt'))
+    expect(strpos($html, '>AD<'))->toBeLessThan(strpos($html, 'data-card-body'))
         ->and(substr_count($html, '>DNS<'))->toBe(1);
 });
 
@@ -70,8 +70,8 @@ test('the VLAN list folds as well', function () {
     $this->actingAs(userWithPermissions(['network_viewAny']));
 
     $this->get(route('network.index', $customer))->assertOk()
-        ->assertSee('x-data="karte"', false)
-        ->assertSee('karten-offen:network')
+        ->assertSee('x-data="card"', false)
+        ->assertSee('cards-open:network')
         ->assertSee('Alle aufklappen');
 });
 
@@ -82,22 +82,22 @@ test('plain cards arrange their content themselves and do not fold', function ()
 
     $this->get(route('rack.index', $customer))->assertOk()
         ->assertSee('MUC-01')
-        ->assertDontSee('x-data="karte"', false);
+        ->assertDontSee('x-data="card"', false);
 });
 
 test('a list set to always open shows its cards open, without arrow or toggle', function () {
-    // forms.php 'klappbar' => false - set for the clusters, a customer has
+    // forms.php 'foldable' => false - set for the clusters, a customer has
     // two or three at most.
     [$customer, $site] = foldingCustomer();
     Cluster::forceCreate(['customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'PVE-Cluster HH']);
     $this->actingAs(userWithPermissions(['cluster_viewAny']));
 
-    expect(config('forms.cluster.klappbar'))->toBeFalse();
+    expect(config('forms.cluster.foldable'))->toBeFalse();
 
     $this->get(route('cluster.index', $customer))->assertOk()
         ->assertSee('PVE-Cluster HH')
-        ->assertSee('data-karte-inhalt', false)
-        ->assertDontSee('x-data="karte"', false)
+        ->assertSee('data-card-body', false)
+        ->assertDontSee('x-data="card"', false)
         ->assertDontSee('Details ein- oder ausklappen')
         ->assertDontSee('Alle aufklappen');
 });

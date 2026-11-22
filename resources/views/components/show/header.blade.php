@@ -6,15 +6,15 @@
     The head line of a card, three parts side by side (design 1A):
 
       name      the slot - name, operating system, badges - and below it the
-                quiet "untertitel" line (model, form factor). Takes the
+                quiet "subtitle" line (model, form factor). Takes the
                 room that is left, up to 36rem; on wide screens it no longer
                 wraps, a long operating system name is cut instead. The cap
                 keeps the kernwerte in the middle on a wide window - without
                 it they slid all the way to the pencil, far from the name.
       kernwerte what one nearly always looks for (IP, place, services), each
-                in a column of fixed width (x-kernwert breite): on every line
+                in a column of fixed width (x-kernwert width): on every line
                 of a list the same value stands in the same place.
-      aktionen  remote access, copy password - and the pencil, always at
+      actions   remote access, copy password - and the pencil, always at
                 the right edge.
 
     Below lg everything wraps: kernwerte under the name, the actions stay
@@ -33,10 +33,10 @@
         {{-- A second, quiet line under the name (model, form factor): in a
              folded card the head line is all there is to tell entries
              apart. --}}
-        @isset($untertitel)
+        @isset($subtitle)
             {{-- Flex, not truncate on the line: a badge in it (EOL) must stay
                  visible - the text before it is cut instead (its own span). --}}
-            <div class="mt-1 flex min-w-0 items-center gap-2 text-[13px] text-gray-500 dark:text-gray-400">{{ $untertitel }}</div>
+            <div class="mt-1 flex min-w-0 items-center gap-2 text-[13px] text-gray-500 dark:text-gray-400">{{ $subtitle }}</div>
         @endisset
     </div>
     @isset($kernwerte)
@@ -48,8 +48,8 @@
          access and password has more buttons than one with the pencil only,
          and the columns before it would otherwise shift. --}}
     <div class="ml-auto flex shrink-0 items-center justify-end gap-2 lg:w-32">
-        @isset($aktionen)
-            {{ $aktionen }}
+        @isset($actions)
+            {{ $actions }}
         @endisset
         @can($can)
             @if ($editAction)

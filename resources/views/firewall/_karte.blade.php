@@ -4,7 +4,7 @@
             $primaer = $adressen->first()?->label();
             $anzahlIps = $adressen->count();
         @endphp
-        <x-card :raster="$eintrag->agent_reported_at ? 3 : 2">
+        <x-card :columns="$eintrag->agent_reported_at ? 3 : 2">
             <x-slot:head>
                 <x-show.header can="firewall_update" editAction="$dispatch('object-edit', { typ: 'firewall', id: {{ $eintrag->id }} })">
                     @php
@@ -20,24 +20,24 @@
                          man an einer Firewall fast immer sucht: die Adresse, den
                          Firmware-Stand und wo sie steht. --}}
                     <x-slot:kernwerte>
-                        <x-kernwert :label="__('IP')" :zaehler="max(0, $anzahlIps - 1)" breite="w-36">
+                        <x-kernwert :label="__('IP')" :zaehler="max(0, $anzahlIps - 1)" width="w-36">
                             @if ($primaer)
                                 <x-ip-anzeige :adresse="$adressen->first()" />
                             @endif
                         </x-kernwert>
 
-                        <x-kernwert :label="__('Firmware')" breite="w-36" :titel="$eintrag->firmware">{{ $eintrag->firmware }}</x-kernwert>
+                        <x-kernwert :label="__('Firmware')" width="w-36" :title="$eintrag->firmware">{{ $eintrag->firmware }}</x-kernwert>
 
-                        <x-kernwert :label="__('Ort')" breite="w-36" :titel="$eintrag->mountLocation() ?? $eintrag->site?->name">{{ $eintrag->mountLocationShort() ?? $eintrag->site?->name }}</x-kernwert>
+                        <x-kernwert :label="__('Ort')" width="w-36" :title="$eintrag->mountLocation() ?? $eintrag->site?->name">{{ $eintrag->mountLocationShort() ?? $eintrag->site?->name }}</x-kernwert>
                     </x-slot>
 
-                    <x-slot:aktionen>
+                    <x-slot:actions>
                         <livewire:copy-password-button :device="$eintrag" :key="'kopf-kennwort-firewall-'.$eintrag->id" />
                     </x-slot>
 
                     {{-- Second line: the device - model and form factor. --}}
                     @if ($geraet !== '')
-                        <x-slot:untertitel><span class="min-w-0 truncate" title="{{ $geraet }}">{{ $geraet }}</span></x-slot>
+                        <x-slot:subtitle><span class="min-w-0 truncate" title="{{ $geraet }}">{{ $geraet }}</span></x-slot>
                     @endif
                 </x-show.header>
             </x-slot>
@@ -46,7 +46,7 @@
                 {{-- Feste Spalten nach Thema wie bei Server und VM (design 1A):
                      Zugang - womit man hineinkommt; Geraet - was man anfassen
                      und verlaengern muss; System - was der Agent meldet. --}}
-                <x-kartenspalte :titel="__('Zugang')" symbol="svg.login">
+                <x-card-column :title="__('Zugang')" icon="svg.login">
                     <x-ipcard :device="$eintrag" />
 
                     <x-credentialscard :device="$eintrag" />
@@ -66,9 +66,9 @@
                         'User URL' => $eintrag->url_user,
                         'Externe URL' => $eintrag->url_external,
                     ]" />
-                </x-kartenspalte>
+                </x-card-column>
 
-                <x-kartenspalte :titel="__('Gerät')" symbol="svg.server">
+                <x-card-column :title="__('Gerät')" icon="svg.server">
                     <x-minitablecard :title="__('Hardware')" :array="[
                         'Hersteller' => $eintrag->manufacturer,
                         'Modell' => $eintrag->model,
@@ -86,10 +86,10 @@
                     <x-minitablecard :title="__('Notizen')" :array="[
                         'Notizen' => $eintrag->notes,
                     ]" />
-                </x-kartenspalte>
+                </x-card-column>
 
                 @if ($eintrag->agent_reported_at)
-                    <x-kartenspalte :titel="__('System')" symbol="svg.settings">
+                    <x-card-column :title="__('System')" icon="svg.settings">
                     {{-- What the firewall agent reported - read only, replaced by
                          every run. Each list is left out when it is empty. --}}
                         @php
@@ -128,7 +128,7 @@
                         <p class="w-full mb-5 text-xs text-gray-500 dark:text-gray-400">
                             {{ __('Vom Agent gemeldet am :datum', ['datum' => \App\Support\LocalTime::display($eintrag->agent_reported_at)]) }}
                         </p>
-                    </x-kartenspalte>
+                    </x-card-column>
                 @endif
 
             </x-slot>

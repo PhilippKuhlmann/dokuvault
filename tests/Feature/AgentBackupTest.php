@@ -175,13 +175,13 @@ test('the period of the grid is a setting and the page needs its right', functio
     $this->actingAs(userWithPermissions(['admin_backup']));
 
     Livewire\Livewire::test(AdminBackups::class)
-        ->assertSet('tage', 14)
-        ->set('tage', 30);
+        ->assertSet('days', 14)
+        ->set('days', 30);
 
     expect(Setting::backupDays())->toBe(30);
 
     // Only the offered periods; anything else falls back to 14.
-    Livewire\Livewire::test(AdminBackups::class)->set('tage', 9);
+    Livewire\Livewire::test(AdminBackups::class)->set('days', 9);
     expect(Setting::backupDays())->toBe(14);
 });
 

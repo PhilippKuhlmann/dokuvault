@@ -202,7 +202,7 @@ return [
     'firewall' => [
         'model' => Firewall::class, 'request' => FirewallRequest::class,
         // Always open: a handful of entries at most (x-card, object-list).
-        'klappbar' => false,
+        'foldable' => false,
         'relation' => 'firewalls', 'einzahl' => 'Firewall', 'suchfelder' => ['name', 'serialNumber'],
         'bloecke' => true,
         'spalten' => 2,
@@ -358,7 +358,7 @@ return [
     'internetconnection' => [
         'model' => InternetConnection::class, 'request' => InternetConnectionRequest::class,
         // Always open: a handful of entries at most (x-card, object-list).
-        'klappbar' => false,
+        'foldable' => false,
         'relation' => 'internetconnections', 'einzahl' => 'Internetanschluss',
         'suchfelder' => ['provider', 'product', 'contract_number'],
         'spalten' => 2,
@@ -439,7 +439,7 @@ return [
     'addomain' => [
         'model' => ADDomain::class, 'request' => ADDomainRequest::class,
         // Always open: a handful of entries at most (x-card, object-list).
-        'klappbar' => false,
+        'foldable' => false,
         'relation' => 'addomains', 'einzahl' => 'AD-Domäne',
         'suchfelder' => ['domain', 'netbios'],
         // Domain admin account via the credentials block, not a column of its own.
@@ -487,7 +487,7 @@ return [
     'securepointuma' => [
         'model' => SecurepointUMA::class, 'request' => SecurepointUMARequest::class,
         // Always open: a handful of entries at most (x-card, object-list).
-        'klappbar' => false,
+        'foldable' => false,
         'relation' => 'securepointumas', 'einzahl' => 'E-Mail-Archivierung',
         'suchfelder' => ['name', 'manufacturer'],
         'bloecke' => true,
@@ -523,7 +523,7 @@ return [
         'relation' => 'clusters', 'einzahl' => 'Cluster', 'suchfelder' => ['name', 'note'],
         // Always open: a customer has two or three clusters at most, folding
         // them would only cost clicks (x-card, object-list).
-        'klappbar' => false,
+        'foldable' => false,
         // Preload the nodes for the map, or one query per row.
         'mitladen' => ['servers.operatingSystem'],
         'felder' => [
@@ -780,7 +780,7 @@ return [
     'nas' => [
         'model' => NAS::class, 'request' => NASRequest::class,
         // Always open: a handful of entries at most (x-card, object-list).
-        'klappbar' => false,
+        'foldable' => false,
         'relation' => 'nas', 'einzahl' => 'NAS', 'suchfelder' => ['name', 'model', 'serialNumber'],
         'bloecke' => true,
         'felder' => [
@@ -854,7 +854,7 @@ return [
     'phonesystem' => [
         'model' => PhoneSystem::class, 'request' => PhoneSystemRequest::class,
         // Always open: a handful of entries at most (x-card, object-list).
-        'klappbar' => false,
+        'foldable' => false,
         'relation' => 'phonesystems', 'einzahl' => 'TK-Anlage', 'suchfelder' => ['name', 'manufacturer', 'model', 'serialNumber'],
         'bloecke' => true,
         'felder' => [
@@ -874,7 +874,7 @@ return [
     'sipaccount' => [
         'model' => SipAccount::class, 'request' => SipAccountRequest::class,
         // Always open: a handful of entries at most (x-card, object-list).
-        'klappbar' => false,
+        'foldable' => false,
         'relation' => 'sipaccounts', 'einzahl' => 'SIP-Anschluss',
         'suchfelder' => ['provider', 'main_number', 'numbers', 'contract_number'],
         // SIP credentials via the credentials block: single numbers often
@@ -965,7 +965,7 @@ return [
     'recorder' => [
         'model' => Recorder::class, 'request' => RecorderRequest::class,
         // Always open: one or two per customer (x-card, object-list).
-        'klappbar' => false,
+        'foldable' => false,
         'relation' => 'recorders', 'einzahl' => 'Recorder', 'suchfelder' => ['name', 'model', 'serialNumber'],
         'bloecke' => true,
         'felder' => [
@@ -984,7 +984,7 @@ return [
     'router' => [
         'model' => Router::class, 'request' => RouterRequest::class,
         // Always open: a handful of entries at most (x-card, object-list).
-        'klappbar' => false,
+        'foldable' => false,
         'relation' => 'routers', 'einzahl' => 'Router', 'suchfelder' => ['name', 'model', 'serialNumber'],
         'bloecke' => true,
         'felder' => [
@@ -1003,7 +1003,7 @@ return [
     'ups' => [
         'model' => Ups::class, 'request' => UpsRequest::class,
         // Always open: a handful of entries at most (x-card, object-list).
-        'klappbar' => false,
+        'foldable' => false,
         'relation' => 'ups', 'einzahl' => 'USV', 'suchfelder' => ['name', 'model', 'serialNumber'],
         'bloecke' => true,
         'felder' => [

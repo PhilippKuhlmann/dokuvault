@@ -42,8 +42,8 @@ test('a server the agent reports: a third column System', function () {
 });
 
 test('a column whose blocks are all empty is left out', function () {
-    $leer = Blade::render('<x-kartenspalte titel="Zugang">{!! $nichts !!}</x-kartenspalte>', ['nichts' => "<!--[if BLOCK]><![endif]-->\n  <!--[if ENDBLOCK]><![endif]-->"]);
-    $voll = Blade::render('<x-kartenspalte titel="Zugang"><p>10.10.30.14</p></x-kartenspalte>');
+    $leer = Blade::render('<x-card-column title="Zugang">{!! $nichts !!}</x-card-column>', ['nichts' => "<!--[if BLOCK]><![endif]-->\n  <!--[if ENDBLOCK]><![endif]-->"]);
+    $voll = Blade::render('<x-card-column title="Zugang"><p>10.10.30.14</p></x-card-column>');
 
     expect(trim($leer))->toBe('')
         ->and($voll)->toContain('Zugang')->toContain('10.10.30.14');

@@ -23,8 +23,8 @@
             {{-- A setting of the installation, saved on change - the
                  customer's backup card shows the same period. --}}
             <div>
-                <x-input.label for="tage" :value="__('Zeitraum')" />
-                <x-input.select name="tage" id="tage" wire:model.live="tage" class="mt-1">
+                <x-input.label for="days" :value="__('Zeitraum')" />
+                <x-input.select name="days" id="days" wire:model.live="days" class="mt-1">
                     @foreach (\App\Models\Setting::BACKUP_DAY_OPTIONS as $wert)
                         <option value="{{ $wert }}">{{ trans_choice(':count Tag|:count Tage', $wert) }}</option>
                     @endforeach
@@ -65,7 +65,7 @@
                 <tr>
                     <th class="px-4 py-2.5 font-semibold">{{ __('Kunde') }}</th>
                     <th class="px-4 py-2.5 font-semibold">{{ __('Backup') }}</th>
-                    <th class="px-4 py-2.5 font-semibold">{{ __('Letzte :tage Tage', ['tage' => $tage]) }}</th>
+                    <th class="px-4 py-2.5 font-semibold">{{ __('Letzte :tage Tage', ['tage' => $days]) }}</th>
                     <th class="px-4 py-2.5 font-semibold">{{ __('Tage erfolgreich') }}</th>
                     <th class="px-4 py-2.5 font-semibold">{{ __('Letzter Erfolg') }}</th>
                 </tr>
@@ -73,7 +73,7 @@
             <tbody>
                 @forelse ($backups as $backup)
                     @php
-                        $cells = \App\Support\BackupRunDays::for($backup, $tage);
+                        $cells = \App\Support\BackupRunDays::for($backup, $days);
                         // Of the days that had a run: how many went through.
                         $ran = collect($cells)->whereIn('state', ['ok', 'warning', 'failed'])->count();
                         $ok = collect($cells)->where('state', 'ok')->count();
@@ -91,7 +91,7 @@
                             </div>
                         </td>
                         <td class="px-4 py-2.5">
-                            <x-backup-verlauf :backup="$backup" :cells="$cells" gross />
+                            <x-backup-verlauf :backup="$backup" :cells="$cells" large />
                         </td>
                         <td class="whitespace-nowrap px-4 py-2.5">
                             @if ($ran > 0)

@@ -1,10 +1,10 @@
 {{-- Kopfzeile mit Suche und Anlegen-Knopf, darunter die Karten des Typs.
      Suchfeld wie in der VLAN-Liste: Lupe im Feld, sucht waehrend des Tippens. --}}
-{{-- kartenliste: "open all / fold all" for the folding cards (x-card),
-     kept per list in this browser; the cards read data-karten-offen when
+{{-- cardList: "open all / fold all" for the folding cards (x-card),
+     kept per list in this browser; the cards read data-cards-open when
      they start - also after Livewire re-renders the list. --}}
-<div x-data="kartenliste(@alpineJson('karten-offen:'.$typ))"
-    x-bind:data-karten-offen="alleOffen ? '1' : '0'"
+<div x-data="cardList(@alpineJson('cards-open:'.$typ))"
+    x-bind:data-cards-open="allOpen ? '1' : '0'"
     {{-- Jumped in from the global search: scroll to the highlighted entry
          and flash it briefly - see $treffer in resources/js/alpine/hilfen.js. --}}
     x-init="$treffer()">
@@ -40,13 +40,13 @@
         @endforeach
 
         {{-- Only for card lists that fold: a table has nothing to fold, and
-             a list set to "always open" (forms.php 'klappbar' => false, e.g.
+             a list set to "always open" (forms.php 'foldable' => false, e.g.
              the few clusters) neither. --}}
-        @unless (view()->exists($typ.'._zeile') || ! config('forms.'.$typ.'.klappbar', true))
-            <button type="button" x-on:click="alleUmschalten()"
+        @unless (view()->exists($typ.'._zeile') || ! config('forms.'.$typ.'.foldable', true))
+            <button type="button" x-on:click="toggleAll()"
                 class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 shadow-xs transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-                <span x-show="! alleOffen">{{ __('Alle aufklappen') }}</span>
-                <span x-show="alleOffen" x-cloak>{{ __('Alle zuklappen') }}</span>
+                <span x-show="! allOpen">{{ __('Alle aufklappen') }}</span>
+                <span x-show="allOpen" x-cloak>{{ __('Alle zuklappen') }}</span>
             </button>
         @endunless
 
@@ -130,9 +130,9 @@
         </div>
     @endif
 
-    {{-- Folding or always open, per kind (forms.php 'klappbar', default
+    {{-- Folding or always open, per kind (forms.php 'foldable', default
          folding) - x-card reads it, the _karte files need not know. --}}
-    @php (app()->instance('karten.klappbar', (bool) config('forms.'.$typ.'.klappbar', true)))
+    @php (app()->instance('cards.foldable', (bool) config('forms.'.$typ.'.foldable', true)))
 
     @forelse ($eintraege as $eintrag)
         @unless ($alsTabelle)

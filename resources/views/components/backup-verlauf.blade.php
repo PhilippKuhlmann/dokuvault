@@ -10,9 +10,9 @@
 
     $backup: with recentRuns and firstRun loaded.
     cells: already built (the admin overview counts them as well).
-    gross: the larger squares of the admin overview.
+    large: the larger squares of the admin overview.
 --}}
-@props(['backup', 'cells' => null, 'gross' => false])
+@props(['backup', 'cells' => null, 'large' => false])
 
 @php
     $cells ??= \App\Support\BackupRunDays::for($backup, \App\Models\Setting::backupDays());
@@ -27,8 +27,8 @@
             <x-hovertext dunkel class="leading-none" :text="$cell['label']">
                 <span tabindex="0" @class([
                         'inline-block rounded-sm cursor-default focus:outline-hidden focus:ring-2 focus:ring-cerulean-500',
-                        'h-5 w-3.5' => $gross,
-                        'h-4 w-2.5' => ! $gross,
+                        'h-5 w-3.5' => $large,
+                        'h-4 w-2.5' => ! $large,
                         'bg-green-600' => $cell['state'] === 'ok',
                         'bg-amber-400' => $cell['state'] === 'warning',
                         'bg-red-600' => $cell['state'] === 'failed',

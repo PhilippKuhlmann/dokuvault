@@ -35,7 +35,7 @@ trait TracksChanges
 
     /**
      * The newest entry of the activity log about this object - "changed on
-     * ... by ..." in the foot of an opened card (x-kartenfuss). A relation,
+     * ... by ..." in the foot of an opened card (x-card-footer). A relation,
      * so a list loads it for all its entries in one query.
      */
     public function latestActivity(): MorphOne

@@ -129,7 +129,7 @@ export function hilfenRegistrieren(Alpine) {
 
             // The visible surface of a card (x-card marks it): the wrapper
             // around it has no box, nor does the folding div around the panel.
-            const target = w.querySelector('[data-karte-flaeche]') || w.firstElementChild || w;
+            const target = w.querySelector('[data-card-surface]') || w.firstElementChild || w;
             target.scrollIntoView({ behavior: 'smooth', block: 'center' });
             target.style.transition = 'box-shadow .3s';
             target.style.boxShadow = '0 0 0 3px rgb(56 152 236)';

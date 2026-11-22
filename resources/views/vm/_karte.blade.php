@@ -5,7 +5,7 @@
             $primaer = $adressen->first()?->label();
         @endphp
 
-        <x-card :raster="2">
+        <x-card :columns="2">
             <x-slot:head>
                 <x-show.header can="vm_update" editAction="$dispatch('object-edit', { typ: 'vm', id: {{ $eintrag->id }} })">
                     <span class="shrink-0 font-bold">{{ $eintrag->name }}</span>
@@ -68,14 +68,14 @@
                          to kind and state they were cut ("Windows Server 201…")
                          - and with them the version the badge is about. --}}
                     @if ($eintrag->operatingSystem)
-                        <x-slot:untertitel><span class="min-w-0 truncate" title="{{ $eintrag->operatingSystem->name }}">{{ $eintrag->operatingSystem->name }}</span><span class="shrink-0"><x-eol :os="$eintrag->operatingSystem" /></span></x-slot>
+                        <x-slot:subtitle><span class="min-w-0 truncate" title="{{ $eintrag->operatingSystem->name }}">{{ $eintrag->operatingSystem->name }}</span><span class="shrink-0"><x-eol :os="$eintrag->operatingSystem" /></span></x-slot>
                     @endif
 
                     {{-- Wie beim Server: das Nachgeschlagene in festen Spalten.
                          Statt des Einbauorts steht hier der Host - eine VM
                          steckt in keinem Rack. --}}
                     <x-slot:kernwerte>
-                        <x-kernwert :label="__('IP')" :zaehler="max(0, $anzahlIps - 1)" breite="w-36">
+                        <x-kernwert :label="__('IP')" :zaehler="max(0, $anzahlIps - 1)" width="w-36">
                             @if ($primaer)
                                 <x-ip-anzeige :adresse="$adressen->first()" />
                             @endif
@@ -84,13 +84,13 @@
                         {{-- Host oder Cluster - eines von beiden, nie beides.
                              Ohne den Cluster stuende bei einer Cluster-VM
                              nichts, obwohl dokumentiert ist, wo sie laeuft. --}}
-                        <x-kernwert :label="$eintrag->cluster && ! $eintrag->host ? __('Cluster') : __('Host')" breite="w-40">{{ $eintrag->host?->name ?? $eintrag->cluster?->name }}</x-kernwert>
+                        <x-kernwert :label="$eintrag->cluster && ! $eintrag->host ? __('Cluster') : __('Host')" width="w-40">{{ $eintrag->host?->name ?? $eintrag->cluster?->name }}</x-kernwert>
 
                         {{-- As on the server: what runs there, in the head line. --}}
-                        <x-dienstchips :dienste="$eintrag->services" class="w-36" />
+                        <x-service-chips :services="$eintrag->services" class="w-36" />
                     </x-slot>
 
-                    <x-slot:aktionen>
+                    <x-slot:actions>
                         <x-remote.button :device="$eintrag" stil="symbol" />
                         <livewire:copy-password-button :device="$eintrag" :key="'kopf-kennwort-vm-'.$eintrag->id" />
                     </x-slot>
@@ -100,8 +100,8 @@
             <x-slot:body>
                 {{-- Zwei feste Spalten (design 1A): Zugang - was man zum Arbeiten
                      braucht; System - Ressourcen von Hand und was der Agent meldet.
-                     Dienste stehen seit 26.11.22 im Kopf (x-dienstchips). --}}
-                <x-kartenspalte :titel="__('Zugang')" symbol="svg.login">
+                     Dienste stehen seit 26.11.22 im Kopf (x-service-chips). --}}
+                <x-card-column :title="__('Zugang')" icon="svg.login">
                     <x-ipcard :device="$eintrag" />
 
                     <x-credentialscard :device="$eintrag" />
@@ -112,10 +112,10 @@
                         \App\Models\Setting::remoteAccess()['id_label'] => $eintrag->remoteID,
                         'Passwort' => [$eintrag, 'remotePassword'],
                     ]" />
-                </x-kartenspalte>
+                </x-card-column>
 
                 @if ($eintrag->agent_reported_at || filled($eintrag->cores) || filled($eintrag->memory_gb) || filled($eintrag->disk_gb))
-                    <x-kartenspalte :titel="__('System')" symbol="svg.settings">
+                    <x-card-column :title="__('System')" icon="svg.settings">
                         {{-- By hand, for a guest no agent reports. --}}
                         <x-minitablecard :title="__('Ressourcen')" :array="[
                             'Kerne' => $eintrag->cores,
@@ -124,13 +124,13 @@
                         ]" />
 
                         <x-agentcard :device="$eintrag" :bloecke="\App\Support\AgentReportCards::vm($eintrag)" />
-                    </x-kartenspalte>
+                    </x-card-column>
                 @endif
             </x-slot>
 
             {{-- Last change, agent, and the links to log, server map, rack. --}}
-            <x-slot:fuss>
-                <x-kartenfuss :eintrag="$eintrag" />
+            <x-slot:footer>
+                <x-card-footer :entry="$eintrag" />
             </x-slot>
         </x-card>
     

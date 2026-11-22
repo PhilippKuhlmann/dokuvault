@@ -68,5 +68,5 @@
     @endforeach
 
     {{-- When the agent last reported stands in the foot of the card
-         (x-kartenfuss) - here it said the same a second time. --}}
+         (x-card-footer) - here it said the same a second time. --}}
 @endif

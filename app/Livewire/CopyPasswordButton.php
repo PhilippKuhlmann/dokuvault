@@ -60,15 +60,15 @@ class CopyPasswordButton extends Component
         }
 
         try {
-            $wert = app(PasswordReveal::class)->ausVerknuepfung($link, auth()->user());
-        } catch (TooManyPasswordReveals $bremse) {
-            $this->addError('kennwort', $bremse->getMessage());
+            $value = app(PasswordReveal::class)->ausVerknuepfung($link, auth()->user());
+        } catch (TooManyPasswordReveals $throttled) {
+            $this->addError('kennwort', $throttled->getMessage());
 
             return;
         }
 
-        if ($wert !== null) {
-            $this->dispatch('password-ready', wert: $wert)->self();
+        if ($value !== null) {
+            $this->dispatch('password-ready', value: $value)->self();
         }
     }
 

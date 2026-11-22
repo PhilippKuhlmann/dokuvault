@@ -29,7 +29,7 @@ class AdminBackups extends Component
     public bool $nurProbleme = false;
 
     /** Days in the grid (Setting::backupDays). */
-    public int $tage = 14;
+    public int $days = 14;
 
     /** Runs kept per backup before the oldest are deleted. */
     public int $aufbewahrung = 100;
@@ -38,16 +38,16 @@ class AdminBackups extends Component
     {
         Gate::authorize('admin_backup');
 
-        $this->tage = Setting::backupDays();
+        $this->days = Setting::backupDays();
         $this->aufbewahrung = Setting::backupAufbewahrung();
     }
 
-    public function updatedTage(): void
+    public function updatedDays(): void
     {
         Gate::authorize('admin_backup');
 
-        $this->tage = in_array($this->tage, Setting::BACKUP_DAY_OPTIONS, true) ? $this->tage : 14;
-        Setting::setzen(Setting::BACKUP_VERLAUF, $this->tage);
+        $this->days = in_array($this->days, Setting::BACKUP_DAY_OPTIONS, true) ? $this->days : 14;
+        Setting::setzen(Setting::BACKUP_VERLAUF, $this->days);
     }
 
     /**
@@ -83,9 +83,9 @@ class AdminBackups extends Component
 
         // The counts on top: by the last run, before "only problems" filters.
         $counts = (clone $reported)
-            ->selectRaw('last_status, count(*) as anzahl')
+            ->selectRaw('last_status, count(*) as total')
             ->groupBy('last_status')
-            ->pluck('anzahl', 'last_status');
+            ->pluck('total', 'last_status');
 
         $backups = $reported
             ->with(['customer:id,name,slug', 'recentRuns', 'firstRun'])

@@ -19,6 +19,10 @@
 - **Kernwerte bleiben in der Mitte, auch im breiten Fenster.** Der Namensblock wächst höchstens auf 36 rem; vorher rutschten IP, Ort und Dienste auf großen Bildschirmen ganz nach rechts an den Stift, weit weg vom Namen. Gilt für alle Karten mit dieser Kopfzeile.
 - **„Kennwort kopieren“ mit mehreren Kennwörtern** sieht aus wie seine Nachbarn: ein umrandeter Knopf, in der Ecke die Anzahl. Das Menü dahinter zeigt je Eintrag Bezeichnung und Benutzername (so unterscheidet man zweimal „Administrator“). Nach dem Klick steht „Kopiert“ in der Zeile und ein Haken am Knopf, dann schließt sich das Menü von selbst. Es schließt auch per Esc oder per Klick daneben.
 
+### Intern
+
+- Neu eingeführte Bezeichner auf Englisch: `x-card-column`, `x-card-footer`, `x-service-chips`, `'foldable'` in `config/forms.php`, die Alpine-Komponenten `card`, `cardList`, `passwordMenu`. Ob „Alle aufklappen“ zuletzt an war, merkt sich der Browser unter neuem Namen – einmal neu wählen.
+
 ## 26.11.22c
 
 ### Changed
@@ -46,7 +50,7 @@
 ### Changed
 
 - **Listen-Karten sind zuklappbar.** In allen Kartenlisten (Server, VMs, Clients, Drucker, VLANs …) zeigt jeder Eintrag zunächst nur seine Kopfzeile: Name, Kernwerte wie IP und Ort, Fernwartung und Bearbeiten. Ein Klick auf den Pfeil oder die freie Fläche des Kopfs klappt die Karte auf. Neun Server passen jetzt auf einen Bildschirm statt auf sechs. „Alle aufklappen“ oben in der Liste öffnet alle; die Wahl merkt sich der Browser je Liste. Ein Sprung aus der Suche klappt den Treffer auf. Serverschränke, Patchfelder und die EOL-Übersicht bleiben, wie sie sind.
-- **Je Liste einstellbar: zuklappbar oder immer offen.** Listen mit wenigen Einträgen bleiben immer aufgeklappt – ohne Pfeil und ohne „Alle aufklappen“. Immer offen sind jetzt: Cluster, Internet-Anschlüsse, Firewalls, Router, AD-Domänen, TK-Anlagen, SIP-Anschlüsse, NAS, USV, E-Mail-Archivierung und Rekorder. Welche Liste wie arbeitet, steht je Objektart in `config/forms.php` (`'klappbar' => false`).
+- **Je Liste einstellbar: zuklappbar oder immer offen.** Listen mit wenigen Einträgen bleiben immer aufgeklappt – ohne Pfeil und ohne „Alle aufklappen“. Immer offen sind jetzt: Cluster, Internet-Anschlüsse, Firewalls, Router, AD-Domänen, TK-Anlagen, SIP-Anschlüsse, NAS, USV, E-Mail-Archivierung und Rekorder. Welche Liste wie arbeitet, steht je Objektart in `config/forms.php` (`'foldable' => false`).
 - **Server und VMs: mehr im Kopf.** Unter dem Namen eines Servers steht jetzt Modell und Bauform. Die Dienste stehen bei Server und VM als farbige Chips in der Kopfzeile statt als eigener Block – so unterscheidet die zugeklappte Zeile einen Server vom nächsten.
 
 ### Changed
