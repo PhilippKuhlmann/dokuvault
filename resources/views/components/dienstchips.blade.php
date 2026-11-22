@@ -15,6 +15,6 @@
      the columns of a list keep their place. --}}
 <div {{ $attributes->merge(['class' => 'flex flex-wrap items-center gap-1']) }}>
     @foreach ($gefuellt as $dienst)
-        <x-servicechip :name="$dienst" :farbe="$farben[mb_strtolower($dienst)] ?? null" class="px-2! py-0.5! text-xs!" />
+        <x-servicechip :name="$dienst" :farbe="$farben[mb_strtolower($dienst)] ?? null" class="px-2! py-0.5! text-[11px]! font-semibold" />
     @endforeach
 </div>

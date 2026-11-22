@@ -14,14 +14,14 @@
                             __(config('custom.server_form_factors')[$eintrag->form_factor] ?? ''),
                         ]));
                     @endphp
-                    <span class="shrink-0 font-semibold">{{ $eintrag->name }}</span>
+                    <span class="shrink-0 font-bold">{{ $eintrag->name }}</span>
 
                     {{-- Betriebssystem klein hinter dem Namen, das EOL-Abzeichen
                          direkt daneben - es gehoert zum System. Zur Not wird
                          das System gekuerzt (voll im Tooltip), das Abzeichen
                          nie. Der Servertyp steht in der zweiten Zeile. --}}
                     @if ($eintrag->operatingSystem)
-                        <span class="min-w-0 truncate text-sm font-normal text-gray-500 dark:text-gray-400" title="{{ $eintrag->operatingSystem->name }}">{{ $eintrag->operatingSystem->name }}</span>
+                        <span class="min-w-0 truncate text-[13px] font-normal text-gray-500 dark:text-gray-400" title="{{ $eintrag->operatingSystem->name }}">{{ $eintrag->operatingSystem->name }}</span>
                         <span class="shrink-0"><x-eol :os="$eintrag->operatingSystem" /></span>
                     @endif
 

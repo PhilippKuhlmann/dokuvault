@@ -25,7 +25,7 @@
              auf breiten Schirmen - in der zugeklappten Liste ist der Kopf
              alles, was man sieht, und er soll ruhig bleiben. min-w-0 laesst
              den Block schmaler werden als seinen Inhalt. --}}
-        <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 wrap-break-word text-base leading-tight sm:gap-x-3 sm:text-xl lg:flex-nowrap dark:text-gray-100">
+        <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 wrap-break-word text-base leading-tight sm:gap-x-3 sm:text-lg lg:flex-nowrap dark:text-gray-100">
             {{ $slot }}
         </div>
         {{-- A second, quiet line under the name (model, form factor): in a
@@ -34,7 +34,7 @@
         @isset($untertitel)
             {{-- Flex, not truncate on the line: a badge in it (EOL) must stay
                  visible - the text before it is cut instead (its own span). --}}
-            <div class="mt-1 flex min-w-0 items-center gap-2 text-sm text-gray-500 dark:text-gray-400">{{ $untertitel }}</div>
+            <div class="mt-1 flex min-w-0 items-center gap-2 text-[13px] text-gray-500 dark:text-gray-400">{{ $untertitel }}</div>
         @endisset
     </div>
     @isset($kernwerte)

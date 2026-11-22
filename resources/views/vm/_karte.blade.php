@@ -8,7 +8,7 @@
         <x-card>
             <x-slot:head>
                 <x-show.header can="vm_update" editAction="$dispatch('object-edit', { typ: 'vm', id: {{ $eintrag->id }} })">
-                    <span class="shrink-0 font-semibold">{{ $eintrag->name }}</span>
+                    <span class="shrink-0 font-bold">{{ $eintrag->name }}</span>
 
                     {{-- VM or container, as the agent reported it: decides how
                          to get in (console vs. pct enter) and what a backup

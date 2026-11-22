@@ -11,14 +11,16 @@
      value. The value is cut off and readable in titel. An empty value shows
      a dash, so the column stays where it is. --}}
 <div @class([
-    'flex min-w-0 text-sm',
+    'flex min-w-0',
+    'text-sm' => ! $breite,
+    'text-[13px]' => $breite,
     'flex-col gap-0.5' => $breite,
     'items-center gap-2' => ! $breite,
     $breite => $breite,
 ])>
     {{-- gray-500 / dark gray-400: the lighter shades stayed under 4.5:1 for
          text this small (2.5:1 light, 3:1 dark). --}}
-    <span class="shrink-0 text-[10.5px] font-semibold uppercase leading-none tracking-wide text-gray-500 dark:text-gray-400">{{ $label }}</span>
+    <span class="shrink-0 text-[11px] font-semibold uppercase leading-none tracking-wide text-gray-500 dark:text-gray-400">{{ $label }}</span>
 
     <div class="flex min-w-0 items-center gap-2">
         {{-- Livewire leaves its BLOCK comment markers in a slot built from @if:
