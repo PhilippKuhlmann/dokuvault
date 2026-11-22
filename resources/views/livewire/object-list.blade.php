@@ -39,8 +39,10 @@
             @endcan
         @endforeach
 
-        {{-- Only for card lists: a table has nothing to fold. --}}
-        @unless (view()->exists($typ.'._zeile'))
+        {{-- Only for card lists that fold: a table has nothing to fold, and
+             a list set to "always open" (forms.php 'klappbar' => false, e.g.
+             the few clusters) neither. --}}
+        @unless (view()->exists($typ.'._zeile') || ! config('forms.'.$typ.'.klappbar', true))
             <button type="button" x-on:click="alleUmschalten()"
                 class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 shadow-xs transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
                 <span x-show="! alleOffen">{{ __('Alle aufklappen') }}</span>
@@ -127,6 +129,10 @@
             </x-table.main>
         </div>
     @endif
+
+    {{-- Folding or always open, per kind (forms.php 'klappbar', default
+         folding) - x-card reads it, the _karte files need not know. --}}
+    @php (app()->instance('karten.klappbar', (bool) config('forms.'.$typ.'.klappbar', true)))
 
     @forelse ($eintraege as $eintrag)
         @unless ($alsTabelle)

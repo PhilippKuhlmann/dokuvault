@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Cluster;
 use App\Models\Customer;
 use App\Models\Network;
 use App\Models\OperatingSystem;
@@ -82,4 +83,21 @@ test('plain cards arrange their content themselves and do not fold', function ()
     $this->get(route('rack.index', $customer))->assertOk()
         ->assertSee('MUC-01')
         ->assertDontSee('x-data="karte"', false);
+});
+
+test('a list set to always open shows its cards open, without arrow or toggle', function () {
+    // forms.php 'klappbar' => false - set for the clusters, a customer has
+    // two or three at most.
+    [$customer, $site] = foldingCustomer();
+    Cluster::forceCreate(['customer_id' => $customer->id, 'site_id' => $site->id, 'name' => 'PVE-Cluster HH']);
+    $this->actingAs(userWithPermissions(['cluster_viewAny']));
+
+    expect(config('forms.cluster.klappbar'))->toBeFalse();
+
+    $this->get(route('cluster.index', $customer))->assertOk()
+        ->assertSee('PVE-Cluster HH')
+        ->assertSee('data-karte-inhalt', false)
+        ->assertDontSee('x-data="karte"', false)
+        ->assertDontSee('Details ein- oder ausklappen')
+        ->assertDontSee('Alle aufklappen');
 });

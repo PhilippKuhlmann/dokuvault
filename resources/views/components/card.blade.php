@@ -21,7 +21,10 @@
     (rack, patch panel, EOL) arrange their content themselves and stay open.
 --}}
 @php
-    $klappbar = ! $plain && trim($head) !== '';
+    // A list may be set to "always open" (forms.php 'klappbar' => false,
+    // passed on by object-list): then no arrow, no folding, content shown.
+    $listeKlappt = ! app()->bound('karten.klappbar') || app('karten.klappbar');
+    $klappbar = ! $plain && trim($head) !== '' && $listeKlappt;
     // No @if inside a component tag: the binding comes as an attribute bag.
     $flaeche = new \Illuminate\View\ComponentAttributeBag($klappbar
         ? ['x-bind:class' => "offen ? 'ring-2 ring-cerulean-400/60 shadow-md dark:ring-cerulean-500/50' : ''"]

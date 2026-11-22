@@ -513,6 +513,9 @@ return [
     'cluster' => [
         'model' => Cluster::class, 'request' => ClusterRequest::class,
         'relation' => 'clusters', 'einzahl' => 'Cluster', 'suchfelder' => ['name', 'note'],
+        // Always open: a customer has two or three clusters at most, folding
+        // them would only cost clicks (x-card, object-list).
+        'klappbar' => false,
         // Preload the nodes for the map, or one query per row.
         'mitladen' => ['servers.operatingSystem'],
         'felder' => [
