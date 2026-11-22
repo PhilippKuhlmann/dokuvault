@@ -7,8 +7,10 @@
 
       name      the slot - name, operating system, badges - and below it the
                 quiet "untertitel" line (model, form factor). Takes the
-                room that is left; on wide screens it no longer wraps, a long
-                operating system name is cut instead.
+                room that is left, up to 36rem; on wide screens it no longer
+                wraps, a long operating system name is cut instead. The cap
+                keeps the kernwerte in the middle on a wide window - without
+                it they slid all the way to the pencil, far from the name.
       kernwerte what one nearly always looks for (IP, place, services), each
                 in a column of fixed width (x-kernwert breite): on every line
                 of a list the same value stands in the same place.
@@ -19,7 +21,7 @@
     top right.
 --}}
 <div class="flex w-full flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2 lg:flex-nowrap">
-    <div class="min-w-0 flex-1 basis-64">
+    <div class="min-w-0 flex-1 basis-64 lg:max-w-xl">
         {{-- Auf schmalen Bildschirmen kleiner: In text-2xl brach ein Name wie
              srv-hyperv-01.mustermann.local mitten durch. 20px statt 24px auch
              auf breiten Schirmen - in der zugeklappten Liste ist der Kopf
