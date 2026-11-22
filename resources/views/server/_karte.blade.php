@@ -34,7 +34,16 @@
                         @if ($eintrag->mountLocation())
                             <x-kernwert :label="__('Rack')">{{ $eintrag->mountLocation() }}</x-kernwert>
                         @endif
+
+                        {{-- What runs there, in the head line: in a folded card
+                             it is what tells one server from the next. --}}
+                        <x-dienstchips :dienste="$eintrag->services" />
                     </x-slot>
+
+                    <x-slot:untertitel>{{ implode(' · ', array_filter([
+                        trim($eintrag->manufacturer.' '.$eintrag->model),
+                        __(config('custom.server_form_factors')[$eintrag->form_factor] ?? ''),
+                    ])) }}</x-slot>
                 </x-show.header>
             </x-slot>
 
@@ -75,7 +84,7 @@
                 <x-agentcard :device="$eintrag" :bloecke="\App\Support\AgentReportCards::server($eintrag)" />
 
                 {{-- Betriebssystem steht jetzt in der Kopfzeile - hier waere es doppelt. --}}
-                <x-minitagcard :title="__('Dienste')" :array="$eintrag->services" />
+                {{-- Dienste stehen seit 26.11.22 im Kopf (x-dienstchips). --}}
 
                 <x-beschaffungcard :device="$eintrag" />
 

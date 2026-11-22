@@ -15,8 +15,16 @@
              min-w-0 laesst den Block schmaler werden als seinen Inhalt - ohne
              das schiebt ein Flex-Kind seine Nachbarn aus der Karte, statt
              umzubrechen. --}}
-        <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 wrap-break-word text-base leading-tight sm:gap-x-3 sm:text-2xl dark:text-gray-100">
-            {{ $slot }}
+        <div class="min-w-0">
+            <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 wrap-break-word text-base leading-tight sm:gap-x-3 sm:text-2xl dark:text-gray-100">
+                {{ $slot }}
+            </div>
+            {{-- A second, quiet line under the name (model, form factor): in a
+                 folded card the head line is all there is to tell entries
+                 apart. --}}
+            @isset($untertitel)
+                <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ $untertitel }}</div>
+            @endisset
         </div>
 
         @isset($kernwerte)

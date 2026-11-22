@@ -91,6 +91,9 @@
                         @elseif ($eintrag->cluster)
                             <x-kernwert :label="__('Cluster')">{{ $eintrag->cluster->name }}</x-kernwert>
                         @endif
+
+                        {{-- As on the server: what runs there, in the head line. --}}
+                        <x-dienstchips :dienste="$eintrag->services" />
                     </x-slot>
                 </x-show.header>
             </x-slot>
@@ -117,7 +120,7 @@
 
                 <x-agentcard :device="$eintrag" :bloecke="\App\Support\AgentReportCards::vm($eintrag)" />
 
-                <x-minitagcard :title="__('Dienste')" :array="$eintrag->services" />
+                {{-- Dienste stehen seit 26.11.22 im Kopf (x-dienstchips). --}}
 
             </x-slot>
         </x-card>

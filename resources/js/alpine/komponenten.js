@@ -46,6 +46,49 @@ export function komponentenRegistrieren(Alpine) {
         },
     }));
 
+    // A card of the object lists that folds: only its head line shows until
+    // it is opened - every card fully open made a list of nine servers six
+    // screens long. Starts open when the list says "all open" (data attribute
+    // of kartenliste) or when the global search jumped to it.
+    Alpine.data('karte', () => ({
+        offen: false,
+        init() {
+            const liste = this.$el.closest('[data-karten-offen]');
+            this.offen = (liste && liste.dataset.kartenOffen === '1') || !! this.$el.closest('[data-highlight]');
+        },
+        umschalten() {
+            this.offen = ! this.offen;
+        },
+        setzen(wert) {
+            this.offen = !! wert;
+        },
+        // A click on the free space of the head line folds as well; one on a
+        // link, button or field in it (edit, remote access, copy) does what
+        // that element does. Selecting text to copy it folds nothing.
+        kopfKlick(event) {
+            if (event.target.closest('a, button, input, select, textarea, label, summary, [role="button"]')) {
+                return;
+            }
+            if (window.getSelection && String(window.getSelection()).length > 0) {
+                return;
+            }
+            this.umschalten();
+        },
+    }));
+
+    // The list around such cards: "open all / fold all", kept per list in
+    // this browser - a convenience of the viewer, not a setting.
+    Alpine.data('kartenliste', (schluessel) => ({
+        alleOffen: (() => {
+            try { return localStorage.getItem(schluessel) === '1'; } catch (e) { return false; }
+        })(),
+        alleUmschalten() {
+            this.alleOffen = ! this.alleOffen;
+            try { localStorage.setItem(schluessel, this.alleOffen ? '1' : '0'); } catch (e) { /* ignore */ }
+            this.$dispatch('karten-alle', { offen: this.alleOffen });
+        },
+    }));
+
     // Admin: device model and rack catalog item - report the choice to the
     // rack preview next to the form.
     Alpine.data('geraetemodell', (typ, he, drawing, zeichnungen) => ({

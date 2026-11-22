@@ -1789,5 +1789,8 @@
     "Tage erfolgreich": "Successful days",
     "kein Lauf": "no run",
     "noch nicht erfasst": "not recorded yet",
-    "Je Tag zählt der schlechteste Lauf, rechts ist heute.": "Per day the worst run counts; today is on the right."
+    "Je Tag zählt der schlechteste Lauf, rechts ist heute.": "Per day the worst run counts; today is on the right.",
+    "Details ein- oder ausklappen": "Show or hide details",
+    "Alle aufklappen": "Expand all",
+    "Alle zuklappen": "Collapse all"
 }

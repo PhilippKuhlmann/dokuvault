@@ -1,6 +1,10 @@
 {{-- Kopfzeile mit Suche und Anlegen-Knopf, darunter die Karten des Typs.
      Suchfeld wie in der VLAN-Liste: Lupe im Feld, sucht waehrend des Tippens. --}}
-<div x-data
+{{-- kartenliste: "open all / fold all" for the folding cards (x-card),
+     kept per list in this browser; the cards read data-karten-offen when
+     they start - also after Livewire re-renders the list. --}}
+<div x-data="kartenliste(@alpineJson('karten-offen:'.$typ))"
+    x-bind:data-karten-offen="alleOffen ? '1' : '0'"
     {{-- Jumped in from the global search: scroll to the highlighted entry
          and flash it briefly - see $treffer in resources/js/alpine/hilfen.js. --}}
     x-init="$treffer()">
@@ -34,6 +38,15 @@
                 </a>
             @endcan
         @endforeach
+
+        {{-- Only for card lists: a table has nothing to fold. --}}
+        @unless (view()->exists($typ.'._zeile'))
+            <button type="button" x-on:click="alleUmschalten()"
+                class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 shadow-xs transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                <span x-show="! alleOffen">{{ __('Alle aufklappen') }}</span>
+                <span x-show="alleOffen" x-cloak>{{ __('Alle zuklappen') }}</span>
+            </button>
+        @endunless
 
         <livewire:object-modal :typ="$typ" :customer="$customer" :key="'formular-'.$typ" />
     </x-sitetopmenu>

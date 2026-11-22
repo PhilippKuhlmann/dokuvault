@@ -12,14 +12,39 @@
     Der Rahmen kommt aus x-panel - dieselbe Fläche wie überall sonst.
     Eigen ist hier nur, was darin geschieht: der Kopf mit Trennlinie und
     der Satz in Spalten.
+
+    Folding (design 1A, 26.11.22): a list card shows its head line only -
+    name, kernwerte, actions - until it is opened. Nine servers fully open
+    were six screens of scrolling to find one IP. The arrow, or a click on
+    the free space of the head, opens it; "open all" of the list
+    (kartenliste) and a jump from the search open it as well. Plain cards
+    (rack, patch panel, EOL) arrange their content themselves and stay open.
 --}}
-<x-panel polster="keins" class="flex flex-col m-3 dark:text-gray-100">
+@php
+    $klappbar = ! $plain && trim($head) !== '';
+@endphp
+
+<div @if ($klappbar) x-data="karte" x-on:karten-alle.window="setzen($event.detail.offen)" @endif>
+<x-panel polster="keins" data-karte-flaeche class="flex flex-col m-3 dark:text-gray-100">
     @if (trim($head))
-        <div class="border-b border-gray-100 dark:border-gray-700">
-            {{ $head }}
+        <div @class(['flex items-start', 'cursor-pointer' => $klappbar]) @if ($klappbar) x-on:click="kopfKlick($event)" @endif>
+            @if ($klappbar)
+                <button type="button" x-on:click="umschalten()" x-bind:aria-expanded="offen ? 'true' : 'false'"
+                    aria-label="{{ __('Details ein- oder ausklappen') }}"
+                    class="ml-3 mt-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition-colors hover:bg-gray-50 hover:text-chathams-blue-800 focus:outline-hidden focus:ring-2 focus:ring-cerulean-500 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-100">
+                    <svg x-bind:class="offen ? 'rotate-90' : ''" class="h-3.5 w-3.5 transition-transform" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 6l6 6-6 6" />
+                    </svg>
+                </button>
+            @endif
+            <div class="min-w-0 flex-1">
+                {{ $head }}
+            </div>
         </div>
     @endif
-    <div @class([
+    <div data-karte-inhalt @if ($klappbar) x-show="offen" x-cloak @endif @class([
+        'border-t border-gray-100 dark:border-gray-700' => trim($head) !== '',
         'flex flex-wrap gap-x-8 gap-y-5 p-5' => $plain,
         {{-- Der mb-5 des letzten Blocks zaehlt am Spaltenende nicht mit - die
              Dienste-Kacheln klebten am Kartenrand. Der Abstand kommt deshalb aus
@@ -35,3 +60,4 @@
         {{ $body }}
     </div>
 </x-panel>
+</div>

@@ -1,4 +1,6 @@
-<div>
+{{-- kartenliste: "open all / fold all" for the folding VLAN cards, as in
+     the object lists. --}}
+<div x-data="kartenliste(@alpineJson('karten-offen:network'))" x-bind:data-karten-offen="alleOffen ? '1' : '0'">
 
     {{-- Statt des eingebauten "Neu" (fuehrt auf eine eigene Seite) dasselbe
          Modal wie im IP-Block am Geraet - man bleibt in der Liste. Der Standort
@@ -20,6 +22,12 @@
                      zu ersetzen, zwei Radius-Klassen wuerden sich streiten. --}}
                 class="w-56 pl-9 pr-3 py-2 text-sm" />
         </label>
+
+        <button type="button" x-on:click="alleUmschalten()"
+            class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 shadow-xs transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+            <span x-show="! alleOffen">{{ __('Alle aufklappen') }}</span>
+            <span x-show="alleOffen" x-cloak>{{ __('Alle zuklappen') }}</span>
+        </button>
 
         {{-- Exakt die Klassen des bisherigen "Neu" aus x-sitetopmenu. --}}
         <livewire:network-quick-create :customer="$customer" :label="__('Neu')" :mit-symbol="true" 
