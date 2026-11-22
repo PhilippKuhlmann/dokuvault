@@ -36,4 +36,24 @@ trait IsMountable
 
         return $einbau->rack->name.' · '.$he.' · '.__(Rack::SEITEN[$einbau->side] ?? 'Vorderseite');
     }
+
+    /**
+     * The mounting place for the head line of a folded card, where a column
+     * is 11rem wide: "Rack HH-01 · HE 22". The side only when it is the rear
+     * - the front is what one expects. Null when not mounted.
+     */
+    public function mountLocationShort(): ?string
+    {
+        $einbau = $this->rackItem;
+
+        if (! $einbau?->rack) {
+            return null;
+        }
+
+        $he = $einbau->height_units > 1
+            ? 'HE '.$einbau->position.'–'.$einbau->topUnit()
+            : 'HE '.$einbau->position;
+
+        return $einbau->rack->name.' · '.$he.($einbau->side === 'rear' ? ' · '.__('hinten') : '');
+    }
 }

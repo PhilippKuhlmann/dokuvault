@@ -6,6 +6,7 @@ use App\Models\PasswordHistory;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Spatie\Activitylog\Facades\CauserResolver;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
@@ -30,6 +31,16 @@ trait TracksChanges
     public static function bootTracksChanges(): void
     {
         static::updated(fn (Model $model) => $model->logPasswordChange());
+    }
+
+    /**
+     * The newest entry of the activity log about this object - "changed on
+     * ... by ..." in the foot of an opened card (x-kartenfuss). A relation,
+     * so a list loads it for all its entries in one query.
+     */
+    public function latestActivity(): MorphOne
+    {
+        return $this->morphOne(Activity::class, 'subject')->latestOfMany('id');
     }
 
     /**

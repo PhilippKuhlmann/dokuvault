@@ -529,7 +529,7 @@ return [
         'bloecke' => true,
         // The card sums the guests' memory - without preloading the list
         // asks for them row by row.
-        'mitladen' => ['gaeste'],
+        'mitladen' => ['gaeste', 'latestActivity.causer'],
         // Twenty fields one below another would be a scrolling distance.
         'spalten' => 2,
         // 'gruppe' divides the twenty fields into sections with headings of
@@ -584,7 +584,7 @@ return [
         'bloecke' => true,
         // Host and cluster stand on the card - without preloading the list
         // asks for them one row at a time.
-        'mitladen' => ['host', 'cluster'],
+        'mitladen' => ['host', 'cluster', 'latestActivity.causer'],
         'felder' => [
             // Host and cluster first: both answer the site along with it, and
             // what they answer should not be typed in before them.

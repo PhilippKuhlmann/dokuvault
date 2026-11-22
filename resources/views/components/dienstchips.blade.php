@@ -11,10 +11,10 @@
     $farben = $gefuellt ? \App\Models\Service::farbzuordnung() : [];
 @endphp
 
-@if ($gefuellt)
-    <div class="flex flex-wrap items-center gap-1">
-        @foreach ($gefuellt as $dienst)
-            <x-servicechip :name="$dienst" :farbe="$farben[mb_strtolower($dienst)] ?? null" class="px-2! py-0.5! text-xs!" />
-        @endforeach
-    </div>
-@endif
+{{-- Given a fixed width (class), the box stays even without services, so
+     the columns of a list keep their place. --}}
+<div {{ $attributes->merge(['class' => 'flex flex-wrap items-center gap-1']) }}>
+    @foreach ($gefuellt as $dienst)
+        <x-servicechip :name="$dienst" :farbe="$farben[mb_strtolower($dienst)] ?? null" class="px-2! py-0.5! text-xs!" />
+    @endforeach
+</div>

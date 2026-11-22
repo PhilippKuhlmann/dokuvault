@@ -8,36 +8,43 @@
 
             <x-slot:head>
                 <x-show.header can="server_update" editAction="$dispatch('object-edit', { typ: 'server', id: {{ $eintrag->id }} })">
-                    {{-- Die Fernwartung bleibt der erste Knopf in der Kopfzeile:
-                         taeglich benutzt. Welches Werkzeug dahinter steckt,
-                         steht in den Einstellungen. --}}
-                    <x-remote.button :device="$eintrag" />
-                    {{ $eintrag->name }}
+                    <span class="shrink-0 font-semibold">{{ $eintrag->name }}</span>
 
                     {{-- Betriebssystem klein hinter den Namen: Es gehoert zur
-                         Identitaet der Maschine, nicht zu den Nachschlagewerten. --}}
+                         Identitaet der Maschine, nicht zu den Nachschlagewerten.
+                         Cut on wide screens instead of breaking the line. --}}
                     @if ($eintrag->operatingSystem)
-                        <span class="text-sm font-normal text-gray-500 dark:text-gray-400">{{ $eintrag->operatingSystem->name }}</span>
+                        <span class="min-w-0 truncate text-sm font-normal text-gray-500 dark:text-gray-400" title="{{ $eintrag->operatingSystem->name }}">{{ $eintrag->operatingSystem->name }}</span>
 
-                        <x-eol :os="$eintrag->operatingSystem" />
+                        <span class="shrink-0"><x-eol :os="$eintrag->operatingSystem" /></span>
                     @endif
 
-                    {{-- Was man fast immer sucht, steht neben dem Namen statt irgendwo
-                         in der Karte. Der Zaehler verraet schon hier, dass mehr da ist. --}}
+                    {{-- Was man fast immer sucht, in festen Spalten (design 1A):
+                         IP, Ort, Dienste stehen in jeder Zeile an derselben
+                         Stelle, ein fehlender Wert zeigt einen Strich. Ort: das
+                         Rack kurz, sonst der Standort - auch ein Tower steht
+                         irgendwo. Der Zaehler verraet, dass mehr da ist. --}}
                     <x-slot:kernwerte>
-                        @if ($primaer)
-                            <x-kernwert :label="__('IP')" :zaehler="$anzahlIps - 1">
+                        <x-kernwert :label="__('IP')" :zaehler="max(0, $anzahlIps - 1)" breite="w-40">
+                            @if ($primaer)
                                 <x-ip-anzeige :adresse="$adressen->first()" />
-                            </x-kernwert>
-                        @endif
+                            @endif
+                        </x-kernwert>
 
-                        @if ($eintrag->mountLocation())
-                            <x-kernwert :label="__('Rack')">{{ $eintrag->mountLocation() }}</x-kernwert>
-                        @endif
+                        <x-kernwert :label="__('Ort')" breite="w-44" :titel="$eintrag->mountLocation() ?? $eintrag->site?->name">{{ $eintrag->mountLocationShort() ?? $eintrag->site?->name }}</x-kernwert>
 
                         {{-- What runs there, in the head line: in a folded card
                              it is what tells one server from the next. --}}
-                        <x-dienstchips :dienste="$eintrag->services" />
+                        <x-dienstchips :dienste="$eintrag->services" class="w-36" />
+                    </x-slot>
+
+                    {{-- Fernwartung und Kennwort: die taeglichen Handgriffe,
+                         rechts neben dem Stift - ohne die Karte aufzuklappen.
+                         Welches Werkzeug dahinter steckt, steht in den
+                         Einstellungen. --}}
+                    <x-slot:aktionen>
+                        <x-remote.button :device="$eintrag" />
+                        <livewire:copy-password-button :device="$eintrag" :key="'kopf-kennwort-server-'.$eintrag->id" />
                     </x-slot>
 
                     <x-slot:untertitel>{{ implode(' · ', array_filter([
@@ -88,6 +95,11 @@
 
                 <x-beschaffungcard :device="$eintrag" />
 
+            </x-slot>
+
+            {{-- Last change, agent, and the links to log, server map, rack. --}}
+            <x-slot:fuss>
+                <x-kartenfuss :eintrag="$eintrag" />
             </x-slot>
         </x-card>
     

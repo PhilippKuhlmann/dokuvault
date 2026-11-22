@@ -22,10 +22,16 @@
 --}}
 @php
     $klappbar = ! $plain && trim($head) !== '';
+    // No @if inside a component tag: the binding comes as an attribute bag.
+    $flaeche = new \Illuminate\View\ComponentAttributeBag($klappbar
+        ? ['x-bind:class' => "offen ? 'ring-2 ring-cerulean-400/60 shadow-md dark:ring-cerulean-500/50' : ''"]
+        : []);
 @endphp
 
 <div @if ($klappbar) x-data="karte" x-on:karten-alle.window="setzen($event.detail.offen)" @endif>
-<x-panel polster="keins" data-karte-flaeche class="flex flex-col m-3 dark:text-gray-100">
+{{-- Opened, the card stands out with a blue frame: with "open all" one
+     still sees where one card ends and the next begins. --}}
+<x-panel polster="keins" data-karte-flaeche class="flex flex-col m-3 transition-shadow dark:text-gray-100" :attributes="$flaeche">
     @if (trim($head))
         <div @class(['flex items-start', 'cursor-pointer' => $klappbar]) @if ($klappbar) x-on:click="kopfKlick($event)" @endif>
             @if ($klappbar)
@@ -56,8 +62,18 @@
              blieben je gut 200px, und darin passte "Seriennummer CZ29470H8K-..."
              nicht: Die Tabelle lief in die Nachbarspalte und aus der Karte. --}}
         'p-5 columns-1 md:columns-2 xl:columns-3 gap-x-10' => ! $plain,
+        'lg:pl-14' => $klappbar,
     ])>
         {{ $body }}
     </div>
+    {{-- lg:pl-14 above: the content indented to the name of the head line
+         - arrow 12 + 32 px, head padding 12 px - reads as belonging to it.
+         Optional foot under the columns (x-kartenfuss): last change, agent,
+         links to the activity log, server map and rack. --}}
+    @isset($fuss)
+        <div @if ($klappbar) x-show="offen" x-cloak @endif>
+            {{ $fuss }}
+        </div>
+    @endisset
 </x-panel>
 </div>

@@ -1792,5 +1792,11 @@
     "Je Tag zählt der schlechteste Lauf, rechts ist heute.": "Per day the worst run counts; today is on the right.",
     "Details ein- oder ausklappen": "Show or hide details",
     "Alle aufklappen": "Expand all",
-    "Alle zuklappen": "Collapse all"
+    "Alle zuklappen": "Collapse all",
+    "Kennwort kopieren": "Copy password",
+    "Agent: :zeit": "Agent: :zeit",
+    "Geändert am :datum": "Changed on :datum",
+    "von :name": "by :name",
+    "Im Serverplan zeigen": "Show in server map",
+    "In :rack zeigen": "Show in :rack"
 }

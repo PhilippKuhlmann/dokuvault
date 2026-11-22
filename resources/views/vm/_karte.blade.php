@@ -8,11 +8,7 @@
         <x-card>
             <x-slot:head>
                 <x-show.header can="vm_update" editAction="$dispatch('object-edit', { typ: 'vm', id: {{ $eintrag->id }} })">
-                    {{-- Die Fernwartung bleibt der erste Knopf in der Kopfzeile: taeglich
-                         benutzt. Welches Werkzeug dahinter steckt, steht in den
-                         Einstellungen. --}}
-                    <x-remote.button :device="$eintrag" />
-                    {{ $eintrag->name }}
+                    <span class="shrink-0 font-semibold">{{ $eintrag->name }}</span>
 
                     {{-- VM or container, as the agent reported it: decides how
                          to get in (console vs. pct enter) and what a backup
@@ -69,31 +65,33 @@
                     @endif
 
                     @if ($eintrag->operatingSystem)
-                        <span class="text-sm font-normal text-gray-500 dark:text-gray-400">{{ $eintrag->operatingSystem->name }}</span>
+                        <span class="min-w-0 truncate text-sm font-normal text-gray-500 dark:text-gray-400" title="{{ $eintrag->operatingSystem->name }}">{{ $eintrag->operatingSystem->name }}</span>
 
-                        <x-eol :os="$eintrag->operatingSystem" />
+                        <span class="shrink-0"><x-eol :os="$eintrag->operatingSystem" /></span>
                     @endif
 
-                    {{-- Wie beim Server: das Nachgeschlagene neben den Namen. Statt des
-                         Einbauorts steht hier der Host - eine VM steckt in keinem Rack. --}}
+                    {{-- Wie beim Server: das Nachgeschlagene in festen Spalten.
+                         Statt des Einbauorts steht hier der Host - eine VM
+                         steckt in keinem Rack. --}}
                     <x-slot:kernwerte>
-                        @if ($primaer)
-                            <x-kernwert :label="__('IP')" :zaehler="$anzahlIps - 1">
+                        <x-kernwert :label="__('IP')" :zaehler="max(0, $anzahlIps - 1)" breite="w-40">
+                            @if ($primaer)
                                 <x-ip-anzeige :adresse="$adressen->first()" />
-                            </x-kernwert>
-                        @endif
+                            @endif
+                        </x-kernwert>
 
                         {{-- Host oder Cluster - eines von beiden, nie beides.
                              Ohne den Cluster stuende bei einer Cluster-VM
                              nichts, obwohl dokumentiert ist, wo sie laeuft. --}}
-                        @if ($eintrag->host)
-                            <x-kernwert :label="__('Host')">{{ $eintrag->host->name }}</x-kernwert>
-                        @elseif ($eintrag->cluster)
-                            <x-kernwert :label="__('Cluster')">{{ $eintrag->cluster->name }}</x-kernwert>
-                        @endif
+                        <x-kernwert :label="$eintrag->cluster && ! $eintrag->host ? __('Cluster') : __('Host')" breite="w-40">{{ $eintrag->host?->name ?? $eintrag->cluster?->name }}</x-kernwert>
 
                         {{-- As on the server: what runs there, in the head line. --}}
-                        <x-dienstchips :dienste="$eintrag->services" />
+                        <x-dienstchips :dienste="$eintrag->services" class="w-36" />
+                    </x-slot>
+
+                    <x-slot:aktionen>
+                        <x-remote.button :device="$eintrag" />
+                        <livewire:copy-password-button :device="$eintrag" :key="'kopf-kennwort-vm-'.$eintrag->id" />
                     </x-slot>
                 </x-show.header>
             </x-slot>
@@ -122,6 +120,11 @@
 
                 {{-- Dienste stehen seit 26.11.22 im Kopf (x-dienstchips). --}}
 
+            </x-slot>
+
+            {{-- Last change, agent, and the links to log, server map, rack. --}}
+            <x-slot:fuss>
+                <x-kartenfuss :eintrag="$eintrag" />
             </x-slot>
         </x-card>
     
