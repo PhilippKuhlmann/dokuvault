@@ -184,8 +184,9 @@ return [
     'backup' => [
         'model' => Backup::class, 'request' => BackupRequest::class,
         'relation' => 'backups', 'einzahl' => 'Backup', 'suchfelder' => ['name', 'software'],
-        // The last runs on the card (x-backup-verlauf), limited per backup.
-        'mitladen' => ['recentRuns'],
+        // The run grid on the card (x-backup-verlauf): the runs of the
+        // period and the oldest one kept.
+        'mitladen' => ['recentRuns', 'firstRun'],
         'felder' => [
             ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
             ['name' => 'software', 'label' => 'Software', 'type' => 'text'],

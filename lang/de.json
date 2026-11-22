@@ -13,5 +13,10 @@
     ":count Kern|:count Kerne": ":count Kern|:count Kerne",
     ":count ausgeschalteter Gast ausgeblendet|:count ausgeschaltete Gäste ausgeblendet": ":count ausgeschalteter Gast ausgeblendet|:count ausgeschaltete Gäste ausgeblendet",
     ":count ohne Backup|:count ohne Backup": ":count ohne Backup|:count ohne Backup",
-    ":count Gast|:count Gäste": ":count Gast|:count Gäste"
+    ":count Gast|:count Gäste": ":count Gast|:count Gäste",
+    ":count fehlgeschlagen|:count fehlgeschlagen": ":count fehlgeschlagen|:count fehlgeschlagen",
+    ":count mit Warnung|:count mit Warnung": ":count mit Warnung|:count mit Warnung",
+    ":count erfolgreich|:count erfolgreich": ":count erfolgreich|:count erfolgreich",
+    ":count Tag|:count Tage": ":count Tag|:count Tage",
+    ":count Lauf|:count Läufe": ":count Lauf|:count Läufe"
 }

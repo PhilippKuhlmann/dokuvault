@@ -10,12 +10,13 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 
 /**
- * Backups of all customers with their last runs, as the agents report them
+ * Backups of all customers with their run grid, as the agents report them
  * (Veeam, Windows Server-Sicherung, Proxmox vzdump). The morning question
  * "did everything run last night?" without opening every customer.
  *
- * How many runs per backup: a setting of the installation, changed right on
- * this page - whoever looks here is the one who knows how far back to see.
+ * One square per day (x-backup-verlauf): a job that stopped running shows
+ * as a grey gap. How many days: a setting of the installation, changed right
+ * on this page - whoever looks here is the one who knows how far back to see.
  */
 class AdminBackups extends Component
 {
@@ -27,7 +28,8 @@ class AdminBackups extends Component
     #[Url(except: false)]
     public bool $nurProbleme = false;
 
-    public int $anzahl = 10;
+    /** Days in the grid (Setting::backupDays). */
+    public int $tage = 14;
 
     /** Runs kept per backup before the oldest are deleted. */
     public int $aufbewahrung = 100;
@@ -36,18 +38,16 @@ class AdminBackups extends Component
     {
         Gate::authorize('admin_backup');
 
-        $this->anzahl = Setting::backupHistory();
+        $this->tage = Setting::backupDays();
         $this->aufbewahrung = Setting::backupAufbewahrung();
     }
 
-    public function updatedAnzahl(): void
+    public function updatedTage(): void
     {
         Gate::authorize('admin_backup');
 
-        $this->anzahl = max(5, min(50, $this->anzahl));
-        Setting::setzen(Setting::BACKUP_VERLAUF, $this->anzahl);
-        // Showing more than is kept would show nothing more.
-        $this->aufbewahrung = Setting::backupAufbewahrung();
+        $this->tage = in_array($this->tage, Setting::BACKUP_DAY_OPTIONS, true) ? $this->tage : 14;
+        Setting::setzen(Setting::BACKUP_VERLAUF, $this->tage);
     }
 
     /**
@@ -58,7 +58,7 @@ class AdminBackups extends Component
     {
         Gate::authorize('admin_backup');
 
-        $this->validate(['aufbewahrung' => ['required', 'integer', 'min:'.max(10, $this->anzahl), 'max:10000']], [], [
+        $this->validate(['aufbewahrung' => ['required', 'integer', 'min:10', 'max:10000']], [], [
             'aufbewahrung' => __('Höchstens speichern'),
         ]);
 
@@ -76,11 +76,19 @@ class AdminBackups extends Component
 
     public function render()
     {
-        $backups = Backup::query()
-            ->with(['customer:id,name,slug', 'recentRuns'])
-            // Only what an agent reports: hand-entered backups have no runs.
+        // Only what an agent reports: hand-entered backups have no runs.
+        $reported = Backup::query()
             ->whereNotNull('agent_identifier')
-            ->when($this->kunde !== '', fn ($q) => $q->where('customer_id', (int) $this->kunde))
+            ->when($this->kunde !== '', fn ($q) => $q->where('customer_id', (int) $this->kunde));
+
+        // The counts on top: by the last run, before "only problems" filters.
+        $counts = (clone $reported)
+            ->selectRaw('last_status, count(*) as anzahl')
+            ->groupBy('last_status')
+            ->pluck('anzahl', 'last_status');
+
+        $backups = $reported
+            ->with(['customer:id,name,slug', 'recentRuns', 'firstRun'])
             ->when($this->nurProbleme, fn ($q) => $q->whereIn('last_status', ['failed', 'warning']))
             ->get()
             // Problems first, then by customer and name.
@@ -91,6 +99,11 @@ class AdminBackups extends Component
 
         return view('livewire.admin-backups', [
             'backups' => $backups,
+            'counts' => [
+                'failed' => (int) ($counts['failed'] ?? 0),
+                'warning' => (int) ($counts['warning'] ?? 0),
+                'ok' => (int) ($counts['ok'] ?? 0),
+            ],
             'kunden' => Customer::whereIn('id', Backup::whereNotNull('agent_identifier')->select('customer_id'))
                 ->orderBy('name')->pluck('name', 'id')->all(),
         ])->layout('layouts.admin.app');

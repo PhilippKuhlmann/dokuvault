@@ -488,23 +488,31 @@ class Setting extends Model
 
     public const BACKUP_AUFBEWAHRUNG = 'backup_aufbewahrung';
 
-    /** How many runs per backup are shown - admin overview and customer card (5-50, default 10). */
-    public static function backupHistory(): int
+    /** The periods the run grid offers, in days. */
+    public const BACKUP_DAY_OPTIONS = [7, 14, 30];
+
+    /**
+     * How many days the run grid shows - admin overview and customer card
+     * (7, 14 or 30, default 14). Until 26.11.22 the key held a number of
+     * runs (5-50); such a value falls back to the default.
+     */
+    public static function backupDays(): int
     {
         $wert = (int) self::wert(self::BACKUP_VERLAUF);
 
-        return $wert >= 5 && $wert <= 50 ? $wert : 10;
+        return in_array($wert, self::BACKUP_DAY_OPTIONS, true) ? $wert : 14;
     }
 
     /**
      * How many runs per backup are kept before the oldest are deleted
-     * (default 100). Never fewer than are shown.
+     * (default 100). Days before the oldest kept run stand empty in the
+     * grid - a job running every hour needs more than 100 for 30 days.
      */
     public static function backupAufbewahrung(): int
     {
         $wert = (int) self::wert(self::BACKUP_AUFBEWAHRUNG);
 
-        return max($wert >= 10 && $wert <= 10000 ? $wert : 100, self::backupHistory());
+        return $wert >= 10 && $wert <= 10000 ? $wert : 100;
     }
 
     /*

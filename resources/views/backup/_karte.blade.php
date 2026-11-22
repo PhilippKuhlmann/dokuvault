@@ -43,12 +43,13 @@
                             : null,
                     ]" />
                 </div>
-                {{-- Reported runs, as on the admin overview: as many as set
-                     there. Only for backups an agent reports. --}}
+                {{-- The run grid, as on the admin overview: one square per
+                     day, the period set there. Only for backups an agent
+                     reports. --}}
                 <div>
                     @if ($eintrag->agent_identifier)
-                        <x-minitextcard :title="__('Letzte Läufe')">
-                            <x-backup-verlauf :runs="$eintrag->recentRuns" />
+                        <x-minitextcard :title="__('Letzte :tage Tage', ['tage' => \App\Models\Setting::backupDays()])">
+                            <x-backup-verlauf :backup="$eintrag" />
                         </x-minitextcard>
                     @endif
                 </div>

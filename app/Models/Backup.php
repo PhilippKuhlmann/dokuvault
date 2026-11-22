@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\OwnedByCustomer;
 use App\Models\Concerns\TracksChanges;
+use App\Support\LocalTime;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -50,12 +51,24 @@ class Backup extends Model
     }
 
     /**
-     * The runs that are shown (Setting::backupVerlauf) - eager loadable with
-     * a limit per backup, so a list does not load every run of every job.
+     * The runs of the period the grid shows (Setting::backupDays), counted
+     * in whole local days - today included. Eager loadable, so a list does
+     * not load every run of every job.
      */
     public function recentRuns()
     {
-        return $this->runs()->limit(Setting::backupHistory());
+        $since = Carbon::now(LocalTime::zone())->subDays(Setting::backupDays() - 1)->startOfDay()->utc();
+
+        return $this->runs()->where('finished_at', '>=', $since);
+    }
+
+    /**
+     * The oldest run kept: days before it stand empty in the grid, not grey
+     * - nothing is known about them (job newer, or the runs pruned).
+     */
+    public function firstRun()
+    {
+        return $this->hasOne(BackupRun::class)->oldestOfMany('finished_at');
     }
 
     /** Deletes all but the newest $behalten runs of this backup. */

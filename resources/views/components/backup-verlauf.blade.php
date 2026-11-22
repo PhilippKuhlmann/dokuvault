@@ -1,27 +1,42 @@
 {{--
-    The last runs of a backup as small squares: green ok, amber warning,
-    red failed. Oldest left, newest right - read like a time line. Date and
-    result at once on hover or tap (x-hovertext). Used on the admin overview and the customer's backup
-    card, so both look the same.
+    The run grid of a backup: one square per day, oldest left, today right
+    (App\Support\BackupRunDays). Green ok, amber warning, red failed - the
+    worst run of the day counts. Grey: no run that day - a job that stopped
+    running shows as a gap, it stayed green while the squares counted runs.
+    Dashed and empty: before the oldest run kept, nothing is known.
 
-    $runs: newest first, as Backup::recentRuns() delivers them.
+    Date and result at once on hover or tap (x-hovertext). Used on the admin
+    overview and the customer's backup card, so both look the same.
+
+    $backup: with recentRuns and firstRun loaded.
+    cells: already built (the admin overview counts them as well).
+    gross: the larger squares of the admin overview.
 --}}
-@props(['runs'])
+@props(['backup', 'cells' => null, 'gross' => false])
+
+@php
+    $cells ??= \App\Support\BackupRunDays::for($backup, \App\Models\Setting::backupDays());
+@endphp
 
 <div {{ $attributes->merge(['class' => 'flex flex-wrap items-center gap-1']) }}>
-    @forelse ($runs->reverse() as $lauf)
-        {{-- Instant tooltip (x-hovertext, dark like the menu icons); tabindex
-             so a tap on a touch screen shows it too. --}}
-        <x-hovertext dunkel class="leading-none" :text="$lauf->finished_at->format('d.m.Y H:i').' · '.__(\App\Models\Backup::STATUS[$lauf->status] ?? $lauf->status)">
-            <span tabindex="0" @class([
-                    'inline-block h-4 w-3 rounded-sm cursor-default focus:outline-hidden focus:ring-2 focus:ring-cerulean-500',
-                    'bg-green-500' => $lauf->status === 'ok',
-                    'bg-amber-400' => $lauf->status === 'warning',
-                    'bg-red-500' => $lauf->status === 'failed',
-                ])
-                aria-label="{{ $lauf->finished_at->format('d.m.Y H:i') }} · {{ __(\App\Models\Backup::STATUS[$lauf->status] ?? $lauf->status) }}"></span>
-        </x-hovertext>
-    @empty
+    @if ($backup->firstRun === null)
         <span class="text-xs text-gray-400 dark:text-gray-500">{{ __('noch keine Läufe gemeldet') }}</span>
-    @endforelse
+    @else
+        @foreach ($cells as $cell)
+            {{-- tabindex so a tap on a touch screen shows the tooltip too. --}}
+            <x-hovertext dunkel class="leading-none" :text="$cell['label']">
+                <span tabindex="0" @class([
+                        'inline-block rounded-sm cursor-default focus:outline-hidden focus:ring-2 focus:ring-cerulean-500',
+                        'h-5 w-3.5' => $gross,
+                        'h-4 w-2.5' => ! $gross,
+                        'bg-green-600' => $cell['state'] === 'ok',
+                        'bg-amber-400' => $cell['state'] === 'warning',
+                        'bg-red-600' => $cell['state'] === 'failed',
+                        'bg-gray-200 dark:bg-gray-600' => $cell['state'] === 'none',
+                        'border border-dashed border-gray-300 dark:border-gray-600' => $cell['state'] === 'unknown',
+                    ])
+                    aria-label="{{ $cell['label'] }}"></span>
+            </x-hovertext>
+        @endforeach
+    @endif
 </div>

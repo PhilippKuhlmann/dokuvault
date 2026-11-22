@@ -155,9 +155,12 @@ test('without runs the last run alone builds up the history', function () {
 test('the admin overview shows the last runs of every reported backup', function () {
     $this->actingAs(userWithPermissions(['admin_backup']));
     [$customer, $plain] = backupToken();
-    $this->withToken($plain)->postJson('/api/agent/backup', ['jobs' => [veeamJob(['runs' => [
-        ['status' => 'failed', 'finished_at' => '2026-10-01T22:40:00+02:00'],
-    ]])]]);
+    // Within the period of the grid: two days with a run, one went through.
+    $this->withToken($plain)->postJson('/api/agent/backup', ['jobs' => [veeamJob([
+        'last_run_at' => now()->subDay()->toIso8601String(),
+        'last_success' => now()->subDay()->toIso8601String(),
+        'runs' => [['status' => 'failed', 'finished_at' => now()->subDays(2)->toIso8601String()]],
+    ])]]);
     Backup::create(['customer_id' => $customer->id, 'name' => 'Von Hand gepflegt']);
 
     $this->get(route('admin.backups'))
@@ -168,14 +171,24 @@ test('the admin overview shows the last runs of every reported backup', function
         ->assertDontSee('Von Hand gepflegt');
 });
 
-test('the number of runs is a setting and the page needs its right', function () {
+test('the period of the grid is a setting and the page needs its right', function () {
     $this->actingAs(userWithPermissions(['admin_backup']));
 
     Livewire\Livewire::test(AdminBackups::class)
-        ->assertSet('anzahl', 10)
-        ->set('anzahl', 20);
+        ->assertSet('tage', 14)
+        ->set('tage', 30);
 
-    expect(Setting::backupHistory())->toBe(20);
+    expect(Setting::backupDays())->toBe(30);
+
+    // Only the offered periods; anything else falls back to 14.
+    Livewire\Livewire::test(AdminBackups::class)->set('tage', 9);
+    expect(Setting::backupDays())->toBe(14);
+});
+
+test('a number of runs saved before 26.11.22 is no period', function () {
+    Setting::setzen(Setting::BACKUP_VERLAUF, 10);
+
+    expect(Setting::backupDays())->toBe(14);
 });
 
 test('without the right there is no backup overview', function () {
@@ -198,7 +211,7 @@ test('the customer sees the last runs on the backup card', function () {
 
     $this->get(route('backup.index', $customer))
         ->assertOk()
-        ->assertSee('Letzte Läufe')
+        ->assertSee('Letzte 14 Tage')
         ->assertSee('Fehlgeschlagen');
 });
 
@@ -227,13 +240,12 @@ test('lowering the retention in the admin area deletes old runs at once', functi
         ->and($backup->runs()->first()->finished_at->equalTo($neuester))->toBeTrue();
 });
 
-test('the retention cannot be lower than the runs shown', function () {
+test('the retention keeps at least ten runs', function () {
     $this->actingAs(userWithPermissions(['admin_backup']));
 
     Livewire\Livewire::test(AdminBackups::class)
-        ->set('anzahl', 30)
-        ->set('aufbewahrung', 20)
+        ->set('aufbewahrung', 5)
         ->assertHasErrors('aufbewahrung');
 
-    expect(Setting::backupAufbewahrung())->toBeGreaterThanOrEqual(30);
+    expect(Setting::backupAufbewahrung())->toBe(100);
 });

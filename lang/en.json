@@ -1270,11 +1270,9 @@
     "Freier Plattenplatz": "Free disk space",
     "letzte 90 Tage, in MB": "last 90 days, in MB",
     "Größte Tabellen": "Largest tables",
-    "Letzte Läufe": "Last runs",
     "Höchstens speichern": "Keep at most",
     "Läufe je Backup": "runs per backup",
     "Nur mit Fehler oder Warnung": "Only with error or warning",
-    "Letzte :anzahl Läufe": "Last :anzahl runs",
     "Erfolgreich": "Successful",
     "nach": "to",
     "Keine gemeldeten Backups. Backups erscheinen hier, sobald ein Agent sie meldet (Veeam, Windows Server-Sicherung, Proxmox).": "No reported backups. Backups appear here as soon as an agent reports them (Veeam, Windows Server Backup, Proxmox).",
@@ -1781,5 +1779,15 @@
     "Festplatte (GB)": "Disk (GB)",
     "Kerne": "Cores",
     "CPU": "CPU",
-    "Festplatte": "Disk"
+    "Festplatte": "Disk",
+    ":count fehlgeschlagen|:count fehlgeschlagen": ":count failed|:count failed",
+    ":count mit Warnung|:count mit Warnung": ":count with warning|:count with warnings",
+    ":count erfolgreich|:count erfolgreich": ":count successful|:count successful",
+    ":count Tag|:count Tage": ":count day|:count days",
+    ":count Lauf|:count Läufe": ":count run|:count runs",
+    "Letzte :tage Tage": "Last :tage days",
+    "Tage erfolgreich": "Successful days",
+    "kein Lauf": "no run",
+    "noch nicht erfasst": "not recorded yet",
+    "Je Tag zählt der schlechteste Lauf, rechts ist heute.": "Per day the worst run counts; today is on the right."
 }

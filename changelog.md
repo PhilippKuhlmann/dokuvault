@@ -1,5 +1,13 @@
 # Changelog
 
+## 26.11.22
+
+### Changed
+
+- **Backup-Verlauf nach Tagen statt nach Läufen.** Unter *Administration › Backups* und auf der Backup-Karte des Kunden steht je Tag ein Kästchen, rechts ist heute; laufen an einem Tag mehrere Läufe, zählt der schlechteste. Ein Tag ohne Lauf ist grau. Vorher zeigten die Kästchen die letzten Läufe, und ein Job, der still aufgehört hatte zu laufen, blieb grün. Ein Tag vor dem ältesten gespeicherten Lauf bleibt leer (gestrichelt): Darüber ist nichts bekannt. Ein Tooltip nennt Datum, Ergebnis und die Zahl der Läufe.
+- **„Zeitraum“ statt „Letzte Läufe“:** 7, 14 oder 30 Tage, Standard 14. Ein früher gespeicherter Wert („10 Läufe“) wird zu 14 Tagen. „Höchstens speichern“ hängt nicht mehr daran; ein Job, der stündlich läuft, braucht für 30 Tage mehr als 100 gespeicherte Läufe.
+- Oben auf der Seite stehen jetzt die Zahlen „fehlgeschlagen“, „mit Warnung“ und „erfolgreich“ nach dem letzten Lauf, dazu eine Legende. Die Spalte „Tage erfolgreich“ zählt, an wie vielen Tagen mit Lauf alles durchging.
+
 ## 26.11.21
 
 ### Changed
