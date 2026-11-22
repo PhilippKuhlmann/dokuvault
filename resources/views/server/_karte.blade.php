@@ -8,13 +8,22 @@
 
             <x-slot:head>
                 <x-show.header can="server_update" editAction="$dispatch('object-edit', { typ: 'server', id: {{ $eintrag->id }} })">
+                    @php
+                        $geraet = implode(' · ', array_filter([
+                            trim($eintrag->manufacturer.' '.$eintrag->model),
+                            __(config('custom.server_form_factors')[$eintrag->form_factor] ?? ''),
+                        ]));
+                    @endphp
                     <span class="shrink-0 font-semibold">{{ $eintrag->name }}</span>
 
-                    {{-- Betriebssystem klein hinter den Namen: Es gehoert zur
-                         Identitaet der Maschine, nicht zu den Nachschlagewerten.
-                         Cut on wide screens instead of breaking the line. --}}
-                    @if ($eintrag->operatingSystem)
-                        <span class="min-w-0 truncate text-sm font-normal text-gray-500 dark:text-gray-400" title="{{ $eintrag->operatingSystem->name }}">{{ $eintrag->operatingSystem->name }}</span>
+                    {{-- Das Geraet klein hinter dem Namen - der Teil, der zur
+                         Not gekuerzt wird (voll im Tooltip). Betriebssystem und
+                         EOL-Abzeichen stehen zusammen in der zweiten Zeile: Das
+                         Abzeichen gehoert zum System, nicht zum Server, und
+                         neben dem Namen fehlte dem System der Platz fuer die
+                         Version ("Windows Server 201…"). --}}
+                    @if ($geraet !== '')
+                        <span class="min-w-0 truncate text-sm font-normal text-gray-500 dark:text-gray-400" title="{{ $geraet }}">{{ $geraet }}</span>
                     @endif
 
                     {{-- Was man fast immer sucht, in festen Spalten (design 1A):
@@ -45,16 +54,11 @@
                         <livewire:copy-password-button :device="$eintrag" :key="'kopf-kennwort-server-'.$eintrag->id" />
                     </x-slot>
 
-                    {{-- The EOL badge in the second line: next to the operating
-                         system it took the room the version needed - "Windows
-                         Server 201…" hid exactly what the badge is about. --}}
-                    @php
-                        $geraet = implode(' · ', array_filter([
-                            trim($eintrag->manufacturer.' '.$eintrag->model),
-                            __(config('custom.server_form_factors')[$eintrag->form_factor] ?? ''),
-                        ]));
-                    @endphp
-                    <x-slot:untertitel><span class="min-w-0 truncate" title="{{ $geraet }}">{{ $geraet }}</span>@if ($eintrag->operatingSystem)<span class="shrink-0"><x-eol :os="$eintrag->operatingSystem" /></span>@endif</x-slot>
+                    {{-- Second line: the operating system with its EOL badge,
+                         as on the VM. --}}
+                    @if ($eintrag->operatingSystem)
+                        <x-slot:untertitel><span class="min-w-0 truncate" title="{{ $eintrag->operatingSystem->name }}">{{ $eintrag->operatingSystem->name }}</span><span class="shrink-0"><x-eol :os="$eintrag->operatingSystem" /></span></x-slot>
+                    @endif
                 </x-show.header>
             </x-slot>
 
