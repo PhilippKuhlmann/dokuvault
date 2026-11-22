@@ -5,7 +5,7 @@
 ### Changed
 
 - **Kopfzeile der Karten wie im Entwurf 1A.**
-  - IP, Ort und Dienste stehen in festen Spalten, in jeder Zeile an derselben Stelle. Ein fehlender Wert zeigt „—“, statt dass die Nachbarn nachrücken. Alle Zeilen sind gleich hoch.
+  - IP, Ort und Dienste stehen in festen Spalten, in jeder Zeile an derselben Stelle – die Beschriftung oben, der Wert darunter, wie ein Spaltenkopf. Ein fehlender Wert zeigt „—“, statt dass die Nachbarn nachrücken. Alle Zeilen sind gleich hoch.
   - Ein langes Betriebssystem wird gekürzt (ganz im Tooltip), statt die Zeile umzubrechen.
   - Der Name steht etwas kleiner und fett.
   - Der Ort ist kurz („Rack HH-01 · HE 22“, die Rückseite mit „hinten“); bei Servern ohne Rack steht der Standort.
