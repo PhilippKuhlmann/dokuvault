@@ -18,7 +18,7 @@
 - **Einheitliche Knöpfe, lesbarere Beschriftungen, kompaktere Zeilen.** Die Fernwartung ist ein umrandeter Knopf wie „Kennwort kopieren“ und der Stift. „IP“, „Ort“ und „Host“ sind dunkler gesetzt und erreichen jetzt den Mindestkontrast für kleine Schrift (vorher etwa 2,5:1 hell, 3:1 dunkel). Eine zugeklappte Zeile ist etwa 68 statt 75 px hoch.
 - **Aufgedeckte Kennwörter sind ganz lesbar.** Ein Klick aufs Auge zeigt das Kennwort jetzt als Text, der bei Bedarf umbricht, statt in einem Feld fester Breite – in den Zugangsdaten war das Feld nur etwa zehn Zeichen breit, längere Kennwörter waren abgeschnitten („Hyp3r!Demo2(“). Gilt für alle Kennwörter in den Karten (Zugangsdaten, BMC, Fernwartung und die übrigen Gerätefelder). Ein Klick in das aufgedeckte Kennwort markiert es ganz. Auge und Kopieren-Knopf bleiben dabei an ihrer Stelle, statt an den rechten Rand zu springen.
 - **Aufgeklappte Karten** haben einen blauen Rahmen und sind bündig unter dem Namen eingerückt. Unten steht eine Fußzeile:
-  - wann der Agent zuletzt gemeldet hat und wann von wem zuletzt geändert wurde
+  - wann und von wem zuletzt geändert wurde (wann der Agent gemeldet hat, steht wie bisher im Agent-Block)
   - Links „Verlauf“ (Protokoll), „Im Serverplan zeigen“ und „In Rack … zeigen“ – jeweils nur, wo man sie sehen darf
 
 ## 26.11.22b
