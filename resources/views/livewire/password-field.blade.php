@@ -1,4 +1,4 @@
-<div class="flex items-center gap-2" x-data="{ copied: false }"
+<div class="flex items-start gap-2" x-data="{ copied: false }"
     x-on:password-ready="$kopieren($event.detail.wert)">
     {{-- Immer dasselbe Feld und dieselben zwei Knöpfe - ob verdeckt oder offen.
          So springt die Spalte beim Aufdecken nicht: Vorher kam offen ein
@@ -7,8 +7,16 @@
          Der Wert steht erst im DOM, wenn er angezeigt wurde. Kopieren geht auch
          zugeklappt: Dann holt der Server den Wert einmalig in die Zwischenablage
          (protokolliert und gebremst wie das Anzeigen), ohne ihn aufzudecken. --}}
-    <input x-ref="pw" type="text" disabled value="{{ $offen ? $wert : '••••••••••' }}"
-        class="{{ $width }} min-w-0 p-0 text-sm font-mono bg-transparent border-0 {{ $offen ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 select-none' }}">
+    {{-- Covered: the dots in a field of fixed width. Revealed: the value as
+         text that wraps - in a field of fixed width (w-24 in the credentials)
+         a longer password was cut ("Hyp3r!Demo2(") and could not be read in
+         full. select-all: one click selects it for typing off or copying. --}}
+    @if ($offen)
+        <span x-ref="pw" class="min-w-0 flex-1 select-all break-all font-mono text-sm leading-6 text-gray-900 dark:text-gray-100">{{ $wert }}</span>
+    @else
+        <input type="text" disabled value="••••••••••" aria-label="{{ __('Verdecktes Kennwort') }}"
+            class="{{ $width }} min-w-0 p-0 text-sm font-mono bg-transparent border-0 text-gray-400 dark:text-gray-500 select-none">
+    @endif
 
     {{-- Auge: aufdecken bzw. verbergen. --}}
     <button type="button" tabindex="-1" wire:click="{{ $offen ? 'hide' : 'show' }}"
@@ -30,7 +38,7 @@
          aufzudecken. --}}
     <button type="button" tabindex="-1" title="{{ __('Passwort kopieren') }}"
         @if ($offen)
-            x-on:click="$kopieren($refs.pw.value)"
+            x-on:click="$kopieren($refs.pw.textContent)"
         @else
             wire:click="kopieren"
         @endif

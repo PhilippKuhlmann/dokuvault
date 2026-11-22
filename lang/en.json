@@ -1799,5 +1799,6 @@
     "von :name": "by :name",
     "Im Serverplan zeigen": "Show in server map",
     "In :rack zeigen": "Show in :rack",
-    "Fernwartung starten": "Start remote session"
+    "Fernwartung starten": "Start remote session",
+    "Verdecktes Kennwort": "Hidden password"
 }
