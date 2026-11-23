@@ -29,6 +29,8 @@ class TeamController extends Controller
 
         return view('admin.team.index', [
             'teams' => $teams,
+            'teamCount' => Team::count(),
+            'teamLastAdded' => Team::latest('created_at')->first(),
             'mine' => auth()->user()->teams()->pluck('teams.id')->all(),
         ]);
     }

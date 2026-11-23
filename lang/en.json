@@ -1823,12 +1823,10 @@
     "Team „:name“ löschen?": "Delete team “:name”?",
     "Team löschen": "Delete team",
     "Nur ohne zugewiesene Kunden.": "Only without assigned customers.",
-    "Ein Kunde mit Team ist nur für dessen Mitglieder sichtbar – auch für Admins. Kunden ohne Team sehen alle. Zugewiesen wird ein Team beim Kunden unter Admin › Kunden. Ein Team ändern dürfen nur seine Mitglieder.": "A customer with a team is visible to its members only – admins included. Customers without a team are seen by everyone. A team is assigned on the customer under Admin › Customers. Only its members may change a team.",
-    "kein Mitglied": "not a member",
-    "Noch keine Teams. Solange kein Kunde einem Team zugewiesen ist, sehen alle Benutzer alle Kunden.": "No teams yet. As long as no customer is assigned to a team, all users see all customers.",
     "nur :teams": "only :teams",
     "Mitglieder ändert man im Team unter Admin › Teams.": "Members are changed in the team under Admin › Teams.",
     "Netzlaufwerke": "Network drives",
     "Team-Mitglieder geändert": "Team members changed",
-    "Zugriff geändert": "Access changed"
+    "Zugriff geändert": "Access changed",
+    "Teams Gesamt": "Teams total"
 }

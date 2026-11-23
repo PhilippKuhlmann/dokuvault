@@ -34,7 +34,7 @@ test('only a member may change or delete a team', function () {
     $outsider = userWithPermissions(['admin_team']);
     $this->actingAs($outsider);
 
-    $this->get(route('admin.team.index'))->assertOk()->assertSee('Chef')->assertSee('kein Mitglied');
+    $this->get(route('admin.team.index'))->assertOk()->assertSee('Chef')->assertDontSee(route('admin.team.edit', $team));
     $this->get(route('admin.team.edit', $team))->assertForbidden();
     $this->patch(route('admin.team.update', $team), ['name' => 'Chef', 'members' => [$outsider->id]])->assertForbidden();
     $this->delete(route('admin.team.destroy', $team))->assertForbidden();
