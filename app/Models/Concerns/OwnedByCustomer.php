@@ -42,6 +42,25 @@ trait OwnedByCustomer
         }
     }
 
+    /**
+     * Every secret column stays out of toArray() and JSON - whatever the
+     * model declares itself. The public API returned models as they are,
+     * and only the server listed its passwords in $hidden: a Wi-Fi key, a
+     * USC-PIN or a mailbox password would have gone out in plaintext the
+     * moment an endpoint returned such a model. Read in code (->password)
+     * they are still there; only the serialized form leaves them out.
+     */
+    public function initializeOwnedByCustomer(): void
+    {
+        $this->mergeHidden(array_merge(config('custom.secret_columns', []), self::OTHER_SECRETS));
+    }
+
+    /**
+     * Encrypted, but not in secret_columns (that list also drives the
+     * password history, and these are no passwords one changes there).
+     */
+    public const OTHER_SECRETS = ['fixed_password', 'scan_communities'];
+
     /** Rows that reading creates (an ordered PDF) - allowed with the level "read". */
     public static function writtenWhileReading(): bool
     {

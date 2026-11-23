@@ -23,6 +23,7 @@
 
 ### Fixed
 
+- **Keine Geheimnisse mehr in der JSON-Ausgabe.** Kennwörter, Schlüssel, PINs und SNMP-Communities sind bei allen Modellen aus der JSON-Form ausgeblendet. Bisher war das nur beim Server so – gab die API etwa eine Firewall, ein WLAN oder ein Postfach zurück, stand das Geheimnis im Klartext darin. Ein Test findet jede verschlüsselte Spalte selbst, auch künftige.
 - Wer nur „Einstellungen“ verwalten darf, sah auf dem Admin-Dashboard den Link „Einstellungen“ zur Sicherung, die nur Admins öffnen dürfen – und landete auf „Verboten“.
 
 ## 26.11.22d
