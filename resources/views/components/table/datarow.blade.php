@@ -47,8 +47,10 @@
             {{-- A list of names (e.g. the groups of an AD user). Folded to a
                  count, so a user in twenty groups does not stretch every row;
                  a click unfolds the whole list in place. Key 'liste:Gruppen'
-                 - the part after the colon names what is counted. --}}
-            <td scope="row" class="py-2.5 px-4 align-top">
+                 - the part after the colon names what is counted.
+                 Centred like the other cells: on top it stood above the
+                 line of the row, which the pencil makes taller. --}}
+            <td scope="row" class="py-2.5 px-4">
                 @if (count($value) === 0)
                     <span class="text-gray-400 dark:text-gray-500">—</span>
                 @else
