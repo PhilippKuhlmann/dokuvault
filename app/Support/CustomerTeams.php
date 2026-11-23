@@ -32,7 +32,16 @@ class CustomerTeams
     public static function fromRequest(Customer $customer, Request $request): void
     {
         if (! $request->user()->can('admin_team')) {
-            abort_if($request->has('teams') || $request->has('levels'), 403, __('Den Zugriff ändern darf nur, wer Teams verwalten darf.'));
+            abort_if($request->hasAny(['teams', 'levels', 'access']), 403, __('Den Zugriff ändern darf nur, wer Teams verwalten darf.'));
+
+            return;
+        }
+
+        // The form sends access[team] = none | level; the API teams[] and
+        // levels[team].
+        if ($request->has('access')) {
+            $assigned = array_filter((array) $request->input('access'), fn ($level) => $level !== 'none');
+            self::sync($customer, array_keys($assigned), $request->user(), $assigned);
 
             return;
         }

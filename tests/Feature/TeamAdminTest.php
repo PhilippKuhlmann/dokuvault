@@ -87,7 +87,7 @@ test('a new customer starts with the creator\'s teams ticked', function () {
     $this->actingAs($tech);
 
     $this->get(route('admin.customer.create'))->assertOk()
-        ->assertSee('value="'.$team->id.'" checked', false);
+        ->assertSee('name="access['.$team->id.']" value="full" class="peer sr-only"'."\n".'                                    checked', false);
 
     $this->post(route('admin.customer.store'), ['name' => 'Neukunde', 'teams' => [$team->id]]);
     expect(Customer::firstWhere('name', 'Neukunde')->teams()->pluck('name')->all())->toBe(['Nord']);
@@ -154,11 +154,34 @@ test('with "Kunden verwalten" alone the access is shown, not changed', function 
 
     $this->get(route('admin.customer.edit', $customer->id))->assertOk()
         ->assertSee('Den Zugriff ändern darf nur, wer Teams verwalten darf.')
-        ->assertDontSee('name="teams[]"', false);
+        ->assertDontSee('name="access[', false);
 
     // The name changes, the access stays - and sent anyway, it is refused.
     $this->patch(route('admin.customer.update', $customer), ['name' => 'Kunde B'])->assertRedirect();
     $this->patch(route('admin.customer.update', $customer), ['name' => 'Kunde B', 'teams' => [$team->id]])->assertForbidden();
 
     expect($customer->fresh()->name)->toBe('Kunde B')->and($customer->teams()->count())->toBe(0);
+});
+
+test('the form sends one switch per team: not assigned, or a level', function () {
+    $boss = userWithPermissions(['admin_customer', 'admin_team']);
+    $chef = Team::create(['name' => 'Chef']);
+    $chef->members()->attach($boss->id);
+    $tech = Team::create(['name' => 'Technik']);
+    $south = Team::create(['name' => 'Süd']);
+    $customer = Customer::factory()->create(['name' => 'Eigene Firma']);
+    $this->actingAs($boss);
+
+    $this->patch(route('admin.customer.update', $customer), ['name' => 'Eigene Firma', 'access' => [
+        $chef->id => 'full', $tech->id => 'read_no_secrets', $south->id => 'none',
+    ]])->assertSessionHasNoErrors();
+
+    expect(DB::table('customer_team')->where('customer_id', $customer->id)->pluck('level', 'team_id')->all())
+        ->toBe([$chef->id => 'full', $tech->id => 'read_no_secrets']);
+
+    // All "not assigned": open to everyone again.
+    $this->patch(route('admin.customer.update', $customer), ['name' => 'Eigene Firma', 'access' => [
+        $chef->id => 'none', $tech->id => 'none', $south->id => 'none',
+    ]])->assertSessionHasNoErrors();
+    expect($customer->teams()->count())->toBe(0);
 });

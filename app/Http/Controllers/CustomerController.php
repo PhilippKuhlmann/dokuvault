@@ -191,7 +191,7 @@ class CustomerController extends Controller
         // Preset: the creator's own teams - a technician of team North
         // creates customers for team North, not by accident for everyone.
         return view('admin.customer.create', [
-            'teams' => Team::orderBy('name')->get(['id', 'name']),
+            'teams' => Team::orderBy('name')->with('members:id,name')->get(['id', 'name']),
             // Only preset where it will be saved ("Teams verwalten").
             'selectedTeams' => auth()->user()->can('admin_team') ? auth()->user()->teams()->pluck('teams.id')->all() : [],
             'levels' => [],
@@ -217,7 +217,7 @@ class CustomerController extends Controller
 
         return view('admin.customer.edit', [
             'customer' => $customer,
-            'teams' => Team::orderBy('name')->get(['id', 'name']),
+            'teams' => Team::orderBy('name')->with('members:id,name')->get(['id', 'name']),
             'selectedTeams' => $customer->teams()->pluck('teams.id')->all(),
             'levels' => $customer->teams()->get()->mapWithKeys(fn ($team) => [$team->id => $team->pivot->level])->all(),
         ]);

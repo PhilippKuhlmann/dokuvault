@@ -1813,7 +1813,6 @@
     "Teams": "Teams",
     "Zugriff": "Access",
     "Alle Benutzer sehen diesen Kunden. Um ihn auf bestimmte Personen zu beschränken, lege unter Admin › Teams ein Team an.": "All users see this customer. To limit it to certain people, create a team under Admin › Teams.",
-    "Kein Team angehakt: Alle Benutzer sehen den Kunden. Mit Team: nur dessen Mitglieder – auch Admins nicht mehr.": "No team ticked: all users see the customer. With a team: its members only – admins included.",
     "Nur Benutzer ohne eigenen Kunden – Kundenzugänge sehen ohnehin nur ihren Kunden.": "Only users without a customer of their own – customer logins see only their customer anyway.",
     "Neues Team": "New team",
     "Du bist automatisch Mitglied – ein Team, das niemand ändern darf, wäre verloren.": "You are a member automatically – a team nobody may change would be lost.",
@@ -1835,9 +1834,15 @@
     "Bei diesem Kunden hast du nur Lesezugriff.": "You have read-only access to this customer.",
     "Danach wärst du selbst ausgesperrt. Mindestens ein Team, in dem du Mitglied bist, braucht Vollzugriff.": "You would lock yourself out. At least one team you are a member of needs full access.",
     "Stufe für :team": "Level for :team",
-    "Vollzugriff: was die Rolle erlaubt. Lesen: ansehen und Kennwörter aufdecken, aber nichts anlegen, ändern oder löschen. Lesen ohne Kennwörter: wie Lesen, aber kein Kennwort, Schlüssel oder PIN im Klartext.": "Full access: what the role allows. Read: view and reveal passwords, but create, change or delete nothing. Read without passwords: like read, but no password, key or PIN in plain text.",
     "Vollzugriff": "Full access",
     "Lesen": "Read",
     "Lesen ohne Kennwörter": "Read without passwords",
-    "Den Zugriff ändern darf nur, wer Teams verwalten darf.": "Only users who may manage teams can change the access."
+    "Den Zugriff ändern darf nur, wer Teams verwalten darf.": "Only users who may manage teams can change the access.",
+    "Ohne zugewiesenes Team sehen alle Benutzer den Kunden. Mit Team nur dessen Mitglieder – auch Admins.": "Without an assigned team all users see the customer. With a team only its members – admins included.",
+    "Nicht zugewiesen": "Not assigned",
+    "Das Team hat hier keinen eigenen Zugriff.": "The team has no access of its own here.",
+    "Was die Rolle erlaubt.": "What the role allows.",
+    "Ansehen und Kennwörter aufdecken, aber nichts anlegen, ändern oder löschen.": "View and reveal passwords, but create, change or delete nothing.",
+    "Wie Lesen, aber kein Kennwort, Schlüssel oder PIN im Klartext.": "Like read, but no password, key or PIN in plain text.",
+    "keine Mitglieder": "no members"
 }

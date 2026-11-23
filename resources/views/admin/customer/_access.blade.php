@@ -1,7 +1,8 @@
 {{--
-    Who may see the customer (App\Support\CustomerAccess): no team ticked -
-    every staff user, as before; teams ticked - their members only, admins
-    included. CustomerTeams refuses a choice that would lock the editor out.
+    Who may see the customer (App\Support\CustomerAccess): no team assigned -
+    every user, as before; teams assigned - their members only, admins
+    included, each team with its level. CustomerTeams refuses a choice that
+    would lock the editor out.
 --}}
 <fieldset class="mt-6 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
     <legend class="flex items-center gap-1.5 px-1 text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -34,34 +35,47 @@
         </p>
     @else
         <p class="text-sm text-gray-500 dark:text-gray-400">
-            {{ __('Kein Team angehakt: Alle Benutzer sehen den Kunden. Mit Team: nur dessen Mitglieder – auch Admins nicht mehr.') }}
+            {{ __('Ohne zugewiesenes Team sehen alle Benutzer den Kunden. Mit Team nur dessen Mitglieder – auch Admins.') }}
         </p>
-        {{-- Per team the level: what the role allows (full), only reading,
-             or reading without any password in plaintext. The role stays
-             the upper bound - a level only takes away. --}}
+        {{-- One switch per team instead of tick plus select: "not assigned"
+             or the level. The role stays the upper bound - a level only
+             takes away. Plain radios, styled as a segmented control (peer),
+             so it works without script. --}}
         @php
-            $checked = collect(old('teams', $selectedTeams))->map(fn ($id) => (int) $id)->all();
-            $chosenLevels = old('levels', $levels);
+            $chosen = old('access', collect($selectedTeams)->mapWithKeys(fn ($id) => [$id => $levels[$id] ?? 'full'])->all());
+            $choices = [
+                'none' => [__('Nicht zugewiesen'), __('Das Team hat hier keinen eigenen Zugriff.'), 'peer-checked:bg-white peer-checked:text-gray-900 dark:peer-checked:bg-gray-600 dark:peer-checked:text-white'],
+                'full' => [__('Vollzugriff'), __('Was die Rolle erlaubt.'), 'peer-checked:bg-cerulean-600 peer-checked:text-white dark:peer-checked:bg-cerulean-500'],
+                'read' => [__('Lesen'), __('Ansehen und Kennwörter aufdecken, aber nichts anlegen, ändern oder löschen.'), 'peer-checked:bg-amber-500 peer-checked:text-white dark:peer-checked:bg-amber-600'],
+                'read_no_secrets' => [__('Lesen ohne Kennwörter'), __('Wie Lesen, aber kein Kennwort, Schlüssel oder PIN im Klartext.'), 'peer-checked:bg-amber-600 peer-checked:text-white dark:peer-checked:bg-amber-700'],
+            ];
         @endphp
-        <div class="mt-3 divide-y divide-gray-100 dark:divide-gray-700">
+        <div class="mt-4 space-y-2">
             @foreach ($teams as $team)
-                <div class="flex items-center justify-between gap-4 py-2">
-                    <label class="flex min-w-0 items-center gap-2 text-sm text-gray-900 dark:text-gray-100">
-                        <input type="checkbox" name="teams[]" value="{{ $team->id }}" @checked(in_array($team->id, $checked, true))
-                            class="rounded border-gray-300 text-cerulean-600 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700">
-                        <span class="truncate">{{ $team->name }}</span>
-                    </label>
-                    <x-input.select name="levels[{{ $team->id }}]" :aria-label="__('Stufe für :team', ['team' => $team->name])" class="w-56 shrink-0 text-sm">
-                        @foreach (\App\Support\CustomerAccess::LEVELS as $level)
-                            <option value="{{ $level }}" @selected(($chosenLevels[$team->id] ?? 'full') === $level)>{{ \App\Support\CustomerAccess::label($level) }}</option>
+                <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 dark:border-gray-700 dark:bg-gray-800/60">
+                    <div class="min-w-0">
+                        <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $team->name }}</div>
+                        <div class="truncate text-xs text-gray-500 dark:text-gray-400">{{ $team->members->pluck('name')->join(', ') ?: __('keine Mitglieder') }}</div>
+                    </div>
+                    <div role="radiogroup" aria-label="{{ __('Stufe für :team', ['team' => $team->name]) }}"
+                        class="inline-flex shrink-0 rounded-lg bg-gray-100 p-1 dark:bg-gray-900/60">
+                        @foreach ($choices as $value => [$label, $hint, $active])
+                            <label class="cursor-pointer" title="{{ $hint }}">
+                                <input type="radio" name="access[{{ $team->id }}]" value="{{ $value }}" class="peer sr-only"
+                                    @checked(($chosen[$team->id] ?? 'none') === $value)>
+                                <span class="block whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:text-gray-900 peer-focus-visible:ring-2 peer-focus-visible:ring-cerulean-500 dark:text-gray-300 dark:hover:text-white {{ $active }}">{{ $label }}</span>
+                            </label>
                         @endforeach
-                    </x-input.select>
+                    </div>
                 </div>
             @endforeach
         </div>
-        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            {{ __('Vollzugriff: was die Rolle erlaubt. Lesen: ansehen und Kennwörter aufdecken, aber nichts anlegen, ändern oder löschen. Lesen ohne Kennwörter: wie Lesen, aber kein Kennwort, Schlüssel oder PIN im Klartext.') }}
-        </p>
+        <dl class="mt-4 grid grid-cols-1 gap-x-4 gap-y-1 text-xs text-gray-500 sm:grid-cols-[auto_1fr] dark:text-gray-400">
+            @foreach (array_slice($choices, 1, null, true) as [$label, $hint])
+                <dt class="font-semibold text-gray-700 dark:text-gray-300">{{ $label }}</dt>
+                <dd>{{ $hint }}</dd>
+            @endforeach
+        </dl>
     @endif
 
     @error('teams')

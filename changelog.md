@@ -13,7 +13,7 @@
   - Neues Recht „Teams verwalten“ – bestehende Rollen mit „Benutzer verwalten“ bekommen es dazu.
   - Kundenzugänge und Agents sind davon nicht betroffen.
   - Notausgang, falls kein Mitglied mehr übrig ist: `php artisan team:add-member <Team> <Benutzer>` auf dem Server.
-- **Stufe je Team und Kunde.** Neben dem Haken wählt man beim Kunden die Stufe:
+- **Stufe je Team und Kunde.** Beim Kunden steht jedes Team in einer eigenen Zeile mit seinen Mitgliedern, daneben eine Schalterleiste: „Nicht zugewiesen“, „Vollzugriff“, „Lesen“, „Lesen ohne Kennwörter“. Darunter steht kurz, was jede Stufe bedeutet.
   - **Vollzugriff:** was die Rolle erlaubt.
   - **Lesen:** ansehen und Kennwörter aufdecken, ein PDF erstellen – aber nichts anlegen, ändern oder löschen. Stift, „Neu“ und Löschen verschwinden; auch über Formulare, Livewire oder die App wird nichts gespeichert.
   - **Lesen ohne Kennwörter:** wie Lesen, aber kein Kennwort, Schlüssel oder PIN im Klartext – statt Auge und Kopieren ein Schloss, kein „Kennwort kopieren“, kein Fernwartungs-Knopf (der Link gibt das Kennwort mit), kein PDF (es enthält Kennwörter).
