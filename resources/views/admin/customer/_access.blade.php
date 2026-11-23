@@ -12,7 +12,23 @@
         {{ __('Zugriff') }}
     </legend>
 
-    @if ($teams->isEmpty())
+    {{-- Changing it takes "Teams verwalten" (CustomerTeams): without, the
+         section only shows - no inputs, so the form sends nothing. --}}
+    @if (! auth()->user()->can('admin_team'))
+        {{-- A block, not the one-line form: with the @php ... @endphp further
+             down Blade took both for one block. --}}
+        @php
+            $assigned = $teams->whereIn('id', $selectedTeams);
+        @endphp
+        <p class="text-sm text-gray-900 dark:text-gray-100">
+            @forelse ($assigned as $team)
+                {{ $team->name }} ({{ \App\Support\CustomerAccess::label($levels[$team->id] ?? 'full') }})@unless ($loop->last), @endunless
+            @empty
+                {{ __('alle Benutzer') }}
+            @endforelse
+        </p>
+        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('Den Zugriff ändern darf nur, wer Teams verwalten darf.') }}</p>
+    @elseif ($teams->isEmpty())
         <p class="text-sm text-gray-500 dark:text-gray-400">
             {{ __('Alle Benutzer sehen diesen Kunden. Um ihn auf bestimmte Personen zu beschränken, lege unter Admin › Teams ein Team an.') }}
         </p>

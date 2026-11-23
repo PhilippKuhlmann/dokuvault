@@ -60,7 +60,7 @@ test('a team keeps at least one member, and is not deleted while customers hang 
 });
 
 test('a customer is given teams on its page - never so that the editor is locked out', function () {
-    $tech = userWithPermissions(['admin_customer']);
+    $tech = userWithPermissions(['admin_customer', 'admin_team']);
     $mine = Team::create(['name' => 'Nord']);
     $mine->members()->attach($tech->id);
     $other = Team::create(['name' => 'Süd']);
@@ -81,7 +81,7 @@ test('a customer is given teams on its page - never so that the editor is locked
 });
 
 test('a new customer starts with the creator\'s teams ticked', function () {
-    $tech = userWithPermissions(['admin_customer']);
+    $tech = userWithPermissions(['admin_customer', 'admin_team']);
     $team = Team::create(['name' => 'Nord']);
     $team->members()->attach($tech->id);
     $this->actingAs($tech);
@@ -143,4 +143,22 @@ test('the console brings a member back into a team nobody may change', function 
     $this->artisan('team:add-member', ['team' => 'Chef', 'user' => $user->username])->assertSuccessful();
 
     expect($team->hasMember($user))->toBeTrue();
+});
+
+test('with "Kunden verwalten" alone the access is shown, not changed', function () {
+    $tech = userWithPermissions(['admin_customer']);
+    $team = Team::create(['name' => 'Chef']);
+    $team->members()->attach($tech->id);
+    $customer = Customer::factory()->create(['name' => 'Kunde A']);
+    $this->actingAs($tech);
+
+    $this->get(route('admin.customer.edit', $customer->id))->assertOk()
+        ->assertSee('Den Zugriff ändern darf nur, wer Teams verwalten darf.')
+        ->assertDontSee('name="teams[]"', false);
+
+    // The name changes, the access stays - and sent anyway, it is refused.
+    $this->patch(route('admin.customer.update', $customer), ['name' => 'Kunde B'])->assertRedirect();
+    $this->patch(route('admin.customer.update', $customer), ['name' => 'Kunde B', 'teams' => [$team->id]])->assertForbidden();
+
+    expect($customer->fresh()->name)->toBe('Kunde B')->and($customer->teams()->count())->toBe(0);
 });

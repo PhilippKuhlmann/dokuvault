@@ -101,7 +101,7 @@ test('elsewhere the same technician writes as the role allows', function () {
 
 test('who only reads cannot lift their own team on the customer page', function () {
     [$own, , , $tech] = levelWorld();
-    $user = technician($tech, ['admin_customer']);
+    $user = technician($tech, ['admin_customer', 'admin_team']);
     $this->actingAs($user);
 
     $this->patch(route('admin.customer.update', $own), [
@@ -113,7 +113,7 @@ test('who only reads cannot lift their own team on the customer page', function 
 
 test('with full access one sets the levels - never so that one keeps less than full', function () {
     [$own, , $boss, $tech] = levelWorld();
-    $user = technician($boss, ['admin_customer']);
+    $user = technician($boss, ['admin_customer', 'admin_team']);
     $this->actingAs($user);
 
     $this->patch(route('admin.customer.update', $own), [
@@ -139,7 +139,7 @@ test('agents and the console still write - they are no user', function () {
 
 test('who only reads gets no pencil and no form for the customer itself', function () {
     [$own, , , $tech] = levelWorld();
-    $this->actingAs(technician($tech, ['admin_customer']));
+    $this->actingAs(technician($tech, ['admin_customer', 'admin_team']));
 
     $this->get(route('admin.customer.index'))->assertOk()
         ->assertSee('Eigene Firma')

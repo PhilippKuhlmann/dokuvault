@@ -192,7 +192,8 @@ class CustomerController extends Controller
         // creates customers for team North, not by accident for everyone.
         return view('admin.customer.create', [
             'teams' => Team::orderBy('name')->get(['id', 'name']),
-            'selectedTeams' => auth()->user()->teams()->pluck('teams.id')->all(),
+            // Only preset where it will be saved ("Teams verwalten").
+            'selectedTeams' => auth()->user()->can('admin_team') ? auth()->user()->teams()->pluck('teams.id')->all() : [],
             'levels' => [],
         ]);
     }
@@ -201,7 +202,7 @@ class CustomerController extends Controller
     {
         DB::transaction(function () use ($request) {
             $customer = Customer::create($request->safe()->except(['teams', 'levels']));
-            CustomerTeams::sync($customer, $request->validated('teams', []), $request->user(), $request->validated('levels', []));
+            CustomerTeams::fromRequest($customer, $request);
         });
 
         return redirect(route('admin.customer.index'));
@@ -226,7 +227,7 @@ class CustomerController extends Controller
     {
         DB::transaction(function () use ($customer, $request) {
             $customer->update($request->safe()->except(['teams', 'levels']));
-            CustomerTeams::sync($customer, $request->validated('teams', []), $request->user(), $request->validated('levels', []));
+            CustomerTeams::fromRequest($customer, $request);
         });
 
         return redirect(route('admin.customer.index', $customer));

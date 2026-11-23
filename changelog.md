@@ -20,6 +20,7 @@
   - Die Rolle bleibt die Obergrenze, die Stufe nimmt nur weg. Mit zwei Teams beim selben Kunden gilt die höhere Stufe. Auch Admins sind daran gebunden.
   - Neben dem Seitentitel steht „Nur lesen“ bzw. „Nur lesen, ohne Kennwörter“, damit der fehlende Stift nicht wie ein Fehler aussieht.
   - Zugriff ändern darf nur, wer Vollzugriff hat, und man muss ihn über ein eigenes Team behalten.
+  - Den Bereich „Zugriff“ ändert nur, wer zusätzlich „Teams verwalten“ darf. Mit „Kunden verwalten“ allein legt man Kunden an und ändert Name und Nummer; die Teams stehen dort nur zum Lesen. Sonst hätte ein Techniker einen offenen Kunden seinem Team geben können – und niemand sonst, auch der Chef nicht, hätte ihn mehr gesehen.
 
 ### Fixed
 

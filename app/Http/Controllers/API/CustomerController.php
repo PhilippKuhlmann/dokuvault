@@ -43,7 +43,7 @@ class CustomerController extends Controller
         // customer meant for one team was open to everyone.
         $customer = DB::transaction(function () use ($request) {
             $customer = Customer::create($request->safe()->except(['teams', 'levels']));
-            CustomerTeams::sync($customer, $request->validated('teams', []), $request->user(), $request->validated('levels', []));
+            CustomerTeams::fromRequest($customer, $request);
 
             return $customer;
         });

@@ -5,6 +5,9 @@ namespace App\Support;
 use App\Models\Customer;
 use App\Models\Team;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -22,11 +25,35 @@ use Illuminate\Validation\ValidationException;
 class CustomerTeams
 {
     /**
+     * From a form or the API: without "Teams verwalten" the section is shown
+     * read-only and sends nothing - then the access stays as it is. Sent
+     * anyway (an API call), it is refused rather than silently dropped.
+     */
+    public static function fromRequest(Customer $customer, Request $request): void
+    {
+        if (! $request->user()->can('admin_team')) {
+            abort_if($request->has('teams') || $request->has('levels'), 403, __('Den Zugriff ändern darf nur, wer Teams verwalten darf.'));
+
+            return;
+        }
+
+        self::sync($customer, $request->input('teams', []), $request->user(), $request->input('levels', []));
+    }
+
+    /**
      * @param  list<int>  $teamIds
      * @param  array<int|string, string>  $levels  team id => level; missing: kept, or full for a new one
      */
     public static function sync(Customer $customer, array $teamIds, User $editor, array $levels = []): void
     {
+        // Only with "Teams verwalten": with "Kunden verwalten" alone a
+        // technician could give an open customer to their own team - and
+        // from then on nobody else saw it, the boss included - or drop the
+        // boss's team. Decided 23.11.2026.
+        if (! Gate::forUser($editor)->allows('admin_team')) {
+            throw new AuthorizationException(__('Den Zugriff ändern darf nur, wer Teams verwalten darf.'));
+        }
+
         // Only with full access may the access be changed: a member who may
         // only read would otherwise lift their own team to full.
         CustomerAccess::assertWritable($customer->id);

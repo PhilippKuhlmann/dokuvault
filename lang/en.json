@@ -1838,5 +1838,6 @@
     "Vollzugriff: was die Rolle erlaubt. Lesen: ansehen und Kennwörter aufdecken, aber nichts anlegen, ändern oder löschen. Lesen ohne Kennwörter: wie Lesen, aber kein Kennwort, Schlüssel oder PIN im Klartext.": "Full access: what the role allows. Read: view and reveal passwords, but create, change or delete nothing. Read without passwords: like read, but no password, key or PIN in plain text.",
     "Vollzugriff": "Full access",
     "Lesen": "Read",
-    "Lesen ohne Kennwörter": "Read without passwords"
+    "Lesen ohne Kennwörter": "Read without passwords",
+    "Den Zugriff ändern darf nur, wer Teams verwalten darf.": "Only users who may manage teams can change the access."
 }

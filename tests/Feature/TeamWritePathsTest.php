@@ -78,7 +78,7 @@ test('trash: "delete for good" leaves a read customer untouched, not half delete
 });
 
 test('the public API keeps teams and levels when it creates a customer', function () {
-    $user = userWithPermissions(['admin_customer']);
+    $user = userWithPermissions(['admin_customer', 'admin_team']);
     $team = Team::create(['name' => 'Chef']);
     $team->members()->attach($user->id);
     $this->actingAs($user);
