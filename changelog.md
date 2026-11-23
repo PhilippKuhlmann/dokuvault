@@ -4,8 +4,8 @@
 
 ### Added
 
-- **Teams: Kunden nur für bestimmte Mitarbeiter.** Unter Admin › Benutzer › Teams legt man Teams an (z. B. „Chef“, „Team Nord“) und wählt die Mitglieder. Beim Kunden (Admin › Kunden › Bearbeiten, Bereich „Zugriff“) hakt man an, welche Teams ihn sehen.
-  - Kunde ohne Team: alle Mitarbeiter sehen ihn – wie bisher.
+- **Teams: Kunden nur für bestimmte Benutzer.** Unter Admin › Benutzer › Teams legt man Teams an (z. B. „Chef“, „Team Nord“) und wählt die Mitglieder. Beim Kunden (Admin › Kunden › Bearbeiten, Bereich „Zugriff“) hakt man an, welche Teams ihn sehen.
+  - Kunde ohne Team: alle Benutzer sehen ihn – wie bisher.
   - Kunde mit Team: nur die Mitglieder. Für alle anderen gibt es ihn nicht – nicht in der Kundensuche, der globalen Suche, den Listen, dem Dashboard, dem Protokoll, der Benutzerverwaltung, der Statistik und den Fristen-Mails; ein direkter Link antwortet „nicht gefunden“. Das gilt auch für Admins.
   - Ein Team ändern dürfen nur seine Mitglieder; wer ein Team anlegt, ist darin. Beim Speichern eines Kunden kann man sich nicht selbst aussperren. Ein Team mit zugewiesenen Kunden lässt sich nicht löschen.
   - Ein neuer Kunde startet mit den Teams dessen, der ihn anlegt.

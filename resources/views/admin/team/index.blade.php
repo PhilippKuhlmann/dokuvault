@@ -42,7 +42,7 @@
                 @empty
                     <tr>
                         <td colspan="4" class="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                            {{ __('Noch keine Teams. Solange kein Kunde einem Team zugewiesen ist, sehen alle Mitarbeiter alle Kunden.') }}
+                            {{ __('Noch keine Teams. Solange kein Kunde einem Team zugewiesen ist, sehen alle Benutzer alle Kunden.') }}
                         </td>
                     </tr>
                 @endforelse

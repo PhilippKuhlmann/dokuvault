@@ -45,7 +45,7 @@ class CustomerTeams
             return;
         }
 
-        $names = fn (array $ids) => Team::whereIn('id', $ids)->orderBy('name')->pluck('name')->join(', ') ?: __('alle Mitarbeiter');
+        $names = fn (array $ids) => Team::whereIn('id', $ids)->orderBy('name')->pluck('name')->join(', ') ?: __('alle Benutzer');
 
         activity()
             ->event('access_changed')

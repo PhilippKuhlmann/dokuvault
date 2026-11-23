@@ -14,11 +14,11 @@
 
     @if ($teams->isEmpty())
         <p class="text-sm text-gray-500 dark:text-gray-400">
-            {{ __('Alle Mitarbeiter sehen diesen Kunden. Um ihn auf bestimmte Personen zu beschränken, lege unter Admin › Teams ein Team an.') }}
+            {{ __('Alle Benutzer sehen diesen Kunden. Um ihn auf bestimmte Personen zu beschränken, lege unter Admin › Teams ein Team an.') }}
         </p>
     @else
         <p class="text-sm text-gray-500 dark:text-gray-400">
-            {{ __('Kein Team angehakt: Alle Mitarbeiter sehen den Kunden. Mit Team: nur dessen Mitglieder – auch Admins nicht mehr.') }}
+            {{ __('Kein Team angehakt: Alle Benutzer sehen den Kunden. Mit Team: nur dessen Mitglieder – auch Admins nicht mehr.') }}
         </p>
         @php ($checked = collect(old('teams', $selectedTeams))->map(fn ($id) => (int) $id)->all())
         <div class="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">

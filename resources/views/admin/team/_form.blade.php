@@ -6,7 +6,7 @@
 <fieldset class="mt-5">
     <legend class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Mitglieder') }}</legend>
     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-        {{ __('Nur Mitarbeiter – Kundenzugänge sehen ohnehin nur ihren eigenen Kunden.') }}
+        {{ __('Nur Benutzer ohne eigenen Kunden – Kundenzugänge sehen ohnehin nur ihren Kunden.') }}
     </p>
     @php ($checked = collect(old('members', $selected))->map(fn ($id) => (int) $id)->all())
     <div class="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">

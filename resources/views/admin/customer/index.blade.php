@@ -29,7 +29,7 @@
                              Schraegstrich einen Pfad meint. --}}
                         'pfad' => '/'.$customer->slug,
                         {{-- Teams: only their members see the customer. --}}
-                        $customer->teams->isEmpty() ? __('alle Mitarbeiter') : __('nur :teams', ['teams' => $customer->teams->pluck('name')->join(', ')]),
+                        $customer->teams->isEmpty() ? __('alle Benutzer') : __('nur :teams', ['teams' => $customer->teams->pluck('name')->join(', ')]),
                     ]"
 
                     editUrl="/{{ Request::path() }}/{{ $customer->id }}/edit"
