@@ -106,6 +106,31 @@ export function komponentenRegistrieren(Alpine) {
         },
     }));
 
+    // Picking team members among many users: a search over name, user name
+    // and role, "only the selected", and the count. The cards carry their
+    // text in data-search; nothing is sent to the server.
+    Alpine.data('memberPicker', () => ({
+        search: '',
+        onlySelected: false,
+        selected: 0,
+        init() {
+            this.count();
+        },
+        count() {
+            this.selected = this.$root.querySelectorAll('input[name="members[]"]:checked').length;
+        },
+        toggleOnlySelected() {
+            this.onlySelected = ! this.onlySelected;
+        },
+        shows(card) {
+            const text = (card.dataset.search || '').toLowerCase();
+            const term = this.search.trim().toLowerCase();
+            const ticked = card.querySelector('input').checked;
+
+            return (! term || text.includes(term)) && (! this.onlySelected || ticked);
+        },
+    }));
+
     // The list around such cards: "open all / fold all", kept per list in
     // this browser - a convenience of the viewer, not a setting.
     Alpine.data('cardList', (storageKey) => ({

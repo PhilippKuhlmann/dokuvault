@@ -11,6 +11,7 @@
   - Ein neuer Kunde startet mit den Teams dessen, der ihn anlegt.
   - Änderungen an Mitgliedern und Zugriff stehen im Protokoll („Team-Mitglieder geändert“, „Zugriff geändert“).
   - Im Team stehen die Mitglieder als Karten mit Kürzel, Name, Anmeldename und Rolle; ein Klick auf die Karte wählt sie, ausgewählte sind blau. Die Kunden des Teams stehen darunter, jeder mit seiner Stufe.
+  - Ab neun Benutzern gibt es über den Karten eine Suche (Name, Anmeldename, Rolle), den Schalter „Nur ausgewählte“ und die Zahl der ausgewählten. Kunden-Logins stehen dort ohnehin nicht – sie sehen nur ihren eigenen Kunden.
   - Neues Recht „Teams verwalten“ – bestehende Rollen mit „Benutzer verwalten“ bekommen es dazu.
   - Kundenzugänge und Agents sind davon nicht betroffen.
   - Notausgang, falls kein Mitglied mehr übrig ist: `php artisan team:add-member <Team> <Benutzer>` auf dem Server.
