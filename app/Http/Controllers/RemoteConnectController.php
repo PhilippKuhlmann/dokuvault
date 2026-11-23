@@ -6,6 +6,7 @@ use App\Models\Computer;
 use App\Models\Server;
 use App\Models\Setting;
 use App\Models\VM;
+use App\Support\CustomerAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -33,6 +34,9 @@ class RemoteConnectController extends Controller
         // does for the routes below /{customer}).
         $geraet = $klasse::findOrFail($id);
         abort_if(auth()->user()->hasCustomer() && (int) $geraet->customer_id !== (int) auth()->user()->customer_id, 403);
+        // The link carries the remote password: not for the level "read
+        // without passwords" (CustomerAccess).
+        abort_unless(CustomerAccess::canRevealSecrets(auth()->user(), (int) $geraet->customer_id), 403, __('Kennwörter sind für dein Team bei diesem Kunden verborgen.'));
         $link = Setting::remoteAccessLink($geraet->remoteID, $geraet->remotePassword);
         abort_unless($link, 404);
 

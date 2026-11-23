@@ -3,7 +3,9 @@
 namespace App\Livewire;
 
 use App\Exceptions\TooManyPasswordReveals;
+use App\Support\CustomerAccess;
 use App\Support\PasswordReveal;
+use Illuminate\Database\Eloquent\Model;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -38,6 +40,15 @@ class SecretField extends Component
 
     public bool $offen = false;
 
+    /**
+     * Whether the user's team may see passwords of this customer at all
+     * (CustomerAccess, level "read without passwords"). Without, the field
+     * stays covered and has neither eye nor copy - PasswordReveal refuses
+     * anyway, this only spares the button that would fail.
+     */
+    #[Locked]
+    public bool $mayReveal = true;
+
     public ?string $wert = null;
 
     public function mount(string $modell, int $id, string $feld, string $width = 'w-full'): void
@@ -46,6 +57,12 @@ class SecretField extends Component
         $this->id = $id;
         $this->feld = $feld;
         $this->width = $width;
+        // The page's customer when known (no query per field in a list),
+        // else the one of the row.
+        $customerId = ! CustomerAccess::anyAssigned() ? null
+            : (CustomerAccess::currentCustomerId()
+                ?? (is_subclass_of($modell, Model::class) ? $modell::query()->whereKey($id)->value('customer_id') : null));
+        $this->mayReveal = CustomerAccess::canRevealSecrets(auth()->user(), $customerId ? (int) $customerId : null);
     }
 
     public function show(): void

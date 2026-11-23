@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Concerns;
 
+use App\Models\Customer;
 use App\Support\CustomerAccess;
 
 /**
@@ -25,5 +26,28 @@ trait ScopedToCustomer
 
         abort_if($nutzer && $nutzer->customer_id && $nutzer->customer_id !== $customerId, 403);
         abort_unless(CustomerAccess::canSee($nutzer, $customerId), 404);
+
+        // From here on the gates know the customer (CustomerAccess level).
+        CustomerAccess::announce($customerId);
+    }
+
+    /**
+     * Every later request of the component (/livewire/update) carries no
+     * customer in its route: the component announces the one it holds, so
+     * a gate asked in an action or in render sees the level of its team.
+     */
+    public function hydrateScopedToCustomer(): void
+    {
+        foreach (['customerId', 'customer_id', 'kundeId'] as $property) {
+            if (property_exists($this, $property) && $this->{$property}) {
+                CustomerAccess::announce((int) $this->{$property});
+
+                return;
+            }
+        }
+
+        if (property_exists($this, 'customer') && $this->customer instanceof Customer) {
+            CustomerAccess::announce((int) $this->customer->getKey());
+        }
     }
 }

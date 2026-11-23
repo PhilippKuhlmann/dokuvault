@@ -24,6 +24,17 @@
             class="w-24 min-w-0 p-0 text-sm font-mono bg-transparent border-0 text-gray-400 dark:text-gray-500 select-none">
     @endif
 
+    {{-- Level "read without passwords" (CustomerAccess): covered for good,
+         a lock instead of eye and copy. --}}
+    @if (! $mayReveal)
+        <span class="shrink-0 text-gray-400 dark:text-gray-500" title="{{ __('Kennwörter sind für dein Team bei diesem Kunden verborgen.') }}">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 13a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" />
+                <path d="M8 11V7a4 4 0 1 1 8 0v4" />
+            </svg>
+            <span class="sr-only">{{ __('Kennwörter sind für dein Team bei diesem Kunden verborgen.') }}</span>
+        </span>
+    @else
     {{-- Auge: aufdecken bzw. verbergen. --}}
     <button type="button" tabindex="-1" wire:click="{{ $offen ? 'hide' : 'show' }}"
         title="{{ $offen ? __('Passwort verbergen') : __('Passwort anzeigen') }}"
@@ -56,6 +67,8 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
         </svg>
     </button>
+
+    @endif
 
     {{-- Greift die Bremse, steht hier der Hinweis - statt eines still
          ausbleibenden Werts. --}}

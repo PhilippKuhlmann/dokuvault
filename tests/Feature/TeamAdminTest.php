@@ -75,7 +75,7 @@ test('a customer is given teams on its page - never so that the editor is locked
         ->assertSessionHasNoErrors();
     expect($customer->teams()->pluck('name')->all())->toBe(['Nord', 'Süd'])
         ->and(DB::table('customer_team')->where('customer_id', $customer->id)->pluck('level')->unique()->all())->toBe([CustomerAccess::FULL])
-        ->and(Activity::where('event', 'access_changed')->where('subject_id', $customer->id)->value('properties')['attributes']['Teams'])->toBe('Nord, Süd');
+        ->and(Activity::where('event', 'access_changed')->where('subject_id', $customer->id)->value('properties')['attributes']['Teams'])->toBe('Nord (Vollzugriff), Süd (Vollzugriff)');
 
     $this->get(route('admin.customer.index'))->assertSee('nur Nord, Süd');
 });

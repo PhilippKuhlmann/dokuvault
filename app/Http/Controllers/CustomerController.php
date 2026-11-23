@@ -9,6 +9,7 @@ use App\Models\DocumentationRun;
 use App\Models\PdfExport;
 use App\Models\Setting;
 use App\Models\Team;
+use App\Support\CustomerAccess;
 use App\Support\CustomerDashboard;
 use App\Support\CustomerTeams;
 use Illuminate\Support\Facades\DB;
@@ -192,14 +193,15 @@ class CustomerController extends Controller
         return view('admin.customer.create', [
             'teams' => Team::orderBy('name')->get(['id', 'name']),
             'selectedTeams' => auth()->user()->teams()->pluck('teams.id')->all(),
+            'levels' => [],
         ]);
     }
 
     public function store(CustomerRequest $request)
     {
         DB::transaction(function () use ($request) {
-            $customer = Customer::create($request->safe()->except('teams'));
-            CustomerTeams::sync($customer, $request->validated('teams', []), $request->user());
+            $customer = Customer::create($request->safe()->except(['teams', 'levels']));
+            CustomerTeams::sync($customer, $request->validated('teams', []), $request->user(), $request->validated('levels', []));
         });
 
         return redirect(route('admin.customer.index'));
@@ -208,19 +210,23 @@ class CustomerController extends Controller
     public function edit($customer)
     {
         $customer = Customer::where('id', $customer)->firstOrFail();
+        // Saving needs full access (Customer::updating) - no form that
+        // cannot be saved.
+        abort_unless(CustomerAccess::canWrite(auth()->user(), $customer->id), 403, __('Bei diesem Kunden hast du nur Lesezugriff.'));
 
         return view('admin.customer.edit', [
             'customer' => $customer,
             'teams' => Team::orderBy('name')->get(['id', 'name']),
             'selectedTeams' => $customer->teams()->pluck('teams.id')->all(),
+            'levels' => $customer->teams()->get()->mapWithKeys(fn ($team) => [$team->id => $team->pivot->level])->all(),
         ]);
     }
 
     public function update(Customer $customer, CustomerRequest $request)
     {
         DB::transaction(function () use ($customer, $request) {
-            $customer->update($request->safe()->except('teams'));
-            CustomerTeams::sync($customer, $request->validated('teams', []), $request->user());
+            $customer->update($request->safe()->except(['teams', 'levels']));
+            CustomerTeams::sync($customer, $request->validated('teams', []), $request->user(), $request->validated('levels', []));
         });
 
         return redirect(route('admin.customer.index', $customer));

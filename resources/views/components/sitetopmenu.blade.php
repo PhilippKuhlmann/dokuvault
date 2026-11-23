@@ -26,6 +26,9 @@
 <div class="flex flex-wrap w-full items-center justify-between gap-3 px-3 pt-4 pb-1">
     <div class="text-2xl font-CoconPro text-gray-900 dark:text-gray-100">
         {{ $title }}
+        @unless ($isAdmin)
+            <x-access-level-badge class="ml-2" />
+        @endunless
     </div>
 
     <div class="flex items-center gap-3">

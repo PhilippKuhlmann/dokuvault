@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\ScopedToCustomer;
 use App\Livewire\Concerns\ValidatesOnInput;
 use App\Models\Customer;
 use App\Models\DocumentationRun;
@@ -34,6 +35,9 @@ use Livewire\Component;
  */
 class DocumentationWizard extends Component
 {
+    // Announces its customer on every request, for the team level
+    // (CustomerAccess) - its own checks of the customer stay below.
+    use ScopedToCustomer;
     use ValidatesOnInput;
 
     #[Locked]

@@ -17,6 +17,7 @@
 
         <x-table.body>
 
+            {{-- No pencil where the user's team only reads (CustomerAccess). --}}
             @foreach ($customers as $customer)
 
                 <x-table.datarow
@@ -32,7 +33,7 @@
                         $customer->teams->isEmpty() ? __('alle Benutzer') : __('nur :teams', ['teams' => $customer->teams->pluck('name')->join(', ')]),
                     ]"
 
-                    editUrl="/{{ Request::path() }}/{{ $customer->id }}/edit"
+                    :editUrl="\App\Support\CustomerAccess::canWrite(auth()->user(), $customer->id) ? '/'.Request::path().'/'.$customer->id.'/edit' : null"
                     can="admin_customer"
                 />
 

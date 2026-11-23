@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\ScopedToCustomer;
 use App\Models\Rack;
 use App\Models\RackCatalogItem;
 use App\Models\RackItem;
@@ -19,6 +20,10 @@ use Livewire\Component;
  */
 class RackEditor extends Component
 {
+    // Announces its customer on every request, for the team level
+    // (CustomerAccess) - its own checks of the customer stay below.
+    use ScopedToCustomer;
+
     // Scalars instead of model instances: robust with Livewire hydration (like DeviceIpAddresses).
     #[Locked]
     public int $rackId;

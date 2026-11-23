@@ -20,16 +20,32 @@
         <p class="text-sm text-gray-500 dark:text-gray-400">
             {{ __('Kein Team angehakt: Alle Benutzer sehen den Kunden. Mit Team: nur dessen Mitglieder – auch Admins nicht mehr.') }}
         </p>
-        @php ($checked = collect(old('teams', $selectedTeams))->map(fn ($id) => (int) $id)->all())
-        <div class="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
+        {{-- Per team the level: what the role allows (full), only reading,
+             or reading without any password in plaintext. The role stays
+             the upper bound - a level only takes away. --}}
+        @php
+            $checked = collect(old('teams', $selectedTeams))->map(fn ($id) => (int) $id)->all();
+            $chosenLevels = old('levels', $levels);
+        @endphp
+        <div class="mt-3 divide-y divide-gray-100 dark:divide-gray-700">
             @foreach ($teams as $team)
-                <label class="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100">
-                    <input type="checkbox" name="teams[]" value="{{ $team->id }}" @checked(in_array($team->id, $checked, true))
-                        class="rounded border-gray-300 text-cerulean-600 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700">
-                    {{ $team->name }}
-                </label>
+                <div class="flex items-center justify-between gap-4 py-2">
+                    <label class="flex min-w-0 items-center gap-2 text-sm text-gray-900 dark:text-gray-100">
+                        <input type="checkbox" name="teams[]" value="{{ $team->id }}" @checked(in_array($team->id, $checked, true))
+                            class="rounded border-gray-300 text-cerulean-600 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700">
+                        <span class="truncate">{{ $team->name }}</span>
+                    </label>
+                    <x-input.select name="levels[{{ $team->id }}]" :aria-label="__('Stufe für :team', ['team' => $team->name])" class="w-56 shrink-0 text-sm">
+                        @foreach (\App\Support\CustomerAccess::LEVELS as $level)
+                            <option value="{{ $level }}" @selected(($chosenLevels[$team->id] ?? 'full') === $level)>{{ \App\Support\CustomerAccess::label($level) }}</option>
+                        @endforeach
+                    </x-input.select>
+                </div>
             @endforeach
         </div>
+        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            {{ __('Vollzugriff: was die Rolle erlaubt. Lesen: ansehen und Kennwörter aufdecken, aber nichts anlegen, ändern oder löschen. Lesen ohne Kennwörter: wie Lesen, aber kein Kennwort, Schlüssel oder PIN im Klartext.') }}
+        </p>
     @endif
 
     @error('teams')

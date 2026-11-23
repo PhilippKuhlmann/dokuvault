@@ -1809,7 +1809,6 @@
     "Dem Team sind noch Kunden zugewiesen. Erst dort das Team entfernen, dann löschen.": "Customers are still assigned to this team. Remove the team there first, then delete it.",
     "Team „:name“ gelöscht.": "Team “:name” deleted.",
     "Nur Mitglieder dürfen ein Team ändern.": "Only members may change a team.",
-    "Danach wärst du selbst ausgesperrt. Wähle mindestens ein Team, in dem du Mitglied bist.": "You would lock yourself out. Choose at least one team you are a member of.",
     "alle Benutzer": "all users",
     "Teams": "Teams",
     "Zugriff": "Access",
@@ -1828,5 +1827,16 @@
     "Netzlaufwerke": "Network drives",
     "Team-Mitglieder geändert": "Team members changed",
     "Zugriff geändert": "Access changed",
-    "Teams Gesamt": "Teams total"
+    "Teams Gesamt": "Teams total",
+    "Dein Team hat bei diesem Kunden nur diese Stufe.": "Your team has only this level for this customer.",
+    "Nur lesen": "Read only",
+    "Nur lesen, ohne Kennwörter": "Read only, without passwords",
+    "Kennwörter sind für dein Team bei diesem Kunden verborgen.": "Passwords of this customer are hidden for your team.",
+    "Bei diesem Kunden hast du nur Lesezugriff.": "You have read-only access to this customer.",
+    "Danach wärst du selbst ausgesperrt. Mindestens ein Team, in dem du Mitglied bist, braucht Vollzugriff.": "You would lock yourself out. At least one team you are a member of needs full access.",
+    "Stufe für :team": "Level for :team",
+    "Vollzugriff: was die Rolle erlaubt. Lesen: ansehen und Kennwörter aufdecken, aber nichts anlegen, ändern oder löschen. Lesen ohne Kennwörter: wie Lesen, aber kein Kennwort, Schlüssel oder PIN im Klartext.": "Full access: what the role allows. Read: view and reveal passwords, but create, change or delete nothing. Read without passwords: like read, but no password, key or PIN in plain text.",
+    "Vollzugriff": "Full access",
+    "Lesen": "Read",
+    "Lesen ohne Kennwörter": "Read without passwords"
 }

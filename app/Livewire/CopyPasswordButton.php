@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Exceptions\TooManyPasswordReveals;
 use App\Models\CredentialLink;
+use App\Support\CustomerAccess;
 use App\Support\PasswordReveal;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
@@ -30,7 +31,9 @@ class CopyPasswordButton extends Component
 
     public function mount(Model $device): void
     {
-        if (! method_exists($device, 'zugangsdaten') || ! Gate::allows('logingeneral_viewAny')) {
+        // Level "read without passwords" (CustomerAccess): no button at all.
+        if (! method_exists($device, 'zugangsdaten') || ! Gate::allows('logingeneral_viewAny')
+            || ! CustomerAccess::canRevealSecrets(auth()->user(), (int) $device->customer_id)) {
             return;
         }
 

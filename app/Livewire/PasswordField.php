@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Exceptions\TooManyPasswordReveals;
 use App\Models\CredentialLink;
+use App\Support\CustomerAccess;
 use App\Support\PasswordReveal;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -33,12 +34,26 @@ class PasswordField extends Component
     public bool $offen = false;
 
     /** Filled only after the click - before that no value lies in the component. */
+    /**
+     * Whether the user's team may see passwords of this customer at all
+     * (CustomerAccess, level "read without passwords"). Without, the field
+     * stays covered and has neither eye nor copy - PasswordReveal refuses
+     * anyway, this only spares the button that would fail.
+     */
+    #[Locked]
+    public bool $mayReveal = true;
+
     public ?string $wert = null;
 
     public function mount(int $linkId, string $width = 'w-full'): void
     {
         $this->linkId = $linkId;
         $this->width = $width;
+        // The page's customer when known (no query per field in a list),
+        // else the one of the link.
+        $customerId = ! CustomerAccess::anyAssigned() ? null
+            : (CustomerAccess::currentCustomerId() ?? CredentialLink::query()->whereKey($linkId)->value('customer_id'));
+        $this->mayReveal = CustomerAccess::canRevealSecrets(auth()->user(), $customerId ? (int) $customerId : null);
     }
 
     public function show(): void

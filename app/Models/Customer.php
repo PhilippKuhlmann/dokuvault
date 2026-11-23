@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\TracksChanges;
 use App\Models\Scopes\VisibleCustomerScope;
+use App\Support\CustomerAccess;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -24,6 +25,9 @@ class Customer extends Model
         // Teams: a customer of teams the user is not in does not exist for
         // them (App\Support\CustomerAccess).
         static::addGlobalScope(new VisibleCustomerScope);
+        // Name, number, teams: only with full access (CustomerAccess).
+        static::updating(fn ($customer) => CustomerAccess::assertWritable($customer->id));
+        static::deleting(fn ($customer) => CustomerAccess::assertWritable($customer->id));
 
         // Only on the final delete - a customer in the trash keeps its data.
         // Through Eloquent, so the files go too (see PdfExport).

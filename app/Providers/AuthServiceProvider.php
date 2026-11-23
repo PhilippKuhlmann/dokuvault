@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Policies\CustomerPolicy;
 use App\Policies\GeneralPolicy;
 use App\Policies\ResourcePolicy;
+use App\Support\CustomerAccess;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -49,6 +50,18 @@ class AuthServiceProvider extends ServiceProvider
             // the internal searches for them.
             if ($ability === 'isCustomer') {
                 return null;
+            }
+
+            // Teams with level "read" (CustomerAccess): on such a customer
+            // nothing is created, changed or deleted - not by an admin
+            // either. Before the admin's "may do everything", or it would
+            // never be asked. The pencil and "new" vanish with it.
+            if (CustomerAccess::writes($ability) && ! CustomerAccess::canWrite($user, CustomerAccess::currentCustomerId())) {
+                return false;
+            }
+            // The PDF prints passwords: not for "read without passwords".
+            if ($ability === 'create_pdf' && ! CustomerAccess::canRevealSecrets($user, CustomerAccess::currentCustomerId())) {
+                return false;
             }
 
             return $user->role_id === Role::IS_ADMIN ? true : null;

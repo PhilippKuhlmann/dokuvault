@@ -17,6 +17,12 @@ class PdfExport extends Model
 {
     use OwnedByCustomer;
 
+    /** Ordering a PDF is reading the documentation (CustomerAccess level "read"). */
+    public static function writtenWhileReading(): bool
+    {
+        return true;
+    }
+
     public const OFFEN = 'offen';
 
     public const LAEUFT = 'laeuft';

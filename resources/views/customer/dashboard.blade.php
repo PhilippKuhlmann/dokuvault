@@ -8,6 +8,7 @@
         <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 mb-5">
             <div class="min-w-0 text-3xl font-CoconPro text-gray-900 break-words dark:text-gray-100">
                 {{ $customer->name }}
+                <x-access-level-badge class="ml-2" />
             </div>
             @can('create_pdf')
                 {{-- Knopf und Stand in einer Komponente: Das PDF entsteht im

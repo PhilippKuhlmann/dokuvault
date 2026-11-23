@@ -30,6 +30,8 @@ class CustomerRequest extends FormRequest
             // every staff user. CustomerTeams checks the editor keeps access.
             'teams' => ['array'],
             'teams.*' => ['integer', 'exists:teams,id'],
+            'levels' => ['array'],
+            'levels.*' => ['in:full,read,read_no_secrets'],
             // No 'slug': it is made once from the name when the customer is
             // created (Customer::creating) and is the storage folder and URL
             // segment of all its files - not something to set from a form.

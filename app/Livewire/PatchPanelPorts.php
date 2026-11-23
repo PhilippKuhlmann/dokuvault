@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\ScopedToCustomer;
 use App\Livewire\Concerns\ValidatesOnInput;
 use App\Models\NetworkSwitch;
 use App\Models\PatchPanel;
@@ -20,6 +21,9 @@ use Livewire\Component;
  */
 class PatchPanelPorts extends Component
 {
+    // Announces its customer on every request, for the team level
+    // (CustomerAccess) - its own checks of the customer stay below.
+    use ScopedToCustomer;
     use ValidatesOnInput;
 
     // Scalars instead of a model instance: robust with Livewire hydration (like DeviceIpAddresses).
