@@ -116,7 +116,7 @@ class TeamController extends Controller
     /** Staff users only: a customer login is kept to its customer anyway. */
     private function staff()
     {
-        return User::whereNull('customer_id')->whereNull('deactivated_at')->orderBy('name')->get(['id', 'name', 'username']);
+        return User::whereNull('customer_id')->whereNull('deactivated_at')->with('role:id,name')->orderBy('name')->get(['id', 'name', 'username', 'role_id']);
     }
 
     private function validated(Request $request): array

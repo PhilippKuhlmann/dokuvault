@@ -10,6 +10,7 @@
   - Ein Team ändern dürfen nur seine Mitglieder; wer ein Team anlegt, ist darin. Beim Speichern eines Kunden kann man sich nicht selbst aussperren. Ein Team mit zugewiesenen Kunden lässt sich nicht löschen.
   - Ein neuer Kunde startet mit den Teams dessen, der ihn anlegt.
   - Änderungen an Mitgliedern und Zugriff stehen im Protokoll („Team-Mitglieder geändert“, „Zugriff geändert“).
+  - Im Team stehen die Mitglieder als Karten mit Kürzel, Name, Anmeldename und Rolle; ein Klick auf die Karte wählt sie, ausgewählte sind blau. Die Kunden des Teams stehen darunter, jeder mit seiner Stufe.
   - Neues Recht „Teams verwalten“ – bestehende Rollen mit „Benutzer verwalten“ bekommen es dazu.
   - Kundenzugänge und Agents sind davon nicht betroffen.
   - Notausgang, falls kein Mitglied mehr übrig ist: `php artisan team:add-member <Team> <Benutzer>` auf dem Server.

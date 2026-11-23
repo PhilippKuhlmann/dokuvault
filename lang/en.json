@@ -1844,5 +1844,6 @@
     "Was die Rolle erlaubt.": "What the role allows.",
     "Ansehen und Kennwörter aufdecken, aber nichts anlegen, ändern oder löschen.": "View and reveal passwords, but create, change or delete nothing.",
     "Wie Lesen, aber kein Kennwort, Schlüssel oder PIN im Klartext.": "Like read, but no password, key or PIN in plain text.",
-    "keine Mitglieder": "no members"
+    "keine Mitglieder": "no members",
+    "Noch keinem Kunden zugewiesen. Das geschieht beim Kunden unter Admin › Kunden.": "Not assigned to any customer yet. That is done on the customer under Admin › Customers."
 }
