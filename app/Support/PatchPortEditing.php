@@ -42,6 +42,10 @@ class PatchPortEditing
      */
     public function save(PatchPanel $panel, array $werte): void
     {
+        // Level "read" (CustomerAccess): checked here, before anything is
+        // written - this path skips the model events or touches files first.
+        CustomerAccess::assertWritable((int) $panel->customer_id);
+
         foreach ($panel->ports()->get() as $port) {
             if (! isset($werte[$port->id])) {
                 continue;
@@ -57,6 +61,10 @@ class PatchPortEditing
     /** Clear a row without having to empty every field by hand. */
     public function clear(PatchPanel $panel, int $portId): void
     {
+        // Level "read" (CustomerAccess): checked here, before anything is
+        // written - this path skips the model events or touches files first.
+        CustomerAccess::assertWritable((int) $panel->customer_id);
+
         $panel->ports()->whereKey($portId)->update(array_fill_keys(self::COLUMNS, null));
     }
 }

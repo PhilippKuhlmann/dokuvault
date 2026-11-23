@@ -40,6 +40,10 @@ class IpRangeEditing
      */
     public function create(Network $netz, array $daten): IpRange
     {
+        // Level "read" (CustomerAccess): checked here, before anything is
+        // written - this path skips the model events or touches files first.
+        CustomerAccess::assertWritable((int) $netz->customer_id);
+
         $von = IpRange::alsLong($daten['from_ip']);
         $bis = IpRange::alsLong($daten['to_ip']);
 
@@ -90,6 +94,10 @@ class IpRangeEditing
     /** Only a range of this network - a foreign id is ignored. */
     public function delete(Network $netz, int $id): void
     {
+        // Level "read" (CustomerAccess): checked here, before anything is
+        // written - this path skips the model events or touches files first.
+        CustomerAccess::assertWritable((int) $netz->customer_id);
+
         $this->ranges($netz)->firstWhere('id', $id)?->delete();
     }
 

@@ -48,6 +48,10 @@ class IpAssignment
 
     public function add(Model $device, array $daten, bool $dhcp): IpAddress
     {
+        // Level "read" (CustomerAccess): checked here, before anything is
+        // written - this path skips the model events or touches files first.
+        CustomerAccess::assertWritable((int) $device->customer_id);
+
         return $device->ipAddresses()->create([
             'customer_id' => $device->customer_id,
             'network_id' => ($daten['network_id'] ?? null) ?: null,
@@ -59,6 +63,10 @@ class IpAssignment
 
     public function remove(Model $device, int $id): void
     {
+        // Level "read" (CustomerAccess): checked here, before anything is
+        // written - this path skips the model events or touches files first.
+        CustomerAccess::assertWritable((int) $device->customer_id);
+
         $device->ipAddresses()->whereKey($id)->delete();
     }
 

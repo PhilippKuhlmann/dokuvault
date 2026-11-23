@@ -42,6 +42,10 @@ class ScanTargetLinking
 
     public function add(Scanner $scanner, array $daten, bool $neu): ScanTarget
     {
+        // Level "read" (CustomerAccess): checked here, before anything is
+        // written - this path skips the model events or touches files first.
+        CustomerAccess::assertWritable((int) $scanner->customer_id);
+
         $ziel = $neu
             ? ScanTarget::create([
                 'customer_id' => $scanner->customer_id,
@@ -59,6 +63,10 @@ class ScanTargetLinking
 
     public function remove(Scanner $scanner, int $id): void
     {
+        // Level "read" (CustomerAccess): checked here, before anything is
+        // written - this path skips the model events or touches files first.
+        CustomerAccess::assertWritable((int) $scanner->customer_id);
+
         $scanner->scanTargets()->detach($id);
     }
 }

@@ -10,6 +10,7 @@ use App\Models\ChecklistTemplate;
 use App\Models\ChecklistTemplateItem;
 use App\Models\Customer;
 use App\Models\NetworkShare;
+use App\Support\CustomerAccess;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
@@ -221,6 +222,10 @@ class ChecklistSettings extends Component
     /** Switches a standard step off for this customer - or back on. */
     public function toggleStandard(int $itemId): void
     {
+        // Level "read" (CustomerAccess): checked here, before anything is
+        // written - this path skips the model events or touches files first.
+        CustomerAccess::assertWritable($this->customerId);
+
         $customer = $this->customer();
         $item = ChecklistTemplateItem::whereNull('customer_id')->findOrFail($itemId);
 

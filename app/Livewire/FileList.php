@@ -6,6 +6,7 @@ use App\Livewire\Concerns\ScopedToCustomer;
 use App\Models\Customer;
 use App\Models\File;
 use App\Models\Setting;
+use App\Support\CustomerAccess;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -83,6 +84,8 @@ class FileList extends Component
         // exception passed through.
         abort_unless($datei !== null, 404);
 
+        // Before the file goes: the model guard would stop only the row.
+        CustomerAccess::assertWritable((int) $datei->customer_id);
         Storage::disk('local')->delete($datei->file_path);
         $datei->delete();
 

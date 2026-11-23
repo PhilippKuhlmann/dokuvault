@@ -43,6 +43,10 @@ class ServerToVm
      */
     public static function asNewVm(Server $server, string $name, ?int $hostId = null, ?int $clusterId = null): VM
     {
+        // Level "read" (CustomerAccess): checked here, before anything is
+        // written - this path skips the model events or touches files first.
+        CustomerAccess::assertWritable((int) $server->customer_id);
+
         return DB::transaction(function () use ($server, $name, $hostId, $clusterId) {
             $vm = VM::create([
                 'customer_id' => $server->customer_id,
@@ -67,6 +71,10 @@ class ServerToVm
      */
     public static function into(Server $server, VM $vm): void
     {
+        // Level "read" (CustomerAccess): checked here, before anything is
+        // written - this path skips the model events or touches files first.
+        CustomerAccess::assertWritable((int) $server->customer_id);
+
         DB::transaction(function () use ($server, $vm) {
             $vorhanden = $vm->ipAddresses()->pluck('address')->filter()->all();
             foreach ($server->ipAddresses()->get() as $adresse) {

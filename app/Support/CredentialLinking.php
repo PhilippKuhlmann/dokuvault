@@ -80,6 +80,10 @@ class CredentialLinking
     /** Skip duplicate links silently - the unique index would throw a 500. */
     public function attach(Model $device, int $loginId, ?string $note): CredentialLink
     {
+        // Level "read" (CustomerAccess): checked here, before anything is
+        // written - this path skips the model events or touches files first.
+        CustomerAccess::assertWritable((int) $device->customer_id);
+
         return $device->credentialLinks()->firstOrCreate(
             ['login_general_id' => $loginId],
             ['customer_id' => $device->customer_id, 'note' => $note ?: null],
@@ -88,6 +92,10 @@ class CredentialLinking
 
     public function create(Model $device, array $daten): CredentialLink
     {
+        // Level "read" (CustomerAccess): checked here, before anything is
+        // written - this path skips the model events or touches files first.
+        CustomerAccess::assertWritable((int) $device->customer_id);
+
         $login = LoginGeneral::create([
             'customer_id' => $device->customer_id,
             'name' => $daten['name'],
@@ -105,6 +113,10 @@ class CredentialLinking
      */
     public function detach(Model $device, int $linkId, User $nutzer): void
     {
+        // Level "read" (CustomerAccess): checked here, before anything is
+        // written - this path skips the model events or touches files first.
+        CustomerAccess::assertWritable((int) $device->customer_id);
+
         $device->credentialLinks()
             ->whereKey($linkId)
             ->whereHas('login', fn ($q) => $q->whereIn('kind', $this->visibleKinds($nutzer)))

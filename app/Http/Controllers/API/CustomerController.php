@@ -5,7 +5,9 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CustomerRequest;
 use App\Models\Customer;
+use App\Support\CustomerTeams;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CustomerController extends Controller
 {
@@ -36,7 +38,15 @@ class CustomerController extends Controller
             abort(403);
         }
 
-        $customer = Customer::create($request->validated());
+        // Teams and levels as in the browser (CustomerTeams): with the same
+        // lock-out rule - a plain create() dropped them silently, and a
+        // customer meant for one team was open to everyone.
+        $customer = DB::transaction(function () use ($request) {
+            $customer = Customer::create($request->safe()->except(['teams', 'levels']));
+            CustomerTeams::sync($customer, $request->validated('teams', []), $request->user(), $request->validated('levels', []));
+
+            return $customer;
+        });
 
         return response()->json($customer, 201);
     }

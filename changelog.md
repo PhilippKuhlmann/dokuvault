@@ -23,6 +23,12 @@
 
 ### Fixed
 
+- **Stufe „Lesen“ dicht über alle Wege.** Eine Sicherheitsprüfung fand vier Wege, auf denen bei einem nur lesbaren Kunden doch geschrieben werden konnte – alle behoben, jeder mit Test:
+  - App: IP-Adressen, Zugangsdaten-Verknüpfungen und Scan-Ziele an einem Gerät ließen sich entfernen oder hinzufügen.
+  - App: Ein Datei-Upload an einer Lizenz ersetzte die gespeicherte Datei, bevor die Sperre griff.
+  - Papierkorb: „Endgültig löschen“ entfernte IP-Adressen, Verknüpfungen und Datei, bevor die Sperre griff. „Alle löschen“ überspringt solche Einträge jetzt.
+  - API: Ein neuer Kunde verlor die mitgeschickten Teams und war damit für alle sichtbar.
+  - Dazu ein Wächter-Test: Jede schreibende Adresse ohne Kunden darin muss geprüft und begründet sein, sonst schlägt er an.
 - **Keine Geheimnisse mehr in der JSON-Ausgabe.** Kennwörter, Schlüssel, PINs und SNMP-Communities sind bei allen Modellen aus der JSON-Form ausgeblendet. Bisher war das nur beim Server so – gab die API etwa eine Firewall, ein WLAN oder ein Postfach zurück, stand das Geheimnis im Klartext darin. Ein Test findet jede verschlüsselte Spalte selbst, auch künftige.
 - Wer nur „Einstellungen“ verwalten darf, sah auf dem Admin-Dashboard den Link „Einstellungen“ zur Sicherung, die nur Admins öffnen dürfen – und landete auf „Verboten“.
 

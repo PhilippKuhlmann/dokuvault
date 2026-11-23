@@ -121,7 +121,14 @@ class MobileObjects
             ->when($nutzer->hasCustomer(), fn ($abfrage) => $abfrage->where('customer_id', $nutzer->customer_id))
             ->find($id);
 
-        return $objekt ?? abort(404);
+        abort_unless($objekt, 404);
+
+        // The routes /objects/{typ}/{id} carry no customer: announce the
+        // object's, so the gates know the level of the user's team on it
+        // (CustomerAccess) - as the {customer} route does elsewhere.
+        CustomerAccess::announce((int) $objekt->customer_id);
+
+        return $objekt;
     }
 
     /** Eine Zeile in Liste und Suche. */

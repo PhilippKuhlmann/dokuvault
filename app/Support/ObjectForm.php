@@ -203,6 +203,10 @@ class ObjectForm
      */
     public function save(array $daten, ?Model $objekt = null, ?UploadedFile $datei = null): Model
     {
+        // Level "read" (CustomerAccess): checked here, before anything is
+        // written - this path skips the model events or touches files first.
+        CustomerAccess::assertWritable($this->customerId);
+
         $klasse = $this->settings()['model'];
 
         // Empty fields as null, not as an empty string: MySQL rejects ''

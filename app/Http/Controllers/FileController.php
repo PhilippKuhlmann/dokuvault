@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\File;
 use App\Models\Setting;
+use App\Support\CustomerAccess;
 use App\Support\FileName;
 use App\Support\StoragePath;
 use Illuminate\Http\Request;
@@ -46,6 +47,9 @@ class FileController extends Controller
             'name' => ['required', 'string', 'max:255'],
         ], [], ['file' => __('Datei'), 'name' => __('Name')]);
 
+        // Before the file is stored: the model guard would stop only the row
+        // and leave the file behind (CustomerAccess level "read").
+        CustomerAccess::assertWritable((int) $customer->id);
         $file = $request->file('file');
         $fileName = FileName::fuer($file, $validated['name']);
         $filePath = $file->storeAs($customer->slug.'/files', $fileName, 'local');
@@ -81,6 +85,7 @@ class FileController extends Controller
     public function destroy(Customer $customer, File $file)
     {
         $this->authorize('delete', File::class);
+        CustomerAccess::assertWritable((int) $file->customer_id);
 
         Storage::delete($file->file_path);
         $file->delete();

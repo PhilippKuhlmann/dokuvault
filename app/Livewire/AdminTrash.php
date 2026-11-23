@@ -6,6 +6,7 @@ use App\Models\Concerns\HasCredentials;
 use App\Models\Concerns\HasIpAddresses;
 use App\Models\Concerns\TracksChanges;
 use App\Models\Customer;
+use App\Support\CustomerAccess;
 use App\Support\StoragePath;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -166,7 +167,9 @@ class AdminTrash extends Component
             [$klasse] = config("custom.trashables.{$zeile['slug']}");
             $objekt = $klasse::onlyTrashed()->find($zeile['id']);
 
-            if ($objekt) {
+            // Entries of a customer the user only reads stay (CustomerAccess):
+            // "delete all" deletes what it may, instead of stopping halfway.
+            if ($objekt && CustomerAccess::canWrite(auth()->user(), $objekt->customer_id ? (int) $objekt->customer_id : null)) {
                 $this->endgueltig($objekt);
                 $anzahl++;
             }
@@ -189,6 +192,10 @@ class AdminTrash extends Component
      */
     protected function endgueltig($objekt): void
     {
+        // Level "read" (CustomerAccess): checked here, before anything is
+        // written - this path skips the model events or touches files first.
+        CustomerAccess::assertWritable($objekt->customer_id ? (int) $objekt->customer_id : null);
+
         // Only inside the owner's folder - a path that was taken from a form
         // could point at another customer's files.
         $kunde = $objekt->customer_id ? Customer::withTrashed()->find($objekt->customer_id) : null;
