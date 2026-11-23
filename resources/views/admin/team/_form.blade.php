@@ -20,7 +20,7 @@
         // would be a long scroll to find one name.
         $withSearch = $staff->count() > 8;
     @endphp
-    <div x-data="memberPicker" x-on:change="count()">
+    <div x-data="pickList" x-on:change="count()">
     @if ($withSearch)
         <div class="mt-4 flex flex-wrap items-center gap-3">
             <label class="relative min-w-0 flex-1 basis-56">
@@ -39,7 +39,7 @@
     @endif
     <div class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
         @foreach ($staff as $user)
-            <label @if ($withSearch) x-show="shows($el)" data-search="{{ mb_strtolower($user->name.' '.$user->username.' '.$user->role?->name) }}" @endif class="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2.5 transition-colors hover:border-cerulean-300 has-checked:border-cerulean-500 has-checked:bg-cerulean-50 dark:border-gray-700 dark:bg-gray-800/60 dark:hover:border-cerulean-700 dark:has-checked:border-cerulean-500 dark:has-checked:bg-cerulean-900/30">
+            <label @if ($withSearch) x-show="shows($el)" @endif data-search="{{ mb_strtolower($user->name.' '.$user->username.' '.$user->role?->name) }}" class="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2.5 transition-colors hover:border-cerulean-300 has-checked:border-cerulean-500 has-checked:bg-cerulean-50 dark:border-gray-700 dark:bg-gray-800/60 dark:hover:border-cerulean-700 dark:has-checked:border-cerulean-500 dark:has-checked:bg-cerulean-900/30">
                 <input type="checkbox" name="members[]" value="{{ $user->id }}" @checked(in_array($user->id, $checked, true))
                     class="shrink-0 rounded border-gray-300 text-cerulean-600 focus:ring-cerulean-500 dark:border-gray-600 dark:bg-gray-700">
                 <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600 dark:bg-gray-700 dark:text-gray-200" aria-hidden="true">

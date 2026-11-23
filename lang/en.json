@@ -1848,5 +1848,10 @@
     "Noch keinem Kunden zugewiesen. Das geschieht beim Kunden unter Admin › Kunden.": "Not assigned to any customer yet. That is done on the customer under Admin › Customers.",
     "Name, Anmeldename oder Rolle": "Name, user name or role",
     "Nur ausgewählte": "Only selected",
-    "ausgewählt": "selected"
+    "ausgewählt": "selected",
+    "Zugriff bei :kunde ändern": "Change access for :kunde",
+    "Teams suchen": "Search teams",
+    "Team oder Mitglied": "Team or member",
+    "Nur zugewiesene": "Only assigned",
+    "zugewiesen": "assigned"
 }

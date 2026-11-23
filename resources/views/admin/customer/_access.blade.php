@@ -49,10 +49,31 @@
                 'read' => [__('Lesen'), __('Ansehen und Kennwörter aufdecken, aber nichts anlegen, ändern oder löschen.'), 'peer-checked:bg-amber-500 peer-checked:text-white dark:peer-checked:bg-amber-600'],
                 'read_no_secrets' => [__('Lesen ohne Kennwörter'), __('Wie Lesen, aber kein Kennwort, Schlüssel oder PIN im Klartext.'), 'peer-checked:bg-amber-600 peer-checked:text-white dark:peer-checked:bg-amber-700'],
             ];
+            // Assigned teams on top - with ten teams the ones that matter
+            // here would otherwise be anywhere in the list.
+            $sorted = $teams->sortBy(fn ($team) => [($chosen[$team->id] ?? 'none') === 'none' ? 1 : 0, mb_strtolower($team->name)])->values();
+            $withSearch = $teams->count() > 6;
         @endphp
+        <div x-data="pickList" x-on:change="count()">
+        @if ($withSearch)
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+                <label class="relative min-w-0 flex-1 basis-56">
+                    <span class="sr-only">{{ __('Teams suchen') }}</span>
+                    <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+                    </svg>
+                    <x-input.field type="search" x-model="search" :placeholder="__('Team oder Mitglied')" class="w-full py-2 pl-9 pr-3 text-sm" />
+                </label>
+                <button type="button" x-on:click="toggleOnlySelected()" x-bind:aria-pressed="onlySelected ? 'true' : 'false'"
+                    class="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 aria-pressed:border-cerulean-500 aria-pressed:bg-cerulean-50 aria-pressed:text-cerulean-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:aria-pressed:bg-cerulean-900/30 dark:aria-pressed:text-cerulean-200">
+                    {{ __('Nur zugewiesene') }}
+                </button>
+                <span class="text-sm text-gray-500 dark:text-gray-400"><span x-text="selected"></span> {{ __('zugewiesen') }}</span>
+            </div>
+        @endif
         <div class="mt-4 space-y-2">
-            @foreach ($teams as $team)
-                <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 dark:border-gray-700 dark:bg-gray-800/60">
+            @foreach ($sorted as $team)
+                <div @if ($withSearch) x-show="shows($el)" @endif data-search="{{ mb_strtolower($team->name.' '.$team->members->pluck('name')->join(' ')) }}" class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 dark:border-gray-700 dark:bg-gray-800/60">
                     <div class="min-w-0">
                         <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $team->name }}</div>
                         <div class="truncate text-xs text-gray-500 dark:text-gray-400">{{ $team->members->pluck('name')->join(', ') ?: __('keine Mitglieder') }}</div>
@@ -69,6 +90,7 @@
                     </div>
                 </div>
             @endforeach
+        </div>
         </div>
         <dl class="mt-4 grid grid-cols-1 gap-x-4 gap-y-1 text-xs text-gray-500 sm:grid-cols-[auto_1fr] dark:text-gray-400">
             @foreach (array_slice($choices, 1, null, true) as [$label, $hint])

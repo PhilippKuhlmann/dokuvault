@@ -106,18 +106,22 @@ export function komponentenRegistrieren(Alpine) {
         },
     }));
 
-    // Picking team members among many users: a search over name, user name
-    // and role, "only the selected", and the count. The cards carry their
-    // text in data-search; nothing is sent to the server.
-    Alpine.data('memberPicker', () => ({
+    // Picking among many: team members on a team, teams on a customer. A
+    // search over the text each row carries in data-search, "only the
+    // selected", and the count. Selected: a ticked box, or a chosen switch
+    // other than "none". Nothing is sent to the server.
+    Alpine.data('pickList', () => ({
         search: '',
         onlySelected: false,
         selected: 0,
         init() {
             this.count();
         },
+        isPicked(row) {
+            return !! row.querySelector('input:checked:not([value="none"])');
+        },
         count() {
-            this.selected = this.$root.querySelectorAll('input[name="members[]"]:checked').length;
+            this.selected = Array.from(this.$root.querySelectorAll('[data-search]')).filter((row) => this.isPicked(row)).length;
         },
         toggleOnlySelected() {
             this.onlySelected = ! this.onlySelected;
@@ -125,9 +129,7 @@ export function komponentenRegistrieren(Alpine) {
         shows(card) {
             const text = (card.dataset.search || '').toLowerCase();
             const term = this.search.trim().toLowerCase();
-            const ticked = card.querySelector('input').checked;
-
-            return (! term || text.includes(term)) && (! this.onlySelected || ticked);
+            return (! term || text.includes(term)) && (! this.onlySelected || this.isPicked(card));
         },
     }));
 

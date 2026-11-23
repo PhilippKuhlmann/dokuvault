@@ -11,6 +11,8 @@
   - Ein neuer Kunde startet mit den Teams dessen, der ihn anlegt.
   - Änderungen an Mitgliedern und Zugriff stehen im Protokoll („Team-Mitglieder geändert“, „Zugriff geändert“).
   - Im Team stehen die Mitglieder als Karten mit Kürzel, Name, Anmeldename und Rolle; ein Klick auf die Karte wählt sie, ausgewählte sind blau. Die Kunden des Teams stehen darunter, jeder mit seiner Stufe.
+  - Die Kunden eines Teams stehen nach Stufe gruppiert („Vollzugriff · 12“, „Lesen · 3“), jeder Name führt zum Bereich „Zugriff“ des Kunden; oben steht die Gesamtzahl.
+  - Beim Kunden stehen die zugewiesenen Teams oben; ab sieben Teams gibt es eine Suche (Team oder Mitglied), „Nur zugewiesene“ und die Zahl der zugewiesenen.
   - Ab neun Benutzern gibt es über den Karten eine Suche (Name, Anmeldename, Rolle), den Schalter „Nur ausgewählte“ und die Zahl der ausgewählten. Kunden-Logins stehen dort ohnehin nicht – sie sehen nur ihren eigenen Kunden.
   - Neues Recht „Teams verwalten“ – bestehende Rollen mit „Benutzer verwalten“ bekommen es dazu.
   - Kundenzugänge und Agents sind davon nicht betroffen.
