@@ -34,6 +34,10 @@ trait OwnedByCustomer
                 return;
             }
             CustomerAccess::assertWritable($model->customer_id);
+            // Moving a row out of a customer is a write on that customer too.
+            if ($model->exists && $model->isDirty('customer_id')) {
+                CustomerAccess::assertWritable($model->getOriginal('customer_id'));
+            }
         };
         static::saving($guard);
         static::deleting($guard);

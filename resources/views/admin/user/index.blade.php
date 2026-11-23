@@ -55,12 +55,12 @@
                          das, wonach man sucht. --}}
                     :inaktiv="$user->isDisabled()"
 
-                    editUrl="{{ route('admin.user.edit', $user) }}"
+                    :editUrl="$user->customer_id && ! \App\Support\CustomerAccess::canWrite(auth()->user(), $user->customer_id) ? null : route('admin.user.edit', $user)"
                     can="admin_user"
                     {{-- Loeschen ohne Umweg ueber das Bearbeiten-Formular. Sich
                          selbst kann niemand entfernen - sonst stuende man vor
                          einer Anmeldemaske ohne Konto. --}}
-                    :delUrl="$user->id === auth()->id() ? '' : route('admin.user.destroy', $user)"
+                    :delUrl="$user->id === auth()->id() || ($user->customer_id && ! \App\Support\CustomerAccess::canWrite(auth()->user(), $user->customer_id)) ? '' : route('admin.user.destroy', $user)"
                     canDel="admin_user"
                 />
 

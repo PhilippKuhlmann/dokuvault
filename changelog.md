@@ -29,7 +29,9 @@
   - App: Ein Datei-Upload an einer Lizenz ersetzte die gespeicherte Datei, bevor die Sperre griff.
   - Papierkorb: „Endgültig löschen“ entfernte IP-Adressen, Verknüpfungen und Datei, bevor die Sperre griff. „Alle löschen“ überspringt solche Einträge jetzt.
   - API: Ein neuer Kunde verlor die mitgeschickten Teams und war damit für alle sichtbar.
-  - Dazu ein Wächter-Test: Jede schreibende Adresse ohne Kunden darin muss geprüft und begründet sein, sonst schlägt er an.
+  - Benutzerverwaltung: Wer bei einem Kunden nur liest, konnte für diesen Kunden einen Kunden-Login anlegen oder einen bestehenden ändern – und sich damit über diesen Login Vollzugriff verschaffen. Kunden-Logins dieses Kunden legt man jetzt nur noch mit Vollzugriff an, ändert, lädt ein oder löscht sie; in der Liste fehlen dann Stift und Löschen.
+  - Ein Eintrag lässt sich nicht aus einem nur lesbaren Kunden heraus zu einem anderen Kunden verschieben.
+  - Dazu zwei Wächter-Tests: Jede schreibende Adresse ohne Kunden darin – auch im Admin-Bereich – muss geprüft und begründet sein, und jede Livewire-Komponente mit Kundenbezug muss ihren Kunden melden. Sonst schlagen sie an.
 - **Keine Geheimnisse mehr in der JSON-Ausgabe.** Kennwörter, Schlüssel, PINs und SNMP-Communities sind bei allen Modellen aus der JSON-Form ausgeblendet. Bisher war das nur beim Server so – gab die API etwa eine Firewall, ein WLAN oder ein Postfach zurück, stand das Geheimnis im Klartext darin. Ein Test findet jede verschlüsselte Spalte selbst, auch künftige.
 - Wer nur „Einstellungen“ verwalten darf, sah auf dem Admin-Dashboard den Link „Einstellungen“ zur Sicherung, die nur Admins öffnen dürfen – und landete auf „Verboten“.
 

@@ -7,7 +7,9 @@ use App\Models\LicenseAccess;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\Team;
+use App\Models\User;
 use App\Support\CustomerAccess;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -87,4 +89,36 @@ test('the public API keeps teams and levels when it creates a customer', functio
         ->assertCreated();
 
     expect(Customer::firstWhere('name', 'API-Kunde')->teams()->pluck('name')->all())->toBe(['Chef']);
+});
+
+test('user admin: no login handed out for a customer the team only reads', function () {
+    [$customer, , , $user] = readWorld(['admin_user']);
+    $user->role->update(['name' => 'Technik-Rolle']);
+    $login = User::factory()->create(['name' => 'Login GF', 'customer_id' => $customer->id, 'role_id' => $user->role_id]);
+    $this->actingAs($user);
+
+    // A customer login has full rights on its customer - handing one out
+    // would lift "read" to full.
+    $this->post(route('admin.user.store'), [
+        'name' => 'Neu', 'username' => 'neu-gf', 'email' => 'neu@example.test', 'password' => 'Ein-langes-Kennwort-2026!',
+        'role_id' => $user->role_id, 'customer_id' => $customer->id,
+    ])->assertForbidden();
+    $this->get(route('admin.user.edit', $login))->assertForbidden();
+    $this->delete(route('admin.user.destroy', $login))->assertForbidden();
+    $this->get(route('admin.user.index'))->assertSee('Login GF')->assertDontSee(route('admin.user.edit', $login));
+
+    expect(User::where('username', 'neu-gf')->exists())->toBeFalse()
+        ->and(User::whereKey($login->id)->exists())->toBeTrue();
+});
+
+test('a row is not moved out of a customer the team only reads', function () {
+    [$customer, $server] = readWorld([]);
+    $other = Customer::factory()->create();
+    $team = Team::firstWhere('name', 'Technik');
+    $other->teams()->attach($team->id, ['level' => CustomerAccess::FULL]);
+    $this->actingAs($team->members()->first());
+
+    $server->customer_id = $other->id;
+    expect(fn () => $server->save())->toThrow(AuthorizationException::class);
+    expect(Server::whereKey($server->id)->value('customer_id'))->toBe($customer->id);
 });

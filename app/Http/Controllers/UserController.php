@@ -38,7 +38,7 @@ class UserController extends Controller
     public function store(UserRequest $request)
     {
         $daten = $request->validated();
-        $this->onlyVisible($daten['customer_id'] ?? null);
+        $this->onlyWritable($daten['customer_id'] ?? null);
         $this->authorizeRole($daten['role_id']);
         $einladen = (bool) ($daten['einladen'] ?? false);
         unset($daten['einladen']);
@@ -66,7 +66,7 @@ class UserController extends Controller
      */
     public function invite(User $user)
     {
-        $this->onlyVisible($user->customer_id);
+        $this->onlyWritable($user->customer_id);
 
         abort_unless(auth()->user()->mayManage($user), 403);
 
@@ -118,7 +118,7 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        $this->onlyVisible($user->customer_id);
+        $this->onlyWritable($user->customer_id);
 
         abort_unless(auth()->user()->mayManage($user), 403);
 
@@ -130,12 +130,12 @@ class UserController extends Controller
 
     public function update(User $user, UserRequest $request)
     {
-        $this->onlyVisible($user->customer_id);
+        $this->onlyWritable($user->customer_id);
 
         abort_unless(auth()->user()->mayManage($user), 403);
 
         $userData = $request->validated();
-        $this->onlyVisible($userData['customer_id'] ?? null);
+        $this->onlyWritable($userData['customer_id'] ?? null);
         $this->authorizeRole($userData['role_id']);
 
         // On the demo the predefined accounts are locked completely. Not only
@@ -195,7 +195,7 @@ class UserController extends Controller
      */
     public function resetTwoFactor(User $user)
     {
-        $this->onlyVisible($user->customer_id);
+        $this->onlyWritable($user->customer_id);
 
         abort_unless(auth()->user()->mayManage($user), 403);
 
@@ -225,7 +225,7 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        $this->onlyVisible($user->customer_id);
+        $this->onlyWritable($user->customer_id);
 
         abort_unless(auth()->user()->mayManage($user), 403);
 
@@ -256,11 +256,19 @@ class UserController extends Controller
     }
 
     /**
-     * A login of a customer hidden by teams does not exist for this admin -
-     * neither to open nor to create (CustomerAccess).
+     * A login of a customer hidden by teams does not exist for this admin
+     * (404). And a login of a customer the admin's team only reads is not
+     * theirs to create, change, invite or delete (403): a customer login has
+     * full rights on its customer - whoever could hand one out would lift
+     * their own "read" to full. Found in a review, 23.11.2026.
      */
-    private function onlyVisible(?int $customerId): void
+    private function onlyWritable(?int $customerId): void
     {
-        abort_unless($customerId === null || CustomerAccess::canSee(auth()->user(), $customerId), 404);
+        if ($customerId === null) {
+            return;
+        }
+
+        abort_unless(CustomerAccess::canSee(auth()->user(), $customerId), 404);
+        CustomerAccess::assertWritable($customerId);
     }
 }
