@@ -278,6 +278,7 @@ return [
     'admin_list_titles' => [
         'admin.customer' => 'Kunden',
         'admin.role' => 'Rollen',
+        'admin.team' => 'Teams',
         'admin.user' => 'Benutzer',
         'admin.mailboxprovider' => 'Postfach-Anbieter',
         'admin.operatingsystem' => 'Betriebssysteme',
@@ -1355,6 +1356,7 @@ return [
         'admin_customer' => 'Kunden verwalten',
         'admin_user' => 'Benutzer verwalten',
         'admin_role' => 'Rollen und Rechte verwalten',
+        'admin_team' => 'Teams verwalten',
         'admin_catalog' => 'Auswahlmenüs verwalten',
         'admin_operatingsystem' => 'Support-Ende (EOL) sehen',
         'admin_setting' => 'Einstellungen der Installation',
@@ -1412,6 +1414,8 @@ return [
         'zweite_stufe' => ['Zweite Stufe zurückgesetzt', 'text-purple-700 bg-purple-50 dark:text-purple-300 dark:bg-purple-900/30'],
         'agent_locked' => ['Agent gesperrt', 'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-900/30'],
         'agent_unlocked' => ['Agent entsperrt', 'text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-900/30'],
+        'members_changed' => ['Team-Mitglieder geändert', 'text-purple-700 bg-purple-50 dark:text-purple-300 dark:bg-purple-900/30'],
+        'access_changed' => ['Zugriff geändert', 'text-purple-700 bg-purple-50 dark:text-purple-300 dark:bg-purple-900/30'],
     ],
 
     /*

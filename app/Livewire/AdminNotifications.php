@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\ExpiryNotice;
+use App\Support\CustomerAccess;
 use App\Support\ExpiringItems;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -62,7 +63,7 @@ class AdminNotifications extends Component
     {
         Gate::authorize('admin_setting');
 
-        $user = User::findOrFail($id);
+        $user = CustomerAccess::exceptHidden(User::query())->findOrFail($id);
         $user->update(['expiry_mail' => ! $user->expiry_mail]);
 
         $this->dispatch('notice', text: $user->expiry_mail
@@ -100,14 +101,15 @@ class AdminNotifications extends Component
 
     public function render()
     {
-        $users = User::with('customer')
+        // Logins of customers hidden by teams are not listed (CustomerAccess).
+        $users = CustomerAccess::exceptHidden(User::with('customer'))
             ->when($this->search !== '', fn ($q) => $q->whereEnthaelt(['name', 'username', 'email'], $this->search))
             ->orderByDesc('expiry_mail')->orderBy('name')
             ->paginate(Setting::seiteAdmin());
 
         return view('livewire.admin-notifications', [
             'users' => $users,
-            'recipients' => User::where('expiry_mail', true)->count(),
+            'recipients' => CustomerAccess::exceptHidden(User::query())->where('expiry_mail', true)->count(),
         ])->layout('layouts.admin.app');
     }
 }

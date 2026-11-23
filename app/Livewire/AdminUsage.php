@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\User;
+use App\Support\CustomerAccess;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Url;
@@ -43,7 +44,8 @@ class AdminUsage extends Component
         // period took 2.6 s with 96,000 entries. Each query below returns
         // at most a few hundred rows (days x events, users, object types).
         $anmeldung = ['anmeldung', 'anmeldung_gescheitert', 'anmeldung_gesperrt'];
-        $basis = fn () => Activity::query()->where('created_at', '>=', $von);
+        // Entries of customers hidden by teams do not count (CustomerAccess).
+        $basis = fn () => CustomerAccess::exceptHidden(Activity::query())->where('created_at', '>=', $von);
 
         $jeTagUndEreignis = $basis()
             ->whereIn('event', [...self::AENDERUNGEN, ...$anmeldung])

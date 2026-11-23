@@ -35,6 +35,7 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\SshKeyController;
+use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TrashController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WizardController;
@@ -201,6 +202,17 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             Route::get('/customer/create', [CustomerController::class, 'create'])->name('admin.customer.create');
             Route::get('/customer/{customer}/edit', [CustomerController::class, 'edit'])->name('admin.customer.edit');
             Route::patch('/customer/{customer}', [CustomerController::class, 'update'])->name('admin.customer.update');
+        });
+
+        // Teams: which staff users see which customers (CustomerAccess).
+        // Changing a team is for its members only - TeamController checks.
+        Route::middleware('can:admin_team')->group(function () {
+            Route::get('/team', [TeamController::class, 'index'])->name('admin.team.index');
+            Route::post('/team', [TeamController::class, 'store'])->name('admin.team.store');
+            Route::get('/team/create', [TeamController::class, 'create'])->name('admin.team.create');
+            Route::get('/team/{team}/edit', [TeamController::class, 'edit'])->name('admin.team.edit');
+            Route::patch('/team/{team}', [TeamController::class, 'update'])->name('admin.team.update');
+            Route::delete('/team/{team}', [TeamController::class, 'destroy'])->name('admin.team.destroy');
         });
 
         // Users

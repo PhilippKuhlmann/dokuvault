@@ -2,6 +2,7 @@
 
 namespace App\Models\Scopes;
 
+use App\Support\CustomerAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
@@ -17,21 +18,25 @@ use Illuminate\Database\Eloquent\Scope;
  * customer login a forgotten one means another company's passwords. With
  * this scope the worst a forgotten filter does to them is an empty list.
  *
- * Nobody else is touched: technicians and admins (customer_id null) work
- * for every customer, and the agent API, the queue and the console have no
- * user at all.
+ * Technicians and admins (customer_id null) work for every customer -
+ * except the customers of teams they are not in (CustomerAccess): those rows
+ * are left out for them here, with the customer itself (VisibleCustomerScope).
+ * The agent API, the queue and the console have no user and are not touched.
  */
 class OwnCustomerScope implements Scope
 {
     public function apply(Builder $builder, Model $model): void
     {
-        $customerId = auth()->user()?->customer_id;
+        $user = auth()->user();
+        $customerId = $user?->customer_id;
+        $column = $model->qualifyColumn('customer_id');
 
         if (! $customerId) {
+            // Rows without a customer stay: they are nobody's to hide.
+            CustomerAccess::exceptHidden($builder, $column, $user);
+
             return;
         }
-
-        $column = $model->qualifyColumn('customer_id');
 
         // Rows without a customer are shared defaults on a few tables (the
         // standard steps of a checklist template). Everywhere else a row

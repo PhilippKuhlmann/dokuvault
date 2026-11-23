@@ -107,6 +107,7 @@
             [null, $adminPraefix.__('Dashboard'), 'admin.dashboard'],
             ['admin_user', $adminPraefix.__('Benutzer'), 'admin.user.index'],
             ['admin_role', $adminPraefix.__('Rollen'), 'admin.role.index'],
+            ['admin_team', $adminPraefix.__('Teams'), 'admin.team.index'],
             ['admin_customer', $adminPraefix.__('Kunden'), 'admin.customer.index'],
             ['admin_catalog', $adminPraefix.__('Betriebssysteme'), 'admin.operatingsystem.index'],
             ['admin_catalog', $adminPraefix.__('Mail Anbieter'), 'admin.mailboxprovider.index'],

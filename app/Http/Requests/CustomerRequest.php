@@ -26,6 +26,10 @@ class CustomerRequest extends FormRequest
         return [
             'name' => 'required|max:255',
             'customer_number' => '',
+            // Teams that alone may see the customer (CustomerAccess) - none:
+            // every staff user. CustomerTeams checks the editor keeps access.
+            'teams' => ['array'],
+            'teams.*' => ['integer', 'exists:teams,id'],
             // No 'slug': it is made once from the name when the customer is
             // created (Customer::creating) and is the storage folder and URL
             // segment of all its files - not something to set from a form.

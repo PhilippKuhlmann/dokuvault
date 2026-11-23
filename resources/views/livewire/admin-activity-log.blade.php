@@ -177,7 +177,7 @@
                                             @continue($field === 'name' && $activity->event === 'updated' && ! array_key_exists('name', $old))
                                             <div class="text-xs">
                                                 <span class="text-gray-500">{{ $field }}:</span>
-                                                @if ($activity->event === 'updated' && array_key_exists($field, $old))
+                                                @if (array_key_exists($field, $old))
                                                     <span class="text-red-600 line-through dark:text-red-400">{{ is_scalar($old[$field]) ? $old[$field] : json_encode($old[$field]) }}</span>
                                                     →
                                                 @endif

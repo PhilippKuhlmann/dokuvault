@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Concerns;
 
+use App\Support\CustomerAccess;
+
 /**
  * The signed-in user has to belong to the customer the component works
  * with.
@@ -12,7 +14,8 @@ namespace App\Livewire\Concerns;
  * outside.
  *
  * A user without customer_id - technician, admin - works for every customer
- * and is not stopped; for them the permissions decide.
+ * the teams let them see (CustomerAccess); a hidden one answers 404, as its
+ * page does.
  */
 trait ScopedToCustomer
 {
@@ -21,5 +24,6 @@ trait ScopedToCustomer
         $nutzer = auth()->user();
 
         abort_if($nutzer && $nutzer->customer_id && $nutzer->customer_id !== $customerId, 403);
+        abort_unless(CustomerAccess::canSee($nutzer, $customerId), 404);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\AgentToken;
 use App\Models\Customer;
 use App\Models\User;
+use App\Support\CustomerAccess;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Url;
@@ -66,7 +67,8 @@ class AdminActivityLog extends Component
 
     public function render()
     {
-        $abfrage = Activity::with('causer.customer')
+        // Entries of customers hidden by teams are not there (CustomerAccess).
+        $abfrage = CustomerAccess::exceptHidden(Activity::with('causer.customer'))
             ->when($this->ereignis !== '', fn ($a) => $a->where('event', $this->ereignis))
             ->when($this->art !== '', fn ($a) => $a->where('subject_type', $this->art))
             // Kind AND id: an agent token with id 5 is not the user with id 5.
@@ -97,7 +99,7 @@ class AdminActivityLog extends Component
             'activities' => $activities,
             'kundeVon' => $this->customersOfEntries($activities->getCollection()),
             'kunden' => Customer::orderBy('name')->pluck('name', 'id')->all(),
-            'gesamt' => Activity::count(),
+            'gesamt' => CustomerAccess::exceptHidden(Activity::query())->count(),
             'ereignisse' => config('custom.activity_events'),
             'arten' => $this->types(),
             // Not 'benutzer': that is already the name of the filter property,
@@ -157,7 +159,7 @@ class AdminActivityLog extends Component
      */
     protected function types(): array
     {
-        return Activity::query()
+        return CustomerAccess::exceptHidden(Activity::query())
             ->whereNotNull('subject_type')
             ->distinct()
             ->orderBy('subject_type')
@@ -175,7 +177,7 @@ class AdminActivityLog extends Component
      */
     protected function verursacher(): array
     {
-        $ids = Activity::where('causer_type', User::class)
+        $ids = CustomerAccess::exceptHidden(Activity::query())->where('causer_type', User::class)
             ->whereNotNull('causer_id')->distinct()->pluck('causer_id');
 
         // Kept apart by origin: a customer account with write permission
@@ -186,7 +188,7 @@ class AdminActivityLog extends Component
         //
         // The value carries the kind with it ('user:5'), because an agent
         // token can have the same id as a user.
-        $gruppen = User::whereIn('id', $ids)
+        $gruppen = CustomerAccess::exceptHidden(User::whereIn('id', $ids))
             ->with('customer:id,name')
             ->orderBy('name')
             ->get(['id', 'name', 'customer_id'])

@@ -73,6 +73,17 @@
             <x-create.gesperrt :checked="$user->isDisabled()" :seit="$user->deactivated_at" />
             <x-input.fehler :messages="$errors->get('deactivated')" class="mt-2" />
 
+            {{-- Shown, not edited: the members of a team are changed in the
+                 team, by its members (TeamController) - here anyone with
+                 admin_user could otherwise add themselves. --}}
+            @unless ($user->customer_id)
+                <div class="mt-5 text-sm">
+                    <span class="text-gray-500 dark:text-gray-400">{{ __('Teams') }}:</span>
+                    <span class="text-gray-900 dark:text-gray-100">{{ $user->teams->pluck('name')->join(', ') ?: '—' }}</span>
+                    <span class="block text-xs text-gray-500 dark:text-gray-400">{{ __('Mitglieder ändert man im Team unter Admin › Teams.') }}</span>
+                </div>
+            @endunless
+
         </x-create.main>
 
         @if ($errors->has('invitation'))

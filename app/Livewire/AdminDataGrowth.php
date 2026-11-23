@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Customer;
+use App\Support\CustomerAccess;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -48,6 +49,24 @@ class AdminDataGrowth extends Component
             ->where('datum', '>=', $von)
             ->orderBy('datum')
             ->get();
+
+        // Customers hidden by teams (CustomerAccess): their rows go, and the
+        // totals (customer_id 0) are counted without them - otherwise the
+        // difference would show what they hold.
+        $hidden = CustomerAccess::hiddenIds(auth()->user());
+        if ($hidden) {
+            $abzug = $werte->whereIn('customer_id', $hidden)
+                ->groupBy(fn ($z) => $z->kennzahl.'|'.$z->datum)
+                ->map(fn ($zeilen) => (int) $zeilen->sum('wert'));
+            $werte = $werte->reject(fn ($z) => in_array((int) $z->customer_id, $hidden, true))
+                ->map(function ($z) use ($abzug) {
+                    if ((int) $z->customer_id === 0) {
+                        $z->wert = max(0, (int) $z->wert - ($abzug[$z->kennzahl.'|'.$z->datum] ?? 0));
+                    }
+
+                    return $z;
+                })->values();
+        }
 
         $erster = $werte->min('datum');
         $letzter = $werte->max('datum');

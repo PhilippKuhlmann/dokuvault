@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\Invitation;
+use App\Support\CustomerAccess;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -18,9 +19,10 @@ class UserController extends Controller
     // ADMIN Bereich
     public function index()
     {
-        $users = User::paginate(Setting::seiteAdmin());
-        $usersCount = User::all()->count();
-        $userLastAdded = User::latest('created_at')->first();
+        // Logins of customers hidden by teams are not listed (CustomerAccess).
+        $users = CustomerAccess::exceptHidden(User::query())->paginate(Setting::seiteAdmin());
+        $usersCount = CustomerAccess::exceptHidden(User::query())->count();
+        $userLastAdded = CustomerAccess::exceptHidden(User::query())->latest('created_at')->first();
 
         return view('admin.user.index', compact('users', 'usersCount', 'userLastAdded'));
     }
@@ -36,6 +38,7 @@ class UserController extends Controller
     public function store(UserRequest $request)
     {
         $daten = $request->validated();
+        $this->onlyVisible($daten['customer_id'] ?? null);
         $this->authorizeRole($daten['role_id']);
         $einladen = (bool) ($daten['einladen'] ?? false);
         unset($daten['einladen']);
@@ -63,6 +66,8 @@ class UserController extends Controller
      */
     public function invite(User $user)
     {
+        $this->onlyVisible($user->customer_id);
+
         abort_unless(auth()->user()->mayManage($user), 403);
 
         // An invitation sets a DokuVault password - a directory account
@@ -113,6 +118,8 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
+        $this->onlyVisible($user->customer_id);
+
         abort_unless(auth()->user()->mayManage($user), 403);
 
         $roles = $this->assignableRoles();
@@ -123,9 +130,12 @@ class UserController extends Controller
 
     public function update(User $user, UserRequest $request)
     {
+        $this->onlyVisible($user->customer_id);
+
         abort_unless(auth()->user()->mayManage($user), 403);
 
         $userData = $request->validated();
+        $this->onlyVisible($userData['customer_id'] ?? null);
         $this->authorizeRole($userData['role_id']);
 
         // On the demo the predefined accounts are locked completely. Not only
@@ -185,6 +195,8 @@ class UserController extends Controller
      */
     public function resetTwoFactor(User $user)
     {
+        $this->onlyVisible($user->customer_id);
+
         abort_unless(auth()->user()->mayManage($user), 403);
 
         if ($user->isDemoProtected()) {
@@ -213,6 +225,8 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        $this->onlyVisible($user->customer_id);
+
         abort_unless(auth()->user()->mayManage($user), 403);
 
         if ($user->isDemoProtected()) {
@@ -239,5 +253,14 @@ class UserController extends Controller
     private function authorizeRole(int|string $roleId): void
     {
         abort_unless(auth()->user()->mayAssign(Role::with('permissions')->findOrFail($roleId)), 403);
+    }
+
+    /**
+     * A login of a customer hidden by teams does not exist for this admin -
+     * neither to open nor to create (CustomerAccess).
+     */
+    private function onlyVisible(?int $customerId): void
+    {
+        abort_unless($customerId === null || CustomerAccess::canSee(auth()->user(), $customerId), 404);
     }
 }

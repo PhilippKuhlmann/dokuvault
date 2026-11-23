@@ -13,7 +13,7 @@
 
 <div class="m-3">
     <x-table.main>
-        <x-table.head :labels="['Name', 'KD-Nr.', 'URL', '', ]" />
+        <x-table.head :labels="['Name', 'KD-Nr.', 'URL', 'Zugriff', '', ]" />
 
         <x-table.body>
 
@@ -28,6 +28,8 @@
                              Tabelle muss nicht raten, ob ein fuehrender
                              Schraegstrich einen Pfad meint. --}}
                         'pfad' => '/'.$customer->slug,
+                        {{-- Teams: only their members see the customer. --}}
+                        $customer->teams->isEmpty() ? __('alle Mitarbeiter') : __('nur :teams', ['teams' => $customer->teams->pluck('name')->join(', ')]),
                     ]"
 
                     editUrl="/{{ Request::path() }}/{{ $customer->id }}/edit"

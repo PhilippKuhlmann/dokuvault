@@ -118,9 +118,16 @@ class ExpiringItems
             ->values();
     }
 
+    /**
+     * The mail goes out from the console, where no global scope knows the
+     * recipient: their customer, and for staff no customer hidden from
+     * them by teams (CustomerAccess).
+     */
     private static function scoped($query, User $user)
     {
-        return $user->customer_id ? $query->where('customer_id', $user->customer_id) : $query;
+        return $user->customer_id
+            ? $query->where('customer_id', $user->customer_id)
+            : CustomerAccess::exceptHidden($query, $query->getModel()->qualifyColumn('customer_id'), $user);
     }
 
     private static function rows(Collection $models, string $kind, string $slug, string $label, string $column): Collection

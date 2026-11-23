@@ -8,7 +8,7 @@
 
             {{-- Zwei Bereiche unter einem Menuepunkt: Wer nur Rollen pflegen
                  darf, sieht den Punkt, aber nur die eine Zeile darin. --}}
-            @canany(['admin_user', 'admin_role'])
+            @canany(['admin_user', 'admin_role', 'admin_team'])
                 <x-aside.dropdown :label="__('Benutzer')" svg="svg.user" >
                     <x-slot:links>
                         @can('admin_user')
@@ -16,6 +16,9 @@
                         @endcan
                         @can('admin_role')
                             <x-aside.dropdownlink :label="__('Rollen')" href="{{ route('admin.role.index') }}" />
+                        @endcan
+                        @can('admin_team')
+                            <x-aside.dropdownlink :label="__('Teams')" href="{{ route('admin.team.index') }}" />
                         @endcan
                     </x-slot:links>
                 </x-aside.dropdown>

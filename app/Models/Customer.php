@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use App\Models\Concerns\TracksChanges;
+use App\Models\Scopes\VisibleCustomerScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -19,6 +21,10 @@ class Customer extends Model
     {
         parent::boot();
 
+        // Teams: a customer of teams the user is not in does not exist for
+        // them (App\Support\CustomerAccess).
+        static::addGlobalScope(new VisibleCustomerScope);
+
         // Only on the final delete - a customer in the trash keeps its data.
         // Through Eloquent, so the files go too (see PdfExport).
         static::forceDeleting(fn ($customer) => PdfExport::where('customer_id', $customer->id)->get()->each->delete());
@@ -29,13 +35,21 @@ class Customer extends Model
             // Keep it unique
             $slug = $baseSlug;
             $counter = 1;
-            while (static::where('slug', $slug)->exists()) {
+            // Without the team scope: a customer hidden from the creator
+            // still holds its slug.
+            while (static::withoutGlobalScopes()->where('slug', $slug)->exists()) {
                 $slug = $baseSlug.'-'.$counter;
                 $counter++;
             }
 
             $customer->slug = $slug;
         });
+    }
+
+    /** The teams whose members alone may see this customer - none: everyone. */
+    public function teams(): BelongsToMany
+    {
+        return $this->belongsToMany(Team::class)->withPivot('level')->withTimestamps()->orderBy('name');
     }
 
     public function getRouteKeyName()

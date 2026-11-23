@@ -25,6 +25,7 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Models\VM;
 use App\Models\Wifi;
+use App\Support\CustomerAccess;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Spatie\Activitylog\Models\Activity;
@@ -49,11 +50,16 @@ class AdminController extends Controller
      */
     protected function numbers(): array
     {
-        return Cache::remember('admin.zahlen', now()->addMinutes(15), fn () => [
-            'users' => User::count(),
+        // One cache per set of hidden customers (teams): what one admin may
+        // count is not what the next one may see.
+        $hidden = CustomerAccess::hiddenIds(auth()->user());
+        $key = 'admin.zahlen'.($hidden ? '.'.md5(implode(',', $hidden)) : '');
+
+        return Cache::remember($key, now()->addMinutes(15), fn () => [
+            'users' => CustomerAccess::exceptHidden(User::query())->count(),
             'customers' => Customer::count(),
             'roles' => Role::count(),
-            'activities' => Activity::count(),
+            'activities' => CustomerAccess::exceptHidden(Activity::query())->count(),
             'servers' => Server::count(),
             'vms' => VM::count(),
             'computers' => Computer::count(),
@@ -138,7 +144,7 @@ class AdminController extends Controller
         ];
 
         // Letzte Aktivitäten
-        $activities = Activity::with('causer')->latest()->limit(10)->get();
+        $activities = CustomerAccess::exceptHidden(Activity::with('causer'))->latest()->limit(10)->get();
 
         // Top-Kunden nach dokumentierten Geräten
         $topCustomers = Customer::withCount(['servers', 'computers', 'vms', 'nas', 'printers', 'cameras', 'networkswitches', 'accesspoints', 'routers', 'wifis', 'phones'])
@@ -154,7 +160,7 @@ class AdminController extends Controller
         // Aktivitäts-Verlauf der letzten 14 Tage
         // Counted in the database: reading every entry of two weeks took
         // 1.2 s with 2000 customers. DATE() exists in MySQL and SQLite.
-        $byDay = Activity::where('created_at', '>=', now()->subDays(13)->startOfDay())
+        $byDay = CustomerAccess::exceptHidden(Activity::query())->where('created_at', '>=', now()->subDays(13)->startOfDay())
             ->selectRaw('DATE(created_at) as tag, COUNT(*) as anzahl')
             ->groupBy('tag')
             ->pluck('anzahl', 'tag');

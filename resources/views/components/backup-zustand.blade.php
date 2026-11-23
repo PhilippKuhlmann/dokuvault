@@ -26,7 +26,10 @@
         </div>
         <div class="truncate text-xs text-gray-600 dark:text-gray-300" title="{{ $zustand['text'] }}">{{ $zustand['text'] }}</div>
     </div>
-    @can('admin_setting')
+    {{-- isAdmin, as the route: the backup page is for the admin role only
+         (target and archive password take every customer's data along).
+         With admin_setting the link led to a 403. --}}
+    @can('isAdmin')
         @unless (request()->routeIs('admin.backup.settings'))
             <a href="{{ route('admin.backup.settings') }}" class="shrink-0 text-sm text-cerulean-600 hover:underline dark:text-cerulean-400">{{ __('Einstellungen') }}</a>
         @endunless

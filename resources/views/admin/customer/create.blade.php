@@ -5,5 +5,7 @@
 
         <x-create.singlerow :label="__('Kundenummer')" name="customer_number" />
 
+        @include('admin.customer._access')
+
     </x-create.main>
 </x-admin-layout>

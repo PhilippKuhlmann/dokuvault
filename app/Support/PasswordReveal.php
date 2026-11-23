@@ -162,5 +162,7 @@ class PasswordReveal
     private function onlyOwnCustomer(User $nutzer, $kundeId): void
     {
         abort_if($nutzer->hasCustomer() && (int) $nutzer->customer_id !== (int) $kundeId, 403);
+        // A customer of teams the user is not in: as if it did not exist.
+        abort_unless(CustomerAccess::canSee($nutzer, (int) $kundeId), 404);
     }
 }

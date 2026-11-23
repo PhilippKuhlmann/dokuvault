@@ -8,7 +8,10 @@ use App\Models\Customer;
 use App\Models\DocumentationRun;
 use App\Models\PdfExport;
 use App\Models\Setting;
+use App\Models\Team;
 use App\Support\CustomerDashboard;
+use App\Support\CustomerTeams;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -176,7 +179,7 @@ class CustomerController extends Controller
     // ADMIN Bereich
     public function index()
     {
-        $customers = Customer::paginate(Setting::seiteAdmin());
+        $customers = Customer::with('teams:id,name')->orderBy('name')->paginate(Setting::seiteAdmin());
         $customersCount = Customer::all()->count();
 
         return view('admin.customer.index', compact('customers', 'customersCount'));
@@ -184,12 +187,20 @@ class CustomerController extends Controller
 
     public function create()
     {
-        return view('admin.customer.create');
+        // Preset: the creator's own teams - a technician of team North
+        // creates customers for team North, not by accident for everyone.
+        return view('admin.customer.create', [
+            'teams' => Team::orderBy('name')->get(['id', 'name']),
+            'selectedTeams' => auth()->user()->teams()->pluck('teams.id')->all(),
+        ]);
     }
 
     public function store(CustomerRequest $request)
     {
-        Customer::create($request->validated());
+        DB::transaction(function () use ($request) {
+            $customer = Customer::create($request->safe()->except('teams'));
+            CustomerTeams::sync($customer, $request->validated('teams', []), $request->user());
+        });
 
         return redirect(route('admin.customer.index'));
     }
@@ -198,12 +209,19 @@ class CustomerController extends Controller
     {
         $customer = Customer::where('id', $customer)->firstOrFail();
 
-        return view('admin.customer.edit', compact('customer'));
+        return view('admin.customer.edit', [
+            'customer' => $customer,
+            'teams' => Team::orderBy('name')->get(['id', 'name']),
+            'selectedTeams' => $customer->teams()->pluck('teams.id')->all(),
+        ]);
     }
 
     public function update(Customer $customer, CustomerRequest $request)
     {
-        $customer->update($request->validated());
+        DB::transaction(function () use ($customer, $request) {
+            $customer->update($request->safe()->except('teams'));
+            CustomerTeams::sync($customer, $request->validated('teams', []), $request->user());
+        });
 
         return redirect(route('admin.customer.index', $customer));
     }
