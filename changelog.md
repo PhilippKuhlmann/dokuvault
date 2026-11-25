@@ -1,5 +1,23 @@
 # Changelog
 
+## 26.11.25
+
+### Changed
+
+- **Demo-Kunde Mustermann ist jetzt eine durchgängige Firma.** Metallverarbeitung mit Zentrale und Fertigung in Hamburg und Vertriebsbüro in München, rund 25 Mitarbeiter. Feste Daten statt Zufallswerte, die sich widersprachen (doppelte IP-Adressen, ein Domain Controller mit „SQL, Backup“, die Zentrale Hamburg in Zülpich, SSIDs wie Nachnamen).
+  - **Personen:** Die AD-Benutzer sind die Mitarbeiter; Durchwahlen, Rechner, Postfächer und Lizenzen gehören denselben Personen, alle mit @mustermann.de.
+  - **Netz:** ein IP-Plan ohne Doppelungen – 10.10.x.0/24 in Hamburg, 10.20.x.0/24 in München (x = VLAN). Die Firewall ist das Gateway, die beiden Domain Controller sind DNS. Jedes Gerät steht in seinem VLAN.
+  - **Server:** ein alter Hyper-V-Host mit vier Windows-VMs, der gerade von einem Proxmox-Cluster mit Ceph abgelöst wird, dazu ein Backup-Server.
+  - **Je Gerätegruppe ein Hersteller** (Dell, Ubiquiti UniFi, Yealink mit 3CX, Kyocera, APC, Synology), Modelle passend, keine doppelten Namen.
+  - **Agent und von Hand nebeneinander:** Proxmox, Hyper-V, Windows-Agent, UniFi, Firewall, Microsoft 365 und Netzwerk-Scan liefern Daten; anderes ist von Hand gepflegt, z. B. der alte ERP-Server, ein neuer, noch nicht eingebundener Access Point, ein Azubi im AD.
+  - **Alle Module befüllt**, jetzt auch SIP-Anschlüsse, Checklisten (ein laufendes Onboarding, ein abgeschlossenes Offboarding), Dateien, Papierkorb und Kennwort-Verlauf.
+  - **Was Aufmerksamkeit braucht:** ein fehlgeschlagenes Backup, ein Zertifikat und eine Lizenz kurz vor Ablauf, ein Server mit bald endender Garantie, ein Windows 10 nach Support-Ende, ein Agent, der nicht mehr meldet, neu gefundene Geräte im Netzwerk-Scan.
+- Das Aktivitätsprotokoll der Demo ist wieder gefüllt: Die drei Techniker, die dort arbeiten, fehlten bisher – der Teil wurde still übersprungen.
+
+### Fixed
+
+- Container (LXC) aus dem Proxmox-Demo-Datensatz erschienen als VM.
+
 ## 26.11.23
 
 ### Added

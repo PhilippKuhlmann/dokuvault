@@ -32,11 +32,11 @@ class DemoProxmoxSeeder extends Seeder
                     ['name' => 'local', 'type' => 'dir', 'total_gb' => 94, 'used_gb' => 38],
                     ['name' => 'local-lvm', 'type' => 'lvmthin', 'total_gb' => 832, 'used_gb' => 210],
                     ['name' => 'ceph-vm', 'type' => 'rbd', 'total_gb' => 11500, 'used_gb' => 4120],
-                    ['name' => 'pbs-backup', 'type' => 'pbs', 'total_gb' => 9200, 'used_gb' => 7820],
+                    ['name' => 'pbs01', 'type' => 'pbs', 'total_gb' => 9200, 'used_gb' => 7820],
                 ],
                 'gaeste' => [
-                    [101, 'VM-DC02', 'qemu', 'running', 4, 8, 'Windows Server 2022 Standard'],
-                    [102, 'VM-Exchange', 'qemu', 'running', 8, 32, 'Windows Server 2022 Standard'],
+                    [101, 'SRV-DC02', 'qemu', 'running', 4, 8, 'Windows Server 2022 Standard'],
+                    [102, 'SRV-WSUS01', 'qemu', 'running', 4, 32, 'Windows Server 2022 Standard'],
                     [201, 'CT-Proxy', 'lxc', 'running', 2, 2, 'Debian 13'],
                     [202, 'CT-Test', 'lxc', 'stopped', 1, 0.5, 'Debian 12'],
                 ],
@@ -50,10 +50,11 @@ class DemoProxmoxSeeder extends Seeder
                     ['name' => 'nas-iso', 'type' => 'nfs', 'total_gb' => 0, 'used_gb' => 0],
                 ],
                 'gaeste' => [
-                    [111, 'VM-SQL01', 'qemu', 'running', 8, 64, 'Windows Server 2025 Standard'],
-                    [112, 'VM-App01', 'qemu', 'running', 4, 16, 'Windows Server 2025 Standard'],
+                    [111, 'SRV-SQL01', 'qemu', 'running', 8, 64, 'Windows Server 2025 Standard'],
+                    [112, 'SRV-APP01', 'qemu', 'running', 4, 16, 'Windows Server 2025 Standard'],
                     // No core limit: a container may use all of the host's.
                     [211, 'CT-Grafana', 'lxc', 'running', null, 4, 'Debian 13'],
+                    [212, 'CT-UniFi', 'lxc', 'running', 2, 2, 'Debian 12'],
                 ],
             ],
             'PVE-03' => [
@@ -64,25 +65,24 @@ class DemoProxmoxSeeder extends Seeder
                     ['name' => 'ceph-vm', 'type' => 'rbd', 'total_gb' => 11500, 'used_gb' => 4120],
                 ],
                 'gaeste' => [
-                    [121, 'VM-Fileserver', 'qemu', 'running', 4, 16, 'Windows Server 2022 Standard'],
-                    [122, 'VM-Backup', 'qemu', 'stopped', 4, 16, 'Windows Server 2022 Standard'],
-                    [221, 'CT-Pihole', 'lxc', 'running', 1, 0.5, 'Debian 13'],
+                    [121, 'SRV-FS02', 'qemu', 'running', 4, 16, 'Windows Server 2025 Standard'],
+                    [122, 'PBS01', 'qemu', 'running', 4, 16, 'Proxmox Backup Server 4'],
                 ],
             ],
         ];
 
         // Load of the running guests when the agent ran: CPU in percent of
-        // their own cores, memory in use. One amber (VM-Exchange, 86 % of its
-        // memory) and one red (VM-SQL01, 91 %).
+        // their own cores, memory in use. One amber (SRV-WSUS01, 86 % of its
+        // memory) and one red (SRV-SQL01, 91 %).
         $last = [
             101 => [6.5, 6.1], 102 => [38.2, 27.4], 201 => [3.2, 0.6],
             111 => [71.8, 58.3], 112 => [22.4, 11.8], 211 => [9.8, 3.1],
-            121 => [4.1, 9.7], 221 => [0.8, 0.2],
+            121 => [4.1, 9.7], 122 => [12.5, 11.2], 212 => [5.4, 1.3],
         ];
 
         // Root disk of the running containers (used, size) - Proxmox sees
         // inside a container, not inside a VM. CT-Grafana nearly full.
-        $platte = [201 => [3.1, 8], 211 => [18.6, 20], 221 => [1.4, 4]];
+        $platte = [201 => [3.1, 8], 211 => [18.6, 20], 212 => [5.2, 16]];
 
         foreach ($knoten as $name => $k) {
             $server = Server::where('name', $name)->whereNotNull('cluster_id')->first();
@@ -109,6 +109,9 @@ class DemoProxmoxSeeder extends Seeder
                         'site_id' => $server->site_id,
                         'server_id' => $server->id,
                         'name' => $gast,
+                        // As the agent sets it (ReportsMachines): a container is
+                        // no VM - without it the demo listed them as VMs.
+                        'kind' => $typ === 'lxc' ? 'lxc' : 'vm',
                         'operating_system_id' => OperatingSystem::where('name', $os)->value('id'),
                         'agent_details' => array_filter([
                             'vmid' => $vmid, 'type' => $typ, 'status' => $status,

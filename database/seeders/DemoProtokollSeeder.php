@@ -8,11 +8,14 @@ use App\Models\ContactPerson;
 use App\Models\Customer;
 use App\Models\Network;
 use App\Models\Printer;
+use App\Models\Role;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\User;
+use App\Models\Wifi;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 /**
  * Eine plausible Historie im Aktivitaetsprotokoll.
@@ -36,7 +39,7 @@ class DemoProtokollSeeder extends Seeder
     public function run(): void
     {
         $kunde = Customer::where('slug', 'mustermann')->first();
-        $standort = $kunde ? Site::where('customer_id', $kunde->id)->first() : null;
+        $standort = $kunde ? Site::where('customer_id', $kunde->id)->where('name', 'Zentrale Hamburg')->first() : null;
 
         if (! $kunde || ! $standort) {
             $this->command?->warn('DemoProtokollSeeder: Kunde "mustermann" oder Standort fehlt - uebersprungen.');
@@ -44,64 +47,71 @@ class DemoProtokollSeeder extends Seeder
             return;
         }
 
-        $jonas = User::where('name', 'Jonas Wieck')->first();
-        $malte = User::where('name', 'Malte Ruhnau')->first();
-        $rita = User::where('name', 'Rita Sander')->first();
+        // The three technicians of the IT service provider. Created here if
+        // missing - before, the seeder looked for them, found nobody and the
+        // log stayed empty on the demo. They cannot sign in: random password.
+        [$jonas, $malte, $rita] = collect(['Jonas Wieck' => 'jwieck', 'Malte Ruhnau' => 'mruhnau', 'Rita Sander' => 'rsander'])
+            ->map(fn ($username, $name) => User::firstOrCreate(['username' => $username], [
+                'name' => $name, 'email' => $username.'@systemhaus.example', 'password' => bcrypt(Str::random(40)),
+                'role_id' => Role::IS_TECHNIKER,
+            ]))->values()->all();
 
-        if (! $jonas || ! $malte || ! $rita) {
-            $this->command?->warn('DemoProtokollSeeder: Demo-Benutzer fehlen - uebersprungen.');
-
-            return;
-        }
-
-        // Jonas dokumentiert einen neuen Drucker und traegt am Server nach,
-        // was ihm aufgefallen ist.
+        // Jonas documents a new label printer for the warehouse and adds the
+        // supplier at the Hyper-V host.
         $this->als($jonas, function () use ($kunde, $standort) {
-            Printer::factory()->create([
-                'customer_id' => $kunde->id,
-                'site_id' => $standort->id,
-                'name' => 'DRU-Empfang',
-                'manufacturer' => 'Kyocera',
-                'model' => 'ECOSYS MA4000',
+            $drucker = Printer::forceCreate([
+                'customer_id' => $kunde->id, 'site_id' => $standort->id, 'name' => 'PRN-Versand',
+                'manufacturer' => 'Kyocera', 'model' => 'ECOSYS PA4500x', 'serialNumber' => 'VCN4Y02187', 'port' => 443,
+                'purchase_date' => now()->subDays(3)->toDateString(), 'warranty_until' => now()->addYears(3)->toDateString(),
+                'supplier' => 'Kyocera Partner Nord',
+            ]);
+            $drucker->ipAddresses()->create([
+                'customer_id' => $kunde->id, 'address' => '10.10.60.24', 'label' => 'Primär',
+                'network_id' => Network::where('customer_id', $kunde->id)->where('description', 'Drucker')->value('id'),
             ]);
 
-            // Lieferant und Garantie nachgetragen - die Arbeit, die nach dem
-            // Kauf liegen bleibt und ohne die das Dashboard nicht warnen kann.
-            Server::where('customer_id', $kunde->id)->where('name', 'SRV-APP01')->first()
-                ?->update(['supplier' => 'Bechtle', 'warranty_until' => now()->addMonths(8)]);
+            Server::where('customer_id', $kunde->id)->where('name', 'SRV-HV01')->first()
+                ?->update(['supplier' => 'Dell Technologies (über Bechtle)']);
         });
 
-        // Malte korrigiert den zweiten DNS im Clients-VLAN.
+        // Malte fixes the second DNS of the Clients VLAN, changes the guest
+        // Wi-Fi password (the old one goes to the password history) and
+        // documents the VPN certificate.
         $this->als($malte, function () use ($kunde) {
-            Network::where('customer_id', $kunde->id)->where('description', 'Clients')->first()
-                ?->update(['dns2' => '1.1.1.1']);
+            Network::where('customer_id', $kunde->id)->where('site_id', Site::where('customer_id', $kunde->id)->where('name', 'Zentrale Hamburg')->value('id'))
+                ->where('description', 'Clients')->first()
+                ?->update(['dns2' => '10.10.30.20']);
 
-            Certificate::factory()->create([
-                'customer_id' => $kunde->id,
-                'name' => 'Wildcard *.mustermann.de',
-                'expiry_date' => now()->addMonths(4),
+            Wifi::where('customer_id', $kunde->id)->where('ssid', 'Mustermann-Gast')->first()
+                ?->update(['password' => 'Gast-Hamburg-2026-Q4']);
+
+            Certificate::forceCreate([
+                'customer_id' => $kunde->id, 'name' => 'vpn.mustermann.de', 'common_name' => 'vpn.mustermann.de',
+                'issuer' => "Let's Encrypt", 'type' => 'SSL/TLS', 'issued_date' => now()->subDays(20)->toDateString(),
+                'expiry_date' => now()->addDays(70)->toDateString(), 'auto_check' => false,
+                'notes' => 'SSL-VPN und Benutzerportal der FW-HH',
             ]);
         });
 
-        // Rita raeumt auf: ein alter Rechner geht in den Papierkorb - und wird
-        // gleich wieder zurueckgeholt. Genau der Fall, fuer den es den
-        // Papierkorb gibt, und im Protokoll sind beide Schritte zu sehen.
+        // Rita tidies up: a new contact; an old PC goes to the trash and comes
+        // back (both steps in the log); an old printer stays in the trash.
         $this->als($rita, function () use ($kunde, $standort) {
-            ContactPerson::factory()->create([
-                'customer_id' => $kunde->id,
-                'first_name' => 'Sabine',
-                'last_name' => 'Roth',
-                'role' => 'Einkauf',
+            ContactPerson::forceCreate([
+                'customer_id' => $kunde->id, 'first_name' => 'Sabine', 'last_name' => 'Roth', 'role' => 'Einkauf, bestellt Hardware',
+                'phone' => '040 7541 3215', 'mail' => 'sabine.roth@mustermann.de',
             ]);
 
-            $alt = Computer::factory()->create([
-                'customer_id' => $kunde->id,
-                'site_id' => $standort->id,
-                'name' => 'PC-Alt-19',
+            $alt = Computer::forceCreate([
+                'customer_id' => $kunde->id, 'site_id' => $standort->id, 'name' => 'PC-ALT-LAGER',
+                'manufacturer' => 'Dell', 'model' => 'OptiPlex 7050', 'serialNumber' => '4KQ7XH2',
             ]);
-
             $alt->delete();
             $alt->restore();
+
+            Printer::forceCreate([
+                'customer_id' => $kunde->id, 'site_id' => $standort->id, 'name' => 'PRN-Lager-alt',
+                'manufacturer' => 'Kyocera', 'model' => 'FS-2100DN', 'serialNumber' => 'LJA4Z01733',
+            ])->delete();
         });
     }
 
