@@ -134,6 +134,8 @@ return [
     ],
     'certificate' => [
         'model' => Certificate::class, 'request' => CertificateRequest::class,
+        // Always open: a handful of certificates per customer (x-card, object-list).
+        'foldable' => false,
         'relation' => 'certificates', 'einzahl' => 'Zertifikat', 'suchfelder' => ['name', 'common_name', 'issuer'],
         'felder' => [
             ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
