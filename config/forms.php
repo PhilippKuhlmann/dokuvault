@@ -114,6 +114,8 @@ use App\Support\SshKeyGenerator;
 return [
     'domain' => [
         'model' => Domain::class, 'request' => DomainRequest::class,
+        // Always open: a customer has two or three domains (x-card, object-list).
+        'foldable' => false,
         'relation' => 'domains', 'einzahl' => 'Domain', 'suchfelder' => ['name', 'registrar'],
         'felder' => [
             ['name' => 'name', 'label' => 'Domain', 'type' => 'text'],
