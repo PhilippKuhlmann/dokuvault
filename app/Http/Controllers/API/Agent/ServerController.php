@@ -258,11 +258,19 @@ class ServerController extends AgentEndpoint
         }
         $vm->save();
 
-        $uebernommen = Server::where('customer_id', $customer->id)
-            ->where('agent_identifier', $meldung['identifier'])
-            ->get()
-            ->filter(fn (Server $server) => $this->foldIntoVm($server, $vm))
-            ->count();
+        // Only within one site: the VM is found customer-wide (by its BIOS
+        // UUID, which any hypervisor report can set), and a token of another
+        // site must not pull a server of this one into the trash. Across
+        // sites the server stays for a human to sort out.
+        $site = request()->attributes->get('agentSite');
+        $uebernommen = $site && (int) $vm->site_id === (int) $site->id
+            ? Server::where('customer_id', $customer->id)
+                ->where('site_id', $vm->site_id)
+                ->where('agent_identifier', $meldung['identifier'])
+                ->get()
+                ->filter(fn (Server $server) => $this->foldIntoVm($server, $vm))
+                ->count()
+            : 0;
 
         $this->reportUrl($vm, $customer->id, $vm->site_id, $meldung['ip'] ?? null);
 

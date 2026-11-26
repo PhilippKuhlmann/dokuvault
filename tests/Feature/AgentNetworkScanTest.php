@@ -25,6 +25,8 @@ function scanSetup(?Customer $customer = null): array
     $customer ??= Customer::factory()->create();
     $site = Site::factory()->create(['customer_id' => $customer->id]);
     [$token, $plain] = AgentToken::generateFor($customer, $site, 'Dienst', now()->addDays(60));
+    // As after its first check-in: the token belongs to this machine.
+    $token->forceFill(['machine_id' => 'scan-pc'])->save();
 
     $netz = Network::factory()->create([
         'customer_id' => $customer->id, 'site_id' => $site->id,

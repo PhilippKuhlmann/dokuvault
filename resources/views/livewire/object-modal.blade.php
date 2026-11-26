@@ -225,7 +225,7 @@
                                          SSH-Schluessel. --}}
                                     <x-input.textarea wire:model.live.blur="form.{{ $feld['name'] }}"
                                         :rows="$feld['zeilen'] ?? 3"
-                                        :placeholder="$feld['platzhalter'] ?? ''" class="mt-1" />
+                                        :placeholder="$this->placeholderFor($feld)" class="mt-1" />
                                 @else
                                     {{-- Hersteller und Modell werden bei Geraeten
                                          mit Frontblende ohne Platzhalter
@@ -241,11 +241,20 @@
                                             type="{{ $feld['type'] }}" class="mt-1" />
                                     @else
                                         <x-input.text :feld="'form.'.$feld['name']" wire:model.live.blur="form.{{ $feld['name'] }}"
-                                            type="{{ $feld['type'] }}" :placeholder="$feld['platzhalter'] ?? ''" class="mt-1" />
+                                            type="{{ $feld['type'] }}" :placeholder="$this->placeholderFor($feld)" class="mt-1" />
                                     @endif
                                 @endif
 
                                 <x-input.fehler :feld="'form.'.$feld['name']" />
+
+                                {{-- A stored secret is not sent to the browser: the field
+                                     stays empty and keeps it, removing is a click of its own. --}}
+                                @if (isset($gespeicherteGeheimnisse[$feld['name']]))
+                                    <button type="button" wire:click="toggleRemoveSecret('{{ $feld['name'] }}')"
+                                        class="mt-1 text-xs {{ isset($geheimEntfernen[$feld['name']]) ? 'text-red-600 dark:text-red-400' : 'text-gray-500 hover:text-red-600 dark:text-gray-400' }}">
+                                        {{ isset($geheimEntfernen[$feld['name']]) ? __('Wird beim Speichern entfernt – rückgängig') : __('Gespeichertes entfernen') }}
+                                    </button>
+                                @endif
 
                                 {{-- Vorherige Kennwoerter. Der Fall dahinter: Jemand
                                      hat falsch geaendert, und man braucht das alte

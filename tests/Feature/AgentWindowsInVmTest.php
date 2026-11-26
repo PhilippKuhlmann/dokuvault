@@ -198,3 +198,19 @@ test('the VM card shows the host name when it differs from the name', function (
     $this->get(route('vm.index', $customer))->assertOk()
         ->assertSeeInOrder(['Hostname', 'WIN-H4KK383P230']);
 });
+
+test('a token of another site does not fold a server of this site into a VM', function () {
+    [$customer, $site, $plain] = windowsVmKunde();
+    windowsInDerVm($plain)->assertOk();
+    $server = Server::where('customer_id', $customer->id)->where('agent_identifier', 'fc7056a0-machine-guid')->sole();
+
+    // A branch office token reports a hypervisor with that UUID at its own
+    // site, then Windows "inside" it with the server's machine id.
+    $branch = Site::factory()->create(['customer_id' => $customer->id]);
+    [, $branchToken] = AgentToken::generateFor($customer, $branch, 'Filiale');
+    proxmoxMitWindowsGast($branchToken)->assertOk();
+    windowsInDerVm($branchToken)->assertOk()->assertJson(['type' => 'vm', 'servers_folded' => 0]);
+
+    expect($server->fresh()->trashed())->toBeFalse()
+        ->and($server->fresh()->site_id)->toBe($site->id);
+});

@@ -24,21 +24,18 @@ test('Passwort mit Sonderzeichen übersteht den Edit-Roundtrip unverändert', fu
         'password' => $password,
     ]);
 
-    // Das Modal bindet ueber wire:model, der Wert steht also im Zustand der
-    // Komponente und nicht in einem value-Attribut. Genau dort muss er
-    // unveraendert ankommen - eine zusaetzliche Maskierung faellt hier auf.
+    // The stored password is not in the edit form any more (PasswordReveal
+    // shows it); saved with the field left empty it stays exactly the same.
     $formular = Livewire::test(ObjectModal::class, ['typ' => 'logingeneral', 'customer' => $customer])
         ->call('bearbeiten', 'logingeneral', $login->id);
 
-    expect($formular->get('form')['password'])->toBe($password);
+    expect($formular->get('form')['password'])->toBe('');
 
-    // Speichern ohne Änderung -> Wert bleibt exakt gleich
-    imModalBearbeiten('logingeneral', $customer, $login, [
-        'name' => 'RTR-Test',
-        'username' => 'admin',
-        'password' => $password,
-    ])->assertHasNoErrors();
+    imModalBearbeiten('logingeneral', $customer, $login, ['name' => 'RTR-Test'])->assertHasNoErrors();
+    expect($login->fresh()->password)->toBe($password);
 
+    // Typed in again, it arrives unchanged - no extra escaping on the way.
+    imModalBearbeiten('logingeneral', $customer, $login, ['password' => $password])->assertHasNoErrors();
     expect($login->fresh()->password)->toBe($password);
 });
 

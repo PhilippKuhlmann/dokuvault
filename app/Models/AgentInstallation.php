@@ -58,6 +58,22 @@ class AgentInstallation extends Model
     /** Without a community of its own, the scan asks with the usual default. */
     public const SCAN_DEFAULT_COMMUNITY = 'public';
 
+    /**
+     * The installation the calling token runs on - from the token, not from
+     * the machine id in the request: any token of the customer could name
+     * another machine's id and write its results or scan findings.
+     */
+    public static function forToken(AgentToken $token, string $machineId): self
+    {
+        $machineId = strtolower($machineId);
+        abort_unless($token->machine_id !== null && $token->machine_id === $machineId, 404);
+
+        return static::where('customer_id', $token->customer_id)
+            ->where('machine_id', $machineId)
+            ->where('agent_token_id', $token->id)
+            ->firstOrFail();
+    }
+
     public function customer()
     {
         return $this->belongsTo(Customer::class);

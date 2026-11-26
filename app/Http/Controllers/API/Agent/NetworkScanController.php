@@ -45,9 +45,7 @@ class NetworkScanController extends AgentEndpoint
 
         // Only a machine that checked in with this customer and has the scan
         // switched on - a token without the role must not create findings.
-        $installation = AgentInstallation::where('customer_id', $customer->id)
-            ->where('machine_id', strtolower($data['machine_id']))
-            ->firstOrFail();
+        $installation = AgentInstallation::forToken($request->attributes->get('agentToken'), $data['machine_id']);
         abort_unless($installation->runsScan(), 403, __('Der Netzwerk-Scan ist für diesen Agenten nicht eingeschaltet.'));
 
         $aktualisiert = 0;

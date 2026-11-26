@@ -377,3 +377,29 @@ test('the agent list puts problems first and says what is off', function () {
         expect($html)->toContain('Update ausstehend');
     }
 });
+
+test('another token of the customer cannot report for a machine it does not run on', function () {
+    [$token, $plain] = installationToken();
+    checkinAls($plain, 'dc01', ['windows-server']);
+    [, $fremd] = AgentToken::generateFor($token->customer, $token->site, 'Arbeitsplatz', now()->addDays(60));
+    checkinAls($fremd, 'pc07', ['windows-client']);
+
+    reportAls($fremd, 'dc01', [['role' => 'windows-server', 'ok' => false, 'message' => 'gefälscht']])->assertNotFound();
+
+    expect(AgentInstallation::where('machine_id', 'dc01')->sole()->last_results)->toBeNull();
+});
+
+test('a machine reporting with a valid token is not taken over by another one', function () {
+    [$token, $plain] = installationToken();
+    checkinAls($plain, 'dc01', ['windows-server']);
+    [$zweiter, $fremd] = AgentToken::generateFor($token->customer, $token->site, 'Zweiter', now()->addDays(60));
+
+    checkinAls($fremd, 'dc01', ['windows-server'])->assertStatus(409);
+    expect(AgentInstallation::where('machine_id', 'dc01')->sole()->agent_token_id)->toBe($token->id)
+        ->and($zweiter->fresh()->machine_id)->toBeNull();
+
+    // The old token locked: the reinstall with the new one goes through.
+    $token->update(['locked_at' => now()]);
+    checkinAls($fremd, 'dc01', ['windows-server'])->assertOk();
+    expect(AgentInstallation::where('machine_id', 'dc01')->sole()->agent_token_id)->toBe($zweiter->id);
+});

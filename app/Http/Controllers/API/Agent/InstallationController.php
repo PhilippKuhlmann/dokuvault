@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API\Agent;
 
 use App\Models\AgentInstallation;
+use App\Models\AgentToken;
 use App\Models\Domain;
 use App\Models\Service;
 use App\Support\AgentScript;
@@ -36,6 +37,21 @@ class InstallationController extends AgentEndpoint
 
         $token = $request->attributes->get('agentToken');
         $machineId = strtolower($data['machine_id']);
+
+        // A machine that already reports with another, still valid token is
+        // not taken over: otherwise any token of the customer could claim it
+        // by its machine id - its roles, its results and the SNMP
+        // communities of its scan. A reinstall renews the old token (same
+        // token, new value) or locks it first.
+        $existing = AgentInstallation::where('customer_id', $token->customer_id)->where('machine_id', $machineId)->first();
+        if ($existing && $existing->agent_token_id && $existing->agent_token_id !== $token->id) {
+            $other = AgentToken::withoutGlobalScopes()->find($existing->agent_token_id);
+            if ($other && ! $other->isExpired() && ! $other->isLocked()) {
+                abort(409, __('Dieser Rechner meldet bereits mit dem Token :token. Diesen Token erneuern statt einen neuen zu nehmen, oder ihn vorher sperren.', [
+                    'token' => $other->name ?: ('#'.$other->id),
+                ]));
+            }
+        }
 
         // One token per agent: the first machine to check in owns it. A second
         // one is refused - otherwise locking the token would stop every agent
@@ -88,9 +104,7 @@ class InstallationController extends AgentEndpoint
             'results.*.message' => ['nullable', 'string', 'max:100000'],
         ]);
 
-        $installation = AgentInstallation::where('customer_id', $request->attributes->get('agentCustomer')->id)
-            ->where('machine_id', strtolower($data['machine_id']))
-            ->firstOrFail();
+        $installation = AgentInstallation::forToken($request->attributes->get('agentToken'), $data['machine_id']);
 
         $installation->recordResults($data['results']);
 
