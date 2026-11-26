@@ -56,10 +56,22 @@ test('an empty BACKUP_ARCHIVE_PASSWORD is no password', function () {
         ->and(app(EncryptBackupArchive::class)->shouldEncrypt())->toBeFalse();
 });
 
-test('without an archive password the .env stays out of the backup', function () {
+test('without an archive password the .env and the cached config stay out of the backup', function () {
     BackupSettings::anwenden();
 
-    expect(config('backup.backup.source.files.exclude'))->toContain(base_path('.env'));
+    // config:cache writes APP_KEY into bootstrap/cache/config.php.
+    expect(config('backup.backup.source.files.exclude'))
+        ->toContain(base_path('.env'))
+        ->toContain(base_path('bootstrap/cache/config.php'));
+});
+
+test('with an archive password the cached config goes into the backup too', function () {
+    BackupSettings::save(['backup_geheim_archivpasswort' => 'archiv-passwort']);
+    BackupSettings::anwenden();
+
+    expect(config('backup.backup.source.files.exclude'))
+        ->not->toContain(base_path('.env'))
+        ->not->toContain(base_path('bootstrap/cache/config.php'));
 });
 
 test('FTP without keeping local writes only to the target', function () {

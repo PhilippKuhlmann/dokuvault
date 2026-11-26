@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\DirectoryGroupRole;
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
@@ -385,6 +386,34 @@ test('groups are mapped, reordered and removed', function () {
 
     $this->delete(route('admin.directory.groups.destroy', $technikZeile));
     expect($reihenfolge())->toBe(['DV-Lesen']);
+});
+
+test('a delegate with admin_setting cannot map a group to a role above their own', function () {
+    $delegate = userWithPermissions(['admin_setting']);
+    $this->actingAs($delegate);
+    $admin = Role::find(Role::IS_ADMIN) ?? Role::factory()->create(['id' => Role::IS_ADMIN, 'name' => 'Admin']);
+    $wider = Role::factory()->create(['name' => 'Wider']);
+    $wider->permissions()->attach(Permission::where('name', 'admin_user')->first()?->id ?? Permission::factory()->create(['name' => 'admin_user'])->id);
+    $own = $delegate->role;
+
+    // Role 1 and a role with more rights are refused, the own role is fine.
+    $this->post(route('admin.directory.groups.store'), ['group' => 'Domain Users', 'role_id' => $admin->id])->assertForbidden();
+    $this->post(route('admin.directory.groups.store'), ['group' => 'Domain Users', 'role_id' => $wider->id])->assertForbidden();
+    $this->post(route('admin.directory.groups.store'), ['group' => 'DV-Setting', 'role_id' => $own->id])->assertSessionHasNoErrors();
+    expect(DirectoryGroupRole::pluck('group')->all())->toBe(['DV-Setting']);
+
+    // A role-1 mapping set up by the admin can be neither removed nor
+    // moved by the delegate, and the own mapping not moved past it.
+    $adminRow = DirectoryGroupRole::create(['source' => 'ldap', 'group' => 'DokuVault-Admins', 'role_id' => $admin->id, 'position' => 0]);
+    $ownRow = DirectoryGroupRole::where('group', 'DV-Setting')->sole();
+    $this->delete(route('admin.directory.groups.destroy', $adminRow))->assertForbidden();
+    $this->post(route('admin.directory.groups.move', [$adminRow, 'down']))->assertForbidden();
+    $this->post(route('admin.directory.groups.move', [$ownRow, 'up']))->assertForbidden();
+    expect(DirectoryGroupRole::orderBy('position')->pluck('group')->all())->toBe(['DokuVault-Admins', 'DV-Setting']);
+
+    // The page offers only the own role.
+    $this->get(route('admin.directory.index'))->assertOk()
+        ->assertViewHas('rollen', fn ($roles) => $roles->pluck('id')->all() === [$own->id]);
 });
 
 test('in the user admin a directory account can be locked, but not given another role or password', function () {

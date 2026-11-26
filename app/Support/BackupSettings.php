@@ -191,14 +191,15 @@ class BackupSettings
         // The .env holds APP_KEY - without it every stored password in the
         // dump is unreadable after a restore. It only goes into the archive
         // when the archive is encrypted; otherwise the page warns to keep
-        // the key elsewhere.
+        // the key elsewhere. The cached config is a copy of the .env and
+        // follows the same rule.
         if (filled($w['backup_geheim_archivpasswort'])) {
             config([
                 'backup.backup.password' => $w['backup_geheim_archivpasswort'],
                 'backup.backup.encryption' => 'default',
                 'backup.backup.source.files.exclude' => array_values(array_diff(
                     config('backup.backup.source.files.exclude', []),
-                    [base_path('.env')],
+                    [base_path('.env'), base_path('bootstrap/cache/config.php')],
                 )),
             ]);
 

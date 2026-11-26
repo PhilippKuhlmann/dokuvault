@@ -51,8 +51,11 @@ class DirectorySettingController extends Controller
             'hatKennwort' => LdapConfig::bindPassword() !== null,
             'domain' => Setting::wert(LdapConfig::DOMAIN),
             'extension' => LdapConfig::extensionLoaded(),
-            'zuordnungen' => DirectoryGroupRole::where('source', DirectoryLogin::SOURCE)->with('role')->orderBy('position')->orderBy('id')->get(),
-            'rollen' => Role::orderBy('name')->get(),
+            // Rows whose role the viewer may not hand out are shown but locked.
+            'zuordnungen' => DirectoryGroupRole::where('source', DirectoryLogin::SOURCE)->with('role.permissions')->orderBy('position')->orderBy('id')->get()
+                ->each(fn (DirectoryGroupRole $mapping) => $mapping->setAttribute('changeable', $this->mayChange($mapping))),
+            // A mapping is a role grant: only roles the viewer may assign.
+            'rollen' => Role::with('permissions')->orderBy('name')->get()->filter(fn (Role $role) => auth()->user()->mayAssign($role))->values(),
         ]);
     }
 
@@ -182,16 +185,22 @@ class DirectorySettingController extends Controller
     {
         // Picked from the list (its DN) or typed by hand - the typed one
         // wins, it is the deliberate exception.
-        $daten = $request->validate([
+        $data = $request->validate([
             'group' => ['nullable', 'string', 'max:500', 'required_without:group_manual'],
             'group_manual' => ['nullable', 'string', 'max:500'],
             'role_id' => ['required', 'integer', Rule::exists('roles', 'id')->whereNull('deleted_at')],
         ], [], ['group' => __('Gruppe'), 'group_manual' => __('Gruppe'), 'role_id' => __('Rolle')]);
 
+        // Everyone in the group gets this role on sign-in - the same ceiling
+        // as assigning it in the user admin, or admin_setting alone would
+        // be enough to map one's own group to role 1.
+        $role = Role::with('permissions')->findOrFail($data['role_id']);
+        abort_unless($request->user()->mayAssign($role), 403);
+
         DirectoryGroupRole::create([
             'source' => DirectoryLogin::SOURCE,
-            'group' => trim(($daten['group_manual'] ?? null) ?: $daten['group']),
-            'role_id' => $daten['role_id'],
+            'group' => trim(($data['group_manual'] ?? null) ?: $data['group']),
+            'role_id' => $role->id,
             'position' => (int) DirectoryGroupRole::where('source', DirectoryLogin::SOURCE)->max('position') + 1,
         ]);
 
@@ -200,6 +209,8 @@ class DirectorySettingController extends Controller
 
     public function destroyGroup(DirectoryGroupRole $directoryGroupRole)
     {
+        abort_unless($this->mayChange($directoryGroupRole), 403);
+
         $directoryGroupRole->delete();
 
         return redirect(route('admin.directory.index'))->with('success', __('Zuordnung entfernt.'));
@@ -215,6 +226,10 @@ class DirectorySettingController extends Controller
         $ziel = $richtung === 'up' ? $index - 1 : $index + 1;
 
         if ($ziel >= 0 && $ziel < $alle->count()) {
+            // The order decides which role wins, so both rows that swap
+            // places must carry roles the caller may assign.
+            abort_unless($this->mayChange($directoryGroupRole) && $this->mayChange($alle[$ziel]), 403);
+
             $neu = $alle->all();
             [$neu[$index], $neu[$ziel]] = [$neu[$ziel], $neu[$index]];
             foreach (array_values($neu) as $position => $zuordnung) {
@@ -223,5 +238,15 @@ class DirectorySettingController extends Controller
         }
 
         return redirect(route('admin.directory.index'));
+    }
+
+    /** Within the caller's ceiling: the role of this mapping is one they may assign. */
+    private function mayChange(DirectoryGroupRole $mapping): bool
+    {
+        $role = $mapping->role;
+        $role?->loadMissing('permissions');
+
+        // A mapping to a deleted role grants nothing - anyone may clear it.
+        return $role === null || auth()->user()->mayAssign($role);
     }
 }

@@ -156,6 +156,8 @@
                             @endphp
                             <span class="min-w-0 flex-1 break-all text-gray-900 dark:text-gray-100" title="{{ $zuordnung->group }}">{{ $anzeige }}</span>
                             <span class="shrink-0 rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700 dark:bg-gray-700 dark:text-gray-200">{{ $zuordnung->role?->name }}</span>
+                            {{-- A role above the viewer's ceiling: shown, but not to be moved or removed. --}}
+                            @if ($zuordnung->changeable)
                             <div class="flex shrink-0 items-center gap-1">
                                 @unless ($loop->first)
                                     <form method="POST" action="{{ route('admin.directory.groups.move', [$zuordnung, 'up']) }}">
@@ -175,6 +177,7 @@
                                     <button type="submit" class="rounded px-1.5 py-0.5 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20" title="{{ __('Entfernen') }}" aria-label="{{ __('Entfernen') }}">✕</button>
                                 </form>
                             </div>
+                            @endif
                         </div>
                     @endforeach
                 </div>

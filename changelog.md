@@ -1,5 +1,12 @@
 # Changelog
 
+## 26.11.26
+
+### Security
+
+- **AD-Gruppen vergeben nur noch Rollen im eigenen Rahmen.** Wer nur „Einstellungen“ verwalten durfte, konnte unter Anmeldung eine AD-Gruppe der Admin-Rolle zuordnen und sich darüber zum vollen Admin machen. Jetzt gilt dieselbe Grenze wie in der Benutzerverwaltung: Zuordnen, Verschieben und Entfernen nur für Rollen, die man selbst vergeben darf. Zuordnungen darüber sind sichtbar, aber gesperrt.
+- **Der Config-Cache bleibt aus dem unverschlüsselten Backup.** `php artisan config:cache` (läuft bei jedem Update) schreibt den APP_KEY und alle Geheimnisse der `.env` nach `bootstrap/cache/config.php` – die Datei landete bisher im Backup, auch ohne Archivpasswort. Sie folgt jetzt derselben Regel wie die `.env`: nur im verschlüsselten Archiv.
+
 ## 26.11.25
 
 ### Changed

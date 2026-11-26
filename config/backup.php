@@ -53,6 +53,9 @@ return [
                      * backup (see SECURITY.md).
                      */
                     base_path('.env'),
+                    // config:cache (deploy.sh) copies APP_KEY and every other
+                    // secret of the .env in here - same rule as the .env.
+                    base_path('bootstrap/cache/config.php'),
                     base_path('auth.json'),
 
                     // Password PDFs still within their retention period; they
