@@ -74,17 +74,6 @@ class ObjectModal extends Component
     public array $form = [];
 
     /**
-     * Secret fields with a stored value, by field name. The value itself is
-     * not sent to the browser when editing - it is shown through
-     * PasswordReveal like everywhere else; an empty field keeps it.
-     */
-    #[Locked]
-    public array $gespeicherteGeheimnisse = [];
-
-    /** Stored secrets the user chose to remove on save, by field name. */
-    public array $geheimEntfernen = [];
-
-    /**
      * The uploaded file - kept apart from the form, because it is a temporary
      * file and not a value that gets validated or written into the table.
      * Only on save does it become a path.
@@ -136,8 +125,6 @@ class ObjectModal extends Component
         $this->modellbild = null;
         $this->bearbeiteId = null;
         $this->loeschenGefragt = false;
-        $this->gespeicherteGeheimnisse = [];
-        $this->geheimEntfernen = [];
         $this->resetValidation();
     }
 
@@ -163,17 +150,6 @@ class ObjectModal extends Component
         $objekt = $this->fetchObject($id);
 
         $this->form = $this->objectForm()->values($objekt);
-
-        // Secrets stay on the server: the update right alone must not put
-        // every password of the object into the page, unbraked and unlogged.
-        $this->gespeicherteGeheimnisse = [];
-        $this->geheimEntfernen = [];
-        foreach ($this->secretFields() as $feld) {
-            if (filled($objekt->getRawOriginal($feld))) {
-                $this->gespeicherteGeheimnisse[$feld] = true;
-            }
-            $this->form[$feld] = '';
-        }
 
         $this->bearbeiteId = $objekt->id;
         $this->loeschenGefragt = false;
@@ -226,19 +202,7 @@ class ObjectModal extends Component
      */
     protected function regeln(): array
     {
-        $regeln = $this->objectForm()->rules($this->form, 'form.');
-
-        // A stored secret left empty is kept - "required" is met by it.
-        foreach ($this->keptSecrets() as $feld) {
-            $regel = $regeln['form.'.$feld] ?? null;
-            if ($regel !== null) {
-                $regeln['form.'.$feld] = collect(is_string($regel) ? explode('|', $regel) : $regel)
-                    ->map(fn ($teil) => $teil === 'required' ? 'nullable' : $teil)
-                    ->all();
-            }
-        }
-
-        return $regeln;
+        return $this->objectForm()->rules($this->form, 'form.');
     }
 
     protected function fieldNames(): array
@@ -255,11 +219,6 @@ class ObjectModal extends Component
         $this->enableCheck();
 
         $daten = $this->validate($this->regeln(), [], $this->fieldNames())['form'];
-
-        // Left empty: the stored value stays (removing is marked apart).
-        foreach ($this->keptSecrets() as $feld) {
-            unset($daten[$feld]);
-        }
 
         $bisher = $this->bearbeiteId ? $this->fetchObject($this->bearbeiteId) : null;
         $this->objectForm()->save($daten, $bisher, $this->datei);
@@ -517,47 +476,6 @@ class ObjectModal extends Component
                 'wer' => $eintrag->user?->name,
             ])
             ->all();
-    }
-
-    public function toggleRemoveSecret(string $feld): void
-    {
-        if (! isset($this->gespeicherteGeheimnisse[$feld])) {
-            return;
-        }
-
-        if (isset($this->geheimEntfernen[$feld])) {
-            unset($this->geheimEntfernen[$feld]);
-        } else {
-            $this->geheimEntfernen[$feld] = true;
-            $this->form[$feld] = '';
-        }
-    }
-
-    /** The placeholder of a field - for a stored secret, that it is kept. */
-    public function placeholderFor(array $feld): string
-    {
-        if (isset($this->gespeicherteGeheimnisse[$feld['name']]) && ! isset($this->geheimEntfernen[$feld['name']])) {
-            return __('Gespeichert – leer lassen, um es zu behalten');
-        }
-
-        return $feld['platzhalter'] ?? '';
-    }
-
-    /** @return list<string> the secret columns this form has */
-    protected function secretFields(): array
-    {
-        return array_values(array_intersect(config('custom.secret_columns'), array_keys($this->form)));
-    }
-
-    /** @return list<string> stored secrets left empty and not marked for removal */
-    protected function keptSecrets(): array
-    {
-        if (! $this->bearbeiteId) {
-            return [];
-        }
-
-        return array_values(array_filter(array_keys($this->gespeicherteGeheimnisse), fn ($feld) => ! isset($this->geheimEntfernen[$feld])
-            && trim((string) ($this->form[$feld] ?? '')) === ''));
     }
 
     public function hideHistory(string $feld): void

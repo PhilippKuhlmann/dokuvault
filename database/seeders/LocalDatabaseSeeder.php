@@ -40,6 +40,8 @@ class LocalDatabaseSeeder extends Seeder
 
         $this->call([
             CustomerSeeder::class,
+            // Teams with each access level - after the customers they use.
+            DemoTeamSeeder::class,
             // Installed agents, backup runs, API statistics - so those pages
             // are not empty in the demo.
             DemoAgentSeeder::class,

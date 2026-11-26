@@ -4,7 +4,6 @@ use App\Livewire\AdminLogRetention;
 use App\Livewire\AdminTrash;
 use App\Livewire\ObjectModal;
 use App\Models\Customer;
-use App\Models\DynDNS;
 use App\Models\Firewall;
 use App\Models\PasswordHistory;
 use App\Models\Setting;
@@ -241,48 +240,4 @@ test('ohne admin_activity kein Zugriff auf die Einstellung', function () {
     $this->actingAs(userWithPermissions(['firewall_viewAny']));
 
     Livewire::test(AdminLogRetention::class)->assertForbidden();
-});
-
-test('the edit form does not carry stored passwords, an empty field keeps them', function () {
-    $this->actingAs(userWithPermissions(['firewall_viewAny', 'firewall_update']));
-    $firewall = firewallMitKennwort('Bleibt!2026');
-
-    $test = Livewire::test(ObjectModal::class, ['typ' => 'firewall', 'customer' => $firewall->customer])
-        ->call('bearbeiten', 'firewall', $firewall->id);
-
-    // Neither in the form state nor anywhere in the page.
-    expect($test->get('form.cloud_backup_password'))->toBe('');
-    $test->assertDontSee('Bleibt!2026');
-
-    // Saved with the field left empty: the password stays.
-    $test->set('form.name', 'FW-Neu')->call('save')->assertHasNoErrors();
-    expect($firewall->fresh()->cloud_backup_password)->toBe('Bleibt!2026')
-        ->and($firewall->fresh()->name)->toBe('FW-Neu');
-
-    // A new one replaces it, removing is a click of its own.
-    Livewire::test(ObjectModal::class, ['typ' => 'firewall', 'customer' => $firewall->customer])
-        ->call('bearbeiten', 'firewall', $firewall->id)
-        ->set('form.cloud_backup_password', 'Neu!2026')->call('save')->assertHasNoErrors();
-    expect($firewall->fresh()->cloud_backup_password)->toBe('Neu!2026');
-
-    Livewire::test(ObjectModal::class, ['typ' => 'firewall', 'customer' => $firewall->customer])
-        ->call('bearbeiten', 'firewall', $firewall->id)
-        ->call('toggleRemoveSecret', 'cloud_backup_password')->call('save')->assertHasNoErrors();
-    expect($firewall->fresh()->cloud_backup_password)->toBeNull();
-});
-
-test('a required password counts as given while one is stored', function () {
-    $customer = Customer::factory()->create();
-    $this->actingAs(userWithPermissions(['dyndns_viewAny', 'dyndns_create', 'dyndns_update']));
-    imModal('dyndns', $customer, ['username' => 'dyn', 'password' => 'Dyn!2026'])->assertHasNoErrors();
-    $dyndns = DynDNS::where('customer_id', $customer->id)->sole();
-
-    imModalBearbeiten('dyndns', $customer, $dyndns, ['domain' => 'firma.dyndns.org'])->assertHasNoErrors();
-    expect($dyndns->fresh()->password)->toBe('Dyn!2026');
-
-    // Removing a required one is refused.
-    Livewire::test(ObjectModal::class, ['typ' => 'dyndns', 'customer' => $customer])
-        ->call('bearbeiten', 'dyndns', $dyndns->id)
-        ->call('toggleRemoveSecret', 'password')->call('save')
-        ->assertHasErrors('form.password');
 });

@@ -1,10 +1,14 @@
 <?php
 
 use App\Models\Cluster;
+use App\Models\Customer;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Server;
+use App\Models\Team;
+use App\Models\User;
 use App\Models\VM;
+use App\Support\CustomerAccess;
 use Database\Seeders\LocalDatabaseSeeder;
 use Database\Seeders\PermissionRoleSeeder;
 
@@ -53,4 +57,18 @@ test('der Demo-Datensatz enthaelt einen Proxmox-Cluster mit drei Knoten und VMs 
 
     // Der Standort kommt vom Cluster (VM::booted), nicht aus dem Seeder-Array.
     expect($vms->pluck('site_id')->unique()->all())->toBe([$cluster->site_id]);
+});
+
+test('the demo shows every team level to the techniker login, the admin sees all', function () {
+    $this->seed(LocalDatabaseSeeder::class);
+
+    $techniker = User::where('username', 'techniker')->sole();
+    $admin = User::where('username', 'admin')->sole();
+    $levels = fn (User $user) => Customer::withoutGlobalScopes()->orderBy('id')->get()
+        ->map(fn ($customer) => CustomerAccess::levelFor($user, $customer->id))->all();
+
+    // Mustermann full, then read, read without passwords, hidden, open.
+    expect(array_slice($levels($techniker), 0, 5))->toBe(['full', 'read', 'read_no_secrets', null, 'full'])
+        ->and(array_unique($levels($admin)))->toBe(['full'])
+        ->and(Team::count())->toBe(3);
 });

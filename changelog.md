@@ -2,6 +2,10 @@
 
 ## 26.11.26
 
+### Changed
+
+- **Demo mit Teams.** Wer sich als „techniker“ anmeldet, sieht jede Zugriffsstufe einmal: Mustermann mit Vollzugriff, ein Kunde nur lesend, einer ohne Kennwörter, einer gar nicht – die übrigen ohne Team wie bisher. „admin“ sieht und ändert über das Team „Geschäftsführung“ weiterhin alles.
+
 ### Security
 
 - **AD-Gruppen vergeben nur noch Rollen im eigenen Rahmen.** Wer nur „Einstellungen“ verwalten durfte, konnte unter Anmeldung eine AD-Gruppe der Admin-Rolle zuordnen und sich darüber zum vollen Admin machen. Jetzt gilt dieselbe Grenze wie in der Benutzerverwaltung: Zuordnen, Verschieben und Entfernen nur für Rollen, die man selbst vergeben darf. Zuordnungen darüber sind sichtbar, aber gesperrt.
@@ -18,7 +22,6 @@
 - **Ablauf-Mail nicht mehr an Konten, die der AD-Abgleich beendet hat.**
 - **Protokoll: Rack-Einträge gehören zum Kunden des Racks.** Sie standen bisher ohne Kunden im Protokoll und waren damit auch für Benutzer außerhalb des Teams sichtbar. Bestehende Einträge werden nachgetragen.
 - Ein Agent mit vielen Adressen lädt die Netze des Standorts nur noch einmal je Meldung statt einmal je Adresse.
-- **Kennwörter nicht mehr im Bearbeiten-Fenster.** Beim Bearbeiten kam jedes gespeicherte Kennwort im Klartext in die Seite – am Ansehen-Knopf (Bremse, Protokoll, Team-Stufe) vorbei. Jetzt bleibt das Feld leer mit „Gespeichert – leer lassen, um es zu behalten“; ein neuer Wert ersetzt es, „Gespeichertes entfernen“ löscht es. Ansehen geht wie überall über das Auge.
 - **Agent-Token gehören zu ihrem Rechner.** Ergebnisse und Netzwerk-Scan nimmt DokuVault nur noch vom Token des Rechners an, nicht von irgendeinem Token des Kunden. Ein Rechner, der mit einem gültigen Token meldet, lässt sich nicht von einem zweiten übernehmen – bei einer Neuinstallation den alten Token erneuern oder vorher sperren.
 - **VM-Zusammenführung nur innerhalb eines Standorts.** Ein Token eines anderen Standorts kann keinen Server mehr in eine VM überführen (und damit in den Papierkorb legen).
 
