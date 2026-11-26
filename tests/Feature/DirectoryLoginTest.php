@@ -6,9 +6,11 @@ use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\Directory\DirectoryClient;
+use App\Support\Directory\DirectoryLogin;
 use App\Support\Directory\DirectoryUnavailable;
 use App\Support\Directory\DirectoryUser;
 use App\Support\Directory\LdapConfig;
+use App\Support\Directory\PhpLdapClient;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Spatie\Activitylog\Models\Activity;
@@ -668,4 +670,34 @@ test('without the directory switched on nothing changes', function () {
         ->assertSessionHasErrors(['username' => trans('auth.failed')]);
 
     expect($attrappe->gefragt)->toBe([]);
+});
+
+test('ended by the AD sync, an integration token ends as well', function () {
+    adEinschalten();
+    [, $techniker] = adRollen();
+    $nutzer = adNutzer($techniker);
+    $integration = $nutzer->createToken('Skript', ['*'])->plainTextToken;
+    adAttrappe(null);
+
+    $this->artisan('directory:sync')->assertSuccessful();
+
+    expect($nutzer->tokens()->count())->toBe(0);
+    $this->withToken($integration)->getJson('/api/user')->assertUnauthorized();
+});
+
+test('a token of an account the AD sync ended is refused', function () {
+    [, $techniker] = adRollen();
+    $nutzer = adNutzer($techniker, ['directory_revoked_at' => now()]);
+    $token = $nutzer->createToken('Skript', ['*'])->plainTextToken;
+
+    $this->withToken($token)->getJson('/api/user')->assertForbidden();
+});
+
+test('the directory password parameters are marked sensitive, so no trace carries them', function () {
+    $sensitive = fn (string $class, string $method) => (new ReflectionParameter([$class, $method], 'password'))
+        ->getAttributes(SensitiveParameter::class) !== [];
+
+    expect($sensitive(DirectoryClient::class, 'authenticate'))->toBeTrue()
+        ->and($sensitive(PhpLdapClient::class, 'authenticate'))->toBeTrue()
+        ->and($sensitive(DirectoryLogin::class, 'login'))->toBeTrue();
 });

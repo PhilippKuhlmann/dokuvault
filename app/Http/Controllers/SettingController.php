@@ -60,6 +60,12 @@ class SettingController extends Controller
             ])->withInput());
         }
 
+        if (Setting::sendsPasswordOverNetwork($muster)) {
+            abort(redirect(route('admin.setting.index'))->withErrors([
+                'remote_pattern' => __('Mit {password} ist keine Web-Adresse erlaubt – das Kennwort ginge an den Server im Muster. Nur ein Programm-Schema, etwa "meintool://".'),
+            ])->withInput());
+        }
+
         if (! str_contains($muster, '{id}')) {
             abort(redirect(route('admin.setting.index'))->withErrors([
                 'remote_pattern' => __('Im Muster fehlt {id} — ohne die Kennung führt der Knopf nirgendwohin.'),

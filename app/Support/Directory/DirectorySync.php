@@ -80,6 +80,10 @@ class DirectorySync
             'directory_revoked_at' => now(),
         ])->save();
 
+        // Every bearer credential ends too: the password change above only
+        // revokes the app tokens, an integration token would stay valid.
+        $nutzer->tokens()->delete();
+
         activity()
             ->event('ad_abgleich')
             ->performedOn($nutzer)

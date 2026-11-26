@@ -26,7 +26,7 @@ class PhpLdapClient implements DirectoryClient
     /** LDAP result "invalid credentials" - a wrong password, not an outage. */
     private const INVALID_CREDENTIALS = 49;
 
-    public function authenticate(string $login, string $password): ?DirectoryUser
+    public function authenticate(string $login, #[\SensitiveParameter] string $password): ?DirectoryUser
     {
         // An empty password makes an anonymous bind - and that "succeeds".
         // It must never count as a sign-in.

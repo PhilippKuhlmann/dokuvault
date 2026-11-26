@@ -95,3 +95,35 @@ test('public names and IPs stay allowed', function () {
         ->and(CertificateCheck::isPublicTarget('gibt-es-nicht.invalid'))->toBeTrue()
         ->and(CertificateCheck::isPublicTarget('10.1.2.3'))->toBeFalse();
 });
+
+test('a target set by a customer account is checked public-only at night too', function () {
+    $check = recordingCertificateCheck();
+    $customer = Customer::factory()->create();
+    $user = userWithPermissions(['certificate_viewAny', 'certificate_create']);
+    $user->update(['customer_id' => $customer->id]);
+    $this->actingAs($user);
+
+    // Public when saved, internal at night (DNS changed) - the case the
+    // save-time rule cannot see.
+    $certificate = Certificate::factory()->create(['customer_id' => $customer->id, 'check_host' => 'shop.example.com', 'auto_check' => true]);
+    expect($certificate->check_public_only)->toBeTrue();
+    auth()->logout();
+    $certificate->forceFill(['check_host' => '10.0.0.5'])->saveQuietly();
+
+    $this->artisan('domains:check')->assertSuccessful();
+
+    expect($check->connections)->toBe([])
+        ->and($certificate->fresh()->check_error)->toContain('interne Adresse');
+});
+
+test('a target set by staff stays checkable internally at night', function () {
+    $check = recordingCertificateCheck();
+    $customer = Customer::factory()->create();
+    $this->actingAs(userWithPermissions(['certificate_viewAny', 'certificate_create']));
+    $certificate = Certificate::factory()->create(['customer_id' => $customer->id, 'check_host' => '10.0.0.5', 'check_port' => 8443, 'auto_check' => true]);
+    expect($certificate->check_public_only)->toBeFalse();
+
+    $this->artisan('domains:check')->assertSuccessful();
+
+    expect($check->connections)->toBe(['10.0.0.5:8443']);
+});

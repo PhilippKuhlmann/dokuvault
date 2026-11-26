@@ -58,7 +58,6 @@
                         @can('admin_setting')
                             <x-aside.dropdownlink :label="__('Allgemein')" href="{{ route('admin.general.index') }}" />
                             <x-aside.dropdownlink :label="__('Fernwartung')" href="{{ route('admin.setting.index') }}" />
-                            <x-aside.dropdownlink :label="__('Mail')" href="{{ route('admin.mail.index') }}" />
                             <x-aside.dropdownlink :label="__('Sicherheit')" href="{{ route('admin.security.index') }}" />
                             <x-aside.dropdownlink :label="__('Anmeldung (AD)')" href="{{ route('admin.directory.index') }}" />
                             <x-aside.dropdownlink :label="__('Fristen')" href="{{ route('admin.retention.index') }}" />
@@ -66,6 +65,7 @@
                             <x-aside.dropdownlink :label="__('Agenten')" href="{{ route('admin.agents.settings') }}" />
                         @endcan
                         @can('isAdmin')
+                            <x-aside.dropdownlink :label="__('Mail')" href="{{ route('admin.mail.index') }}" />
                             <x-aside.dropdownlink :label="__('Backup')" href="{{ route('admin.backup.settings') }}" />
                         @endcan
                         {{-- Die Aufbewahrungsfrist gehoert zum Protokoll, nicht zu

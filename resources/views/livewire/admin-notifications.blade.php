@@ -30,7 +30,11 @@
             {{ __('Die Vorwarnzeit steht unter') }}
             <a href="{{ route('admin.retention.index') }}" class="text-cerulean-600 hover:underline dark:text-cerulean-400">{{ __('Fristen') }}</a>,
             {{ __('der Mailserver unter') }}
-            <a href="{{ route('admin.mail.index') }}" class="text-cerulean-600 hover:underline dark:text-cerulean-400">{{ __('Mail') }}</a>.
+            @can('isAdmin')
+                <a href="{{ route('admin.mail.index') }}" class="text-cerulean-600 hover:underline dark:text-cerulean-400">{{ __('Mail') }}</a>.
+            @else
+                {{ __('Mail') }}.
+            @endcan
         </p>
 
         <div class="mt-4 flex items-center gap-3">

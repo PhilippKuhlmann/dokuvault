@@ -44,7 +44,7 @@ class DirectoryLogin
      * @throws ValidationException when the directory cannot be asked, or the
      *                             account is in no group that grants a role
      */
-    public function login(string $username, string $password): ?User
+    public function login(string $username, #[\SensitiveParameter] string $password): ?User
     {
         try {
             $konto = $this->client->authenticate($username, $password);

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\TracksChanges;
+use App\Support\CustomerAccess;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -165,11 +167,46 @@ class User extends Authenticatable
      */
     public function mayManage(User $other): bool
     {
+        // Teams bind role 1 as well: whoever could set the password of a
+        // team member would see what the team sees.
+        if (! $this->seesAtLeastAs($other)) {
+            return false;
+        }
+
         if ((int) $this->role_id === Role::IS_ADMIN) {
             return true;
         }
 
         return (int) $other->role_id !== Role::IS_ADMIN && (! $other->role || $this->mayAssign($other->role));
+    }
+
+    /**
+     * Teams: on every customer the other user reaches through a team, this
+     * user has at least the same level - so taking over their account gains
+     * no hidden customer, no write access and no passwords.
+     */
+    private function seesAtLeastAs(User $other): bool
+    {
+        // Customer logins: UserController::onlyWritable decides.
+        if ($other->customer_id !== null || $other->is($this) || ! CustomerAccess::anyAssigned()) {
+            return true;
+        }
+
+        $rank = fn (?string $level) => $level === null ? -1 : count(CustomerAccess::LEVELS) - array_search($level, CustomerAccess::LEVELS, true);
+
+        $customerIds = DB::table('customer_team')
+            ->join('team_user', 'team_user.team_id', '=', 'customer_team.team_id')
+            ->where('team_user.user_id', $other->getKey())
+            ->distinct()
+            ->pluck('customer_team.customer_id');
+
+        foreach ($customerIds as $customerId) {
+            if ($rank(CustomerAccess::levelFor($other, (int) $customerId)) > $rank(CustomerAccess::levelFor($this, (int) $customerId))) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function hasCustomer()

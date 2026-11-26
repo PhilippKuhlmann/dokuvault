@@ -111,3 +111,40 @@ test('a new customer gets a free slug even when a hidden one holds the name', fu
 
     expect($twin->slug)->toBe('eigene-firma-1');
 });
+
+test('whoever is outside a team cannot take over the account of a member', function () {
+    [$own, , $team] = teamSetup();
+    $member = userWithPermissions(['server_viewAny']);
+    $team->members()->attach($member->id);
+
+    // Role 1 and a delegate with admin_user: both outside the team.
+    foreach ([adminUser(), userWithPermissions(['admin_user', 'server_viewAny'])] as $outsider) {
+        nutzerWechseln($outsider);
+        expect($outsider->mayManage($member))->toBeFalse();
+        $this->get(route('admin.user.edit', $member))->assertForbidden();
+        $this->patch(route('admin.user.update', $member), ['name' => 'X', 'username' => $member->username, 'email' => $member->email, 'role_id' => $member->role_id])->assertForbidden();
+        $this->delete(route('admin.user.destroy', $member))->assertForbidden();
+    }
+    expect(User::find($member->id))->not->toBeNull();
+
+    // A member of the same team may.
+    $peer = adminUser();
+    $team->members()->attach($peer->id);
+    expect($peer->fresh()->mayManage($member))->toBeTrue();
+});
+
+test('a member with a lower level cannot take over one with a higher level', function () {
+    [$own] = teamSetup();
+    $full = Team::create(['name' => 'Voll']);
+    $full->customers()->attach($own->id, ['level' => CustomerAccess::FULL]);
+    $read = Team::create(['name' => 'Lesen']);
+    $read->customers()->attach($own->id, ['level' => CustomerAccess::READ_NO_SECRETS]);
+
+    $high = userWithPermissions(['server_viewAny']);
+    $full->members()->attach($high->id);
+    $low = adminUser();
+    $read->members()->attach($low->id);
+
+    // Even role 1: with the account it would see the passwords its own team hides.
+    expect($low->mayManage($high))->toBeFalse();
+});

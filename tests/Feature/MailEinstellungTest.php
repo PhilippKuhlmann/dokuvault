@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Notification;
 
 function alsEinstellungsverwaltung(): void
 {
-    test()->actingAs(userWithPermissions(['admin_setting']));
+    test()->actingAs(adminUser());
 }
 
 function mailFormular(array $abweichend = []): array
@@ -24,11 +24,15 @@ function mailFormular(array $abweichend = []): array
     ], $abweichend);
 }
 
-test('die Seite ist nur mit dem Recht admin_setting erreichbar', function () {
-    $this->actingAs(userWithPermissions([]));
+test('the mail page is for the admin role only, admin_setting is not enough', function () {
+    // The server set here delivers every reset mail - with it a delegate
+    // could take over an admin account.
+    $this->actingAs(userWithPermissions(['admin_setting']));
     $this->get(route('admin.mail.index'))->assertForbidden();
+    $this->patch(route('admin.mail.update'), mailFormular())->assertForbidden();
+    expect(Setting::wert('mail_host'))->toBeNull();
 
-    nutzerWechseln(userWithPermissions(['admin_setting']));
+    nutzerWechseln(adminUser());
     $this->get(route('admin.mail.index'))->assertStatus(200);
 });
 

@@ -148,12 +148,16 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
             Route::patch('/setting', [SettingController::class, 'update'])->name('admin.setting.update');
 
             // Mail sending. Whatever stands here applies instead of the .env -
-            // see AppServiceProvider::applyMailSettings().
-            Route::get('/mail', [MailSettingController::class, 'index'])->name('admin.mail.index');
-            Route::patch('/mail', [MailSettingController::class, 'update'])->name('admin.mail.update');
-            Route::post('/mail/test', [MailSettingController::class, 'test'])->name('admin.mail.test');
-            Route::delete('/mail/password', [MailSettingController::class, 'deletePassword'])
-                ->name('admin.mail.password');
+            // see AppServiceProvider::applyMailSettings(). Admin role only:
+            // the server set here delivers the reset, invitation and 2FA
+            // mails of every account, role 1 included.
+            Route::middleware('can:isAdmin')->group(function () {
+                Route::get('/mail', [MailSettingController::class, 'index'])->name('admin.mail.index');
+                Route::patch('/mail', [MailSettingController::class, 'update'])->name('admin.mail.update');
+                Route::post('/mail/test', [MailSettingController::class, 'test'])->name('admin.mail.test');
+                Route::delete('/mail/password', [MailSettingController::class, 'deletePassword'])
+                    ->name('admin.mail.password');
+            });
 
             // Signing in through an on-premises Active Directory, next to
             // local users; see App\Support\Directory.

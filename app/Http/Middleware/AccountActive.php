@@ -27,7 +27,9 @@ class AccountActive
     {
         $nutzer = $request->user();
 
-        if ($nutzer === null || ! $nutzer->isDisabled()) {
+        // Ended by the AD sync counts as locked as well - for a token issued
+        // later or one that slipped past the sync.
+        if ($nutzer === null || (! $nutzer->isDisabled() && $nutzer->directory_revoked_at === null)) {
             return $next($request);
         }
 

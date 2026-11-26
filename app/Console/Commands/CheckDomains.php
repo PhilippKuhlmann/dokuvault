@@ -53,7 +53,7 @@ class CheckDomains extends Command
                 return;
             }
 
-            $check->checkCertificate($certificate);
+            $check->checkCertificate($certificate, $certificate->check_public_only);
             $failed += $certificate->check_error ? 1 : 0;
             $this->line('certificate: '.$certificate->name.($certificate->check_error ? ' - '.$certificate->check_error : ''));
         });

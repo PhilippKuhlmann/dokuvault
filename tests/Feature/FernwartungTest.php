@@ -214,3 +214,25 @@ test('die Einstellungen stehen im Admin-Menue', function () {
         ->assertSee('TeamViewer')
         ->assertSee('AnyDesk');
 });
+
+test('a web address with {password} is refused, the device password would go to that server', function () {
+    $this->actingAs(adminUser());
+
+    foreach (['https://evil.example/c?id={id}&pw={password}', 'http://10.0.0.1/{id}/{password}', 'ftp://x/{id}{password}'] as $pattern) {
+        $this->patch(route('admin.setting.update'), ['remote_tool' => 'custom', 'remote_pattern' => $pattern])
+            ->assertSessionHasErrors('remote_pattern');
+    }
+    expect(Setting::wert(Setting::REMOTE_PATTERN))->toBeNull();
+
+    // Without the password a web console stays possible.
+    $this->patch(route('admin.setting.update'), ['remote_tool' => 'custom', 'remote_pattern' => 'https://console.example/{id}'])
+        ->assertSessionHasNoErrors();
+    expect(Setting::remoteAccessLink('42', 'geheim'))->toBe('https://console.example/42');
+});
+
+test('a web pattern with {password} saved before gives no link', function () {
+    Setting::setzen(Setting::REMOTE_TOOL, 'custom');
+    Setting::setzen(Setting::REMOTE_PATTERN, 'https://evil.example/c?id={id}&pw={password}');
+
+    expect(Setting::remoteAccessLink('42', 'geheim'))->toBeNull();
+});

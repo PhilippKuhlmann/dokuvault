@@ -719,6 +719,12 @@ class Setting extends Model
             return null;
         }
 
+        // A web address with {password} would hand the device password to
+        // whatever server the pattern names - only a program gets it.
+        if (static::sendsPasswordOverNetwork($tool['url'])) {
+            return null;
+        }
+
         // A pattern with {password} needs a password too - otherwise a link
         // would come out that leads to the password prompt instead of the
         if (str_contains($tool['url'], '{password}') && blank($passwort)) {
@@ -730,5 +736,16 @@ class Setting extends Model
             [rawurlencode($id), rawurlencode((string) $passwort)],
             $tool['url']
         );
+    }
+
+    /** Schemes a browser sends over the network instead of to a local program. */
+    public const NETWORK_SCHEMES = ['http', 'https', 'ftp', 'ftps', 'sftp', 'ws', 'wss', 'mailto', 'sms', 'tel', 'news', 'nntp', 'gopher', 'ldap', 'ldaps', 'smb'];
+
+    /** A pattern that would put the device password into a request to some server. */
+    public static function sendsPasswordOverNetwork(string $pattern): bool
+    {
+        $scheme = strtolower((string) strtok($pattern, ':'));
+
+        return str_contains($pattern, '{password}') && in_array($scheme, self::NETWORK_SCHEMES, true);
     }
 }

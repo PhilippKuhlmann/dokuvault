@@ -6,6 +6,12 @@
 
 - **AD-Gruppen vergeben nur noch Rollen im eigenen Rahmen.** Wer nur „Einstellungen“ verwalten durfte, konnte unter Anmeldung eine AD-Gruppe der Admin-Rolle zuordnen und sich darüber zum vollen Admin machen. Jetzt gilt dieselbe Grenze wie in der Benutzerverwaltung: Zuordnen, Verschieben und Entfernen nur für Rollen, die man selbst vergeben darf. Zuordnungen darüber sind sichtbar, aber gesperrt.
 - **Der Config-Cache bleibt aus dem unverschlüsselten Backup.** `php artisan config:cache` (läuft bei jedem Update) schreibt den APP_KEY und alle Geheimnisse der `.env` nach `bootstrap/cache/config.php` – die Datei landete bisher im Backup, auch ohne Archivpasswort. Sie folgt jetzt derselben Regel wie die `.env`: nur im verschlüsselten Archiv.
+- **Mail-Einstellungen nur noch für die Admin-Rolle.** Über den hier eingetragenen Server laufen die Reset-, Einladungs- und Zwei-Faktor-Mails aller Konten; mit „Einstellungen“ allein ließ sich so ein Admin-Konto übernehmen. Wie beim Backup reicht das Recht „Einstellungen“ nicht mehr.
+- **Fernwartungs-Muster: keine Web-Adresse mit {password}.** Ein `https://…{password}`-Muster schickte das Geräte-Kennwort beim Klick auf „Verbinden“ an den Server im Muster. Solche Muster werden abgelehnt, ein schon gespeichertes ergibt keinen Knopf mehr. Ohne `{password}` bleibt eine Web-Konsole möglich.
+- **AD-Abgang beendet jeden Zugang.** Sperrt der AD-Abgleich ein Konto, verfallen jetzt auch Integrations-Token, nicht nur App-Token; ein Token eines so beendeten Kontos wird abgewiesen.
+- **AD-Kennwort nicht mehr im Log.** War der AD-Server beim Anmelden nicht erreichbar, stand das eingetippte Kennwort im Stacktrace des Fehlerlogs (und damit im Backup). Die Parameter sind als sensibel markiert, das Docker-Image lässt Argumente in Stacktraces ganz weg.
+- **Teams: kein Übernehmen eines Teammitglieds von außen.** Wer Benutzer verwalten darf (auch die Admin-Rolle), konnte das Konto eines Teammitglieds bearbeiten, ihm ein Kennwort setzen und so die Kunden des Teams sehen. Jetzt nur, wenn man selbst bei allen Kunden des Mitglieds mindestens dieselbe Stufe hat.
+- **Nächtliche Zertifikatsprüfung wie der Knopf.** Ein Prüfziel, das ein Kundenkonto eingetragen hat, prüft auch der nächtliche Lauf nur noch gegen öffentliche Adressen. Vorher reichte ein Name, der erst nachts intern auflöst.
 
 ## 26.11.25
 

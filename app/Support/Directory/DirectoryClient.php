@@ -17,7 +17,7 @@ interface DirectoryClient
      *
      * @throws DirectoryUnavailable when the directory cannot be asked at all
      */
-    public function authenticate(string $login, string $password): ?DirectoryUser;
+    public function authenticate(string $login, #[\SensitiveParameter] string $password): ?DirectoryUser;
 
     /**
      * The enabled account with this objectGUID (hex) and its groups - or

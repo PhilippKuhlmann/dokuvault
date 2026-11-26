@@ -63,6 +63,8 @@ trait TracksChanges
                 // a day saying "checked again" would bury the real changes.
                 'checked_at',
                 'check_error',
+                // Follows the check target by itself (Certificate::booted).
+                'check_public_only',
                 'agent_reported_at',
                 // What an agent reports is the machine's state, replaced by
                 // every run: used storage and a guest's power state change
