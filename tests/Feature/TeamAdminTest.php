@@ -3,6 +3,9 @@
 use App\Livewire\AdminActivityLog;
 use App\Models\Certificate;
 use App\Models\Customer;
+use App\Models\Rack;
+use App\Models\RackItem;
+use App\Models\Site;
 use App\Models\Team;
 use App\Models\User;
 use App\Support\CustomerAccess;
@@ -121,6 +124,19 @@ test('the activity log leaves out entries of a hidden customer', function () {
 
     Livewire::test(AdminActivityLog::class)->assertDontSee('Geheimes Objekt');
     $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Geheimes Objekt');
+});
+
+test('a rack item entry belongs to the customer of its rack and stays hidden', function () {
+    [$hidden, , $outsider] = hiddenWorld();
+    $site = Site::factory()->create(['customer_id' => $hidden->id]);
+    $rack = Rack::withoutGlobalScopes()->create(['customer_id' => $hidden->id, 'site_id' => $site->id, 'name' => 'R1', 'height_units' => 42]);
+    $item = RackItem::create(['rack_id' => $rack->id, 'position' => 3, 'height_units' => 1, 'name' => 'Geheimes Patchfeld']);
+
+    $entry = Activity::where('subject_type', RackItem::class)->where('subject_id', $item->id)->latest('id')->first();
+    expect($entry?->customer_id)->toBe($hidden->id);
+
+    $this->actingAs($outsider);
+    Livewire::test(AdminActivityLog::class)->assertDontSee('Geheimes Patchfeld');
 });
 
 test('the expiry mail of a staff user leaves out hidden customers', function () {

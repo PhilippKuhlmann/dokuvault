@@ -12,6 +12,12 @@
 - **AD-Kennwort nicht mehr im Log.** War der AD-Server beim Anmelden nicht erreichbar, stand das eingetippte Kennwort im Stacktrace des Fehlerlogs (und damit im Backup). Die Parameter sind als sensibel markiert, das Docker-Image lässt Argumente in Stacktraces ganz weg.
 - **Teams: kein Übernehmen eines Teammitglieds von außen.** Wer Benutzer verwalten darf (auch die Admin-Rolle), konnte das Konto eines Teammitglieds bearbeiten, ihm ein Kennwort setzen und so die Kunden des Teams sehen. Jetzt nur, wenn man selbst bei allen Kunden des Mitglieds mindestens dieselbe Stufe hat.
 - **Nächtliche Zertifikatsprüfung wie der Knopf.** Ein Prüfziel, das ein Kundenkonto eingetragen hat, prüft auch der nächtliche Lauf nur noch gegen öffentliche Adressen. Vorher reichte ein Name, der erst nachts intern auflöst.
+- **Neuer Server, Kennwort neu eingeben.** Wer bei Mail oder AD-Anmeldung Server, Port oder Verschlüsselung ändert, muss das hinterlegte Kennwort neu eintippen – sonst ginge das alte an den neuen Server.
+- **Bisherige Kennwörter im Bearbeiten-Fenster** zählen jetzt wie jedes Ansehen: gebremst, protokolliert, nicht bei der Team-Stufe „Lesen ohne Kennwörter“.
+- **Einrichtung bleibt eingerichtet.** Ist der erste Admin angelegt, öffnet ein `SETUP_TOKEN` in der `.env` `/setup` nicht wieder, auch wenn später kein Admin mehr da ist. Neu starten lässt sich die Einrichtung nur noch über `php artisan setup:code`.
+- **Ablauf-Mail nicht mehr an Konten, die der AD-Abgleich beendet hat.**
+- **Protokoll: Rack-Einträge gehören zum Kunden des Racks.** Sie standen bisher ohne Kunden im Protokoll und waren damit auch für Benutzer außerhalb des Teams sichtbar. Bestehende Einträge werden nachgetragen.
+- Ein Agent mit vielen Adressen lädt die Netze des Standorts nur noch einmal je Meldung statt einmal je Adresse.
 
 ## 26.11.25
 

@@ -24,6 +24,13 @@ class InitialSetup
 {
     public static function pending(): bool
     {
+        // Done is done: a SETUP_TOKEN left in the .env must not reopen the
+        // page once the last admin is gone. Only the console (setup:code)
+        // starts it again.
+        if (filled(Setting::wert(Setting::SETUP_DONE))) {
+            return false;
+        }
+
         if (blank(config('custom.setup_token')) && blank(Setting::wert(Setting::SETUP_CODE))) {
             return false;
         }
@@ -36,12 +43,16 @@ class InitialSetup
         return User::where('role_id', Role::IS_ADMIN)->exists();
     }
 
-    /** A new code; any earlier generated one stops working. */
+    /**
+     * A new code; any earlier generated one stops working. Run on the
+     * console only - whoever is there may start the setup again.
+     */
     public static function newCode(): string
     {
         $code = implode('-', str_split(Str::upper(Str::random(20)), 5));
 
         Setting::setzen(Setting::SETUP_CODE, Hash::make($code));
+        Setting::setzen(Setting::SETUP_DONE, null);
 
         return $code;
     }
@@ -70,5 +81,6 @@ class InitialSetup
     public static function finish(): void
     {
         Setting::setzen(Setting::SETUP_CODE, null);
+        Setting::setzen(Setting::SETUP_DONE, now()->toIso8601String());
     }
 }

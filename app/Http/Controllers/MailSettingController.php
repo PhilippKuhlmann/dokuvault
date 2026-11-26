@@ -7,6 +7,7 @@ use App\Notifications\Testmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 /**
@@ -42,6 +43,15 @@ class MailSettingController extends Controller
     public function update(Request $request)
     {
         $daten = $this->check($request);
+
+        // The stored password belongs to the server it was entered for: with
+        // another server it has to be typed again, or it would be sent there.
+        $serverChanged = mb_strtolower(trim((string) ($daten['mail_host'] ?? ''))) !== mb_strtolower(trim((string) Setting::wert(Setting::MAIL_HOST)))
+            || (int) ($daten['mail_port'] ?? 0) !== (int) Setting::wert(Setting::MAIL_PORT)
+            || (string) ($daten['mail_encryption'] ?? '') !== (string) Setting::wert(Setting::MAIL_ENCRYPTION, 'tls');
+        if ($serverChanged && ($daten['mail_password'] ?? '') === '' && Setting::mailPassword() !== null) {
+            throw ValidationException::withMessages(['mail_password' => __('Bei geändertem Server das Kennwort bitte neu eingeben.')]);
+        }
 
         Setting::setzen(Setting::MAIL_HOST, $daten['mail_host'] ?: null);
         Setting::setzen(Setting::MAIL_PORT, $daten['mail_port'] ?: null);

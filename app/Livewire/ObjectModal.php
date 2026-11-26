@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Exceptions\TooManyPasswordReveals;
 use App\Livewire\Concerns\ScopedToCustomer;
 use App\Livewire\Concerns\ValidatesOnInput;
 use App\Models\ADDomainHost;
@@ -12,6 +13,7 @@ use App\Models\DeviceModel;
 use App\Models\Site;
 use App\Support\LocalTime;
 use App\Support\ObjectForm;
+use App\Support\PasswordReveal;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -457,12 +459,16 @@ class ObjectModal extends Component
             return;
         }
 
-        $this->gezeigterVerlauf[$feld] = $this->fetchObject($this->bearbeiteId)
-            ->passwordHistory()
-            ->where('field', $feld)
-            ->with('user:id,name')
-            ->limit(10)
-            ->get()
+        // Plaintext like any other reveal: team level, brake, log entry.
+        try {
+            $eintraege = app(PasswordReveal::class)->historyForEditor($this->fetchObject($this->bearbeiteId), $feld, auth()->user());
+        } catch (TooManyPasswordReveals $bremse) {
+            $this->addError('verlauf.'.$feld, $bremse->getMessage());
+
+            return;
+        }
+
+        $this->gezeigterVerlauf[$feld] = $eintraege
             ->map(fn ($eintrag) => [
                 'wert' => $eintrag->value,
                 'wann' => LocalTime::display($eintrag->created_at),

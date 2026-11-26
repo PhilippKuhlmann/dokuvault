@@ -77,9 +77,13 @@ class AppServiceProvider extends ServiceProvider
                 return;
             }
             $objekt = $eintrag->subject;
-            $eintrag->customer_id = $objekt instanceof Customer
-                ? $objekt->getKey()
-                : ($objekt?->getAttribute('customer_id') ?? null);
+            // Owned through a parent (a rack item through its rack): the
+            // model says whose it is - NULL would show it to every team.
+            $eintrag->customer_id = match (true) {
+                $objekt instanceof Customer => $objekt->getKey(),
+                $objekt !== null && method_exists($objekt, 'customerIdForLog') => $objekt->customerIdForLog(),
+                default => $objekt?->getAttribute('customer_id'),
+            };
         });
 
         if ($this->app->environment('production')) {

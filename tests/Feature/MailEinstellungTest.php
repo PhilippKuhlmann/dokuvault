@@ -68,10 +68,27 @@ test('ein leeres Kennwortfeld lässt das hinterlegte stehen', function () {
     $this->patch(route('admin.mail.update'), mailFormular());
     $this->patch(route('admin.mail.update'), mailFormular([
         'mail_password' => '',
-        'mail_host' => 'smtp.anders.example',
-    ]));
+        'mail_from_name' => 'Anders',
+    ]))->assertSessionHasNoErrors();
 
     expect(Setting::mailPassword())->toBe('Geheim-2026')
+        ->and(Setting::wert(Setting::MAIL_FROM_NAME))->toBe('Anders');
+});
+
+test('another server needs the password typed again', function () {
+    // Otherwise the stored password would go to the new server.
+    alsEinstellungsverwaltung();
+    $this->patch(route('admin.mail.update'), mailFormular());
+
+    foreach ([['mail_host' => 'smtp.anders.example'], ['mail_port' => '25'], ['mail_encryption' => '']] as $change) {
+        $this->patch(route('admin.mail.update'), mailFormular(['mail_password' => ''] + $change))
+            ->assertSessionHasErrors('mail_password');
+    }
+    expect(Setting::wert(Setting::MAIL_HOST))->toBe('smtp.example.com');
+
+    $this->patch(route('admin.mail.update'), mailFormular(['mail_password' => 'Neu-2026', 'mail_host' => 'smtp.anders.example']))
+        ->assertSessionHasNoErrors();
+    expect(Setting::mailPassword())->toBe('Neu-2026')
         ->and(Setting::wert(Setting::MAIL_HOST))->toBe('smtp.anders.example');
 });
 

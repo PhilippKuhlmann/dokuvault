@@ -126,10 +126,27 @@ class Network extends Model
             return null;
         }
 
-        return static::where('customer_id', $customerId)
+        // Once per request and site: an agent reports hundreds of addresses
+        // in one go, and loading every network of the site for each of
+        // them grew with the number of networks.
+        $cache = request()->attributes->get(self::FOR_URL_CACHE, []);
+        $key = $customerId.':'.($siteId ?? '-');
+        $cache[$key] ??= static::where('customer_id', $customerId)
             ->when($siteId, fn ($query) => $query->where('site_id', $siteId))
-            ->get()
-            ->first(fn (self $netz) => $netz->containsUrl($adresse));
+            ->get();
+        request()->attributes->set(self::FOR_URL_CACHE, $cache);
+
+        return $cache[$key]->first(fn (self $netz) => $netz->containsUrl($adresse));
+    }
+
+    private const FOR_URL_CACHE = 'networks.for-url';
+
+    /** A network created, changed or removed: the next lookup loads again. */
+    protected static function booted(): void
+    {
+        $forget = fn () => request()->attributes->remove(self::FOR_URL_CACHE);
+        static::saved($forget);
+        static::deleted($forget);
     }
 
     /**

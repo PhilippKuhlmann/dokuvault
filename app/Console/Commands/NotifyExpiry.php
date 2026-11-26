@@ -33,6 +33,8 @@ class NotifyExpiry extends Command
 
         $users = User::where('expiry_mail', true)
             ->whereNull('deactivated_at')
+            // Ended by the AD sync: no longer one of us, no list of expiries.
+            ->whereNull('directory_revoked_at')
             ->whereNotNull('email')
             ->with('role.permissions')
             ->get();

@@ -297,11 +297,23 @@ test('the settings page saves the connection, the password encrypted and kept wh
         ->and(LdapConfig::bindPassword())->toBe('Dienst!2026')
         ->and(Setting::wert(LdapConfig::BIND_PASSWORD))->not->toBe('Dienst!2026');
 
-    // Saved again without a password: it stays.
+    // Saved again without a password, same server: it stays.
     $this->patch(route('admin.directory.update'), [
+        'enabled' => '1', 'host' => 'dc01.firma.local', 'encryption' => 'ldaps', 'verify_cert' => '1',
+        'base_dn' => 'DC=firma,DC=local', 'bind_dn' => 'CN=svc,DC=firma,DC=local', 'bind_password' => '', 'domain' => 'FIRMA',
+    ])->assertSessionHasNoErrors();
+    expect(LdapConfig::bindPassword())->toBe('Dienst!2026');
+
+    // Another server or a weaker connection without the password: refused,
+    // the stored one would go to wherever the new values point.
+    $andererServer = [
         'enabled' => '1', 'host' => 'dc02.firma.local', 'encryption' => 'starttls',
         'base_dn' => 'DC=firma,DC=local', 'bind_dn' => 'CN=svc,DC=firma,DC=local', 'bind_password' => '',
-    ])->assertSessionHasNoErrors();
+    ];
+    $this->patch(route('admin.directory.update'), $andererServer)->assertSessionHasErrors('bind_password');
+    expect(LdapConfig::host())->toBe('dc01.firma.local');
+
+    $this->patch(route('admin.directory.update'), ['bind_password' => 'Dienst!2026'] + $andererServer)->assertSessionHasNoErrors();
     expect(LdapConfig::bindPassword())->toBe('Dienst!2026')
         ->and(LdapConfig::host())->toBe('dc02.firma.local')
         ->and(LdapConfig::verifyCert())->toBeFalse();

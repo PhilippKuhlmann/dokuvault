@@ -91,6 +91,27 @@ test('das Modal zeigt den Verlauf erst auf Klick', function () {
         ->assertDontSee('Vorher!2026');
 });
 
+test('the history in the modal is braked and logged like any other reveal', function () {
+    $this->actingAs(userWithPermissions(['firewall_viewAny', 'firewall_update']));
+    Setting::setzen(Setting::KENNWORT_ABRUFE, '1');
+
+    $firewall = firewallMitKennwort('Vorher!2026');
+    $firewall->update(['cloud_backup_password' => 'Nachher!2026']);
+
+    $test = Livewire::test(ObjectModal::class, ['typ' => 'firewall', 'customer' => $firewall->customer])
+        ->call('bearbeiten', 'firewall', $firewall->id)
+        ->call('showHistory', 'cloud_backup_password')
+        ->assertSee('Vorher!2026');
+    expect(Activity::where('event', 'kennwort_angesehen')->count())->toBe(1);
+
+    // The budget is used up: no values, a message instead.
+    $test->call('hideHistory', 'cloud_backup_password')
+        ->call('showHistory', 'cloud_backup_password')
+        ->assertHasErrors('verlauf.cloud_backup_password')
+        ->assertDontSee('Vorher!2026');
+    expect(Activity::where('event', 'kennwort_angesehen')->count())->toBe(1);
+});
+
 test('ohne Bearbeitungsrecht kein Verlauf', function () {
     $this->actingAs(userWithPermissions(['firewall_viewAny']));
 

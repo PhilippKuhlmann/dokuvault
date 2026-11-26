@@ -47,6 +47,15 @@ test('only users who switched it on get the mail', function () {
     Notification::assertNotSentTo($off, ExpiryNotice::class);
 });
 
+test('an account the AD sync ended gets no mail', function () {
+    $revoked = expiryAdmin(['expiry_mail' => true, 'directory_revoked_at' => now()]);
+    certificateDue(Customer::factory()->create(), 10);
+
+    $this->artisan('expiry:notify')->assertSuccessful();
+
+    Notification::assertNotSentTo($revoked, ExpiryNotice::class);
+});
+
 test('outside the warning period nothing is sent', function () {
     expiryAdmin(['expiry_mail' => true]);
     certificateDue(Customer::factory()->create(), 60);

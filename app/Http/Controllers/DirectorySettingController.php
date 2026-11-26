@@ -11,6 +11,7 @@ use App\Support\Directory\DirectoryUnavailable;
 use App\Support\Directory\LdapConfig;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Administration > Anmeldung: signing in through an on-premises Active
@@ -80,6 +81,17 @@ class DirectorySettingController extends Controller
             'bind_password' => __('Kennwort'),
             'domain' => __('Domäne (NetBIOS)'),
         ]);
+
+        // The stored service password belongs to the server it was entered
+        // for: another server, port or a weaker connection - type it again,
+        // or it would be sent wherever the new values point.
+        $serverChanged = mb_strtolower(trim((string) ($daten['host'] ?? ''))) !== mb_strtolower(trim((string) LdapConfig::host()))
+            || (int) ($daten['port'] ?? 0) !== (int) Setting::wert(LdapConfig::PORT)
+            || $daten['encryption'] !== LdapConfig::encryption()
+            || $request->boolean('verify_cert') !== LdapConfig::verifyCert();
+        if ($serverChanged && ($daten['bind_password'] ?? '') === '' && LdapConfig::bindPassword() !== null) {
+            throw ValidationException::withMessages(['bind_password' => __('Bei geändertem Server das Kennwort bitte neu eingeben.')]);
+        }
 
         // Who switched the encryption off - and back on - belongs in the
         // log: from then on passwords cross the network readable.

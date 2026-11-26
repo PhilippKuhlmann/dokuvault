@@ -117,6 +117,23 @@ test('SETUP_TOKEN from the environment works instead of a generated code', funct
         ->and(InitialSetup::pending())->toBeFalse();
 });
 
+test('once set up, SETUP_TOKEN does not reopen the page when the last admin is gone', function () {
+    config(['custom.setup_token' => 'mein-fester-code-123']);
+    $this->seed(ProductionDatabaseSeeder::class);
+    $this->post(route('setup.store'), setupForm('mein-fester-code-123'))->assertRedirect(route('login'));
+
+    // The only administrator deleted or demoted; the token is still in the .env.
+    User::where('role_id', Role::IS_ADMIN)->delete();
+
+    expect(InitialSetup::pending())->toBeFalse();
+    $this->get(route('setup'))->assertNotFound();
+    $this->post(route('setup.store'), setupForm('mein-fester-code-123', ['username' => 'eindringling']))->assertNotFound();
+
+    // Only the console starts it again.
+    $this->artisan('setup:code')->assertSuccessful();
+    expect(InitialSetup::pending())->toBeTrue();
+});
+
 test('setup:code replaces a lost code', function () {
     $old = seedProductionAndReadCode();
 

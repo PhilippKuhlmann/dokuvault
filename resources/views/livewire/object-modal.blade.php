@@ -276,6 +276,9 @@
                                                 {{ __('Zuletzt geändert') }} {{ $verlauf[$feld['name']]['zuletzt'] }} —
                                                 <span class="underline">{{ trans_choice('{1}vorheriges Kennwort anzeigen|[2,*]:anzahl vorherige anzeigen', $verlauf[$feld['name']]['anzahl'], ['anzahl' => $verlauf[$feld['name']]['anzahl']]) }}</span>
                                             </button>
+                                            @error('verlauf.'.$feld['name'])
+                                                <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                                            @enderror
                                         @endif
                                     </div>
                                 @endif

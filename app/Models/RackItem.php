@@ -22,6 +22,17 @@ class RackItem extends Model
         return $this->belongsTo(Rack::class);
     }
 
+    /**
+     * The customer of the rack - for the activity log, which otherwise
+     * finds no customer_id here and shows the entry to every team.
+     */
+    public function customerIdForLog(): ?int
+    {
+        $id = Rack::withoutGlobalScopes()->withTrashed()->whereKey($this->rack_id)->value('customer_id');
+
+        return $id === null ? null : (int) $id;
+    }
+
     public function device()
     {
         return $this->morphTo();

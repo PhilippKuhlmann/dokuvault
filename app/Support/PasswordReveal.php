@@ -7,6 +7,7 @@ use App\Models\CredentialLink;
 use App\Models\PasswordHistory;
 use App\Models\Setting;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -141,6 +142,38 @@ class PasswordReveal
             ->log('Kennwort angesehen');
 
         return $eintrag->value;
+    }
+
+    /**
+     * The previous passwords of one field, in the edit form. The caller has
+     * checked the update right on the object; here the same rules as every
+     * other reveal: team level, brake (one hit for the list) and a log entry.
+     *
+     * @return Collection<int, PasswordHistory>
+     */
+    public function historyForEditor(Model $objekt, string $feld, User $nutzer): Collection
+    {
+        if (! in_array($feld, config('custom.secret_columns'), true)) {
+            return new Collection;
+        }
+
+        $this->onlyOwnCustomer($nutzer, $objekt->customer_id);
+        $this->bremsen($nutzer);
+
+        activity()
+            ->event('kennwort_angesehen')
+            ->performedOn($objekt)
+            ->causedBy($nutzer)
+            ->withProperties([
+                'objekt' => $objekt->name ?? $objekt->host ?? (class_basename($objekt).' #'.$objekt->id),
+                'attributes' => array_filter([
+                    'Feld' => (config('custom.secret_field_labels')[$feld] ?? $feld).' (bisherige)',
+                    'IP' => request()->ip(),
+                ]),
+            ])
+            ->log('Kennwort angesehen');
+
+        return $objekt->passwordHistory()->where('field', $feld)->with('user:id,name')->limit(10)->get();
     }
 
     /**
