@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\LockedInDemo;
 use App\Models\Setting;
 use App\Support\BackupSettings;
 use Illuminate\Support\Facades\Artisan;
@@ -20,6 +21,8 @@ use Spatie\Backup\BackupDestination\BackupDestination;
  */
 class AdminBackupSettings extends Component
 {
+    use LockedInDemo;
+
     public array $form = [];
 
     /** Result of "Verbindung testen": [ok, message]. */

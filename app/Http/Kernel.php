@@ -5,6 +5,7 @@ namespace App\Http;
 use App\Http\Middleware\AccountActive;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\AuthenticateAgent;
+use App\Http\Middleware\BlockInDemo;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\isAdmin;
 use App\Http\Middleware\isCustomer;
@@ -144,6 +145,7 @@ class Kernel extends HttpKernel
         'throttle' => ThrottleRequests::class,
         'verified' => EnsureEmailIsVerified::class,
         'isAdmin' => isAdmin::class,
+        'demo.blocked' => BlockInDemo::class,
         'IsTechnician' => IsTechnician::class,
         'isCustomer' => isCustomer::class,
         'agent' => AuthenticateAgent::class,

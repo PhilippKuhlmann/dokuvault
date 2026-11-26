@@ -2,6 +2,7 @@
     <div class="p-3 sm:p-5 space-y-6">
         <x-panel class="text-3xl font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Einstellungen') }}</x-panel>
 
+<x-demo-locked class="space-y-6">
         <form method="POST" action="{{ route('admin.setting.update') }}" class="max-w-3xl"700"
             {{-- @js statt '{{ }}': Im Attribut wird der Wert vom Browser
                  entschluesselt, bevor Alpine ihn auswertet - aus &#039; wird
@@ -64,5 +65,6 @@
                 @endif
             </div>
         </form>
+</x-demo-locked>
     </div>
 </x-admin-layout>

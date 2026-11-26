@@ -1,5 +1,6 @@
 <div class="p-3 sm:p-5 space-y-6">
     <div class="text-3xl font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Allgemein') }}</div>
+<x-demo-locked class="space-y-6">
 
     <x-panel class="max-w-3xl">
         <div class="text-xl font-CoconPro text-gray-900 dark:text-gray-100 mb-1">{{ __('Name und Logo') }}</div>
@@ -235,4 +236,5 @@
         </p>
     </x-panel>
 
+</x-demo-locked>
 </div>

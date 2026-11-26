@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\LockedInDemo;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
@@ -20,6 +21,8 @@ use Livewire\Component;
  */
 class AdminSecurity extends Component
 {
+    use LockedInDemo;
+
     /** Minimum length; eight is Laravel's default and applied silently before. */
     public int $pwMin = 8;
 

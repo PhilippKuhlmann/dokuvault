@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\LockedInDemo;
 use App\Models\Setting;
 use App\Support\LocalTime;
 use Illuminate\Support\Facades\Gate;
@@ -20,6 +21,7 @@ use Livewire\WithFileUploads;
  */
 class AdminGeneral extends Component
 {
+    use LockedInDemo;
     use WithFileUploads;
 
     /** Own name; empty means the one from the configuration. */

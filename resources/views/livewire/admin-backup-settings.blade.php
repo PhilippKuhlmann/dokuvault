@@ -11,6 +11,7 @@
         </p>
     </div>
 
+<x-demo-locked class="space-y-4">
     <x-backup-zustand />
 
     <form wire:submit="save" class="space-y-4">
@@ -228,4 +229,5 @@
             <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">{{ __('Die Pfade in der ZIP folgen dem Installationsordner des alten Servers. Einmal auf einer Test-VM durchspielen, bevor man es braucht.') }}</p>
         </details>
     </x-panel>
+</x-demo-locked>
 </div>

@@ -252,6 +252,15 @@ class AppServiceProvider extends ServiceProvider
 
     private function applyMailSettings(): void
     {
+        // The public demo sends no mail at all: everyone shares its admin
+        // account, and invitations, resets or test mails to any address
+        // would make it a relay. They land in the log instead.
+        if (config('app.demo')) {
+            config(['mail.default' => 'log']);
+
+            return;
+        }
+
         try {
             $host = trim((string) Setting::wert(Setting::MAIL_HOST));
         } catch (Throwable) {

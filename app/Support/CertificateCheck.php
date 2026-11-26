@@ -32,6 +32,10 @@ class CertificateCheck
      */
     public function check(string $host, int $port = 443, bool $publicOnly = false): array
     {
+        // The public demo never reaches into the network it runs in -
+        // whoever signs in there is a stranger, staff account or not.
+        $publicOnly = $publicOnly || (bool) config('app.demo');
+
         // Resolved once and connected to exactly that address: a second
         // lookup at connect time could be answered with an internal one.
         $this->connectTo = $publicOnly ? self::publicAddress($host) : null;

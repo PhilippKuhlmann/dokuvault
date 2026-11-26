@@ -7,6 +7,7 @@
             </p>
         </div>
 
+<x-demo-locked class="space-y-6">
         @if (session('success'))
             <div class="max-w-3xl rounded-lg border border-green-300 bg-green-50 p-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-900/25 dark:text-green-300" role="status">
                 {{ session('success') }}
@@ -280,5 +281,6 @@
                 <li>{{ __('Wird jemand im AD gesperrt oder aus der Gruppe genommen, kommt er bei der nächsten Anmeldung nicht mehr hinein. Kennwörter werden nie in DokuVault gespeichert.') }}</li>
             </ul>
         </x-panel>
+</x-demo-locked>
     </div>
 </x-admin-layout>

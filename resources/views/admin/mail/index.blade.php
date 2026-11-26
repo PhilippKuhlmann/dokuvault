@@ -2,6 +2,7 @@
     <div class="p-3 sm:p-5 space-y-6">
         <div class="text-3xl font-CoconPro text-gray-900 dark:text-gray-100">{{ __('Einstellungen') }}</div>
 
+<x-demo-locked class="space-y-6">
         @if (session('success'))
             <div class="max-w-3xl rounded-lg border border-green-300 bg-green-50 p-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-900/25 dark:text-green-300" role="status">
                 {{ session('success') }}
@@ -134,5 +135,6 @@
 
             <x-input.fehler :messages="$errors->get('test_an')" class="mt-2" />
         </form>
+</x-demo-locked>
     </div>
 </x-admin-layout>

@@ -5,6 +5,7 @@
 ### Changed
 
 - **Demo mit Teams.** Wer sich als „techniker“ anmeldet, sieht jede Zugriffsstufe einmal: Mustermann mit Vollzugriff, ein Kunde nur lesend, einer ohne Kennwörter, einer gar nicht – die übrigen ohne Team wie bisher. „admin“ sieht und ändert über das Team „Geschäftsführung“ weiterhin alles.
+- **Demo abgesichert.** In der öffentlichen Demo teilen sich alle denselben Admin-Zugang. Deshalb sind dort Mail, Anmeldung (AD), Fernwartungs-Muster, Backup, Allgemein und Sicherheit nur noch zum Ansehen; der Backup-Download ist gesperrt, die Zertifikatsprüfung erreicht nur öffentliche Adressen, und Mails landen im Log statt verschickt zu werden. Teams, Benutzer, Rollen und alle Kundendaten bleiben zum Ausprobieren offen.
 
 ### Security
 
